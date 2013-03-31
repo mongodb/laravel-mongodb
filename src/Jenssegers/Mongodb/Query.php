@@ -54,6 +54,13 @@ class Query {
     public $limit;
 
     /**
+     * The number of records to skip.
+     *
+     * @var int
+     */
+    public $offset;
+
+    /**
      * All of the available operators.
      *
      * @var array
@@ -89,6 +96,19 @@ class Query {
     public function take($value)
     {
         $this->limit = $value;
+
+        return $this;
+    }
+
+    /**
+     * Set the "offset" value of the query.
+     *
+     * @param  int  $value
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function skip($value)
+    {
+        $this->offset = $value;
 
         return $this;
     }
@@ -186,6 +206,12 @@ class Query {
             $cursor->sort($this->orders);
         }
 
+        // Apply offset
+        if ($this->offset)
+        {
+            $cursor->skip($this->offset);
+        }
+
         // Apply limit
         if ($this->limit)
         {
@@ -194,6 +220,79 @@ class Query {
 
         // Return collection of models
         return $this->toCollection($cursor);
+    }
+
+    /**
+     * Insert a new document into the database.
+     *
+     * @param  array  $data
+     * @return mixed
+     */
+    public function insert($data)
+    {
+        $result = $this->collection->insert($data);
+
+        if(1 == (int) $result['ok'])
+        {
+            return $data['_id'];
+        }
+
+        return false;
+    }
+
+    /**
+     * Save the document. Insert into the database if its not exists.
+     *
+     * @param  array  $data
+     * @return mixed
+     */
+    public function save($data)
+    {
+        $this->collection->save($data);
+
+        if(isset($data['_id']))
+        {
+            return $data['_id'];
+        }
+
+        return false;
+    }
+
+    /**
+     * Update a document in the database.
+     *
+     * @param  array  $data
+     * @return int
+     */
+    public function update(array $data)
+    {
+        $update = array('$set' => $data);
+
+        $result = $this->collection->update($this->wheres, $update, array('multiple' => true));
+
+        if(1 == (int) $result['ok'])
+        {
+            return $result['n'];
+        }
+
+        return 0;
+    }
+
+    /**
+     * Delete a document from the database.
+     *
+     * @return int
+     */
+    public function delete()
+    {
+        $result = $this->collection->remove($this->wheres);
+
+        if(1 == (int) $result['ok'])
+        {
+            return $result['n'];
+        }
+
+        return 0;
     }
 
     /**
