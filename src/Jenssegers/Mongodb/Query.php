@@ -124,6 +124,18 @@ class Query extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Insert a new record and get the value of the primary key.
+     *
+     * @param  array   $values
+     * @param  string  $sequence
+     * @return int
+     */
+    public function insertGetId(array $values, $sequence = null)
+    {
+        return $this->insert($values);
+    }
+
+    /**
      * Update a record in the database.
      *
      * @param  array  $values
