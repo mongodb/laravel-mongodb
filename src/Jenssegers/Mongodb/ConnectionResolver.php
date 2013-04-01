@@ -41,7 +41,7 @@ class ConnectionResolver implements ConnectionResolverInterface {
      * Get a database connection instance.
      *
      * @param  string  $name
-     * @return \Illuminate\Database\Connection
+     * @return Connection
      */
     public function connection($name = null)
     {

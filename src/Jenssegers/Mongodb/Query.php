@@ -2,129 +2,40 @@
 
 use MongoID;
 
-class Query {
+class Query extends \Illuminate\Database\Query\Builder {
 
     /**
-     * The model.
-     *
-     * @var Jenssegers\Mongodb\Model
-     */
-    protected $model;
+    * The database collection
+    *
+    * @var string
+    */
+    public $collection;
 
     /**
-     * The database connection instance.
-     *
-     * @var Jenssegers\Mongodb\Connection
-     */
-    protected $connection;
-
-    /**
-     * The database collection used for the current query.
-     *
-     * @var string   $collection
-     */
-    protected $collection;
-
-    /**
-     * The where constraints for the query.
-     *
-     * @var array
-     */
-    public $wheres = array();
-
-    /**
-     * The columns that should be returned.
-     *
-     * @var array
-     */
-    public $columns = array();
-
-    /**
-     * The orderings for the query.
-     *
-     * @var array
-     */
-    public $orders = array();
-
-    /**
-     * The maximum number of documents to return.
-     *
-     * @var int
-     */
-    public $limit;
-
-    /**
-     * The number of records to skip.
-     *
-     * @var int
-     */
-    public $offset;
-
-    /**
-     * All of the available operators.
-     *
-     * @var array
-     */
+    * All of the available operators.
+    *
+    * @var array
+    */
     protected $operators = array(
         '=' => '=',
         '!=' => '!=',
         '<' => '$lt',
         '<=' => '$le',
         '>' => '$gt',
-        '>=' => '$ge'
+        '>=' => '$ge',
+        'in' => '$in',
     );
 
     /**
-     * Create a new model query builder instance.
-     *
-     * @param  Jenssegers\Mongodb\Connection  $connection
-     * @return void
-     */
-    public function __construct(Model $model)
+    * Create a new query builder instance.
+    *
+    * @param Connection $connection
+    * @return void
+    */
+    public function __construct(Connection $connection, $collection)
     {
-        $this->model = $model;
-        $this->connection = $model->getConnection();
-        $this->collection = $this->connection->getCollection($model->getCollection());
-    }
-
-    /**
-     * Set the "limit" value of the query.
-     *
-     * @param  int  $value
-     * @return \Jenssegers\Mongodb\Query
-     */
-    public function take($value)
-    {
-        $this->limit = $value;
-
-        return $this;
-    }
-
-    /**
-     * Set the "offset" value of the query.
-     *
-     * @param  int  $value
-     * @return \Illuminate\Database\Query\Builder
-     */
-    public function skip($value)
-    {
-        $this->offset = $value;
-
-        return $this;
-    }
-
-    /**
-     * Add an "order by" clause to the query.
-     *
-     * @param  string  $column
-     * @param  string  $direction
-     * @return \Illuminate\Database\Query\Builder
-     */
-    public function orderBy($column, $direction = 'asc')
-    {
-        $this->orders[$column] = ($direction == 'asc' ? 1 : -1);
-
-        return $this;
+        $this->connection = $connection;
+        $this->collection = $connection->getCollection($collection);
     }
 
     /**
@@ -136,69 +47,30 @@ class Query {
      */
     public function find($id, $columns = array('*'))
     {
-        $id = new MongoID((string) $id);
-
-        return $this->where($this->model->getKeyName(), '=', $id)->first($columns);
-    }
-
-    /**
-     * Execute the query and get the first result.
-     *
-     * @param  array   $columns
-     * @return array
-     */
-    public function first($columns = array())
-    {
-        return $this->take(1)->get($columns)->first();
-    }
-
-    /**
-     * Add a basic where clause to the query.
-     *
-     * @param  string  $column
-     * @param  string  $operator
-     * @param  mixed   $value
-     * @param  string  $boolean
-     * @return \Jenssegers\Mongodb\Query
-     */
-    public function where($column, $operator = null, $value = null, $boolean = 'and')
-    {
-        // If the given operator is not found in the list of valid operators we will
-        // assume that the developer is just short-cutting the '=' operators and
-        // we will set the operators to '=' and set the values appropriately.
-        if (!in_array(strtolower($operator), $this->operators, true))
-        {
-            list($value, $operator) = array($operator, '=');
-        }
-
-        if ($operator == '=')
-        {
-            $this->wheres[$column] = $value;
-        }
-        else
-        {
-            $this->wheres[$column] = array($this->operators[$operator] => $value);
-        }
-
-        return $this;
+        return $this->where('_id', '=', new MongoID((string) $id))->first($columns);
     }
 
     /**
      * Execute the query as a "select" statement.
      *
      * @param  array  $columns
-     * @return Collection
+     * @return array
      */
-    public function get($columns = array())
+    public function get($columns = array('*'))
     {
-        // Merge with previous columns
-        $this->columns = array_merge($this->columns, $columns);
+        // If no columns have been specified for the select statement, we will set them
+        // here to either the passed columns, or the standard default of retrieving
+        // all of the columns on the table using the "wildcard" column character.
+        if (is_null($this->columns))
+        {
+            $this->columns = $columns;
+        }
 
         // Drop all columns if * is present
         if (in_array('*', $this->columns)) $this->columns = array();
 
         // Get Mongo cursor
-        $cursor = $this->collection->find($this->wheres, $this->columns);
+        $cursor = $this->collection->find($this->compileWheres(), $this->columns);
 
         // Apply order
         if ($this->orders)
@@ -218,57 +90,50 @@ class Query {
             $cursor->limit($this->limit);
         }
 
-        // Return collection of models
-        return $this->toCollection($cursor);
+        return $cursor;
     }
 
     /**
-     * Insert a new document into the database.
+     * Add an "order by" clause to the query.
      *
-     * @param  array  $data
-     * @return mixed
+     * @param  string  $column
+     * @param  string  $direction
+     * @return \Illuminate\Database\Query\Builder
      */
-    public function insert($data)
+    public function orderBy($column, $direction = 'asc')
     {
-        $result = $this->collection->insert($data);
+        $this->orders[$column] = ($direction == 'asc' ? 1 : -1);
+
+        return $this;
+    }
+
+    /**
+     * Insert a new record into the database.
+     *
+     * @param  array  $values
+     * @return bool
+     */
+    public function insert(array $values)
+    {
+        $result = $this->collection->insert($values);
 
         if(1 == (int) $result['ok'])
         {
-            return $data['_id'];
+            return $values['_id'];
         }
-
-        return false;
     }
 
     /**
-     * Save the document. Insert into the database if its not exists.
+     * Update a record in the database.
      *
-     * @param  array  $data
-     * @return mixed
-     */
-    public function save($data)
-    {
-        $this->collection->save($data);
-
-        if(isset($data['_id']))
-        {
-            return $data['_id'];
-        }
-
-        return false;
-    }
-
-    /**
-     * Update a document in the database.
-     *
-     * @param  array  $data
+     * @param  array  $values
      * @return int
      */
-    public function update(array $data)
+    public function update(array $values)
     {
-        $update = array('$set' => $data);
+        $update = array('$set' => $values);
 
-        $result = $this->collection->update($this->wheres, $update, array('multiple' => true));
+        $result = $this->collection->update($this->compileWheres(), $update, array('multiple' => true));
 
         if(1 == (int) $result['ok'])
         {
@@ -279,13 +144,15 @@ class Query {
     }
 
     /**
-     * Delete a document from the database.
+     * Delete a record from the database.
      *
+     * @param  mixed  $id
      * @return int
      */
-    public function delete()
+    public function delete($id = null)
     {
-        $result = $this->collection->remove($this->wheres);
+        $query = $this->compileWheres($this);
+        $result = $this->collection->remove($query);
 
         if(1 == (int) $result['ok'])
         {
@@ -296,20 +163,62 @@ class Query {
     }
 
     /**
-     * Transform to model collection.
-     *
-     * @param  array  $columns
-     * @return Collection
-     */
-    public function toCollection($results)
+    * Compile the where array
+    *
+    * @return array
+    */
+    public function compileWheres()
     {
-        $models = array();
+        if (!$this->wheres) return array();
+        
+        $wheres = array();
 
-        foreach ($results as $result) {
-            $models[] = $this->model->newInstance($result);
+        foreach ($this->wheres as $where) 
+        {
+            // Delegate
+            $method = "compileWhere{$where['type']}";
+            $compiled = $this->{$method}($where);
+
+            foreach ($compiled as $key=>$value)
+                $wheres[$key] = $value;
         }
 
-        return $this->model->newCollection($models);
+        return $wheres;
+    }
+
+    public function compileWhereBasic($where)
+    {
+        extract($where);
+
+        // Convert id's
+        if ($column == '_id')
+        {
+            $value = ($value instanceof MongoID) ? $value : new MongoID($value);
+        }
+
+        // Convert operators
+        if (!isset($operator) || $operator == '=')
+        {
+            return array($column => $value);
+        }
+        else
+        {
+            return array($column => array($this->operators[$operator] => $value));
+        }
+    }
+
+    public function compileWhereIn($where)
+    {
+        extract($where);
+
+        // Convert id's
+        if ($column == '_id')
+        {
+            foreach ($values as &$value)
+                $value = ($value instanceof MongoID) ? $value : new MongoID($value);
+        }
+
+        return array($column => array($this->operators['in'] => $values));
     }
 
 }

@@ -2,15 +2,9 @@
 
 use Illuminate\Database\ConnectionResolverInterface as Resolver;
 use Illuminate\Database\Eloquent\Collection;
+use Jenssegers\Mongodb\Query as QueryBuilder;
 
-abstract class Model extends \ArrayObject {
-
-    /**
-     * The connection name for the model.
-     *
-     * @var string
-     */
-    protected $connection;
+abstract class Model extends \Illuminate\Database\Eloquent\Model {
 
     /**
      * The collection associated with the model.
@@ -27,225 +21,48 @@ abstract class Model extends \ArrayObject {
     protected $primaryKey = '_id';
 
     /**
-     * The connection resolver instance.
+     * Perform a model insert operation.
      *
-     * @var Jenssegers\Mongodb\ConnectionResolverInterface
+     * @param  \Illuminate\Database\Eloquent\Builder
+     * @return bool
      */
-    protected static $resolver;
-
-
-
-    /**
-     * Get properties from internal array
-     *
-     * @param  string $name
-     * @return mixed
-     */
-    public function __get($name)
+    protected function performInsert($query)
     {
-        return $this[$name];
-    }
+        if ($this->fireModelEvent('creating') === false) return false;
 
-    /**
-     * Write all properties to internal array
-     *
-     * @param  string $name
-     * @param  mixed  $value
-     */
-    public function __set($name, $value)
-    {
-        $this[$name] = $value;
-    }
+        $attributes = $this->attributes;
 
-    /**
-     * Handle dynamic method calls into the method.
-     *
-     * @param  string  $method
-     * @param  array   $parameters
-     * @return mixed
-     */
-    public function __call($method, $parameters)
-    {
-        // Create a query
-        $query = $this->newQuery();
-
-        return call_user_func_array(array($query, $method), $parameters);
-    }
-
-    /**
-     * Handle dynamic static method calls into the method.
-     *
-     * @param  string  $method
-     * @param  array   $parameters
-     * @return mixed
-     */
-    public static function __callStatic($method, $parameters)
-    {
-        $instance = new static;
-
-        return call_user_func_array(array($instance, $method), $parameters);
-    }
-
-    /**
-     * Get all of the models from the database.
-     *
-     * @param  array  $columns
-     * @return \Illuminate\Database\Eloquent\Collection
-     */
-    public static function all($columns = array('*'))
-    {
-        $instance = new static;
-
-        return $instance->newQuery()->get($columns);
-    }
-
-    /**
-     * Find a model by its primary key.
-     *
-     * @param  mixed  $id
-     * @param  array  $columns
-     * @return \Jenssegers\Mongodb\Model|\Illuminate\Database\Eloquent\Collection
-     */
-    public static function find($id, $columns = array('*'))
-    {
-        $instance = new static;
-
-        if (is_array($id))
+        // If the model has an incrementing key, we can use the "insertGetId" method on
+        // the query builder, which will give us back the final inserted ID for this
+        // table from the database. Not all tables have to be incrementing though.
+        if ($this->incrementing)
         {
-            $id = array_map(function($value)
-            {
-                return ($value instanceof MongoID) ? $value : new MongoID($value);
-            }, $id);
-
-            return $instance->newQuery()->whereIn($instance->getKeyName(), $id)->get($columns);
+            $keyName = $this->getKeyName();
+            $this->setAttribute($keyName, $query->insert($attributes));
         }
 
-        return $instance->newQuery()->find($id, $columns);
+        // If the table is not incrementing we'll simply insert this attributes as they
+        // are, as this attributes arrays must contain an "id" column already placed
+        // there by the developer as the manually determined key for these models.
+        else
+        {
+            $query->insert($attributes);
+        }
+
+        $this->fireModelEvent('created', false);
+
+        return true;
     }
 
     /**
-     * Create a new instance of the given model.
+     * Get a new query builder instance for the connection.
      *
-     * @param  array  $attributes
-     * @param  bool   $exists
-     * @return \Jenssegers\Mongodb\Model
+     * @return Builder
      */
-    public function newInstance($attributes = array(), $exists = false)
+    protected function newBaseQueryBuilder()
     {
-        // This method just provides a convenient way for us to generate fresh model
-        // instances of this current model. It is particularly useful during the
-        // hydration of new objects via the Eloquent query builder instances.
-        $model = new static((array) $attributes);
-
-        $model->exists = $exists;
-
-        return $model;
-    }
-
-    /**
-     * Get a new query for the model's table.
-     *
-     * @return \Jenssegers\Mongodb\Query
-     */
-    public function newQuery()
-    {
-        $query = new Query($this);
-
-        return $query;
-    }
-
-    /**
-     * Create a new Collection instance.
-     *
-     * @param  array  $models
-     * @return LMongo\Eloquent\Collection
-     */
-    public function newCollection(array $models = array())
-    {
-        return new Collection($models);
-    }
-
-    /**
-     * Get the database collection for the model.
-     *
-     * @return \Jenssegers\Mongodb\Connection
-     */
-    public function getCollection()
-    {
-        return $this->collection;
-    }
-
-    /**
-     * Get the database connection for the model.
-     *
-     * @return \Jenssegers\Mongodb\Connection
-     */
-    public function getConnection()
-    {
-        return static::resolveConnection($this->connection);
-    }
-
-    /**
-     * Get the current connection name for the model.
-     *
-     * @return string
-     */
-    public function getConnectionName()
-    {
-        return $this->connection;
-    }
-
-    /**
-     * Set the connection associated with the model.
-     *
-     * @param  string  $name
-     * @return void
-     */
-    public function setConnection($name)
-    {
-        $this->connection = $name;
-    }
-
-    /**
-     * Get the primary key for the model.
-     *
-     * @return string
-     */
-    public function getKeyName()
-    {
-        return $this->primaryKey;
-    }
-
-    /**
-     * Resolve a connection instance by name.
-     *
-     * @param  string  $connection
-     * @return \Jenssegers\Mongodb\Connection
-     */
-    public static function resolveConnection($connection)
-    {
-        return static::$resolver->connection($connection);
-    }
-
-    /**
-     * Get the connection resolver instance.
-     *
-     * @return \Jenssegers\Mongodb\ConnectionResolverInterface
-     */
-    public static function getConnectionResolver()
-    {
-        return static::$resolver;
-    }
-
-    /**
-     * Set the connection resolver instance.
-     *
-     * @param  Jenssegers\Mongodb\ConnectionResolverInterface  $resolver
-     * @return void
-     */
-    public static function setConnectionResolver(Resolver $resolver)
-    {
-        static::$resolver = $resolver;
+        $connection = $this->getConnection();
+        return new QueryBuilder($connection, $this->collection);
     }
 
 }
