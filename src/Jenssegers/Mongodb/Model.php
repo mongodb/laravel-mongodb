@@ -21,6 +21,27 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     protected $primaryKey = '_id';
 
     /**
+     * Convert a DateTime to a storable string.
+     *
+     * @param  DateTime  $value
+     * @return MongoDate
+     */
+    protected function fromDateTime(DateTime $value)
+    {
+        return new MongoDate($value->getTimestamp());
+    }
+
+    /**
+     * Get a fresh timestamp for the model.
+     *
+     * @return MongoDate
+     */
+    public function freshTimestamp()
+    {
+        return new MongoDate;
+    }
+
+    /**
      * Get a new query builder instance for the connection.
      *
      * @return Builder
@@ -28,7 +49,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
-        return new QueryBuilder($connection, $this->collection);
+        return new QueryBuilder($connection);
     }
 
 }

@@ -32,10 +32,9 @@ class Query extends \Illuminate\Database\Query\Builder {
     * @param Connection $connection
     * @return void
     */
-    public function __construct(Connection $connection, $collection)
+    public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-        $this->collection = $connection->getCollection($collection);
     }
 
     /**
@@ -70,7 +69,22 @@ class Query extends \Illuminate\Database\Query\Builder {
         if (in_array('*', $this->columns)) $this->columns = array();
 
         // Get Mongo cursor
-        $cursor = $this->collection->find($this->compileWheres(), $this->columns);
+        if ($this->distinct)
+        {
+            $cursor = $this->collection->distinct($this->columns, $this->compileWheres());
+        }
+        else if(count($this->groups))
+        {
+            $options = array();
+            $options['condition'] = $this->compileWheres();
+            
+            $result = $this->collection->group($this->groups, array(), NULL, $options);
+            $cursor = $result['retval'];
+        }
+        else
+        {
+            $cursor = $this->collection->find($this->compileWheres(), $this->columns);
+        }
 
         // Apply order
         if ($this->orders)
@@ -172,6 +186,19 @@ class Query extends \Illuminate\Database\Query\Builder {
         }
 
         return 0;
+    }
+
+    /**
+     * Set the collection which the query is targeting.
+     *
+     * @param  string  $collection
+     * @return Builder
+     */
+    public function from($collection)
+    {
+        $this->collection = $this->connection->getCollection($collection);
+
+        return $this;
     }
 
     /**
