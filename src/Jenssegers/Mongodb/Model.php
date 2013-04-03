@@ -4,6 +4,8 @@ use Illuminate\Database\ConnectionResolverInterface as Resolver;
 use Illuminate\Database\Eloquent\Collection;
 use Jenssegers\Mongodb\Query as QueryBuilder;
 
+use MongoDate;
+
 abstract class Model extends \Illuminate\Database\Eloquent\Model {
 
     /**
