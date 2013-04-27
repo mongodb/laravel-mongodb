@@ -18,11 +18,11 @@ class Query extends \Illuminate\Database\Query\Builder {
     */
     protected $operators = array(
         '=' => '=',
-        '!=' => '!=',
+        '!=' => '$ne',
         '<' => '$lt',
-        '<=' => '$le',
+        '<=' => '$lte',
         '>' => '$gt',
-        '>=' => '$ge',
+        '>=' => '$gte',
         'in' => '$in',
         'exists' => '$exists'
     );
