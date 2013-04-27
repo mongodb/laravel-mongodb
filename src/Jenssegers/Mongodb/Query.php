@@ -24,6 +24,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         '>' => '$gt',
         '>=' => '$ge',
         'in' => '$in',
+        'exists' => '$exists'
     );
 
     /**
@@ -258,6 +259,34 @@ class Query extends \Illuminate\Database\Query\Builder {
         }
 
         return array($column => array($this->operators['in'] => $values));
+    }
+
+    public function compileWhereNull($where)
+    {
+        extract($where);
+
+        // Convert id's
+        if ($column == '_id')
+        {
+            foreach ($values as &$value)
+                $value = ($value instanceof MongoID) ? $value : new MongoID($value);
+        }
+
+        return array($column => array($this->operators['exists'] => false));
+    }
+
+    public function compileWhereNotNull($where)
+    {
+        extract($where);
+
+        // Convert id's
+        if ($column == '_id')
+        {
+            foreach ($values as &$value)
+                $value = ($value instanceof MongoID) ? $value : new MongoID($value);
+        }
+
+        return array($column => array($this->operators['exists'] => true));
     }
 
 }
