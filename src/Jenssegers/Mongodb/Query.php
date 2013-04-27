@@ -16,7 +16,7 @@ class Query extends \Illuminate\Database\Query\Builder {
     *
     * @var array
     */
-    protected $operators = array(
+    protected $conversion = array(
         '=' => '=',
         '!=' => '$ne',
         '<' => '$lt',
@@ -215,6 +215,12 @@ class Query extends \Illuminate\Database\Query\Builder {
 
         foreach ($this->wheres as $where) 
         {
+            // Convert id's
+            if ($where['column'] == '_id')
+            {
+                $where['value'] = ($where['value'] instanceof MongoID) ? $where['value'] : new MongoID($where['value']);
+            }
+
             // Delegate
             $method = "compileWhere{$where['type']}";
             $compiled = $this->{$method}($where);
@@ -230,12 +236,6 @@ class Query extends \Illuminate\Database\Query\Builder {
     {
         extract($where);
 
-        // Convert id's
-        if ($column == '_id')
-        {
-            $value = ($value instanceof MongoID) ? $value : new MongoID($value);
-        }
-
         // Convert operators
         if (!isset($operator) || $operator == '=')
         {
@@ -243,50 +243,29 @@ class Query extends \Illuminate\Database\Query\Builder {
         }
         else
         {
-            return array($column => array($this->operators[$operator] => $value));
+            return array($column => array($this->conversion[$operator] => $value));
         }
     }
 
     public function compileWhereIn($where)
     {
         extract($where);
-
-        // Convert id's
-        if ($column == '_id')
-        {
-            foreach ($values as &$value)
-                $value = ($value instanceof MongoID) ? $value : new MongoID($value);
-        }
-
-        return array($column => array($this->operators['in'] => $values));
+        
+        return array($column => array($this->conversion['in'] => $values));
     }
 
     public function compileWhereNull($where)
     {
         extract($where);
 
-        // Convert id's
-        if ($column == '_id')
-        {
-            foreach ($values as &$value)
-                $value = ($value instanceof MongoID) ? $value : new MongoID($value);
-        }
-
-        return array($column => array($this->operators['exists'] => false));
+        return array($column => array($this->conversion['exists'] => false));
     }
 
     public function compileWhereNotNull($where)
     {
         extract($where);
 
-        // Convert id's
-        if ($column == '_id')
-        {
-            foreach ($values as &$value)
-                $value = ($value instanceof MongoID) ? $value : new MongoID($value);
-        }
-
-        return array($column => array($this->operators['exists'] => true));
+        return array($column => array($this->conversion['exists'] => true));
     }
 
 }
