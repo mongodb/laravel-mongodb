@@ -93,7 +93,7 @@ Examples
 
 Distinct is limited to a single column.
 
-    $users = Users::distinct('name')->get();
+    $names = Users::distinct('name')->get();
 
 **Group By**
 
