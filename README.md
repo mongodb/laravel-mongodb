@@ -89,4 +89,8 @@ Examples
             })
             ->get();
 
+**Distinct**
+
+    $users = Users::distinct('name')->get();
+
 All basis insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!

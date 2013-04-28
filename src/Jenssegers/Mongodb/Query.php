@@ -73,7 +73,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         // Get Mongo cursor
         if ($this->distinct)
         {
-            $cursor = $this->collection->distinct($this->columns, $this->compileWheres());
+            $cursor = $this->collection->distinct($this->distinct, $this->compileWheres());
         }
         else if(count($this->groups))
         {
@@ -200,6 +200,18 @@ class Query extends \Illuminate\Database\Query\Builder {
     {
         if ($collection)
             $this->collection = $this->connection->getCollection($collection);
+
+        return $this;
+    }
+
+    /**
+     * Force the query to only return distinct results.
+     *
+     * @return Builder
+     */
+    public function distinct($column = false)
+    {
+        $this->distinct = $column;
 
         return $this;
     }
