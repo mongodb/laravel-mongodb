@@ -68,36 +68,44 @@ class Query extends \Illuminate\Database\Query\Builder {
         }
 
         // Drop all columns if * is present
-        if (in_array('*', $this->columns)) $this->columns = array();
+        if (in_array('*', $this->columns)) 
+        {
+            $this->columns = array();
+        }
 
-        // Get Mongo cursor
+
         if ($this->distinct)
         {
+            // We can only return an array of distinct values for a single column
             return $this->collection->distinct($this->distinct, $this->compileWheres());
         }
         else if(count($this->groups))
         {
+            // We can pass our wheres as a condition
             $options = array();
             $options['condition'] = $this->compileWheres();
 
-            $keys = array();
-            foreach ($this->groups as $group)
-                $keys[$group] = 1;
-
+            // Initial value and reduce code
             $initial = array("item" => "");
             $reduce = "function (obj, prev) { prev.item = obj; }";
             
-            $result = $this->collection->group($keys, $initial, $reduce, $options);
+            // Get results
+            $result = $this->collection->group($this->groups, $initial, $reduce, $options);
             $items = $result['retval'];
 
+            // Transform results to a nice array
             $results = array();
             foreach($items as $item)
+            {
                 $results[] = $item['item'];
+            }
 
+            // Return these results since we don't have a MongoCursor
             return $results;
         }
         else
         {
+            // Get the MongoCursor
             $cursor = $this->collection->find($this->compileWheres(), $this->columns);
         }
 
@@ -119,6 +127,7 @@ class Query extends \Illuminate\Database\Query\Builder {
             $cursor->limit($this->limit);
         }
 
+        // Return results
         return $cursor;
     }
 
@@ -132,6 +141,24 @@ class Query extends \Illuminate\Database\Query\Builder {
     public function orderBy($column, $direction = 'asc')
     {
         $this->orders[$column] = ($direction == 'asc' ? 1 : -1);
+
+        return $this;
+    }
+
+    /**
+     * Add a "group by" clause to the query.
+     *
+     * @param  dynamic  $columns
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function groupBy()
+    {
+        $groups = func_get_args();
+
+        foreach ($groups as $group)
+        {
+            $this->groups[$group] = 1;
+        }
 
         return $this;
     }
@@ -212,7 +239,9 @@ class Query extends \Illuminate\Database\Query\Builder {
     public function from($collection)
     {
         if ($collection)
+        {
             $this->collection = $this->connection->getCollection($collection);
+        }
 
         return $this;
     }
