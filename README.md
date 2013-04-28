@@ -91,6 +91,14 @@ Examples
 
 **Distinct**
 
+Distinct is limited to a single column.
+
     $users = Users::distinct('name')->get();
+
+**Group By**
+
+Grouping does not support sorting and limiting at this moment.
+
+    $users = Users::groupBy('title')->get();
 
 All basis insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!
