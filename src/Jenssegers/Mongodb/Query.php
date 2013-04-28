@@ -215,19 +215,10 @@ class Query extends \Illuminate\Database\Query\Builder {
         
         $wheres = array();
 
-        foreach ($this->wheres as $i=>$where) 
+        foreach ($this->wheres as $i=>&$where) 
         {
-            // Nested query
-            if ($where['type'] == 'Nested')
-            {
-                // Compile nested query and add it to current query
-                $compiled = $where['query']->compileWheres();
-                $wheres = array_merge_recursive($wheres, $compiled);
-                continue;
-            }
-
             // Convert id's
-            if ($where['column'] == '_id')
+            if (isset($where['column']) && $where['column'] == '_id')
             {
                 $where['value'] = ($where['value'] instanceof MongoID) ? $where['value'] : new MongoID($where['value']);
             }
@@ -271,6 +262,21 @@ class Query extends \Illuminate\Database\Query\Builder {
         return $query;
     }
 
+    public function compileWhereNested($where)
+    {
+        extract($where);
+
+        // Compile subquery
+        $compiled = $query->compileWheres();
+
+        if ($boolean == 'or')
+        {
+            return array($this->conversion[$boolean] => array($compiled));
+        }
+
+        return $compiled;
+    }
+
     public function compileWhereIn($where)
     {
         extract($where);
@@ -280,16 +286,18 @@ class Query extends \Illuminate\Database\Query\Builder {
 
     public function compileWhereNull($where)
     {
-        extract($where);
+        $where['operator'] = '=';
+        $where['value'] = null;
 
-        return array($column => array($this->conversion['exists'] => false));
+        return $this->compileWhereBasic($where);
     }
 
     public function compileWhereNotNull($where)
     {
-        extract($where);
+        $where['operator'] = '!=';
+        $where['value'] = null;
 
-        return array($column => array($this->conversion['exists'] => true));
+        return $this->compileWhereBasic($where);
     }
 
     /**
