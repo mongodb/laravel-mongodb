@@ -1,7 +1,7 @@
 Laravel Eloquent MongoDB
 ========================
 
-This is an Eloquent model that supports MongoDB.
+An Eloquent model that supports MongoDB.
 
 Installation
 ------------
@@ -15,11 +15,11 @@ Add the package to your `composer.json` or install manually.
     }
 
 
-Run `composer update` to download the package from packagist.
+Run `composer update` to download and install the package.
 
-Add the service provider to your `config/app.php`:
+Add the service provider in `app/config/app.php`:
 
-    'Jenssegers\Mongodb\MongodbServiceProvider'
+    'Jenssegers\Mongodb\MongodbServiceProvider',
 
 Usage
 -----
@@ -37,7 +37,7 @@ Tell your model to use the MongoDB model and a MongoDB collection:
 Configuration
 -------------
 
-The model will automatically check the Laravel database configuration array in `config/database.php` for a 'mongodb' item.
+The model will automatically check the Laravel database configuration array in `app/config/database.php` for a 'mongodb' item.
 
     'mongodb' => array(
         'host'     => 'localhost',
