@@ -10,7 +10,7 @@ Add the package to your `composer.json` or install manually.
 
     {
         "require": {
-            "navruzm/lmongo": "*"
+            "jenssegers/mongodb": "*"
         }
     }
 
