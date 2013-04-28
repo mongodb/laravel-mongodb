@@ -198,7 +198,8 @@ class Query extends \Illuminate\Database\Query\Builder {
      */
     public function from($collection)
     {
-        $this->collection = $this->connection->getCollection($collection);
+        if ($collection)
+            $this->collection = $this->connection->getCollection($collection);
 
         return $this;
     }
@@ -216,6 +217,15 @@ class Query extends \Illuminate\Database\Query\Builder {
 
         foreach ($this->wheres as $i=>$where) 
         {
+            // Nested query
+            if ($where['type'] == 'Nested')
+            {
+                // Compile nested query and add it to current query
+                $compiled = $where['query']->compileWheres();
+                $wheres = array_merge_recursive($wheres, $compiled);
+                continue;
+            }
+
             // Convert id's
             if ($where['column'] == '_id')
             {
@@ -223,7 +233,7 @@ class Query extends \Illuminate\Database\Query\Builder {
             }
 
             // First item of chain
-            if ($i == 0 && count($this->wheres) > 1)
+            if ($i == 0 && count($this->wheres) > 1 && $where['boolean'] == 'and')
             {
                 // Copy over boolean value of next item in chain
                 $where['boolean'] = $this->wheres[$i+1]['boolean'];
@@ -280,6 +290,17 @@ class Query extends \Illuminate\Database\Query\Builder {
         extract($where);
 
         return array($column => array($this->conversion['exists'] => true));
+    }
+
+    /**
+     * Get a new instance of the query builder.
+     *
+     * @return Builder
+     */
+    public function newQuery()
+    {
+        $connection = $this->getConnection();
+        return new Query($connection);
     }
 
 }
