@@ -73,15 +73,28 @@ class Query extends \Illuminate\Database\Query\Builder {
         // Get Mongo cursor
         if ($this->distinct)
         {
-            $cursor = $this->collection->distinct($this->distinct, $this->compileWheres());
+            return $this->collection->distinct($this->distinct, $this->compileWheres());
         }
         else if(count($this->groups))
         {
             $options = array();
             $options['condition'] = $this->compileWheres();
+
+            $keys = array();
+            foreach ($this->groups as $group)
+                $keys[$group] = 1;
+
+            $initial = array("item" => "");
+            $reduce = "function (obj, prev) { prev.item = obj; }";
             
-            $result = $this->collection->group($this->groups, array(), NULL, $options);
-            $cursor = $result['retval'];
+            $result = $this->collection->group($keys, $initial, $reduce, $options);
+            $items = $result['retval'];
+
+            $results = array();
+            foreach($items as $item)
+                $results[] = $item['item'];
+
+            return $results;
         }
         else
         {
