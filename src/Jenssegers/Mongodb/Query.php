@@ -24,7 +24,8 @@ class Query extends \Illuminate\Database\Query\Builder {
         '>' => '$gt',
         '>=' => '$gte',
         'in' => '$in',
-        'exists' => '$exists'
+        'exists' => '$exists',
+        'or' => '$or',
     );
 
     /**
@@ -213,7 +214,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         
         $wheres = array();
 
-        foreach ($this->wheres as $where) 
+        foreach ($this->wheres as $i=>$where) 
         {
             // Convert id's
             if ($where['column'] == '_id')
@@ -221,12 +222,19 @@ class Query extends \Illuminate\Database\Query\Builder {
                 $where['value'] = ($where['value'] instanceof MongoID) ? $where['value'] : new MongoID($where['value']);
             }
 
+            // First item of chain
+            if ($i == 0 && count($this->wheres) > 1)
+            {
+                // Copy over boolean value of next item in chain
+                $where['boolean'] = $this->wheres[$i+1]['boolean'];
+            }
+
             // Delegate
             $method = "compileWhere{$where['type']}";
             $compiled = $this->{$method}($where);
 
-            foreach ($compiled as $key=>$value)
-                $wheres[$key] = $value;
+            // Merge compiled where
+            $wheres = array_merge_recursive($wheres, $compiled);
         }
 
         return $wheres;
@@ -236,21 +244,27 @@ class Query extends \Illuminate\Database\Query\Builder {
     {
         extract($where);
 
-        // Convert operators
         if (!isset($operator) || $operator == '=')
         {
-            return array($column => $value);
+            $query = array($column => $value);
         }
         else
         {
-            return array($column => array($this->conversion[$operator] => $value));
+            $query = array($column => array($this->conversion[$operator] => $value));
         }
+
+        if ($boolean == 'or')
+        {
+            return array($this->conversion[$boolean] => array($query));
+        }
+
+        return $query;
     }
 
     public function compileWhereIn($where)
     {
         extract($where);
-        
+
         return array($column => array($this->conversion['in'] => $values));
     }
 
