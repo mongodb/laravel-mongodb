@@ -97,7 +97,7 @@ class Query extends \Illuminate\Database\Query\Builder {
                 }
             }
 
-            if ($wheres) $pipeline[] = array('$match' => $match);
+            if ($wheres) $pipeline[] = array('$match' => $wheres);
 
             $pipeline[] = array('$group' => $group);
 
