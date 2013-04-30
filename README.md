@@ -100,4 +100,4 @@ Examples
     $price = DB::table('orders')->avg('price');
     $total = DB::table('users')->sum('votes');
 
-All basis insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!
+All basic insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!
