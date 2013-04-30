@@ -89,16 +89,15 @@ Examples
             })
             ->get();
 
-**Distinct**
-
-Distinct is limited to a single column.
-
-    $names = Users::distinct('name')->get();
-
 **Group By**
 
-Grouping does not support sorting and limiting at this moment.
+    $users = Users::groupBy('title')->get(array('title', 'name'));
 
-    $users = Users::groupBy('title')->get();
+**Aggregation**
+
+    $price = DB::table('orders')->max('price');
+    $price = DB::table('orders')->min('price');
+    $price = DB::table('orders')->avg('price');
+    $total = DB::table('users')->sum('votes');
 
 All basis insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!

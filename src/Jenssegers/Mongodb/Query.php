@@ -23,9 +23,6 @@ class Query extends \Illuminate\Database\Query\Builder {
         '<=' => '$lte',
         '>' => '$gt',
         '>=' => '$gte',
-        'in' => '$in',
-        'exists' => '$exists',
-        'or' => '$or',
     );
 
     /**
@@ -73,62 +70,78 @@ class Query extends \Illuminate\Database\Query\Builder {
             $this->columns = array();
         }
 
+        // Compile wheres
+        $wheres = $this->compileWheres();
 
-        if ($this->distinct)
+        // Use aggregation framework if needed
+        if ($this->groups || $this->aggregate)
         {
-            // We can only return an array of distinct values for a single column
-            return $this->collection->distinct($this->distinct, $this->compileWheres());
-        }
-        else if(count($this->groups))
-        {
-            // We can pass our wheres as a condition
-            $options = array();
-            $options['condition'] = $this->compileWheres();
+            $pipeline = array();
 
-            // Initial value and reduce code
-            $initial = array("item" => "");
-            $reduce = "function (obj, prev) { prev.item = obj; }";
-            
-            // Get results
-            $result = $this->collection->group($this->groups, $initial, $reduce, $options);
-            $items = $result['retval'];
+            // Group
+            $group = array();
+            $group['_id'] = $this->groups ? $this->groups : 0;
 
-            // Transform results to a nice array
-            $results = array();
-            foreach($items as $item)
+            // Columns
+            foreach ($this->columns as $column)
             {
-                $results[] = $item['item'];
+                $group[$column] = array('$last' => '$' . $column);
             }
 
-            // Return these results since we don't have a MongoCursor
-            return $results;
+            // Apply aggregation functions
+            if ($this->aggregate)
+            {
+                foreach ($this->aggregate['columns'] as $column)
+                {
+                    $group[$column] = array('$' . $this->aggregate['function'] => '$' . $column);
+                }
+            }
+
+            if ($wheres) $pipeline[] = array('$match' => $match);
+
+            $pipeline[] = array('$group' => $group);
+
+            // Apply order and limit
+            if ($this->orders) $pipeline[] = array('$sort' => $this->orders);
+            if ($this->limit) $pipeline[] = array('$limit' => $this->limit);
+
+            $results = $this->collection->aggregate($pipeline);
+
+            // Return results
+            return $results['result'];
         }
         else
         {
             // Get the MongoCursor
-            $cursor = $this->collection->find($this->compileWheres(), $this->columns);
-        }
+            $cursor = $this->collection->find($wheres, $this->columns);
 
-        // Apply order
-        if ($this->orders)
+            // Apply order, offset and limit
+            if ($this->orders) $cursor->sort($this->orders);
+            if ($this->offset) $cursor->skip($this->offset);
+            if ($this->limit) $cursor->limit($this->limit);
+
+            // Return results
+            return $cursor;
+        }
+    }
+
+    /**
+     * Execute an aggregate function on the database.
+     *
+     * @param  string  $function
+     * @param  array   $columns
+     * @return mixed
+     */
+    public function aggregate($function, $columns = array('*'))
+    {
+        $this->aggregate = compact('function', 'columns');
+
+        $results = $this->get($columns);
+
+        if (isset($results[0]))
         {
-            $cursor->sort($this->orders);
+            return $results[0][$columns[0]];
         }
-
-        // Apply offset
-        if ($this->offset)
-        {
-            $cursor->skip($this->offset);
-        }
-
-        // Apply limit
-        if ($this->limit)
-        {
-            $cursor->limit($this->limit);
-        }
-
-        // Return results
-        return $cursor;
     }
 
     /**
@@ -157,7 +170,7 @@ class Query extends \Illuminate\Database\Query\Builder {
 
         foreach ($groups as $group)
         {
-            $this->groups[$group] = 1;
+            $this->groups[$group] = '$' . $group;
         }
 
         return $this;
@@ -247,18 +260,6 @@ class Query extends \Illuminate\Database\Query\Builder {
     }
 
     /**
-     * Force the query to only return distinct results.
-     *
-     * @return Builder
-     */
-    public function distinct($column = false)
-    {
-        $this->distinct = $column;
-
-        return $this;
-    }
-
-    /**
     * Compile the where array
     *
     * @return array
@@ -310,7 +311,7 @@ class Query extends \Illuminate\Database\Query\Builder {
 
         if ($boolean == 'or')
         {
-            return array($this->conversion[$boolean] => array($query));
+            return array('$or' => array($query));
         }
 
         return $query;
@@ -325,7 +326,7 @@ class Query extends \Illuminate\Database\Query\Builder {
 
         if ($boolean == 'or')
         {
-            return array($this->conversion[$boolean] => array($compiled));
+            return array('$or' => array($compiled));
         }
 
         return $compiled;
@@ -335,7 +336,7 @@ class Query extends \Illuminate\Database\Query\Builder {
     {
         extract($where);
 
-        return array($column => array($this->conversion['in'] => $values));
+        return array($column => array('$in' => $values));
     }
 
     public function compileWhereNull($where)
