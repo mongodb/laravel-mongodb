@@ -23,6 +23,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         '<=' => '$lte',
         '>' => '$gt',
         '>=' => '$gte',
+        'exists' => '$exists',
     );
 
     /**
@@ -257,6 +258,17 @@ class Query extends \Illuminate\Database\Query\Builder {
         }
 
         return $this;
+    }
+
+    /**
+     * Run a truncate statement on the table.
+     *
+     * @return void
+     */
+    public function truncate()
+    {
+        $result = $this->collection->drop();
+        return ((int) $result['ok']) == 1;
     }
 
     /**
