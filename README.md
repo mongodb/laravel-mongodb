@@ -95,9 +95,9 @@ Examples
 
 **Aggregation**
 
-    $price = DB::table('orders')->max('price');
-    $price = DB::table('orders')->min('price');
-    $price = DB::table('orders')->avg('price');
-    $total = DB::table('users')->sum('votes');
+    $price = Order::max('price');
+    $price = Order::min('price');
+    $price = Order::avg('price');
+    $total = User::sum('votes');
 
 All basic insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!
