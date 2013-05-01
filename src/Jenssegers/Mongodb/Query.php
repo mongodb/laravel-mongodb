@@ -211,6 +211,25 @@ class Query extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Add a where between statement to the query.
+     *
+     * @param  string  $column
+     * @param  array   $values
+     * @param  string  $boolean
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function whereBetween($column, array $values, $boolean = 'and')
+    {
+        $type = 'between';
+
+        $this->wheres[] = compact('column', 'type', 'boolean', 'values');
+
+        $this->bindings = array_merge($this->bindings, $values);
+
+        return $this;
+    }
+
+    /**
      * Insert a new record into the database.
      *
      * @param  array  $values
@@ -312,7 +331,7 @@ class Query extends \Illuminate\Database\Query\Builder {
     public function compileWheres()
     {
         if (!$this->wheres) return array();
-        
+
         $wheres = array();
 
         foreach ($this->wheres as $i=>&$where) 
@@ -333,6 +352,12 @@ class Query extends \Illuminate\Database\Query\Builder {
             // Delegate
             $method = "compileWhere{$where['type']}";
             $compiled = $this->{$method}($where);
+
+            // Check for or
+            if ($where['boolean'] == 'or')
+            {
+                $compiled = array('$or' => array($compiled));
+            }
 
             // Merge compiled where
             $wheres = array_merge_recursive($wheres, $compiled);
@@ -367,11 +392,6 @@ class Query extends \Illuminate\Database\Query\Builder {
             $query = array($column => array($this->conversion[$operator] => $value));
         }
 
-        if ($boolean == 'or')
-        {
-            return array('$or' => array($query));
-        }
-
         return $query;
     }
 
@@ -379,15 +399,7 @@ class Query extends \Illuminate\Database\Query\Builder {
     {
         extract($where);
 
-        // Compile subquery
-        $compiled = $query->compileWheres();
-
-        if ($boolean == 'or')
-        {
-            return array('$or' => array($compiled));
-        }
-
-        return $compiled;
+        return $query->compileWheres();
     }
 
     public function compileWhereIn($where)
@@ -411,6 +423,17 @@ class Query extends \Illuminate\Database\Query\Builder {
         $where['value'] = null;
 
         return $this->compileWhereBasic($where);
+    }
+
+    public function compileWherebetween($where)
+    {
+        extract($where);
+
+        return array(
+            $column => array(
+                '$gte' => $values[0],
+                '$lte' => $values[1])
+            );
     }
 
     /**

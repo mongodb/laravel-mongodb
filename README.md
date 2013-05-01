@@ -76,6 +76,10 @@ Examples
 
     $users = User::whereIn('age', array(16, 18, 20))->get();
 
+**Using Where Between**
+
+    $users = User::whereBetween('votes', array(1, 100))->get();
+
 **Where null**
 
     $users = User::whereNull('updated_at')->get();
