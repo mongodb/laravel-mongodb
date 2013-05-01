@@ -135,4 +135,6 @@ Aggregations can be combined with **where**:
 
     $user = Comment::where('body', 'like', '%spam%')->get();
 
+**Inserts, updates and deletes**
+
 All basic insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!
