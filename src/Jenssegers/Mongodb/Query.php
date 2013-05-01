@@ -24,7 +24,6 @@ class Query extends \Illuminate\Database\Query\Builder {
         '<=' => '$lte',
         '>' => '$gt',
         '>=' => '$gte',
-        'exists' => '$exists',
     );
 
     /**
