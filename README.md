@@ -93,9 +93,12 @@ Examples
 Distinct requires a field for which to return the distinct values.
 
     $users = User::distinct()->get(array('name'));
-
     // or
     $users = User::distinct('name')->get();
+
+Distinct can be combined with **where**:
+
+     $users = User::where('active', true)->distinct('name')->get();
 
 **Advanced Wheres**
 
@@ -118,7 +121,11 @@ Selected columns that are not grouped will be aggregated with the $last function
     $price = Order::max('price');
     $price = Order::min('price');
     $price = Order::avg('price');
-    $total = User::sum('votes');
+    $total = Order::sum('price');
+
+Aggregations can be combined with **where**:
+
+    $sold = Orders::where('sold', true)->sum('price');
 
 **Like**
 
