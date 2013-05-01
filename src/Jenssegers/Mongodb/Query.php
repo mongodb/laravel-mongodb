@@ -24,6 +24,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         '<=' => '$lte',
         '>' => '$gt',
         '>=' => '$gte',
+        'exists' => '$exists',
     );
 
     /**
@@ -238,7 +239,7 @@ class Query extends \Illuminate\Database\Query\Builder {
     {
         $result = $this->collection->insert($values);
 
-        if(1 == (int) $result['ok'])
+        if (1 == (int) $result['ok'])
         {
             return $values['_id'];
         }
@@ -268,7 +269,7 @@ class Query extends \Illuminate\Database\Query\Builder {
 
         $result = $this->collection->update($this->compileWheres(), $update, array('multiple' => true));
 
-        if(1 == (int) $result['ok'])
+        if (1 == (int) $result['ok'])
         {
             return $result['n'];
         }
@@ -287,7 +288,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         $query = $this->compileWheres($this);
         $result = $this->collection->remove($query);
 
-        if(1 == (int) $result['ok'])
+        if (1 == (int) $result['ok'])
         {
             return $result['n'];
         }
@@ -319,7 +320,8 @@ class Query extends \Illuminate\Database\Query\Builder {
     public function truncate()
     {
         $result = $this->collection->drop();
-        return ((int) $result['ok']) == 1;
+
+        return (1 == (int) $result['ok']);
     }
 
     /**
