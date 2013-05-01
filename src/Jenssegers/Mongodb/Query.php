@@ -328,7 +328,7 @@ class Query extends \Illuminate\Database\Query\Builder {
     *
     * @return array
     */
-    public function compileWheres()
+    private function compileWheres()
     {
         if (!$this->wheres) return array();
 
@@ -366,7 +366,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         return $wheres;
     }
 
-    public function compileWhereBasic($where)
+    private function compileWhereBasic($where)
     {
         extract($where);
 
@@ -395,21 +395,21 @@ class Query extends \Illuminate\Database\Query\Builder {
         return $query;
     }
 
-    public function compileWhereNested($where)
+    private function compileWhereNested($where)
     {
         extract($where);
 
         return $query->compileWheres();
     }
 
-    public function compileWhereIn($where)
+    private function compileWhereIn($where)
     {
         extract($where);
 
         return array($column => array('$in' => $values));
     }
 
-    public function compileWhereNull($where)
+    private function compileWhereNull($where)
     {
         $where['operator'] = '=';
         $where['value'] = null;
@@ -417,7 +417,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         return $this->compileWhereBasic($where);
     }
 
-    public function compileWhereNotNull($where)
+    private function compileWhereNotNull($where)
     {
         $where['operator'] = '!=';
         $where['value'] = null;
@@ -425,7 +425,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         return $this->compileWhereBasic($where);
     }
 
-    public function compileWherebetween($where)
+    private function compileWherebetween($where)
     {
         extract($where);
 
