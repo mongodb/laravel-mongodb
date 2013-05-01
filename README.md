@@ -88,6 +88,15 @@ Examples
 
     $users = User::skip(10)->take(5)->get();
 
+**Distinct**
+
+Distinct requires a field for which to return the distinct values.
+
+    $users = User::distinct()->get(array('name'));
+
+    // or
+    $users = User::distinct('name')->get();
+
 **Advanced Wheres**
 
     $users = User::where('name', '=', 'John')->orWhere(function($query)

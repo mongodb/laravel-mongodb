@@ -122,6 +122,13 @@ class Query extends \Illuminate\Database\Query\Builder {
         }
         else
         {
+            // Execute distinct
+            if ($this->distinct)
+            {
+                $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
+                return $this->collection->distinct($column, $wheres);
+            }
+
             // Get the MongoCursor
             $cursor = $this->collection->find($wheres, $this->columns);
 
@@ -152,6 +159,23 @@ class Query extends \Illuminate\Database\Query\Builder {
         {
             return $results[0][$columns[0]];
         }
+    }
+
+    /**
+     * Force the query to only return distinct results.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function distinct($column = false)
+    {
+        $this->distinct = true;
+
+        if ($column)
+        {
+            $this->columns = array($column);
+        }
+
+        return $this;
     }
 
     /**
