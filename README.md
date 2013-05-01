@@ -74,11 +74,19 @@ Examples
 
 **Using Where In With An Array**
 
-    $users = User::whereIn('id', array(1, 2, 3))->get();
+    $users = User::whereIn('age', array(16, 18, 20))->get();
+
+**Where null**
+
+    $users = User::whereNull('updated_at')->get();
 
 **Order By**
 
     $users = User::orderBy('name', 'desc')->get();
+
+**Offset & Limit**
+
+    $users = User::skip(10)->take(5)->get();
 
 **Advanced Wheres**
 
@@ -97,11 +105,11 @@ Selected columns that are not grouped will be aggregated with the $last function
 
 **Aggregation**
 
+    $total = Order::count();
     $price = Order::max('price');
     $price = Order::min('price');
     $price = Order::avg('price');
     $total = User::sum('votes');
-    $total = Order::count();
 
 **Like**
 
