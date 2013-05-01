@@ -91,6 +91,8 @@ Examples
 
 **Group By**
 
+Selected columns that are not grouped will be aggregated with the $last function.
+
     $users = Users::groupBy('title')->get(array('title', 'name'));
 
 **Aggregation**
@@ -99,5 +101,10 @@ Examples
     $price = Order::min('price');
     $price = Order::avg('price');
     $total = User::sum('votes');
+    $total = Order::count();
+
+**Like**
+
+    $user = Comment::where('body', 'like', '%spam%')->get();
 
 All basic insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!

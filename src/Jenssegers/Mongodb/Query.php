@@ -1,6 +1,7 @@
 <?php namespace Jenssegers\Mongodb;
 
 use MongoID;
+use MongoRegex;
 
 class Query extends \Illuminate\Database\Query\Builder {
 
@@ -79,7 +80,7 @@ class Query extends \Illuminate\Database\Query\Builder {
         {
             $pipeline = array();
 
-            // Group
+            // Grouping
             $group = array();
             $group['_id'] = $this->groups ? $this->groups : 0;
 
@@ -92,9 +93,17 @@ class Query extends \Illuminate\Database\Query\Builder {
             // Apply aggregation functions
             if ($this->aggregate)
             {
+                $function = $this->aggregate['function'];
+
                 foreach ($this->aggregate['columns'] as $column)
                 {
-                    $group[$column] = array('$' . $this->aggregate['function'] => '$' . $column);
+                    if ($function == 'count')
+                    {
+                        $group[$column] = array('$sum' => 1);
+                    }
+                    else {
+                        $group[$column] = array('$' . $function => '$' . $column);
+                    }
                 }
             }
 
@@ -150,7 +159,7 @@ class Query extends \Illuminate\Database\Query\Builder {
      *
      * @param  string  $column
      * @param  string  $direction
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
     public function orderBy($column, $direction = 'asc')
     {
@@ -163,7 +172,7 @@ class Query extends \Illuminate\Database\Query\Builder {
      * Add a "group by" clause to the query.
      *
      * @param  dynamic  $columns
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
     public function groupBy()
     {
@@ -311,6 +320,19 @@ class Query extends \Illuminate\Database\Query\Builder {
     public function compileWhereBasic($where)
     {
         extract($where);
+
+        // Replace like with MongoRegex
+        if ($operator == 'like')
+        {
+            $operator = '=';
+            $regex = str_replace('%', '', $value);
+
+            // Prepare regex
+            if (substr($value, 0, 1) != '%') $regex = '^' . $regex;
+            if (substr($value, -1) != '%')   $regex = $regex . '$';
+
+            $value = new MongoRegex("/$regex/i");
+        }
 
         if (!isset($operator) || $operator == '=')
         {
