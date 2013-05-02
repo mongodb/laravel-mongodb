@@ -167,6 +167,8 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 
 		$old = $user->updated_at;
 
+		sleep(1);
+
 		$user->touch();
 		$check = User::find($user->_id);
 
