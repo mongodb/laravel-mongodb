@@ -79,10 +79,21 @@ class Query extends \Illuminate\Database\Query\Builder {
         if ($this->groups || $this->aggregate)
         {
             $pipeline = array();
+            $group = array();
 
             // Grouping
-            $group = array();
-            $group['_id'] = $this->groups ? $this->groups : 0;
+            if ($this->groups)
+            {
+                foreach ($this->groups as $column)
+                {
+                    $group['_id'][$column] = '$' . $column;
+                    $group[$column] = array('$last' => '$' . $column);
+                }
+            }
+            else
+            {
+                $group['_id'] = 0;
+            }
 
             // Columns
             foreach ($this->columns as $column)
@@ -195,24 +206,6 @@ class Query extends \Illuminate\Database\Query\Builder {
     public function orderBy($column, $direction = 'asc')
     {
         $this->orders[$column] = ($direction == 'asc' ? 1 : -1);
-
-        return $this;
-    }
-
-    /**
-     * Add a "group by" clause to the query.
-     *
-     * @param  dynamic  $columns
-     * @return Builder
-     */
-    public function groupBy()
-    {
-        $groups = func_get_args();
-
-        foreach ($groups as $group)
-        {
-            $this->groups[$group] = '$' . $group;
-        }
 
         return $this;
     }

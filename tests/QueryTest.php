@@ -183,4 +183,48 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(37, User::where('title', 'user')->max('age'));
 	}
 
+	public function testGroupBy()
+	{
+		$users = User::groupBy('title')->get();
+		$this->assertEquals(3, count($users));
+
+		$users = User::groupBy('age')->get();
+		$this->assertEquals(6, count($users));
+
+		$users = User::groupBy('age')->orderBy('age', 'desc')->get();
+		$this->assertEquals(37, $users[0]->age);
+		$this->assertEquals(35, $users[1]->age);
+		$this->assertEquals(33, $users[2]->age);
+	}
+
+	public function testSubquery()
+	{
+		$users = User::where('title', 'admin')->orWhere(function($query)
+            {
+                $query->where('name', 'Tommy Toe')
+                      ->orWhere('name', 'Error');
+            })
+            ->get();
+
+        $this->assertEquals(5, count($users));
+
+        $users = User::where('title', 'user')->where(function($query)
+            {
+                $query->where('age', 35)
+                      ->orWhere('name', 'like', '%harry%');
+            })
+            ->get();
+
+        $this->assertEquals(2, count($users));
+
+        $users = User::where('age', 35)->orWhere(function($query)
+            {
+                $query->where('title', 'admin')
+                      ->orWhere('name', 'Error');
+            })
+            ->get();
+
+        $this->assertEquals(5, count($users));
+	}
+
 }
