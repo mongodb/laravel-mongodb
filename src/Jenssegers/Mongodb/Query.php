@@ -129,8 +129,15 @@ class Query extends \Illuminate\Database\Query\Builder {
                 return $this->collection->distinct($column, $wheres);
             }
 
+            // Columns
+            $columns = array();
+            foreach ($this->columns as $column)
+            {
+                $columns[$column] = true;
+            }
+
             // Get the MongoCursor
-            $cursor = $this->collection->find($wheres, $this->columns);
+            $cursor = $this->collection->find($wheres, $columns);
 
             // Apply order, offset and limit
             if ($this->orders) $cursor->sort($this->orders);
@@ -138,7 +145,7 @@ class Query extends \Illuminate\Database\Query\Builder {
             if ($this->limit) $cursor->limit($this->limit);
 
             // Return results
-            return $cursor;
+            return iterator_to_array($cursor);
         }
     }
 
@@ -340,7 +347,17 @@ class Query extends \Illuminate\Database\Query\Builder {
             // Convert id's
             if (isset($where['column']) && $where['column'] == '_id')
             {
-                $where['value'] = ($where['value'] instanceof MongoID) ? $where['value'] : new MongoID($where['value']);
+                if (isset($where['values']))
+                {
+                    foreach ($where['values'] as &$value)
+                    {
+                        $value = ($value instanceof MongoID) ? $value : new MongoID($value);
+                    }
+                }
+                else
+                {
+                    $where['value'] = ($where['value'] instanceof MongoID) ? $where['value'] : new MongoID($where['value']);
+                }
             }
 
             // First item of chain

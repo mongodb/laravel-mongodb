@@ -52,9 +52,19 @@ class Connection {
      * Get a mongodb collection.
      *
      * @param  string   $name
+     * @return MongoDB
      */
     public function getCollection($name) {
         return $this->db->{$name};
+    }
+
+    /**
+     * Get the mongodb database object.
+     *
+     * @return  MongoDB
+     */
+    public function getDb() {
+        return $this->db;
     }
 
     /**
