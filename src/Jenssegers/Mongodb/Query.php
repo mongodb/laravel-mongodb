@@ -24,7 +24,6 @@ class Query extends \Illuminate\Database\Query\Builder {
         '<=' => '$lte',
         '>' => '$gt',
         '>=' => '$gte',
-        'exists' => '$exists',
     );
 
     /**
@@ -182,7 +181,7 @@ class Query extends \Illuminate\Database\Query\Builder {
     /**
      * Force the query to only return distinct results.
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder
      */
     public function distinct($column = false)
     {
@@ -239,10 +238,7 @@ class Query extends \Illuminate\Database\Query\Builder {
     {
         $result = $this->collection->insert($values);
 
-        if (1 == (int) $result['ok'])
-        {
-            return $values['_id'];
-        }
+        return (1 == (int) $result['ok']);
     }
 
     /**
@@ -254,7 +250,12 @@ class Query extends \Illuminate\Database\Query\Builder {
      */
     public function insertGetId(array $values, $sequence = null)
     {
-        return $this->insert($values);
+        $result = $this->collection->insert($values);
+
+        if (1 == (int) $result['ok'])
+        {
+            return $values['_id'];
+        }
     }
 
     /**
