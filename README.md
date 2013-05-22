@@ -8,132 +8,173 @@ Installation
 
 Add the package to your `composer.json` or install manually.
 
-    {
-        "require": {
-            "jenssegers/mongodb": "*"
-        }
+```yaml
+{
+    "require": {
+        "jenssegers/mongodb": "*"
     }
-
+}
+```
 
 Run `composer update` to download and install the package.
 
 Add the service provider in `app/config/app.php`:
 
-    'Jenssegers\Mongodb\MongodbServiceProvider',
+```php
+'Jenssegers\Mongodb\MongodbServiceProvider',
+```
 
 Usage
 -----
 
 Tell your model to use the MongoDB model and a MongoDB collection:
 
-    use Jenssegers\Mongodb\Model as Eloquent
+```php
+use Jenssegers\Mongodb\Model as Eloquent
 
-    class MyModel extends Eloquent {
+class MyModel extends Eloquent {
 
-        protected $collection = 'mycollection';
+    protected $collection = 'mycollection';
 
-    }
+}
+```
 
 Configuration
 -------------
 
 The model will automatically check the Laravel database configuration array in `app/config/database.php` for a 'mongodb' item.
 
-    'mongodb' => array(
-        'host'     => 'localhost',
-        'port'     => 27017,
-        'database' => 'database',
-    ),
+```php
+'mongodb' => array(
+    'host'     => 'localhost',
+    'port'     => 27017,
+    'database' => 'database',
+),
+```
 
 You can also specify the connection name in the model:
 
-    class MyModel extends Eloquent {
+```php
+class MyModel extends Eloquent {
 
-        protected $connection = 'mongodb2';
+    protected $connection = 'mongodb2';
 
-    }
+}
+```
 
 Examples
 --------
 
 **Retrieving All Models**
 
-    $users = User::all();
+```php
+$users = User::all();
+```
 
 **Retrieving A Record By Primary Key**
 
-    $user = User::find('517c43667db388101e00000f');
+```php
+$user = User::find('517c43667db388101e00000f');
+```
 
 **Wheres**
 
-    $users = User::where('votes', '>', 100)->take(10)->get();
+```php
+$users = User::where('votes', '>', 100)->take(10)->get();
+```
 
 **Or Statements**
 
-    $users = User::where('votes', '>', 100)->orWhere('name', 'John')->get();
+```php
+$users = User::where('votes', '>', 100)->orWhere('name', 'John')->get();
+```
 
 **Using Where In With An Array**
 
-    $users = User::whereIn('age', array(16, 18, 20))->get();
+```php
+$users = User::whereIn('age', array(16, 18, 20))->get();
+```
 
 **Using Where Between**
 
-    $users = User::whereBetween('votes', array(1, 100))->get();
+```php
+$users = User::whereBetween('votes', array(1, 100))->get();
+```
 
 **Where null**
 
-    $users = User::whereNull('updated_at')->get();
+```php
+$users = User::whereNull('updated_at')->get();
+```
 
 **Order By**
 
-    $users = User::orderBy('name', 'desc')->get();
+```php
+$users = User::orderBy('name', 'desc')->get();
+```
 
 **Offset & Limit**
 
-    $users = User::skip(10)->take(5)->get();
+```php
+$users = User::skip(10)->take(5)->get();
+```
 
 **Distinct**
 
 Distinct requires a field for which to return the distinct values.
 
-    $users = User::distinct()->get(array('name'));
-    // or
-    $users = User::distinct('name')->get();
+```php
+$users = User::distinct()->get(array('name'));
+// or
+$users = User::distinct('name')->get();
+```
 
 Distinct can be combined with **where**:
 
-     $users = User::where('active', true)->distinct('name')->get();
+```php
+$users = User::where('active', true)->distinct('name')->get();
+```
 
 **Advanced Wheres**
 
-    $users = User::where('name', '=', 'John')->orWhere(function($query)
-            {
-                $query->where('votes', '>', 100)
-                      ->where('title', '<>', 'Admin');
-            })
-            ->get();
+```php
+$users = User::where('name', '=', 'John')->orWhere(function($query)
+        {
+            $query->where('votes', '>', 100)
+                  ->where('title', '<>', 'Admin');
+        })
+        ->get();
+```
 
 **Group By**
 
 Selected columns that are not grouped will be aggregated with the $last function.
 
-    $users = Users::groupBy('title')->get(array('title', 'name'));
+```php
+$users = Users::groupBy('title')->get(array('title', 'name'));
+```
 
 **Aggregation**
 
-    $total = Order::count();
-    $price = Order::max('price');
-    $price = Order::min('price');
-    $price = Order::avg('price');
-    $total = Order::sum('price');
+```php
+$total = Order::count();
+$price = Order::max('price');
+$price = Order::min('price');
+$price = Order::avg('price');
+$total = Order::sum('price');
+```
 
 Aggregations can be combined with **where**:
 
-    $sold = Orders::where('sold', true)->sum('price');
+```php
+$sold = Orders::where('sold', true)->sum('price');
+```
 
 **Like**
 
-    $user = Comment::where('body', 'like', '%spam%')->get();
+```php
+$user = Comment::where('body', 'like', '%spam%')->get();
+```
 
 **Inserts, updates and deletes**
 
