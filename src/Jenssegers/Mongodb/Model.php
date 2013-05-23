@@ -35,13 +35,24 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     }
 
     /**
-     * Get a fresh timestamp for the model.
+     * Return a timestamp as DateTime object.
      *
-     * @return MongoDate
+     * @param  mixed  $value
+     * @return DateTime
      */
-    public function freshTimestamp()
+    protected function asDateTime($value)
     {
-        return new MongoDate;
+        if ($value instanceof MongoDate)
+        {
+            $value = $value->sec;
+        }
+
+        if (is_int($value))
+        {
+            $value = "@$value";
+        }
+
+        return new DateTime($value);
     }
 
     /**
