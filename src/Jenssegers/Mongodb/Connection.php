@@ -54,7 +54,8 @@ class Connection {
      * @param  string   $name
      * @return MongoDB
      */
-    public function getCollection($name) {
+    public function getCollection($name)
+    {
         return $this->db->{$name};
     }
 
@@ -63,7 +64,8 @@ class Connection {
      *
      * @return  MongoDB
      */
-    public function getDb() {
+    public function getDb()
+    {
         return $this->db;
     }
 

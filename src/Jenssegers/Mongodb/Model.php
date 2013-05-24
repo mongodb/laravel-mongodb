@@ -56,6 +56,18 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     }
 
     /**
+     * Get the table associated with the model.
+     *
+     * @return string
+     */
+    public function getTable()
+    {
+        if (isset($this->collection)) return $this->collection;
+
+        return parent::getTable();
+    }
+
+    /**
      * Get a new query builder instance for the connection.
      *
      * @return Builder

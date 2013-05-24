@@ -71,7 +71,8 @@ class ConnectionResolver implements ConnectionResolverInterface {
      *
      * @param  array  $config
      */
-    public function makeConnection($config) {
+    public function makeConnection($config)
+    {
         return new Connection($config);
     }
 
