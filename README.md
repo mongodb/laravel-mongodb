@@ -3,6 +3,8 @@ Laravel Eloquent MongoDB [![Build Status](https://travis-ci.org/jenssegers/Larav
 
 An Eloquent model that supports MongoDB.
 
+*This model extends the original Eloquent model so it uses exactly the same methods. Please note that some advanced Eloquent features may not be working, but feel free to issue a pull request!*
+
 Installation
 ------------
 
@@ -27,7 +29,7 @@ Add the service provider in `app/config/app.php`:
 Usage
 -----
 
-Tell your model to use the MongoDB model and a MongoDB collection:
+Tell your model to use the MongoDB model and a MongoDB collection (alias for table):
 
 ```php
 use Jenssegers\Mongodb\Model as Eloquent
@@ -42,7 +44,7 @@ class MyModel extends Eloquent {
 Configuration
 -------------
 
-The model will automatically check the Laravel database configuration array in `app/config/database.php` for a 'mongodb' item.
+The model will automatically check the database configuration array in `app/config/database.php` for a 'mongodb' item.
 
 ```php
 'mongodb' => array(
@@ -178,4 +180,4 @@ $user = Comment::where('body', 'like', '%spam%')->get();
 
 **Inserts, updates and deletes**
 
-All basic insert, update, delete and select methods should be implemented. Feel free to fork and help completing this library!
+All basic insert, update, delete and select methods should be implemented.
