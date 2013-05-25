@@ -10,12 +10,8 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp()
 	{
-		$config = array(
-			'host'     => 'localhost',
-			'database' => 'unittest'
-		);
-
-		$this->connection = new Connection($config);
+		include('tests/app.php');
+		$this->connection = new Connection($app['config']['database.connections']['mongodb']);
 		$this->collection = $this->connection->getCollection('unittest');
 	}
 

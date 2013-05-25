@@ -1,8 +1,6 @@
 <?php namespace Jenssegers\Mongodb;
 
-use MongoClient;
-
-class Connection extends \Illuminate\Database\Connection {
+class Connection {
 
     /**
      * The MongoDB database handler.
@@ -19,6 +17,13 @@ class Connection extends \Illuminate\Database\Connection {
     protected $connection;
 
     /**
+     * The database connection configuration options.
+     *
+     * @var string
+     */
+    protected $config = array();
+
+    /**
      * Create a new database connection instance.
      *
      * @param  array   $config
@@ -26,6 +31,8 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function __construct(array $config)
     {
+        if (!is_null($this->connection)) return;
+
         // Store configuration
         $this->config = $config;
 
@@ -33,14 +40,16 @@ class Connection extends \Illuminate\Database\Connection {
         $options = array_get($config, 'options', array());
 
         // Create connection
-        $this->connection = new MongoClient($this->getDsn($config), $options);
+        $this->connection = new \MongoClient($this->getDsn($config), $options);
 
         // Select database
         $this->db = $this->connection->{$config['database']};
+
+        return $this;
     }
 
     /**
-     * Get a MongoDB collection.
+     * Get a mongodb collection.
      *
      * @param  string   $name
      * @return MongoDB
@@ -51,7 +60,7 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
-     * Get the MongoDB database object.
+     * Get the mongodb database object.
      *
      * @return  MongoDB
      */

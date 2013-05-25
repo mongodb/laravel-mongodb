@@ -4,19 +4,14 @@ require_once('models/User.php');
 
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Model;
-use Jenssegers\Mongodb\ConnectionResolver;
+use Jenssegers\Mongodb\DatabaseManager;
 
 class ModelTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp()
 	{
-		$app = array();
-		$app['config']['database']['connections']['mongodb'] = array(
-			'host'     => 'localhost',
-			'database' => 'unittest'
-		);
-
-		Model::setConnectionResolver(new ConnectionResolver($app));
+		include('tests/app.php');
+		Model::setConnectionResolver(new DatabaseManager($app));
 	}
 
 	public function tearDown()

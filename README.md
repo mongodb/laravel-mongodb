@@ -1,7 +1,7 @@
 Laravel Eloquent MongoDB [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB)
 ========================
 
-An Eloquent model that supports MongoDB.
+An Eloquent model that supports MongoDB, inspired by LMongo but using original Eloquent methods.
 
 *This model extends the original Eloquent model so it uses exactly the same methods. Please note that some advanced Eloquent features may not be working, but feel free to issue a pull request!*
 

@@ -4,19 +4,14 @@ require_once('models/User.php');
 
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Model;
-use Jenssegers\Mongodb\ConnectionResolver;
+use Jenssegers\Mongodb\DatabaseManager;
 
 class QueryTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp()
 	{
-		$app = array();
-		$app['config']['database']['connections']['mongodb'] = array(
-			'host'     => 'localhost',
-			'database' => 'unittest'
-		);
-
-		Model::setConnectionResolver(new ConnectionResolver($app));
+		include('tests/app.php');
+		Model::setConnectionResolver(new DatabaseManager($app));
 
 		// test data
 		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
@@ -38,6 +33,7 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 	public function testGet()
 	{
 		$users = User::get();
+
 		$this->assertEquals(9, count($users));
 		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $users[0]);
 	}

@@ -1,8 +1,8 @@
 <?php namespace Jenssegers\Mongodb;
 
-use Jenssegers\Mongodb\DatabaseManager as Resolver;
+use Illuminate\Database\ConnectionResolverInterface as Resolver;
 use Illuminate\Database\Eloquent\Collection;
-use Jenssegers\Mongodb\Builder as QueryBuilder;
+use Jenssegers\Mongodb\Query as QueryBuilder;
 
 use DateTime;
 use MongoDate;
