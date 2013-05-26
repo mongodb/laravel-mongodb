@@ -26,12 +26,24 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     /**
      * Convert a DateTime to a storable string.
      *
-     * @param  DateTime  $value
-     * @return MongoDate
+     * @param  DateTime|int  $value
+     * @return string
      */
-    protected function fromDateTime(DateTime $value)
+    protected function fromDateTime($value)
     {
-        return new MongoDate($value->getTimestamp());
+        // Convert DateTime to MongoDate
+        if ($value instanceof DateTime)
+        {
+            $value = new MongoDate($value->getTimestamp());
+        }
+
+        // Convert timestamp to MongoDate
+        elseif (is_numeric($value))
+        {
+            $value = new MongoDate($value);
+        }
+
+        return $value;
     }
 
     /**
