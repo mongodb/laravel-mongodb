@@ -461,8 +461,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function newQuery()
     {
-        $connection = $this->getConnection();
-        return new Builder($connection);
+        return new Builder($this->connection);
     }
 
 }

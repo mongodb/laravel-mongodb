@@ -1,7 +1,7 @@
 <?php namespace Jenssegers\Mongodb;
 
-use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Illuminate\Database\Eloquent\Collection;
+use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Builder as QueryBuilder;
 
 use DateTime;
@@ -68,6 +68,26 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     }
 
     /**
+     * Get a fresh timestamp for the model.
+     *
+     * @return DateTime
+     */
+    public function freshTimestamp()
+    {
+        return new MongoDate;
+    }
+
+    /**
+     * Get the fully qualified "deleted at" column.
+     *
+     * @return string
+     */
+    public function getQualifiedDeletedAtColumn()
+    {
+        return $this->getDeletedAtColumn();
+    }
+
+    /**
      * Get the table associated with the model.
      *
      * @return string
@@ -86,8 +106,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     protected function newBaseQueryBuilder()
     {
-        $connection = $this->getConnection();
-        return new QueryBuilder($connection);
+        return new QueryBuilder($this->getConnection());
     }
 
 }
