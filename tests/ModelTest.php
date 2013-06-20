@@ -133,7 +133,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
      */
 	public function testFindOrfail()
 	{
-		User::findOrfail('123');
+		User::findOrfail('51c33d8981fec6813e00000a');
 	}
 
 	public function testCreate()
