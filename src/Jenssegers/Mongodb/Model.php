@@ -5,6 +5,7 @@ use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Builder as QueryBuilder;
 
 use DateTime;
+use MongoId;
 use MongoDate;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model {
@@ -107,6 +108,33 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     protected function newBaseQueryBuilder()
     {
         return new QueryBuilder($this->getConnection());
+    }
+
+    /**
+     * Set the array of model attributes. No checking is done.
+     *
+     * @param  array  $attributes
+     * @param  bool   $sync
+     * @return void
+     */
+    public function setRawAttributes(array $attributes, $sync = false)
+    {
+        foreach($attributes as $key => &$value)
+        {
+            // Convert MongoId
+            if ($value instanceof MongoId)
+            {
+                $value = (string) $value;
+            }
+
+            // Convert MongoDate
+            else if ($value instanceof MongoDate)
+            {
+                $value = $this->asDateTime($value)->format('Y-m-d H:i:s');
+            }
+        }
+
+        parent::setRawAttributes($attributes, $sync);
     }
 
 }
