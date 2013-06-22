@@ -37,12 +37,13 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$user->name = "John Doe";
 		$user->title = "admin";
 		$user->age = 35;
+
 		$user->save();
 
 		$this->assertEquals(true, $user->exists);
 		$this->assertEquals(1, User::count());
 
-		$this->assertInstanceOf('MongoId', $user->_id);
+		$this->assertTrue(isset($user->_id));
 		$this->assertNotEquals('', (string) $user->_id);
 		$this->assertNotEquals(0, strlen((string) $user->_id));
 		$this->assertInstanceOf('DateTime', $user->created_at);

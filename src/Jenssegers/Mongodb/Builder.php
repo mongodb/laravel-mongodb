@@ -260,7 +260,8 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         if (1 == (int) $result['ok'])
         {
-            return $values['_id'];
+            // Return id as a string
+            return (string) $values['_id'];
         }
     }
 
