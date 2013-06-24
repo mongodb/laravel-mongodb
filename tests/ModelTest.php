@@ -66,7 +66,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$check->save();
 
 		$this->assertEquals(true, $check->exists);
-		$this->assertInstanceOf('DateTime', $user->created_at);
+		$this->assertInstanceOf('DateTime', $check->created_at);
 		$this->assertInstanceOf('DateTime', $check->updated_at);
 		$this->assertEquals(1, User::count());
 
@@ -185,7 +185,6 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(true, $user->exists);
 
 		$user->delete();
-		$this->assertEquals(false, $user->exists);
 
 		$check = Soft::find($user->_id);
 		$this->assertEquals(null, $check);
@@ -194,6 +193,14 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(0, $all->count());
 
 		$all = Soft::withTrashed()->get();
+		$this->assertEquals(1, $all->count());
+
+		$check = $all[0];
+		$this->assertInstanceOf('DateTime', $check->deleted_at);
+		$this->assertEquals(true, $check->trashed());
+
+		$check->restore();
+		$all = Soft::get();
 		$this->assertEquals(1, $all->count());
 	}
 

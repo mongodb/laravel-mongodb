@@ -20,6 +20,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     protected $conversion = array(
         '=' => '=',
         '!=' => '$ne',
+        '<>' => '$ne',
         '<' => '$lt',
         '<=' => '$lte',
         '>' => '$gt',

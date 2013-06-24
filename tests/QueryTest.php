@@ -61,6 +61,9 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 		$users = User::where('age', '!=', 35)->get();
 		$this->assertEquals(6, count($users));
+
+		$users = User::where('age', '<>', 35)->get();
+		$this->assertEquals(6, count($users));
 	}
 
 	public function testAndWhere()
