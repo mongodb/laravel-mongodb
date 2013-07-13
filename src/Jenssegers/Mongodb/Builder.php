@@ -287,6 +287,49 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Increment a column's value by a given amount.
+     *
+     * @param  string  $column
+     * @param  int     $amount
+     * @param  array   $extra
+     * @return int
+     */
+    public function increment($column, $amount = 1, array $extra = array())
+    {
+        // build update statement
+        $update = array(
+            '$inc' => array($column => $amount),
+            '$set' => $extra,
+        );
+
+        // protect
+        $this->whereNotNull($column);
+
+        // perform
+        $result = $this->collection->update($this->compileWheres(), $update, array('multiple' => true));
+
+        if (1 == (int) $result['ok'])
+        {
+            return $result['n'];
+        }
+
+        return 0;
+    }
+
+    /**
+     * Decrement a column's value by a given amount.
+     *
+     * @param  string  $column
+     * @param  int     $amount
+     * @param  array   $extra
+     * @return int
+     */
+    public function decrement($column, $amount = 1, array $extra = array())
+    {
+        return $this->increment($column, -1 * $amount, $extra);
+    }
+
+    /**
      * Delete a record from the database.
      *
      * @param  mixed  $id
@@ -427,6 +470,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
         extract($where);
 
         return array($column => array('$in' => $values));
+    }
+
+    private function compileWhereNotIn($where)
+    {
+        extract($where);
+
+        return array($column => array('$nin' => $values));
     }
 
     private function compileWhereNull($where)
