@@ -112,6 +112,12 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(null, $user->age);
 
+		$user = User::select('name', 'title')->first();
+
+		$this->assertEquals('John Doe', $user->name);
+		$this->assertEquals('admin', $user->title);
+		$this->assertEquals(null, $user->age);
+
 		$user = User::get(array('name'))->first();
 
 		$this->assertEquals('John Doe', $user->name);
@@ -143,12 +149,22 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 		$users = User::whereIn('age', array(33, 35, 13))->get();
 		$this->assertEquals(6, count($users));
+
+		$users = User::whereNotIn('age', array(33, 35))->get();
+		$this->assertEquals(4, count($users));
+
+		$users = User::whereNotNull('age')
+		             ->whereNotIn('age', array(33, 35))->get();
+		$this->assertEquals(3, count($users));
 	}
 
 	public function testWhereNull()
 	{
 		$users = User::whereNull('age')->get();
 		$this->assertEquals(1, count($users));
+
+		$users = User::whereNotNull('age')->get();
+		$this->assertEquals(8, count($users));
 	}
 
 	public function testOrder()
@@ -173,6 +189,37 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('Jane Doe', $users[0]->name);
 	}
 
+	public function testIncrements()
+	{
+		User::where('name', 'John Doe')->increment('age');
+		User::where('name', 'John Doe')->increment('age', 2, array('title' => 'user'));
+
+		$user = User::where('name', 'John Doe')->first();
+		$this->assertEquals(38, $user->age);
+		$this->assertEquals('user', $user->title);
+
+		User::where('name', 'John Doe')->decrement('age');
+		$num = User::where('name', 'John Doe')->decrement('age', 2, array('title' => 'admin'));
+
+		$user = User::where('name', 'John Doe')->first();
+		$this->assertEquals(35, $user->age);
+		$this->assertEquals('admin', $user->title);
+		$this->assertEquals(1, $num);
+
+		User::increment('age');
+		User::increment('age', 2);
+
+		$user = User::where('name', 'Mark Moe')->first();
+		$this->assertEquals(26, $user->age);
+
+		User::decrement('age', 2);
+		$num = User::decrement('age');
+
+		$user = User::where('name', 'Mark Moe')->first();
+		$this->assertEquals(23, $user->age);
+		$this->assertEquals(8, $num);
+	}
+
 	public function testAggregates()
 	{
 		$this->assertEquals(9, User::count());
@@ -183,6 +230,9 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals(35, User::where('title', 'admin')->max('age'));
 		$this->assertEquals(37, User::where('title', 'user')->max('age'));
+	
+		$this->assertEquals(33, User::where('title', 'admin')->min('age'));
+		$this->assertEquals(13, User::where('title', 'user')->min('age'));
 	}
 
 	public function testGroupBy()

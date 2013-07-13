@@ -97,6 +97,8 @@ $users = User::where('votes', '>', 100)->orWhere('name', 'John')->get();
 $users = User::whereIn('age', array(16, 18, 20))->get();
 ```
 
+When using `whereNotIn` objects will be returned if the field is non existant. Combine with `whereNotNull('age')` to leave out those documents.
+
 **Using Where Between**
 
 ```php
@@ -181,3 +183,30 @@ $user = Comment::where('body', 'like', '%spam%')->get();
 **Inserts, updates and deletes**
 
 All basic insert, update, delete and select methods should be implemented.
+
+**Increments & decrements**
+
+Perform increments (default 1) on specified attributes.
+Attention: without a where-clause, every object will be modified.
+
+```php
+User::where('name', 'John Doe')->increment('age');
+User::where('name', 'Bart De Wever')->decrement('weight', 50);
+```
+
+The number of updated objects is returned.
+
+```php
+$count = User->increment('age');
+echo $count;
+```
+
+will return the number of users where `age` is a valid field.
+
+These functions also allow for a third attribute:
+
+```php
+User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
+
+User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
+```
