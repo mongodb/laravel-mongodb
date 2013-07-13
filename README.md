@@ -188,12 +188,15 @@ All basic insert, update, delete and select methods should be implemented.
 
 Perform increments (default 1) on specified attributes.
 Attention: without a where-clause, every object will be modified.
-The number of updated objects is returned.
 
 ```php
 User::where('name', 'John Doe')->increment('age');
 User::where('name', 'Bart De Wever')->decrement('weight', 50);
+```
 
+The number of updated objects is returned.
+
+```php
 $count = User->increment('age');
 echo $count;
 ```
