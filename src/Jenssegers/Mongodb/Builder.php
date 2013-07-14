@@ -243,9 +243,16 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function insert(array $values)
     {
-        $result = $this->collection->insert($values);
+        // Since every insert gets treated like a batch insert, we will make sure the
+        // bindings are structured in a way that is convenient for building these
+        // inserts statements by verifying the elements are actually an array.
+        if ( ! is_array(reset($values)))
+        {
+            $values = array($values);
+        }
 
-        return (1 == (int) $result['ok']);
+        // Batch insert
+        return $this->collection->batchInsert($values);
     }
 
     /**

@@ -5,6 +5,8 @@ An Eloquent model that supports MongoDB, inspired by LMongo but using original E
 
 *This model extends the original Eloquent model so it uses exactly the same methods. Please note that some advanced Eloquent features may not be working, but feel free to issue a pull request!*
 
+For more information about Eloquent, check http://laravel.com/docs/eloquent.
+
 Installation
 ------------
 
@@ -184,29 +186,24 @@ $user = Comment::where('body', 'like', '%spam%')->get();
 
 All basic insert, update, delete and select methods should be implemented.
 
-**Increments & decrements**
+**Incrementing or decrementing a value of a column**
 
-Perform increments (default 1) on specified attributes.
-Attention: without a where-clause, every object will be modified.
+Perform increments or decrements (default 1) on specified attributes:
 
 ```php
 User::where('name', 'John Doe')->increment('age');
 User::where('name', 'Bart De Wever')->decrement('weight', 50);
 ```
 
-The number of updated objects is returned.
+The number of updated objects is returned:
 
 ```php
 $count = User->increment('age');
-echo $count;
 ```
 
-will return the number of users where `age` is a valid field.
-
-These functions also allow for a third attribute:
+You may also specify additional columns to update:
 
 ```php
 User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
-
 User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
 ```

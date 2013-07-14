@@ -162,7 +162,10 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 	{
 		$users = User::whereNull('age')->get();
 		$this->assertEquals(1, count($users));
+	}
 
+	public function testWhereNotNull()
+	{
 		$users = User::whereNotNull('age')->get();
 		$this->assertEquals(8, count($users));
 	}
@@ -277,6 +280,48 @@ class QueryTest extends PHPUnit_Framework_TestCase {
             ->get();
 
         $this->assertEquals(5, count($users));
+	}
+
+	public function testUpdate()
+	{
+		User::where('name', 'John Doe')
+            ->update(array('age' => 100));
+
+        $user = User::where('name', 'John Doe')->first();
+		$this->assertEquals(100, $user->age);
+	}
+
+	public function testDelete()
+	{
+		User::where('age', '>', 30)->delete();
+		$this->assertEquals(3, User::count());
+	}
+
+	public function testInsert()
+	{
+		User::insert(
+		    array('name' => 'Francois', 'age' => 59, 'title' => 'Senior')
+		);
+
+		$this->assertEquals(10, User::count());
+
+		User::insert(array(
+		    array('name' => 'Gaston', 'age' => 60, 'title' => 'Senior'),
+		    array('name' => 'Jaques', 'age' => 61, 'title' => 'Senior')
+		));
+
+		$this->assertEquals(12, User::count());
+	}
+
+	public function testInsertGetId()
+	{
+		$id = User::insertGetId(
+		    array('name' => 'Gaston', 'age' => 60, 'title' => 'Senior')
+		);
+
+		$this->assertEquals(10, User::count());
+		$this->assertNotNull($id);
+		$this->assertTrue(is_string($id));
 	}
 
 }
