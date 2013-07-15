@@ -1,7 +1,7 @@
 {
     "name": "jenssegers/mongodb",
     "description": "An Eloquent model that supports MongoDB",
-    "keywords": ["laravel","eloquent","mongodb","model"],
+    "keywords": ["laravel","eloquent","mongodb","mongo","database","model"],
     "authors": [
         {
             "name": "Jens Segers",
