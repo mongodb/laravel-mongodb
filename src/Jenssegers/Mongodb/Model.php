@@ -25,6 +25,13 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     protected $primaryKey = '_id';
 
     /**
+     * The connection resolver instance.
+     *
+     * @var \Illuminate\Database\ConnectionResolverInterface
+     */
+    protected static $resolver;
+
+    /**
      * Convert a DateTime to a storable string.
      *
      * @param  DateTime|int  $value
