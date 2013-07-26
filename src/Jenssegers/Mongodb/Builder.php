@@ -8,7 +8,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     /**
     * The database collection
     *
-    * @var string
+    * @var MongoCollection
     */
     public $collection;
 
@@ -247,8 +247,6 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         $this->wheres[] = compact('column', 'type', 'boolean', 'values');
 
-        $this->bindings = array_merge($this->bindings, $values);
-
         return $this;
     }
 
@@ -366,8 +364,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function delete($id = null)
     {
-        $query = $this->compileWheres();
-        $result = $this->collection->remove($query);
+        $result = $this->collection->remove($this->compileWheres());
 
         if (1 == (int) $result['ok'])
         {
@@ -406,6 +403,16 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Get a new instance of the query builder.
+     *
+     * @return Builder
+     */
+    public function newQuery()
+    {
+        return new Builder($this->connection);
+    }
+
+    /**
     * Compile the where array
     *
     * @return array
@@ -414,6 +421,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     {
         if (!$this->wheres) return array();
 
+        // The new list of compiled wheres
         $wheres = array();
 
         foreach ($this->wheres as $i=>&$where) 
@@ -533,16 +541,6 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 '$gte' => $values[0],
                 '$lte' => $values[1])
             );
-    }
-
-    /**
-     * Get a new instance of the query builder.
-     *
-     * @return Builder
-     */
-    public function newQuery()
-    {
-        return new Builder($this->connection);
     }
 
 }
