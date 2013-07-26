@@ -13,6 +13,6 @@ services: mongodb
 
 before_script:
   - echo "extension = mongo.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
-  - composer install --no-interaction
+  - composer install --dev --no-interaction
 
 script: phpunit tests

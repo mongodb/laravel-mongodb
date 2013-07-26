@@ -51,20 +51,17 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
-     * Execute the query as a "select" statement.
+     * Execute the query as a fresh "select" statement.
      *
      * @param  array  $columns
-     * @return array
+     * @return array|static[]
      */
-    public function get($columns = array('*'))
+    public function getFresh($columns = array('*'))
     {
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
         // all of the columns on the table using the "wildcard" column character.
-        if (is_null($this->columns))
-        {
-            $this->columns = $columns;
-        }
+        if (is_null($this->columns)) $this->columns = $columns;
 
         // Drop all columns if * is present
         if (in_array('*', $this->columns)) 
@@ -161,6 +158,27 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Generate the unique cache key for the query.
+     *
+     * @return string
+     */
+    public function generateCacheKey()
+    {
+        $key = array(
+            'connection' => $this->connection->getName(),
+            'collection' => $this->collection->getName(),
+            'wheres'     => $this->wheres,
+            'columns'    => $this->columns,
+            'groups'     => $this->groups,
+            'orders'     => $this->orders,
+            'offset'     => $this->offset,
+            'aggregate'  => $this->aggregate,
+        );
+
+        return md5(serialize(array_values($key)));
+    }
+
+    /**
      * Execute an aggregate function on the database.
      *
      * @param  string  $function
@@ -172,6 +190,11 @@ class Builder extends \Illuminate\Database\Query\Builder {
         $this->aggregate = compact('function', 'columns');
 
         $results = $this->get($columns);
+
+        // Once we have executed the query, we will reset the aggregate property so
+        // that more select queries can be executed against the database without
+        // the aggregate value getting in the way when the grammar builds it.
+        $this->columns = null; $this->aggregate = null;
 
         if (isset($results[0]))
         {
@@ -343,7 +366,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function delete($id = null)
     {
-        $query = $this->compileWheres($this);
+        $query = $this->compileWheres();
         $result = $this->collection->remove($query);
 
         if (1 == (int) $result['ok'])

@@ -60,7 +60,7 @@ Tell your model to use the MongoDB model and set the collection (alias for table
     
     }
 
-**Everything else works just like the original Eloquent model.**
+Everything else works just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
 
 Query Builder
 -------------
@@ -176,4 +176,8 @@ You may also specify additional columns to update:
     User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
     User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
 
-Read more about the Eloquent on http://laravel.com/docs/eloquent
+**Query Caching**
+
+You may easily cache the results of a query using the remember method:
+
+    $users = User::remember(10)->get();

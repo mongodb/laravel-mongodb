@@ -1,6 +1,5 @@
 <?php
 require_once('vendor/autoload.php');
-require_once('models/User.php');
 
 use Jenssegers\Mongodb\Facades\DB;
 

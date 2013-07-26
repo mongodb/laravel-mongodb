@@ -15,6 +15,9 @@
         "illuminate/database": "4.1.x",
         "illuminate/events": "4.1.x"
     },
+    "require-dev": {
+        "illuminate/cache": "4.1.x"
+    },
     "autoload": {
         "psr-0": {
             "Jenssegers\\Mongodb": "src/"
