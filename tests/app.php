@@ -2,7 +2,7 @@
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Model;
 use Jenssegers\Mongodb\DatabaseManager;
-use Jenssegers\Mongodb\Facades\Mongo;
+use Jenssegers\Mongodb\Facades\DB;
 use Illuminate\Events\Dispatcher;
 
 # Fake app
@@ -21,4 +21,4 @@ $app['mongodb'] = new DatabaseManager($app);
 
 # Static setup
 Model::setConnectionResolver(new DatabaseManager($app));
-Mongo::setFacadeApplication($app);
+DB::setFacadeApplication($app);

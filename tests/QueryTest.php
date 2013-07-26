@@ -2,7 +2,7 @@
 require_once('vendor/autoload.php');
 require_once('models/User.php');
 
-use Jenssegers\Mongodb\Facades\Mongo;
+use Jenssegers\Mongodb\Facades\DB;
 
 class QueryTest extends PHPUnit_Framework_TestCase {
 
@@ -13,35 +13,35 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 	public function tearDown()
 	{
-		Mongo::collection('users')->truncate();
+		DB::collection('users')->truncate();
 	}
 
 	public function testCollection()
 	{
-		$this->assertInstanceOf('Jenssegers\Mongodb\Builder', Mongo::collection('users'));
+		$this->assertInstanceOf('Jenssegers\Mongodb\Builder', DB::collection('users'));
 	}
 
 	public function testInsert()
 	{
 		$user = array('name' => 'John Doe');
-		Mongo::collection('users')->insert($user);
+		DB::collection('users')->insert($user);
 
-		$users = Mongo::collection('users')->get();
+		$users = DB::collection('users')->get();
 		$this->assertEquals(1, count($users));
 
-		$user = Mongo::collection('users')->first();
+		$user = DB::collection('users')->first();
 		$this->assertEquals('John Doe', $user['name']);
 	}
 
 	public function testFind()
 	{
 		$user = array('name' => 'John Doe');
-		$id = Mongo::collection('users')->insertGetId($user);
+		$id = DB::collection('users')->insertGetId($user);
 
 		$this->assertNotNull($id);
 		$this->assertTrue(is_string($id));
 
-		$user = Mongo::collection('users')->find($id);
+		$user = DB::collection('users')->find($id);
 		$this->assertEquals('John Doe', $user['name']);
 	}
 
