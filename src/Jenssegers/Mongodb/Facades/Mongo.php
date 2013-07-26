@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Facade;
 
-class MongoDB extends Facade {
+class Mongo extends Facade {
 
 	/**
 	 * Get the registered name of the component.
