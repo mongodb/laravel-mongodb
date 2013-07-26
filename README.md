@@ -70,6 +70,8 @@ The MongoDB query builder allows you to execute queries, just like the original 
     $users = MDB::collection('users')->get();
     $user = MDB::collection('users')->where('name', 'John')->first();
 
+Read more about the query builder on http://laravel.com/docs/queries
+
 More examples
 -------------
 
@@ -173,3 +175,5 @@ You may also specify additional columns to update:
 
     User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
     User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
+
+Read more about the Eloquent on http://laravel.com/docs/eloquent
