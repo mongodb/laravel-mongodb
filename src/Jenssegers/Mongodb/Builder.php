@@ -33,15 +33,9 @@ class Builder extends \Illuminate\Database\Query\Builder {
     * @param Connection $connection
     * @return void
     */
-    public function __construct(Connection $connection, $collection = null)
+    public function __construct(Connection $connection)
     {
         $this->connection = $connection;
-
-        // Set optional collection
-        if (!is_null($collection))
-        {
-            $this->from($collection);
-        }
     }
 
     /**

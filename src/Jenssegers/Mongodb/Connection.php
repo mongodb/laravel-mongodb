@@ -1,5 +1,6 @@
 <?php namespace Jenssegers\Mongodb;
 
+use Jenssegers\Mongodb\Builder as QueryBuilder;
 use MongoClient;
 
 class Connection extends \Illuminate\Database\Connection {
@@ -37,6 +38,30 @@ class Connection extends \Illuminate\Database\Connection {
 
         // Select database
         $this->db = $this->connection->{$config['database']};
+    }
+
+    /**
+     * Return a new QueryBuilder for a collection
+     *
+     * @param  string  $collection
+     * @return QueryBuilder
+     */
+    public function collection($collection)
+    {
+        $query = new QueryBuilder($this);
+
+        return $query->from($collection);
+    }
+
+    /**
+     * Begin a fluent query against a database table.
+     *
+     * @param  string  $table
+     * @return QueryBuilder
+     */
+    public function table($table)
+    {
+        return $this->collection($table);
     }
 
     /**
@@ -90,6 +115,18 @@ class Connection extends \Illuminate\Database\Connection {
         $dsn.= "/{$database}";
 
         return $dsn;
+    }
+
+    /**
+     * Dynamically pass methods to the connection.
+     *
+     * @param  string  $method
+     * @param  array   $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        return call_user_func_array(array($this->connection, $method), $parameters);
     }
 
 }

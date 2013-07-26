@@ -49,7 +49,7 @@ class DatabaseManager implements ConnectionResolverInterface {
 	 * Get a database connection instance.
 	 *
 	 * @param  string  $name
-	 * @return \Illuminate\Database\Connection
+	 * @return Connection
 	 */
 	public function connection($name = null)
 	{
@@ -72,7 +72,7 @@ class DatabaseManager implements ConnectionResolverInterface {
 	 * Reconnect to the given database.
 	 *
 	 * @param  string  $name
-	 * @return \Illuminate\Database\Connection
+	 * @return Connection
 	 */
 	public function reconnect($name = null)
 	{
@@ -85,7 +85,7 @@ class DatabaseManager implements ConnectionResolverInterface {
 	 * Make the database connection instance.
 	 *
 	 * @param  string  $name
-	 * @return \Illuminate\Database\Connection
+	 * @return Connection
 	 */
 	protected function makeConnection($name)
 	{
@@ -102,18 +102,26 @@ class DatabaseManager implements ConnectionResolverInterface {
 	/**
 	 * Prepare the database connection instance.
 	 *
-	 * @param  \Illuminate\Database\Connection  $connection
-	 * @return \Illuminate\Database\Connection
+	 * @param  Connection  $connection
+	 * @return Connection
 	 */
 	protected function prepare(Connection $connection)
 	{
 		$connection->setEventDispatcher($this->app['events']);
 
+		// The database connection can also utilize a cache manager instance when cache
+		// functionality is used on queries, which provides an expressive interface
+		// to caching both fluent queries and Eloquent queries that are executed.
+		$app = $this->app;
+
+		$connection->setCacheManager(function() use ($app)
+		{
+			return $app['cache'];
+		});
+
 		// We will setup a Closure to resolve the paginator instance on the connection
 		// since the Paginator isn't sued on every request and needs quite a few of
 		// our dependencies. It'll be more efficient to lazily resolve instances.
-		$app = $this->app;
-
 		$connection->setPaginator(function() use ($app)
 		{
 			return $app['paginator'];
@@ -167,25 +175,15 @@ class DatabaseManager implements ConnectionResolverInterface {
 	}
 
 	/**
-	 * Return a new QueryBuilder for a collection
+	 * Dynamically pass methods to the default connection.
 	 *
-	 * @param  string  $collection
-	 * @return QueryBuilder
+	 * @param  string  $method
+	 * @param  array   $parameters
+	 * @return mixed
 	 */
-	public function collection($collection)
+	public function __call($method, $parameters)
 	{
-		return new QueryBuilder($this->connection(), $collection);
-	}
-
-	/**
-	 * Return a new QueryBuilder for a collection
-	 *
-	 * @param  string  $collection
-	 * @return QueryBuilder
-	 */
-	public function __get($collection)
-	{
-		return $this->collection($collection);
+		return call_user_func_array(array($this->connection(), $method), $parameters);
 	}
 
 }
