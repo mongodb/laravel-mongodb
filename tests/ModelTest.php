@@ -13,7 +13,6 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 	public function setUp()
 	{
 		include('tests/app.php');
-		Model::setConnectionResolver(new DatabaseManager($app));
 	}
 
 	public function tearDown()
