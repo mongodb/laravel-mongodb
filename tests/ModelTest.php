@@ -2,6 +2,7 @@
 require_once('vendor/autoload.php');
 require_once('models/User.php');
 require_once('models/Soft.php');
+require_once('models/Book.php');
 
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Model;
@@ -19,6 +20,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 	{
 		User::truncate();
 		Soft::truncate();
+		Book::truncate();
 	}
 
 	public function testNewModel()
@@ -202,6 +204,26 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$check->restore();
 		$all = Soft::get();
 		$this->assertEquals(1, $all->count());
+	}
+
+	public function testPrimaryKey()
+	{
+		$user = new User;
+		$this->assertEquals('_id', $user->getKeyName());
+
+		$book = new Book;
+		$this->assertEquals('title', $book->getKeyName());
+
+		$book->title = "A Game of Thrones";
+		$book->author = "George R. R. Martin";
+		$book->save();
+
+		$this->assertEquals("A Game of Thrones", $book->getKey());
+
+		$check = Book::find("A Game of Thrones");
+		$this->assertEquals('title', $check->getKeyName());
+		$this->assertEquals("A Game of Thrones", $check->getKey());
+		$this->assertEquals("A Game of Thrones", $check->title);
 	}
 
 }

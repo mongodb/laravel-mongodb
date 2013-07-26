@@ -268,8 +268,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         if (1 == (int) $result['ok'])
         {
+            if (!$sequence)
+            {
+                $sequence = '_id';
+            }
+
             // Return id as a string
-            return (string) $values['_id'];
+            return (string) $values[$sequence];
         }
     }
 
