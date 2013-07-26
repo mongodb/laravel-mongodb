@@ -1,9 +1,9 @@
 Laravel Eloquent MongoDB [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB)
 ========================
 
-An Eloquent model that supports MongoDB, inspired by LMongo but using original Eloquent methods.
+An Eloquent model that supports MongoDB, inspired by LMongo, but using the original Eloquent methods.
 
-*This model extends the original Eloquent model so it uses exactly the same methods. Please note that some advanced Eloquent features may not be working, but feel free to issue a pull request!*
+*This model extends the original Eloquent model, so it uses exactly the same methods. Some advanced Eloquent features may not be working, but feel free to report them or issue a pull request!*
 
 For more information about Eloquent, check http://laravel.com/docs/eloquent.
 
@@ -24,10 +24,33 @@ Add the service provider in `app/config/app.php`:
 
     'Jenssegers\Mongodb\MongodbServiceProvider',
 
-Usage
------
+Add an alias for the query builder, you can change this alias to your own preference:
 
-Tell your model to use the MongoDB model and a MongoDB collection (alias for table):
+    'MDB'            => 'Jenssegers\Mongodb\Facades\DB',
+
+Configuration
+-------------
+
+This package will automatically check the database configuration in `app/config/database.php` for a 'mongodb' item.
+
+    'mongodb' => array(
+        'host'     => 'localhost',
+        'port'     => 27017,
+        'database' => 'database',
+    ),
+
+You can also specify the connection name in the model if you have multiple connections:
+
+    class MyModel extends Eloquent {
+    
+        protected $connection = 'mongodb2';
+    
+    }
+
+Eloquent
+--------
+
+Tell your model to use the MongoDB model and set the collection (alias for table) property:
     
     use Jenssegers\Mongodb\Model as Eloquent
     
@@ -37,27 +60,18 @@ Tell your model to use the MongoDB model and a MongoDB collection (alias for tab
     
     }
 
-Configuration
+**Everything else works just like the original Eloquent model.**
+
+Query Builder
 -------------
 
-The model will automatically check the database configuration array in `app/config/database.php` for a 'mongodb' item.
+The MongoDB query builder allows you to execute queries, just like the original query builder (note that we are using the previously created alias here):
 
-    'mongodb' => array(
-        'host'     => 'localhost',
-        'port'     => 27017,
-        'database' => 'database',
-    ),
+    $users = MDB::collection('users')->get();
+    $user = MDB::collection('users')->where('name', 'John')->first();
 
-You can also specify the connection name in the model:
-
-    class MyModel extends Eloquent {
-    
-        protected $connection = 'mongodb2';
-    
-    }
-
-Examples
---------
+More examples
+-------------
 
 **Retrieving All Models**
 
