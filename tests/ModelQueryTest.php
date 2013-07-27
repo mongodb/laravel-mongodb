@@ -1,6 +1,7 @@
 <?php
 require_once('vendor/autoload.php');
 require_once('models/User.php');
+require_once('tests/app.php');
 
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Model;
@@ -10,8 +11,6 @@ class ModelQueryTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp()
 	{
-		include('tests/app.php');
-		
 		// test data
 		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
 		User::create(array('name' => 'Jane Doe', 'age' => 33, 'title' => 'admin'));

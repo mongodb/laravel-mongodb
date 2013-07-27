@@ -27,5 +27,5 @@ $app['config']['database.connections']['mongodb'] = array(
 $app['mongodb'] = new DatabaseManager($app);
 
 # Static setup
-Model::setConnectionResolver(new DatabaseManager($app));
+Model::setConnectionResolver($app['mongodb']);
 DB::setFacadeApplication($app);

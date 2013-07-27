@@ -3,6 +3,7 @@ require_once('vendor/autoload.php');
 require_once('models/User.php');
 require_once('models/Soft.php');
 require_once('models/Book.php');
+require_once('tests/app.php');
 
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Model;
@@ -10,10 +11,7 @@ use Jenssegers\Mongodb\DatabaseManager;
 
 class ModelTest extends PHPUnit_Framework_TestCase {
 
-	public function setUp()
-	{
-		include('tests/app.php');
-	}
+	public function setUp() {}
 
 	public function tearDown()
 	{

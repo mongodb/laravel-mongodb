@@ -1,14 +1,12 @@
 <?php
 require_once('vendor/autoload.php');
+require_once('tests/app.php');
 
 use Jenssegers\Mongodb\Facades\DB;
 
 class QueryTest extends PHPUnit_Framework_TestCase {
 
-	public function setUp()
-	{
-		include('tests/app.php');
-	}
+	public function setUp() {}
 
 	public function tearDown()
 	{

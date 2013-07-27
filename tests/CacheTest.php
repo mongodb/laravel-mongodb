@@ -1,18 +1,14 @@
 <?php
 require_once('vendor/autoload.php');
 require_once('models/User.php');
+require_once('tests/app.php');
 
 use Jenssegers\Mongodb\Facades\DB;
 
 class CacheTest extends PHPUnit_Framework_TestCase {
 
-	protected $app;
-
 	public function setUp()
 	{
-		include('tests/app.php');
-		$this->app = $app;
-
 		// test data
 		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
 		User::create(array('name' => 'Jane Doe', 'age' => 33, 'title' => 'admin'));
@@ -37,8 +33,10 @@ class CacheTest extends PHPUnit_Framework_TestCase {
 		$users = User::where('age', '>', 10)->remember(10, 'db.users')->get();
 		$this->assertEquals(3, count($users));
 
+		global $app;
+
 		# get from cache driver
-		$cache = $this->app['cache'];
+		$cache = $app['cache'];
 		$users = $cache->get('db.users');
 		$this->assertEquals(3, count($users));
 	}
