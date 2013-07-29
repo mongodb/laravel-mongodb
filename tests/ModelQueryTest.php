@@ -322,4 +322,18 @@ class ModelQueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue(is_string($id));
 	}
 
+	public function testRaw()
+	{
+		$where = array('age' => array('$gt' => 30, '$lt' => 40));
+		$users = User::whereRaw($where)->get();
+
+		$this->assertEquals(6, count($users));
+
+		$where1 = array('age' => array('$gt' => 30, '$lte' => 35));
+		$where2 = array('age' => array('$gt' => 35, '$lt' => 40));
+		$users = User::whereRaw($where1)->orWhereRaw($where2)->get();
+
+		$this->assertEquals(6, count($users));
+	}
+
 }

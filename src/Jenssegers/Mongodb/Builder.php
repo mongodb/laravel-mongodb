@@ -532,7 +532,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         return $this->compileWhereBasic($where);
     }
 
-    private function compileWherebetween($where)
+    private function compileWhereBetween($where)
     {
         extract($where);
 
@@ -541,6 +541,11 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 '$gte' => $values[0],
                 '$lte' => $values[1])
             );
+    }
+
+    private function compileWhereRaw($where)
+    {
+        return $where['sql'];
     }
 
 }

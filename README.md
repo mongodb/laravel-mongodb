@@ -176,6 +176,12 @@ You may also specify additional columns to update:
     User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
     User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
 
+**Raw Expressions**
+
+These expressions will be injected directly into the query.
+
+    User::whereRaw(array('age' => array('$gt' => 30, '$lt' => 40)))->get();
+
 **Query Caching**
 
 You may easily cache the results of a query using the remember method:
