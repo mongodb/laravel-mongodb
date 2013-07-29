@@ -153,7 +153,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             if ($this->limit) $cursor->limit($this->limit);
 
             // Return results
-            return array_values(iterator_to_array($cursor));
+            return iterator_to_array($cursor, false);
         }
     }
 

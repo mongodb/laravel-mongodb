@@ -64,6 +64,7 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 		$users = DB::collection('users')->where('address.country', 'Belgium')->get();
 		$this->assertEquals(1, count($users));
+		$this->assertEquals('John Doe', $users[0]['name']);
 	}
 
 }
