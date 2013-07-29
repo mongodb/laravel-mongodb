@@ -42,4 +42,28 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('John Doe', $user['name']);
 	}
 
+	public function testSubKey()
+	{
+		$user1 = array(
+			'name' => 'John Doe',
+			'address' => array(
+				'country' => 'Belgium',
+				'city' => 'Ghent'
+				)
+			);
+
+		$user2 = array(
+			'name' => 'Jane Doe',
+			'address' => array(
+				'country' => 'France',
+				'city' => 'Paris'
+				)
+			);
+
+		DB::collection('users')->insert(array($user1, $user2));
+
+		$users = DB::collection('users')->where('address.country', 'Belgium')->get();
+		$this->assertEquals(1, count($users));
+	}
+
 }
