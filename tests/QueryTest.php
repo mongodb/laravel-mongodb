@@ -11,6 +11,7 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 	public function tearDown()
 	{
 		DB::collection('users')->truncate();
+		DB::collection('items')->truncate();
 	}
 
 	public function testCollection()
@@ -65,6 +66,25 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$users = DB::collection('users')->where('address.country', 'Belgium')->get();
 		$this->assertEquals(1, count($users));
 		$this->assertEquals('John Doe', $users[0]['name']);
+	}
+
+	public function testInArray()
+	{
+		$item1 = array(
+			'tags' => array('tag1', 'tag2', 'tag3', 'tag4')
+			);
+
+		$item2 = array(
+			'tags' => array('tag2')
+			);
+
+		DB::collection('items')->insert(array($item1, $item2));
+
+		$items = DB::collection('items')->where('tags', 'tag2')->get();
+		$this->assertEquals(2, count($items));
+
+		$items = DB::collection('items')->where('tags', 'tag1')->get();
+		$this->assertEquals(1, count($items));
 	}
 
 }
