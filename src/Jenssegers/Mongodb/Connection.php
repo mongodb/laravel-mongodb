@@ -80,9 +80,19 @@ class Connection extends \Illuminate\Database\Connection {
      *
      * @return  MongoDB
      */
-    public function getDb()
+    public function getMongoDB()
     {
         return $this->db;
+    }
+
+    /**
+     * return MongoClient object
+     *
+     * @return MongoClient
+     */
+    public function getMongoClient()
+    {
+        return $this->connection;
     }
 
     /**
@@ -98,23 +108,23 @@ class Connection extends \Illuminate\Database\Connection {
         // need to establish the MongoClient and return them back for use.
         extract($config);
 
-        $dsn = "mongodb://";
+        // Treat host option as array of hosts
+        $hosts = is_array($config['host']) ? $config['host'] : array($config['host']);
 
-        if (isset($config['username']) and isset($config['password']))
+        foreach ($hosts as &$host)
         {
-            $dsn .= "{$username}:{$password}@";
+            if (isset($config['username']) and isset($config['password']))
+            {
+                $host = "{$username}:{$password}@{$host}";
+            }
+
+            if (isset($config['port']))
+            {
+                $host = "{$host}:{$port}";
+            }
         }
 
-        $dsn .= "{$host}";
-
-        if (isset($config['port']))
-        {
-            $dsn .= ":{$port}";
-        }
-
-        $dsn .= "/{$database}";
-
-        return $dsn;
+        return "mongodb://" . implode(',', $hosts) . "/{$database}";
     }
 
     /**

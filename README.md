@@ -36,7 +36,9 @@ This package will automatically check the database configuration in `app/config/
     'mongodb' => array(
         'host'     => 'localhost',
         'port'     => 27017,
-        'database' => 'database',
+        'username' => 'username',
+        'password' => 'password',
+        'database' => 'database'
     ),
 
 You can also specify the connection name in the model if you have multiple connections:
@@ -46,6 +48,17 @@ You can also specify the connection name in the model if you have multiple conne
         protected $connection = 'mongodb2';
     
     }
+
+You can connect to multiple servers or replica sets with the following configuration:
+
+    'mongodb' => array(
+        'host'     => array('server1', 'server2),
+        'port'     => 27017,
+        'username' => 'username',
+        'password' => 'password',
+        'database' => 'database',
+        'options'  => array('replicaSet' => 'replicaSetName')
+    ),
 
 Eloquent
 --------

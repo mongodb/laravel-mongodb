@@ -28,7 +28,7 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 	public function testDb()
 	{
 		$connection = DB::connection('mongodb');
-		$this->assertInstanceOf('MongoDB', $connection->getDb());
+		$this->assertInstanceOf('MongoDB', $connection->getMongoDB());
 	}
 
 	public function testCollection()
@@ -47,6 +47,21 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 	{
 		$dbs = DB::connection('mongodb')->listCollections();
 		$this->assertTrue(is_array($dbs));
+	}
+
+	public function testMultipleConnections()
+	{
+		global $app;
+
+		# Add fake host
+		$db = $app['config']['database.connections']['mongodb'];
+		$db['host'] = array($db['host'], '1.2.3.4');
+
+		$connection = new Connection($db);
+		$mongoclient = $connection->getMongoClient();
+
+		$hosts = $mongoclient->getHosts();
+		$this->assertEquals(1, count($hosts));
 	}
 
 }
