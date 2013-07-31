@@ -52,7 +52,7 @@ Eloquent
 
 Tell your model to use the MongoDB model and set the collection (alias for table) property:
     
-    use Jenssegers\Mongodb\Model as Eloquent
+    use Jenssegers\Mongodb\Model as Eloquent;
     
     class MyModel extends Eloquent {
     
