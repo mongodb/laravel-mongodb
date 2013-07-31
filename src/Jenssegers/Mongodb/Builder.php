@@ -18,12 +18,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
     * @var array
     */
     protected $conversion = array(
-        '=' => '=',
+        '='  => '=',
         '!=' => '$ne',
         '<>' => '$ne',
-        '<' => '$lt',
+        '<'  => '$lt',
         '<=' => '$lte',
-        '>' => '$gt',
+        '>'  => '$gt',
         '>=' => '$gte',
     );
 
@@ -121,7 +121,8 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
             // Apply order and limit
             if ($this->orders) $pipeline[] = array('$sort' => $this->orders);
-            if ($this->limit) $pipeline[] = array('$limit' => $this->limit);
+            if ($this->offset) $pipeline[] = array('$skip' => $this->offset);
+            if ($this->limit)  $pipeline[] = array('$limit' => $this->limit);
 
             $results = $this->collection->aggregate($pipeline);
 
@@ -150,7 +151,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             // Apply order, offset and limit
             if ($this->orders) $cursor->sort($this->orders);
             if ($this->offset) $cursor->skip($this->offset);
-            if ($this->limit) $cursor->limit($this->limit);
+            if ($this->limit)  $cursor->limit($this->limit);
 
             // Return results
             return iterator_to_array($cursor, false);

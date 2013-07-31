@@ -105,14 +105,14 @@ class Connection extends \Illuminate\Database\Connection {
             $dsn .= "{$username}:{$password}@";
         }
 
-        $dsn.= "{$host}";
+        $dsn .= "{$host}";
 
         if (isset($config['port']))
         {
             $dsn .= ":{$port}";
         }
 
-        $dsn.= "/{$database}";
+        $dsn .= "/{$database}";
 
         return $dsn;
     }
