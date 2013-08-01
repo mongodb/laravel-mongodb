@@ -37,7 +37,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      * @param  DateTime|int  $value
      * @return string
      */
-    protected function fromDateTime($value)
+    public function fromDateTime($value)
     {
         // Convert DateTime to MongoDate
         if ($value instanceof DateTime)
