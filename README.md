@@ -191,7 +191,7 @@ You may also specify additional columns to update:
 
 **Relations**
 
-Support relations are:
+Supported relations are:
 
  - hasOne
  - hasMany
