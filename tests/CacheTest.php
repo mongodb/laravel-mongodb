@@ -22,6 +22,11 @@ class CacheTest extends PHPUnit_Framework_TestCase {
 
 	public function testCache()
 	{
+		# get from cache driver
+		global $app;
+		$cache = $app['cache'];
+		$cache->forget('db.users');
+
 		# auto generate cache key
 		$users = DB::collection('users')->where('age', '>', 10)->remember(10)->get();
 		$this->assertEquals(3, count($users));
@@ -33,10 +38,6 @@ class CacheTest extends PHPUnit_Framework_TestCase {
 		$users = User::where('age', '>', 10)->remember(10, 'db.users')->get();
 		$this->assertEquals(3, count($users));
 
-		global $app;
-
-		# get from cache driver
-		$cache = $app['cache'];
 		$users = $cache->get('db.users');
 		$this->assertEquals(3, count($users));
 	}
