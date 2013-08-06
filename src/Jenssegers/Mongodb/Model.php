@@ -1,8 +1,12 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Builder as QueryBuilder;
+use Jenssegers\Mongodb\Relations\BelongsTo;
 
 use DateTime;
 use MongoId;
@@ -105,6 +109,69 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         if (isset($this->collection)) return $this->collection;
 
         return parent::getTable();
+    }
+
+    /**
+     * Define a one-to-one relationship.
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
+    public function hasOne($related, $foreignKey = null)
+    {
+        $foreignKey = $foreignKey ?: $this->getForeignKey();
+
+        $instance = new $related;
+
+        return new HasOne($instance->newQuery(), $this, $foreignKey);
+    }
+
+    /**
+     * Define a one-to-many relationship.
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function hasMany($related, $foreignKey = null)
+    {
+        $foreignKey = $foreignKey ?: $this->getForeignKey();
+
+        $instance = new $related;
+
+        return new HasMany($instance->newQuery(), $this, $foreignKey);
+    }
+
+    /**
+     * Define an inverse one-to-one or many relationship.
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function belongsTo($related, $foreignKey = null)
+    {
+        list(, $caller) = debug_backtrace(false);
+
+        // If no foreign key was supplied, we can use a backtrace to guess the proper
+        // foreign key name by using the name of the relationship function, which
+        // when combined with an "_id" should conventionally match the columns.
+        $relation = $caller['function'];
+
+        if (is_null($foreignKey))
+        {
+            $foreignKey = snake_case($relation).'_id';
+        }
+
+        // Once we have the foreign key names, we'll just create a new Eloquent query
+        // for the related models and returns the relationship instance which will
+        // actually be responsible for retrieving and hydrating every relations.
+        $instance = new $related;
+
+        $query = $instance->newQuery();
+
+        return new BelongsTo($query, $this, $foreignKey, $relation);
     }
 
     /**

@@ -1,5 +1,4 @@
 <?php
-require_once('vendor/autoload.php');
 require_once('tests/app.php');
 
 use Jenssegers\Mongodb\Facades\DB;

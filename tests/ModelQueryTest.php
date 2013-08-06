@@ -1,11 +1,5 @@
 <?php
-require_once('vendor/autoload.php');
-require_once('models/User.php');
 require_once('tests/app.php');
-
-use Jenssegers\Mongodb\Connection;
-use Jenssegers\Mongodb\Model;
-use Jenssegers\Mongodb\DatabaseManager;
 
 class ModelQueryTest extends PHPUnit_Framework_TestCase {
 

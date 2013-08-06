@@ -64,7 +64,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         if (is_null($this->columns)) $this->columns = $columns;
 
         // Drop all columns if * is present
-        if (in_array('*', $this->columns)) 
+        if (in_array('*', $this->columns))
         {
             $this->columns = array();
         }

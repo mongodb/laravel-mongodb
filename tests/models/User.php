@@ -8,9 +8,19 @@ class User extends Eloquent {
 
 	protected static $unguarded = true;
 
-	public function phone()
+	public function books()
     {
-        return $this->hasOne('Phone');
+        return $this->hasMany('Book', 'author_id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany('Item');
+    }
+
+    public function role()
+    {
+        return $this->hasOne('Role');
     }
 
 }

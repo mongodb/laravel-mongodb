@@ -1,4 +1,7 @@
 <?php
+$loader = require 'vendor/autoload.php';
+$loader->add('', 'tests/models');
+
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Model;
 use Jenssegers\Mongodb\DatabaseManager;

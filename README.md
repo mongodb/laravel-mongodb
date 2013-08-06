@@ -3,7 +3,7 @@ Laravel Eloquent MongoDB [![Build Status](https://travis-ci.org/jenssegers/Larav
 
 An Eloquent model that supports MongoDB, inspired by LMongo, but using the original Eloquent methods.
 
-*This model extends the original Eloquent model, so it uses exactly the same methods. Some advanced Eloquent features may not be working, but feel free to report them or issue a pull request!*
+*This model extends the original Eloquent model, so it uses exactly the same methods.*
 
 For more information about Eloquent, check http://laravel.com/docs/eloquent.
 
@@ -188,6 +188,38 @@ You may also specify additional columns to update:
 
     User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
     User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
+
+**Relations**
+
+Support relations are:
+
+ - hasOne
+ - hasMany
+ - belongsTo
+
+Example:
+
+    class User extends Eloquent {
+
+        public function items()
+        {
+            return $this->hasMany('Item');
+        }
+
+    }
+
+And the inverse relation:
+
+    class Item extends Eloquent {
+
+        public function user()
+        {
+            return $this->belongsTo('User');
+        }
+
+    }
+
+Other relations are not yet supported, but may be added in the future. Read more about these relations on http://four.laravel.com/docs/eloquent#relationships
 
 **Raw Expressions**
 

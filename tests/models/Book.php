@@ -9,4 +9,9 @@ class Book extends Eloquent {
 	protected static $unguarded = true;
 
 	protected $primaryKey = 'title';
+
+    public function author()
+    {
+        return $this->belongsTo('User', 'author_id');
+    }
 }
