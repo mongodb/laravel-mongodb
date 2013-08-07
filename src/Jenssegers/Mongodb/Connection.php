@@ -111,20 +111,26 @@ class Connection extends \Illuminate\Database\Connection {
         // Treat host option as array of hosts
         $hosts = is_array($config['host']) ? $config['host'] : array($config['host']);
 
+        // Add ports to hosts
         foreach ($hosts as &$host)
         {
-            if (isset($config['username']) and isset($config['password']))
-            {
-                $host = "{$username}:{$password}@{$host}";
-            }
-
             if (isset($config['port']))
             {
                 $host = "{$host}:{$port}";
             }
         }
 
-        return "mongodb://" . implode(',', $hosts) . "/{$database}";
+        // Credentials
+        if (isset($config['username']) and isset($config['password']))
+        {
+            $credentials = "{$username}:{$password}@";
+        }
+        else
+        {
+            $credentials = '';
+        }
+
+        return "mongodb://{$credentials}" . implode(',', $hosts) . "/{$database}";
     }
 
     /**
