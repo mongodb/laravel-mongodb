@@ -124,7 +124,7 @@ class Connection extends \Illuminate\Database\Connection {
             }
         }
 
-        echo "mongodb://" . $credentials . implode(',', $hosts) . "/{$database}";
+        return "mongodb://" . $credentials . implode(',', $hosts) . "/{$database}";
     }
 
     /**
