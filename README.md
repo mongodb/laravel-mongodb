@@ -85,6 +85,11 @@ The MongoDB query builder allows you to execute queries, just like the original 
 
 Read more about the query builder on http://laravel.com/docs/queries
 
+Sessions
+--------
+
+If you want a MongoDB session driver, check out https://github.com/jenssegers/Laravel-MongoDB-Session
+
 More examples
 -------------
 
