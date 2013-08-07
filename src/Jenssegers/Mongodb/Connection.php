@@ -111,6 +111,8 @@ class Connection extends \Illuminate\Database\Connection {
         // Treat host option as array of hosts
         $hosts = is_array($config['host']) ? $config['host'] : array($config['host']);
 
+        $credentials = null;
+
         if (isset($config['username']) and isset($config['password']))
         {
             $credentials = "{$username}:{$password}@";
