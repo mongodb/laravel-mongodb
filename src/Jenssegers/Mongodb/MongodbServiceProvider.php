@@ -3,6 +3,7 @@
 use Jenssegers\Mongodb\Model;
 use Jenssegers\Mongodb\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\DatabasePresenceVerifier;
 
 class MongodbServiceProvider extends ServiceProvider {
 
