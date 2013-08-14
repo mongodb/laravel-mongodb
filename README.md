@@ -10,7 +10,7 @@ For more information about Eloquent, check http://laravel.com/docs/eloquent.
 Installation
 ------------
 
-Add the package to your `composer.json` or install manually.
+Add the package to your `composer.json` and run `composer update`.
 
     {
         "require": {
@@ -18,13 +18,11 @@ Add the package to your `composer.json` or install manually.
         }
     }
 
-Run `composer update` to download and install the package.
-
 Add the service provider in `app/config/app.php`:
 
     'Jenssegers\Mongodb\MongodbServiceProvider',
 
-Add an alias for the query builder, you can change this alias to your own preference:
+Add an alias for the database manager, you can change this alias to your own preference:
 
     'MDB'            => 'Jenssegers\Mongodb\Facades\DB',
 
