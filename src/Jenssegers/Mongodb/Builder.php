@@ -410,12 +410,14 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  closure  $expression
      * @return mixed
      */
-    public function raw($expression)
+    public function raw($expression = null)
     {
         if ($expression instanceof Closure)
         {
             return call_user_func($expression, $this->collection);
         }
+
+        return $this->collection;
     }
 
     /**

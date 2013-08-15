@@ -96,6 +96,9 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertInstanceOf('MongoCursor', $cursor);
 		$this->assertEquals(1, $cursor->count());
+
+		$collection = DB::collection('users')->raw();
+		$this->assertInstanceOf('MongoCollection', $collection);
 	}
 
 }

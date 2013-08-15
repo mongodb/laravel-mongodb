@@ -237,6 +237,10 @@ You can also perform raw expressions on the internal MongoCollection object, not
         return $collection->find();
     });
 
+Or you can access the internal object directly:
+
+    User::raw()->find();
+
 **Query Caching**
 
 You may easily cache the results of a query using the remember method:
