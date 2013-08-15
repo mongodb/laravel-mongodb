@@ -88,8 +88,10 @@ Sessions
 
 If you want a MongoDB session driver, check out https://github.com/jenssegers/Laravel-MongoDB-Session
 
-More examples
+Documentation
 -------------
+
+### Basic Usage
 
 **Retrieving All Models**
 
@@ -172,10 +174,6 @@ Aggregations can be combined with **where**:
 
     $user = Comment::where('body', 'like', '%spam%')->get();
 
-**Inserts, updates and deletes**
-
-All basic insert, update, delete and select methods should be implemented.
-
 **Incrementing or decrementing a value of a column**
 
 Perform increments or decrements (default 1) on specified attributes:
@@ -192,7 +190,11 @@ You may also specify additional columns to update:
     User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
     User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
 
-**Relations**
+### Inserts, updates and deletes
+
+All basic insert, update, delete and select methods should be implemented.
+
+### Relations
 
 Supported relations are:
 
@@ -224,7 +226,7 @@ And the inverse relation:
 
 Other relations are not yet supported, but may be added in the future. Read more about these relations on http://four.laravel.com/docs/eloquent#relationships
 
-**Raw Expressions**
+### Raw Expressions
 
 These expressions will be injected directly into the query.
 
@@ -241,7 +243,7 @@ Or you can access the internal object directly:
 
     User::raw()->find();
 
-**Query Caching**
+### Query Caching
 
 You may easily cache the results of a query using the remember method:
 
