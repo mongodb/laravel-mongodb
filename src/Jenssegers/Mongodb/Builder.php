@@ -412,9 +412,9 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
-     * Append a value to an array.
+     * Append one or more values to an array.
      *
-     * @param  string  $column
+     * @param  mixed   $column
      * @param  mixed   $value
      * @return int
      */
@@ -426,11 +426,37 @@ class Builder extends \Illuminate\Database\Query\Builder {
         }
         else if (is_array($value))
         {
+            // $pushAll depricated
             $query = array('$push' => array($column => array('$each' => $value)));
         }
         else
         {
             $query = array('$push' => array($column => $value));
+        }
+
+        return $this->performUpdate($query);
+    }
+
+    /**
+     * Remove one or more values from an array.
+     *
+     * @param  mixed   $column
+     * @param  mixed   $value
+     * @return int
+     */
+    public function pull($column, $value = null)
+    {
+        if (is_array($column))
+        {
+            $query = array('$pull' => $column);
+        }
+        else if (is_array($value))
+        {
+            $query = array('$pullAll' => array($column => $value));
+        }
+        else
+        {
+            $query = array('$pull' => array($column => $value));
         }
 
         return $this->performUpdate($query);

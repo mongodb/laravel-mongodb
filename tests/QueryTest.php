@@ -128,4 +128,24 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('tag4', $user['tags'][3]);
 	}
 
+	public function testPull()
+	{
+		$user = array('name' => 'John Doe', 'tags' => array('tag1', 'tag2', 'tag3', 'tag4'));
+		$id = DB::collection('users')->insertGetId($user);
+
+		DB::collection('users')->where('_id', $id)->pull('tags', 'tag3');
+		$user = DB::collection('users')->find($id);
+
+		$this->assertTrue(is_array($user['tags']));
+		$this->assertEquals(3, count($user['tags']));
+		$this->assertEquals('tag4', $user['tags'][2]);
+
+		DB::collection('users')->where('_id', $id)->pull('tags', array('tag2', 'tag4'));
+		$user = DB::collection('users')->find($id);
+
+		$this->assertTrue(is_array($user['tags']));
+		$this->assertEquals(1, count($user['tags']));
+		$this->assertEquals('tag1', $user['tags'][0]);
+	}
+
 }

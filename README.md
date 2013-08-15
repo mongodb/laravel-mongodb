@@ -252,6 +252,13 @@ Add one or more items to an array.
     User::where('name', 'John')->push('items', 'boots');
     User::where('name', 'John')->push('items', array('sword', 'shield'));
 
+***Pull***
+
+Remove one or more values from an array.
+
+    User::where('name', 'John')->pull('items', 'boots');
+    User::where('name', 'John')->pull('items', array('sword', 'shield'));
+
 ### Query Caching
 
 You may easily cache the results of a query using the remember method:
