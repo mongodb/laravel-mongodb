@@ -1,7 +1,7 @@
 <?php
 require_once('tests/app.php');
 
-use Jenssegers\Mongodb\Facades\DB;
+use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Connection;
 
 class ConnectionTest extends PHPUnit_Framework_TestCase {

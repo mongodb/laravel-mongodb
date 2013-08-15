@@ -1,5 +1,11 @@
 <?php namespace Jenssegers\Mongodb;
 
+/*
+|--------------------------------------------------------------------------
+| DEPRECATED
+|--------------------------------------------------------------------------
+*/
+
 use Illuminate\Database\ConnectionResolverInterface;
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Builder as QueryBuilder;

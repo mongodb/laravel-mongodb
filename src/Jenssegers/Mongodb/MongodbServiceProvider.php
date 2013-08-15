@@ -13,7 +13,7 @@ class MongodbServiceProvider extends ServiceProvider {
      */
     public function boot()
     {
-        Model::setConnectionResolver($this->app['mongodb']);
+        Model::setConnectionResolver($this->app['db']);
         Model::setEventDispatcher($this->app['events']);
     }
 
@@ -24,12 +24,16 @@ class MongodbServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        // The database manager is used to resolve various connections, since multiple
-        // connections might be managed. It also implements the connection resolver
-        // interface which may be used by other components requiring connections.
+        // DEPRECATED
         $this->app['mongodb'] = $this->app->share(function($app)
         {
             return new DatabaseManager($app);
+        });
+
+        // Add a mongodb extension to the original database manager
+        $this->app['db']->extend('mongodb', function($config)
+        {
+            return new Connection($config);
         });
     }
 

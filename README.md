@@ -1,11 +1,12 @@
 Laravel Eloquent MongoDB [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB)
 ========================
 
-An Eloquent model that supports MongoDB, inspired by LMongo, but using the original Eloquent methods.
+An Eloquent model that supports MongoDB, inspired by LMongo, but using the original Eloquent methods. For more information about Eloquent, check http://laravel.com/docs/eloquent.
 
 *This model extends the original Eloquent model, so it uses exactly the same methods.*
 
-For more information about Eloquent, check http://laravel.com/docs/eloquent.
+**ATTENTION WHEN UPGRADING!**
+The way the internal connection resolving works has been changed to extend original Laravel objects instead of registering new objects. Check the configuration section for more information about the new configuration. Remove the old `MDB` facade as it is now deprecated.
 
 Installation
 ------------
@@ -22,16 +23,19 @@ Add the service provider in `app/config/app.php`:
 
     'Jenssegers\Mongodb\MongodbServiceProvider',
 
-Add an alias for the database manager, you can change this alias to your own preference:
-
-    'MDB'            => 'Jenssegers\Mongodb\Facades\DB',
+The service provider will register a mongodb extension with the original database manager, so that everything else keeps working just fine.
 
 Configuration
 -------------
 
-This package will automatically check the database configuration in `app/config/database.php` for a 'mongodb' item.
+Change your default database connection name in `app/config/database.php`:
+
+    'default' => 'mongodb',
+
+And add a new mongodb connection:
 
     'mongodb' => array(
+        'driver'   => 'mongodb',
         'host'     => 'localhost',
         'port'     => 27017,
         'username' => 'username',
@@ -40,6 +44,8 @@ This package will automatically check the database configuration in `app/config/
     ),
 
 You can also specify the connection name in the model if you have multiple connections:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
 
     class MyModel extends Eloquent {
     
@@ -50,6 +56,7 @@ You can also specify the connection name in the model if you have multiple conne
 You can connect to multiple servers or replica sets with the following configuration:
 
     'mongodb' => array(
+        'driver'   => 'mongodb',
         'host'     => array('server1', 'server2),
         'port'     => 27017,
         'username' => 'username',
@@ -78,8 +85,8 @@ Query Builder
 
 The MongoDB query builder allows you to execute queries, just like the original query builder (note that we are using the previously created alias here):
 
-    $users = MDB::collection('users')->get();
-    $user = MDB::collection('users')->where('name', 'John')->first();
+    $users = DB::collection('users')->get();
+    $user = DB::collection('users')->where('name', 'John')->first();
 
 Read more about the query builder on http://laravel.com/docs/queries
 

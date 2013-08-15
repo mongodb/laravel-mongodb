@@ -1,5 +1,11 @@
 <?php namespace Jenssegers\Mongodb\Facades;
 
+/*
+|--------------------------------------------------------------------------
+| DEPRECATED
+|--------------------------------------------------------------------------
+*/
+
 use Illuminate\Support\Facades\Facade;
 
 class DB extends Facade {
