@@ -1,9 +1,7 @@
-Laravel Eloquent MongoDB [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB)
-========================
+Laravel MongoDB [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB)
+===============
 
-An Eloquent model that supports MongoDB, inspired by LMongo, but using the original Eloquent methods. For more information about Eloquent, check http://laravel.com/docs/eloquent.
-
-*This model extends the original Eloquent model, so it uses exactly the same methods.*
+An Eloquent model and Query builder with support for MongoDB, inspired by LMongo, but using the original Laravel methods. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
 **ATTENTION WHEN UPGRADING!**
 The way the internal connection resolving works has been changed to extend original Laravel objects instead of registering new objects. Check the configuration section for more information about the new configuration. Remove the old `MDB` facade as it is now deprecated.
