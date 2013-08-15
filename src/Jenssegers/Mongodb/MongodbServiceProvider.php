@@ -3,6 +3,7 @@
 use Jenssegers\Mongodb\Model;
 use Jenssegers\Mongodb\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\DatabasePresenceVerifier;
 
 class MongodbServiceProvider extends ServiceProvider {
 
@@ -13,6 +14,8 @@ class MongodbServiceProvider extends ServiceProvider {
      */
     public function boot()
     {
+        $this->registerValidationPresenceVerifier();
+
         Model::setConnectionResolver($this->app['mongodb']);
         Model::setEventDispatcher($this->app['events']);
     }
@@ -30,6 +33,21 @@ class MongodbServiceProvider extends ServiceProvider {
         $this->app['mongodb'] = $this->app->share(function($app)
         {
             return new DatabaseManager($app);
+        });
+    }
+
+    /**
+     * Register MongoDB as the ConnectionResolverInterface on the DatabasePresenceVerifier.
+     * This allows Validation methods which utilize the PresenceVerifierInterface to use our
+     * MongoDB connection.
+     *
+     * @return void
+     */
+    public function registerValidationPresenceVerifier()
+    {
+        $this->app['validation.presence'] = $this->app->share(function($app)
+        {
+            return new DatabasePresenceVerifier($app['mongodb']);
         });
     }
 
