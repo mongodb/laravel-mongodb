@@ -245,14 +245,14 @@ Or you can access the internal object directly:
 
 ### MongoDB specific operations
 
-***Push***
+**Push**
 
 Add one or more items to an array.
 
     User::where('name', 'John')->push('items', 'boots');
     User::where('name', 'John')->push('items', array('sword', 'shield'));
 
-***Pull***
+**Pull**
 
 Remove one or more values from an array.
 
