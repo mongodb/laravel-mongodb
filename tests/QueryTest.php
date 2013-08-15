@@ -101,4 +101,31 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('MongoCollection', $collection);
 	}
 
+	public function testPush()
+	{
+		$user = array('name' => 'John Doe', 'tags' => array());
+		$id = DB::collection('users')->insertGetId($user);
+
+		DB::collection('users')->where('_id', $id)->push('tags', 'tag1');
+		$user = DB::collection('users')->find($id);
+
+		$this->assertTrue(is_array($user['tags']));
+		$this->assertEquals(1, count($user['tags']));
+		$this->assertEquals('tag1', $user['tags'][0]);
+
+		DB::collection('users')->where('_id', $id)->push('tags', 'tag2');
+		$user = DB::collection('users')->find($id);
+
+		$this->assertTrue(is_array($user['tags']));
+		$this->assertEquals(2, count($user['tags']));
+		$this->assertEquals('tag2', $user['tags'][1]);
+
+		DB::collection('users')->where('_id', $id)->push('tags', array('tag3', 'tag4'));
+		$user = DB::collection('users')->find($id);
+
+		$this->assertTrue(is_array($user['tags']));
+		$this->assertEquals(4, count($user['tags']));
+		$this->assertEquals('tag4', $user['tags'][3]);
+	}
+
 }

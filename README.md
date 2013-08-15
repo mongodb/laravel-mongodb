@@ -243,6 +243,15 @@ Or you can access the internal object directly:
 
     User::raw()->find();
 
+### MongoDB specific operations
+
+***Push***
+
+Add one or more items to an array.
+
+    User::where('name', 'John')->push('items', 'boots');
+    User::where('name', 'John')->push('items', array('sword', 'shield'));
+
 ### Query Caching
 
 You may easily cache the results of a query using the remember method:

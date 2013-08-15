@@ -303,16 +303,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function update(array $values)
     {
-        $update = array('$set' => $values);
-
-        $result = $this->collection->update($this->compileWheres(), $update, array('multiple' => true));
-
-        if (1 == (int) $result['ok'])
-        {
-            return $result['n'];
-        }
-
-        return 0;
+        return $this->performUpdate(array('$set' => $values));
     }
 
     /**
@@ -421,6 +412,31 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Append a value to an array.
+     *
+     * @param  string  $column
+     * @param  mixed   $value
+     * @return int
+     */
+    public function push($column, $value = null)
+    {
+        if (is_array($column))
+        {
+            $query = array('$push' => $column);
+        }
+        else if (is_array($value))
+        {
+            $query = array('$push' => array($column => array('$each' => $value)));
+        }
+        else
+        {
+            $query = array('$push' => array($column => $value));
+        }
+
+        return $this->performUpdate($query);
+    }
+
+    /**
      * Get a new instance of the query builder.
      *
      * @return Builder
@@ -428,6 +444,24 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public function newQuery()
     {
         return new Builder($this->connection);
+    }
+
+    /**
+     * Perform update.
+     *
+     * @param  array  $query
+     * @return int
+     */
+    protected function performUpdate($query)
+    {
+        $result = $this->collection->update($this->compileWheres(), $query, array('multiple' => true));
+
+        if (1 == (int) $result['ok'])
+        {
+            return $result['n'];
+        }
+
+        return 0;
     }
 
     /**
