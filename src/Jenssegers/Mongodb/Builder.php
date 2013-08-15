@@ -2,6 +2,7 @@
 
 use MongoID;
 use MongoRegex;
+use Closure;
 
 class Builder extends \Illuminate\Database\Query\Builder {
 
@@ -401,6 +402,20 @@ class Builder extends \Illuminate\Database\Query\Builder {
         $result = $this->collection->drop();
 
         return (1 == (int) $result['ok']);
+    }
+
+    /**
+     * Create a raw database expression.
+     *
+     * @param  closure  $expression
+     * @return mixed
+     */
+    public function raw($expression)
+    {
+        if ($expression instanceof Closure)
+        {
+            return call_user_func($expression, $this->collection);
+        }
     }
 
     /**

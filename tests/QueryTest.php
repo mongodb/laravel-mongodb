@@ -86,4 +86,16 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, count($items));
 	}
 
+	public function testRaw()
+	{
+		DB::collection('users')->insert(array('name' => 'John Doe'));
+
+		$cursor = DB::collection('users')->raw(function($collection) {
+			return $collection->find();
+		});
+
+		$this->assertInstanceOf('MongoCursor', $cursor);
+		$this->assertEquals(1, $cursor->count());
+	}
+
 }

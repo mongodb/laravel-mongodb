@@ -230,6 +230,13 @@ These expressions will be injected directly into the query.
 
     User::whereRaw(array('age' => array('$gt' => 30, '$lt' => 40)))->get();
 
+You can also perform raw expressions on the internal MongoCollection object, note that this will return the original response, and not a collection of models.
+
+    User::raw(function($collection)
+    {
+        return $collection->find();
+    });
+
 **Query Caching**
 
 You may easily cache the results of a query using the remember method:
