@@ -258,15 +258,15 @@ Or you can access the internal object directly:
 
 Add one or more items to an array.
 
-    User::where('name', 'John')->push('items', 'boots');
-    User::where('name', 'John')->push('items', array('sword', 'shield'));
+    DB::collection('users')->where('name', 'John')->push('items', 'boots');
+    DB::collection('users')->where('name', 'John')->push('items', array('sword', 'shield'));
 
 **Pull**
 
 Remove one or more values from an array.
 
-    User::where('name', 'John')->pull('items', 'boots');
-    User::where('name', 'John')->pull('items', array('sword', 'shield'));
+    DB::collection('users')->where('name', 'John')->pull('items', 'boots');
+    DB::collection('users')->where('name', 'John')->pull('items', array('sword', 'shield'));
 
 ### Query Caching
 

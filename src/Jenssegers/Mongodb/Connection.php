@@ -37,7 +37,7 @@ class Connection extends \Illuminate\Database\Connection {
         $this->connection = new MongoClient($this->getDsn($config), $options);
 
         // Select database
-        $this->db = $this->connection->{$config['database']};
+        $this->db = $this->connection->selectDB($config['database']);
     }
 
     /**
@@ -130,7 +130,7 @@ class Connection extends \Illuminate\Database\Connection {
             $credentials = '';
         }
 
-        return "mongodb://{$credentials}" . implode(',', $hosts) . "/{$database}";
+        return "mongodb://{$credentials}" . implode(',', $hosts);
     }
 
     /**
