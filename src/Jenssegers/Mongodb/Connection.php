@@ -27,14 +27,16 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function __construct(array $config)
     {
-        // Store configuration
         $this->config = $config;
 
-        // Check for connection options
+        // Build the connection string
+        $dsn = $this->getDsn($config);
+
+        // You can pass options directly to the MogoClient constructor
         $options = array_get($config, 'options', array());
 
-        // Create connection
-        $this->connection = new MongoClient($this->getDsn($config), $options);
+        // Create the connection
+        $this->connection = $this->createConnection($dsn, $config, $options);
 
         // Select database
         $this->db = $this->connection->{$config['database']};
@@ -96,6 +98,31 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
+     * Create a new MongoClient connection.
+     *
+     * @param  string  $dsn
+     * @param  array   $config
+     * @param  array   $options
+     * @return MongoClient
+     */
+    protected function createConnection($dsn, array $config, array $options)
+    {
+        // Add credentials as options, this make sure the connection will not fail if
+        // the username or password contains strange characters.
+        if (isset($config['username']) && $config['username'])
+        {
+            $options['username'] = $config['username'];
+        }
+
+        if (isset($config['password']) && $config['password'])
+        {
+            $options['password'] = $config['password'];
+        }
+
+        return new MongoClient($dsn, $options);
+    }
+
+    /**
      * Create a DSN string from a configuration.
      *
      * @param  array   $config
@@ -120,17 +147,9 @@ class Connection extends \Illuminate\Database\Connection {
             }
         }
 
-        // Credentials
-        if (isset($config['username']) and isset($config['password']))
-        {
-            $credentials = "{$username}:{$password}@";
-        }
-        else
-        {
-            $credentials = '';
-        }
-
-        return "mongodb://{$credentials}" . implode(',', $hosts) . "/{$database}";
+        // The database name needs to be in the connection string, otherwise it will 
+        // authenticate to the admin database, which may result in permission errors.
+        return "mongodb://" . implode(',', $hosts) . "/{$database}";
     }
 
     /**
