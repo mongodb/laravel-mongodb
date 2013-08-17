@@ -43,7 +43,7 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
-     * Return a new QueryBuilder for a collection
+     * Begin a fluent query against a database collection.
      *
      * @param  string  $collection
      * @return QueryBuilder
@@ -56,7 +56,7 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
-     * Begin a fluent query against a database table.
+     * Begin a fluent query against a database collection.
      *
      * @param  string  $table
      * @return QueryBuilder
@@ -107,7 +107,7 @@ class Connection extends \Illuminate\Database\Connection {
      */
     protected function createConnection($dsn, array $config, array $options)
     {
-        // Add credentials as options, this make sure the connection will not fail if
+        // Add credentials as options, this makes sure the connection will not fail if
         // the username or password contains strange characters.
         if (isset($config['username']) && $config['username'])
         {
