@@ -81,7 +81,7 @@ Everything else works just like the original Eloquent model. Read more about the
 Query Builder
 -------------
 
-Once selected a mongodb connection, you can execute queries just like the original query builder. The main difference is that we are using `collection` instead of `table` (but table will work as well), and some additional operations like `push` and `pull`.
+Once you have selected a mongodb connection, you can execute queries just like the original query builder. The main difference is that we are using `collection` instead of `table` (but table will work as well), and some additional operations like `push` and `pull`.
     
     // With custom connection
     $user = DB::connection('mongodb')->collection('users')->get();

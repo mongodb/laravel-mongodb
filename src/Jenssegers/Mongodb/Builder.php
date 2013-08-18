@@ -11,7 +11,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     *
     * @var MongoCollection
     */
-    public $collection;
+    protected $collection;
 
     /**
     * All of the available operators.
@@ -495,7 +495,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     *
     * @return array
     */
-    private function compileWheres()
+    protected function compileWheres()
     {
         if (!$this->wheres) return array();
 
@@ -507,6 +507,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             // Convert id's
             if (isset($where['column']) && $where['column'] == '_id')
             {
+                // Multiple values
                 if (isset($where['values']))
                 {
                     foreach ($where['values'] as &$value)
@@ -514,6 +515,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
                         $value = ($value instanceof MongoID) ? $value : new MongoID($value);
                     }
                 }
+                // Single value
                 else
                 {
                     $where['value'] = ($where['value'] instanceof MongoID) ? $where['value'] : new MongoID($where['value']);
@@ -544,7 +546,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         return $wheres;
     }
 
-    private function compileWhereBasic($where)
+    protected function compileWhereBasic($where)
     {
         extract($where);
 
@@ -573,28 +575,28 @@ class Builder extends \Illuminate\Database\Query\Builder {
         return $query;
     }
 
-    private function compileWhereNested($where)
+    protected function compileWhereNested($where)
     {
         extract($where);
 
         return $query->compileWheres();
     }
 
-    private function compileWhereIn($where)
+    protected function compileWhereIn($where)
     {
         extract($where);
 
         return array($column => array('$in' => $values));
     }
 
-    private function compileWhereNotIn($where)
+    protected function compileWhereNotIn($where)
     {
         extract($where);
 
         return array($column => array('$nin' => $values));
     }
 
-    private function compileWhereNull($where)
+    protected function compileWhereNull($where)
     {
         $where['operator'] = '=';
         $where['value'] = null;
@@ -602,7 +604,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         return $this->compileWhereBasic($where);
     }
 
-    private function compileWhereNotNull($where)
+    protected function compileWhereNotNull($where)
     {
         $where['operator'] = '!=';
         $where['value'] = null;
@@ -610,7 +612,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         return $this->compileWhereBasic($where);
     }
 
-    private function compileWhereBetween($where)
+    protected function compileWhereBetween($where)
     {
         extract($where);
 
@@ -621,7 +623,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             );
     }
 
-    private function compileWhereRaw($where)
+    protected function compileWhereRaw($where)
     {
         return $where['sql'];
     }
