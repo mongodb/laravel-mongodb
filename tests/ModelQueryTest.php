@@ -284,21 +284,6 @@ class ModelQueryTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(5, count($users));
 	}
 
-	public function testUpdate()
-	{
-		User::where('name', 'John Doe')
-            ->update(array('age' => 100));
-
-        $user = User::where('name', 'John Doe')->first();
-		$this->assertEquals(100, $user->age);
-	}
-
-	public function testDelete()
-	{
-		User::where('age', '>', 30)->delete();
-		$this->assertEquals(3, User::count());
-	}
-
 	public function testInsert()
 	{
 		User::insert(

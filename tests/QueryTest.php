@@ -18,11 +18,22 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('Jenssegers\Mongodb\Builder', DB::collection('users'));
 	}
 
+	public function testGet()
+	{
+		$users = DB::collection('users')->get();
+		$this->assertEquals(0, count($users));
+
+		DB::collection('users')->insert(array('name' => 'John Doe'));
+
+		$users = DB::collection('users')->get();
+		$this->assertEquals(1, count($users));
+	}
+
 	public function testInsert()
 	{
 		$user = array(
+			'tags' => array('tag1', 'tag2'),
 			'name' => 'John Doe',
-			'tags' => array('tag1', 'tag2')
 		);
 		DB::collection('users')->insert($user);
 
@@ -38,12 +49,12 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 	{
 		$users = array(
 			array(
-				'name' => 'Jane Doe',
-				'tags' => array('tag1', 'tag2')
+				'tags' => array('tag1', 'tag2'),
+				'name' => 'Jane Doe',	
 			),
 			array(
+				'tags' => array('tag3'),
 				'name' => 'John Doe',
-				'tags' => array('tag3')
 			),
 		);
 		DB::collection('users')->insert($users);
@@ -66,6 +77,33 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 		$user = DB::collection('users')->find($id);
 		$this->assertEquals('John Doe', $user['name']);
+	}
+
+	public function testUpdate()
+	{
+		DB::collection('users')->insert(array('name' => 'John Doe', 'age' => 10));
+		DB::collection('users')->where('name', 'John Doe')->update(array('age' => 100));
+
+        $user = User::where('name', 'John Doe')->first();
+		$this->assertEquals(100, $user->age);
+	}
+
+	public function testDelete()
+	{
+		DB::collection('users')->insert(array('name' => 'John Doe', 'age' => 100));
+
+		DB::collection('users')->where('age', '<', 30)->delete();
+		$this->assertEquals(1, DB::collection('users')->count());
+
+		DB::collection('users')->where('age', '>', 30)->delete();
+		$this->assertEquals(0, DB::collection('users')->count());
+	}
+
+	public function testTruncate()
+	{
+		DB::collection('users')->insert(array('name' => 'John Doe', 'age' => 100));
+		DB::collection('users')->truncate();
+		$this->assertEquals(0, DB::collection('users')->count());
 	}
 
 	public function testSubKey()
@@ -97,11 +135,11 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 	{
 		$item1 = array(
 			'tags' => array('tag1', 'tag2', 'tag3', 'tag4')
-			);
+		);
 
 		$item2 = array(
 			'tags' => array('tag2')
-			);
+		);
 
 		DB::collection('items')->insert(array($item1, $item2));
 
