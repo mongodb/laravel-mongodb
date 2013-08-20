@@ -106,11 +106,14 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
                 foreach ($this->aggregate['columns'] as $column)
                 {
+                    // Translate count into sum
                     if ($function == 'count')
                     {
                         $group[$column] = array('$sum' => 1);
                     }
-                    else {
+                    // Pass other functions directly
+                    else
+                    {
                         $group[$column] = array('$' . $function => '$' . $column);
                     }
                 }
@@ -160,7 +163,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
-     * Generate the unique cache key for the query.
+     * Generate the unique cache key for the current query.
      *
      * @return string
      */
@@ -260,13 +263,20 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function insert(array $values)
     {
-        // Since every insert gets treated like a batch insert, we will make sure the
-        // bindings are structured in a way that is convenient for building these
-        // inserts statements by verifying the elements are actually an array.
-        if ( ! is_array(reset($values)))
+        // Since every insert gets treated like a batch insert, we will have to detect
+        // if the user is inserting a single document or an array of documents.
+        $batch = true;
+        foreach ($values as $value)
         {
-            $values = array($values);
+            // As soon as we find a value that is not an array we assume the user is
+            // inserting a single document.
+            if (!is_array($value)) 
+            {
+                $batch = false; break;
+            }
         }
+
+        if (!$batch) $values = array($values);
 
         // Batch insert
         return $this->collection->batchInsert($values);
@@ -502,7 +512,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         // The new list of compiled wheres
         $wheres = array();
 
-        foreach ($this->wheres as $i=>&$where) 
+        foreach ($this->wheres as $i => &$where) 
         {
             // Convert id's
             if (isset($where['column']) && $where['column'] == '_id')

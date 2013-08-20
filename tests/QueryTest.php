@@ -20,14 +20,40 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 	public function testInsert()
 	{
-		$user = array('name' => 'John Doe');
+		$user = array(
+			'name' => 'John Doe',
+			'tags' => array('tag1', 'tag2')
+		);
 		DB::collection('users')->insert($user);
 
 		$users = DB::collection('users')->get();
 		$this->assertEquals(1, count($users));
 
-		$user = DB::collection('users')->first();
+		$user = $users[0];
 		$this->assertEquals('John Doe', $user['name']);
+		$this->assertTrue(is_array($user['tags']));
+	}
+
+	public function testBatchInsert()
+	{
+		$users = array(
+			array(
+				'name' => 'Jane Doe',
+				'tags' => array('tag1', 'tag2')
+			),
+			array(
+				'name' => 'John Doe',
+				'tags' => array('tag3')
+			),
+		);
+		DB::collection('users')->insert($users);
+
+		$users = DB::collection('users')->get();
+		$this->assertEquals(2, count($users));
+
+		$user = $users[0];
+		$this->assertEquals('Jane Doe', $user['name']);
+		$this->assertTrue(is_array($user['tags']));
 	}
 
 	public function testFind()
