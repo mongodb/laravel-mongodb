@@ -212,4 +212,20 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('tag1', $user['tags'][0]);
 	}
 
+	public function testDistinct()
+	{
+		DB::collection('items')->insert(array(
+			array('name' => 'knife', 'type' => 'sharp', 'amount' => 34),
+			array('name' => 'fork',  'type' => 'sharp', 'amount' => 20),
+			array('name' => 'spoon', 'type' => 'round', 'amount' => 3),
+			array('name' => 'spoon', 'type' => 'round', 'amount' => 14)
+		));
+
+		$items = DB::collection('items')->distinct('name')->get();
+		$this->assertEquals(array('knife', 'fork', 'spoon'), $items);
+
+		$types = DB::collection('items')->distinct('type')->get();
+		$this->assertEquals(array('sharp', 'round'), $types);
+	}
+
 }
