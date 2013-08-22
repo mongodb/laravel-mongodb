@@ -99,11 +99,11 @@ The database driver also has (limited) schema builder support. You can easily ma
 
 Supported operations are:
 
-    - create and drop
-    - collection
-    - hasCollection
-    - index and dropIndex
-    - unique and dropUnique
+ - create and drop
+ - collection
+ - hasCollection
+ - index and dropIndex
+ - unique and dropUnique
 
 Read more about the schema builder on http://laravel.com/docs/schema
 
