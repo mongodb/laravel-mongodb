@@ -48,7 +48,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function find($id, $columns = array('*'))
     {
-        return $this->where('_id', '=', new MongoID((string) $id))->first($columns);
+        return $this->where('_id', '=', $this->convertKey($id))->first($columns);
     }
 
     /**
@@ -501,6 +501,22 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Convert a key to MongoID if needed
+     * 
+     * @param  mixed $id
+     * @return mixed
+     */
+    protected function convertKey($id)
+    {
+        if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id))
+        {
+            return new MongoId($id);
+        }
+
+        return $id;
+    }
+
+    /**
     * Compile the where array
     *
     * @return array
@@ -522,13 +538,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 {
                     foreach ($where['values'] as &$value)
                     {
-                        $value = ($value instanceof MongoID) ? $value : new MongoID($value);
+                        $value = $this->convertKey($value);
                     }
                 }
                 // Single value
                 else
                 {
-                    $where['value'] = ($where['value'] instanceof MongoID) ? $where['value'] : new MongoID($where['value']);
+                    $where['value'] = $this->convertKey($where['value']);
                 }
             }
 

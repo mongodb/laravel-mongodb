@@ -228,4 +228,19 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('sharp', 'round'), $types);
 	}
 
+	public function testCustomId()
+	{
+		DB::collection('items')->insert(array(
+			array('_id' => 'knife', 'type' => 'sharp', 'amount' => 34),
+			array('_id' => 'fork',  'type' => 'sharp', 'amount' => 20),
+			array('_id' => 'spoon', 'type' => 'round', 'amount' => 3)
+		));
+
+		$item = DB::collection('items')->find('knife');
+		$this->assertEquals('knife', $item['_id']);
+
+		$item = DB::collection('items')->where('_id', 'fork')->first();
+		$this->assertEquals('fork', $item['_id']);
+	}
+
 }
