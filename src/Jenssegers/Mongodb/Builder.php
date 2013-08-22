@@ -360,6 +360,26 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Pluck a single column from the database.
+     *
+     * @param  string  $column
+     * @return mixed
+     */
+    public function pluck($column)
+    {
+        $result = (array) $this->first(array($column));
+
+        // MongoDB returns the _id field even if you did not ask for it, so we need to
+        // remove this from the result.
+        if (array_key_exists('_id', $result))
+        {
+            unset($result['_id']);
+        }
+
+        return count($result) > 0 ? reset($result) : null;
+    }
+
+    /**
      * Delete a record from the database.
      *
      * @param  mixed  $id
