@@ -78,6 +78,16 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
+     * Get a schema builder instance for the connection.
+     *
+     * @return Schema\Builder
+     */
+    public function getSchemaBuilder()
+    {
+        return new Schema\Builder($this);
+    }
+
+    /**
      * Get the MongoDB database object.
      *
      * @return  MongoDB

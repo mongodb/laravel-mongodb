@@ -5,7 +5,6 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 	public static function setUpBeforeClass()
 	{
-		// test data
 		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
 		User::create(array('name' => 'Jane Doe', 'age' => 33, 'title' => 'admin'));
 		User::create(array('name' => 'Harry Hoe', 'age' => 13, 'title' => 'user'));

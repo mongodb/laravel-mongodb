@@ -43,16 +43,6 @@ And add a new mongodb connection:
         'database' => 'database'
     ),
 
-You can also specify the connection name in the model if you have multiple connections:
-
-    use Jenssegers\Mongodb\Model as Eloquent;
-
-    class MyModel extends Eloquent {
-    
-        protected $connection = 'mongodb2';
-    
-    }
-
 You can connect to multiple servers or replica sets with the following configuration:
 
     'mongodb' => array(
@@ -78,12 +68,14 @@ Tell your model to use the MongoDB model and set the collection (alias for table
     
     }
 
+*You can also specify the connection name in the model by changing the `connection` attribute.*
+
 Everything else works just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
 
 Query Builder
 -------------
 
-Once you have selected a mongodb connection, you can execute queries just like the original query builder. The main difference is that we are using `collection` instead of `table` (but table will work as well), and some additional operations like `push` and `pull`.
+The database driver plugs right into the original query builder. When using mongodb connections you will be able to build fluent queries to perform database operations. For your convenience, there is a `collection` alias for `table` as well as some additional mongodb specific operations like `push` and `pull`.
     
     // With custom connection
     $user = DB::connection('mongodb')->collection('users')->get();
@@ -94,10 +86,31 @@ Once you have selected a mongodb connection, you can execute queries just like t
 
 Read more about the query builder on http://laravel.com/docs/queries
 
+Schema
+------
+
+The database driver also has (limited) schema builder support. You can easily manipulate collections and set indexes:
+
+    Schema::create('users', function($collection) 
+    {
+        $collection->index('name');
+        $collection->unique('email');
+    });
+
+Supported operations are:
+
+    - create and drop
+    - collection
+    - hasCollection
+    - index and dropIndex
+    - unique and dropUnique
+
+Read more about the schema builder on http://laravel.com/docs/schema
+
 Sessions
 --------
 
-If you want a MongoDB session driver, check out https://github.com/jenssegers/Laravel-MongoDB-Session
+The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
 
 Documentation
 -------------

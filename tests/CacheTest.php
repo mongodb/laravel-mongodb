@@ -9,7 +9,6 @@ class CacheTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp()
 	{
-		# clear cache
 		global $app;
 		$this->cache = $app['cache'];
 
@@ -26,14 +25,12 @@ class CacheTest extends PHPUnit_Framework_TestCase {
 
 	public function testCache()
 	{
-		# auto generate cache key
 		$users = DB::collection('users')->where('age', '>', 10)->remember(10)->get();
 		$this->assertEquals(3, count($users));
 
 		$users = DB::collection('users')->where('age', '>', 10)->getCached();
 		$this->assertEquals(3, count($users));
 
-		# store under predefined cache key
 		$users = User::where('age', '>', 10)->remember(10, 'db.users')->get();
 		$this->assertEquals(3, count($users));
 
