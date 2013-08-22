@@ -234,10 +234,10 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 	public function testDistinct()
 	{
 		DB::collection('items')->insert(array(
-			array('name' => 'knife', 'type' => 'sharp', 'amount' => 34),
-			array('name' => 'fork',  'type' => 'sharp', 'amount' => 20),
-			array('name' => 'spoon', 'type' => 'round', 'amount' => 3),
-			array('name' => 'spoon', 'type' => 'round', 'amount' => 14)
+			array('name' => 'knife', 'type' => 'sharp',),
+			array('name' => 'fork',  'type' => 'sharp'),
+			array('name' => 'spoon', 'type' => 'round'),
+			array('name' => 'spoon', 'type' => 'round')
 		));
 
 		$items = DB::collection('items')->distinct('name')->get();
@@ -260,6 +260,14 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 		$item = DB::collection('items')->where('_id', 'fork')->first();
 		$this->assertEquals('fork', $item['_id']);
+
+		DB::collection('users')->insert(array(
+			array('_id' => 1, 'name' => 'Jane Doe'),
+			array('_id' => 2, 'name' => 'John Doe')
+		));
+
+		$item = DB::collection('users')->find(1);
+		$this->assertEquals(1, $item['_id']);
 	}
 
 	public function testTake()

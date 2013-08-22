@@ -3,7 +3,7 @@ require_once('tests/app.php');
 
 class QueryTest extends PHPUnit_Framework_TestCase {
 
-	public function setUp()
+	public static function setUpBeforeClass()
 	{
 		// test data
 		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
@@ -17,7 +17,7 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		User::create(array('name' => 'Error', 'age' => null, 'title' => null));
 	}
 
-	public function tearDown()
+	public static function tearDownAfterClass()
 	{
 		User::truncate();
 	}
