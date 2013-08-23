@@ -23,7 +23,7 @@ Add the service provider in `app/config/app.php`:
 
     'Jenssegers\Mongodb\MongodbServiceProvider',
 
-The service provider will register a mongodb extension with the original database manager, so that everything else keeps working just fine.
+The service provider will register a mongodb database extension with the original database manager. There is no need to register additional facades or objects. When using mongodb connections, Laravel will automatically provide you with the corresponding mongodb objects.
 
 Configuration
 -------------
@@ -58,8 +58,8 @@ You can connect to multiple servers or replica sets with the following configura
 Eloquent
 --------
 
-Tell your model to use the MongoDB model and set the collection (alias for table) property:
-    
+Tell your model to use the MongoDB model and set the collection (alias for table) property. The lower-case, plural name of the class will be used for the collection name, unless another name is explicitly specified.
+
     use Jenssegers\Mongodb\Model as Eloquent;
     
     class MyModel extends Eloquent {
@@ -68,7 +68,7 @@ Tell your model to use the MongoDB model and set the collection (alias for table
     
     }
 
-*You can also specify the connection name in the model by changing the `connection` attribute.*
+*You can also specify the connection name in the model by changing the `connection` property.*
 
 Everything else works just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
 
@@ -228,6 +228,8 @@ Supported relations are:
 
 Example:
 
+    use Jenssegers\Mongodb\Model as Eloquent;
+
     class User extends Eloquent {
 
         public function items()
@@ -238,6 +240,8 @@ Example:
     }
 
 And the inverse relation:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
 
     class Item extends Eloquent {
 
