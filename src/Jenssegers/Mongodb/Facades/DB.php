@@ -17,7 +17,7 @@ class DB extends Facade {
 	 */
 	protected static function getFacadeAccessor()
 	{
-		return 'mongodb';
+		return 'db';
 	}
 
 }

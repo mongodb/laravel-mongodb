@@ -24,12 +24,6 @@ class MongodbServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        // DEPRECATED
-        $this->app['mongodb'] = $this->app->share(function($app)
-        {
-            return new DatabaseManager($app);
-        });
-
         // Add a mongodb extension to the original database manager
         $this->app['db']->extend('mongodb', function($config)
         {
