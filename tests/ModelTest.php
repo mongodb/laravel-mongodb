@@ -10,6 +10,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		User::truncate();
 		Soft::truncate();
 		Book::truncate();
+		Item::truncate();
 	}
 
 	public function testNewModel()
@@ -120,6 +121,31 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(35, $check->age);
 	}
 
+	public function testGet()
+	{
+		User::insert(array(
+			array('name' => 'John Doe'),
+			array('name' => 'Jane Doe')
+		));
+
+		$users = User::get();
+		$this->assertEquals(2, count($users));
+		$this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
+		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $users[0]);
+	}
+
+	public function testFirst()
+	{
+		User::insert(array(
+			array('name' => 'John Doe'),
+			array('name' => 'Jane Doe')
+		));
+
+		$user = User::get()->first();
+		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
+		$this->assertEquals('John Doe', $user->name);
+	}
+
 	/**
      * @expectedException Illuminate\Database\Eloquent\ModelNotFoundException
      */
@@ -223,6 +249,20 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 
 		$sharp = Item::sharp()->get();
 		$this->assertEquals(1, $sharp->count());
+	}
+
+	public function testToArray()
+	{
+		$original = array(
+			array('name' => 'knife', 'type' => 'sharp'),
+			array('name' => 'spoon', 'type' => 'round')
+		);
+
+		Item::insert($original);
+
+		$items = Item::all();
+		$this->assertEquals($original, $items->toArray());
+		$this->assertEquals($original[0], $items[0]->toArray());
 	}
 
 }

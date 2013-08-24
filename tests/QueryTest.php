@@ -21,22 +21,6 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		User::truncate();
 	}
 
-	public function testGet()
-	{
-		$users = User::get();
-
-		$this->assertEquals(9, count($users));
-		$this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
-		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $users[0]);
-	}
-
-	public function testFirst()
-	{
-		$user = User::get()->first();
-		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
-		$this->assertEquals('John Doe', $user->name);
-	}
-
 	public function testWhere()
 	{
 		$users = User::where('age', 35)->get();
