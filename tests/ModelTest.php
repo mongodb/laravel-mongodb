@@ -25,8 +25,8 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 	public function testInsert()
 	{
 		$user = new User;
-		$user->name = "John Doe";
-		$user->title = "admin";
+		$user->name = 'John Doe';
+		$user->title = 'admin';
 		$user->age = 35;
 
 		$user->save();
@@ -39,15 +39,15 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertNotEquals(0, strlen((string) $user->_id));
 		$this->assertInstanceOf('DateTime', $user->created_at);
 
-		$this->assertEquals("John Doe", $user->name);
+		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(35, $user->age);
 	}
 
 	public function testUpdate()
 	{
 		$user = new User;
-		$user->name = "John Doe";
-		$user->title = "admin";
+		$user->name = 'John Doe';
+		$user->title = 'admin';
 		$user->age = 35;
 		$user->save();
 
@@ -61,15 +61,15 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('DateTime', $check->updated_at);
 		$this->assertEquals(1, User::count());
 
-		$this->assertEquals("John Doe", $check->name);
+		$this->assertEquals('John Doe', $check->name);
 		$this->assertEquals(36, $check->age);
 	}
 
 	public function testDelete()
 	{
 		$user = new User;
-		$user->name = "John Doe";
-		$user->title = "admin";
+		$user->name = 'John Doe';
+		$user->title = 'admin';
 		$user->age = 35;
 		$user->save();
 
@@ -84,29 +84,29 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 	public function testAll()
 	{
 		$user = new User;
-		$user->name = "John Doe";
-		$user->title = "admin";
+		$user->name = 'John Doe';
+		$user->title = 'admin';
 		$user->age = 35;
 		$user->save();
 
 		$user = new User;
-		$user->name = "Jane Doe";
-		$user->title = "user";
+		$user->name = 'Jane Doe';
+		$user->title = 'user';
 		$user->age = 32;
 		$user->save();
 
 		$all = User::all();
 
 		$this->assertEquals(2, count($all));
-		$this->assertEquals("John Doe", $all[0]->name);
-		$this->assertEquals("Jane Doe", $all[1]->name);
+		$this->assertEquals('John Doe', $all[0]->name);
+		$this->assertEquals('Jane Doe', $all[1]->name);
 	}
 
 	public function testFind()
 	{
 		$user = new User;
-		$user->name = "John Doe";
-		$user->title = "admin";
+		$user->name = 'John Doe';
+		$user->title = 'admin';
 		$user->age = 35;
 		$user->save();
 
@@ -116,7 +116,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(true, $check->exists);
 		$this->assertEquals($user->_id, $check->_id);
 
-		$this->assertEquals("John Doe", $check->name);
+		$this->assertEquals('John Doe', $check->name);
 		$this->assertEquals(35, $check->age);
 	}
 
@@ -134,15 +134,14 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
 		$this->assertEquals(true, $user->exists);
-
-		$this->assertEquals("Jane Poe", $user->name);
+		$this->assertEquals('Jane Poe', $user->name);
 	}
 
 	public function testDestroy()
 	{
 		$user = new User;
-		$user->name = "John Doe";
-		$user->title = "admin";
+		$user->name = 'John Doe';
+		$user->title = 'admin';
 		$user->age = 35;
 		$user->save();
 
@@ -154,8 +153,8 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 	public function testTouch()
 	{
 		$user = new User;
-		$user->name = "John Doe";
-		$user->title = "admin";
+		$user->name = 'John Doe';
+		$user->title = 'admin';
 		$user->age = 35;
 		$user->save();
 
@@ -171,7 +170,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 	public function testSoftDelete()
 	{
 		$user = new Soft;
-		$user->name = "Softy";
+		$user->name = 'Softy';
 		$user->save();
 		$this->assertEquals(true, $user->exists);
 
@@ -203,16 +202,27 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$book = new Book;
 		$this->assertEquals('title', $book->getKeyName());
 
-		$book->title = "A Game of Thrones";
-		$book->author = "George R. R. Martin";
+		$book->title = 'A Game of Thrones';
+		$book->author = 'George R. R. Martin';
 		$book->save();
 
-		$this->assertEquals("A Game of Thrones", $book->getKey());
+		$this->assertEquals('A Game of Thrones', $book->getKey());
 
-		$check = Book::find("A Game of Thrones");
+		$check = Book::find('A Game of Thrones');
 		$this->assertEquals('title', $check->getKeyName());
-		$this->assertEquals("A Game of Thrones", $check->getKey());
-		$this->assertEquals("A Game of Thrones", $check->title);
+		$this->assertEquals('A Game of Thrones', $check->getKey());
+		$this->assertEquals('A Game of Thrones', $check->title);
+	}
+
+	public function testScope()
+	{
+		Item::insert(array(
+			array('name' => 'knife', 'type' => 'sharp'),
+			array('name' => 'spoon', 'type' => 'round')
+		));
+
+		$sharp = Item::sharp()->get();
+		$this->assertEquals(1, $sharp->count());
 	}
 
 }

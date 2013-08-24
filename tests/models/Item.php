@@ -13,4 +13,9 @@ class Item extends Eloquent {
         return $this->belongsTo('User');
     }
 
+    public function scopeSharp($query)
+    {
+    	return $query->where('type', 'sharp');
+    }
+
 }
