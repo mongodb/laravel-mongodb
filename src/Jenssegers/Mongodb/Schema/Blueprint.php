@@ -28,7 +28,7 @@ class Blueprint {
 	 * Specify an index for the collection.
 	 *
 	 * @param  string|array  $columns
-	 * @param  array         $otions
+	 * @param  array         $options
 	 * @return bool
 	 */
 	public function index($columns, $options = array())
