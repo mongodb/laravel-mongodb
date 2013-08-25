@@ -103,7 +103,8 @@ Supported operations are:
  - collection
  - hasCollection
  - index and dropIndex
- - unique and dropUnique
+ - unique
+ - background, sparse, expire (MongoDB specific)
 
 Read more about the schema builder on http://laravel.com/docs/schema
 

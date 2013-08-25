@@ -34,7 +34,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		});
 
 		$index = $this->getIndex('newcollection', 'mykey');
-		$this->assertEquals(1, $index);
+		$this->assertEquals(1, $index['key']['mykey']);
 	}
 
 	public function testUnique()
@@ -45,7 +45,52 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		});
 
 		$index = $this->getIndex('newcollection', 'uniquekey');
-		$this->assertEquals('unique', $index);
+		$this->assertEquals(1, $index['unique']);
+	}
+
+	public function testDropIndex()
+	{
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->unique('uniquekey');
+			$collection->dropIndex('uniquekey');
+		});
+
+		$index = $this->getIndex('newcollection', 'uniquekey');
+		$this->assertEquals(null, $index);
+	}
+
+	public function testBackground()
+	{
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->background('backgroundkey');
+		});
+
+		$index = $this->getIndex('newcollection', 'backgroundkey');
+		$this->assertEquals(1, $index['background']);
+	}
+
+	public function testSparse()
+	{
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->background('backgroundkey');
+		});
+
+		$index = $this->getIndex('newcollection', 'backgroundkey');
+		$this->assertEquals(1, $index['background']);
+	}
+
+	public function testExpire()
+	{
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->expire('expirekey', 60);
+		});
+
+		$index = $this->getIndex('newcollection', 'expirekey');
+		$this->assertEquals(60, $index['expireAfterSeconds']);
 	}
 
 	protected function getIndex($collection, $name)
@@ -54,11 +99,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 
 		foreach ($collection->getIndexInfo() as $index)
 		{
-			if (isset($index['key'][$name]))
-			{
-				if (isset($index['unique'])) return 'unique';
-				return $index['key'][$name];
-			}
+			if (isset($index['key'][$name])) return $index;
 		}
 
 		return false;

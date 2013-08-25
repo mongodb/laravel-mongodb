@@ -28,7 +28,7 @@ class Blueprint {
 	 * Specify an index for the collection.
 	 *
 	 * @param  string|array  $columns
-	 * @param  array  $otions
+	 * @param  array         $otions
 	 * @return bool
 	 */
 	public function index($columns, $options = array())
@@ -55,23 +55,46 @@ class Blueprint {
 	 * Specify a unique index for the collection.
 	 *
 	 * @param  string|array  $columns
-	 * @param  string  $name
 	 * @return bool
 	 */
 	public function unique($columns)
 	{
-		return $this->index($columns, array("unique" => true));
+		return $this->index($columns, array('unique' => true));
 	}
 
 	/**
-	 * Indicate that the given unique key should be dropped.
-	 *
-	 * @param  string|array  $index
+	 * Specify a non blocking index for the collection.
+	 * 
+	 * @param  string|array  $columns
 	 * @return bool
 	 */
-	public function dropUnique($columns)
+	public function background($columns)
 	{
-		return $this->dropIndex($columns);
+		return $this->index($columns, array('background' => true));
+	}
+
+	/**
+	 * Specify a sparse index for the collection.
+	 * 
+	 * @param  string|array  $columns
+	 * @return bool
+	 */
+	public function sparse($columns)
+	{
+		return $this->index($columns, array('sparse' => true));
+	}
+
+	/**
+	 * Specify the number of seconds after wich a document should be considered expired based,
+	 * on the given single-field index containing a date.
+	 * 
+	 * @param  string|array  $columns
+	 * @param  int           $seconds
+	 * @return bool
+	 */
+	public function expire($columns, $seconds)
+	{
+		return $this->index($columns, array('expireAfterSeconds' => $seconds));
 	}
 
 	/**
