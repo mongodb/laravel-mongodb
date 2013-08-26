@@ -29,6 +29,18 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, count($users));
 	}
 
+	public function testNoDocument()
+	{
+		$items = DB::collection('items')->where('name', 'nothing')->get();
+		$this->assertEquals(array(), $items);
+
+		$item = DB::collection('items')->where('name', 'nothing')->first();
+		$this->assertEquals(null, $item);
+
+		$item = DB::collection('items')->where('_id', '51c33d8981fec6813e00000a')->first();
+		$this->assertEquals(null, $item);
+	}
+
 	public function testInsert()
 	{
 		DB::collection('users')->insert(array(

@@ -146,6 +146,19 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('John Doe', $user->name);
 	}
 
+	public function testNoDocument()
+	{
+		$items = Item::where('name', 'nothing')->get();
+		$this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $items);
+		$this->assertEquals(0, $items->count());
+
+		$item =Item::where('name', 'nothing')->first();
+		$this->assertEquals(null, $item);
+
+		$item = Item::find('51c33d8981fec6813e00000a');
+		$this->assertEquals(null, $item);
+	}
+
 	/**
      * @expectedException Illuminate\Database\Eloquent\ModelNotFoundException
      */
