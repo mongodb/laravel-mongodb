@@ -337,4 +337,39 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(array('knife' => 'sharp', 'fork' => 'sharp', 'spoon' => 'round'), $list);
 	}
 
+	public function testAggregate()
+	{
+		DB::collection('items')->insert(array(
+			array('name' => 'knife', 'type' => 'sharp', 'amount' => 34),
+			array('name' => 'fork',  'type' => 'sharp', 'amount' => 20),
+			array('name' => 'spoon', 'type' => 'round', 'amount' => 3),
+			array('name' => 'spoon', 'type' => 'round', 'amount' => 14)
+		));
+
+		$this->assertEquals(71, DB::collection('items')->sum('amount'));
+		$this->assertEquals(4, DB::collection('items')->count('amount'));
+		$this->assertEquals(3, DB::collection('items')->min('amount'));
+		$this->assertEquals(34, DB::collection('items')->max('amount'));
+		$this->assertEquals(17.75, DB::collection('items')->avg('amount'));
+
+		$this->assertEquals(2, DB::collection('items')->where('name', 'spoon')->count('amount'));
+		$this->assertEquals(14, DB::collection('items')->where('name', 'spoon')->max('amount'));
+	}
+
+	public function testSubdocumentAggregate()
+	{
+		DB::collection('items')->insert(array(
+			array('name' => 'knife', 'amount' => array('hidden' => 10, 'found' => 3)),
+			array('name' => 'fork',  'amount' => array('hidden' => 35, 'found' => 12)),
+			array('name' => 'spoon', 'amount' => array('hidden' => 14, 'found' => 21)),
+			array('name' => 'spoon', 'amount' => array('hidden' => 6, 'found' => 4))
+		));
+
+		$this->assertEquals(65, DB::collection('items')->sum('amount.hidden'));
+		$this->assertEquals(4, DB::collection('items')->count('amount.hidden'));
+		$this->assertEquals(6, DB::collection('items')->min('amount.hidden'));
+		$this->assertEquals(35, DB::collection('items')->max('amount.hidden'));
+		$this->assertEquals(16.25, DB::collection('items')->avg('amount.hidden'));
+	}
+
 }

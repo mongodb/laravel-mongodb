@@ -64,72 +64,70 @@ class Builder extends \Illuminate\Database\Query\Builder {
         // all of the columns on the table using the "wildcard" column character.
         if (is_null($this->columns)) $this->columns = $columns;
 
-        // Drop all columns if * is present
-        if (in_array('*', $this->columns))
-        {
-            $this->columns = array();
-        }
+        // Drop all columns if * is present, MongoDB does not work this way
+        if (in_array('*', $this->columns)) $this->columns = array();
 
         // Compile wheres
         $wheres = $this->compileWheres();
 
-        // Use aggregation framework if needed
+        // Aggregation query
         if ($this->groups || $this->aggregate)
         {
-            $pipeline = array();
             $group = array();
 
-            // Grouping
+            // Apply grouping
             if ($this->groups)
             {
                 foreach ($this->groups as $column)
                 {
+                    // Mark column as grouped
                     $group['_id'][$column] = '$' . $column;
+
+                    // Aggregate by $last when grouping, this mimics MySQL's behaviour a bit
                     $group[$column] = array('$last' => '$' . $column);
                 }
             }
             else
             {
-                $group['_id'] = 0;
+                // If we don't use grouping, set the _id to null to prepare the pipeline for 
+                // other aggregation functions
+                $group['_id'] = null;
             }
 
-            // Columns
+            // When additional columns are requested, aggregate them by $last as well
             foreach ($this->columns as $column)
             {
-                $group[$column] = array('$last' => '$' . $column);
+                // Replace possible dots in subdocument queries with underscores
+                $key = str_replace('.', '_', $column);
+                $group[$key] = array('$last' => '$' . $column);
             }
 
-            // Apply aggregation functions
+            // Apply aggregation functions, these may override previous aggregations
             if ($this->aggregate)
             {
                 $function = $this->aggregate['function'];
 
                 foreach ($this->aggregate['columns'] as $column)
                 {
+                    // Replace possible dots in subdocument queries with underscores
+                    $key = str_replace('.', '_', $column);
+
                     // Translate count into sum
                     if ($function == 'count')
                     {
-                        $group[$column] = array('$sum' => 1);
+                        $group[$key] = array('$sum' => 1);
                     }
                     // Pass other functions directly
                     else
                     {
-                        // Normally this aggregate function would overwrite the
-                        // $last group set above, but since we are modifying
-                        // the string, we need to unset it directly.
-                        if (isset($group[$column]))
-                        {
-                            unset($group[$column]);
-                        }
-
-                        $key = str_replace('.', '_', $column);
                         $group[$key] = array('$' . $function => '$' . $column);
                     }
                 }
             }
 
-            if ($wheres) $pipeline[] = array('$match' => $wheres);
-
+            // Build pipeline
+            $pipeline = array();
+            if ($wheres)  $pipeline[] = array('$match' => $wheres);
             $pipeline[] = array('$group' => $group);
 
             // Apply order and limit
@@ -137,28 +135,31 @@ class Builder extends \Illuminate\Database\Query\Builder {
             if ($this->offset) $pipeline[] = array('$skip' => $this->offset);
             if ($this->limit)  $pipeline[] = array('$limit' => $this->limit);
 
+            // Execute aggregation
             $results = $this->collection->aggregate($pipeline);
 
             // Return results
             return $results['result'];
         }
+
+        // Distinct query
+        else if ($this->distinct)
+        {
+            // Return distinct results directly
+            $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
+            return $this->collection->distinct($column, $wheres);
+        }
+        
+        // Normal query
         else
         {
-            // Execute distinct
-            if ($this->distinct)
-            {
-                $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
-                return $this->collection->distinct($column, $wheres);
-            }
-
-            // Columns
             $columns = array();
             foreach ($this->columns as $column)
             {
                 $columns[$column] = true;
             }
 
-            // Get the MongoCursor
+            // Execute query and get MongoCursor
             $cursor = $this->collection->find($wheres, $columns);
 
             // Apply order, offset and limit
@@ -166,7 +167,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             if ($this->offset) $cursor->skip($this->offset);
             if ($this->limit)  $cursor->limit($this->limit);
 
-            // Return results
+            // Return results as an array with numeric keys
             return iterator_to_array($cursor, false);
         }
     }
@@ -212,6 +213,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         if (isset($results[0]))
         {
+            // Replace possible dots in subdocument queries with underscores
             $key = str_replace('.', '_', $columns[0]);
             return $results[0][$key];
         }
@@ -280,7 +282,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (!is_array($value))
+            if (!is_array($value)) 
             {
                 $batch = false; break;
             }
@@ -532,7 +534,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
     /**
      * Convert a key to MongoID if needed
-     *
+     * 
      * @param  mixed $id
      * @return mixed
      */
@@ -558,7 +560,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         // The new list of compiled wheres
         $wheres = array();
 
-        foreach ($this->wheres as $i => &$where)
+        foreach ($this->wheres as $i => &$where) 
         {
             // Convert id's
             if (isset($where['column']) && $where['column'] == '_id')
