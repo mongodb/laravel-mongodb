@@ -114,7 +114,16 @@ class Builder extends \Illuminate\Database\Query\Builder {
                     // Pass other functions directly
                     else
                     {
-                        $group[$column] = array('$' . $function => '$' . $column);
+                        // Normally this aggregate function would overwrite the
+                        // $last group set above, but since we are modifying
+                        // the string, we need to unset it directly.
+                        if (isset($group[$column]))
+                        {
+                            unset($group[$column]);
+                        }
+
+                        $key = str_replace('.', '_', $column);
+                        $group[$key] = array('$' . $function => '$' . $column);
                     }
                 }
             }
@@ -203,7 +212,8 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         if (isset($results[0]))
         {
-            return $results[0][$columns[0]];
+            $key = str_replace('.', '_', $columns[0]);
+            return $results[0][$key];
         }
     }
 
@@ -270,7 +280,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (!is_array($value)) 
+            if (!is_array($value))
             {
                 $batch = false; break;
             }
@@ -522,7 +532,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
     /**
      * Convert a key to MongoID if needed
-     * 
+     *
      * @param  mixed $id
      * @return mixed
      */
@@ -548,7 +558,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         // The new list of compiled wheres
         $wheres = array();
 
-        foreach ($this->wheres as $i => &$where) 
+        foreach ($this->wheres as $i => &$where)
         {
             // Convert id's
             if (isset($where['column']) && $where['column'] == '_id')

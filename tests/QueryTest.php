@@ -5,14 +5,14 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 	public static function setUpBeforeClass()
 	{
-		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
-		User::create(array('name' => 'Jane Doe', 'age' => 33, 'title' => 'admin'));
-		User::create(array('name' => 'Harry Hoe', 'age' => 13, 'title' => 'user'));
-		User::create(array('name' => 'Robert Roe', 'age' => 37, 'title' => 'user'));
-		User::create(array('name' => 'Mark Moe', 'age' => 23, 'title' => 'user'));
-		User::create(array('name' => 'Brett Boe', 'age' => 35, 'title' => 'user'));
-		User::create(array('name' => 'Tommy Toe', 'age' => 33, 'title' => 'user'));
-		User::create(array('name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin'));
+		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin', 'subdocument' => array('age' => 35)));
+		User::create(array('name' => 'Jane Doe', 'age' => 33, 'title' => 'admin', 'subdocument' => array('age' => 33)));
+		User::create(array('name' => 'Harry Hoe', 'age' => 13, 'title' => 'user', 'subdocument' => array('age' => 13)));
+		User::create(array('name' => 'Robert Roe', 'age' => 37, 'title' => 'user', 'subdocument' => array('age' => 37)));
+		User::create(array('name' => 'Mark Moe', 'age' => 23, 'title' => 'user', 'subdocument' => array('age' => 23)));
+		User::create(array('name' => 'Brett Boe', 'age' => 35, 'title' => 'user', 'subdocument' => array('age' => 35)));
+		User::create(array('name' => 'Tommy Toe', 'age' => 33, 'title' => 'user', 'subdocument' => array('age' => 33)));
+		User::create(array('name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin', 'subdocument' => array('age' => 35)));
 		User::create(array('name' => 'Error', 'age' => null, 'title' => null));
 	}
 
@@ -176,9 +176,14 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(30.5, User::avg('age'));
 		$this->assertEquals(244, User::sum('age'));
 
+		$this->assertEquals(37, User::max('subdocument.age'));
+		$this->assertEquals(13, User::min('subdocument.age'));
+		$this->assertEquals(30.5, User::avg('subdocument.age'));
+		$this->assertEquals(244, User::sum('subdocument.age'));
+
 		$this->assertEquals(35, User::where('title', 'admin')->max('age'));
 		$this->assertEquals(37, User::where('title', 'user')->max('age'));
-	
+
 		$this->assertEquals(33, User::where('title', 'admin')->min('age'));
 		$this->assertEquals(13, User::where('title', 'user')->min('age'));
 	}
