@@ -321,6 +321,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * Update a record in the database.
      *
      * @param  array  $values
+     * @param  array  $options
      * @return int
      */
     public function update(array $values, array $options = array())
@@ -518,6 +519,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * Perform update.
      *
      * @param  array  $query
+     * @param  array  $options
      * @return int
      */
     protected function performUpdate($query, array $options = array())
