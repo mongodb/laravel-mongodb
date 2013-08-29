@@ -372,4 +372,15 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(16.25, DB::collection('items')->avg('amount.hidden'));
 	}
 
+	public function testUpsert()
+	{
+		DB::collection('items')->where('name', 'knife')
+							   ->update(
+							   		array('amount' => 1),
+							   		array('upsert' => true)
+							   	);
+
+		$this->assertEquals(1, DB::collection('items')->count());
+	}
+
 }

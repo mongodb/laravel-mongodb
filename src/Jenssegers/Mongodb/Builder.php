@@ -323,9 +323,9 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  array  $values
      * @return int
      */
-    public function update(array $values)
+    public function update(array $values, array $options = array())
     {
-        return $this->performUpdate(array('$set' => $values));
+        return $this->performUpdate(array('$set' => $values), $options);
     }
 
     /**
@@ -520,9 +520,15 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  array  $query
      * @return int
      */
-    protected function performUpdate($query)
+    protected function performUpdate($query, array $options = array())
     {
-        $result = $this->collection->update($this->compileWheres(), $query, array('multiple' => true));
+        // Default options
+        $default = array('multiple' => true);
+
+        // Merge options and override default options
+        $options = array_merge($default, $options);
+
+        $result = $this->collection->update($this->compileWheres(), $query, $options);
 
         if (1 == (int) $result['ok'])
         {
