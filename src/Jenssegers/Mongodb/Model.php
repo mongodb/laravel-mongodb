@@ -36,10 +36,10 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     protected static $resolver;
 
     /**
-     * Convert a DateTime to a storable string.
+     * Convert a DateTime to a storable MongoDate object.
      *
      * @param  DateTime|int  $value
-     * @return string
+     * @return MongoDate
      */
     public function fromDateTime($value)
     {
@@ -66,11 +66,13 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     protected function asDateTime($value)
     {
+        // Convert MongoDate to timestamp
         if ($value instanceof MongoDate)
         {
             $value = $value->sec;
         }
 
+        // Convert timestamp to string for DateTime
         if (is_int($value))
         {
             $value = "@$value";
@@ -82,7 +84,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     /**
      * Get a fresh timestamp for the model.
      *
-     * @return DateTime
+     * @return MongoDate
      */
     public function freshTimestamp()
     {
@@ -195,13 +197,13 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     {
         foreach($attributes as $key => &$value)
         {
-            // Convert MongoId
+            // Convert MongoId to string
             if ($value instanceof MongoId)
             {
                 $value = (string) $value;
             }
 
-            // Convert MongoDate
+            // Convert MongoDate to string
             else if ($value instanceof MongoDate)
             {
                 $value = $this->asDateTime($value)->format('Y-m-d H:i:s');
