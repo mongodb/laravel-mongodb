@@ -383,4 +383,26 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, DB::collection('items')->count());
 	}
 
+	public function testUnset()
+	{
+		$id1 = DB::collection('users')->insertGetId(array('name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF'));
+		$id2 = DB::collection('users')->insertGetId(array('name' => 'Jane Doe', 'note1' => 'ABC', 'note2' => 'DEF'));
+
+		DB::collection('users')->where('name', 'John Doe')->unset('note1');
+
+		$user1 = DB::collection('users')->find($id1);
+		$user2 = DB::collection('users')->find($id2);
+
+		$this->assertFalse(isset($user1['note1']));
+		$this->assertTrue(isset($user1['note2']));
+		$this->assertTrue(isset($user2['note1']));
+		$this->assertTrue(isset($user2['note2']));
+
+		DB::collection('users')->where('name', 'Jane Doe')->unset(array('note1', 'note2'));
+
+		$user2 = DB::collection('users')->find($id2);
+		$this->assertFalse(isset($user2['note1']));
+		$this->assertFalse(isset($user2['note2']));
+	}
+
 }

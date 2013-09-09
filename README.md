@@ -288,6 +288,17 @@ Remove one or more values from an array.
     DB::collection('users')->where('name', 'John')->pull('items', 'boots');
     DB::collection('users')->where('name', 'John')->pull('items', array('sword', 'shield'));
 
+**Unset**
+
+Remove one or more fields from a document.
+
+    DB::collection('users')->where('name', 'John')->unset('note');
+
+You can also perform an unset on a model.
+
+    $user = User::where('name', 'John')->first();
+    $user->unset('note');
+
 ### Query Caching
 
 You may easily cache the results of a query using the remember method:

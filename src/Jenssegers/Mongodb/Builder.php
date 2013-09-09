@@ -7,17 +7,17 @@ use Closure;
 class Builder extends \Illuminate\Database\Query\Builder {
 
     /**
-    * The database collection
-    *
-    * @var MongoCollection
-    */
+     * The database collection
+     *
+     * @var MongoCollection
+     */
     protected $collection;
 
     /**
-    * All of the available operators.
-    *
-    * @var array
-    */
+     * All of the available operators.
+     *
+     * @var array
+     */
     protected $conversion = array(
         '='  => '=',
         '!=' => '$ne',
@@ -29,11 +29,11 @@ class Builder extends \Illuminate\Database\Query\Builder {
     );
 
     /**
-    * Create a new query builder instance.
-    *
-    * @param Connection $connection
-    * @return void
-    */
+     * Create a new query builder instance.
+     *
+     * @param Connection $connection
+     * @return void
+     */
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
@@ -339,24 +339,15 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function increment($column, $amount = 1, array $extra = array())
     {
-        // build update statement
-        $update = array(
+        $query = array(
             '$inc' => array($column => $amount),
             '$set' => $extra,
         );
 
-        // protect
+        // Protect
         $this->whereNotNull($column);
 
-        // perform
-        $result = $this->collection->update($this->compileWheres(), $update, array('multiple' => true));
-
-        if (1 == (int) $result['ok'])
-        {
-            return $result['n'];
-        }
-
-        return 0;
+        return $this->performUpdate($query);
     }
 
     /**
@@ -506,6 +497,28 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Remove one or more fields.
+     *
+     * @param  mixed $columns
+     * @return int
+     */
+    public function dropColumn($columns)
+    {
+        if (!is_array($columns)) $columns = array($columns);
+
+        $fields = array();
+
+        foreach ($columns as $column)
+        {
+            $fields[$column] = 1;
+        }
+
+        $query = array('$unset' => $fields);
+
+        return $this->performUpdate($query);
+    }
+
+    /**
      * Get a new instance of the query builder.
      *
      * @return Builder
@@ -516,7 +529,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
-     * Perform update.
+     * Perform an update query.
      *
      * @param  array  $query
      * @param  array  $options
@@ -541,7 +554,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
-     * Convert a key to MongoID if needed
+     * Convert a key to MongoID if needed.
      * 
      * @param  mixed $id
      * @return mixed
@@ -557,10 +570,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
-    * Compile the where array
-    *
-    * @return array
-    */
+     * Compile the where array.
+     *
+     * @return array
+     */
     protected function compileWheres()
     {
         if (!$this->wheres) return array();
@@ -692,6 +705,23 @@ class Builder extends \Illuminate\Database\Query\Builder {
     protected function compileWhereRaw($where)
     {
         return $where['sql'];
+    }
+
+    /**
+     * Handle dynamic method calls into the method.
+     *
+     * @param  string  $method
+     * @param  array   $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        if ($method == 'unset')
+        {
+            return call_user_func_array(array($this, 'dropColumn'), $parameters);
+        }
+
+        return parent::__call($method, $parameters);
     }
 
 }

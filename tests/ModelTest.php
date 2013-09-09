@@ -278,4 +278,31 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals($original[0], $items[0]->toArray());
 	}
 
+	public function testUnset()
+	{
+		$user1 = User::create(array('name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF'));
+		$user2 = User::create(array('name' => 'Jane Doe', 'note1' => 'ABC', 'note2' => 'DEF'));
+
+		$user1->unset('note1');
+
+		$this->assertFalse(isset($user1->note1));
+		$this->assertTrue(isset($user1->note2));
+		$this->assertTrue(isset($user2->note1));
+		$this->assertTrue(isset($user2->note2));
+
+		// Re-fetch to be sure
+		$user1 = User::find($user1->_id);
+		$user2 = User::find($user2->_id);
+
+		$this->assertFalse(isset($user1->note1));
+		$this->assertTrue(isset($user1->note2));
+		$this->assertTrue(isset($user2->note1));
+		$this->assertTrue(isset($user2->note2));
+
+		$user2->unset(array('note1', 'note2'));
+
+		$this->assertFalse(isset($user2->note1));
+		$this->assertFalse(isset($user2->note2));
+	}
+
 }

@@ -213,4 +213,41 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         parent::setRawAttributes($attributes, $sync);
     }
 
+    /**
+     * Remove one or more fields.
+     *
+     * @param  mixed $columns
+     * @return int
+     */
+    public function dropColumn($columns)
+    {
+        if (!is_array($columns)) $columns = array($columns);
+
+        // Unset attributes
+        foreach ($columns as $column)
+        {
+            $this->__unset($column);
+        }
+        
+        // Perform unset only on current document
+        return $query = $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
+    }
+
+    /**
+     * Handle dynamic method calls into the method.
+     *
+     * @param  string  $method
+     * @param  array   $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        if ($method == 'unset')
+        {
+            return call_user_func_array(array($this, 'dropColumn'), $parameters);
+        }
+
+        return parent::__call($method, $parameters);
+    }
+
 }
