@@ -16,7 +16,8 @@
         "illuminate/events": "4.0.x"
     },
     "require-dev": {
-        "illuminate/cache": "4.0.x"
+        "illuminate/cache": "4.0.x",
+        "illuminate/auth": "4.0.x"
     },
     "autoload": {
         "psr-0": {

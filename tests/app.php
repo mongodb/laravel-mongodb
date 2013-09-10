@@ -25,15 +25,12 @@ $app['events'] = new Dispatcher;
 # Cache driver
 $app['cache'] = new Repository(new ArrayStore);
 
-# Database configuration
-$app['config']['database.fetch'] = null;
-$app['config']['database.default'] = 'mongodb';
-$app['config']['database.connections']['mongodb'] = array(
-	'name'	   => 'mongodb',
-	'driver'   => 'mongodb',
-	'host'     => 'localhost',
-	'database' => 'unittest'
-);
+# Load database configuration
+$config = require 'config/database.php';
+foreach ($config as $key => $value)
+{
+	$app['config']["database.$key"] = $value;
+}
 
 # Initialize database manager
 $app['db.factory'] = new ConnectionFactory(new Container);
