@@ -644,11 +644,11 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         if (!isset($operator) || $operator == '=')
         {
-            $query = array($column => $value);
+            $query = array($column => $this->convertKey($value));
         }
         else
         {
-            $query = array($column => array($this->conversion[$operator] => $value));
+            $query = array($column => array($this->conversion[$operator] => $this->convertKey($value)));
         }
 
         return $query;
