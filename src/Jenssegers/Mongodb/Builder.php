@@ -458,11 +458,6 @@ class Builder extends \Illuminate\Database\Query\Builder {
         {
             $query = array('$push' => $column);
         }
-        else if (is_array($value))
-        {
-            // $pushAll depricated
-            $query = array('$push' => array($column => array('$each' => $value)));
-        }
         else
         {
             $query = array('$push' => array($column => $value));
@@ -483,10 +478,6 @@ class Builder extends \Illuminate\Database\Query\Builder {
         if (is_array($column))
         {
             $query = array('$pull' => $column);
-        }
-        else if (is_array($value))
-        {
-            $query = array('$pullAll' => array($column => $value));
         }
         else
         {

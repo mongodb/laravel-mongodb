@@ -276,17 +276,17 @@ Or you can access the internal object directly:
 
 **Push**
 
-Add one or more items to an array.
+Add an items to an array.
 
     DB::collection('users')->where('name', 'John')->push('items', 'boots');
-    DB::collection('users')->where('name', 'John')->push('items', array('sword', 'shield'));
+    DB::collection('users')->where('name', 'John')->push('messages', array('from' => 'Jane Doe', 'message' => 'Hi John'));
 
 **Pull**
 
-Remove one or more values from an array.
+Remove an item from an array.
 
     DB::collection('users')->where('name', 'John')->pull('items', 'boots');
-    DB::collection('users')->where('name', 'John')->pull('items', array('sword', 'shield'));
+    DB::collection('users')->where('name', 'John')->pull('messages', array('from' => 'Jane Doe', 'message' => 'Hi John'));
 
 **Unset**
 

@@ -196,7 +196,8 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 	{
 		$id = DB::collection('users')->insertGetId(array(
 			'name' => 'John Doe',
-			'tags' => array()
+			'tags' => array(),
+			'messages' => array(),
 		));
 
 		DB::collection('users')->where('_id', $id)->push('tags', 'tag1');
@@ -213,19 +214,22 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(2, count($user['tags']));
 		$this->assertEquals('tag2', $user['tags'][1]);
 
-		DB::collection('users')->where('_id', $id)->push('tags', array('tag3', 'tag4'));
-		
+		$message = array('from' => 'Jane', 'body' => 'Hi John');
+		DB::collection('users')->where('_id', $id)->push('messages', $message);
+
 		$user = DB::collection('users')->find($id);
-		$this->assertTrue(is_array($user['tags']));
-		$this->assertEquals(4, count($user['tags']));
-		$this->assertEquals('tag4', $user['tags'][3]);
+		$this->assertTrue(is_array($user['messages']));
+		$this->assertEquals($message, $user['messages'][0]);
 	}
 
 	public function testPull()
 	{
+		$message = array('from' => 'Jane', 'body' => 'Hi John');
+
 		$id = DB::collection('users')->insertGetId(array(
 			'name' => 'John Doe',
-			'tags' => array('tag1', 'tag2', 'tag3', 'tag4')
+			'tags' => array('tag1', 'tag2', 'tag3', 'tag4'),
+			'messages' => array($message)
 		));
 
 		DB::collection('users')->where('_id', $id)->pull('tags', 'tag3');
@@ -235,12 +239,11 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(3, count($user['tags']));
 		$this->assertEquals('tag4', $user['tags'][2]);
 
-		DB::collection('users')->where('_id', $id)->pull('tags', array('tag2', 'tag4'));
-		
+		DB::collection('users')->where('_id', $id)->pull('messages', $message);
+
 		$user = DB::collection('users')->find($id);
-		$this->assertTrue(is_array($user['tags']));
-		$this->assertEquals(1, count($user['tags']));
-		$this->assertEquals('tag1', $user['tags'][0]);
+		$this->assertTrue(is_array($user['messages']));
+		$this->assertEquals(0, count($user['messages']));
 	}
 
 	public function testDistinct()
