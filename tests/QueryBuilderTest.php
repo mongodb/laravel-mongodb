@@ -1,5 +1,4 @@
 <?php
-require_once('tests/app.php');
 
 use Illuminate\Support\Facades\DB;
 
@@ -56,7 +55,7 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue(is_array($user['tags']));
 	}
 
-	public function testInsertGetId() 
+	public function testInsertGetId()
 	{
 		$id = DB::collection('users')->insertGetId(array('name' => 'John Doe'));
 
@@ -69,7 +68,7 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		DB::collection('users')->insert(array(
 			array(
 				'tags' => array('tag1', 'tag2'),
-				'name' => 'Jane Doe',	
+				'name' => 'Jane Doe',
 			),
 			array(
 				'tags' => array('tag3'),
@@ -91,6 +90,12 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 		$user = DB::collection('users')->find($id);
 		$this->assertEquals('John Doe', $user['name']);
+	}
+
+	public function testFindNull()
+	{
+		$user = DB::collection('users')->find(null);
+		$this->assertEquals(null, $user);
 	}
 
 	public function testCount()
@@ -201,14 +206,14 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		));
 
 		DB::collection('users')->where('_id', $id)->push('tags', 'tag1');
-		
+
 		$user = DB::collection('users')->find($id);
 		$this->assertTrue(is_array($user['tags']));
 		$this->assertEquals(1, count($user['tags']));
 		$this->assertEquals('tag1', $user['tags'][0]);
 
 		DB::collection('users')->where('_id', $id)->push('tags', 'tag2');
-		
+
 		$user = DB::collection('users')->find($id);
 		$this->assertTrue(is_array($user['tags']));
 		$this->assertEquals(2, count($user['tags']));
@@ -233,7 +238,7 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		));
 
 		DB::collection('users')->where('_id', $id)->pull('tags', 'tag3');
-		
+
 		$user = DB::collection('users')->find($id);
 		$this->assertTrue(is_array($user['tags']));
 		$this->assertEquals(3, count($user['tags']));

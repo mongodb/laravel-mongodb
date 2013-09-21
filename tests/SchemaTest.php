@@ -1,5 +1,4 @@
 <?php
-require_once('tests/app.php');
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;

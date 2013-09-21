@@ -1,5 +1,4 @@
 <?php
-require_once('tests/app.php');
 
 class RelationsTest extends PHPUnit_Framework_TestCase {
 

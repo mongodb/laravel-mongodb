@@ -1,6 +1,4 @@
 <?php
-require_once('tests/app.php');
-
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Connection;
 

@@ -89,7 +89,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             }
             else
             {
-                // If we don't use grouping, set the _id to null to prepare the pipeline for 
+                // If we don't use grouping, set the _id to null to prepare the pipeline for
                 // other aggregation functions
                 $group['_id'] = null;
             }
@@ -149,7 +149,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
             return $this->collection->distinct($column, $wheres);
         }
-        
+
         // Normal query
         else
         {
@@ -282,7 +282,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (!is_array($value)) 
+            if (!is_array($value))
             {
                 $batch = false; break;
             }
@@ -546,7 +546,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
     /**
      * Convert a key to MongoID if needed.
-     * 
+     *
      * @param  mixed $id
      * @return mixed
      */
@@ -572,7 +572,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         // The new list of compiled wheres
         $wheres = array();
 
-        foreach ($this->wheres as $i => &$where) 
+        foreach ($this->wheres as $i => &$where)
         {
             // Convert id's
             if (isset($where['column']) && $where['column'] == '_id')
@@ -586,7 +586,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
                     }
                 }
                 // Single value
-                else
+                elseif (isset($where['value']))
                 {
                     $where['value'] = $this->convertKey($where['value']);
                 }
