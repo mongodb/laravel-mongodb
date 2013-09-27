@@ -61,11 +61,11 @@ Eloquent
 Tell your model to use the MongoDB model and set the collection (alias for table) property. The lower-case, plural name of the class will be used for the collection name, unless another name is explicitly specified.
 
     use Jenssegers\Mongodb\Model as Eloquent;
-    
+
     class MyModel extends Eloquent {
-    
+
         protected $collection = 'mycollection';
-    
+
     }
 
 *You can also specify the connection name in the model by changing the `connection` property.*
@@ -76,7 +76,7 @@ Query Builder
 -------------
 
 The database driver plugs right into the original query builder. When using mongodb connections you will be able to build fluent queries to perform database operations. For your convenience, there is a `collection` alias for `table` as well as some additional mongodb specific operations like `push` and `pull`.
-    
+
     // With custom connection
     $user = DB::connection('mongodb')->collection('users')->get();
 
@@ -91,7 +91,7 @@ Schema
 
 The database driver also has (limited) schema builder support. You can easily manipulate collections and set indexes:
 
-    Schema::create('users', function($collection) 
+    Schema::create('users', function($collection)
     {
         $collection->index('name');
         $collection->unique('email');
@@ -273,6 +273,13 @@ Or you can access the internal object directly:
     User::raw()->find();
 
 ### MongoDB specific operations
+
+**Upsert**
+
+Update or insert a document. Additional options for the update method are passed directly to the native update method.
+
+    DB::collection('users')->where('name', 'John')
+                           ->update($data, array('upsert' => true));
 
 **Push**
 
