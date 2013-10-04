@@ -107,6 +107,8 @@ class Connection extends \Illuminate\Database\Connection {
         return $this->connection;
     }
 
+
+
     /**
      * Create a new MongoClient connection.
      *
@@ -174,4 +176,12 @@ class Connection extends \Illuminate\Database\Connection {
         return call_user_func_array(array($this->db, $method), $parameters);
     }
 
+
+    //--------------------
+    public function getElapsedTime($start)
+    {
+        return parent::getElapsedTime($start);
+    }    
+
 }
+
