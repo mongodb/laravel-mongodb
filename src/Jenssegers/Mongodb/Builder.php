@@ -37,6 +37,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
+        $this->debug      = class_exists('\Config') && \Config::get('app.debug');
     }
 
     /**
@@ -59,6 +60,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function getFresh($columns = array('*'))
     {
+        $start = microtime(true);
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
         // all of the columns on the table using the "wildcard" column character.
@@ -154,9 +156,14 @@ class Builder extends \Illuminate\Database\Query\Builder {
         else
         {
             $columns = array();
-            foreach ($this->columns as $column)
+            foreach ($this->columns as $columnName => $columnValue)
             {
-                $columns[$column] = true;
+
+                // fix for projection operators
+                if (is_int($columnName))
+                    $columns[$columnValue] = true;
+                else #if (is_array($columnValue))
+                    $columns[$columnName] = $columnValue;
             }
 
             // Execute query and get MongoCursor
@@ -166,6 +173,27 @@ class Builder extends \Illuminate\Database\Query\Builder {
             if ($this->orders) $cursor->sort($this->orders);
             if ($this->offset) $cursor->skip($this->offset);
             if ($this->limit)  $cursor->limit($this->limit);
+
+           
+            
+
+            if ($this->debug) {
+                $explain = $cursor->explain();
+                $info    = $cursor->info();
+                /*
+                Output debug customization
+                */
+                unset($info['query']);unset($info['fields']);unset($info['ns']);unset($info['started_iterating']);
+                unset($explain['indexBounds']);unset($explain['allPlans']);unset($explain['oldPlan']);
+
+                \Event::fire('illuminate.query', array( 
+                    $this->collection->getName() . ".find(" . json_encode($wheres) . '<i style="color:#f60">,'.json_encode((object)$columns).',</i>'.
+                    json_encode($info) . ')<br/>'.
+                    preg_replace("/\"(.*?)\":/",'<b style="color:#F54E39;">\1</b><em >:</em>',json_encode($explain,JSON_PRETTY_PRINT))
+                    , 
+                    null, $this->connection->getElapsedTime($start), $this->connection->getName() ));
+            }
+           
 
             // Return results as an array with numeric keys
             return iterator_to_array($cursor, false);
@@ -303,7 +331,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function insertGetId(array $values, $sequence = null)
     {
+        $start = microtime();
         $result = $this->collection->insert($values);
+        if ($this->debug) 
+            \Event::fire('illuminate.query', array( $this->collection->getName() . ".insert " . json_encode($values), null, $time = $this->connection->getElapsedTime($start), $this->connection->getName() ));
 
         if (1 == (int) $result['ok'])
         {
@@ -391,7 +422,11 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function delete($id = null)
     {
-        $result = $this->collection->remove($this->compileWheres());
+        $start = microtime();
+        $wheres = $this->compileWheres();
+        $result = $this->collection->remove($wheres);
+        if ($this->debug) 
+            \Event::fire('illuminate.query', array( $this->collection->getName() . ".remove " . json_encode($wheres), null, $time = $this->connection->getElapsedTime($start), $this->connection->getName() ));
 
         if (1 == (int) $result['ok'])
         {
@@ -533,8 +568,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         // Merge options and override default options
         $options = array_merge($default, $options);
+        $wheres  = $this->compileWheres();
+        $start   = microtime();
+        $result  = $this->collection->update($wheres, $query, $options);
+        if ($this->debug) 
+            \Event::fire('illuminate.query', array( $this->collection->getName() . ".update " . json_encode($wheres) . "|||".json_encode($query) . "|||" . json_encode($options), null, $time = $this->connection->getElapsedTime($start), $this->connection->getName() ));
 
-        $result = $this->collection->update($this->compileWheres(), $query, $options);
 
         if (1 == (int) $result['ok'])
         {
@@ -716,3 +755,4 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
 }
+
