@@ -157,9 +157,20 @@ class Connection extends \Illuminate\Database\Connection {
             }
         }
 
-        // The database name needs to be in the connection string, otherwise it will 
+        // The database name needs to be in the connection string, otherwise it will
         // authenticate to the admin database, which may result in permission errors.
         return "mongodb://" . implode(',', $hosts) . "/{$database}";
+    }
+
+    /**
+     * Get the elapsed time since a given starting point.
+     *
+     * @param  int    $start
+     * @return float
+     */
+    public function getElapsedTime($start)
+    {
+        return parent::getElapsedTime($start);
     }
 
     /**

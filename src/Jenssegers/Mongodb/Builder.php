@@ -59,6 +59,8 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function getFresh($columns = array('*'))
     {
+        $start = microtime(true);
+
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
         // all of the columns on the table using the "wildcard" column character.
@@ -138,6 +140,11 @@ class Builder extends \Illuminate\Database\Query\Builder {
             // Execute aggregation
             $results = $this->collection->aggregate($pipeline);
 
+            // Log query
+            $this->connection->logQuery(
+                $this->from . '.aggregate(' . json_encode($pipeline) . ')',
+                array(), $this->connection->getElapsedTime($start));
+
             // Return results
             return $results['result'];
         }
@@ -147,7 +154,16 @@ class Builder extends \Illuminate\Database\Query\Builder {
         {
             // Return distinct results directly
             $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
-            return $this->collection->distinct($column, $wheres);
+
+            // Execute distinct
+            $result = $this->collection->distinct($column, $wheres);
+
+            // Log query
+            $this->connection->logQuery(
+                $this->from . '.distinct("' . $column . '", ' . json_encode($wheres) . ')',
+                array(), $this->connection->getElapsedTime($start));
+
+            return $result;
         }
 
         // Normal query
@@ -166,6 +182,11 @@ class Builder extends \Illuminate\Database\Query\Builder {
             if ($this->orders) $cursor->sort($this->orders);
             if ($this->offset) $cursor->skip($this->offset);
             if ($this->limit)  $cursor->limit($this->limit);
+
+            // Log query
+            $this->connection->logQuery(
+                $this->from . '.find(' . json_encode($wheres) . ', ' . json_encode($columns) . ')',
+                array(), $this->connection->getElapsedTime($start));
 
             // Return results as an array with numeric keys
             return iterator_to_array($cursor, false);
@@ -275,6 +296,8 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function insert(array $values)
     {
+        $start = microtime(true);
+
         // Since every insert gets treated like a batch insert, we will have to detect
         // if the user is inserting a single document or an array of documents.
         $batch = true;
@@ -291,7 +314,14 @@ class Builder extends \Illuminate\Database\Query\Builder {
         if (!$batch) $values = array($values);
 
         // Batch insert
-        return $this->collection->batchInsert($values);
+        $result = $this->collection->batchInsert($values);
+
+        // Log query
+        $this->connection->logQuery(
+            $this->from . '.batchInsert(' . json_encode($values) . ')',
+            array(), $this->connection->getElapsedTime($start));
+
+        return $result;
     }
 
     /**
@@ -303,7 +333,14 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function insertGetId(array $values, $sequence = null)
     {
+        $start = microtime(true);
+
         $result = $this->collection->insert($values);
+
+        // Log query
+        $this->connection->logQuery(
+            $this->from . '.insert(' . json_encode($values) . ')',
+            array(), $this->connection->getElapsedTime($start));
 
         if (1 == (int) $result['ok'])
         {
@@ -391,7 +428,15 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function delete($id = null)
     {
-        $result = $this->collection->remove($this->compileWheres());
+        $start = microtime(true);
+
+        $wheres = $this->compileWheres();
+        $result = $this->collection->remove($wheres);
+
+        // Log query
+        $this->connection->logQuery(
+            $this->from . '.remove(' . json_encode($wheres) . ')',
+            array(), $this->connection->getElapsedTime($start));
 
         if (1 == (int) $result['ok'])
         {
@@ -414,7 +459,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $this->collection = $this->connection->getCollection($collection);
         }
 
-        return $this;
+        return parent::from($collection);
     }
 
     /**
@@ -528,13 +573,21 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     protected function performUpdate($query, array $options = array())
     {
+        $start = microtime(true);
+
         // Default options
         $default = array('multiple' => true);
 
         // Merge options and override default options
         $options = array_merge($default, $options);
 
-        $result = $this->collection->update($this->compileWheres(), $query, $options);
+        $wheres = $this->compileWheres();
+        $result = $this->collection->update($wheres, $query, $options);
+
+        // Log query
+        $this->connection->logQuery(
+            $this->from . '.update(' . json_encode($wheres) . ', ' . json_encode($query) . ', ' . json_encode($options) . ')',
+            array(), $this->connection->getElapsedTime($start));
 
         if (1 == (int) $result['ok'])
         {
