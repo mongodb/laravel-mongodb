@@ -185,6 +185,8 @@ Selected columns that are not grouped will be aggregated with the $last function
 
 **Aggregation**
 
+*Aggregations are only available for MongoDB versions greater than 2.2.*
+
     $total = Order::count();
     $price = Order::max('price');
     $price = Order::min('price');
