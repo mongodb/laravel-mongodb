@@ -314,8 +314,12 @@ You may easily cache the results of a query using the remember method:
 
     $users = User::remember(10)->get();
 
+*From: http://laravel.com/docs/queries#caching-queries*
+
 ### Query Logging
 
 By default, Laravel keeps a log in memory of all queries that have been run for the current request. However, in some cases, such as when inserting a large number of rows, this can cause the application to use excess memory. To disable the log, you may use the `disableQueryLog` method:
 
     DB::connection()->disableQueryLog();
+
+*From: http://laravel.com/docs/database#query-logging*
