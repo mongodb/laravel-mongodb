@@ -61,4 +61,24 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, count($hosts));
 	}
 
+	public function testQueryLog()
+	{
+		$this->assertEquals(0, count(DB::getQueryLog()));
+
+		DB::collection('items')->get();
+		$this->assertEquals(1, count(DB::getQueryLog()));
+
+		DB::collection('items')->insert(array('name' => 'test'));
+		$this->assertEquals(2, count(DB::getQueryLog()));
+
+		DB::collection('items')->count();
+		$this->assertEquals(3, count(DB::getQueryLog()));
+
+		DB::collection('items')->where('name', 'test')->update(array('name' => 'test'));
+		$this->assertEquals(4, count(DB::getQueryLog()));
+
+		DB::collection('items')->where('name', 'test')->delete();
+		$this->assertEquals(5, count(DB::getQueryLog()));
+	}
+
 }
