@@ -25,6 +25,22 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
     {
         return $this->hasOne('Role');
     }
+	
+	/**
+	 * Mutator for nested properties
+	 */
+	public function getNotesNote3Attribute($value)
+	{
+		return $value . 'mutated';
+	}
+	
+	/**
+	 * Mutator for nested properties
+	 */
+	public function setNotesNote3Attribute($value)
+	{
+		$this->attributes['notes']['note3'] = strtolower($value);
+	}
 
     /**
      * Get the unique identifier for the user.
