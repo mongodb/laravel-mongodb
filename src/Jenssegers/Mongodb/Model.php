@@ -243,14 +243,14 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
 	public function setAttribute($key, $value)
 	{
 		// Set the nested key to studly case
-		$nestedKey = studly_case(str_replace('.', '_', $key));
+		$studlyKey = studly_case(str_replace('.', '_', $key));
 		
 		// First we will check for the presence of a mutator for the set operation
 		// which simply lets the developers tweak the attribute as it is set on
 		// the model, such as "json_encoding" an listing of data for storage.
-		if ($this->hasSetMutator($nestedKey))
+		if ($this->hasSetMutator($studlyKey))
 		{
-			$method = 'set'.$nestedKey.'Attribute';
+			$method = 'set'.$studlyKey.'Attribute';
 
 			return $this->{$method}($value);
 		}
@@ -258,12 +258,19 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
 		// If an attribute is listed as a "date", we'll convert it from a DateTime
 		// instance into a form proper for storage on the database tables using
 		// the connection grammar's date format. We will auto set the values.
-		elseif (in_array($nestedKey, $this->getDates()))
+		elseif (in_array($studlyKey, $this->getDates()))
 		{
 			if ($value)
 			{
 				$value = $this->fromDateTime($value);
 			}
+		}
+		
+		// If key is in dot notation, leave it as it is. If it is in camel case
+		// convert it to dot notation to be inserted into the document
+		if ( ! strstr($key, '.') && ! strstr($key, '_') && preg_match('/[A-Z]/', $key))
+		{
+			$key = str_replace('_', '.', snake_case($key));
 		}
 		
 		array_set($this->attributes, $key, $value);
@@ -277,18 +284,26 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
 	 */
 	public function getAttribute($key)
 	{
-		// Get the key as studly case
-		$nestedKey = studly_case(str_replace('.', '_', $key));
+		// Get the key as studly case if getAttribute() has been called
+		$studlyKey = strstr($key, '.') ? studly_case(str_replace('.', '_', $key)) : $key;
 		
-		// Check if the nested key exists in the document
+		// If attribute was requested by a getter check if it is in a nested array
+		$inNestedAttributes = array_get($this->attributes, str_replace('_', '.', snake_case($key)), false);
+		
+		// Check if the nested value exists in the document
 		$inAttributes = array_get($this->attributes, $key, false);
-
+		
 		// If the key references an attribute, we can just go ahead and return the
 		// plain attribute value from the model. This allows every attribute to
 		// be dynamically accessed through the _get method without accessors.
-		if ( $inAttributes or $this->hasGetMutator($nestedKey))
+		if ( $inAttributes or $this->hasGetMutator($key) )
 		{
 			return $this->getAttributeValue($key);
+		}
+		
+		if ( $inNestedAttributes )
+		{
+			return $this->getAttributeValue(str_replace('_', '.', snake_case($key)));
 		}
 
 		// If the key already exists in the relationships array, it just means the
@@ -355,6 +370,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
 	 */
 	protected function getAttributeFromArray($key)
 	{
+		if ( ! strstr($key, '.') && ! strstr($key, '_'))
+		{
+			$key = str_replace('_', '.', snake_case($key));
+		}
+		
 		$nestedValue = array_get($this->attributes, $key, false);
 		
 		if ( $nestedValue )
