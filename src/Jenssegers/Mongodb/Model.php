@@ -288,7 +288,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
 		$studlyKey = strstr($key, '.') ? studly_case(str_replace('.', '_', $key)) : $key;
 		
 		// If attribute was requested by a getter check if it is in a nested array
-		$inNestedAttributes = array_get($this->attributes, str_replace('_', '.', snake_case($key)), false);
+		$inNestedAttributes = ! strstr($key, '.') ? array_get($this->attributes, str_replace('_', '.', snake_case($key)), false) : false;
 		
 		// Check if the nested value exists in the document
 		$inAttributes = array_get($this->attributes, $key, false);
