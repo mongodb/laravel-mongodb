@@ -232,7 +232,157 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         // Perform unset only on current document
         return $query = $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
     }
+	
+	/**
+	 * Set a given attribute on the model.
+	 *
+	 * @param  string  $key
+	 * @param  mixed   $value
+	 * @return void
+	 */
+	public function setAttribute($key, $value)
+	{
+		// Set the nested key to studly case
+		$studlyKey = studly_case(str_replace('.', '_', $key));
+		
+		// First we will check for the presence of a mutator for the set operation
+		// which simply lets the developers tweak the attribute as it is set on
+		// the model, such as "json_encoding" an listing of data for storage.
+		if ($this->hasSetMutator($studlyKey))
+		{
+			$method = 'set'.$studlyKey.'Attribute';
 
+			return $this->{$method}($value);
+		}
+
+		// If an attribute is listed as a "date", we'll convert it from a DateTime
+		// instance into a form proper for storage on the database tables using
+		// the connection grammar's date format. We will auto set the values.
+		elseif (in_array($studlyKey, $this->getDates()))
+		{
+			if ($value)
+			{
+				$value = $this->fromDateTime($value);
+			}
+		}
+		
+		// If key is in dot notation, leave it as it is. If it is in camel case
+		// convert it to dot notation to be inserted into the document
+		if ( ! strstr($key, '.') && ! strstr($key, '_') && preg_match('/[A-Z]/', $key))
+		{
+			$key = str_replace('_', '.', snake_case($key));
+		}
+		
+		array_set($this->attributes, $key, $value);
+	}
+	
+	/**
+	 * Get an attribute from the model.
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	public function getAttribute($key)
+	{
+		// Get the key as studly case if getAttribute() has been called
+		$studlyKey = strstr($key, '.') ? studly_case(str_replace('.', '_', $key)) : $key;
+		
+		// If attribute was requested by a getter check if it is in a nested array
+		$inNestedAttributes = ! strstr($key, '.') ? array_get($this->attributes, str_replace('_', '.', snake_case($key)), false) : false;
+		
+		// Check if the nested value exists in the document
+		$inAttributes = array_get($this->attributes, $key, false);
+		
+		// If the key references an attribute, we can just go ahead and return the
+		// plain attribute value from the model. This allows every attribute to
+		// be dynamically accessed through the _get method without accessors.
+		if ( $inAttributes or $this->hasGetMutator($key) )
+		{
+			return $this->getAttributeValue($key);
+		}
+		
+		if ( $inNestedAttributes )
+		{
+			return $this->getAttributeValue(str_replace('_', '.', snake_case($key)));
+		}
+
+		// If the key already exists in the relationships array, it just means the
+		// relationship has already been loaded, so we'll just return it out of
+		// here because there is no need to query within the relations twice.
+		$relationship = array_get($this->relations, $key, false);
+		
+		if ( $relationship )
+		{
+			return $relationship;
+		}
+
+		// If the "attribute" exists as a method on the model, we will just assume
+		// it is a relationship and will load and return results from the query
+		// and hydrate the relationship's value on the "relationships" array.
+		$camelKey = camel_case($key);
+
+		if (method_exists($this, $camelKey))
+		{
+			$relations = $this->$camelKey()->getResults();
+			
+			array_set($this->relations, $key, $relations);
+			
+			return $relations;
+		}
+	}
+	
+	/**
+	 * Get a plain attribute (not a relationship).
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	protected function getAttributeValue($key)
+	{
+		$value = $this->getAttributeFromArray($key);
+		
+		$snakeKey = str_replace('.', '_', $key);
+		
+		// If the attribute has a get mutator, we will call that then return what
+		// it returns as the value, which is useful for transforming values on
+		// retrieval from the model to a form that is more useful for usage.
+		if ($this->hasGetMutator($snakeKey))
+		{
+			return $this->mutateAttribute($snakeKey, $value);
+		}
+
+		// If the attribute is listed as a date, we will convert it to a DateTime
+		// instance on retrieval, which makes it quite convenient to work with
+		// date fields without having to create a mutator for each property.
+		elseif (in_array($snakeKey, $this->getDates()))
+		{
+			if ($value) return $this->asDateTime($value);
+		}
+
+		return $value;
+	}
+	
+	/**
+	 * Get an attribute from the $attributes array.
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	protected function getAttributeFromArray($key)
+	{
+		if ( ! strstr($key, '.') && ! strstr($key, '_'))
+		{
+			$key = str_replace('_', '.', snake_case($key));
+		}
+		
+		$nestedValue = array_get($this->attributes, $key, false);
+		
+		if ( $nestedValue )
+		{
+			return $nestedValue;
+		}
+	}
+	
     /**
      * Handle dynamic method calls into the method.
      *
