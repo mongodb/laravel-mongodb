@@ -270,9 +270,14 @@ You can also perform raw expressions on the internal MongoCollection object, not
         return $collection->find();
     });
 
-Or you can access the internal object directly:
+Or you can access the internal MongoCollection object directly:
 
     User::raw()->find();
+
+The MongoClient and MongoDB objects can be accessed like this:
+
+    $client = DB::getMongoClient();
+    $db = DB::getMongoDB();
 
 ### MongoDB specific operations
 
