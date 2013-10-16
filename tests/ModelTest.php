@@ -303,38 +303,4 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse(isset($user2->note1));
 		$this->assertFalse(isset($user2->note2));
 	}
-	
-	public function testSetAndGetNestedValues()
-	{
-		$user = User::create(array('name' => 'John Doe', 'notes' => array('note1' => 'ABC', 'note2' => 'DEF')));
-		
-		$user = User::find($user->_id);
-		
-		$this->assertTrue($user->getAttribute('notes.note1') === 'ABC');
-		$user->setAttribute('notes.note1', 'XYZ');
-		
-		$this->assertFalse($user->getAttribute('notes.note1') === 'ABC');
-		$this->assertTrue($user->getAttribute('notes.note1') === 'XYZ');
-		
-		$user->notesNote4 = "GHI";
-		$this->assertTrue($user->notesNote4 === "GHI");
-		
-	}
-	
-	public function testSetAndGetNestedMutators()
-	{
-		$user = User::create(array('name' => 'John Doe', 'notes' => array('note1' => 'ABC', 'note3' => 'DEF')));
-		
-		$user = User::find($user->_id);
-		
-		$note3 = $user->notesNote3;
-		
-		$this->assertTrue($note3 === 'DEFmutated');
-		$this->assertTrue($user->notesNote1 === 'ABC');
-		
-		$user->notesNote3 = "ABCDEF";
-		
-		$this->assertFalse($user->notesNote3 === 'ABCDEF');
-		$this->assertTrue($user->notesNote3 === 'abcdefmutated');
-	}
 }

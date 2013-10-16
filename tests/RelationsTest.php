@@ -3,16 +3,22 @@
 class RelationsTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp() {
-	}
-
-	public function tearDown()
-	{
 		User::truncate();
 		Book::truncate();
 		Item::truncate();
 		Role::truncate();
+		Client::truncate();
 	}
 
+	public function tearDown()
+	{
+		//User::truncate();
+		//Book::truncate();
+		//Item::truncate();
+		//Role::truncate();
+		//Client::truncate();
+	}
+	
 	public function testHasMany()
 	{
 		$author = User::create(array('name' => 'George R. R. Martin'));
@@ -101,5 +107,17 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('Role', $role);
 		$this->assertEquals('admin', $role->type);
 	}
-
+	
+	public function testHasManyAndBelongsTo()
+	{
+		$user = User::create(array('name' => 'John Doe'));
+		$user2 = User::create(array('name' => 'Jane Doe'));
+		
+		$user->clients()->save(new Client(array('name' => 'Pork Pies Ltd.')));
+		$user->clients()->create(array('name' => 'Buffet Bar Inc.'));
+		
+		$user = User::with('clients')->first();
+		
+		dd($user);
+	}
 }
