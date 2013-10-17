@@ -116,6 +116,9 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 		$user->clients()->save(new Client(array('name' => 'Pork Pies Ltd.')));
 		$user->clients()->create(array('name' => 'Buffet Bar Inc.'));
 		
+		$user2->clients()->save(new Client(array('name' => 'GHD GmbH')));
+		$user2->clients()->create(array('name' => 'Bayliss corp.'));
+		
 		$user = User::with('clients')->first();
 		
 		dd($user);

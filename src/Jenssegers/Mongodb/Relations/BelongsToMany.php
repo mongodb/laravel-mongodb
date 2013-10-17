@@ -478,61 +478,30 @@ class BelongsToMany extends EloquentBelongsToMany {
 		return $query->where($this->parent->getKeyName(), '=', $this->parent->getKey());
 	}
 	
-	/**
-	 * Match the eagerly loaded results to their parents.
+		/**
+	 * Build model dictionary keyed by the relation's foreign key.
 	 *
-	 * @param  array   $models
 	 * @param  \Illuminate\Database\Eloquent\Collection  $results
-	 * @param  string  $relation
 	 * @return array
-	 */
-	public function match(array $models, Collection $results, $relation)
-	{
-		$foreign = $this->otherKey;
-
-		// First we will get to build a dictionary of the child models by their primary
-		// key of the relationship, then we can easily match the children back onto
-		// the parents using that dictionary and the primary key of the children.
-		$dictionary = array();
-
-		foreach ($results as $result)
-		{
-			$dictionary[$result->getKey()][] = $result;
-		}
-		
-		// Once we have the dictionary constructed, we can loop through all the parents
-		// and match back onto their children using these keys of the dictionary and
-		// the primary key of the children to map them onto the correct instances.
-		foreach ($models as $model)
-		{
-			if (is_array($model->$foreign))
-			{
-				foreach ($model->$foreign as $relatedKey)
-				{		
-					if (isset($dictionary[$relatedKey]))
-					{
-						$model->setRelation($relation, $dictionary[$relatedKey]);
-					}
-				}
-			}
-		}
-		
-		return $models;
-	}
-	
-	/**
-	 * Build model dictionary keyed by the relations other key
 	 */
 	protected function buildDictionary(Collection $results)
 	{
-		$otherKey = $this->otherKey;
-		
+		$foreign = $this->foreignKey;
+
+		// First we will build a dictionary of child models keyed by the foreign key
+		// of the relation so that we will easily and quickly match them to their
+		// parents without having a possibly slow inner loops for every models.
 		$dictionary = array();
-		
+
 		foreach ($results as $result)
 		{
-			$dictionary[$result];
+			foreach ($result->$foreign as $single) 
+			{
+				$dictionary[$single][] = $result;
+			}
 		}
+
+		return $dictionary;
 	}
 
 	/**
