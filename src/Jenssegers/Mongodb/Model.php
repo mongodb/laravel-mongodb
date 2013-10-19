@@ -228,7 +228,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         {
             $this->__unset($column);
         }
-        
+
         // Perform unset only on current document
         return $query = $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
     }
@@ -242,6 +242,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     public function __call($method, $parameters)
     {
+        // Unset method
         if ($method == 'unset')
         {
             return call_user_func_array(array($this, 'dropColumn'), $parameters);

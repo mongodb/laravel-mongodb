@@ -1,6 +1,7 @@
 <?php
 $loader = require 'vendor/autoload.php';
 $loader->add('', 'tests/models');
+$loader->add('', 'tests/seeds');
 
 use Jenssegers\Mongodb\Model;
 use Illuminate\Support\Facades\DB;

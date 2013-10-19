@@ -129,7 +129,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
             // Build pipeline
             $pipeline = array();
-            if ($wheres)  $pipeline[] = array('$match' => $wheres);
+            if ($wheres) $pipeline[] = array('$match' => $wheres);
             $pipeline[] = array('$group' => $group);
 
             // Apply order and limit

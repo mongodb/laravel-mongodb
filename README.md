@@ -102,7 +102,7 @@ Supported operations are:
  - create and drop
  - collection
  - hasCollection
- - index and dropIndex
+ - index and dropIndex (compound indexes supported as well)
  - unique
  - background, sparse, expire (MongoDB specific)
 
