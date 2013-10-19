@@ -5,9 +5,6 @@ Laravel MongoDB
 
 An Eloquent model and Query builder with support for MongoDB, inspired by LMongo, but using the original Laravel methods. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
-**ATTENTION WHEN UPGRADING!**
-The way the internal connection resolving works has been changed to extend original Laravel objects instead of registering new objects. Check the configuration section for more information about the new configuration. Remove the old `MDB` facade as it is now deprecated.
-
 Installation
 ------------
 
