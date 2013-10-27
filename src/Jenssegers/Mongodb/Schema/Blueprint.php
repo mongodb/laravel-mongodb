@@ -92,7 +92,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	 * @param  string|array  $columns
 	 * @return bool
 	 */
-	public function unique($columns = null)
+	public function unique($columns = null, $name = null)
 	{
 		$columns = $this->fluent($columns);
 		$this->index($columns, array('unique' => true));
