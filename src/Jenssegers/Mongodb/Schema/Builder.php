@@ -51,7 +51,10 @@ class Builder extends \Illuminate\Database\Schema\Builder {
 	{
 		$blueprint = $this->createBlueprint($collection);
 
-		return $callback($blueprint);
+		if ($callback)
+		{
+			$callback($blueprint);
+		}
 	}
 
 	/**
@@ -75,12 +78,13 @@ class Builder extends \Illuminate\Database\Schema\Builder {
 	 */
 	public function create($collection, Closure $callback = null)
 	{
-		$db = $this->connection->getMongoDB();
-		$db->createCollection($collection);
+		$blueprint = $this->createBlueprint($collection);
+
+		$blueprint->create();
 
 		if ($callback)
 		{
-			return $this->collection($collection, $callback);
+			$callback($blueprint);
 		}
 	}
 
@@ -93,7 +97,7 @@ class Builder extends \Illuminate\Database\Schema\Builder {
 	public function drop($collection)
 	{
 		$blueprint = $this->createBlueprint($collection);
-		
+
 		return $blueprint->drop();
 	}
 

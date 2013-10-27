@@ -52,7 +52,7 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 
 		# Add fake host
 		$db = $app['config']['database.connections']['mongodb'];
-		$db['host'] = array($db['host'], '1.2.3.4');
+		$db['host'] = array($db['host'], '0.0.0.0');
 
 		$connection = new Connection($db);
 		$mongoclient = $connection->getMongoClient();

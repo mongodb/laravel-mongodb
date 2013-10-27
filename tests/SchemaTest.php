@@ -92,6 +92,22 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(60, $index['expireAfterSeconds']);
 	}
 
+	public function testFluent()
+	{
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->string('email')->index();
+			$collection->string('token')->index();
+			$collection->timestamp('created_at');
+		});
+
+		$index = $this->getIndex('newcollection', 'email');
+		$this->assertEquals(1, $index['key']['email']);
+
+		$index = $this->getIndex('newcollection', 'token');
+		$this->assertEquals(1, $index['key']['token']);
+	}
+
 	protected function getIndex($collection, $name)
 	{
 		$collection = DB::getCollection($collection);

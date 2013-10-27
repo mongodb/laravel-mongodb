@@ -7,12 +7,21 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="false"
+         stopOnFailure="true"
          syntaxCheck="false"
 >
     <testsuites>
-        <testsuite name="Laravel MongoDB Test Suite">
+        <testsuite name="all">
             <directory>tests/</directory>
+        </testsuite>
+        <testsuite name="schema">
+            <directory>tests/SchemaTest.php</directory>
+        </testsuite>
+        <testsuite name="seeder">
+            <directory>tests/SeederTest.php</directory>
+        </testsuite>
+        <testsuite name="cache">
+            <directory>tests/CacheTest.php</directory>
         </testsuite>
     </testsuites>
 </phpunit>
