@@ -277,13 +277,14 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  string  $column
      * @param  array   $values
      * @param  string  $boolean
-     * @return \Illuminate\Database\Query\Builder
+     * @param  bool  $not
+     * @return Builder
      */
-    public function whereBetween($column, array $values, $boolean = 'and')
+    public function whereBetween($column, array $values, $boolean = 'and', $not = false)
     {
         $type = 'between';
 
-        $this->wheres[] = compact('column', 'type', 'boolean', 'values');
+        $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
 
         return $this;
     }
@@ -739,11 +740,32 @@ class Builder extends \Illuminate\Database\Query\Builder {
     {
         extract($where);
 
-        return array(
-            $column => array(
-                '$gte' => $values[0],
-                '$lte' => $values[1])
+        if ($not)
+        {
+            return array(
+                '$or' => array(
+                    array(
+                        $column => array(
+                            '$lte' => $values[0]
+                        )
+                    ),
+                    array(
+                        $column => array(
+                            '$gte' => $values[1]
+                        )
+                    )
+                )
             );
+        }
+        else
+        {
+            return array(
+                $column => array(
+                    '$gte' => $values[0],
+                    '$lte' => $values[1]
+                )
+            );
+        }
     }
 
     protected function compileWhereRaw($where)

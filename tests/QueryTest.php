@@ -103,6 +103,10 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 		$users = User::whereBetween('age', array(13, 23))->get();
 		$this->assertEquals(2, count($users));
+
+		// testing whereNotBetween for version 4.1
+		$users = User::whereBetween('age', array(0, 25), 'and', true)->get();
+		$this->assertEquals(6, count($users));
 	}
 
 	public function testIn()

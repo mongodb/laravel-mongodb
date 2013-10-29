@@ -23,5 +23,9 @@
         <testsuite name="cache">
             <directory>tests/CacheTest.php</directory>
         </testsuite>
+        <testsuite name="builder">
+            <directory>tests/QueryBuilderTest.php</directory>
+            <directory>tests/QueryTest.php</directory>
+        </testsuite>
     </testsuites>
 </phpunit>
