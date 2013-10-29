@@ -110,8 +110,8 @@ Sessions
 
 The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
 
-Documentation
--------------
+Examples
+--------
 
 ### Basic Usage
 
