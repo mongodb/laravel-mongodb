@@ -63,6 +63,11 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals('John Doe', $check->name);
 		$this->assertEquals(36, $check->age);
+
+		$user->update(array('age' => 20));
+
+		$check = User::find($user->_id);
+		$this->assertEquals(20, $check->age);
 	}
 
 	public function testDelete()

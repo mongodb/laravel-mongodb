@@ -27,5 +27,9 @@
             <directory>tests/QueryBuilderTest.php</directory>
             <directory>tests/QueryTest.php</directory>
         </testsuite>
+        <testsuite name="model">
+            <directory>tests/ModelTest.php</directory>
+            <directory>tests/RelationsTest.php</directory>
+        </testsuite>
     </testsuites>
 </phpunit>
