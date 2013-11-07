@@ -413,4 +413,18 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse(isset($user2['note2']));
 	}
 
+	public function testUpdateSubdocument()
+	{
+		DB::collection('users')->insertGetId(array(
+			'name' => 'John Doe',
+			'address' => array('country' => 'Belgium')
+		));
+
+		DB::collection('users')->where('name', 'John Doe')->update(array('address.country' => 'England'));
+
+		$check = DB::collection('users')->where('name', 'John Doe')->first();
+
+		$this->assertEquals('England', $check['address']['country']);
+	}
+
 }
