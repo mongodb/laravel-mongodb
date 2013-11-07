@@ -2,6 +2,8 @@
 
 use MongoID;
 use MongoRegex;
+use MongoDate;
+use DateTime;
 use Closure;
 
 class Builder extends \Illuminate\Database\Query\Builder {
@@ -644,6 +646,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 {
                     $where['value'] = $this->convertKey($where['value']);
                 }
+            }
+
+            // Convert dates
+            if (isset($where['value']) && $where['value'] instanceof DateTime)
+            {
+                $where['value'] = new MongoDate($where['value']->getTimestamp());
             }
 
             // First item of chain

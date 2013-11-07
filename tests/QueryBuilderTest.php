@@ -435,6 +435,9 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$user = DB::collection('users')->where('birthday', new MongoDate(strtotime("1980-01-01 00:00:00")))->first();
 		$this->assertEquals('John Doe', $user['name']);
 
+		$user = DB::collection('users')->where('birthday', '=', new DateTime("1980-01-01 00:00:00"))->first();
+		$this->assertEquals('John Doe', $user['name']);
+
 		$start = new MongoDate(strtotime("1981-01-01 00:00:00"));
 		$stop = new MongoDate(strtotime("1982-01-01 00:00:00"));
 
