@@ -413,4 +413,36 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse(isset($user2['note2']));
 	}
 
+	public function testUpdateSubdocument()
+	{
+		$id = DB::collection('users')->insertGetId(array('name' => 'John Doe', 'address' => array('country' => 'Belgium')));
+
+		DB::collection('users')->where('_id', $id)->update(array('address.country' => 'England'));
+
+		$check = DB::collection('users')->find($id);
+		$this->assertEquals('England', $check['address']['country']);
+	}
+
+	public function testDates()
+	{
+		DB::collection('users')->insert(array(
+			array('name' => 'John Doe', 'birthday' => new MongoDate(strtotime("1980-01-01 00:00:00"))),
+			array('name' => 'Jane Doe', 'birthday' => new MongoDate(strtotime("1981-01-01 00:00:00"))),
+			array('name' => 'Robert Roe', 'birthday' => new MongoDate(strtotime("1982-01-01 00:00:00"))),
+			array('name' => 'Mark Moe', 'birthday' => new MongoDate(strtotime("1983-01-01 00:00:00"))),
+		));
+
+		$user = DB::collection('users')->where('birthday', new MongoDate(strtotime("1980-01-01 00:00:00")))->first();
+		$this->assertEquals('John Doe', $user['name']);
+
+		$user = DB::collection('users')->where('birthday', '=', new DateTime("1980-01-01 00:00:00"))->first();
+		$this->assertEquals('John Doe', $user['name']);
+
+		$start = new MongoDate(strtotime("1981-01-01 00:00:00"));
+		$stop = new MongoDate(strtotime("1982-01-01 00:00:00"));
+
+		$users = DB::collection('users')->whereBetween('birthday', array($start, $stop))->get();
+		$this->assertEquals(2, count($users));
+	}
+
 }

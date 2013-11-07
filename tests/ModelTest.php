@@ -309,4 +309,17 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertFalse(isset($user2->note2));
 	}
 
+	public function testDates()
+	{
+		$user = User::create(array('name' => 'John Doe', 'birthday' => new DateTime('1980/1/1')));
+		$this->assertInstanceOf('DateTime', $user->birthday);
+
+		// Re-fetch to be sure
+		$user = User::find($user->_id);
+		$this->assertInstanceOf('DateTime', $user->birthday);
+
+		$user = User::where('birthday', '>', new DateTime('1975/1/1'))->first();
+		$this->assertEquals('John Doe', $user->name);
+	}
+
 }

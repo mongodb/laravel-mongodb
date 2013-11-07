@@ -218,6 +218,24 @@ You may also specify additional columns to update:
 
 All basic insert, update, delete and select methods should be implemented.
 
+### Dates
+
+Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields you will need to manually specify them as described here: http://laravel.com/docs/eloquent#date-mutators
+
+Example:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class User extends Eloquent {
+
+        protected $dates = array('birthday');
+
+    }
+
+Which allows you to execute queries like:
+
+    $users = User::where('birthday', '>', new DateTime('-18 years'))->get();
+
 ### Relations
 
 Supported relations are:
