@@ -1,5 +1,7 @@
 <?php
 
+use Carbon;
+
 class ModelTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp() {}
@@ -37,7 +39,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue(isset($user->_id));
 		$this->assertNotEquals('', (string) $user->_id);
 		$this->assertNotEquals(0, strlen((string) $user->_id));
-		$this->assertInstanceOf('DateTime', $user->created_at);
+		$this->assertInstanceOf('Carbon\Carbon', $user->created_at);
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(35, $user->age);
@@ -57,8 +59,8 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$check->save();
 
 		$this->assertEquals(true, $check->exists);
-		$this->assertInstanceOf('DateTime', $check->created_at);
-		$this->assertInstanceOf('DateTime', $check->updated_at);
+		$this->assertInstanceOf('Carbon\Carbon', $check->created_at);
+		$this->assertInstanceOf('Carbon\Carbon', $check->updated_at);
 		$this->assertEquals(1, User::count());
 
 		$this->assertEquals('John Doe', $check->name);
@@ -229,7 +231,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $all->count());
 
 		$check = $all[0];
-		$this->assertInstanceOf('DateTime', $check->deleted_at);
+		$this->assertInstanceOf('Carbon\Carbon', $check->deleted_at);
 		$this->assertEquals(true, $check->trashed());
 
 		$check->restore();
@@ -312,11 +314,11 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 	public function testDates()
 	{
 		$user = User::create(array('name' => 'John Doe', 'birthday' => new DateTime('1980/1/1')));
-		$this->assertInstanceOf('DateTime', $user->birthday);
+		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 
-		// Re-fetch to be sure
-		$user = User::find($user->_id);
-		$this->assertInstanceOf('DateTime', $user->birthday);
+		$check = User::find($user->_id);
+		$this->assertInstanceOf('Carbon\Carbon', $check->birthday);
+		$this->assertEquals($user->birthday, $check->birthday);
 
 		$user = User::where('birthday', '>', new DateTime('1975/1/1'))->first();
 		$this->assertEquals('John Doe', $user->name);

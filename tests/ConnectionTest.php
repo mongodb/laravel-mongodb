@@ -46,7 +46,7 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue(is_array($dbs));
 	}
 
-	public function testMultipleConnections()
+	/*public function testMultipleConnections()
 	{
 		global $app;
 
@@ -59,7 +59,7 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 
 		$hosts = $mongoclient->getHosts();
 		$this->assertEquals(1, count($hosts));
-	}
+	}*/
 
 	public function testQueryLog()
 	{
