@@ -8,6 +8,7 @@ use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 
+use Carbon\Carbon;
 use DateTime;
 use MongoId;
 use MongoDate;
@@ -66,19 +67,25 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     protected function asDateTime($value)
     {
-        // Convert MongoDate to timestamp
+        // Convert timestamp
+        if (is_numeric($value))
+        {
+            return Carbon::createFromTimestamp($value);
+        }
+
+        // Convert string
+        if (is_string($value))
+        {
+            return new Carbon($value);
+        }
+
+        // Convert MongoDate
         if ($value instanceof MongoDate)
         {
-            $value = $value->sec;
+            return Carbon::createFromTimestamp($value->sec);
         }
 
-        // Convert timestamp to string for DateTime
-        if (is_int($value))
-        {
-            $value = "@$value";
-        }
-
-        return new DateTime($value);
+        return Carbon::instance($value);
     }
 
     /**
