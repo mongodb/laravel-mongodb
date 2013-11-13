@@ -69,6 +69,26 @@ Tell your model to use the MongoDB model and set the collection (alias for table
 
 Everything else works just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
 
+Alternative Eloquent Setting
+----------------------------
+
+    'aliases' => array(...
+            'Moloquent'		  => 'Jenssegers\Mongodb\Model',
+    );
+    
+    class MyModel extends Moloquent {
+
+        protected $collection = 'mycollection';
+
+    }
+    
+    Add 
+    
+        protected $connection = 'mongodb';
+        
+    in the MyModel if you have multiple database connections and do not want to overwrite the primary database connection.
+
+
 Query Builder
 -------------
 
