@@ -65,29 +65,32 @@ Tell your model to use the MongoDB model and set the collection (alias for table
 
     }
 
-*You can also specify the connection name in the model by changing the `connection` property.*
+If you are using a different database driver as the default one, you will need to specify the mongodb connection within your model by changing the `connection` property:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class MyModel extends Eloquent {
+
+        protected $connection = 'mongodb';
+
+    }
 
 Everything else works just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
 
-Alternative Eloquent Setting
-----------------------------
+### Optional: Alias
+-------------------
 
-    'aliases' => array(...
-            'Moloquent'		  => 'Jenssegers\Mongodb\Model',
-    );
-    
+You may also register an alias for the MongoDB model by adding the following to the alias array in `app/config/app.php`:
+
+    'Moloquent'       => 'Jenssegers\Mongodb\Model',
+
+This will allow you to use your registered alias like:
+
     class MyModel extends Moloquent {
 
         protected $collection = 'mycollection';
 
     }
-    
-    Add 
-    
-        protected $connection = 'mongodb';
-        
-    in the MyModel if you have multiple database connections and do not want to overwrite the primary database connection.
-
 
 Query Builder
 -------------
@@ -155,7 +158,7 @@ Examples
 
     $users = User::whereIn('age', array(16, 18, 20))->get();
 
-When using `whereNotIn` objects will be returned if the field is non existant. Combine with `whereNotNull('age')` to leave out those documents.
+When using `whereNotIn` objects will be returned if the field is non existent. Combine with `whereNotNull('age')` to leave out those documents.
 
 **Using Where Between**
 
