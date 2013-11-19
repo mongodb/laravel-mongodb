@@ -102,4 +102,27 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('admin', $role->type);
 	}
 
+	public function testEasyRelation()
+	{
+		// Has Many
+		$user = User::create(array('name' => 'John Doe'));
+		$item = Item::create(array('type' => 'knife'));
+		$user->items()->save($item);
+
+		$user = User::find($user->_id);
+		$items = $user->items;
+		$this->assertEquals(1, count($items));
+		$this->assertInstanceOf('Item', $items[0]);
+
+		// Has one
+		$user = User::create(array('name' => 'John Doe'));
+		$role = Role::create(array('type' => 'admin'));
+		$user->role()->save($role);
+
+		$user = User::find($user->_id);
+		$role = $user->role;
+		$this->assertInstanceOf('Role', $role);
+		$this->assertEquals('admin', $role->type);
+	}
+
 }
