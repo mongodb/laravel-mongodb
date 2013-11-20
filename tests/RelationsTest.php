@@ -12,11 +12,11 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
 	public function tearDown()
 	{
-		//User::truncate();
-		//Book::truncate();
-		//Item::truncate();
-		//Role::truncate();
-		//Client::truncate();
+		User::truncate();
+		Book::truncate();
+		Item::truncate();
+		Role::truncate();
+		Client::truncate();
 	}
 	
 	public function testHasMany()
