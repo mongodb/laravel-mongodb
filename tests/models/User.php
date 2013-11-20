@@ -7,13 +7,11 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 
 class User extends Eloquent implements UserInterface, RemindableInterface {
 
-    protected $collection = 'users';
+	protected $collection = 'users';
 
-    protected $dates = array('birthday');
+	protected static $unguarded = true;
 
-    protected static $unguarded = true;
-
-    public function books()
+	public function books()
     {
         return $this->hasMany('Book', 'author_id');
     }
@@ -27,6 +25,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
     {
         return $this->hasOne('Role');
     }
+	
+	public function clients()
+	{
+		return $this->belongsToMany('Client');
+	}
 
     /**
      * Get the unique identifier for the user.
