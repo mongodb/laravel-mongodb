@@ -5,80 +5,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 
 class BelongsToMany extends EloquentBelongsToMany {
-	
-	/**
-	 * The intermediate table for the relation.
-	 *
-	 * @var string
-	 */
-	protected $table;
-
-	/**
-	 * The foreign key of the parent model.
-	 *
-	 * @var string
-	 */
-	protected $foreignKey;
-
-	/**
-	 * The associated key of the relation.
-	 *
-	 * @var string
-	 */
-	protected $otherKey;
-
-	/**
-	 * The "name" of the relationship.
-	 *
-	 * @var string
-	 */
-	protected $relationName;
-
-	/**
-	 * The pivot table columns to retrieve.
-	 *
-	 * @var array
-	 */
-	protected $pivotColumns = array();
-
-	/**
-	 * Create a new has many relationship instance.
-	 *
-	 * @param  \Illuminate\Database\Eloquent\Builder  $query
-	 * @param  \Illuminate\Database\Eloquent\Model  $parent
-	 * @param  string  $table
-	 * @param  string  $foreignKey
-	 * @param  string  $otherKey
-	 * @param  string  $relationName
-	 * @return void
-	 */
-	public function __construct(Builder $query, Model $parent, $table, $foreignKey, $otherKey, $relationName = null)
-	{
-		parent::__construct($query, $parent, $table, $foreignKey, $otherKey, $relationName);
-	}
-
-	/**
-	 * Get the results of the relationship.
-	 *
-	 * @return mixed
-	 */
-	public function getResults()
-	{
-		return $this->get();
-	}
-
-	/**
-	 * Execute the query and get the first result.
-	 *
-	 * @param  array   $columns
-	 * @return mixed
-	 */
-	public function first($columns = array('*'))
-	{
-		$results = $this->take(1)->get($columns);
-
-		return count($results) > 0 ? $results->first() : null;
-	}
 
 	/**
 	 * Execute the query as a "select" statement.
@@ -163,37 +89,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 	}
 
 	/**
-	 * Initialize the relation on a set of models.
-	 *
-	 * @param  array   $models
-	 * @param  string  $relation
-	 * @return void
-	 */
-	public function initRelation(array $models, $relation)
-	{
-		foreach ($models as $model)
-		{
-			$model->setRelation($relation, $this->related->newCollection());
-		}
-
-		return $models;
-	}
-
-	/**
-	 * Get all of the IDs for the related models.
-	 *
-	 * @return array
-	 */
-	public function getRelatedIds()
-	{
-		$related = $this->getRelated();
-
-		$fullKey = $related->getQualifiedKeyName();
-
-		return $this->getQuery()->select($fullKey)->lists($related->getKeyName());
-	}
-
-	/**
 	 * Save a new model and attach it to the parent model.
 	 *
 	 * @param  \Illuminate\Database\Eloquent\Model  $model
@@ -203,39 +98,11 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 */
 	public function save(Model $model, array $joining = array(), $touch = true)
 	{
-		if (is_array($model->{$this->otherKey})) 
-		{
-			$model->push($this->foreignKey, (array)$this->parent->getKey());
-		}
-		else 
-		{
-			$model->{$this->foreignKey} = (array)$this->parent->getKey();
-		}
-		
 		$model->save(array('touch' => false));
 
 		$this->attach($model->getKey(), $joining, $touch);
-
+		
 		return $model;
-	}
-
-	/**
-	 * Save an array of new models and attach them to the parent model.
-	 *
-	 * @param  array  $models
-	 * @param  array  $joinings
-	 * @return array
-	 */
-	public function saveMany(array $models, array $joinings = array())
-	{
-		foreach ($models as $key => $model)
-		{
-			$this->save($model, (array) array_get($joinings, $key), false);
-		}
-
-		$this->touchIfTouching();
-
-		return $models;
 	}
 
 	/**
@@ -250,10 +117,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	{
 		$instance = $this->related->newInstance($attributes);
 
-		// We save the ID of the parent model to the foreign key array on the new
-		// model before we save the new instance
-		$instance->{$this->foreignKey} = array((string)$this->parent->getKey());
-		
+		// Save the new instance before we attach it to other models	
 		$instance->save(array('touch' => false));
 		
 		// Attach to the parent instance
@@ -274,10 +138,14 @@ class BelongsToMany extends EloquentBelongsToMany {
 		// First we need to attach any of the associated models that are not currently
 		// in this joining table. We'll spin through the given IDs, checking to see
 		// if they exist in the array of current ones, and if not we will insert.
-		$current = $this->newPivotQuery()->lists($this->otherKey);
+		$current = $this->parent->{$this->otherKey};
+		
+		// Check if the current array exists or not on the parent model and create it
+		// if it does not exist
+		if (is_null($current)) $current = array();
 
 		$records = $this->formatSyncList($ids);
-
+		
 		$detach = array_diff($current, array_keys($records));
 
 		// Next, we will take the differences of the currents and given IDs and detach
@@ -338,10 +206,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 			{
 				$this->attach($id, $attributes, $touch);
 			}
-			elseif (count($attributes) > 0)
-			{
-				$this->updateExistingPivot($id, $attributes, $touch);
-			}
 		}
 	}
 
@@ -357,15 +221,26 @@ class BelongsToMany extends EloquentBelongsToMany {
 	{
 		if ($id instanceof Model) $id = $id->getKey();
 		
-		$query = $this->newParentQuery();
+		// Generate a new parent query instance
+		$parent = $this->newParentQuery();
 		
+		// Generate a new related query instance
+		$related = $this->related->newInstance();
+		
+		// Set contraints on the related query
+		$related = $related->where($this->related->getKeyName(), $id);
+
 		$records = $this->createAttachRecords((array) $id, $attributes);
 		
-		$foreign = array_pluck($records, $this->otherKey)[0];
+		// Get the ID's to attach to the two documents
+		$otherIds = array_pluck($records, $this->otherKey);
+		$foreignIds = array_pluck($records, $this->foreignKey);
 
-		// Atteach to the parent of the relationship
-		$query->push($this->otherKey, $foreign)
-			  ->update(array());
+		// Attach to the parent model
+		$parent->push($this->otherKey, $otherIds[0])->update(array());
+		
+		// Attach to the related model
+		$related->push($this->foreignKey, $foreignIds[0])->update(array());
 	}
 
 	/**
@@ -400,7 +275,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	{
 		if ($ids instanceof Model) $ids = (array) $ids->getKey();
 
-		$query = $this->newPivotQuery();
+		$query = $this->newParentQuery();
 
 		// If associated IDs were passed to the method we will only delete those
 		// associations, otherwise all of the association ties will be broken.
@@ -417,9 +292,12 @@ class BelongsToMany extends EloquentBelongsToMany {
 		// Once we have all of the conditions set on the statement, we are ready
 		// to run the delete on the pivot table. Then, if the touch parameter
 		// is true, we will go ahead and touch all related models to sync.
-		$results = $query->delete();
-
-		return $results;
+		foreach($ids as $id)
+		{
+			$query->pull($this->otherKey, $id);
+		}
+		
+		return count($ids);
 	}
 
 	/**
@@ -455,18 +333,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 	}
 
 	/**
-	 * Create a new query builder for the pivot table.
-	 *
-	 * @return \Illuminate\Database\Query\Builder
-	 */
-	protected function newPivotQuery()
-	{
-		$query = $this->newPivotStatement();
-
-		return $query->whereRaw(array($this->foreignKey => array('$in' => array($this->parent->getKey()))));
-	}
-
-	/**
 	 * Create a new query builder for the parent
 	 * 
 	 * @return Jenssegers\Mongodb\Builder
@@ -478,7 +344,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 		return $query->where($this->parent->getKeyName(), '=', $this->parent->getKey());
 	}
 	
-		/**
+	/**
 	 * Build model dictionary keyed by the relation's foreign key.
 	 *
 	 * @param  \Illuminate\Database\Eloquent\Collection  $results
@@ -495,7 +361,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 
 		foreach ($results as $result)
 		{
-			foreach ($result->$foreign as $single) 
+			foreach ($result->$foreign as $single)
 			{
 				$dictionary[$single][] = $result;
 			}
