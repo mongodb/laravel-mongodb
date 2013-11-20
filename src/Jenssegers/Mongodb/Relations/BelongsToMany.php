@@ -1,4 +1,5 @@
 <?php namespace Jenssegers\Mongodb\Relations;
+
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -7,31 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMan
 class BelongsToMany extends EloquentBelongsToMany {
 
 	/**
-	 * Execute the query as a "select" statement.
+	 * Hydrate the pivot table relationship on the models.
 	 *
-	 * @param  array  $columns
-	 * @return \Illuminate\Database\Eloquent\Collection
+	 * @param  array  $models
+	 * @return void
 	 */
-	public function get($columns = array('*'))
+	protected function hydratePivotRelation(array $models)
 	{
-		// First we'll add the proper select columns onto the query so it is run with
-		// the proper columns. Then, we will get the results and hydrate out pivot
-		// models with the result of those columns as a separate model relation.
-		$select = $this->getSelectColumns($columns);
-
-		$models = $this->query->addSelect($select)->getModels();
-
-		// If we actually found models we will also eager load any relationships that
-		// have been specified as needing to be eager loaded. This will solve the
-		// n + 1 query problem for the developer and also increase performance.
-		if (count($models) > 0)
-		{
-			$models = $this->query->eagerLoadRelations($models);
-		}
-
-		return $this->related->newCollection($models);
+		// Do nothing
 	}
-	
+
 	/**
 	 * Set the select clause for the relation query.
 	 *
@@ -43,87 +29,18 @@ class BelongsToMany extends EloquentBelongsToMany {
 	}
 
 	/**
-	 * Get a paginator for the "select" statement.
-	 *
-	 * @param  int    $perPage
-	 * @param  array  $columns
-	 * @return \Illuminate\Pagination\Paginator
-	 */
-	public function paginate($perPage = null, $columns = array('*'))
-	{
-		$this->query->addSelect($this->getSelectColumns($columns));
-
-		// When paginating results, we need to add the pivot columns to the query and
-		// then hydrate into the pivot objects once the results have been gathered
-		// from the database since this isn't performed by the Eloquent builder.
-		$pager = $this->query->paginate($perPage, $columns);
-
-		return $pager;
-	}
-
-
-	/**
 	 * Set the base constraints on the relation query.
 	 *
 	 * @return void
 	 */
 	public function addConstraints()
 	{
-		if (static::$constraints) 
+		if (static::$constraints)
 		{
 			// Make sure that the primary key of the parent
 			// is in the relationship array of keys
 			$this->query->whereIn($this->foreignKey, array($this->parent->getKey()));
 		}
-	}
-
-	/**
-	 * Set the constraints for an eager load of the relation.
-	 *
-	 * @param  array  $models
-	 * @return void
-	 */
-	public function addEagerConstraints(array $models)
-	{
-		$this->query->whereIn($this->getForeignKey(), $this->getKeys($models));
-	}
-
-	/**
-	 * Save a new model and attach it to the parent model.
-	 *
-	 * @param  \Illuminate\Database\Eloquent\Model  $model
-	 * @param  array  $joining
-	 * @param  bool   $touch
-	 * @return \Illuminate\Database\Eloquent\Model
-	 */
-	public function save(Model $model, array $joining = array(), $touch = true)
-	{
-		$model->save(array('touch' => false));
-
-		$this->attach($model->getKey(), $joining, $touch);
-		
-		return $model;
-	}
-
-	/**
-	 * Create a new instance of the related model.
-	 *
-	 * @param  array  $attributes
-	 * @param  array  $joining
-	 * @param  bool   $touch
-	 * @return \Illuminate\Database\Eloquent\Model
-	 */
-	public function create(array $attributes, array $joining = array(), $touch = true)
-	{
-		$instance = $this->related->newInstance($attributes);
-
-		// Save the new instance before we attach it to other models	
-		$instance->save(array('touch' => false));
-		
-		// Attach to the parent instance
-		$this->attach($instance->_id, $attributes, $touch);
-
-		return $instance;
 	}
 
 	/**
@@ -139,13 +56,13 @@ class BelongsToMany extends EloquentBelongsToMany {
 		// in this joining table. We'll spin through the given IDs, checking to see
 		// if they exist in the array of current ones, and if not we will insert.
 		$current = $this->parent->{$this->otherKey};
-		
+
 		// Check if the current array exists or not on the parent model and create it
 		// if it does not exist
 		if (is_null($current)) $current = array();
 
 		$records = $this->formatSyncList($ids);
-		
+
 		$detach = array_diff($current, array_keys($records));
 
 		// Next, we will take the differences of the currents and given IDs and detach
@@ -162,29 +79,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 		$this->attachNew($records, $current, false);
 
 		$this->touchIfTouching();
-	}
-
-	/**
-	 * Format the sync list so that it is keyed by ID.
-	 *
-	 * @param  array  $records
-	 * @return array
-	 */
-	protected function formatSyncList(array $records)
-	{
-		$results = array();
-
-		foreach ($records as $id => $attributes)
-		{
-			if ( ! is_array($attributes))
-			{
-				list($id, $attributes) = array($attributes, array());
-			}
-
-			$results[$id] = $attributes;
-		}
-
-		return $results;
 	}
 
 	/**
@@ -220,25 +114,25 @@ class BelongsToMany extends EloquentBelongsToMany {
 	public function attach($id, array $attributes = array(), $touch = true)
 	{
 		if ($id instanceof Model) $id = $id->getKey();
-		
+
 		// Generate a new parent query instance
 		$parent = $this->newParentQuery();
-		
+
 		// Generate a new related query instance
 		$related = $this->related->newInstance();
-		
+
 		// Set contraints on the related query
 		$related = $related->where($this->related->getKeyName(), $id);
 
 		$records = $this->createAttachRecords((array) $id, $attributes);
-		
+
 		// Get the ID's to attach to the two documents
 		$otherIds = array_pluck($records, $this->otherKey);
 		$foreignIds = array_pluck($records, $this->foreignKey);
 
 		// Attach to the parent model
 		$parent->push($this->otherKey, $otherIds[0])->update(array());
-		
+
 		// Attach to the related model
 		$related->push($this->foreignKey, $foreignIds[0])->update(array());
 	}
@@ -296,54 +190,22 @@ class BelongsToMany extends EloquentBelongsToMany {
 		{
 			$query->pull($this->otherKey, $id);
 		}
-		
+
 		return count($ids);
 	}
 
 	/**
-	 * If we're touching the parent model, touch.
-	 *
-	 * @return void
-	 */
-	public function touchIfTouching()
-	{ 
-	 	if ($this->touchingParent()) $this->getParent()->touch();
-
-	 	if ($this->getParent()->touches($this->relationName)) $this->touch();
-	}
-
-	/**
-	 * Determine if we should touch the parent on sync.
-	 *
-	 * @return bool
-	 */
-	protected function touchingParent()
-	{
-		return $this->getRelated()->touches($this->guessInverseRelation());
-	}
-
-	/**
-	 * Attempt to guess the name of the inverse of the relation.
-	 *
-	 * @return string
-	 */
-	protected function guessInverseRelation()
-	{
-		return strtolower(str_plural(class_basename($this->getParent())));
-	}
-
-	/**
 	 * Create a new query builder for the parent
-	 * 
+	 *
 	 * @return Jenssegers\Mongodb\Builder
 	 */
 	protected function newParentQuery()
 	{
 		$query = $this->parent->newQuery();
-		
+
 		return $query->where($this->parent->getKeyName(), '=', $this->parent->getKey());
 	}
-	
+
 	/**
 	 * Build model dictionary keyed by the relation's foreign key.
 	 *
@@ -368,16 +230,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 		}
 
 		return $dictionary;
-	}
-
-	/**
-	 * Get the related model's updated at column name.
-	 *
-	 * @return string
-	 */
-	public function getRelatedFreshUpdate()
-	{
-		return array($this->related->getUpdatedAtColumn() => $this->related->freshTimestamp());
 	}
 
 	/**
