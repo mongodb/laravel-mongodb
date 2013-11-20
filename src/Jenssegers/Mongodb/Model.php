@@ -9,6 +9,7 @@ use Jenssegers\Mongodb\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
 
+use Carbon\Carbon;
 use DateTime;
 use MongoId;
 use MongoDate;
@@ -67,19 +68,25 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     protected function asDateTime($value)
     {
-        // Convert MongoDate to timestamp
+        // Convert timestamp
+        if (is_numeric($value))
+        {
+            return Carbon::createFromTimestamp($value);
+        }
+
+        // Convert string
+        if (is_string($value))
+        {
+            return new Carbon($value);
+        }
+
+        // Convert MongoDate
         if ($value instanceof MongoDate)
         {
-            $value = $value->sec;
+            return Carbon::createFromTimestamp($value->sec);
         }
 
-        // Convert timestamp to string for DateTime
-        if (is_int($value))
-        {
-            $value = "@$value";
-        }
-
-        return new DateTime($value);
+        return Carbon::instance($value);
     }
 
     /**
@@ -115,68 +122,84 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     }
 
     /**
-     * Define a one-to-one relationship.
-     *
-     * @param  string  $related
-     * @param  string  $foreignKey
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
-     */
-    public function hasOne($related, $foreignKey = null)
+    * Define a one-to-one relationship.
+    *
+    * @param  string  $related
+    * @param  string  $foreignKey
+    * @param  string  $localKey
+    * @return \Illuminate\Database\Eloquent\Relations\HasOne
+    */
+    public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
         $instance = new $related;
 
-        return new HasOne($instance->newQuery(), $this, $foreignKey);
+        $localKey = $localKey ?: $this->getKeyName();
+
+        return new HasOne($instance->newQuery(), $this, $foreignKey, $localKey);
     }
 
     /**
-     * Define a one-to-many relationship.
-     *
-     * @param  string  $related
-     * @param  string  $foreignKey
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
-     */
-    public function hasMany($related, $foreignKey = null)
+    * Define a one-to-many relationship.
+    *
+    * @param  string  $related
+    * @param  string  $foreignKey
+    * @param  string  $localKey
+    * @return \Illuminate\Database\Eloquent\Relations\HasMany
+    */
+    public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
         $instance = new $related;
 
-        return new HasMany($instance->newQuery(), $this, $foreignKey);
+        $localKey = $localKey ?: $this->getKeyName();
+
+        return new HasMany($instance->newQuery(), $this, $foreignKey, $localKey);
     }
 
     /**
-     * Define an inverse one-to-one or many relationship.
-     *
-     * @param  string  $related
-     * @param  string  $foreignKey
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-     */
-    public function belongsTo($related, $foreignKey = null)
+    * Define an inverse one-to-one or many relationship.
+    *
+    * @param  string  $related
+    * @param  string  $foreignKey
+    * @param  string  $otherKey
+    * @param  string  $relation
+    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+    */
+    public function belongsTo($related, $foreignKey = null, $otherKey = null, $relation = null)
     {
-        list(, $caller) = debug_backtrace(false);
+        // If no relation name was given, we will use this debug backtrace to extract
+        // the calling method's name and use that as the relationship name as most
+        // of the time this will be what we desire to use for the relatinoships.
+        if (is_null($relation))
+        {
+            list(, $caller) = debug_backtrace(false);
+
+            $relation = $caller['function'];
+        }
 
         // If no foreign key was supplied, we can use a backtrace to guess the proper
         // foreign key name by using the name of the relationship function, which
         // when combined with an "_id" should conventionally match the columns.
-        $relation = $caller['function'];
-
         if (is_null($foreignKey))
         {
             $foreignKey = snake_case($relation).'_id';
         }
 
+        $instance = new $related;
+
         // Once we have the foreign key names, we'll just create a new Eloquent query
         // for the related models and returns the relationship instance which will
         // actually be responsible for retrieving and hydrating every relations.
-        $instance = new $related;
-
         $query = $instance->newQuery();
 
-        return new BelongsTo($query, $this, $foreignKey, $relation);
+        $otherKey = $otherKey ?: $instance->getKeyName();
+
+        return new BelongsTo($query, $this, $foreignKey, $otherKey, $relation);
     }
-	
+
 	/**
 	 * Define a many-to-many relationship.
 	 *
@@ -266,7 +289,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         {
             $this->__unset($column);
         }
-        
+
         // Perform unset only on current document
         return $query = $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
     }
@@ -280,6 +303,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     public function __call($method, $parameters)
     {
+        // Unset method
         if ($method == 'unset')
         {
             return call_user_func_array(array($this, 'dropColumn'), $parameters);

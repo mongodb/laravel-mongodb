@@ -3,110 +3,128 @@
 class RelationsTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp() {
-		User::truncate();
-		Book::truncate();
-		Item::truncate();
-		Role::truncate();
-		Client::truncate();
-	}
+    }
 
-	public function tearDown()
-	{
-		User::truncate();
-		Book::truncate();
-		Item::truncate();
-		Role::truncate();
-		Client::truncate();
-	}
-	
-	public function testHasMany()
-	{
-		$author = User::create(array('name' => 'George R. R. Martin'));
-		Book::create(array('title' => 'A Game of Thrones', 'author_id' => $author->_id));
-		Book::create(array('title' => 'A Clash of Kings', 'author_id' => $author->_id));
+    public function tearDown()
+    {
+            User::truncate();
+            Book::truncate();
+            Item::truncate();
+            Role::truncate();
+			Client::truncate();
+    }
 
-		$books = $author->books;
-		$this->assertEquals(2, count($books));
+    public function testHasMany()
+    {
+            $author = User::create(array('name' => 'George R. R. Martin'));
+            Book::create(array('title' => 'A Game of Thrones', 'author_id' => $author->_id));
+            Book::create(array('title' => 'A Clash of Kings', 'author_id' => $author->_id));
 
-		$user = User::create(array('name' => 'John Doe'));
-		Item::create(array('type' => 'knife', 'user_id' => $user->_id));
-		Item::create(array('type' => 'shield', 'user_id' => $user->_id));
-		Item::create(array('type' => 'sword', 'user_id' => $user->_id));
-		Item::create(array('type' => 'bag', 'user_id' => null));
+            $books = $author->books;
+            $this->assertEquals(2, count($books));
 
-		$items = $user->items;
-		$this->assertEquals(3, count($items));
-	}
+            $user = User::create(array('name' => 'John Doe'));
+            Item::create(array('type' => 'knife', 'user_id' => $user->_id));
+            Item::create(array('type' => 'shield', 'user_id' => $user->_id));
+            Item::create(array('type' => 'sword', 'user_id' => $user->_id));
+            Item::create(array('type' => 'bag', 'user_id' => null));
 
-	public function testBelongsTo()
-	{
-		$user = User::create(array('name' => 'George R. R. Martin'));
-		Book::create(array('title' => 'A Game of Thrones', 'author_id' => $user->_id));
-		$book = Book::create(array('title' => 'A Clash of Kings', 'author_id' => $user->_id));
+            $items = $user->items;
+            $this->assertEquals(3, count($items));
+    }
 
-		$author = $book->author;
-		$this->assertEquals('George R. R. Martin', $author->name);
+    public function testBelongsTo()
+    {
+            $user = User::create(array('name' => 'George R. R. Martin'));
+            Book::create(array('title' => 'A Game of Thrones', 'author_id' => $user->_id));
+            $book = Book::create(array('title' => 'A Clash of Kings', 'author_id' => $user->_id));
 
-		$user = User::create(array('name' => 'John Doe'));
-		$item = Item::create(array('type' => 'sword', 'user_id' => $user->_id));
+            $author = $book->author;
+            $this->assertEquals('George R. R. Martin', $author->name);
 
-		$owner = $item->user;
-		$this->assertEquals('John Doe', $owner->name);
-	}
+            $user = User::create(array('name' => 'John Doe'));
+            $item = Item::create(array('type' => 'sword', 'user_id' => $user->_id));
 
-	public function testHasOne()
-	{
-		$user = User::create(array('name' => 'John Doe'));
-		Role::create(array('type' => 'admin', 'user_id' => $user->_id));
+            $owner = $item->user;
+            $this->assertEquals('John Doe', $owner->name);
+    }
 
-		$role = $user->role;
-		$this->assertEquals('admin', $role->type);
-	}
+    public function testHasOne()
+    {
+            $user = User::create(array('name' => 'John Doe'));
+            Role::create(array('type' => 'admin', 'user_id' => $user->_id));
 
-	public function testWithBelongsTo()
-	{
-		$user = User::create(array('name' => 'John Doe'));
-		Item::create(array('type' => 'knife', 'user_id' => $user->_id));
-		Item::create(array('type' => 'shield', 'user_id' => $user->_id));
-		Item::create(array('type' => 'sword', 'user_id' => $user->_id));
-		Item::create(array('type' => 'bag', 'user_id' => null));
+            $role = $user->role;
+            $this->assertEquals('admin', $role->type);
+    }
 
-		$items = Item::with('user')->get();
+    public function testWithBelongsTo()
+    {
+            $user = User::create(array('name' => 'John Doe'));
+            Item::create(array('type' => 'knife', 'user_id' => $user->_id));
+            Item::create(array('type' => 'shield', 'user_id' => $user->_id));
+            Item::create(array('type' => 'sword', 'user_id' => $user->_id));
+            Item::create(array('type' => 'bag', 'user_id' => null));
 
-		$user = $items[0]->getRelation('user');
-		$this->assertInstanceOf('User', $user);
-		$this->assertEquals('John Doe', $user->name);
-		$this->assertEquals(1, count($items[0]->getRelations()));
-		$this->assertEquals(null, $items[3]->getRelation('user'));
-	}
+            $items = Item::with('user')->get();
 
-	public function testWithHashMany()
-	{
-		$user = User::create(array('name' => 'John Doe'));
-		Item::create(array('type' => 'knife', 'user_id' => $user->_id));
-		Item::create(array('type' => 'shield', 'user_id' => $user->_id));
-		Item::create(array('type' => 'sword', 'user_id' => $user->_id));
-		Item::create(array('type' => 'bag', 'user_id' => null));
+            $user = $items[0]->getRelation('user');
+            $this->assertInstanceOf('User', $user);
+            $this->assertEquals('John Doe', $user->name);
+            $this->assertEquals(1, count($items[0]->getRelations()));
+            $this->assertEquals(null, $items[3]->getRelation('user'));
+    }
 
-		$user = User::with('items')->find($user->_id);
+    public function testWithHashMany()
+    {
+            $user = User::create(array('name' => 'John Doe'));
+            Item::create(array('type' => 'knife', 'user_id' => $user->_id));
+            Item::create(array('type' => 'shield', 'user_id' => $user->_id));
+            Item::create(array('type' => 'sword', 'user_id' => $user->_id));
+            Item::create(array('type' => 'bag', 'user_id' => null));
 
-		$items = $user->getRelation('items');
-		$this->assertEquals(3, count($items));
-		$this->assertInstanceOf('Item', $items[0]);
-	}
+            $user = User::with('items')->find($user->_id);
 
-	public function testWithHasOne()
-	{
-		$user = User::create(array('name' => 'John Doe'));
-		Role::create(array('type' => 'admin', 'user_id' => $user->_id));
-		Role::create(array('type' => 'guest', 'user_id' => $user->_id));
+            $items = $user->getRelation('items');
+            $this->assertEquals(3, count($items));
+            $this->assertInstanceOf('Item', $items[0]);
+    }
 
-		$user = User::with('role')->find($user->_id);
+    public function testWithHasOne()
+    {
+            $user = User::create(array('name' => 'John Doe'));
+            Role::create(array('type' => 'admin', 'user_id' => $user->_id));
+            Role::create(array('type' => 'guest', 'user_id' => $user->_id));
 
-		$role = $user->getRelation('role');
-		$this->assertInstanceOf('Role', $role);
-		$this->assertEquals('admin', $role->type);
-	}
+            $user = User::with('role')->find($user->_id);
+
+            $role = $user->getRelation('role');
+            $this->assertInstanceOf('Role', $role);
+            $this->assertEquals('admin', $role->type);
+    }
+
+    public function testEasyRelation()
+    {
+            // Has Many
+            $user = User::create(array('name' => 'John Doe'));
+            $item = Item::create(array('type' => 'knife'));
+            $user->items()->save($item);
+
+            $user = User::find($user->_id);
+            $items = $user->items;
+            $this->assertEquals(1, count($items));
+            $this->assertInstanceOf('Item', $items[0]);
+
+            // Has one
+            $user = User::create(array('name' => 'John Doe'));
+            $role = Role::create(array('type' => 'admin'));
+            $user->role()->save($role);
+
+            $user = User::find($user->_id);
+            $role = $user->role;
+            $this->assertInstanceOf('Role', $role);
+            $this->assertEquals('admin', $role->type);
+    }
 	
 	public function testHasManyAndBelongsTo()
 	{
@@ -175,7 +193,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 			Client::create(array('name' => 'Boloni Ltd.'))->_id,
 			Client::create(array('name' => 'Meatballs Inc.'))->_id
 		);
-			
+		
+		// Sync multiple records
 		$user->clients()->sync($clients);
 		
 		$user = User::with('clients')->find($user->_id);
