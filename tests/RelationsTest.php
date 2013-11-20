@@ -3,6 +3,11 @@
 class RelationsTest extends PHPUnit_Framework_TestCase {
 
 	public function setUp() {
+		User::truncate();
+		Book::truncate();
+		Item::truncate();
+		Role::truncate();
+		Client::truncate();
 	}
 
 	public function tearDown()
@@ -11,8 +16,9 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 		Book::truncate();
 		Item::truncate();
 		Role::truncate();
+		Client::truncate();
 	}
-
+	
 	public function testHasMany()
 	{
 		$author = User::create(array('name' => 'George R. R. Martin'));
@@ -101,28 +107,90 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('Role', $role);
 		$this->assertEquals('admin', $role->type);
 	}
-
-	public function testEasyRelation()
+	
+	public function testHasManyAndBelongsTo()
 	{
-		// Has Many
 		$user = User::create(array('name' => 'John Doe'));
-		$item = Item::create(array('type' => 'knife'));
-		$user->items()->save($item);
+		
+		$user->clients()->save(new Client(array('name' => 'Pork Pies Ltd.')));
+		$user->clients()->create(array('name' => 'Buffet Bar Inc.'));
+		
+		$user = User::with('clients')->find($user->_id);
+		
+		$client = Client::with('users')->first();
+		
+		$clients = $client->getRelation('users');
+		$users = $user->getRelation('clients');
+		
+		$this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
+		$this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $clients);
+		$this->assertInstanceOf('Client', $users[0]);
+		$this->assertInstanceOf('User', $clients[0]);
+		$this->assertCount(2, $user->clients);
+		$this->assertCount(1, $client->users);
+		
+		// Now create a new user to an existing client
+		$client->users()->create(array('name' => 'Jane Doe'));
+		
+		$otherClient = User::where('name', '=', 'Jane Doe')->first()->clients()->get();
+		
+		$this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $otherClient);
+		$this->assertInstanceOf('Client', $otherClient[0]);
+		$this->assertCount(1, $otherClient);
+		
+		// Now attach an existing client to an existing user
+		$user = User::where('name', '=', 'Jane Doe')->first();
+		$client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
+		
+		// Check the models are what they should be
+		$this->assertInstanceOf('Client', $client);
+		$this->assertInstanceOf('User', $user);
+		
+		// Assert they are not attached
+		$this->assertFalse(in_array($client->_id, $user->client_ids));
+		$this->assertFalse(in_array($user->_id, $client->user_ids));
 
-		$user = User::find($user->_id);
-		$items = $user->items;
-		$this->assertEquals(1, count($items));
-		$this->assertInstanceOf('Item', $items[0]);
+		// Attach the client to the user
+		$user->clients()->attach($client);
+		
+		// Get the new user model
+		$user = User::where('name', '=', 'Jane Doe')->first();
+		$client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
 
-		// Has one
-		$user = User::create(array('name' => 'John Doe'));
-		$role = Role::create(array('type' => 'admin'));
-		$user->role()->save($role);
-
-		$user = User::find($user->_id);
-		$role = $user->role;
-		$this->assertInstanceOf('Role', $role);
-		$this->assertEquals('admin', $role->type);
+		// Assert they are attached
+		$this->assertTrue(in_array($client->_id, $user->client_ids));
+		$this->assertTrue(in_array($user->_id, $client->user_ids));
 	}
 
+	public function testHasManyAndBelongsToAttachesExistingModels()
+	{
+		$user = User::create(array('name' => 'John Doe', 'client_ids' => array('1234523')));
+		
+		$clients = array(
+			Client::create(array('name' => 'Pork Pies Ltd.'))->_id,
+			Client::create(array('name' => 'Buffet Bar Inc.'))->_id
+		);
+		
+		$moreClients = array(
+			Client::create(array('name' => 'Boloni Ltd.'))->_id,
+			Client::create(array('name' => 'Meatballs Inc.'))->_id
+		);
+			
+		$user->clients()->sync($clients);
+		
+		$user = User::with('clients')->find($user->_id);
+		
+		// Assert non attached ID's are detached succesfully
+		$this->assertFalse(in_array('1234523', $user->client_ids));
+		
+		// Assert there are two client objects in the relationship
+		$this->assertCount(2, $user->clients);
+		
+		$user->clients()->sync($moreClients);
+		
+		$user = User::with('clients')->find($user->_id);
+		
+		// Assert there are now 4 client objects in the relationship
+		$this->assertCount(4, $user->clients);
+	}
 }
