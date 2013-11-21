@@ -266,6 +266,9 @@ Supported relations are:
  - hasOne
  - hasMany
  - belongsTo
+ - belongsToMany
+
+*The belongsToMany relation will not use a pivot "table", but will push id's to a **related_ids** attribute instead.*
 
 Example:
 
