@@ -266,6 +266,7 @@ Supported relations are:
  - hasOne
  - hasMany
  - belongsTo
+ - belongsToMany
 
 Example:
 
