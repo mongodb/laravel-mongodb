@@ -78,7 +78,6 @@ If you are using a different database driver as the default one, you will need t
 Everything else works just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
 
 ### Optional: Alias
--------------------
 
 You may also register an alias for the MongoDB model by adding the following to the alias array in `app/config/app.php`:
 
@@ -268,7 +267,7 @@ Supported relations are:
  - belongsTo
  - belongsToMany
 
-*The belongsToMany relation will not use a pivot "table", but will push id's to a **related_ids** attribute instead.*
+*The belongsToMany relation will not use a pivot "table", but will push id's to a __related_ids__ attribute instead.*
 
 Example:
 
