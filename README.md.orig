@@ -270,9 +270,9 @@ Supported relations are:
 
 <<<<<<< HEAD
 =======
-*The belongsToMany relation will not use a pivot "table", but will push id's to a **related_ids** attribute instead.*
+*The belongsToMany relation will not use a pivot "table", but will push id's to a __related_ids__ attribute instead.*
 
->>>>>>> Small readme update for belongsToMany
+>>>>>>> Markdown fixes
 Example:
 
     use Jenssegers\Mongodb\Model as Eloquent;
