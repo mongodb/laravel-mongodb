@@ -5,3 +5,4 @@ composer.phar
 composer.lock
 *.sublime-project
 *.sublime-workspace
+*.project
