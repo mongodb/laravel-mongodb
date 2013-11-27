@@ -199,16 +199,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 
 		return count($ids);
 	}
-	
-	protected function detachRelation()
-	{
-		
-	}
-	
-	protected function detachParent()
-	{
-		
-	}
 
 	/**
 	 * Create a new query builder for the parent
