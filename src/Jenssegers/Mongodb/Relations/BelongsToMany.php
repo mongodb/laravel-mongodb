@@ -144,7 +144,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 */
 	protected function createAttachRecords($ids, array $attributes)
 	{
-		$records = array();;
+		$records = array();
 
 		// To create the attachment records, we will simply spin through the IDs given
 		// and create a new record to insert for each ID. Each ID may actually be a
@@ -185,7 +185,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 		// Once we have all of the conditions set on the statement, we are ready
 		// to run the delete on the pivot table. Then, if the touch parameter
 		// is true, we will go ahead and touch all related models to sync.
-		foreach($ids as $id)
+		foreach ($ids as $id)
 		{
 			$query->pull($this->otherKey, $id);
 		}
