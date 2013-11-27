@@ -268,6 +268,8 @@ Supported relations are:
  - belongsTo
  - belongsToMany
 
+*The belongsToMany relation will not use a pivot "table", but will push id's to a __related_ids__ attribute instead.*
+
 Example:
 
     use Jenssegers\Mongodb\Model as Eloquent;
