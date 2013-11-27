@@ -190,8 +190,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         );
 
         $moreClients = array(
-            Client::create(array('name' => 'Boloni Ltd.'))->_id,
-            Client::create(array('name' => 'Meatballs Inc.'))->_id
+            Client::create(array('name' => 'synced Boloni Ltd.'))->_id,
+            Client::create(array('name' => 'synced Meatballs Inc.'))->_id
         );
 
         // Sync multiple records
@@ -209,7 +209,10 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $user = User::with('clients')->find($user->_id);
 
-        // Assert there are now 4 client objects in the relationship
-        $this->assertCount(4, $user->clients);
+        // Assert there are now still 2 client objects in the relationship
+        $this->assertCount(2, $user->clients);
+		// Assert that the new relationships name start with synced
+		$this->assertStringStartsWith('synced', $user->clients[0]->name);
+		$this->assertStringStartsWith('synced', $user->clients[1]->name);
     }
 }
