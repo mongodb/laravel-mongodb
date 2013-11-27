@@ -190,8 +190,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         );
 
         $moreClients = array(
-            Client::create(array('name' => 'Boloni Ltd.'))->_id,
-            Client::create(array('name' => 'Meatballs Inc.'))->_id
+            Client::create(array('name' => 'synced Boloni Ltd.'))->_id,
+            Client::create(array('name' => 'synced Meatballs Inc.'))->_id
         );
 
         // Sync multiple records
