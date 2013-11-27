@@ -170,6 +170,9 @@ class BelongsToMany extends EloquentBelongsToMany {
 
 		$query = $this->newParentQuery();
 
+		// Generate a new related query instance
+		$related = $this->related->newInstance();
+
 		// If associated IDs were passed to the method we will only delete those
 		// associations, otherwise all of the association ties will be broken.
 		// We'll return the numbers of affected rows when we do the deletes.
@@ -189,6 +192,9 @@ class BelongsToMany extends EloquentBelongsToMany {
 		{
 			$query->pull($this->otherKey, $id);
 		}
+		
+		// Remove the relation from the related model
+		$related->pull($this->foreignKey, $this->parent->getKey());
 
 		return count($ids);
 	}
