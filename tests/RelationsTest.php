@@ -12,6 +12,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         Item::truncate();
         Role::truncate();
         Client::truncate();
+        Group::truncate();
     }
 
     public function testHasMany()
@@ -126,16 +127,21 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals('admin', $role->type);
     }
 
-    public function testHasManyAndBelongsTo()
+    public function testBelongsToMany()
     {
         $user = User::create(array('name' => 'John Doe'));
 
+        // Add 2 clients
         $user->clients()->save(new Client(array('name' => 'Pork Pies Ltd.')));
         $user->clients()->create(array('name' => 'Buffet Bar Inc.'));
 
+        // Refetch
         $user = User::with('clients')->find($user->_id);
-
         $client = Client::with('users')->first();
+
+        // Check for relation attributes
+        $this->assertTrue(array_key_exists('user_ids', $client->getAttributes()));
+        $this->assertTrue(array_key_exists('client_ids', $user->getAttributes()));
 
         $clients = $client->getRelation('users');
         $users = $user->getRelation('clients');
@@ -148,15 +154,13 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertCount(1, $client->users);
 
         // Now create a new user to an existing client
-        $client->users()->create(array('name' => 'Jane Doe'));
+        $user = $client->users()->create(array('name' => 'Jane Doe'));
 
-        $otherClient = User::where('name', '=', 'Jane Doe')->first()->clients()->get();
+        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $user->clients);
+        $this->assertInstanceOf('Client', $user->clients->first());
+        $this->assertCount(1, $user->clients);
 
-        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $otherClient);
-        $this->assertInstanceOf('Client', $otherClient[0]);
-        $this->assertCount(1, $otherClient);
-
-        // Now attach an existing client to an existing user
+        // Get user and unattached client
         $user = User::where('name', '=', 'Jane Doe')->first();
         $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
 
@@ -167,6 +171,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         // Assert they are not attached
         $this->assertFalse(in_array($client->_id, $user->client_ids));
         $this->assertFalse(in_array($user->_id, $client->user_ids));
+        $this->assertCount(1, $user->clients);
+        $this->assertCount(1, $client->users);
 
         // Attach the client to the user
         $user->clients()->attach($client);
@@ -178,9 +184,24 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         // Assert they are attached
         $this->assertTrue(in_array($client->_id, $user->client_ids));
         $this->assertTrue(in_array($user->_id, $client->user_ids));
+        $this->assertCount(2, $user->clients);
+        $this->assertCount(2, $client->users);
+
+        // Detach clients from user
+        $user->clients()->sync(array());
+
+        // Get the new user model
+        $user = User::where('name', '=', 'Jane Doe')->first();
+        $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
+
+        // Assert they are not attached
+        $this->assertFalse(in_array($client->_id, $user->client_ids));
+        $this->assertFalse(in_array($user->_id, $client->user_ids));
+        $this->assertCount(0, $user->clients);
+        $this->assertCount(1, $client->users);
     }
 
-    public function testHasManyAndBelongsToAttachesExistingModels()
+    public function testBelongsToManyAttachesExistingModels()
     {
         $user = User::create(array('name' => 'John Doe', 'client_ids' => array('1234523')));
 
@@ -190,8 +211,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         );
 
         $moreClients = array(
-            Client::create(array('name' => 'Boloni Ltd.'))->_id,
-            Client::create(array('name' => 'Meatballs Inc.'))->_id
+            Client::create(array('name' => 'synced Boloni Ltd.'))->_id,
+            Client::create(array('name' => 'synced Meatballs Inc.'))->_id
         );
 
         // Sync multiple records
@@ -205,11 +226,37 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         // Assert there are two client objects in the relationship
         $this->assertCount(2, $user->clients);
 
+        // Add more clients
         $user->clients()->sync($moreClients);
 
+        // Refetch
         $user = User::with('clients')->find($user->_id);
 
-        // Assert there are now 4 client objects in the relationship
-        $this->assertCount(4, $user->clients);
+        // Assert there are now still 2 client objects in the relationship
+        $this->assertCount(2, $user->clients);
+
+        // Assert that the new relationships name start with synced
+        $this->assertStringStartsWith('synced', $user->clients[0]->name);
+        $this->assertStringStartsWith('synced', $user->clients[1]->name);
+    }
+
+    public function testBelongsToManyCustom()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $group = $user->groups()->create(array('name' => 'Admins'));
+
+        // Refetch
+        $user = User::find($user->_id);
+        $group = Group::find($group->_id);
+
+        // Check for custom relation attributes
+        $this->assertTrue(array_key_exists('users', $group->getAttributes()));
+        $this->assertTrue(array_key_exists('groups', $user->getAttributes()));
+
+        // Assert they are attached
+        $this->assertTrue(in_array($group->_id, $user->groups));
+        $this->assertTrue(in_array($user->_id, $group->users));
+        $this->assertEquals($group->_id, $user->groups()->first()->_id);
+        $this->assertEquals($user->_id, $group->users()->first()->_id);
     }
 }
