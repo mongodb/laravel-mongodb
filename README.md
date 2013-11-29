@@ -267,8 +267,6 @@ Supported relations are:
  - belongsTo
  - belongsToMany
 
-*The belongsToMany relation will not use a pivot "table", but will push id's to a __related_ids__ attribute instead.*
-
 Example:
 
     use Jenssegers\Mongodb\Model as Eloquent;
@@ -291,6 +289,19 @@ And the inverse relation:
         public function user()
         {
             return $this->belongsTo('User');
+        }
+
+    }
+
+The belongsToMany relation will not use a pivot "table", but will push id's to a __related_ids__ attribute instead. This makes the second parameter for the belongsToMany method useless. If you want to define custom keys for your relation, set it to `null`:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class User extends Eloquent {
+
+        public function groups()
+        {
+            return $this->belongsToMany('Group', null, 'users', 'groups');
         }
 
     }

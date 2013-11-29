@@ -35,7 +35,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 
     public function groups()
     {
-        return $this->belongsToMany('Group', 'test_collection', 'users', 'groups');
+        return $this->belongsToMany('Group', null, 'users', 'groups');
     }
 
     /**
