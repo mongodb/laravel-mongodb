@@ -5,6 +5,7 @@ use MongoRegex;
 use MongoDate;
 use DateTime;
 use Closure;
+use Illuminate\Database\Query\Processors\Processor;
 
 class Builder extends \Illuminate\Database\Query\Builder {
 
@@ -14,6 +15,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @var MongoCollection
      */
     protected $collection;
+
+    /**
+     * The database query post processor instance.
+     *
+     * @var \Illuminate\Database\Query\Processors\Processor
+     */
+    protected $processor;
 
     /**
      * All of the available operators.
@@ -36,9 +44,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param Connection $connection
      * @return void
      */
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection, Processor $processor = null)
     {
         $this->connection = $connection;
+        $this->processor = $processor;
     }
 
     /**
@@ -147,8 +156,15 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 $this->from . '.aggregate(' . json_encode($pipeline) . ')',
                 array(), $this->connection->getElapsedTime($start));
 
+            //Post process the data
+            $result = $results['result'];
+            if($this->processor !== null)
+            {
+                $result = $this->processor->processSelect($this, $result);
+            }
+
             // Return results
-            return $results['result'];
+            return $result;
         }
 
         // Distinct query
@@ -164,6 +180,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $this->connection->logQuery(
                 $this->from . '.distinct("' . $column . '", ' . json_encode($wheres) . ')',
                 array(), $this->connection->getElapsedTime($start));
+
+            //Post process the data
+            if($this->processor !== null)
+            {
+                $result = $this->processor->processSelect($this, $result);
+            }
 
             return $result;
         }
@@ -190,8 +212,15 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 $this->from . '.find(' . json_encode($wheres) . ', ' . json_encode($columns) . ')',
                 array(), $this->connection->getElapsedTime($start));
 
+            //Post process the data
+            $result = iterator_to_array($cursor, false);
+            if($this->processor !== null)
+            {
+                $result = $this->processor->processSelect($this, $result);
+            }
+
             // Return results as an array with numeric keys
-            return iterator_to_array($cursor, false);
+            return $result;
         }
     }
 
