@@ -1,6 +1,7 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Jenssegers\Mongodb\Builder as QueryBuilder;
+use Jenssegers\Mongodb\Query\Processors\ConvertToObjectsPostProcessor;
 use MongoClient;
 
 class Connection extends \Illuminate\Database\Connection {
@@ -40,6 +41,12 @@ class Connection extends \Illuminate\Database\Connection {
 
         // Select database
         $this->db = $this->connection->{$config['database']};
+
+        // If the ConvertApplicableObjects options is set, use the convertToObjectsPostProcessor
+        if(array_key_exists('convertToObjectsPostProcessor', $config) && $config['convertToObjectsPostProcessor'] == true)
+        {
+            $this->setPostProcessor(new ConvertToObjectsPostProcessor());   
+        }
     }
 
     /**
@@ -50,7 +57,7 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function collection($collection)
     {
-        $query = new QueryBuilder($this);
+        $query = new QueryBuilder($this, $this->getPostProcessor());
 
         return $query->from($collection);
     }

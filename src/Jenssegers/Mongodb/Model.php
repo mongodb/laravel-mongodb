@@ -245,7 +245,8 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     protected function newBaseQueryBuilder()
     {
-        return new QueryBuilder($this->getConnection());
+        $conn = $this->getConnection();
+        return new QueryBuilder($conn, $conn->getPostProcessor());
     }
 
     /**
