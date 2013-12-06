@@ -268,7 +268,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function orderBy($column, $direction = 'asc')
     {
-        $this->orders[$column] = ($direction == 'asc' ? 1 : -1);
+        $this->orders[$column] = (strtolower($direction) == 'asc' ? 1 : -1);
 
         return $this;
     }
