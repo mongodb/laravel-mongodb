@@ -14,7 +14,7 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 	public function testCollection()
 	{
-		$this->assertInstanceOf('Jenssegers\Mongodb\Builder', DB::collection('users'));
+		$this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', DB::collection('users'));
 	}
 
 	public function testGet()

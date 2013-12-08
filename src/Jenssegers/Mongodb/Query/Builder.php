@@ -1,10 +1,12 @@
-<?php namespace Jenssegers\Mongodb;
+<?php namespace Jenssegers\Mongodb\Query;
 
 use MongoID;
 use MongoRegex;
 use MongoDate;
 use DateTime;
 use Closure;
+
+use Jenssegers\Mongodb\Connection;
 
 class Builder extends \Illuminate\Database\Query\Builder {
 
