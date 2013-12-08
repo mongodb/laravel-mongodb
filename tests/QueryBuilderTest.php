@@ -445,4 +445,57 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(2, count($users));
 	}
 
+	public function testOperators()
+	{
+		DB::collection('users')->insert(array(
+			array('name' => 'John Doe', 'age' => 30),
+			array('name' => 'Jane Doe'),
+			array('name' => 'Robert Roe', 'age' => 'thirty-one'),
+		));
+
+		$results = DB::collection('users')->where('age', 'exists', true)->get();
+		$this->assertEquals(2, count($results));
+		$this->assertEquals('John Doe', $results[0]['name']);
+
+		$results = DB::collection('users')->where('age', 'exists', false)->get();
+		$this->assertEquals(1, count($results));
+		$this->assertEquals('Jane Doe', $results[0]['name']);
+
+		$results = DB::collection('users')->where('age', 'type', 2)->get();
+		$this->assertEquals(1, count($results));
+		$this->assertEquals('Robert Roe', $results[0]['name']);
+
+		$results = DB::collection('users')->where('age', 'mod', array(15, 0))->get();
+		$this->assertEquals(1, count($results));
+		$this->assertEquals('John Doe', $results[0]['name']);
+
+		$results = DB::collection('users')->where('age', 'mod', array(29, 1))->get();
+		$this->assertEquals(1, count($results));
+		$this->assertEquals('John Doe', $results[0]['name']);
+
+		$results = DB::collection('users')->where('age', 'mod', array(14, 0))->get();
+		$this->assertEquals(0, count($results));
+
+		DB::collection('items')->insert(array(
+			array('name' => 'fork',  'tags' => array('sharp', 'pointy')),
+			array('name' => 'spork', 'tags' => array('sharp', 'pointy', 'round', 'bowl')),
+			array('name' => 'spoon', 'tags' => array('round', 'bowl')),
+		));
+
+		$results = DB::collection('items')->where('tags', 'all', array('sharp', 'pointy'))->get();
+		$this->assertEquals(2, count($results));
+
+		$results = DB::collection('items')->where('tags', 'all', array('sharp', 'round'))->get();
+		$this->assertEquals(1, count($results));
+
+		$results = DB::collection('items')->where('tags', 'size', 2)->get();
+		$this->assertEquals(2, count($results));
+
+		$results = DB::collection('items')->where('tags', 'size', 3)->get();
+		$this->assertEquals(0, count($results));
+
+		$results = DB::collection('items')->where('tags', 'size', 4)->get();
+		$this->assertEquals(1, count($results));
+	}
+
 }

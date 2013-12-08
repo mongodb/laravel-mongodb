@@ -18,7 +18,19 @@ class Builder extends \Illuminate\Database\Query\Builder {
     protected $collection;
 
     /**
-     * All of the available operators.
+     * All of the available clause operators.
+     *
+     * @var array
+     */
+    protected $operators = array(
+        '=', '<', '>', '<=', '>=', '<>', '!=',
+        'like', 'not like', 'between', 'ilike',
+        '&', '|', '^', '<<', '>>',
+        'exists', 'type', 'mod', 'where', 'all', 'size',
+    );
+
+    /**
+     * Operator conversion.
      *
      * @var array
      */
@@ -701,9 +713,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
         {
             $query = array($column => $value);
         }
-        else
+        else if (array_key_exists($operator, $this->conversion))
         {
             $query = array($column => array($this->conversion[$operator] => $value));
+        }
+        else
+        {
+            $query = array($column => array('$' . $operator => $value));
         }
 
         return $query;
