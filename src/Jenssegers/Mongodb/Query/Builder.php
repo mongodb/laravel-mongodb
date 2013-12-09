@@ -26,7 +26,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         '=', '<', '>', '<=', '>=', '<>', '!=',
         'like', 'not like', 'between', 'ilike',
         '&', '|', '^', '<<', '>>',
-        'exists', 'type', 'mod', 'where', 'all', 'size',
+        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex',
     );
 
     /**

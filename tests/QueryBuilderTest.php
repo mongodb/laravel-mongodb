@@ -496,6 +496,10 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 		$results = DB::collection('items')->where('tags', 'size', 4)->get();
 		$this->assertEquals(1, count($results));
+
+		$regex = new MongoRegex("/.*doe/i");
+		$results = DB::collection('users')->where('name', 'regex', $regex)->get();
+		$this->assertEquals(2, count($results));
 	}
 
 }

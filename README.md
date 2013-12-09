@@ -256,6 +256,12 @@ Selects documents if the array field is a specified size.
 
     User::where('tags', 'size', 3)->get();
 
+**Regex**
+
+Selects documents where values match a specified regular expression.
+
+    User::where('name', 'regex', new MongoRegex("/.*doe/i"))->get();
+
 **Type**
 
 Selects documents if a field is of the specified type. For more information check: http://docs.mongodb.org/manual/reference/operator/query/type/#op._S_type
