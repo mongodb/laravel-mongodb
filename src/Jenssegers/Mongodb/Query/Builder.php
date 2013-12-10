@@ -486,7 +486,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function truncate()
     {
-        $result = $this->collection->drop();
+        $result = $this->collection->remove();
 
         return (1 == (int) $result['ok']);
     }
