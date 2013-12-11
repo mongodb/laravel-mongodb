@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
-use Jenssegers\Mongodb\Builder as QueryBuilder;
+use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
 

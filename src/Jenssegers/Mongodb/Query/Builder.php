@@ -1,10 +1,12 @@
-<?php namespace Jenssegers\Mongodb;
+<?php namespace Jenssegers\Mongodb\Query;
 
 use MongoID;
 use MongoRegex;
 use MongoDate;
 use DateTime;
 use Closure;
+
+use Jenssegers\Mongodb\Connection;
 
 class Builder extends \Illuminate\Database\Query\Builder {
 
@@ -16,7 +18,19 @@ class Builder extends \Illuminate\Database\Query\Builder {
     protected $collection;
 
     /**
-     * All of the available operators.
+     * All of the available clause operators.
+     *
+     * @var array
+     */
+    protected $operators = array(
+        '=', '<', '>', '<=', '>=', '<>', '!=',
+        'like', 'not like', 'between', 'ilike',
+        '&', '|', '^', '<<', '>>',
+        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex',
+    );
+
+    /**
+     * Operator conversion.
      *
      * @var array
      */
@@ -268,7 +282,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function orderBy($column, $direction = 'asc')
     {
-        $this->orders[$column] = ($direction == 'asc' ? 1 : -1);
+        $this->orders[$column] = (strtolower($direction) == 'asc' ? 1 : -1);
 
         return $this;
     }
@@ -472,7 +486,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function truncate()
     {
-        $result = $this->collection->drop();
+        $result = $this->collection->remove();
 
         return (1 == (int) $result['ok']);
     }
@@ -699,9 +713,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
         {
             $query = array($column => $value);
         }
-        else
+        else if (array_key_exists($operator, $this->conversion))
         {
             $query = array($column => array($this->conversion[$operator] => $value));
+        }
+        else
+        {
+            $query = array($column => array('$' . $operator => $value));
         }
 
         return $query;

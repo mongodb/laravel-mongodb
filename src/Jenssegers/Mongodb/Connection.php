@@ -1,6 +1,6 @@
 <?php namespace Jenssegers\Mongodb;
 
-use Jenssegers\Mongodb\Builder as QueryBuilder;
+use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoClient;
 
 class Connection extends \Illuminate\Database\Connection {

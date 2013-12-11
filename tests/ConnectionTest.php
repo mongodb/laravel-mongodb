@@ -34,10 +34,10 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 		$this->assertInstanceOf('MongoCollection', $collection);
 
 		$collection = DB::connection('mongodb')->collection('unittests');
-		$this->assertInstanceOf('Jenssegers\Mongodb\Builder', $collection);
+		$this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', $collection);
 
 		$collection = DB::connection('mongodb')->table('unittests');
-		$this->assertInstanceOf('Jenssegers\Mongodb\Builder', $collection);
+		$this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', $collection);
 	}
 
 	public function testDynamic()
