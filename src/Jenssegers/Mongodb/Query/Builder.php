@@ -398,7 +398,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         );
         if(!empty($extra))
         {
-            $query[] = array('$set' => $extra);
+            $query['$set'] = $extra;
         }
         // Protect
         $this->whereNotNull($column);
