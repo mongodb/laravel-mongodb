@@ -204,14 +204,23 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      * Define a many-to-many relationship.
      *
      * @param  string  $related
-     * @param  string  $table
+     * @param  string  $collection
      * @param  string  $foreignKey
      * @param  string  $otherKey
+     * @param  string  $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function belongsToMany($related, $collection = null, $foreignKey = null, $otherKey = null)
+    public function belongsToMany($related, $collection = null, $foreignKey = null, $otherKey = null, $relation = null)
     {
-        $caller = $this->getBelongsToManyCaller();
+        // If no relationship name was passed, we will pull backtraces to get the
+        // name of the calling function. We will use that function name as the
+        // title of this relation since that is a great convention to apply.
+        if (is_null($relation))
+        {
+            $caller = $this->getBelongsToManyCaller();
+
+            $name = $caller['function'];
+        }
 
         // First, we'll need to determine the foreign key and "other key" for the
         // relationship. Once we have determined the keys we'll make the query
@@ -235,7 +244,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         // appropriate query constraint and entirely manages the hydrations.
         $query = $instance->newQuery();
 
-        return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $caller['function']);
+        return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
     }
 
     /**

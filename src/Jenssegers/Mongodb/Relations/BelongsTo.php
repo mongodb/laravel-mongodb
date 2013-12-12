@@ -3,10 +3,10 @@
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
 
 	/**
-	 * Set the base constraints on the relation query.
-	 *
-	 * @return void
-	 */
+	* Set the base constraints on the relation query.
+	*
+	* @return void
+	*/
 	public function addConstraints()
 	{
 		if (static::$constraints)
@@ -14,9 +14,9 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
 			// For belongs to relationships, which are essentially the inverse of has one
 			// or has many relationships, we need to actually query on the primary key
 			// of the related models matching on the foreign key that's on a parent.
-			$key = $this->related->getKeyName();
+			$table = $this->related->getTable();
 
-			$this->query->where($key, '=', $this->parent->{$this->foreignKey});
+			$this->query->where($this->otherKey, '=', $this->parent->{$this->foreignKey});
 		}
 	}
 
@@ -31,7 +31,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
 		// We'll grab the primary key name of the related models since it could be set to
 		// a non-standard name and not "id". We will then construct the constraint for
 		// our eagerly loading query so it returns the proper models from execution.
-		$key = $this->related->getKeyName();
+		$key = $this->otherKey;
 
 		$this->query->whereIn($key, $this->getEagerModelKeys($models));
 	}
