@@ -265,10 +265,10 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		));
 
 		$items = DB::collection('items')->distinct('name')->get();
-		$this->assertEquals(3, count($items));
+		$this->assertEquals(array('knife', 'fork', 'spoon'), $items);
 
 		$types = DB::collection('items')->distinct('type')->get();
-		$this->assertEquals(2, count($types));
+		$this->assertEquals(array('sharp', 'round'), $types);
 	}
 
 	public function testCustomId()
