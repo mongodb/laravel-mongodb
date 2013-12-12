@@ -394,10 +394,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public function increment($column, $amount = 1, array $extra = array())
     {
         $query = array(
-            '$inc' => array($column => $amount),
-            '$set' => $extra,
+            '$inc' => array($column => $amount)
         );
-
+        if(!empty($extra))
+        {
+            $query['$set'] = $extra;
+        }
         // Protect
         $this->whereNotNull($column);
 
