@@ -273,15 +273,30 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
             {
                 $value = (string) $value;
             }
+        }
 
+        parent::setRawAttributes($attributes, $sync);
+    }
+
+    /**
+     * Convert the model's attributes to an array.
+     *
+     * @return array
+     */
+    public function attributesToArray()
+    {
+        $attributes = parent::attributesToArray();
+
+        foreach ($attributes as &$value)
+        {
             // Convert MongoDate to string
-            else if ($value instanceof MongoDate)
+            if ($value instanceof MongoDate)
             {
                 $value = $this->asDateTime($value)->format('Y-m-d H:i:s');
             }
         }
 
-        parent::setRawAttributes($attributes, $sync);
+        return $attributes;
     }
 
     /**
