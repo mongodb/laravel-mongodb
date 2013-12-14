@@ -92,6 +92,22 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(60, $index['expireAfterSeconds']);
 	}
 
+	public function testSoftDeletes()
+	{
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->softDeletes();
+		});
+
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->string('email')->nullable()->index();
+		});
+
+		$index = $this->getIndex('newcollection', 'email');
+		$this->assertEquals(1, $index['key']['email']);
+	}
+
 	public function testFluent()
 	{
 		Schema::collection('newcollection', function($collection)

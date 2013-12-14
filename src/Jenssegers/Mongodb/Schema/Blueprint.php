@@ -44,7 +44,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	 *
 	 * @param  string|array  $columns
 	 * @param  array         $options
-	 * @return bool
+	 * @return Blueprint
 	 */
 	public function index($columns = null, $options = array())
 	{
@@ -72,7 +72,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	 * Indicate that the given index should be dropped.
 	 *
 	 * @param  string|array  $columns
-	 * @return bool
+	 * @return Blueprint
 	 */
 	public function dropIndex($columns = null)
 	{
@@ -90,7 +90,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	 * Specify a unique index for the collection.
 	 *
 	 * @param  string|array  $columns
-	 * @return bool
+	 * @return Blueprint
 	 */
 	public function unique($columns = null, $name = null)
 	{
@@ -104,7 +104,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	 * Specify a non blocking index for the collection.
 	 *
 	 * @param  string|array  $columns
-	 * @return bool
+	 * @return Blueprint
 	 */
 	public function background($columns = null)
 	{
@@ -118,7 +118,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	 * Specify a sparse index for the collection.
 	 *
 	 * @param  string|array  $columns
-	 * @return bool
+	 * @return Blueprint
 	 */
 	public function sparse($columns = null)
 	{
@@ -134,7 +134,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	 *
 	 * @param  string|array  $columns
 	 * @param  int           $seconds
-	 * @return bool
+	 * @return Blueprint
 	 */
 	public function expire($columns, $seconds)
 	{
@@ -166,6 +166,16 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	public function drop()
 	{
 		$this->collection->drop();
+	}
+
+	/**
+	 * Allow an attribute to be null, does not do anything.
+	 *
+	 * @return Blueprint
+	 */
+	public function nullable()
+	{
+		return $this;
 	}
 
 	/**
