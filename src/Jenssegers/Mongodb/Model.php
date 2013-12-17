@@ -196,6 +196,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         $query = $instance->newQuery();
 
         $otherKey = $otherKey ?: $instance->getKeyName();
+		
+		if($instance instanceof Illuminate\Database\Eloquent\Model)
+		{
+			return Illuminate\Database\Eloquent\Relations\BelongsTo($query, $this, $foreignKey, $otherKey, $relation);
+		}
 
         return new BelongsTo($query, $this, $foreignKey, $otherKey, $relation);
     }
@@ -221,30 +226,49 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
 
             $name = $caller['function'];
         }
+		
+		// First, we'll need to determine the foreign key and "other key" for the
+		// relationship. Once we have determined the keys we'll make the query
+		// instances as well as the relationship instances we need for this.
+		$instance = new $related;
+		
+		// Now we're ready to create a new query builder for the related model and
+		// the relationship instances for the relation. The relations will set
+		// appropriate query constraint and entirely manages the hydrations.
+		$query = $instance->newQuery();
+		
+		if($instance instanceof Illuminate\Database\Eloquent\Model)
+		{
+			$foreignKey = $foreignKey ?: $this->getForeignKey();
 
-        // First, we'll need to determine the foreign key and "other key" for the
-        // relationship. Once we have determined the keys we'll make the query
-        // instances as well as the relationship instances we need for this.
-        $foreignKey = $foreignKey ?: $this->getForeignKey() . 's';
+			$otherKey = $otherKey ?: $instance->getForeignKey();
+			
+			// If no table name was provided, we can guess it by concatenating the two
+			// models using underscores in alphabetical order. The two model names
+			// are transformed to snake case from their default CamelCase also.			
+			if (is_null($collection))
+			{
+				$collection = $this->joiningTable($related);
+			}
+			
+			return new Illuminate\Database\Eloquent\Relations\BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+		} 
+		else 
+		{
+			$foreignKey = $foreignKey ?: $this->getForeignKey() . 's';
 
-        $instance = new $related;
+			$otherKey = $otherKey ?: $instance->getForeignKey() . 's';
 
-        $otherKey = $otherKey ?: $instance->getForeignKey() . 's';
-
-        // If no table name was provided, we can guess it by concatenating the two
-        // models using underscores in alphabetical order. The two model names
-        // are transformed to snake case from their default CamelCase also.
-        if (is_null($collection))
-        {
-            $collection = $instance->getTable();
-        }
-
-        // Now we're ready to create a new query builder for the related model and
-        // the relationship instances for the relation. The relations will set
-        // appropriate query constraint and entirely manages the hydrations.
-        $query = $instance->newQuery();
-
-        return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+			// If no table name was provided, we can guess it by concatenating the two
+			// models using underscores in alphabetical order. The two model names
+			// are transformed to snake case from their default CamelCase also.
+			if (is_null($collection))
+			{
+				$collection = $instance->getTable();
+			}
+			
+			return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+		}
     }
 
     /**
