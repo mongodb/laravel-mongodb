@@ -1,19 +1,13 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Eloquent\Collection;
+
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
-
-use Carbon\Carbon;
-use DateTime;
-use MongoId;
-use MongoDate;
 
 abstract class ModelCross extends \Illuminate\Database\Eloquent\Model {
 	
