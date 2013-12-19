@@ -131,6 +131,12 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     */
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        {
+            return parent::hasOne($related, $foreignKey, $localKey);
+        }
+
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
         $instance = new $related;
@@ -150,6 +156,12 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     */
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        {
+            return parent::hasMany($related, $foreignKey, $localKey);
+        }
+
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
         $instance = new $related;
@@ -170,6 +182,12 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     */
     public function belongsTo($related, $foreignKey = null, $otherKey = null, $relation = null)
     {
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        {
+            return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
+        }
+
         // If no relation name was given, we will use this debug backtrace to extract
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relatinoships.
@@ -196,6 +214,11 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         $query = $instance->newQuery();
 
         $otherKey = $otherKey ?: $instance->getKeyName();
+		
+		if($instance instanceof Illuminate\Database\Eloquent\Model)
+		{
+			return Illuminate\Database\Eloquent\Relations\BelongsTo($query, $this, $foreignKey, $otherKey, $relation);
+		}
 
         return new BelongsTo($query, $this, $foreignKey, $otherKey, $relation);
     }
@@ -212,6 +235,12 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     public function belongsToMany($related, $collection = null, $foreignKey = null, $otherKey = null, $relation = null)
     {
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        {
+            return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $relation);
+        }
+
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
@@ -221,30 +250,49 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
 
             $name = $caller['function'];
         }
+		
+		// First, we'll need to determine the foreign key and "other key" for the
+		// relationship. Once we have determined the keys we'll make the query
+		// instances as well as the relationship instances we need for this.
+		$instance = new $related;
+		
+		// Now we're ready to create a new query builder for the related model and
+		// the relationship instances for the relation. The relations will set
+		// appropriate query constraint and entirely manages the hydrations.
+		$query = $instance->newQuery();
+		
+		if($instance instanceof Illuminate\Database\Eloquent\Model)
+		{
+			$foreignKey = $foreignKey ?: $this->getForeignKey();
 
-        // First, we'll need to determine the foreign key and "other key" for the
-        // relationship. Once we have determined the keys we'll make the query
-        // instances as well as the relationship instances we need for this.
-        $foreignKey = $foreignKey ?: $this->getForeignKey() . 's';
+			$otherKey = $otherKey ?: $instance->getForeignKey();
+			
+			// If no table name was provided, we can guess it by concatenating the two
+			// models using underscores in alphabetical order. The two model names
+			// are transformed to snake case from their default CamelCase also.			
+			if (is_null($collection))
+			{
+				$collection = $this->joiningTable($related);
+			}
+			
+			return new Illuminate\Database\Eloquent\Relations\BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+		} 
+		else 
+		{
+			$foreignKey = $foreignKey ?: $this->getForeignKey() . 's';
 
-        $instance = new $related;
+			$otherKey = $otherKey ?: $instance->getForeignKey() . 's';
 
-        $otherKey = $otherKey ?: $instance->getForeignKey() . 's';
-
-        // If no table name was provided, we can guess it by concatenating the two
-        // models using underscores in alphabetical order. The two model names
-        // are transformed to snake case from their default CamelCase also.
-        if (is_null($collection))
-        {
-            $collection = $instance->getTable();
-        }
-
-        // Now we're ready to create a new query builder for the related model and
-        // the relationship instances for the relation. The relations will set
-        // appropriate query constraint and entirely manages the hydrations.
-        $query = $instance->newQuery();
-
-        return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+			// If no table name was provided, we can guess it by concatenating the two
+			// models using underscores in alphabetical order. The two model names
+			// are transformed to snake case from their default CamelCase also.
+			if (is_null($collection))
+			{
+				$collection = $instance->getTable();
+			}
+			
+			return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+		}
     }
 
     /**
