@@ -131,6 +131,12 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     */
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        {
+            return parent::hasOne($related, $foreignKey, $localKey);
+        }
+
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
         $instance = new $related;
@@ -150,6 +156,12 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     */
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        {
+            return parent::hasMany($related, $foreignKey, $localKey);
+        }
+
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
         $instance = new $related;
@@ -170,6 +182,12 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     */
     public function belongsTo($related, $foreignKey = null, $otherKey = null, $relation = null)
     {
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        {
+            return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
+        }
+
         // If no relation name was given, we will use this debug backtrace to extract
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relatinoships.
@@ -212,6 +230,12 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     public function belongsToMany($related, $collection = null, $foreignKey = null, $otherKey = null, $relation = null)
     {
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        {
+            return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $relation);
+        }
+
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
