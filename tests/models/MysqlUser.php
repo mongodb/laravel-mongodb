@@ -42,11 +42,6 @@ class MysqlUser extends Eloquent {
     {
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('users'))
-        {
-            Schema::connection('mysql')->create('users');
-        }
-
         if (!$schema->hasColumn('users', 'id'))
         {
             Schema::connection('mysql')->table('users', function($table)
