@@ -3,6 +3,7 @@ language: php
 branches:
   only:
     - master
+    - develop
 
 php:
   - 5.3
