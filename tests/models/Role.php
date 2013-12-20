@@ -13,4 +13,9 @@ class Role extends Eloquent {
     	return $this->belongsTo('User');
     }
 
+    public function mysqlUser()
+    {
+    	return $this->belongsTo('MysqlUser', 'role_id');
+    }
+
 }

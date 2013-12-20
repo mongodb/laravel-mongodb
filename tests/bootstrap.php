@@ -42,5 +42,6 @@ $reflection = new ReflectionClass('Jenssegers\Mongodb\Connection');
 $app['db']->extend('mongodb', array($reflection, 'newInstance'));
 
 # Static setup
-Model::setConnectionResolver($app['db']);
+\Jenssegers\Mongodb\Model::setConnectionResolver($app['db']);
+\Jenssegers\Eloquent\Model::setConnectionResolver($app['db']);
 DB::setFacadeApplication($app);

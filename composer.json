@@ -21,7 +21,8 @@
     },
     "autoload": {
         "psr-0": {
-            "Jenssegers\\Mongodb": "src/"
+            "Jenssegers\\Mongodb": "src/",
+            "Jenssegers\\Eloquent": "src/"
         }
     },
     "minimum-stability": "dev"

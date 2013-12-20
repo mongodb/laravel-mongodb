@@ -13,6 +13,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         Role::truncate();
         Client::truncate();
         Group::truncate();
+        MysqlUser::truncate();
     }
 
     public function testHasMany()
@@ -258,5 +259,41 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(in_array($user->_id, $group->users));
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
         $this->assertEquals($user->_id, $group->users()->first()->_id);
+    }
+
+    public function testMysqlModel()
+    {
+        // A bit dirty
+        MysqlUser::executeSchema();
+
+        $user = new MysqlUser;
+        $this->assertInstanceOf('MysqlUser', $user);
+        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
+
+        $user->name = "John Doe";
+        $user->save();
+        $this->assertTrue(is_int($user->id));
+
+        // Has many
+        $book = new Book(array('title' => 'Game of Thrones'));
+        $user->books()->save($book);
+        $user = MysqlUser::find($user->id); // refetch
+        $this->assertEquals(1, count($user->books));
+        $book = $user->books()->first(); // refetch
+        $this->assertEquals('John Doe', $book->mysqlAuthor->name);
+
+        // Has one
+        $role = new Role(array('type' => 'admin'));
+        $user->role()->save($role);
+        $user = MysqlUser::find($user->id); // refetch
+        $this->assertEquals('admin', $user->role->type);
+        $role = $user->role()->first(); // refetch
+        $this->assertEquals('John Doe', $role->mysqlUser->name);
+
+        // belongsToMany DOES NOT WORK YET
+        /*$client = new Client(array('name' => 'Pork Pies Ltd.'));
+        $user->clients()->save($client);
+        $user = MysqlUser::find($user->id); // refetch
+        $this->assertEquals(1, count($user->clients));*/
     }
 }

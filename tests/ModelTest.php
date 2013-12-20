@@ -16,6 +16,7 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 	{
 		$user = new User;
 		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
+		$this->assertInstanceOf('Jenssegers\Mongodb\Connection', $user->getConnection());
 		$this->assertEquals(false, $user->exists);
 		$this->assertEquals('users', $user->getTable());
 		$this->assertEquals('_id', $user->getKeyName());
