@@ -13,7 +13,6 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         Role::truncate();
         Client::truncate();
         Group::truncate();
-        MysqlUser::truncate();
     }
 
     public function testHasMany()
@@ -295,5 +294,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user->clients()->save($client);
         $user = MysqlUser::find($user->id); // refetch
         $this->assertEquals(1, count($user->clients));*/
+
+        // Dirty again :)
+        MysqlUser::truncate();
     }
 }
