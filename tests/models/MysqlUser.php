@@ -48,10 +48,11 @@ class MysqlUser extends Eloquent {
             {
                 $table->increments('id');
                 $table->string('name');
+                $table->timestamps();
             });
         }
 
-        if (!$schema->hasColumn('users', 'id'))
+        /*if (!$schema->hasColumn('users', 'id'))
         {
             Schema::connection('mysql')->table('users', function($table)
             {
@@ -65,7 +66,7 @@ class MysqlUser extends Eloquent {
             {
                 $table->string('name');
             });
-        }
+        }*/
     }
 
 }
