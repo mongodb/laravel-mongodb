@@ -14,24 +14,9 @@ class MysqlUser extends Eloquent {
         return $this->hasMany('Book', 'author_id');
     }
 
-    public function items()
-    {
-        return $this->hasMany('Item');
-    }
-
     public function role()
     {
         return $this->hasOne('Role', 'role_id');
-    }
-
-    public function clients()
-    {
-        return $this->belongsToMany('Client');
-    }
-
-    public function groups()
-    {
-        return $this->belongsToMany('Group', null, 'users', 'groups');
     }
 
     /**
@@ -51,22 +36,6 @@ class MysqlUser extends Eloquent {
                 $table->timestamps();
             });
         }
-
-        /*if (!$schema->hasColumn('users', 'id'))
-        {
-            Schema::connection('mysql')->table('users', function($table)
-            {
-                $table->increments('id');
-            });
-        }
-
-        if (!$schema->hasColumn('users', 'name'))
-        {
-            Schema::connection('mysql')->table('users', function($table)
-            {
-                $table->string('name');
-            });
-        }*/
     }
 
 }

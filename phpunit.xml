@@ -31,5 +31,8 @@
             <directory>tests/ModelTest.php</directory>
             <directory>tests/RelationsTest.php</directory>
         </testsuite>
+        <testsuite name="relations">
+            <directory>tests/RelationsTest.php</directory>
+        </testsuite>
     </testsuites>
 </phpunit>

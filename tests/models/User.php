@@ -8,14 +8,17 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 class User extends Eloquent implements UserInterface, RemindableInterface {
 
 	protected $collection = 'users';
-
 	protected $dates = array('birthday');
-
 	protected static $unguarded = true;
 
 	public function books()
     {
         return $this->hasMany('Book', 'author_id');
+    }
+
+    public function mysqlBooks()
+    {
+        return $this->hasMany('MysqlBook', 'author_id');
     }
 
     public function items()
@@ -26,6 +29,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
     public function role()
     {
         return $this->hasOne('Role');
+    }
+
+    public function mysqlRole()
+    {
+        return $this->hasOne('MysqlRole');
     }
 
 	public function clients()
