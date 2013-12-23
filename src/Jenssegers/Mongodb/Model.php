@@ -38,6 +38,19 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     protected static $resolver;
 
     /**
+     * Custom accessor for the model's id.
+     *
+     * @return string
+     */
+    public function getIdAttribute($value)
+    {
+        // If there is an actual id attribute, then return that.
+        if ($value) return $value;
+
+        return $this->getKey();
+    }
+
+    /**
      * Convert a DateTime to a storable MongoDate object.
      *
      * @param  DateTime|int  $value
@@ -132,7 +145,10 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     {
         foreach($attributes as $key => &$value)
         {
-            // Convert MongoId to string
+            /**
+             * MongoIds are converted to string to make it easier to pass
+             * the id to other instances or relations.
+             */
             if ($value instanceof MongoId)
             {
                 $value = (string) $value;
@@ -153,7 +169,11 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         foreach ($attributes as &$value)
         {
-            // Convert MongoDate to string
+            /**
+             * Here we convert MongoDate instances to string. This mimics
+             * original SQL behaviour so that dates are formatted nicely
+             * when your models are converted to JSON.
+             */
             if ($value instanceof MongoDate)
             {
                 $value = $this->asDateTime($value)->format('Y-m-d H:i:s');

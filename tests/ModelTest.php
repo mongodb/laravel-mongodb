@@ -334,4 +334,13 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('John Doe', $user->name);
 	}
 
+	public function testIdAttribute()
+	{
+		$user = User::create(array('name' => 'John Doe'));
+		$this->assertEquals($user->id, $user->_id);
+
+		$user = User::create(array('id' => 'custom_id', 'name' => 'John Doe'));
+		$this->assertNotEquals($user->id, $user->_id);
+	}
+
 }

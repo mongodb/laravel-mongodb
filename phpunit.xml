@@ -13,6 +13,7 @@
     <testsuites>
         <testsuite name="all">
             <directory>tests/</directory>
+            <exclude>tests/MysqlRelationsTest.php</exclude>
         </testsuite>
         <testsuite name="schema">
             <directory>tests/SchemaTest.php</directory>
@@ -33,6 +34,7 @@
         </testsuite>
         <testsuite name="relations">
             <directory>tests/RelationsTest.php</directory>
+            <directory>tests/MysqlRelationsTest.php</directory>
         </testsuite>
     </testsuites>
 </phpunit>
