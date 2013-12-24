@@ -4,7 +4,7 @@ use Jenssegers\Mongodb\Model as Eloquent;
 
 class Item extends Eloquent {
 
-	protected $collection = 'roles';
+	protected $collection = 'items';
 	protected static $unguarded = true;
 
 	public function user()
