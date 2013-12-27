@@ -511,6 +511,7 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		DB::collection('users')->insert(array(
 			array('name' => 'John Doe', 'age' => 30, 'note' => 'adult'),
 			array('name' => 'Jane Doe', 'age' => 10, 'note' => 'minor'),
+			array('name' => 'Robert Roe', 'age' => null),
 			array('name' => 'Mark Moe'),
 		));
 
@@ -548,6 +549,8 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(11, $user['age']);
 		$user = DB::collection('users')->where('name', 'Jane Doe')->first();
 		$this->assertEquals(21, $user['age']);
+		$user = DB::collection('users')->where('name', 'Robert Roe')->first();
+		$this->assertEquals(null, $user['age']);
 		$user = DB::collection('users')->where('name', 'Mark Moe')->first();
 		$this->assertEquals(1, $user['age']);
 	}

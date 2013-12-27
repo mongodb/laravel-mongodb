@@ -402,6 +402,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $query['$set'] = $extra;
         }
 
+        // Protect
+        $this->where(function($query) use ($column)
+        {
+            $query->where($column, 'exists', false);
+            $query->orWhereNotNull($column);
+        });
+
         return $this->performUpdate($query);
     }
 
