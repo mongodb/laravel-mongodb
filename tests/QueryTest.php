@@ -149,37 +149,6 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(37, $user->age);
 	}
 
-	public function testIncrements()
-	{
-		User::where('name', 'John Doe')->increment('age');
-		User::where('name', 'John Doe')->increment('age', 2, array('title' => 'user'));
-
-		$user = User::where('name', 'John Doe')->first();
-		$this->assertEquals(38, $user->age);
-		$this->assertEquals('user', $user->title);
-
-		User::where('name', 'John Doe')->decrement('age');
-		$num = User::where('name', 'John Doe')->decrement('age', 2, array('title' => 'admin'));
-
-		$user = User::where('name', 'John Doe')->first();
-		$this->assertEquals(35, $user->age);
-		$this->assertEquals('admin', $user->title);
-		$this->assertEquals(1, $num);
-
-		User::increment('age');
-		User::increment('age', 2);
-
-		$user = User::where('name', 'Mark Moe')->first();
-		$this->assertEquals(26, $user->age);
-
-		User::decrement('age', 2);
-		$num = User::decrement('age');
-
-		$user = User::where('name', 'Mark Moe')->first();
-		$this->assertEquals(23, $user->age);
-		$this->assertEquals(8, $num);
-	}
-
 	public function testGroupBy()
 	{
 		$users = User::groupBy('title')->get();

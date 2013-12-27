@@ -396,10 +396,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
         $query = array(
             '$inc' => array($column => $amount)
         );
-        if(!empty($extra))
+
+        if (!empty($extra))
         {
             $query['$set'] = $extra;
         }
+
         // Protect
         $this->whereNotNull($column);
 

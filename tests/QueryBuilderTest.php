@@ -506,4 +506,53 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(2, count($results));
 	}
 
+	public function testIncrement()
+	{
+		DB::collection('users')->insert(array(
+			array('name' => 'John Doe', 'age' => 30, 'note' => 'adult'),
+			array('name' => 'Jane Doe', 'age' => 10, 'note' => 'minor'),
+			array('name' => 'Robert Roe', 'age' => null),
+			array('name' => 'Mark Moe'),
+		));
+
+		$user = DB::collection('users')->where('name', 'John Doe')->first();
+		$this->assertEquals(30, $user['age']);
+
+		DB::collection('users')->where('name', 'John Doe')->increment('age');
+		$user = DB::collection('users')->where('name', 'John Doe')->first();
+		$this->assertEquals(31, $user['age']);
+
+		DB::collection('users')->where('name', 'John Doe')->decrement('age');
+		$user = DB::collection('users')->where('name', 'John Doe')->first();
+		$this->assertEquals(30, $user['age']);
+
+		DB::collection('users')->where('name', 'John Doe')->increment('age', 5);
+		$user = DB::collection('users')->where('name', 'John Doe')->first();
+		$this->assertEquals(35, $user['age']);
+
+		DB::collection('users')->where('name', 'John Doe')->decrement('age', 5);
+		$user = DB::collection('users')->where('name', 'John Doe')->first();
+		$this->assertEquals(30, $user['age']);
+
+		DB::collection('users')->where('name', 'Jane Doe')->increment('age', 10, array('note' => 'adult'));
+		$user = DB::collection('users')->where('name', 'Jane Doe')->first();
+		$this->assertEquals(20, $user['age']);
+		$this->assertEquals('adult', $user['note']);
+
+		DB::collection('users')->where('name', 'John Doe')->decrement('age', 20, array('note' => 'minor'));
+		$user = DB::collection('users')->where('name', 'John Doe')->first();
+		$this->assertEquals(10, $user['age']);
+		$this->assertEquals('minor', $user['note']);
+
+		DB::collection('users')->increment('age');
+		$user = DB::collection('users')->where('name', 'John Doe')->first();
+		$this->assertEquals(11, $user['age']);
+		$user = DB::collection('users')->where('name', 'Jane Doe')->first();
+		$this->assertEquals(21, $user['age']);
+		$user = DB::collection('users')->where('name', 'Robert Roe')->first();
+		$this->assertEquals(null, $user['age']);
+		$user = DB::collection('users')->where('name', 'Mark Moe')->first();
+		$this->assertFalse(isset($user['age']));
+	}
+
 }
