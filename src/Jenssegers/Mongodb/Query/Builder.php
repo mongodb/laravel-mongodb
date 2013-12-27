@@ -402,9 +402,6 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $query['$set'] = $extra;
         }
 
-        // Protect
-        $this->whereNotNull($column);
-
         return $this->performUpdate($query);
     }
 
