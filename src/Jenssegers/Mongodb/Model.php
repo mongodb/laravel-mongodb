@@ -183,6 +183,27 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         return $attributes;
     }
 
+
+    /**
+     * Convert the model's attribute-keys to an array.
+     *
+     * @return array
+     */
+    public function attributeKeysToArray()
+    {
+        $attributes = parent::attributesToArray();
+        $keys = array();
+
+        foreach ($attributes as $key => $value)
+        {
+            $keys[] = $key;
+        }
+
+        return $keys;
+    }
+
+
+
     /**
      * Remove one or more fields.
      *
