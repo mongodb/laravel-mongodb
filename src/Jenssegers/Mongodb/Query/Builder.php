@@ -522,15 +522,18 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  mixed   $value
      * @return int
      */
-    public function push($column, $value = null)
+    public function push($column, $value = null, $unique = false)
     {
+        // Use the addToSet operator in case we only want unique items.
+        $operator = $unique ? '$addToSet' : '$push';
+
         if (is_array($column))
         {
-            $query = array('$push' => $column);
+            $query = array($operator => $column);
         }
         else
         {
-            $query = array('$push' => array($column => $value));
+            $query = array($operator => array($column => $value));
         }
 
         return $this->performUpdate($query);
