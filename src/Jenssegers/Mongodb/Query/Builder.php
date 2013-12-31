@@ -45,6 +45,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
     );
 
     /**
+     * Projections
+     *
+     * @var array
+     */
+    protected $projections = array();
+
+    /**
      * Create a new query builder instance.
      *
      * @param Connection $connection
@@ -65,6 +72,19 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public function find($id, $columns = array('*'))
     {
         return $this->where('_id', '=', $this->convertKey($id))->first($columns);
+    }
+
+    /**
+     * $slice projection operator - returns N element from array
+     *
+     * @param  string $column
+     * @param  mixed  $data
+     * @return mixed
+     */
+    public function slice($column, $elements)
+    {
+        $this->projections[$column] = [ '$slice' => $elements ];
+        return $this;
     }
 
     /**
@@ -189,6 +209,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
             foreach ($this->columns as $column)
             {
                 $columns[$column] = true;
+            }
+
+            // Projection operators 
+            foreach ($this->projections as $column => $data)
+            {
+                $columns[$column] = $data;
             }
 
             // Execute query and get MongoCursor
