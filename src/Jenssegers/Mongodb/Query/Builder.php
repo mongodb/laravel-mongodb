@@ -83,7 +83,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function slice($column, $elements)
     {
-        $this->projections[$column] = [ '$slice' => $elements ];
+        $this->projections[$column] = array( '$slice' => $elements );
         return $this;
     }
 
