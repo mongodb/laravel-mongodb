@@ -78,10 +78,20 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	{
 		$columns = $this->fluent($columns);
 
-		foreach ($columns as $column)
+		// Columns are passed as a default array
+		if (is_array($columns) && is_int(key($columns)))
 		{
-			$this->collection->deleteIndex($column);
+			// Transform the columns to the required array format
+			$transform = array();
+			foreach ($columns as $column)
+			{
+				$transform[$column] = 1;
+			}
+
+			$columns = $transform;
 		}
+
+		$this->collection->deleteIndex($columns);
 
 		return $this;
 	}

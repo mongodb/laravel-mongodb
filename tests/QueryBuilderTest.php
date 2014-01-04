@@ -217,15 +217,22 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals('tag1', $user['tags'][0]);
 
 		DB::collection('users')->where('_id', $id)->push('tags', 'tag2');
-
 		$user = DB::collection('users')->find($id);
-		$this->assertTrue(is_array($user['tags']));
 		$this->assertEquals(2, count($user['tags']));
 		$this->assertEquals('tag2', $user['tags'][1]);
 
+		// Add duplicate
+		DB::collection('users')->where('_id', $id)->push('tags', 'tag2');
+		$user = DB::collection('users')->find($id);
+		$this->assertEquals(3, count($user['tags']));
+
+		// Add unique
+		DB::collection('users')->where('_id', $id)->push('tags', 'tag1', true);
+		$user = DB::collection('users')->find($id);
+		$this->assertEquals(3, count($user['tags']));
+
 		$message = array('from' => 'Jane', 'body' => 'Hi John');
 		DB::collection('users')->where('_id', $id)->push('messages', $message);
-
 		$user = DB::collection('users')->find($id);
 		$this->assertTrue(is_array($user['messages']));
 		$this->assertEquals($message, $user['messages'][0]);

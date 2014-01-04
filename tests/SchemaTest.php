@@ -34,6 +34,14 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 
 		$index = $this->getIndex('newcollection', 'mykey');
 		$this->assertEquals(1, $index['key']['mykey']);
+
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->index(array('mykey'));
+		});
+
+		$index = $this->getIndex('newcollection', 'mykey');
+		$this->assertEquals(1, $index['key']['mykey']);
 	}
 
 	public function testUnique()
@@ -53,6 +61,15 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		{
 			$collection->unique('uniquekey');
 			$collection->dropIndex('uniquekey');
+		});
+
+		$index = $this->getIndex('newcollection', 'uniquekey');
+		$this->assertEquals(null, $index);
+
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->unique('uniquekey');
+			$collection->dropIndex(array('uniquekey'));
 		});
 
 		$index = $this->getIndex('newcollection', 'uniquekey');

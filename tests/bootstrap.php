@@ -9,8 +9,7 @@ use Illuminate\Container\Container;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Events\Dispatcher;
-use Illuminate\Cache\ArrayStore;
-use Illuminate\Cache\Repository;
+use Illuminate\Cache\CacheManager;
 
 # Fake app class
 class App extends ArrayObject {
@@ -20,18 +19,19 @@ class App extends ArrayObject {
 # Fake app
 $app = new App;
 
-# Event dispatcher
-$app['events'] = new Dispatcher;
-
-# Cache driver
-$app['cache'] = new Repository(new ArrayStore);
-
 # Load database configuration
 $config = require 'config/database.php';
 foreach ($config as $key => $value)
 {
 	$app['config']["database.$key"] = $value;
 }
+
+# Event dispatcher
+$app['events'] = new Dispatcher;
+
+# Cache driver
+$app['config']['cache.driver'] = 'array';
+$app['cache'] = new CacheManager($app);
 
 # Initialize database manager
 $app['db.factory'] = new ConnectionFactory(new Container);

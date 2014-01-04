@@ -422,6 +422,10 @@ Add an items to an array.
     DB::collection('users')->where('name', 'John')->push('items', 'boots');
     DB::collection('users')->where('name', 'John')->push('messages', array('from' => 'Jane Doe', 'message' => 'Hi John'));
 
+If you don't want duplicate items, set the third parameter to `true`:
+
+    DB::collection('users')->where('name', 'John')->push('items', 'boots', true);
+
 **Pull**
 
 Remove an item from an array.
