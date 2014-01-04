@@ -78,14 +78,45 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * $slice projection operator - returns N element from array
      *
      * @param  string $column
-     * @param  mixed  $data
+     * @param  int    $elements
      * @return mixed
      */
     public function slice($column, $elements)
     {
-        $this->projections[$column] = array( '$slice' => $elements );
+        if (!isset($this->projections[$column]))
+            $this->projections[$column] = array();
+
+        $this->projections[$column]['$slice'] = $elements;
         return $this;
     }
+
+    /**
+     * $elemMatch projection operator - limits the contents of an array field
+     * that is included in the query results to contain only the array element 
+     * that matches the $elemMatch condition.
+     * http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/
+     *
+     * @param  string $column
+     * @param  string $arrayElement
+     * @param  string $arrayElement     
+     * @return mixed
+     */
+    public function elemMatch($column, $arrayElement, $value)
+    {
+        if (!isset($this->projections[$column]))
+            $this->projections[$column] = array();
+        if (!isset($this->projections[$column]['$elemMatch']))
+            $this->projections[$column]['$elemMatch'] = array();
+        
+        if (!isset($this->projections[$column]['$elemMatch'][ $arrayElement ]))
+            $this->projections[$column]['$elemMatch'][ $arrayElement ] = array();
+
+        // TODO: support for all operators 
+        $this->projections[$column]['$elemMatch'][ $arrayElement ] = $value;
+
+        return $this;
+    }
+
 
     /**
      * Execute the query as a fresh "select" statement.
@@ -214,7 +245,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
             // Projection operators 
             foreach ($this->projections as $column => $data)
             {
-                $columns[$column] = $data;
+                if (isset($columns[$column]))
+                    $columns[$column] = array( true, $data );
+                else
+                    $columns[$column] = $data;
             }
 
             // Execute query and get MongoCursor
