@@ -9,7 +9,7 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		if (self::$started) return;
 
 		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin',
-							 'array' => [ 'a','b','c','d','e','f' ], 
+							 'array' => array( 'a','b','c','d','e','f' ),
 							 'mix' => array(
 							 	array( 'n' => 1, 'phone' => 112233, 'addr' => "405 st.", 'city' => "New York" ),
 							 	array( 'n' => 2, 'phone' => 112233, 'addr' => "22 st.", 'city' => "Chicago" ),
