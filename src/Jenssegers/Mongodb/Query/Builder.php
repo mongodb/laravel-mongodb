@@ -338,7 +338,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $this->from . '.batchInsert(' . json_encode($values) . ')',
             array(), $this->connection->getElapsedTime($start));
 
-        return $result;
+        return (1 == (int) $result['ok']);
     }
 
     /**

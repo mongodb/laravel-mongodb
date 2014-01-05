@@ -271,11 +271,13 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 			array('name' => 'spoon', 'type' => 'round')
 		));
 
-		$items = DB::collection('items')->distinct('name')->get();
-		$this->assertEquals(array('knife', 'fork', 'spoon'), $items);
+		$items = DB::collection('items')->distinct('name')->get(); sort($items);
+		$this->assertEquals(3, count($items));
+		$this->assertEquals(array('fork', 'knife', 'spoon'), $items);
 
-		$types = DB::collection('items')->distinct('type')->get();
-		$this->assertEquals(array('sharp', 'round'), $types);
+		$types = DB::collection('items')->distinct('type')->get(); sort($types);
+		$this->assertEquals(2, count($types));
+		$this->assertEquals(array('round', 'sharp'), $types);
 	}
 
 	public function testCustomId()
@@ -350,9 +352,11 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		));
 
 		$list = DB::collection('items')->lists('name');
+		$this->assertEquals(4, count($list));
 		$this->assertEquals(array('knife', 'fork', 'spoon', 'spoon'), $list);
 
 		$list = DB::collection('items')->lists('type', 'name');
+		$this->assertEquals(3, count($list));
 		$this->assertEquals(array('knife' => 'sharp', 'fork' => 'sharp', 'spoon' => 'round'), $list);
 	}
 

@@ -274,22 +274,11 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 
 	public function testToArray()
 	{
-		$original = array(
-			array('name' => 'knife', 'type' => 'sharp'),
-			array('name' => 'spoon', 'type' => 'round')
-		);
-
-		Item::insert($original);
-
-		$items = Item::all();
-		$this->assertEquals($original, $items->toArray());
-		$this->assertEquals($original[0], $items[0]->toArray());
-
-		// with date
 		$item = Item::create(array('name' => 'fork', 'type' => 'sharp'));
+
 		$array = $item->toArray();
-		$this->assertTrue(array_key_exists('created_at', $array));
-		$this->assertTrue(array_key_exists('updated_at', $array));
+		$keys = array_keys($array); sort($keys);
+		$this->assertEquals(array('_id', 'created_at', 'name', 'type', 'updated_at'), $keys);
 		$this->assertTrue(is_string($array['created_at']));
 		$this->assertTrue(is_string($array['updated_at']));
 	}
