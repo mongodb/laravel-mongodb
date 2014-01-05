@@ -50,7 +50,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @var array
      */
     protected $projections = array();
-    
+
     /**
      * Create a new query builder instance.
      *
@@ -273,9 +273,6 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 if (isset($data['$elemMatch']))
                     $columns[$column] = array( '$elemMatch' => $this->compileWheres($data['$elemMatch']) ) ;
             }
-
-            
-            echo "\n".json_encode($columns) . "\n";            
 
             // Execute query and get MongoCursor
             $cursor = $this->collection->find($wheres, $columns);
