@@ -214,7 +214,7 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 	public function testSlice() {
 		$element = array('name' => 'John Doe', 'age' => 35, 'title' => 'admin');
 		
-		$user = User::whereRaw($element)->slice('array',2)->get(array('_id	'))->first();
+		$user = User::whereRaw($element)->slice('array',2)->get(array('_id','array'))->first();
         $this->assertEquals(2, count($user->array));
         $this->assertEquals(2, count($user->toArray()));
 
@@ -226,12 +226,29 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 
 	public function testElemMatch() {
-		$element = array('name' => 'John Doe', 'age' => 35, 'title' => 'admin');
-		
-		$user = User::whereRaw($element)->elemMatch('mix', 'n', 3)->first();
-		
+        $element = array('name' => 'John Doe', 'age' => 35, 'title' => 'admin');
+        $user = User::whereRaw($element)
+        			->elemMatch('mix', 'n', 3)
+			        ->orElemMatch('mix','n', 10)
+			        ->orElemMatch('mix','n','!=','x')
+			        ->first();
         $this->assertEquals(1, count($user->mix));
-        $this->assertEquals(3, $user->mix[0]['n']);
+        $this->assertEquals(1, $user->mix[0]['n']);
+
+        $user = User::whereRaw($element)
+        			->elemMatch('mix', 'n', 1)
+			        ->elemMatch('mix','phone', 112233)
+			        ->first();
+        $this->assertEquals(1, count($user->mix));
+        $this->assertEquals('New York', $user->mix[0]['city']);
+
+        $user = User::whereRaw($element)
+        			->elemMatch('mix', 'n', '>', 1)
+        			->elemMatch('mix', 'n', '<', 3)
+			        ->first();
+        $this->assertEquals(1, count($user->mix));
+        $this->assertEquals(2, $user->mix[0]['n']);
+
 
 
 	}
