@@ -141,6 +141,15 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $index['key']['token']);
 	}
 
+	public function testDummies()
+	{
+		Schema::collection('newcollection', function($collection)
+		{
+			$collection->boolean('activated')->default(0);
+			$collection->integer('user_id')->unsigned();
+		});
+	}
+
 	protected function getIndex($collection, $name)
 	{
 		$collection = DB::getCollection($collection);

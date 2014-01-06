@@ -179,16 +179,6 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	}
 
 	/**
-	 * Allow an attribute to be null, does not do anything.
-	 *
-	 * @return Blueprint
-	 */
-	public function nullable()
-	{
-		return $this;
-	}
-
-	/**
 	 * Add a new column to the blueprint.
 	 *
 	 * @param  string  $type
@@ -222,6 +212,16 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 		{
 			return $this->columns = $columns;
 		}
+	}
+
+	/**
+	 * Allows the use of unsupported schema methods.
+	 *
+	 * @return Blueprint
+	 */
+	public function __call($method, $args)
+	{
+		return $this;
 	}
 
 }
