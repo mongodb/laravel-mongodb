@@ -127,6 +127,15 @@ Supported operations are:
 
 Read more about the schema builder on http://laravel.com/docs/schema
 
+Auth
+----
+
+If you want to use Laravel's native Auth functionality, register this included service provider:
+
+    'Jenssegers\Mongodb\Auth\ReminderServiceProvider',
+
+This service provider will slightly modify the internal DatabaseReminderRepository to add support for MongoDB based password reminders. If you don't use password reminders, you don't have to register this service provider and everything else should work just fine.
+
 Sessions
 --------
 
