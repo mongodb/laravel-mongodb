@@ -11,13 +11,13 @@
     "license" : "MIT",
     "require": {
         "php": ">=5.3.0",
-        "illuminate/support": "4.1.x",
-        "illuminate/database": "4.1.x",
-        "illuminate/events": "4.1.x"
+        "illuminate/support": "4.2.x",
+        "illuminate/database": "4.2.x",
+        "illuminate/events": "4.2.x"
     },
     "require-dev": {
-        "illuminate/cache": "4.1.x",
-        "illuminate/auth": "4.1.x"
+        "illuminate/cache": "4.2.x",
+        "illuminate/auth": "4.2.x"
     },
     "autoload": {
         "psr-0": {
