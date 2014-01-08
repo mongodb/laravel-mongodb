@@ -205,17 +205,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     }
 
     /**
-     * Create a new Eloquent query builder for the model.
-     *
-     * @param  \Jenssegers\Mongodb\Query\Builder $query
-     * @return \Jenssegers\Mongodb\Eloquent\Builder|static
-     */
-    public function newEloquentBuilder($query)
-    {
-        return new Builder($query);
-    }
-
-    /**
      * Handle dynamic method calls into the method.
      *
      * @param  string  $method
