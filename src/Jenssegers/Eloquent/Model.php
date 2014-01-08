@@ -176,4 +176,15 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         return parent::newBaseQueryBuilder();
     }
 
+    /**
+     * Create a new Eloquent query builder for the model.
+     *
+     * @param  \Jenssegers\Mongodb\Query\Builder $query
+     * @return \Jenssegers\Mongodb\Eloquent\Builder|static
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new Builder($query);
+    }
+
 }
