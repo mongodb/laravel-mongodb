@@ -130,10 +130,10 @@ class BelongsToMany extends EloquentBelongsToMany {
 		$foreignIds = array_pluck($records, $this->foreignKey);
 
 		// Attach to the parent model
-		$parent->push($this->otherKey, $otherIds[0])->update(array());
+		$parent->push($this->otherKey, $otherIds[0]);
 
 		// Attach to the related model
-		$related->push($this->foreignKey, $foreignIds[0])->update(array());
+		$related->push($this->foreignKey, $foreignIds[0]);
 	}
 
 	/**
@@ -192,7 +192,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 		{
 			$query->pull($this->otherKey, $id);
 		}
-		
+
 		// Remove the relation from the related model
 		$related->pull($this->foreignKey, $this->parent->getKey());
 

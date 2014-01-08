@@ -1,4 +1,4 @@
-<?php namespace Jenssegers\Eloquent;
+<?php namespace Jenssegers\Mongodb\Eloquent;
 
 class Builder extends \Illuminate\Database\Eloquent\Builder {
 

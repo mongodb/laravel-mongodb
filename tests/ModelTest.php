@@ -332,4 +332,16 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertNotEquals($user->id, $user->_id);
 	}
 
+	public function testPushPull()
+	{
+		$user = User::create(array('name' => 'John Doe', 'tags' => array()));
+
+		$result = User::where('_id', $user->_id)->push('tags', 'tag1');
+		$user = User::where('_id', $user->_id)->first();
+
+		#$this->assertTrue(is_int($result));
+		$this->assertTrue(is_array($user->tags));
+		$this->assertEquals(1, count($user->tags));
+	}
+
 }
