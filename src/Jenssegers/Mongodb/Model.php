@@ -48,7 +48,8 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // If there is an actual id attribute, then return that.
         if ($value) return $value;
 
-        return $this->attributes[$this->getKeyName()];
+        // Return primary key value if present
+        if (array_key_exists($this->getKeyName(), $this->attributes)) return $this->attributes[$this->getKeyName()];
     }
 
     /**
