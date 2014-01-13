@@ -48,7 +48,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // If there is an actual id attribute, then return that.
         if ($value) return $value;
 
-        return $this->getKey();
+        return $this->attributes[$this->getKeyName()];
     }
 
     /**
