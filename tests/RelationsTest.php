@@ -13,6 +13,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         Role::truncate();
         Client::truncate();
         Group::truncate();
+        Photo::truncate();
     }
 
     public function testHasMany()
@@ -258,5 +259,24 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(in_array($user->_id, $group->users));
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
         $this->assertEquals($user->_id, $group->users()->first()->_id);
+    }
+
+    public function testMorph()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $client = Client::create(array('name' => 'Jane Doe'));
+
+        $photo = Photo::create(array('url' => 'http://graph.facebook.com/john.doe/picture'));
+        $user->photos()->save($photo);
+        $this->assertEquals(1, $user->photos->count());
+        $this->assertEquals($photo->id, $user->photos->first()->id);
+
+        $photo = Photo::create(array('url' => 'http://graph.facebook.com/john.doe/picture'));
+        $client->photos()->save($photo);
+        $this->assertEquals(1, $client->photos->count());
+        $this->assertEquals($photo->id, $client->photos->first()->id);
+
+        $photo = Photo::first();
+        $this->assertEquals($photo->imageable->name, $user->name);
     }
 }

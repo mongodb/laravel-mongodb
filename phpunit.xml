@@ -34,6 +34,9 @@
         </testsuite>
         <testsuite name="relations">
             <directory>tests/RelationsTest.php</directory>
+        </testsuite>
+        <testsuite name="mysqlrelations">
+            <directory>tests/RelationsTest.php</directory>
             <directory>tests/MysqlRelationsTest.php</directory>
         </testsuite>
     </testsuites>
