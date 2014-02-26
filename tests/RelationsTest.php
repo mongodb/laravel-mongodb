@@ -68,7 +68,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         Item::create(array('type' => 'sword', 'user_id' => $user->_id));
         Item::create(array('type' => 'bag', 'user_id' => null));
 
-        $items = Item::with('user')->get();
+        $items = Item::with('user')->orderBy('user_id', 'desc')->get();
 
         $user = $items[0]->getRelation('user');
         $this->assertInstanceOf('User', $user);
