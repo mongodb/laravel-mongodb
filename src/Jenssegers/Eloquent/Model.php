@@ -191,9 +191,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         // title of this relation since that is a great convention to apply.
         if (is_null($relation))
         {
-            $caller = $this->getBelongsToManyCaller();
-
-            $name = $caller['function'];
+            $relation = $this->getBelongsToManyCaller();
         }
 
         // First, we'll need to determine the foreign key and "other key" for the
