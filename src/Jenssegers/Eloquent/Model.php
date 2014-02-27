@@ -1,11 +1,15 @@
 <?php namespace Jenssegers\Eloquent;
 
+use LogicException;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
+use Jenssegers\Mongodb\Relations\EmbedsMany;
+use Jenssegers\Mongodb\Relations\EmbeddedRelation;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model {
@@ -217,6 +221,45 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         $query = $instance->newQuery();
 
         return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+    }
+
+    /**
+     * Define an embedded one-to-many relationship.
+     *
+     * @param  string  $related
+     * @param  string  $collection
+     * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
+     */
+    protected function embedsMany($related, $collection = null)
+    {
+        // If no collection name was provided, we assume that the standard is the
+        // related model camel_cased, pluralized and suffixed with '_ids'
+        if (is_null($collection))
+        {
+            $collection = str_plural(snake_case($related)) . '_ids';
+        }
+
+        return new EmbedsMany($this, $related, $collection);
+    }
+
+    /**
+     * Get a relationship value from a method.
+     *
+     * @param  string  $key
+     * @param  string  $camelKey
+     * @return mixed
+     */
+    protected function getRelationshipFromMethod($key, $camelKey)
+    {
+        $relations = $this->$camelKey();
+
+        if ( ! $relations instanceof Relation and ! $relations instanceof EmbeddedRelation)
+        {
+            throw new LogicException('Relationship method must return an object of type '
+                . 'Illuminate\Database\Eloquent\Relations\Relation or Jenssegers\Mongodb\Relations\EmbeddedRelation');
+        }
+
+        return $this->relations[$key] = $relations->getResults();
     }
 
     /**

@@ -51,6 +51,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         return $this->morphMany('Photo', 'imageable');
     }
 
+    public function addresses()
+    {
+        return $this->embedsMany('Address');
+    }
+
     /**
      * Get the unique identifier for the user.
      *
