@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Database\Eloquent\Collection;
+
 class RelationsTest extends PHPUnit_Framework_TestCase {
 
     public function setUp() {
@@ -279,4 +281,50 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $photo = Photo::first();
         $this->assertEquals($photo->imageable->name, $user->name);
     }
+
+    public function testEmbedsManySaveOneRelated()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+
+        $user->addresses()->create(array('city' => 'Paris'));
+        $user->addresses()->push(new Address(array('city' => 'London')));
+        $user->addresses()->build(array('city' => 'Bruxelles'));
+        $user->addresses()->add(new Address(array('city' => 'New-York')));
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Paris', 'London', 'Bruxelles', 'New-York'), $user->addresses->lists('city'));
+        $this->assertEquals(array('Paris', 'London'), $freshUser->addresses->lists('city'));
+
+        $user->save();
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Paris', 'London', 'Bruxelles', 'New-York'), $freshUser->addresses->lists('city'));
+
+    }
+
+    public function testEmbedsManySaveManyRelated()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+
+        $user->addresses()->createMany(array(array('city' => 'Paris'), array('city' => 'Rouen')));
+        $user->addresses()->pushMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol'))));
+        $user->addresses()->buildMany(array(array('city' => 'Bruxelles')));
+        $user->addresses()->addMany(new Collection(array(new Address(array('city' => 'New-York')))));
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Paris', 'Rouen', 'London', 'Bristol', 'Bruxelles', 'New-York'), $user->addresses->lists('city'));
+        $this->assertEquals(array('Paris', 'Rouen', 'London', 'Bristol'), $freshUser->addresses->lists('city'));
+
+        $user->save();
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Paris', 'Rouen', 'London', 'Bristol', 'Bruxelles', 'New-York'), $freshUser->addresses->lists('city'));
+
+    }
+
+    public function testEmbedsManyCreateId()
+    {
+        $user = new User(array('name' => 'John Doe'));
+        $user->addresses()->build(array('city' => 'Bruxelles'));
+        $this->assertInstanceOf('MongoId', $user->addresses->first()->_id);
+    }
+
 }
