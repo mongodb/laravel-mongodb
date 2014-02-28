@@ -39,4 +39,14 @@ abstract class EmbeddedRelation {
      */
     abstract public function getResults();
 
+    /**
+     * Shorthand to get the results of the relationship.
+     *
+     * @return mixed
+     */
+    public function get()
+    {
+        return $this->getResults();
+    }
+
 }
