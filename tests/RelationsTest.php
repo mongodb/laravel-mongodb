@@ -317,7 +317,6 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user->save();
         $freshUser = User::find($user->id);
         $this->assertEquals(array('Paris', 'Rouen', 'London', 'Bristol', 'Bruxelles', 'New-York'), $freshUser->addresses->lists('city'));
-
     }
 
     public function testEmbedsManyCreateId()
@@ -325,6 +324,10 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user = new User(array('name' => 'John Doe'));
         $user->addresses()->build(array('city' => 'Bruxelles'));
         $this->assertInstanceOf('MongoId', $user->addresses->first()->_id);
+
+        $user = new User(array('name' => 'John Doe'));
+        $user->addresses()->build(array('city' => 'Bruxelles', '_id' => ''));
+        $this->assertInstanceOf('MongoId', $user->addresses()->get()->first()->_id);
     }
 
 }

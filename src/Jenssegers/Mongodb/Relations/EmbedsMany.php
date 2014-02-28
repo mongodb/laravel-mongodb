@@ -59,7 +59,7 @@ class EmbedsMany extends EmbeddedRelation {
      */
     public function build(array $attributes)
     {
-        if ( ! isset($attributes['_id'])) $attributes['_id'] = new MongoId;
+        if ( ! isset($attributes['_id']) or empty($attributes['_id'])) $attributes['_id'] = new MongoId;
 
         $collection = $this->parent->getAttribute($this->collection);
         $collection[''.$attributes['_id']] = $attributes;
