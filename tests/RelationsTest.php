@@ -317,7 +317,6 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user->save();
         $freshUser = User::find($user->id);
         $this->assertEquals(array('Paris', 'Rouen', 'London', 'Bristol', 'Bruxelles', 'New-York'), $freshUser->addresses->lists('city'));
-
     }
 
     public function testEmbedsManyCreateId()
@@ -325,6 +324,85 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user = new User(array('name' => 'John Doe'));
         $user->addresses()->build(array('city' => 'Bruxelles'));
         $this->assertInstanceOf('MongoId', $user->addresses->first()->_id);
+
+        $user = new User(array('name' => 'John Doe'));
+        $user->addresses()->build(array('city' => 'Bruxelles', '_id' => ''));
+        $this->assertInstanceOf('MongoId', $user->addresses()->get()->first()->_id);
+    }
+
+    public function testEmbeddedModelRememberTheFaceOfItsFather()
+    {
+        $user = new User(array('name' => 'John Doe'));
+        $address = $user->addresses()->build(array('city' => 'Bruxelles'));
+
+        $this->assertEquals($user, $address->user);
+        $this->assertEquals($user, $user->addresses->first()->user);
+    }
+
+    public function testEmbedsManyCanBeExecutedLikeAnEloquentRelation()
+    {
+        $user = new User(array('name' => 'John Doe'));
+        $user->addresses()->build(array('city' => 'Paris'));
+        $this->assertEquals($user->addresses, $user->addresses()->get());
+    }
+
+    public function testAnyCollectionMethodCouldBeAppliedToAnEmbeddedRelationship()
+    {
+        $user = new User(array('name' => 'John Doe'));
+        $user->addresses()->buildMany(array(array('city' => 'Paris'), array('city' => 'Bruxelles')));
+        $this->assertEquals(array('Bruxelles', 'Paris'), $user->sorted_addresses->lists('city'));
+
+        $user = new User(array('name' => 'John Doe'));
+        $user->addresses()->buildMany(array(array('country' => 'France', 'city' => 'Paris'), array('country' => 'Belgique', 'city' => 'Bruxelles')));
+        $this->assertEquals(array('Paris'), $user->french_addresses->lists('city'));
+    }
+
+    public function testForgetOneEmbedsManyItem()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $paris = $user->addresses()->create(array('city' => 'Paris'));
+        $bruxelles = $user->addresses()->create(array('city' => 'Bruxelles'));
+
+        $user->addresses()->forget($paris->id);
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
+        $this->assertEquals(array('Paris', 'Bruxelles'), $freshUser->addresses->lists('city'));
+    }
+
+    public function testForgetAllEmbedsManyItems()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->createMany(array(array('city' => 'Paris'), array('city' => 'Bruxelles')));
+
+        $user->addresses()->forgetAll();
+
+        $freshUser = User::find($user->id);
+        $this->assertTrue($user->addresses->isEmpty());
+        $this->assertEquals(array('Paris', 'Bruxelles'), $freshUser->addresses->lists('city'));
+    }
+
+    public function testDeleteOneEmbedsManyItem()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $paris = $user->addresses()->create(array('city' => 'Paris'));
+        $bruxelles = $user->addresses()->create(array('city' => 'Bruxelles'));
+
+        $user->addresses()->delete($paris->id);
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Bruxelles'), $freshUser->addresses->lists('city'));
+    }
+
+    public function testDeleteAllEmbedsManyItems()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->createMany(array(array('city' => 'Paris'), array('city' => 'Bruxelles')));
+
+        $user->addresses()->deleteAll();
+
+        $freshUser = User::find($user->id);
+        $this->assertTrue($freshUser->addresses->isEmpty());
     }
 
 }

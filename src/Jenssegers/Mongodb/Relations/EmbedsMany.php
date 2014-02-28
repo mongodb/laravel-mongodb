@@ -15,6 +15,13 @@ class EmbedsMany extends EmbeddedRelation {
     protected $collection;
 
     /**
+     * Lists the methods to apply on the collection when getting the results
+     *
+     * @var array
+     */
+    protected $constraints = array();
+
+    /**
      * Create a new has many relationship instance.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $parent
@@ -44,8 +51,12 @@ class EmbedsMany extends EmbeddedRelation {
         {
             foreach ($modelsAttributes as $attributes)
             {
-                $models->push(new $this->related($attributes));
+                $models->push($this->newRelatedInstance($attributes));
             }
+        }
+
+        foreach ($this->constraints as $method => $parameters) {
+            $models = call_user_func_array(array($models, $method), $parameters);
         }
 
         return $models;
@@ -59,13 +70,13 @@ class EmbedsMany extends EmbeddedRelation {
      */
     public function build(array $attributes)
     {
-        if ( ! isset($attributes['_id'])) $attributes['_id'] = new MongoId;
+        if ( ! isset($attributes['_id']) or empty($attributes['_id'])) $attributes['_id'] = new MongoId;
 
         $collection = $this->parent->getAttribute($this->collection);
         $collection[''.$attributes['_id']] = $attributes;
         $this->parent->setAttribute($this->collection, $collection);
 
-        return new $this->related($attributes);
+        return $this->newRelatedInstance($attributes);
     }
 
     /**
@@ -165,6 +176,54 @@ class EmbedsMany extends EmbeddedRelation {
     }
 
     /**
+     * Remove a related model by id
+     *
+     * @param  mixed  $id
+     * @return void
+     */
+    public function forget($id)
+    {
+        $collection = $this->parent->getAttribute($this->collection);
+        unset($collection[''.$id]);
+        $this->parent->setAttribute($this->collection, $collection);
+    }
+
+    /**
+     * Remove all related models
+     *
+     * @return void
+     */
+    public function forgetAll()
+    {
+        $this->parent->setAttribute($this->collection, array());
+    }
+
+    /**
+     * Remove a related model by id and save
+     *
+     * @param  mixed  $id
+     * @return void
+     */
+    public function delete($id)
+    {
+        $this->forget($id);
+
+        $this->parent->save();
+    }
+
+    /**
+     * Remove all related models and save
+     *
+     * @return void
+     */
+    public function deleteAll()
+    {
+        $this->forgetAll();
+
+        $this->parent->save();
+    }
+
+    /**
      * Transform a list of models to a list of models' attributes
      *
      * @param  array|Traversable  $models
@@ -180,6 +239,36 @@ class EmbedsMany extends EmbeddedRelation {
         }
 
         return $modelsAttributes;
+    }
+
+    /**
+     * Create a new instance of related from attributes and set the parent attribute
+     *
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function newRelatedInstance($attributes)
+    {
+        $model = new $this->related($attributes);
+
+        $parentName = snake_case(get_class($this->parent));
+        $model->setAttribute($parentName, $this->parent);
+
+        return $model;
+    }
+
+    /**
+     * Handle dynamic method calls to the relationship.
+     *
+     * @param  string  $method
+     * @param  array   $parameters
+     * @return \Jenssegers\Mongodb\Relations\EmbedsMany
+     */
+    public function __call($method, $parameters)
+    {
+        $this->constraints[$method] = $parameters;
+
+        return $this;
     }
 
 }

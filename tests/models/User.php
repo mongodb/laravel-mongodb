@@ -56,6 +56,16 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         return $this->embedsMany('Address');
     }
 
+    public function sortedAddresses()
+    {
+        return $this->addresses()->sortBy(function($a) { return $a->city; });
+    }
+
+    public function frenchAddresses()
+    {
+        return $this->addresses()->filter(function($a) { return $a->country == 'France'; });
+    }
+
     /**
      * Get the unique identifier for the user.
      *
