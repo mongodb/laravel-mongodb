@@ -51,7 +51,7 @@ class EmbedsMany extends EmbeddedRelation {
         {
             foreach ($modelsAttributes as $attributes)
             {
-                $models->push(new $this->related($attributes));
+                $models->push($this->newRelatedInstance($attributes));
             }
         }
 
@@ -76,7 +76,7 @@ class EmbedsMany extends EmbeddedRelation {
         $collection[''.$attributes['_id']] = $attributes;
         $this->parent->setAttribute($this->collection, $collection);
 
-        return new $this->related($attributes);
+        return $this->newRelatedInstance($attributes);
     }
 
     /**
@@ -239,6 +239,22 @@ class EmbedsMany extends EmbeddedRelation {
         }
 
         return $modelsAttributes;
+    }
+
+    /**
+     * Create a new instance of related from attributes and set the parent attribute
+     *
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function newRelatedInstance($attributes)
+    {
+        $model = new $this->related($attributes);
+
+        $parentName = snake_case(get_class($this->parent));
+        $model->setAttribute($parentName, $this->parent);
+
+        return $model;
     }
 
     /**

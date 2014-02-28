@@ -330,6 +330,15 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('MongoId', $user->addresses()->get()->first()->_id);
     }
 
+    public function testEmbeddedModelRememberTheFaceOfItsFather()
+    {
+        $user = new User(array('name' => 'John Doe'));
+        $address = $user->addresses()->build(array('city' => 'Bruxelles'));
+
+        $this->assertEquals($user, $address->user);
+        $this->assertEquals($user, $user->addresses->first()->user);
+    }
+
     public function testEmbedsManyCanBeExecutedLikeAnEloquentRelation()
     {
         $user = new User(array('name' => 'John Doe'));
