@@ -330,4 +330,15 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('MongoId', $user->addresses()->get()->first()->_id);
     }
 
+    public function testAnyCollectionMethodCouldBeAppliedToAnEmbeddedRelationship()
+    {
+        $user = new User(array('name' => 'John Doe'));
+        $user->addresses()->buildMany(array(array('city' => 'Paris'), array('city' => 'Bruxelles')));
+        $this->assertEquals(array('Bruxelles', 'Paris'), $user->sorted_addresses->lists('city'));
+
+        $user = new User(array('name' => 'John Doe'));
+        $user->addresses()->buildMany(array(array('country' => 'France', 'city' => 'Paris'), array('country' => 'Belgique', 'city' => 'Bruxelles')));
+        $this->assertEquals(array('Paris'), $user->french_addresses->lists('city'));
+    }
+
 }

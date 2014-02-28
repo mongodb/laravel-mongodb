@@ -15,6 +15,13 @@ class EmbedsMany extends EmbeddedRelation {
     protected $collection;
 
     /**
+     * Lists the methods to apply on the collection when getting the results
+     *
+     * @var array
+     */
+    protected $constraints = array();
+
+    /**
      * Create a new has many relationship instance.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $parent
@@ -46,6 +53,10 @@ class EmbedsMany extends EmbeddedRelation {
             {
                 $models->push(new $this->related($attributes));
             }
+        }
+
+        foreach ($this->constraints as $method => $parameters) {
+            $models = call_user_func_array(array($models, $method), $parameters);
         }
 
         return $models;
@@ -180,6 +191,20 @@ class EmbedsMany extends EmbeddedRelation {
         }
 
         return $modelsAttributes;
+    }
+
+    /**
+     * Handle dynamic method calls to the relationship.
+     *
+     * @param  string  $method
+     * @param  array   $parameters
+     * @return \Jenssegers\Mongodb\Relations\EmbedsMany
+     */
+    public function __call($method, $parameters)
+    {
+        $this->constraints[$method] = $parameters;
+
+        return $this;
     }
 
 }
