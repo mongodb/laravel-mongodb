@@ -176,6 +176,54 @@ class EmbedsMany extends EmbeddedRelation {
     }
 
     /**
+     * Remove a related model by id
+     *
+     * @param  mixed  $id
+     * @return void
+     */
+    public function forget($id)
+    {
+        $collection = $this->parent->getAttribute($this->collection);
+        unset($collection[''.$id]);
+        $this->parent->setAttribute($this->collection, $collection);
+    }
+
+    /**
+     * Remove all related models
+     *
+     * @return void
+     */
+    public function forgetAll()
+    {
+        $this->parent->setAttribute($this->collection, array());
+    }
+
+    /**
+     * Remove a related model by id and save
+     *
+     * @param  mixed  $id
+     * @return void
+     */
+    public function delete($id)
+    {
+        $this->forget($id);
+
+        $this->parent->save();
+    }
+
+    /**
+     * Remove all related models and save
+     *
+     * @return void
+     */
+    public function deleteAll()
+    {
+        $this->forgetAll();
+
+        $this->parent->save();
+    }
+
+    /**
      * Transform a list of models to a list of models' attributes
      *
      * @param  array|Traversable  $models

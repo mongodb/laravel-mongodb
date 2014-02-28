@@ -348,4 +348,52 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(array('Paris'), $user->french_addresses->lists('city'));
     }
 
+    public function testForgetOneEmbedsManyItem()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $paris = $user->addresses()->create(array('city' => 'Paris'));
+        $bruxelles = $user->addresses()->create(array('city' => 'Bruxelles'));
+
+        $user->addresses()->forget($paris->id);
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
+        $this->assertEquals(array('Paris', 'Bruxelles'), $freshUser->addresses->lists('city'));
+    }
+
+    public function testForgetAllEmbedsManyItems()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->createMany(array(array('city' => 'Paris'), array('city' => 'Bruxelles')));
+
+        $user->addresses()->forgetAll();
+
+        $freshUser = User::find($user->id);
+        $this->assertTrue($user->addresses->isEmpty());
+        $this->assertEquals(array('Paris', 'Bruxelles'), $freshUser->addresses->lists('city'));
+    }
+
+    public function testDeleteOneEmbedsManyItem()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $paris = $user->addresses()->create(array('city' => 'Paris'));
+        $bruxelles = $user->addresses()->create(array('city' => 'Bruxelles'));
+
+        $user->addresses()->delete($paris->id);
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Bruxelles'), $freshUser->addresses->lists('city'));
+    }
+
+    public function testDeleteAllEmbedsManyItems()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->createMany(array(array('city' => 'Paris'), array('city' => 'Bruxelles')));
+
+        $user->addresses()->deleteAll();
+
+        $freshUser = User::find($user->id);
+        $this->assertTrue($freshUser->addresses->isEmpty());
+    }
+
 }
