@@ -374,7 +374,7 @@ If you want to embed documents, rather than referencing them, you can use the `e
 
     }
 
-Now we can access the post's comments through the dynamic property:
+Now we can access the user's books through the dynamic property:
 
     $books = User::first()->books;
 
