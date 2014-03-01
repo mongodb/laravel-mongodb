@@ -378,6 +378,10 @@ Now we can access the user's books through the dynamic property:
 
     $books = User::first()->books;
 
+When using embedded documents, there will also be an inverse relation available:
+
+    $user = $book->user;
+
 Inserting and updating embedded documents works just like the `belongsTo` relation:
 
     $book = new Book(array('title' => 'A Game of Thrones'));
