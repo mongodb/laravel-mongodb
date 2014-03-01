@@ -1,32 +1,100 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Collection;
 
 use MongoId;
 
-class EmbedsMany extends EmbeddedRelation {
+class EmbedsMany extends Relation {
 
     /**
-     * The parent collection attribute where the related are stored.
+     * The local key of the parent model.
      *
      * @var string
      */
-    protected $collection;
+    protected $localKey;
 
     /**
-     * Create a new has many relationship instance.
+     * The foreign key of the parent model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $parent
-     * @param  string  $related
-     * @param  string  $collection
+     * @var string
+     */
+    protected $foreignKey;
+
+    /**
+     * The "name" of the relationship.
+     *
+     * @var string
+     */
+    protected $relation;
+
+    /**
+     * Create a new embeds many relationship instance.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Database\Eloquent\Model    $parent
+     * @param  string  $localKey
+     * @param  string  $relation
      * @return void
      */
-    public function __construct(Model $parent, $related, $collection)
+    public function __construct(Builder $query, Model $parent, $localKey, $foreignKey, $relation)
     {
-        $this->collection = $collection;
+        $this->localKey = $localKey;
+        $this->foreignKey = $foreignKey;
+        $this->relation = $relation;
 
-        parent::__construct($parent, $related);
+        parent::__construct($query, $parent);
+    }
+
+    /**
+     * Set the base constraints on the relation query.
+     *
+     * @return void
+     */
+    public function addConstraints()
+    {
+    }
+
+    /**
+     * Set the constraints for an eager load of the relation.
+     *
+     * @param  array  $models
+     * @return void
+     */
+    public function addEagerConstraints(array $models)
+    {
+    }
+
+    /**
+     * Initialize the relation on a set of models.
+     *
+     * @param  array   $models
+     * @param  string  $relation
+     * @return void
+     */
+    public function initRelation(array $models, $relation)
+    {
+        foreach ($models as $model)
+        {
+            $model->setRelation($relation, $this->related->newCollection());
+        }
+
+        return $models;
+    }
+
+    /**
+     * Match the eagerly loaded results to their parents.
+     *
+     * @param  array   $models
+     * @param  \Illuminate\Database\Eloquent\Collection  $results
+     * @param  string  $relation
+     * @return array
+     */
+    public function match(array $models, Collection $results, $relation)
+    {
+        return $models;
     }
 
     /**
@@ -36,150 +104,251 @@ class EmbedsMany extends EmbeddedRelation {
      */
     public function getResults()
     {
-        $models = new Collection();
+        // Get embedded documents.
+        $results = $this->getEmbedded();
 
-        $modelsAttributes = $this->parent->getAttribute($this->collection);
+        $models = array();
 
-        if (is_array($modelsAttributes))
+        // Wrap documents in model objects.
+        foreach ($results as $result)
         {
-            foreach ($modelsAttributes as $attributes)
+            $model = $this->related->newFromBuilder($result);
+
+            // Attatch the parent relation to the embedded model.
+            $model->setRelation($this->foreignKey, $this->parent);
+
+            $models[] = $model;
+        }
+
+        return $this->related->newCollection($models);
+    }
+
+    /**
+    * Shorthand to get the results of the relationship.
+    *
+    * @return Illuminate\Database\Eloquent\Collection
+    */
+    public function get()
+    {
+        return $this->getResults();
+    }
+
+    /**
+     * Attach a model instance to the parent model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function save(Model $model)
+    {
+        // Insert a new document.
+        if (!$model->exists)
+        {
+            return $this->performInsert($model);
+        }
+
+        // Update an existing document.
+        else
+        {
+            return $this->performUpdate($model);
+        }
+    }
+
+    /**
+     * Perform a model insert operation.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function performInsert(Model $model)
+    {
+        // Create a new key.
+        if (!$model->getKey())
+        {
+            $model->setAttribute($model->getKeyName(), new MongoId);
+        }
+
+        // Set timestamps.
+        if ($model->usesTimestamps())
+        {
+            $time = $model->freshTimestamp();
+
+            $model->setUpdatedAt($time);
+            $model->setCreatedAt($time);
+        }
+
+        $model->exists = true;
+
+        // Get existing embedded documents.
+        $documents = $this->getEmbedded();
+
+        $documents[] = $model->getAttributes();
+
+        $this->setEmbedded($documents);
+
+        return $this->parent->save() ? $model : false;
+    }
+
+    /**
+     * Perform a model update operation.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return bool
+     */
+    protected function performUpdate(Model $model)
+    {
+        // Update timestamps.
+        if ($model->usesTimestamps())
+        {
+            $time = $model->freshTimestamp();
+
+            $model->setUpdatedAt($time);
+        }
+
+        // Get existing embedded documents.
+        $documents = $this->getEmbedded();
+
+        $key = $model->getKey();
+
+        $primaryKey = $model->getKeyName();
+
+        // Update timestamps.
+        if ($model->usesTimestamps())
+        {
+            $time = $model->freshTimestamp();
+
+            $model->setUpdatedAt($time);
+        }
+
+        // Replace the document
+        foreach ($documents as $i => $document)
+        {
+            if ($document[$primaryKey] == $key)
             {
-                $models->push(new $this->related($attributes));
+                $documents[$i] = $model->getAttributes();
+                break;
             }
         }
+
+        $this->setEmbedded($documents);
+
+        return $this->parent->save() ? $model : false;
+    }
+
+    /**
+     * Attach an array of models to the parent instance.
+     *
+     * @param  array  $models
+     * @return array
+     */
+    public function saveMany(array $models)
+    {
+        array_walk($models, array($this, 'save'));
 
         return $models;
     }
 
     /**
-     * Create a new instance and attach it to the parent model.
-     *
-     * @param  array  $attributes
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    public function build(array $attributes)
-    {
-        if ( ! isset($attributes['_id'])) $attributes['_id'] = new MongoId;
-
-        $collection = $this->parent->getAttribute($this->collection);
-        $collection[''.$attributes['_id']] = $attributes;
-        $this->parent->setAttribute($this->collection, $collection);
-
-        return new $this->related($attributes);
-    }
-
-    /**
-     * Attach an instance to the parent model.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    public function add($model)
-    {
-        return $this->build($model->toArray());
-    }
-
-    /**
-     * Create a new instance, attach it to the parent model and save this model.
+     * Create a new instance of the related model.
      *
      * @param  array  $attributes
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function create(array $attributes)
     {
-        $instance = $this->build($attributes);
+        // Here we will set the raw attributes to avoid hitting the "fill" method so
+        // that we do not have to worry about a mass accessor rules blocking sets
+        // on the models. Otherwise, some of these attributes will not get set.
+        $instance = $this->related->newInstance();
 
-        $this->parent->save();
+        $instance->setRawAttributes($attributes);
 
-        return $instance;
+        return $this->save($instance);
     }
 
     /**
-     * Attach a model instance to the parent model and save this model.
+     * Create an array of new instances of the related model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    public function push($model)
-    {
-        return $this->create($model->toArray());
-    }
-
-    /**
-     * Create an array of new instances and attach them to the parent model.
-     *
-     * @param  array|Traversable  $modelsAttributes
+     * @param  array  $records
      * @return array
      */
-    public function buildMany($modelsAttributes)
+    public function createMany(array $records)
     {
         $instances = array();
 
-        foreach ($modelsAttributes as $attributes)
+        foreach ($records as $record)
         {
-            $instances[] = $this->build($attributes);
+            $instances[] = $this->create($record);
         }
 
         return $instances;
     }
 
     /**
-     * Attach an array of new instances to the parent model.
+     * Destroy the embedded models for the given IDs.
      *
-     * @param  array|Traversable  $models
-     * @return array
+     * @param  array|int  $ids
+     * @return int
      */
-    public function addMany($models)
+    public function destroy($ids)
     {
-        $modelsAttributes = $this->getAttributesOf($models);
+        // We'll initialize a count here so we will return the total number of deletes
+        // for the operation. The developers can then check this number as a boolean
+        // type value or get this total count of records deleted for logging, etc.
+        $count = 0;
 
-        return $this->buildMany($modelsAttributes);
-    }
+        $ids = is_array($ids) ? $ids : func_get_args();
 
-    /**
-     * Create an array of new instances, attach them to the parent model and save this model.
-     *
-     * @param  array|Traversable  $modelsAttributes
-     * @return array
-     */
-    public function createMany($modelsAttributes)
-    {
-        $instances = $this->buildMany($modelsAttributes);
+        // Get existing embedded documents.
+        $documents = $this->getEmbedded();
+
+        $primaryKey = $this->related->getKeyName();
+
+        foreach ($documents as $i => $document)
+        {
+            if (in_array($document[$primaryKey], $ids))
+            {
+                unset($documents[$i]);
+                $count++;
+            }
+        }
+
+        $this->setEmbedded($documents);
 
         $this->parent->save();
 
-        return $instances;
+        return $count;
     }
 
     /**
-     * Attach an array of new instances to the parent model and save this model.
+     * Get the embedded documents array
      *
-     * @param  array|Traversable  $models
      * @return array
      */
-    public function pushMany($models)
+    public function getEmbedded()
     {
-        $modelsAttributes = $this->getAttributesOf($models);
+        // Get raw attributes to skip relations and accessors.
+        $attributes = $this->parent->getAttributes();
 
-        return $this->createMany($modelsAttributes);
+        return isset($attributes[$this->localKey]) ? $attributes[$this->localKey] : array();
     }
 
     /**
-     * Transform a list of models to a list of models' attributes
+     * Set the embedded documents array
      *
-     * @param  array|Traversable  $models
-     * @return array
+     * @param array $models
      */
-    protected function getAttributesOf($models)
+    public function setEmbedded(array $models)
     {
-        $modelsAttributes = array();
+        $attributes = $this->parent->getAttributes();
 
-        foreach ($models as $key => $model)
-        {
-            $modelsAttributes[$key] = $model->getAttributes();
-        }
+        $attributes[$this->localKey] = $models;
 
-        return $modelsAttributes;
+        // Set raw attributes to skip mutators.
+        $this->parent->setRawAttributes($attributes);
+
+        // Set the relation on the parent.
+        $this->parent->setRelation($this->relation, $this->getResults());
     }
 
 }

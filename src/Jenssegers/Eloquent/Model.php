@@ -1,6 +1,5 @@
 <?php namespace Jenssegers\Eloquent;
 
-use LogicException;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -9,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
-use Jenssegers\Mongodb\Relations\EmbeddedRelation;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model {
@@ -230,36 +228,31 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      * @param  string  $collection
      * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
      */
-    protected function embedsMany($related, $collection = null)
+    protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
     {
-        // If no collection name was provided, we assume that the standard is the
-        // related model camel_cased, pluralized and suffixed with '_ids'
-        if (is_null($collection))
+        if (is_null($localKey))
         {
-            $collection = str_plural(snake_case($related)) . '_ids';
+            $localKey = snake_case(str_plural($related)) . '_ids';
         }
 
-        return new EmbedsMany($this, $related, $collection);
-    }
-
-    /**
-     * Get a relationship value from a method.
-     *
-     * @param  string  $key
-     * @param  string  $camelKey
-     * @return mixed
-     */
-    protected function getRelationshipFromMethod($key, $camelKey)
-    {
-        $relations = $this->$camelKey();
-
-        if ( ! $relations instanceof Relation and ! $relations instanceof EmbeddedRelation)
+        if (is_null($foreignKey))
         {
-            throw new LogicException('Relationship method must return an object of type '
-                . 'Illuminate\Database\Eloquent\Relations\Relation or Jenssegers\Mongodb\Relations\EmbeddedRelation');
+            $foreignKey = snake_case(class_basename($this));
         }
 
-        return $this->relations[$key] = $relations->getResults();
+        // If no relation name was given, we will use this debug backtrace to extract
+        // the calling method's name and use that as the relationship name as most
+        // of the time this will be what we desire to use for the relatinoships.
+        if (is_null($relation))
+        {
+            list(, $caller) = debug_backtrace(false);
+
+            $relation = $caller['function'];
+        }
+
+        $query = $this->newQuery();
+
+        return new EmbedsMany($query, $this, $localKey, $foreignKey, $relation);
     }
 
     /**

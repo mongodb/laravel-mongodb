@@ -269,7 +269,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $client = Client::create(array('name' => 'Jane Doe'));
 
         $photo = Photo::create(array('url' => 'http://graph.facebook.com/john.doe/picture'));
-        $user->photos()->save($photo);
+        $photo = $user->photos()->save($photo);
+
         $this->assertEquals(1, $user->photos->count());
         $this->assertEquals($photo->id, $user->photos->first()->id);
 
@@ -282,49 +283,64 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($photo->imageable->name, $user->name);
     }
 
-    public function testEmbedsManySaveOneRelated()
+    public function testEmbedsManySave()
     {
         $user = User::create(array('name' => 'John Doe'));
+        $address = new Address(array('city' => 'London'));
 
-        $user->addresses()->create(array('city' => 'Paris'));
-        $user->addresses()->push(new Address(array('city' => 'London')));
-        $user->addresses()->build(array('city' => 'Bruxelles'));
-        $user->addresses()->add(new Address(array('city' => 'New-York')));
+        $address = $user->addresses()->save($address);
+        $this->assertEquals(array('London'), $user->addresses->lists('city'));
+        $this->assertInstanceOf('DateTime', $address->created_at);
+        $this->assertInstanceOf('DateTime', $address->updated_at);
 
-        $freshUser = User::find($user->id);
-        $this->assertEquals(array('Paris', 'London', 'Bruxelles', 'New-York'), $user->addresses->lists('city'));
-        $this->assertEquals(array('Paris', 'London'), $freshUser->addresses->lists('city'));
+        $address = $user->addresses()->save(new Address(array('city' => 'Paris')));
 
-        $user->save();
-        $freshUser = User::find($user->id);
-        $this->assertEquals(array('Paris', 'London', 'Bruxelles', 'New-York'), $freshUser->addresses->lists('city'));
+        $freshUser = User::find($user->_id);
+        $this->assertEquals(array('London', 'Paris'), $freshUser->addresses->lists('city'));
 
+        $address->city = 'New York';
+        $freshUser->addresses()->save($address);
+
+        $this->assertEquals(2, count($freshUser->addresses));
+        $this->assertEquals(2, count($freshUser->addresses()->get()));
+        $this->assertEquals(2, $freshUser->addresses->count());
+        $this->assertEquals(array('London', 'New York'), $freshUser->addresses->lists('city'));
+
+        $address = $freshUser->addresses->first();
+        $this->assertEquals('London', $address->city);
+        $this->assertInstanceOf('DateTime', $address->created_at);
+        $this->assertInstanceOf('DateTime', $address->updated_at);
+        $this->assertInstanceOf('User', $address->user);
     }
 
-    public function testEmbedsManySaveManyRelated()
+    public function testEmbedsManySaveMany()
     {
         $user = User::create(array('name' => 'John Doe'));
-
-        $user->addresses()->createMany(array(array('city' => 'Paris'), array('city' => 'Rouen')));
-        $user->addresses()->pushMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol'))));
-        $user->addresses()->buildMany(array(array('city' => 'Bruxelles')));
-        $user->addresses()->addMany(new Collection(array(new Address(array('city' => 'New-York')))));
+        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol'))));
+        $this->assertEquals(array('London', 'Bristol'), $user->addresses->lists('city'));
 
         $freshUser = User::find($user->id);
-        $this->assertEquals(array('Paris', 'Rouen', 'London', 'Bristol', 'Bruxelles', 'New-York'), $user->addresses->lists('city'));
-        $this->assertEquals(array('Paris', 'Rouen', 'London', 'Bristol'), $freshUser->addresses->lists('city'));
-
-        $user->save();
-        $freshUser = User::find($user->id);
-        $this->assertEquals(array('Paris', 'Rouen', 'London', 'Bristol', 'Bruxelles', 'New-York'), $freshUser->addresses->lists('city'));
-
+        $this->assertEquals(array('London', 'Bristol'), $freshUser->addresses->lists('city'));
     }
 
-    public function testEmbedsManyCreateId()
+    public function testEmbedsManyCreate()
     {
         $user = new User(array('name' => 'John Doe'));
-        $user->addresses()->build(array('city' => 'Bruxelles'));
-        $this->assertInstanceOf('MongoId', $user->addresses->first()->_id);
+        $user->addresses()->create(array('city' => 'Bruxelles'));
+        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Bruxelles'), $freshUser->addresses->lists('city'));
+    }
+
+    public function testEmbedsManyDestroy()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
+
+        $address = $user->addresses->first();
+        $user->addresses()->destroy($address->_id);
+        $this->assertEquals(array('Bristol', 'Bruxelles'), $user->addresses->lists('city'));
     }
 
 }
