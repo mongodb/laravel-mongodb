@@ -364,6 +364,11 @@ class EmbedsMany extends Relation {
             $models[] = $model;
         }
 
+        if (count($models) > 0)
+        {
+            $models = $this->eagerLoadRelations($models);
+        }
+
         return $this->related->newCollection($models);
     }
 
