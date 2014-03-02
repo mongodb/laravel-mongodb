@@ -290,14 +290,19 @@ class EmbedsMany extends Relation {
      * @param  array|int  $ids
      * @return int
      */
-    public function destroy($ids)
+    public function destroy($ids = array())
     {
         // We'll initialize a count here so we will return the total number of deletes
         // for the operation. The developers can then check this number as a boolean
         // type value or get this total count of records deleted for logging, etc.
         $count = 0;
 
-        $ids = is_array($ids) ? $ids : func_get_args();
+        if ($ids instanceof Model) $ids = (array) $ids->getKey();
+
+        // If associated IDs were passed to the method we will only delete those
+        // associations, otherwise all of the association ties will be broken.
+        // We'll return the numbers of affected rows when we do the deletes.
+        $ids = (array) $ids;
 
         // Get existing embedded documents.
         $documents = $this->getEmbedded();
@@ -318,6 +323,28 @@ class EmbedsMany extends Relation {
         $this->parent->save();
 
         return $count;
+    }
+
+    /**
+     * Delete alias.
+     *
+     * @param  int|array  $ids
+     * @return int
+     */
+    public function detach($ids = array())
+    {
+        return $this->destroy($ids);
+    }
+
+    /**
+     * Save alias.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function attach(Model $model)
+    {
+        return $this->save($model);
     }
 
     /**

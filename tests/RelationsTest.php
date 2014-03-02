@@ -342,6 +342,22 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $address = $user->addresses->first();
         $user->addresses()->destroy($address->_id);
         $this->assertEquals(array('Bristol', 'Bruxelles'), $user->addresses->lists('city'));
+
+        $address = $user->addresses->first();
+        $user->addresses()->destroy($address);
+        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
+    }
+
+    public function testEmbedsManyAliases()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address = new Address(array('city' => 'London'));
+
+        $address = $user->addresses()->attach($address);
+        $this->assertEquals(array('London'), $user->addresses->lists('city'));
+
+        $user->addresses()->detach($address);
+        $this->assertEquals(array(), $user->addresses->lists('city'));
     }
 
 }
