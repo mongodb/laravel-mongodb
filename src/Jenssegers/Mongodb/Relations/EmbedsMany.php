@@ -179,14 +179,18 @@ class EmbedsMany extends Relation {
 
         $model->exists = true;
 
+        // Push the document to the database.
+        $result = $this->parent->push($this->localKey, $model->getAttributes(), true);
+
         // Get existing embedded documents.
         $documents = $this->getEmbedded();
 
+        // Add the document to the parent model.
         $documents[] = $model->getAttributes();
 
         $this->setEmbedded($documents);
 
-        return $this->parent->save() ? $model : false;
+        return $result ? $model : false;
     }
 
     /**
@@ -205,22 +209,14 @@ class EmbedsMany extends Relation {
             $model->setUpdatedAt($time);
         }
 
-        // Get existing embedded documents.
-        $documents = $this->getEmbedded();
-
         $key = $model->getKey();
 
         $primaryKey = $model->getKeyName();
 
-        // Update timestamps.
-        if ($model->usesTimestamps())
-        {
-            $time = $model->freshTimestamp();
+        // Get existing embedded documents.
+        $documents = $this->getEmbedded();
 
-            $model->setUpdatedAt($time);
-        }
-
-        // Replace the document
+        // Replace the document in the parent model.
         foreach ($documents as $i => $document)
         {
             if ($document[$primaryKey] == $key)
@@ -309,6 +305,7 @@ class EmbedsMany extends Relation {
 
         $primaryKey = $this->related->getKeyName();
 
+        // Remove the document from the parent model.
         foreach ($documents as $i => $document)
         {
             if (in_array($document[$primaryKey], $ids))
@@ -369,7 +366,7 @@ class EmbedsMany extends Relation {
     {
         $attributes = $this->parent->getAttributes();
 
-        $attributes[$this->localKey] = $models;
+        $attributes[$this->localKey] = array_values($models);
 
         // Set raw attributes to skip mutators.
         $this->parent->setRawAttributes($attributes);
