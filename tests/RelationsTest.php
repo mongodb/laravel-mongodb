@@ -292,6 +292,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(array('London'), $user->addresses->lists('city'));
         $this->assertInstanceOf('DateTime', $address->created_at);
         $this->assertInstanceOf('DateTime', $address->updated_at);
+        $this->assertNotNull($address->_id);
 
         $address = $user->addresses()->save(new Address(array('city' => 'Paris')));
 

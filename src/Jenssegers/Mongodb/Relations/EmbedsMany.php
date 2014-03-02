@@ -163,9 +163,9 @@ class EmbedsMany extends Relation {
     protected function performInsert(Model $model)
     {
         // Create a new key.
-        if (!$model->getKey())
+        if (!isset($model['_id']))
         {
-            $model->setAttribute($model->getKeyName(), new MongoId);
+            $model->setAttribute('_id', new MongoId);
         }
 
         // Set timestamps.
