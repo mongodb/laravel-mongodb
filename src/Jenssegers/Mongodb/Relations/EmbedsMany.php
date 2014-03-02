@@ -69,6 +69,7 @@ class EmbedsMany extends Relation {
      */
     public function addEagerConstraints(array $models)
     {
+        // There are no eager loading constraints.
     }
 
     /**
@@ -100,14 +101,9 @@ class EmbedsMany extends Relation {
     {
         foreach ($models as $model)
         {
-            // Get raw attributes to skip relations and accessors.
-            $attributes = $model->getAttributes();
+            $results = $this->getEmbeddedRecords($model);
 
-            $results = isset($attributes[$this->localKey]) ? $attributes[$this->localKey] : array();
-
-            $collection = $this->toCollection($results);
-
-            $model->setRelation($relation, $collection);
+            $model->setRelation($relation, $this->toCollection($results));
         }
 
         return $models;
@@ -120,10 +116,7 @@ class EmbedsMany extends Relation {
      */
     public function getResults()
     {
-        // Get embedded documents.
-        $results = $this->getEmbeddedRecords();
-
-        return $this->toCollection($results);
+        return $this->toCollection($this->getEmbeddedRecords());
     }
 
     /**
@@ -171,27 +164,21 @@ class EmbedsMany extends Relation {
             $model->setAttribute('_id', new MongoId);
         }
 
-        // Set timestamps.
-        if ($model->usesTimestamps())
-        {
-            $time = $model->freshTimestamp();
-
-            $model->setUpdatedAt($time);
-            $model->setCreatedAt($time);
-        }
-
-        $model->exists = true;
+        // Update timestamps.
+        $this->updateTimestamps($model);
 
         // Push the document to the database.
         $result = $this->query->push($this->localKey, $model->getAttributes(), true);
 
-        // Get existing embedded documents.
         $documents = $this->getEmbeddedRecords();
 
         // Add the document to the parent model.
         $documents[] = $model->getAttributes();
 
         $this->setEmbeddedRecords($documents);
+
+        // Mark the model as existing.
+        $model->exists = true;
 
         return $result ? $model : false;
     }
@@ -205,15 +192,10 @@ class EmbedsMany extends Relation {
     protected function performUpdate(Model $model)
     {
         // Update timestamps.
-        if ($model->usesTimestamps())
-        {
-            $time = $model->freshTimestamp();
+        $this->updateTimestamps($model);
 
-            $model->setUpdatedAt($time);
-        }
-
-        // Convert the id to MongoId if necessary.
-        $id = $this->query->getQuery()->convertKey($model->getKey());
+        // Get the correct foreign key value.
+        $id = $this->getForeignKeyValue($model->getKey());
 
         // Update document in database.
         $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
@@ -315,11 +297,7 @@ class EmbedsMany extends Relation {
         // Pull the documents from the database.
         foreach ($ids as $id)
         {
-            // Convert the id to MongoId if necessary.
-            $id = $this->query->getQuery()->convertKey($id);
-
-            $this->query->pull($this->localKey, array($primaryKey => $id));
-
+            $this->query->pull($this->localKey, array($primaryKey => $this->getForeignKeyValue($id)));
             $count++;
         }
 
@@ -373,9 +351,12 @@ class EmbedsMany extends Relation {
         $models = array();
 
         // Wrap documents in model objects.
-        foreach ($results as $result)
+        foreach ($results as $model)
         {
-            $model = $this->related->newFromBuilder($result);
+            if ( ! $model instanceof Model)
+            {
+                $model = $this->related->newFromBuilder($model);
+            }
 
             // Attatch the parent relation to the embedded model.
             $model->setRelation($this->foreignKey, $this->parent);
@@ -391,10 +372,15 @@ class EmbedsMany extends Relation {
      *
      * @return array
      */
-    protected function getEmbeddedRecords()
+    protected function getEmbeddedRecords(Model $model = null)
     {
+        if (is_null($model))
+        {
+            $model = $this->parent;
+        }
+
         // Get raw attributes to skip relations and accessors.
-        $attributes = $this->parent->getAttributes();
+        $attributes = $model->getAttributes();
 
         return isset($attributes[$this->localKey]) ? $attributes[$this->localKey] : array();
     }
@@ -415,6 +401,38 @@ class EmbedsMany extends Relation {
 
         // Set the relation on the parent.
         $this->parent->setRelation($this->relation, $this->getResults());
+    }
+
+    /**
+     * Update the creation and update timestamps.
+     *
+     * @return void
+     */
+    protected function updateTimestamps(Model $model)
+    {
+        $time = $model->freshTimestamp();
+
+        if ( ! $model->isDirty(Model::UPDATED_AT))
+        {
+            $model->setUpdatedAt($time);
+        }
+
+        if ( ! $model->exists && ! $model->isDirty(Model::CREATED_AT))
+        {
+            $model->setCreatedAt($time);
+        }
+    }
+
+    /**
+     * Get the foreign key value for the relation.
+     *
+     * @param  mixed $id
+     * @return mixed
+     */
+    protected function getForeignKeyValue($id)
+    {
+        // Convert the id to MongoId if necessary.
+        return $this->getBaseQuery()->convertKey($id);
     }
 
 }
