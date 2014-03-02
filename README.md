@@ -395,6 +395,8 @@ You can remove an embedded document by using the `destroy()` method:
     $book = $user->books()->first();
 
     $user->books()->destroy($book->_id);
+    // or
+    $user->books()->destroy($book);
 
 Again, you may override the conventional local key by passing a second argument to the embedsMany method:
 
