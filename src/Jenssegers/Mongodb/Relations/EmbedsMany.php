@@ -98,6 +98,18 @@ class EmbedsMany extends Relation {
      */
     public function match(array $models, Collection $results, $relation)
     {
+        foreach ($models as $model)
+        {
+            // Get raw attributes to skip relations and accessors.
+            $attributes = $model->getAttributes();
+
+            $results = isset($attributes[$this->localKey]) ? $attributes[$this->localKey] : array();
+
+            $collection = $this->toCollection($results);
+
+            $model->setRelation($relation, $collection);
+        }
+
         return $models;
     }
 
@@ -109,22 +121,9 @@ class EmbedsMany extends Relation {
     public function getResults()
     {
         // Get embedded documents.
-        $results = $this->getEmbedded();
+        $results = $this->getEmbeddedRecords();
 
-        $models = array();
-
-        // Wrap documents in model objects.
-        foreach ($results as $result)
-        {
-            $model = $this->related->newFromBuilder($result);
-
-            // Attatch the parent relation to the embedded model.
-            $model->setRelation($this->foreignKey, $this->parent);
-
-            $models[] = $model;
-        }
-
-        return $this->related->newCollection($models);
+        return $this->toCollection($results);
     }
 
     /**
@@ -187,12 +186,12 @@ class EmbedsMany extends Relation {
         $result = $this->query->push($this->localKey, $model->getAttributes(), true);
 
         // Get existing embedded documents.
-        $documents = $this->getEmbedded();
+        $documents = $this->getEmbeddedRecords();
 
         // Add the document to the parent model.
         $documents[] = $model->getAttributes();
 
-        $this->setEmbedded($documents);
+        $this->setEmbeddedRecords($documents);
 
         return $result ? $model : false;
     }
@@ -221,7 +220,7 @@ class EmbedsMany extends Relation {
                               ->update(array($this->localKey . '.$' => $model->getAttributes()));
 
         // Get existing embedded documents.
-        $documents = $this->getEmbedded();
+        $documents = $this->getEmbeddedRecords();
 
         $primaryKey = $this->related->getKeyName();
 
@@ -237,7 +236,7 @@ class EmbedsMany extends Relation {
             }
         }
 
-        $this->setEmbedded($documents);
+        $this->setEmbeddedRecords($documents);
 
         return $result ? $model : false;
     }
@@ -325,7 +324,7 @@ class EmbedsMany extends Relation {
         }
 
         // Get existing embedded documents.
-        $documents = $this->getEmbedded();
+        $documents = $this->getEmbeddedRecords();
 
         // Remove the document from the parent model.
         foreach ($documents as $i => $document)
@@ -336,7 +335,7 @@ class EmbedsMany extends Relation {
             }
         }
 
-        $this->setEmbedded($documents);
+        $this->setEmbeddedRecords($documents);
 
         return $count;
     }
@@ -364,11 +363,35 @@ class EmbedsMany extends Relation {
     }
 
     /**
-     * Get the embedded documents array
+     * Convert an array of embedded documents to a Collection.
+     *
+     * @param  array  $results
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    protected function toCollection(array $results = array())
+    {
+        $models = array();
+
+        // Wrap documents in model objects.
+        foreach ($results as $result)
+        {
+            $model = $this->related->newFromBuilder($result);
+
+            // Attatch the parent relation to the embedded model.
+            $model->setRelation($this->foreignKey, $this->parent);
+
+            $models[] = $model;
+        }
+
+        return $this->related->newCollection($models);
+    }
+
+    /**
+     * Get the embedded documents array.
      *
      * @return array
      */
-    public function getEmbedded()
+    protected function getEmbeddedRecords()
     {
         // Get raw attributes to skip relations and accessors.
         $attributes = $this->parent->getAttributes();
@@ -377,11 +400,11 @@ class EmbedsMany extends Relation {
     }
 
     /**
-     * Set the embedded documents array
+     * Set the embedded documents array.
      *
      * @param array $models
      */
-    public function setEmbedded(array $models)
+    protected function setEmbeddedRecords(array $models)
     {
         $attributes = $this->parent->getAttributes();
 

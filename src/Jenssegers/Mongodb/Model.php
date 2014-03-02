@@ -1,14 +1,10 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
-use Jenssegers\Mongodb\Relations\BelongsTo;
-use Jenssegers\Mongodb\Relations\BelongsToMany;
+use Jenssegers\Mongodb\Relations\EmbedsMany;
 
 use Carbon\Carbon;
 use DateTime;
@@ -50,6 +46,40 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         // Return primary key value if present
         if (array_key_exists($this->getKeyName(), $this->attributes)) return $this->attributes[$this->getKeyName()];
+    }
+
+    /**
+     * Define an embedded one-to-many relationship.
+     *
+     * @param  string  $related
+     * @param  string  $collection
+     * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
+     */
+    protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
+    {
+        if (is_null($localKey))
+        {
+            $localKey = snake_case(str_plural($related)) . '_ids';
+        }
+
+        if (is_null($foreignKey))
+        {
+            $foreignKey = snake_case(class_basename($this));
+        }
+
+        // If no relation name was given, we will use this debug backtrace to extract
+        // the calling method's name and use that as the relationship name as most
+        // of the time this will be what we desire to use for the relatinoships.
+        if (is_null($relation))
+        {
+            list(, $caller) = debug_backtrace(false);
+
+            $relation = $caller['function'];
+        }
+
+        $query = $this->newQuery();
+
+        return new EmbedsMany($query, $this, $localKey, $foreignKey, $relation);
     }
 
     /**

@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
-use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 
 abstract class Model extends \Illuminate\Database\Eloquent\Model {
@@ -219,40 +218,6 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         $query = $instance->newQuery();
 
         return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
-    }
-
-    /**
-     * Define an embedded one-to-many relationship.
-     *
-     * @param  string  $related
-     * @param  string  $collection
-     * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
-     */
-    protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
-    {
-        if (is_null($localKey))
-        {
-            $localKey = snake_case(str_plural($related)) . '_ids';
-        }
-
-        if (is_null($foreignKey))
-        {
-            $foreignKey = snake_case(class_basename($this));
-        }
-
-        // If no relation name was given, we will use this debug backtrace to extract
-        // the calling method's name and use that as the relationship name as most
-        // of the time this will be what we desire to use for the relatinoships.
-        if (is_null($relation))
-        {
-            list(, $caller) = debug_backtrace(false);
-
-            $relation = $caller['function'];
-        }
-
-        $query = $this->newQuery();
-
-        return new EmbedsMany($query, $this, $localKey, $foreignKey, $relation);
     }
 
     /**
