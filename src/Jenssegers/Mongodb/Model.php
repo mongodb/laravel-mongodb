@@ -206,6 +206,23 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     }
 
     /**
+     * Pass push to the query builder.
+     *
+     * @return mixed
+     */
+    public function push()
+    {
+        if ($parameters = func_get_args())
+        {
+            $query = $this->newQuery();
+
+            return call_user_func_array(array($query, 'push'), $parameters);
+        }
+
+        return parent::push();
+    }
+
+    /**
      * Create a new Eloquent query builder for the model.
      *
      * @param  \Jenssegers\Mongodb\Query\Builder $query
