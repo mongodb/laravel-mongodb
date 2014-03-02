@@ -55,6 +55,10 @@ class EmbedsMany extends Relation {
      */
     public function addConstraints()
     {
+        if (static::$constraints)
+        {
+            $this->query->where($this->parent->getKeyName(), '=', $this->parent->getKey());
+        }
     }
 
     /**
@@ -180,7 +184,7 @@ class EmbedsMany extends Relation {
         $model->exists = true;
 
         // Push the document to the database.
-        $result = $this->parent->push($this->localKey, $model->getAttributes(), true);
+        $result = $this->query->push($this->localKey, $model->getAttributes(), true);
 
         // Get existing embedded documents.
         $documents = $this->getEmbedded();
@@ -209,12 +213,19 @@ class EmbedsMany extends Relation {
             $model->setUpdatedAt($time);
         }
 
-        $key = $model->getKey();
+        // Convert the id to MongoId if necessary.
+        $id = $this->query->getQuery()->convertKey($model->getKey());
 
-        $primaryKey = $model->getKeyName();
+        // Update document in database.
+        $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
+                              ->update(array($this->localKey . '.$' => $model->getAttributes()));
 
         // Get existing embedded documents.
         $documents = $this->getEmbedded();
+
+        $primaryKey = $this->related->getKeyName();
+
+        $key = $model->getKey();
 
         // Replace the document in the parent model.
         foreach ($documents as $i => $document)
@@ -228,7 +239,7 @@ class EmbedsMany extends Relation {
 
         $this->setEmbedded($documents);
 
-        return $this->parent->save() ? $model : false;
+        return $result ? $model : false;
     }
 
     /**
@@ -300,10 +311,21 @@ class EmbedsMany extends Relation {
         // We'll return the numbers of affected rows when we do the deletes.
         $ids = (array) $ids;
 
+        $primaryKey = $this->related->getKeyName();
+
+        // Pull the documents from the database.
+        foreach ($ids as $id)
+        {
+            // Convert the id to MongoId if necessary.
+            $id = $this->query->getQuery()->convertKey($id);
+
+            $this->query->pull($this->localKey, array($primaryKey => $id));
+
+            $count++;
+        }
+
         // Get existing embedded documents.
         $documents = $this->getEmbedded();
-
-        $primaryKey = $this->related->getKeyName();
 
         // Remove the document from the parent model.
         foreach ($documents as $i => $document)
@@ -311,13 +333,10 @@ class EmbedsMany extends Relation {
             if (in_array($document[$primaryKey], $ids))
             {
                 unset($documents[$i]);
-                $count++;
             }
         }
 
         $this->setEmbedded($documents);
-
-        $this->parent->save();
 
         return $count;
     }

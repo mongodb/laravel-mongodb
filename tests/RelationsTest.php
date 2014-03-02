@@ -18,7 +18,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         Photo::truncate();
     }
 
-    /*public function testHasMany()
+    public function testHasMany()
     {
         $author = User::create(array('name' => 'George R. R. Martin'));
         Book::create(array('title' => 'A Game of Thrones', 'author_id' => $author->_id));
@@ -281,7 +281,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $photo = Photo::first();
         $this->assertEquals($photo->imageable->name, $user->name);
-    }*/
+    }
 
     public function testEmbedsManySave()
     {
@@ -296,18 +296,21 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $address = $user->addresses()->save(new Address(array('city' => 'Paris')));
 
-        $freshUser = User::find($user->_id);
-        $this->assertEquals(array('London', 'Paris'), $freshUser->addresses->lists('city'));
+        $user = User::find($user->_id);
+        $this->assertEquals(array('London', 'Paris'), $user->addresses->lists('city'));
 
         $address->city = 'New York';
-        $freshUser->addresses()->save($address);
+        $user->addresses()->save($address);
 
-        $this->assertEquals(2, count($freshUser->addresses));
-        $this->assertEquals(2, count($freshUser->addresses()->get()));
-        $this->assertEquals(2, $freshUser->addresses->count());
+        $this->assertEquals(2, count($user->addresses));
+        $this->assertEquals(2, count($user->addresses()->get()));
+        $this->assertEquals(2, $user->addresses->count());
+        $this->assertEquals(array('London', 'New York'), $user->addresses->lists('city'));
+
+        $freshUser = User::find($user->_id);
         $this->assertEquals(array('London', 'New York'), $freshUser->addresses->lists('city'));
 
-        $address = $freshUser->addresses->first();
+        $address = $user->addresses->first();
         $this->assertEquals('London', $address->city);
         $this->assertInstanceOf('DateTime', $address->created_at);
         $this->assertInstanceOf('DateTime', $address->updated_at);

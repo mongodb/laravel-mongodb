@@ -640,7 +640,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  mixed $id
      * @return mixed
      */
-    protected function convertKey($id)
+    public function convertKey($id)
     {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id))
         {
