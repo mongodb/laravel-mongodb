@@ -31,19 +31,29 @@ class EmbedsMany extends Relation {
     protected $relation;
 
     /**
+     * The related model.
+     *
+     * @var \Illuminate\Database\Eloquent\Model
+     */
+    protected $relatedModel;
+
+
+    /**
      * Create a new embeds many relationship instance.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Database\Eloquent\Model    $parent
+     * @param  \Illuminate\Database\Eloquent\Model    $relatedModel
      * @param  string  $localKey
      * @param  string  $relation
      * @return void
      */
-    public function __construct(Builder $query, Model $parent, $localKey, $foreignKey, $relation)
+    public function __construct(Builder $query, Model $parent, Model $relatedModel, $localKey, $foreignKey, $relation)
     {
         $this->localKey = $localKey;
         $this->foreignKey = $foreignKey;
         $this->relation = $relation;
+        $this->relatedModel = $relatedModel;
 
         parent::__construct($query, $parent);
     }
@@ -83,7 +93,7 @@ class EmbedsMany extends Relation {
     {
         foreach ($models as $model)
         {
-            $model->setRelation($relation, $this->related->newCollection());
+            $model->setRelation($relation, $this->relatedModel->newCollection());
         }
 
         return $models;
@@ -204,7 +214,7 @@ class EmbedsMany extends Relation {
         // Get existing embedded documents.
         $documents = $this->getEmbeddedRecords();
 
-        $primaryKey = $this->related->getKeyName();
+        $primaryKey = $this->relatedModel->getKeyName();
 
         $key = $model->getKey();
 
@@ -247,7 +257,7 @@ class EmbedsMany extends Relation {
         // Here we will set the raw attributes to avoid hitting the "fill" method so
         // that we do not have to worry about a mass accessor rules blocking sets
         // on the models. Otherwise, some of these attributes will not get set.
-        $instance = $this->related->newInstance();
+        $instance = $this->relatedModel->newInstance();
 
         $instance->setRawAttributes($attributes);
 
@@ -292,7 +302,7 @@ class EmbedsMany extends Relation {
         // We'll return the numbers of affected rows when we do the deletes.
         $ids = (array) $ids;
 
-        $primaryKey = $this->related->getKeyName();
+        $primaryKey = $this->relatedModel->getKeyName();
 
         // Pull the documents from the database.
         foreach ($ids as $id)
@@ -355,7 +365,7 @@ class EmbedsMany extends Relation {
         {
             if ( ! $model instanceof Model)
             {
-                $model = $this->related->newFromBuilder($model);
+                $model = $this->relatedModel->newFromBuilder($model);
             }
 
             // Attatch the parent relation to the embedded model.
@@ -369,7 +379,7 @@ class EmbedsMany extends Relation {
             $models = $this->eagerLoadRelations($models);
         }
 
-        return $this->related->newCollection($models);
+        return $this->relatedModel->newCollection($models);
     }
 
     /**
