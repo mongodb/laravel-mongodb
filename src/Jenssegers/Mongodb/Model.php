@@ -79,7 +79,9 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         $query = $this->newQuery();
 
-        return new EmbedsMany($query, $this, $localKey, $foreignKey, $relation);
+        $relatedModel = new $related;
+
+        return new EmbedsMany($query, $this, $relatedModel, $localKey, $foreignKey, $relation);
     }
 
     /**
