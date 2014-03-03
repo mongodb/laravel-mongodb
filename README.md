@@ -245,6 +245,22 @@ You may also specify additional columns to update:
     User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
     User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
 
+**Soft deleting**
+
+When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record. To enable soft deletes for a model, apply the SoftDeletingTrait to the model:
+
+use Jenssegers\Mongodb\Eloquent\SoftDeletingTrait;
+
+class User extends Eloquent {
+
+    use SoftDeletingTrait;
+
+    protected $dates = ['deleted_at'];
+
+}
+
+For more information check http://laravel.com/docs/eloquent#soft-deleting
+
 ### MongoDB specific operators
 
 **Exists**
