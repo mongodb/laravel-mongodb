@@ -46,6 +46,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
     );
 
     /**
+     * Projections
+     *
+     * @var array
+     */
+    protected $projections = array();
+
+    /**
      * Create a new query builder instance.
      *
      * @param Connection $connection
@@ -67,6 +74,73 @@ class Builder extends \Illuminate\Database\Query\Builder {
     {
         return $this->where('_id', '=', $this->convertKey($id))->first($columns);
     }
+
+    /**
+     * $slice projection operator - returns N element from array
+     *
+     * @param  string $column
+     * @param  int    $elements
+     * @return mixed
+     */
+    public function slice($column, $elements)
+    {
+        if (!isset($this->projections[$column]))
+            $this->projections[$column] = array();
+
+        $this->projections[$column]['$slice'] = $elements;
+        return $this;
+    }
+
+    /**
+     * $elemMatch projection operator - limits the contents of an array field
+     * that is included in the query results to contain only the array element 
+     * that matches the $elemMatch condition.
+     * This is a where-style method but works on subdocuments of already selected 
+     * documents.
+     * http://docs.mongodb.org/manual/reference/operator/projection/elemMatch/
+     *
+     * @param  string $column
+     * @param  string $documentField
+     * @param  string $column 
+     * @param  string $operator 
+     * @param  mixed  $value 
+     * @param  string $boolean 
+     * @return mixed
+     */
+
+    public function orElemMatch($documentField, $column, $operator = null, $value = null) {
+        return $this->elemMatch($documentField, $column, $operator, $value, 'or');
+    }
+
+    public function elemMatch($documentField, $column, $operator = null, $value = null, $boolean = 'and')
+    {
+        // Inspired by \Illuminate\Database\Query\Builder
+        if (func_num_args() == 3) {
+            list($value, $operator) = array($operator, '=');
+        }
+        elseif ($this->invalidOperatorAndValue($operator, $value)) {
+            throw new \InvalidArgumentException("Value must be provided.");
+        }
+
+        if ( ! in_array(strtolower($operator), $this->operators, true)) {
+            list($value, $operator) = array($operator, '=');
+        }
+
+        if (is_null($value)) {
+            $type = 'Null';
+        } else {
+            $type = 'Basic';
+        }
+        if (!isset($this->projections[$documentField]))
+            $this->projections[$documentField] = array( '$elemMatch' => array() );
+        elseif (!isset($this->projections[$documentField]['$elemMatch']))
+            $this->projections[$documentField]['$elemMatch'] = array();
+
+        $this->projections[$documentField]['$elemMatch'][] = compact('type', 'column', 'operator', 'value', 'boolean');
+
+        return $this;
+    }
+
 
     /**
      * Execute the query as a fresh "select" statement.
@@ -190,6 +264,15 @@ class Builder extends \Illuminate\Database\Query\Builder {
             foreach ($this->columns as $column)
             {
                 $columns[$column] = true;
+            }
+
+            // Projection operators 
+            foreach ($this->projections as $column => $data)
+            {
+                if (isset($data['$slice']))
+                    $columns[$column] = $data;
+                if (isset($data['$elemMatch']))
+                    $columns[$column] = array( '$elemMatch' => $this->compileWheres($data['$elemMatch']) ) ;
             }
 
             // Execute query and get MongoCursor
@@ -655,14 +738,17 @@ class Builder extends \Illuminate\Database\Query\Builder {
      *
      * @return array
      */
-    protected function compileWheres()
+    protected function compileWheres($compileVar = null)
     {
-        if (!$this->wheres) return array();
+        if (is_null($compileVar))
+            $compileVar = &$this->wheres;
+
+        if (!$compileVar) return array();
 
         // The new list of compiled wheres
         $wheres = array();
 
-        foreach ($this->wheres as $i => &$where)
+        foreach ($compileVar as $i => &$where)
         {
             // Convert id's
             if (isset($where['column']) && $where['column'] == '_id')
@@ -689,10 +775,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
             }
 
             // First item of chain
-            if ($i == 0 && count($this->wheres) > 1 && $where['boolean'] == 'and')
+            if ($i == 0 && count($compileVar) > 1 && $where['boolean'] == 'and')
             {
                 // Copy over boolean value of next item in chain
-                $where['boolean'] = $this->wheres[$i+1]['boolean'];
+                $where['boolean'] = $compileVar[$i+1]['boolean'];
             }
 
             // Delegate
