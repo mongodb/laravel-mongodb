@@ -359,6 +359,49 @@ The belongsToMany relation will not use a pivot "table", but will push id's to a
 
 Other relations are not yet supported, but may be added in the future. Read more about these relations on http://four.laravel.com/docs/eloquent#relationships
 
+### EmbedsMany Relations
+
+If you want to embed documents, rather than referencing them, you can use the `embedsMany` relation:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class User extends Eloquent {
+
+        public function books()
+        {
+            return $this->embedsMany('Book');
+        }
+
+    }
+
+Now we can access the user's books through the dynamic property:
+
+    $books = User::first()->books;
+
+When using embedded documents, there will also be an inverse relation available:
+
+    $user = $book->user;
+
+Inserting and updating embedded documents works just like the `belongsTo` relation:
+
+    $book = new Book(array('title' => 'A Game of Thrones'));
+
+    $user = User::first();
+
+    $book = $user->books()->save($book);
+
+You can remove an embedded document by using the `destroy()` method:
+
+    $book = $user->books()->first();
+
+    $user->books()->destroy($book->_id);
+    // or
+    $user->books()->destroy($book);
+
+Again, you may override the conventional local key by passing a second argument to the embedsMany method:
+
+    return $this->embedsMany('Book', 'local_key');
+
 ### MySQL Relations
 
 If you're using a hybrid MongoDB and SQL setup, you're in luck! The model will automatically return a MongoDB- or SQL-relation based on the type of the related model. Of course, if you want this functionality to work both ways, your SQL-models will need to extend `Jenssegers\Eloquent\Model`. Note that this functionality only works for hasOne, hasMany and belongsTo relations.

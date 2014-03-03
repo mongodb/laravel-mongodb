@@ -6,6 +6,7 @@ use MongoDate;
 use DateTime;
 use Closure;
 
+use Illuminate\Database\Query\Expression;
 use Jenssegers\Mongodb\Connection;
 
 class Builder extends \Illuminate\Database\Query\Builder {
@@ -507,11 +508,19 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function raw($expression = null)
     {
+        // Execute the closure on the mongodb collection
         if ($expression instanceof Closure)
         {
             return call_user_func($expression, $this->collection);
         }
 
+        // Create an expression for the given value
+        else if (!is_null($expression))
+        {
+            return new Expression($expression);
+        }
+
+        // Quick access to the mongodb collection
         return $this->collection;
     }
 
@@ -631,7 +640,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  mixed $id
      * @return mixed
      */
-    protected function convertKey($id)
+    public function convertKey($id)
     {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id))
         {

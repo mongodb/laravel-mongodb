@@ -1,14 +1,10 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
-use Jenssegers\Mongodb\Relations\BelongsTo;
-use Jenssegers\Mongodb\Relations\BelongsToMany;
+use Jenssegers\Mongodb\Relations\EmbedsMany;
 
 use Carbon\Carbon;
 use DateTime;
@@ -48,7 +44,44 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // If there is an actual id attribute, then return that.
         if ($value) return $value;
 
-        return $this->getKey();
+        // Return primary key value if present
+        if (array_key_exists($this->getKeyName(), $this->attributes)) return $this->attributes[$this->getKeyName()];
+    }
+
+    /**
+     * Define an embedded one-to-many relationship.
+     *
+     * @param  string  $related
+     * @param  string  $collection
+     * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
+     */
+    protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
+    {
+        if (is_null($localKey))
+        {
+            $localKey = snake_case(str_plural($related)) . '_ids';
+        }
+
+        if (is_null($foreignKey))
+        {
+            $foreignKey = snake_case(class_basename($this));
+        }
+
+        // If no relation name was given, we will use this debug backtrace to extract
+        // the calling method's name and use that as the relationship name as most
+        // of the time this will be what we desire to use for the relatinoships.
+        if (is_null($relation))
+        {
+            list(, $caller) = debug_backtrace(false);
+
+            $relation = $caller['function'];
+        }
+
+        $query = $this->newQuery();
+
+        $instance = new $related;
+
+        return new EmbedsMany($query, $this, $instance, $localKey, $foreignKey, $relation);
     }
 
     /**
@@ -202,6 +235,23 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         // Perform unset only on current document
         return $query = $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
+    }
+
+    /**
+     * Pass push to the query builder.
+     *
+     * @return mixed
+     */
+    public function push()
+    {
+        if ($parameters = func_get_args())
+        {
+            $query = $this->newQuery();
+
+            return call_user_func_array(array($query, 'push'), $parameters);
+        }
+
+        return parent::push();
     }
 
     /**
