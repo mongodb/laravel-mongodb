@@ -39,13 +39,16 @@ class EmbedsMany extends Relation {
      * @param  string  $relation
      * @return void
      */
-    public function __construct(Builder $query, Model $parent, $localKey, $foreignKey, $relation)
+    public function __construct(Builder $query, Model $parent, Model $related, $localKey, $foreignKey, $relation)
     {
+        $this->query = $query;
+        $this->parent = $parent;
+        $this->related = $related;
         $this->localKey = $localKey;
         $this->foreignKey = $foreignKey;
         $this->relation = $relation;
 
-        parent::__construct($query, $parent);
+        $this->addConstraints();
     }
 
     /**
