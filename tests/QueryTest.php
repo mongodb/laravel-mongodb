@@ -70,18 +70,18 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 	public function testSelect()
 	{
-		$user = User::select('name')->first();
+		$user = User::where('name', 'John Doe')->select('name')->first();
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(null, $user->age);
 
-		$user = User::select('name', 'title')->first();
+		$user = User::where('name', 'John Doe')->select('name', 'title')->first();
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals('admin', $user->title);
 		$this->assertEquals(null, $user->age);
 
-		$user = User::get(array('name'))->first();
+		$user = User::where('name', 'John Doe')->get(array('name'))->first();
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(null, $user->age);
