@@ -312,9 +312,9 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 			array('name' => 'spoon', 'type' => 'round', 'amount' => 14)
 		));
 
-		$items = DB::collection('items')->take(2)->get();
+		$items = DB::collection('items')->orderBy('name')->take(2)->get();
 		$this->assertEquals(2, count($items));
-		$this->assertEquals('knife', $items[0]['name']);
+		$this->assertEquals('fork', $items[0]['name']);
 	}
 
 	public function testSkip()
@@ -352,8 +352,9 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		));
 
 		$list = DB::collection('items')->lists('name');
+		sort($list);
 		$this->assertEquals(4, count($list));
-		$this->assertEquals(array('knife', 'fork', 'spoon', 'spoon'), $list);
+		$this->assertEquals(array('fork', 'knife', 'spoon', 'spoon'), $list);
 
 		$list = DB::collection('items')->lists('type', 'name');
 		$this->assertEquals(3, count($list));
