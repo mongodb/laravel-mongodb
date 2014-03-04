@@ -281,17 +281,17 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  string  $direction
      * @return Builder
      */
-    public function orderBy($column, $direction = null)
+    public function orderBy($column, $direction = 'asc')
     {
-        if (is_null($direction) && $column == 'natural')
+        $direction = (strtolower($direction) == 'asc' ? 1 : -1);
+
+        if ($column == 'natural')
         {
-            $this->orders['$natural'] = 1;
+            $this->orders['$natural'] = $direction;
         }
         else
         {
-            $direction = $direction ?: 'asc';
-
-            $this->orders[$column] = (strtolower($direction) == 'asc' ? 1 : -1);
+            $this->orders[$column] = $direction;
         }
 
         return $this;

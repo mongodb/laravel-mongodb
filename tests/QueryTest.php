@@ -148,8 +148,14 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$user = User::whereNotNull('age')->orderBy('age', 'desc')->first();
 		$this->assertEquals(37, $user->age);
 
-		$user = User::whereNotNull('age')->orderBy('natural')->first();
+		$user = User::whereNotNull('age')->orderBy('natural', 'asc')->first();
 		$this->assertEquals(35, $user->age);
+		
+		$user = User::whereNotNull('age')->orderBy('natural', 'ASC')->first();
+		$this->assertEquals(35, $user->age);
+		
+		$user = User::whereNotNull('age')->orderBy('natural', 'desc')->first();
+		$this->assertEquals(35, $user->age);		
 	}
 
 	public function testGroupBy()
