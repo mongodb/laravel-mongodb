@@ -265,12 +265,7 @@ class EmbedsMany extends Relation {
      */
     public function createMany(array $records)
     {
-        $instances = array();
-
-        foreach ($records as $record)
-        {
-            $instances[] = $this->create($record);
-        }
+        $instances = array_map(array($this, 'create'), $records);
 
         return $instances;
     }

@@ -146,13 +146,13 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(array_key_exists('user_ids', $client->getAttributes()));
         $this->assertTrue(array_key_exists('client_ids', $user->getAttributes()));
 
-        $clients = $client->getRelation('users');
-        $users = $user->getRelation('clients');
+        $users = $client->getRelation('users');
+        $clients = $user->getRelation('clients');
 
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $clients);
-        $this->assertInstanceOf('Client', $users[0]);
-        $this->assertInstanceOf('User', $clients[0]);
+        $this->assertInstanceOf('Client', $clients[0]);
+        $this->assertInstanceOf('User', $users[0]);
         $this->assertCount(2, $user->clients);
         $this->assertCount(1, $client->users);
 
@@ -353,6 +353,18 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user = User::create(array());
         $address = $user->addresses()->create(array('_id' => '', 'city' => 'Bruxelles'));
         $this->assertInstanceOf('MongoID', $address->_id);
+    }
+
+    public function testEmbedsManyCreateMany()
+    {
+        $user = User::create(array());
+        list($bruxelles, $paris) = $user->addresses()->createMany(array(array('city' => 'Bruxelles'), array('city' => 'Paris')));
+        $this->assertInstanceOf('Address', $bruxelles);
+        $this->assertEquals('Bruxelles', $bruxelles->city);
+        $this->assertEquals(array('Bruxelles', 'Paris'), $user->addresses->lists('city'));
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Bruxelles', 'Paris'), $freshUser->addresses->lists('city'));
     }
 
     public function testEmbedsManyDestroy()
