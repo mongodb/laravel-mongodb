@@ -104,8 +104,8 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$all = User::all();
 
 		$this->assertEquals(2, count($all));
-		$this->assertEquals('John Doe', $all[0]->name);
-		$this->assertEquals('Jane Doe', $all[1]->name);
+		$this->assertContains('John Doe', $all->lists('name'));
+		$this->assertContains('Jane Doe', $all->lists('name'));
 	}
 
 	public function testFind()

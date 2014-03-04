@@ -141,7 +141,7 @@ class EmbedsMany extends Relation {
     public function save(Model $model)
     {
         // Insert a new document.
-        if (!$model->exists)
+        if ( ! $model->exists)
         {
             return $this->performInsert($model);
         }
@@ -162,7 +162,7 @@ class EmbedsMany extends Relation {
     protected function performInsert(Model $model)
     {
         // Create a new key.
-        if (!isset($model['_id']))
+        if ( ! $model->getAttribute('_id'))
         {
             $model->setAttribute('_id', new MongoId);
         }
@@ -265,12 +265,7 @@ class EmbedsMany extends Relation {
      */
     public function createMany(array $records)
     {
-        $instances = array();
-
-        foreach ($records as $record)
-        {
-            $instances[] = $this->create($record);
-        }
+        $instances = array_map(array($this, 'create'), $records);
 
         return $instances;
     }
