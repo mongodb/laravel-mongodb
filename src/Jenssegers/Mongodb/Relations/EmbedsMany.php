@@ -162,7 +162,7 @@ class EmbedsMany extends Relation {
     protected function performInsert(Model $model)
     {
         // Create a new key.
-        if ( ! isset($model['_id']) or empty($model['_id']))
+        if ( ! $model->getAttribute('_id'))
         {
             $model->setAttribute('_id', new MongoId);
         }
