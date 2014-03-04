@@ -57,16 +57,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
     {
-        if (is_null($localKey))
-        {
-            $localKey = snake_case(str_plural($related)) . '_ids';
-        }
-
-        if (is_null($foreignKey))
-        {
-            $foreignKey = snake_case(class_basename($this));
-        }
-
         // If no relation name was given, we will use this debug backtrace to extract
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relatinoships.
@@ -75,6 +65,16 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             list(, $caller) = debug_backtrace(false);
 
             $relation = $caller['function'];
+        }
+
+        if (is_null($localKey))
+        {
+            $localKey = '_' . $relation;
+        }
+
+        if (is_null($foreignKey))
+        {
+            $foreignKey = snake_case(class_basename($this));
         }
 
         $query = $this->newQuery();
