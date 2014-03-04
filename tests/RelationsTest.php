@@ -355,6 +355,18 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('MongoID', $address->_id);
     }
 
+    public function testEmbedsManyCreateMany()
+    {
+        $user = User::create(array());
+        list($bruxelles, $paris) = $user->addresses()->createMany(array(array('city' => 'Bruxelles'), array('city' => 'Paris')));
+        $this->assertInstanceOf('Address', $bruxelles);
+        $this->assertEquals('Bruxelles', $bruxelles->city);
+        $this->assertEquals(array('Bruxelles', 'Paris'), $user->addresses->lists('city'));
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Bruxelles', 'Paris'), $freshUser->addresses->lists('city'));
+    }
+
     public function testEmbedsManyDestroy()
     {
         $user = User::create(array('name' => 'John Doe'));
