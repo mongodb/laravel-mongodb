@@ -78,10 +78,7 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 		$users = DB::collection('users')->get();
 		$this->assertEquals(2, count($users));
-
-		$user = $users[0];
-		$this->assertEquals('Jane Doe', $user['name']);
-		$this->assertTrue(is_array($user['tags']));
+		$this->assertTrue(is_array($users[0]['tags']));
 	}
 
 	public function testFind()
@@ -118,8 +115,10 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		DB::collection('users')->where('name', 'John Doe')->update(array('age' => 100));
 		$users = DB::collection('users')->get();
 
-		$this->assertEquals(20, $users[0]['age']);
-		$this->assertEquals(100, $users[1]['age']);
+		$john = DB::collection('users')->where('name', 'John Doe')->first();
+		$jane = DB::collection('users')->where('name', 'Jane Doe')->first();
+		$this->assertEquals(100, $john['age']);
+		$this->assertEquals(20, $jane['age']);
 	}
 
 	public function testDelete()
@@ -326,7 +325,7 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 			array('name' => 'spoon', 'type' => 'round', 'amount' => 14)
 		));
 
-		$items = DB::collection('items')->skip(2)->get();
+		$items = DB::collection('items')->orderBy('name')->skip(2)->get();
 		$this->assertEquals(2, count($items));
 		$this->assertEquals('spoon', $items[0]['name']);
 	}
@@ -471,7 +470,9 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 		$results = DB::collection('users')->where('age', 'exists', true)->get();
 		$this->assertEquals(2, count($results));
-		$this->assertEquals('John Doe', $results[0]['name']);
+		$resultsNames = array($results[0]['name'], $results[1]['name']);
+		$this->assertContains('John Doe', $resultsNames);
+		$this->assertContains('Robert Roe', $resultsNames);
 
 		$results = DB::collection('users')->where('age', 'exists', false)->get();
 		$this->assertEquals(1, count($results));
