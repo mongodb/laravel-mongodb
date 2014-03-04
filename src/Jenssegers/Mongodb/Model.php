@@ -246,7 +246,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     {
         if ($parameters = func_get_args())
         {
-            $query = $this->newQuery();
+            $query = $this->setKeysForSaveQuery($this->newQuery());
 
             return call_user_func_array(array($query, 'push'), $parameters);
         }
