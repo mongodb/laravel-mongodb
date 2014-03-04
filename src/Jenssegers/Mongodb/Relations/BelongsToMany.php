@@ -36,9 +36,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	{
 		if (static::$constraints)
 		{
-			// Make sure that the primary key of the parent
-			// is in the relationship array of keys
-			$this->query->whereIn($this->foreignKey, array($this->parent->getKey()));
+			$this->query->where($this->foreignKey, $this->parent->getKey());
 		}
 	}
 
@@ -114,15 +112,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 	{
 		if ($id instanceof Model) $id = $id->getKey();
 
-		// Generate a new parent query instance
-		$parent = $this->newParentQuery();
-
-		// Generate a new related query instance
-		$related = $this->related->newInstance();
-
-		// Set contraints on the related query
-		$related = $related->where($this->related->getKeyName(), $id);
-
 		$records = $this->createAttachRecords((array) $id, $attributes);
 
 		// Get the ID's to attach to the two documents
@@ -130,10 +119,18 @@ class BelongsToMany extends EloquentBelongsToMany {
 		$foreignIds = array_pluck($records, $this->foreignKey);
 
 		// Attach to the parent model
-		$parent->push($this->otherKey, $otherIds[0]);
+		$this->parent->push($this->otherKey, $otherIds[0]);
+
+		// Generate a new related query instance
+		$query = $this->getNewRelatedQuery();
+
+		// Set contraints on the related query
+		$query->where($this->related->getKeyName(), $id);
 
 		// Attach to the related model
-		$related->push($this->foreignKey, $foreignIds[0]);
+		$query->push($this->foreignKey, $foreignIds[0]);
+
+		if ($touch) $this->touchIfTouching();
 	}
 
 	/**
@@ -168,47 +165,32 @@ class BelongsToMany extends EloquentBelongsToMany {
 	{
 		if ($ids instanceof Model) $ids = (array) $ids->getKey();
 
-		$query = $this->newParentQuery();
-
-		// Generate a new related query instance
-		$related = $this->related->newInstance();
-
 		// If associated IDs were passed to the method we will only delete those
 		// associations, otherwise all of the association ties will be broken.
 		// We'll return the numbers of affected rows when we do the deletes.
 		$ids = (array) $ids;
 
+		// Pull each id from the parent.
+		foreach ($ids as $id)
+		{
+			$this->parent->pull($this->otherKey, $id);
+		}
+
+		// Get a new related query.
+		$query = $this->getNewRelatedQuery();
+
+		// Prepare the query to select all related objects.
 		if (count($ids) > 0)
 		{
-			$query->whereIn($this->otherKey, $ids);
+			$query->whereIn($this->related->getKeyName(), $ids);
 		}
+
+		// Remove the relation to the parent.
+		$query->pull($this->foreignKey, $this->parent->getKey());
 
 		if ($touch) $this->touchIfTouching();
 
-		// Once we have all of the conditions set on the statement, we are ready
-		// to run the delete on the pivot table. Then, if the touch parameter
-		// is true, we will go ahead and touch all related models to sync.
-		foreach ($ids as $id)
-		{
-			$query->pull($this->otherKey, $id);
-		}
-
-		// Remove the relation from the related model
-		$related->pull($this->foreignKey, $this->parent->getKey());
-
 		return count($ids);
-	}
-
-	/**
-	 * Create a new query builder for the parent
-	 *
-	 * @return Jenssegers\Mongodb\Builder
-	 */
-	protected function newParentQuery()
-	{
-		$query = $this->parent->newQuery();
-
-		return $query->where($this->parent->getKeyName(), '=', $this->parent->getKey());
 	}
 
 	/**
@@ -235,6 +217,16 @@ class BelongsToMany extends EloquentBelongsToMany {
 		}
 
 		return $dictionary;
+	}
+
+	/**
+	 * Get a new related query.
+	 *
+	 * @return \Illuminate\Database\Query\Builder
+	 */
+	public function getNewRelatedQuery()
+	{
+		return $this->related->newQuery();
 	}
 
 	/**

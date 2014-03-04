@@ -238,7 +238,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     }
 
     /**
-     * Pass push to the query builder.
+     * Append one or more values to an array.
      *
      * @return mixed
      */
@@ -252,6 +252,18 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         }
 
         return parent::push();
+    }
+
+    /**
+     * Remove one or more values from an array.
+     *
+     * @return mixed
+     */
+    public function pull()
+    {
+        $query = $this->setKeysForSaveQuery($this->newQuery());
+
+        return call_user_func_array(array($query, 'pull'), func_get_args());
     }
 
     /**
