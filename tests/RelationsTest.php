@@ -329,6 +329,27 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(array('London', 'Manhattan', 'Bruxelles'), $freshUser->addresses->lists('city'));
     }
 
+    public function testEmbedsManyAssociate()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address = new Address(array('city' => 'London'));
+
+        $address = $user->addresses()->associate($address);
+        $this->assertNotNull($user->_addresses);
+        $this->assertEquals(array('London'), $user->addresses->lists('city'));
+        $this->assertNotNull($address->_id);
+
+        $freshUser = User::find($user->_id);
+        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+
+        $address->city = 'Londinium';
+        $user->addresses()->associate($address);
+        $this->assertEquals(array('Londinium'), $user->addresses->lists('city'));
+
+        $freshUser = User::find($user->_id);
+        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+    }
+
     public function testEmbedsManySaveMany()
     {
         $user = User::create(array('name' => 'John Doe'));
