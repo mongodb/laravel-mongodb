@@ -273,22 +273,12 @@ class EmbedsMany extends Relation {
     /**
      * Destroy the embedded models for the given IDs.
      *
-     * @param  array|int  $ids
+     * @param  mixed  $ids
      * @return int
      */
     public function destroy($ids = array())
     {
-        // We'll initialize a count here so we will return the total number of deletes
-        // for the operation. The developers can then check this number as a boolean
-        // type value or get this total count of records deleted for logging, etc.
-        $count = 0;
-
-        if ($ids instanceof Model) $ids = (array) $ids->getKey();
-
-        // If associated IDs were passed to the method we will only delete those
-        // associations, otherwise all of the association ties will be broken.
-        // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array) $ids;
+        $ids = $this->getIdsArrayFrom($ids);
 
         $primaryKey = $this->related->getKeyName();
 
@@ -296,8 +286,22 @@ class EmbedsMany extends Relation {
         foreach ($ids as $id)
         {
             $this->query->pull($this->localKey, array($primaryKey => $this->getForeignKeyValue($id)));
-            $count++;
         }
+
+        return $this->dissociate($ids);
+    }
+
+    /**
+     * Dissociate the embedded models for the given IDs without persistence.
+     *
+     * @param  mixed  $ids
+     * @return int
+     */
+    public function dissociate($ids = array())
+    {
+        $ids = $this->getIdsArrayFrom($ids);
+
+        $primaryKey = $this->related->getKeyName();
 
         // Get existing embedded documents.
         $documents = $this->getEmbeddedRecords();
@@ -313,7 +317,28 @@ class EmbedsMany extends Relation {
 
         $this->setEmbeddedRecords($documents);
 
-        return $count;
+        // We return the total number of deletes for the operation. The developers
+        // can then check this number as a boolean type value or get this total count
+        // of records deleted for logging, etc.
+        return count($ids);
+    }
+
+    /**
+     * Transform single ID, single Model or array of Models into an array of IDs
+     *
+     * @param  mixed  $ids
+     * @return int
+     */
+    protected function getIdsArrayFrom($ids)
+    {
+        if (! is_array($ids)) $ids = array($ids);
+
+        foreach ($ids as &$id)
+        {
+            if ($id instanceof Model) $id = $id->getKey();
+        }
+
+        return $ids;
     }
 
     /**
