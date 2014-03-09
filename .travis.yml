@@ -17,8 +17,8 @@ before_script:
   - echo "extension = mongo.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - mysql -e 'create database unittest;'
   - composer self-update
+  - composer require satooshi/php-coveralls:dev-master
   - composer install --dev --no-interaction
-  - composer require satooshi/php-coveralls:dev-master --dev --no-progress --prefer-source
 
 script:
   - mkdir -p build/logs
