@@ -20,3 +20,6 @@ before_script:
   - composer install --dev --no-interaction
 
 script: phpunit
+
+after_script:
+  - php vendor/bin/coveralls -v
