@@ -17,8 +17,7 @@
     },
     "require-dev": {
         "illuminate/cache": "4.1.x",
-        "illuminate/auth": "4.1.x",
-        "satooshi/php-coveralls": "dev-master"
+        "illuminate/auth": "4.1.x"
     },
     "autoload": {
         "psr-0": {
