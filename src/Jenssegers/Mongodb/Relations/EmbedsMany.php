@@ -140,6 +140,8 @@ class EmbedsMany extends Relation {
      */
     public function save(Model $model)
     {
+        $this->updateTimestamps($model);
+
         // Insert a new document.
         if ( ! $model->exists)
         {
@@ -154,6 +156,28 @@ class EmbedsMany extends Relation {
     }
 
     /**
+     * Attach a model instance to the parent model without persistence.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function associate(Model $model)
+    {
+        // Insert the related model in the parent instance
+        if ( ! $model->exists)
+        {
+            return $this->associateNew($model);
+        }
+
+        // Update the related model in the parent instance
+        else
+        {
+            return $this->associateExisting($model);
+        }
+
+    }
+
+    /**
      * Perform a model insert operation.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
@@ -161,27 +185,11 @@ class EmbedsMany extends Relation {
      */
     protected function performInsert(Model $model)
     {
-        // Create a new key.
-        if ( ! $model->getAttribute('_id'))
-        {
-            $model->setAttribute('_id', new MongoId);
-        }
-
-        // Update timestamps.
-        $this->updateTimestamps($model);
+        // Insert the related model in the parent instance
+        $this->associateNew($model);
 
         // Push the document to the database.
         $result = $this->query->push($this->localKey, $model->getAttributes(), true);
-
-        $documents = $this->getEmbeddedRecords();
-
-        // Add the document to the parent model.
-        $documents[] = $model->getAttributes();
-
-        $this->setEmbeddedRecords($documents);
-
-        // Mark the model as existing.
-        $model->exists = true;
 
         return $result ? $model : false;
     }
@@ -194,8 +202,8 @@ class EmbedsMany extends Relation {
      */
     protected function performUpdate(Model $model)
     {
-        // Update timestamps.
-        $this->updateTimestamps($model);
+        // Update the related model in the parent instance
+        $this->associateExisting($model);
 
         // Get the correct foreign key value.
         $id = $this->getForeignKeyValue($model->getKey());
@@ -204,6 +212,44 @@ class EmbedsMany extends Relation {
         $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
                               ->update(array($this->localKey . '.$' => $model->getAttributes()));
 
+        return $result ? $model : false;
+    }
+
+    /**
+     * Attach a new model without persistence
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function associateNew($model)
+    {
+        // Create a new key.
+        if ( ! $model->getAttribute('_id'))
+        {
+            $model->setAttribute('_id', new MongoId);
+        }
+
+        $documents = $this->getEmbeddedRecords();
+
+        // Add the document to the parent model.
+        $documents[] = $model->getAttributes();
+
+        $this->setEmbeddedRecords($documents);
+
+        // Mark the model as existing.
+        $model->exists = true;
+
+        return $model;
+    }
+
+    /**
+     * Update an existing model without persistence
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function associateExisting($model)
+    {
         // Get existing embedded documents.
         $documents = $this->getEmbeddedRecords();
 
@@ -212,18 +258,18 @@ class EmbedsMany extends Relation {
         $key = $model->getKey();
 
         // Replace the document in the parent model.
-        foreach ($documents as $i => $document)
+        foreach ($documents as &$document)
         {
             if ($document[$primaryKey] == $key)
             {
-                $documents[$i] = $model->getAttributes();
+                $document = $model->getAttributes();
                 break;
             }
         }
 
         $this->setEmbeddedRecords($documents);
 
-        return $result ? $model : false;
+        return $model;
     }
 
     /**
@@ -273,22 +319,12 @@ class EmbedsMany extends Relation {
     /**
      * Destroy the embedded models for the given IDs.
      *
-     * @param  array|int  $ids
+     * @param  mixed  $ids
      * @return int
      */
     public function destroy($ids = array())
     {
-        // We'll initialize a count here so we will return the total number of deletes
-        // for the operation. The developers can then check this number as a boolean
-        // type value or get this total count of records deleted for logging, etc.
-        $count = 0;
-
-        if ($ids instanceof Model) $ids = (array) $ids->getKey();
-
-        // If associated IDs were passed to the method we will only delete those
-        // associations, otherwise all of the association ties will be broken.
-        // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array) $ids;
+        $ids = $this->getIdsArrayFrom($ids);
 
         $primaryKey = $this->related->getKeyName();
 
@@ -296,8 +332,22 @@ class EmbedsMany extends Relation {
         foreach ($ids as $id)
         {
             $this->query->pull($this->localKey, array($primaryKey => $this->getForeignKeyValue($id)));
-            $count++;
         }
+
+        return $this->dissociate($ids);
+    }
+
+    /**
+     * Dissociate the embedded models for the given IDs without persistence.
+     *
+     * @param  mixed  $ids
+     * @return int
+     */
+    public function dissociate($ids = array())
+    {
+        $ids = $this->getIdsArrayFrom($ids);
+
+        $primaryKey = $this->related->getKeyName();
 
         // Get existing embedded documents.
         $documents = $this->getEmbeddedRecords();
@@ -313,7 +363,28 @@ class EmbedsMany extends Relation {
 
         $this->setEmbeddedRecords($documents);
 
-        return $count;
+        // We return the total number of deletes for the operation. The developers
+        // can then check this number as a boolean type value or get this total count
+        // of records deleted for logging, etc.
+        return count($ids);
+    }
+
+    /**
+     * Transform single ID, single Model or array of Models into an array of IDs
+     *
+     * @param  mixed  $ids
+     * @return int
+     */
+    protected function getIdsArrayFrom($ids)
+    {
+        if (! is_array($ids)) $ids = array($ids);
+
+        foreach ($ids as &$id)
+        {
+            if ($id instanceof Model) $id = $id->getKey();
+        }
+
+        return $ids;
     }
 
     /**

@@ -329,6 +329,27 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(array('London', 'Manhattan', 'Bruxelles'), $freshUser->addresses->lists('city'));
     }
 
+    public function testEmbedsManyAssociate()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address = new Address(array('city' => 'London'));
+
+        $address = $user->addresses()->associate($address);
+        $this->assertNotNull($user->_addresses);
+        $this->assertEquals(array('London'), $user->addresses->lists('city'));
+        $this->assertNotNull($address->_id);
+
+        $freshUser = User::find($user->_id);
+        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+
+        $address->city = 'Londinium';
+        $user->addresses()->associate($address);
+        $this->assertEquals(array('Londinium'), $user->addresses->lists('city'));
+
+        $freshUser = User::find($user->_id);
+        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+    }
+
     public function testEmbedsManySaveMany()
     {
         $user = User::create(array('name' => 'John Doe'));
@@ -383,8 +404,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user->addresses()->create(array('city' => 'Paris'));
         $user->addresses()->create(array('city' => 'San Francisco'));
 
-        $user = User::find($user->id);
-        $this->assertEquals(array('Bruxelles', 'Paris', 'San Francisco'), $user->addresses->lists('city'));
+        $freshUser = User::find($user->id);
+        $this->assertEquals(array('Bruxelles', 'Paris', 'San Francisco'), $freshUser->addresses->lists('city'));
 
         $ids = $user->addresses->lists('_id');
         $user->addresses()->destroy($ids);
@@ -392,6 +413,22 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $freshUser = User::find($user->id);
         $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+
+        list($london, $bristol, $bruxelles) = $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
+        $user->addresses()->destroy(array($london, $bruxelles));
+        $this->assertEquals(array('Bristol'), $user->addresses->lists('city'));
+    }
+
+    public function testEmbedsManyDissociate()
+    {
+        $user = User::create(array());
+        $cordoba = $user->addresses()->create(array('city' => 'Cordoba'));
+
+        $user->addresses()->dissociate($cordoba->id);
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(0, $user->addresses->count());
+        $this->assertEquals(1, $freshUser->addresses->count());
     }
 
     public function testEmbedsManyAliases()
