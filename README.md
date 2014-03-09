@@ -1,7 +1,7 @@
 Laravel MongoDB
 ===============
 
-[![Latest Stable Version](https://poser.pugx.org/jenssegers/mongodb/v/stable.png)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](https://poser.pugx.org/jenssegers/mongodb/downloads.png)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB)
+[![Latest Stable Version](https://poser.pugx.org/jenssegers/mongodb/v/stable.png)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](https://poser.pugx.org/jenssegers/mongodb/downloads.png)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB) [![Coverage Status](https://coveralls.io/repos/jenssegers/Laravel-MongoDB/badge.png?branch=master)](https://coveralls.io/r/jenssegers/Laravel-MongoDB?branch=master)
 
 An Eloquent model and Query builder with support for MongoDB, inspired by LMongo, but using the original Laravel methods. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
