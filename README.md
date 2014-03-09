@@ -398,6 +398,11 @@ You can remove an embedded document by using the `destroy()` method:
     // or
     $user->books()->destroy($book);
 
+If you want to add or remove embedded documents, without persistence, you can use the `associate` and `dissociate` methods. To write the changes to the database, save the parent object:
+
+    $user->books()->associate($book);
+    $user->save();
+
 Again, you may override the conventional local key by passing a second argument to the embedsMany method:
 
     return $this->embedsMany('Book', 'local_key');
