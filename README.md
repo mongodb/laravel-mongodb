@@ -44,7 +44,7 @@ You can connect to multiple servers or replica sets with the following configura
 
     'mongodb' => array(
         'driver'   => 'mongodb',
-        'host'     => array('server1', 'server2),
+        'host'     => array('server1', 'server2'),
         'port'     => 27017,
         'username' => 'username',
         'password' => 'password',
