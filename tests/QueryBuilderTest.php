@@ -195,6 +195,9 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$collection = DB::collection('users')->raw();
 		$this->assertInstanceOf('MongoCollection', $collection);
 
+		$collection = User::raw();
+		$this->assertInstanceOf('MongoCollection', $collection);
+
 		$results = DB::collection('users')->whereRaw(array('age' => 20))->get();
 		$this->assertEquals(1, count($results));
 		$this->assertEquals('Jane Doe', $results[0]['name']);

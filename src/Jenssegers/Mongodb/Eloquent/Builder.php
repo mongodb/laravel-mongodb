@@ -9,7 +9,7 @@ class Builder extends \Illuminate\Database\Eloquent\Builder {
      */
     protected $passthru = array(
         'toSql', 'lists', 'insert', 'insertGetId', 'pluck',
-        'count', 'min', 'max', 'avg', 'sum', 'exists', 'push', 'pull'
+        'count', 'min', 'max', 'avg', 'sum', 'exists', 'push', 'pull', 'raw'
     );
 
 }
