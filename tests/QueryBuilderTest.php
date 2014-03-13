@@ -517,6 +517,9 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$regex = new MongoRegex("/.*doe/i");
 		$results = DB::collection('users')->where('name', 'regex', $regex)->get();
 		$this->assertEquals(2, count($results));
+
+		$results = DB::collection('users')->where('name', 'REGEX', $regex)->get();
+		$this->assertEquals(2, count($results));
 	}
 
 	public function testIncrement()

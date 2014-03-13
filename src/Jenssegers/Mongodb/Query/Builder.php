@@ -673,6 +673,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         foreach ($this->wheres as $i => &$where)
         {
+            // Make sure the operator is in lowercase
+            if (isset($where['operator']))
+            {
+                $where['operator'] = strtolower($where['operator']);
+            }
+
             // Convert id's
             if (isset($where['column']) && $where['column'] == '_id')
             {
