@@ -36,6 +36,7 @@ class EmbedsMany extends Relation {
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Database\Eloquent\Model    $parent
      * @param  string  $localKey
+     * @param  string  $foreignKey
      * @param  string  $relation
      * @return void
      */
@@ -198,7 +199,7 @@ class EmbedsMany extends Relation {
      * Perform a model update operation.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return bool
+     * @return Model|bool
      */
     protected function performUpdate(Model $model)
     {
@@ -373,7 +374,7 @@ class EmbedsMany extends Relation {
      * Transform single ID, single Model or array of Models into an array of IDs
      *
      * @param  mixed  $ids
-     * @return int
+     * @return array
      */
     protected function getIdsArrayFrom($ids)
     {
@@ -390,7 +391,7 @@ class EmbedsMany extends Relation {
     /**
      * Delete alias.
      *
-     * @param  int|array  $ids
+     * @param  mixed  $ids
      * @return int
      */
     public function detach($ids = array())
@@ -463,6 +464,7 @@ class EmbedsMany extends Relation {
      * Set the embedded documents array.
      *
      * @param array $models
+     * @return void
      */
     protected function setEmbeddedRecords(array $models)
     {
