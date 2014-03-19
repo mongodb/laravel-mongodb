@@ -486,7 +486,6 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(false);
-        $events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($address), $address)->andReturn(true);
 
         $this->assertFalse($user->addresses()->save($address));
         $address->unsetEventDispatcher();
