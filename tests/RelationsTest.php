@@ -488,7 +488,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(false);
         $events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($address), $address)->andReturn(true);
 
-        $this->assertFalse($address->save());
+        $this->assertFalse($user->addresses()->save($address));
         $address->unsetEventDispatcher();
 
         $address = new Address(array('city' => 'New York'));
@@ -500,7 +500,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $address->city = 'Warsaw';
 
-        $this->assertFalse($address->save());
+        $this->assertFalse($user->addresses()->save($address));
         $address->unsetEventDispatcher();
     }
 
