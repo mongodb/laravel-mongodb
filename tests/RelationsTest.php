@@ -274,8 +274,17 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(1, $user->photos->count());
         $this->assertEquals($photo->id, $user->photos->first()->id);
 
+        $user = User::find($user->_id);
+        $this->assertEquals(1, $user->photos->count());
+        $this->assertEquals($photo->id, $user->photos->first()->id);
+
         $photo = Photo::create(array('url' => 'http://graph.facebook.com/john.doe/picture'));
         $client->photos()->save($photo);
+
+        $this->assertEquals(1, $client->photos->count());
+        $this->assertEquals($photo->id, $client->photos->first()->id);
+
+        $client = Client::find($client->_id);
         $this->assertEquals(1, $client->photos->count());
         $this->assertEquals($photo->id, $client->photos->first()->id);
 
