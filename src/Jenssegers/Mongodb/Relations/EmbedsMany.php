@@ -148,14 +148,22 @@ class EmbedsMany extends Relation {
         // Insert a new document.
         if ( ! $model->exists)
         {
-            return $this->performInsert($model);
+            $result = $this->performInsert($model);
         }
 
         // Update an existing document.
         else
         {
-            return $this->performUpdate($model);
+            $result = $this->performUpdate($model);
         }
+
+        if ($result)
+        {
+            $this->fireModelEvent($result, 'saved', false);
+            return $result;
+        }
+
+        return false;
     }
 
     /**
@@ -169,22 +177,14 @@ class EmbedsMany extends Relation {
         // Insert the related model in the parent instance
         if ( ! $model->exists)
         {
-            $result = $this->associateNew($model);
+            return $this->associateNew($model);
         }
 
         // Update the related model in the parent instance
         else
         {
-            $result = $this->associateExisting($model);
+            return $this->associateExisting($model);
         }
-
-        if ($result)
-        {
-            $this->fireModelEvent($result, 'saved', false);
-            return $result;
-        }
-
-        return false;
     }
 
     /**
