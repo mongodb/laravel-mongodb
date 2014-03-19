@@ -288,6 +288,12 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user = User::create(array('name' => 'John Doe'));
         $address = new Address(array('city' => 'London'));
 
+        $address->setEventDispatcher($events = m::mock('Illuminate\Events\Dispatcher'));
+        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
+        $events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($address), $address)->andReturn(true);
+        $events->shouldReceive('fire')->once()->with('eloquent.created: '.get_class($address), $address);
+        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address);
+
         $address = $user->addresses()->save($address);
         $this->assertNotNull($user->_addresses);
         $this->assertEquals(array('London'), $user->addresses->lists('city'));
@@ -299,6 +305,12 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $user = User::find($user->_id);
         $this->assertEquals(array('London', 'Paris'), $user->addresses->lists('city'));
+
+        $address->setEventDispatcher($events = m::mock('Illuminate\Events\Dispatcher'));
+        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
+        $events->shouldReceive('until')->once()->with('eloquent.updating: '.get_class($address), $address)->andReturn(true);
+        $events->shouldReceive('fire')->once()->with('eloquent.updated: '.get_class($address), $address)->andReturn(true);
+        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address)->andReturn(true);
 
         $address->city = 'New York';
         $user->addresses()->save($address);

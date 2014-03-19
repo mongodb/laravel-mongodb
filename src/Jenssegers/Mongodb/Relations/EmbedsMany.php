@@ -141,6 +141,8 @@ class EmbedsMany extends Relation {
      */
     public function save(Model $model)
     {
+        if ($this->fireModelEvent($model, 'saving') === false) return false;
+
         $this->updateTimestamps($model);
 
         // Insert a new document.
@@ -167,15 +169,22 @@ class EmbedsMany extends Relation {
         // Insert the related model in the parent instance
         if ( ! $model->exists)
         {
-            return $this->associateNew($model);
+            $result = $this->associateNew($model);
         }
 
         // Update the related model in the parent instance
         else
         {
-            return $this->associateExisting($model);
+            $result = $this->associateExisting($model);
         }
 
+        if ($result)
+        {
+            $this->fireModelEvent($result, 'saved', false);
+            return $result;
+        }
+
+        return false;
     }
 
     /**
@@ -186,13 +195,21 @@ class EmbedsMany extends Relation {
      */
     protected function performInsert(Model $model)
     {
+        if ($this->fireModelEvent($model, 'creating') === false) return false;
+
         // Insert the related model in the parent instance
         $this->associateNew($model);
 
         // Push the document to the database.
         $result = $this->query->push($this->localKey, $model->getAttributes(), true);
 
-        return $result ? $model : false;
+        if ($result)
+        {
+            $this->fireModelEvent($model, 'created', false);
+            return $model;
+        }
+
+        return false;
     }
 
     /**
@@ -203,6 +220,8 @@ class EmbedsMany extends Relation {
      */
     protected function performUpdate(Model $model)
     {
+        if ($this->fireModelEvent($model, 'updating') === false) return false;
+
         // Update the related model in the parent instance
         $this->associateExisting($model);
 
@@ -213,7 +232,13 @@ class EmbedsMany extends Relation {
         $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
                               ->update(array($this->localKey . '.$' => $model->getAttributes()));
 
-        return $result ? $model : false;
+        if ($result)
+        {
+            $this->fireModelEvent($model, 'updated', false);
+            return $model;
+        }
+
+        return false;
     }
 
     /**
@@ -509,6 +534,29 @@ class EmbedsMany extends Relation {
     {
         // Convert the id to MongoId if necessary.
         return $this->getBaseQuery()->convertKey($id);
+    }
+
+    /**
+     * Fire the given event for the given model.
+     *
+     * @param  string  $event
+     * @param  bool    $halt
+     * @return mixed
+     */
+    protected function fireModelEvent(Model $model, $event, $halt = true)
+    {
+        $dispatcher = $model->getEventDispatcher();
+
+        if ( is_null($dispatcher)) return true;
+
+        // We will append the names of the class to the event to distinguish it from
+        // other model events that are fired, allowing us to listen on each model
+        // event set individually instead of catching event for all the models.
+        $event = "eloquent.{$event}: ".get_class($model);
+
+        $method = $halt ? 'until' : 'fire';
+
+        return $dispatcher->$method($event, $model);
     }
 
 }
