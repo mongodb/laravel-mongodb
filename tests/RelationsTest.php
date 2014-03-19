@@ -9,6 +9,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
     public function tearDown()
     {
+        Mockery::close();
+
         User::truncate();
         Book::truncate();
         Item::truncate();
@@ -304,6 +306,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address);
 
         $address = $user->addresses()->save($address);
+        $address->unsetEventDispatcher();
+
         $this->assertNotNull($user->_addresses);
         $this->assertEquals(array('London'), $user->addresses->lists('city'));
         $this->assertInstanceOf('DateTime', $address->created_at);
@@ -318,11 +322,12 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
         $events->shouldReceive('until')->once()->with('eloquent.updating: '.get_class($address), $address)->andReturn(true);
-        $events->shouldReceive('fire')->once()->with('eloquent.updated: '.get_class($address), $address)->andReturn(true);
-        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address)->andReturn(true);
+        $events->shouldReceive('fire')->once()->with('eloquent.updated: '.get_class($address), $address);
+        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address);
 
         $address->city = 'New York';
         $user->addresses()->save($address);
+        $address->unsetEventDispatcher();
 
         $this->assertEquals(2, count($user->addresses));
         $this->assertEquals(2, count($user->addresses()->get()));
