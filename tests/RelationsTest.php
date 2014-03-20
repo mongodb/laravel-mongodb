@@ -299,15 +299,12 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user = User::create(array('name' => 'John Doe'));
         $address = new Address(array('city' => 'London'));
 
-<<<<<<< Updated upstream
-=======
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
         $events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($address), $address)->andReturn(true);
         $events->shouldReceive('fire')->once()->with('eloquent.created: '.get_class($address), $address);
         $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address);
 
->>>>>>> Stashed changes
         $address = $user->addresses()->save($address);
         $address->unsetEventDispatcher();
 
@@ -322,15 +319,12 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user = User::find($user->_id);
         $this->assertEquals(array('London', 'Paris'), $user->addresses->lists('city'));
 
-<<<<<<< Updated upstream
-=======
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
         $events->shouldReceive('until')->once()->with('eloquent.updating: '.get_class($address), $address)->andReturn(true);
         $events->shouldReceive('fire')->once()->with('eloquent.updated: '.get_class($address), $address);
         $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address);
 
->>>>>>> Stashed changes
         $address->city = 'New York';
         $user->addresses()->save($address);
         $address->unsetEventDispatcher();
@@ -531,7 +525,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user->addresses()->save($address);
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
-        $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), $address)->andReturn(false);
+        $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), Mockery::mustBe($address))->andReturn(false);
 
         $this->assertEquals(0, $user->addresses()->destroy($address));
         $this->assertEquals(array('New York'), $user->addresses->lists('city'));
