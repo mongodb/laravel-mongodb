@@ -17,7 +17,8 @@
     },
     "require-dev": {
         "illuminate/cache": "4.1.x",
-        "illuminate/auth": "4.1.x"
+        "illuminate/auth": "4.1.x",
+        "mockery/mockery": "*"
     },
     "autoload": {
         "psr-0": {

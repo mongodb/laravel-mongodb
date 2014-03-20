@@ -142,9 +142,11 @@ class EmbedsMany extends Relation {
     public function find(array $ids)
     {
         $documents = $this->getEmbeddedRecords();
+
         $primaryKey = $this->related->getKeyName();
 
-        $documents = array_filter($documents, function ($document) use($primaryKey, $ids) {
+        $documents = array_filter($documents, function ($document) use ($primaryKey, $ids)
+        {
             return in_array($document[$primaryKey], $ids);
         });
 
