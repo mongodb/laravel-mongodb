@@ -420,8 +420,15 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
 
         $address = $user->addresses->first();
+
+        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
+        $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), $address)->andReturn(true);
+        $events->shouldReceive('fire')->once()->with('eloquent.deleted: '.get_class($address), $address);
+
         $user->addresses()->destroy($address->_id);
         $this->assertEquals(array('Bristol', 'Bruxelles'), $user->addresses->lists('city'));
+
+        $address->unsetEventDispatcher();
 
         $address = $user->addresses->first();
         $user->addresses()->destroy($address);
@@ -469,7 +476,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(array(), $user->addresses->lists('city'));
     }
 
-    public function testEmbedsManyEventsReturnFalse()
+    public function testEmbedsManyCreatingEventReturnsFalse()
     {
         $user = User::create(array('name' => 'John Doe'));
         $address = new Address(array('city' => 'London'));
@@ -480,7 +487,11 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $this->assertFalse($user->addresses()->save($address));
         $address->unsetEventDispatcher();
+    }
 
+    public function testEmbedsManySavingEventReturnsFalse()
+    {
+        $user = User::create(array('name' => 'John Doe'));
         $address = new Address(array('city' => 'Paris'));
         $address->exists = true;
 
@@ -489,7 +500,11 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
 
         $this->assertFalse($user->addresses()->save($address));
         $address->unsetEventDispatcher();
+    }
 
+    public function testEmbedsManyUpdatingEventReturnsFalse()
+    {
+        $user = User::create(array('name' => 'John Doe'));
         $address = new Address(array('city' => 'New York'));
         $address->exists = true;
 
@@ -500,6 +515,21 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $address->city = 'Warsaw';
 
         $this->assertFalse($user->addresses()->save($address));
+        $address->unsetEventDispatcher();
+    }
+
+    public function testEmbedsManyDeletingEventReturnsFalse()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address = new Address(array('city' => 'New York'));
+        $user->addresses()->save($address);
+
+        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
+        $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), $address)->andReturn(false);
+
+        $this->assertEquals(0, $user->addresses()->save($address));
+        $this->assertEquals(array('New York'), $user->addresses->lists('city'));
+
         $address->unsetEventDispatcher();
     }
 

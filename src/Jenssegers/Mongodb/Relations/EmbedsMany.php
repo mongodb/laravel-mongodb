@@ -352,12 +352,25 @@ class EmbedsMany extends Relation {
     {
         $ids = $this->getIdsArrayFrom($ids);
 
+        $models = $this->get()->filter(function($model) use($ids) {
+            return in_array($model->getKey(), $ids);
+        });
+
+        $ids = array();
+
         $primaryKey = $this->related->getKeyName();
 
         // Pull the documents from the database.
-        foreach ($ids as $id)
+        foreach ($models as $model)
         {
+            if ($this->fireModelEvent($model, 'deleting') === false) continue;
+
+            $id = $model->getKey();
             $this->query->pull($this->localKey, array($primaryKey => $this->getForeignKeyValue($id)));
+
+            $ids[] = $id;
+
+            $this->fireModelEvent($model, 'deleted', false);
         }
 
         return $this->dissociate($ids);
