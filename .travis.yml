@@ -18,6 +18,7 @@ before_script:
   - mysql -e 'create database unittest;'
   - composer self-update
   - composer require satooshi/php-coveralls:dev-master
+  - composer require mockery/mockery:dev-master
   - composer install --dev --no-interaction
 
 script:
