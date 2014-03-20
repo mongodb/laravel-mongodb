@@ -134,6 +134,24 @@ class EmbedsMany extends Relation {
     }
 
     /**
+     * Get the results with given ids.
+     *
+     * @param  array  $ids
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function find(array $ids)
+    {
+        $documents = $this->getEmbeddedRecords();
+        $primaryKey = $this->related->getKeyName();
+
+        $documents = array_filter($documents, function ($document) use($primaryKey, $ids) {
+            return in_array($document[$primaryKey], $ids);
+        });
+
+        return $this->toCollection($documents);
+    }
+
+    /**
      * Attach a model instance to the parent model.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
@@ -146,14 +164,22 @@ class EmbedsMany extends Relation {
         // Insert a new document.
         if ( ! $model->exists)
         {
-            return $this->performInsert($model);
+            $result = $this->performInsert($model);
         }
 
         // Update an existing document.
         else
         {
-            return $this->performUpdate($model);
+            $result = $this->performUpdate($model);
         }
+
+        if ($result)
+        {
+            $this->fireModelEvent($result, 'saved', false);
+            return $result;
+        }
+
+        return false;
     }
 
     /**
@@ -175,7 +201,6 @@ class EmbedsMany extends Relation {
         {
             return $this->associateExisting($model);
         }
-
     }
 
     /**
@@ -327,12 +352,23 @@ class EmbedsMany extends Relation {
     {
         $ids = $this->getIdsArrayFrom($ids);
 
+        $models = $this->find($ids);
+
+        $ids = array();
+
         $primaryKey = $this->related->getKeyName();
 
         // Pull the documents from the database.
-        foreach ($ids as $id)
+        foreach ($models as $model)
         {
+            if ($this->fireModelEvent($model, 'deleting') === false) continue;
+
+            $id = $model->getKey();
             $this->query->pull($this->localKey, array($primaryKey => $this->getForeignKeyValue($id)));
+
+            $ids[] = $id;
+
+            $this->fireModelEvent($model, 'deleted', false);
         }
 
         return $this->dissociate($ids);
