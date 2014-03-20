@@ -174,6 +174,16 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
+    * Get the PDO driver name.
+    *
+    * @return string
+    */
+    public function getDriverName()
+    {
+        return '';
+    }
+
+    /**
      * Dynamically pass methods to the connection.
      *
      * @param  string  $method
