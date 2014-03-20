@@ -134,6 +134,24 @@ class EmbedsMany extends Relation {
     }
 
     /**
+     * Get the results with given ids
+     *
+     * @param  array  $ids
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function find(array $ids)
+    {
+        $documents = $this->getEmbeddedRecords();
+        $primaryKey = $this->related->getKeyName();
+
+        $documents = array_filter($documents, function ($document) use($primaryKey, $ids) {
+            return in_array($document[$primaryKey], $ids);
+        });
+
+        return $this->toCollection($documents);
+    }
+
+    /**
      * Attach a model instance to the parent model.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
@@ -352,9 +370,7 @@ class EmbedsMany extends Relation {
     {
         $ids = $this->getIdsArrayFrom($ids);
 
-        $models = $this->get()->filter(function($model) use($ids) {
-            return in_array($model->getKey(), $ids);
-        });
+        $models = $this->find($ids);
 
         $ids = array();
 
