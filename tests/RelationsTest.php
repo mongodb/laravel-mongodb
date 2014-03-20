@@ -527,7 +527,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), $address)->andReturn(false);
 
-        $this->assertEquals(0, $user->addresses()->save($address));
+        $this->assertEquals(0, $user->addresses()->destroy($address));
         $this->assertEquals(array('New York'), $user->addresses->lists('city'));
 
         $address->unsetEventDispatcher();
