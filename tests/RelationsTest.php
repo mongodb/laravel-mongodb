@@ -521,8 +521,9 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
     public function testEmbedsManyDeletingEventReturnsFalse()
     {
         $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'New York'));
-        $user->addresses()->save($address);
+        $user->addresses()->save(new Address(array('city' => 'New York')));
+
+        $address = $user->addresses->first();
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), Mockery::mustBe($address))->andReturn(false);
