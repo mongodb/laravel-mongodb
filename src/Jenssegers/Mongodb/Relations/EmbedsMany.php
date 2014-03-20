@@ -201,10 +201,6 @@ class EmbedsMany extends Relation {
         {
             return $this->associateExisting($model);
         }
-<<<<<<< Updated upstream
-
-=======
->>>>>>> Stashed changes
     }
 
     /**
