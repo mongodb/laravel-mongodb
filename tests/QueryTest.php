@@ -77,8 +77,15 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(null, $user->age);
+		$this->assertEquals(null, $user->title);
 
 		$user = User::where('name', 'John Doe')->select('name', 'title')->first();
+
+		$this->assertEquals('John Doe', $user->name);
+		$this->assertEquals('admin', $user->title);
+		$this->assertEquals(null, $user->age);
+
+		$user = User::where('name', 'John Doe')->select(array('name', 'title'))->get()->first();
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals('admin', $user->title);
@@ -183,6 +190,16 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$users = User::groupBy('age')->skip(1)->take(2)->orderBy('age', 'desc')->get();
 		$this->assertEquals(35, $users[0]->age);
 		$this->assertEquals(33, $users[1]->age);
+	}
+
+	public function testCount()
+	{
+		$count = User::where('age', '<>', 35)->count();
+		$this->assertEquals(6, $count);
+
+		// Test for issue #165
+		$count = User::select('_id', 'age', 'title')->where('age', '<>', 35)->count();
+		$this->assertEquals(6, $count);
 	}
 
 	public function testSubquery()

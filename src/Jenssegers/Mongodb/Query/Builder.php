@@ -63,7 +63,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  array  $columns
      * @return mixed
      */
-    public function find($id, $columns = array('*'))
+    public function find($id, $columns = array())
     {
         return $this->where('_id', '=', $this->convertKey($id))->first($columns);
     }
@@ -74,7 +74,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  array  $columns
      * @return array|static[]
      */
-    public function getFresh($columns = array('*'))
+    public function getFresh($columns = array())
     {
         $start = microtime(true);
 
@@ -83,68 +83,69 @@ class Builder extends \Illuminate\Database\Query\Builder {
         // all of the columns on the table using the "wildcard" column character.
         if (is_null($this->columns)) $this->columns = $columns;
 
-        // Drop all columns if * is present, MongoDB does not work this way
+        // Drop all columns if * is present, MongoDB does not work this way.
         if (in_array('*', $this->columns)) $this->columns = array();
 
         // Compile wheres
         $wheres = $this->compileWheres();
 
-        // Aggregation query
+        // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups || $this->aggregate)
         {
             $group = array();
 
-            // Apply grouping
+            // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups)
             {
                 foreach ($this->groups as $column)
                 {
-                    // Mark column as grouped
                     $group['_id'][$column] = '$' . $column;
 
-                    // Aggregate by $last when grouping, this mimics MySQL's behaviour a bit
+                    // When grouping, also add the $last operator to each grouped field,
+                    // this mimics MySQL's behaviour a bit.
                     $group[$column] = array('$last' => '$' . $column);
                 }
             }
             else
             {
                 // If we don't use grouping, set the _id to null to prepare the pipeline for
-                // other aggregation functions
+                // other aggregation functions.
                 $group['_id'] = null;
             }
 
-            // When additional columns are requested, aggregate them by $last as well
-            foreach ($this->columns as $column)
-            {
-                // Replace possible dots in subdocument queries with underscores
-                $key = str_replace('.', '_', $column);
-                $group[$key] = array('$last' => '$' . $column);
-            }
-
-            // Apply aggregation functions, these may override previous aggregations
+            // Add aggregation functions to the $group part of the aggregation pipeline,
+            // these may override previous aggregations.
             if ($this->aggregate)
             {
                 $function = $this->aggregate['function'];
 
                 foreach ($this->aggregate['columns'] as $column)
                 {
-                    // Replace possible dots in subdocument queries with underscores
-                    $key = str_replace('.', '_', $column);
-
-                    // Translate count into sum
+                    // Translate count into sum.
                     if ($function == 'count')
                     {
-                        $group[$key] = array('$sum' => 1);
+                        $group['aggregate'] = array('$sum' => 1);
                     }
-                    // Pass other functions directly
+                    // Pass other functions directly.
                     else
                     {
-                        $group[$key] = array('$' . $function => '$' . $column);
+                        $group['aggregate'] = array('$' . $function => '$' . $column);
                     }
                 }
             }
 
-            // Build pipeline
+            // If no aggregation functions are used, we add the additional select columns
+            // to the pipeline here, aggregating them by $last.
+            else
+            {
+                foreach ($this->columns as $column)
+                {
+                    $key = str_replace('.', '_', $column);
+                    $group[$key] = array('$last' => '$' . $column);
+                }
+            }
+
+            // Build the aggregation pipeline.
             $pipeline = array();
             if ($wheres) $pipeline[] = array('$match' => $wheres);
             $pipeline[] = array('$group' => $group);
@@ -238,7 +239,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  array   $columns
      * @return mixed
      */
-    public function aggregate($function, $columns = array('*'))
+    public function aggregate($function, $columns = array())
     {
         $this->aggregate = compact('function', 'columns');
 
@@ -251,9 +252,9 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         if (isset($results[0]))
         {
-            // Replace possible dots in subdocument queries with underscores
-            $key = str_replace('.', '_', $columns[0]);
-            return $results[0][$key];
+            $result = (array) $results[0];
+
+            return $result['aggregate'];
         }
     }
 
