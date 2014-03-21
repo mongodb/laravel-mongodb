@@ -447,16 +447,23 @@ These expressions will be injected directly into the query.
 
     User::whereRaw(array('age' => array('$gt' => 30, '$lt' => 40)))->get();
 
-You can also perform raw expressions on the internal MongoCollection object, note that this will return the original response, and not a collection of models.
+You can also perform raw expressions on the internal MongoCollection object. If this is executed on the model class, it will return a collection of models. If this is executed on the query builder, it will return the original response.
 
-    User::raw(function($collection)
+    // Returns a collection of User models.
+    $models = User::raw(function($collection)
     {
         return $collection->find();
     });
 
-Or you can access the internal MongoCollection object directly:
+    // Returns the original MongoCursor.
+    $cursor = DB::collection('users')->raw(function($collection)
+    {
+        return $collection->find();
+    });
 
-    User::raw()->find();
+Optional: if you don't pass a closure to the raw method, the internal MongoCollection object will be accessible:
+
+    $model = User::raw()->findOne(array('age' => array('$lt' => 18)));
 
 The MongoClient and MongoDB objects can be accessed like this:
 

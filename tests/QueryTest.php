@@ -232,7 +232,7 @@ class QueryTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(5, count($users));
 	}
 
-	public function testRaw()
+	public function testWhereRaw()
 	{
 		$where = array('age' => array('$gt' => 30, '$lt' => 40));
 		$users = User::whereRaw($where)->get();

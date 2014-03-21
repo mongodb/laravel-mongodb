@@ -185,7 +185,8 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 			array('name' => 'John Doe', 'age' => 25)
 		));
 
-		$cursor = DB::collection('users')->raw(function($collection) {
+		$cursor = DB::collection('users')->raw(function($collection)
+		{
 			return $collection->find(array('age' => 20));
 		});
 
