@@ -25,5 +25,6 @@
             "Jenssegers\\Mongodb": "src/",
             "Jenssegers\\Eloquent": "src/"
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
