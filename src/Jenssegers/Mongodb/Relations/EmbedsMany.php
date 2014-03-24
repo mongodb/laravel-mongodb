@@ -36,6 +36,7 @@ class EmbedsMany extends Relation {
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Database\Eloquent\Model    $parent
      * @param  string  $localKey
+     * @param  string  $foreignKey
      * @param  string  $relation
      * @return void
      */
@@ -133,6 +134,26 @@ class EmbedsMany extends Relation {
     }
 
     /**
+     * Get the results with given ids.
+     *
+     * @param  array  $ids
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function find(array $ids)
+    {
+        $documents = $this->getEmbeddedRecords();
+
+        $primaryKey = $this->related->getKeyName();
+
+        $documents = array_filter($documents, function ($document) use ($primaryKey, $ids)
+        {
+            return in_array($document[$primaryKey], $ids);
+        });
+
+        return $this->toCollection($documents);
+    }
+
+    /**
      * Attach a model instance to the parent model.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
@@ -140,17 +161,51 @@ class EmbedsMany extends Relation {
      */
     public function save(Model $model)
     {
+        if ($this->fireModelEvent($model, 'saving') === false) return false;
+
+        $this->updateTimestamps($model);
+
         // Insert a new document.
         if ( ! $model->exists)
         {
-            return $this->performInsert($model);
+            $result = $this->performInsert($model);
         }
 
         // Update an existing document.
         else
         {
-            return $this->performUpdate($model);
+            $result = $this->performUpdate($model);
         }
+
+        if ($result)
+        {
+            $this->fireModelEvent($result, 'saved', false);
+            return $result;
+        }
+
+        return false;
+    }
+
+    /**
+     * Attach a model instance to the parent model without persistence.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function associate(Model $model)
+    {
+        // Insert the related model in the parent instance
+        if ( ! $model->exists)
+        {
+            return $this->associateNew($model);
+        }
+
+        // Update the related model in the parent instance
+        else
+        {
+            return $this->associateExisting($model);
+        }
+
     }
 
     /**
@@ -161,17 +216,65 @@ class EmbedsMany extends Relation {
      */
     protected function performInsert(Model $model)
     {
+        if ($this->fireModelEvent($model, 'creating') === false) return false;
+
+        // Insert the related model in the parent instance
+        $this->associateNew($model);
+
+        // Push the document to the database.
+        $result = $this->query->push($this->localKey, $model->getAttributes(), true);
+
+        if ($result)
+        {
+            $this->fireModelEvent($model, 'created', false);
+            return $model;
+        }
+
+        return false;
+    }
+
+    /**
+     * Perform a model update operation.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return Model|bool
+     */
+    protected function performUpdate(Model $model)
+    {
+        if ($this->fireModelEvent($model, 'updating') === false) return false;
+
+        // Update the related model in the parent instance
+        $this->associateExisting($model);
+
+        // Get the correct foreign key value.
+        $id = $this->getForeignKeyValue($model->getKey());
+
+        // Update document in database.
+        $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
+                              ->update(array($this->localKey . '.$' => $model->getAttributes()));
+
+        if ($result)
+        {
+            $this->fireModelEvent($model, 'updated', false);
+            return $model;
+        }
+
+        return false;
+    }
+
+    /**
+     * Attach a new model without persistence
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function associateNew($model)
+    {
         // Create a new key.
         if ( ! $model->getAttribute('_id'))
         {
             $model->setAttribute('_id', new MongoId);
         }
-
-        // Update timestamps.
-        $this->updateTimestamps($model);
-
-        // Push the document to the database.
-        $result = $this->query->push($this->localKey, $model->getAttributes(), true);
 
         $documents = $this->getEmbeddedRecords();
 
@@ -183,27 +286,17 @@ class EmbedsMany extends Relation {
         // Mark the model as existing.
         $model->exists = true;
 
-        return $result ? $model : false;
+        return $model;
     }
 
     /**
-     * Perform a model update operation.
+     * Update an existing model without persistence
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return bool
+     * @return \Illuminate\Database\Eloquent\Model
      */
-    protected function performUpdate(Model $model)
+    protected function associateExisting($model)
     {
-        // Update timestamps.
-        $this->updateTimestamps($model);
-
-        // Get the correct foreign key value.
-        $id = $this->getForeignKeyValue($model->getKey());
-
-        // Update document in database.
-        $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
-                              ->update(array($this->localKey . '.$' => $model->getAttributes()));
-
         // Get existing embedded documents.
         $documents = $this->getEmbeddedRecords();
 
@@ -212,18 +305,18 @@ class EmbedsMany extends Relation {
         $key = $model->getKey();
 
         // Replace the document in the parent model.
-        foreach ($documents as $i => $document)
+        foreach ($documents as &$document)
         {
             if ($document[$primaryKey] == $key)
             {
-                $documents[$i] = $model->getAttributes();
+                $document = $model->getAttributes();
                 break;
             }
         }
 
         $this->setEmbeddedRecords($documents);
 
-        return $result ? $model : false;
+        return $model;
     }
 
     /**
@@ -273,31 +366,46 @@ class EmbedsMany extends Relation {
     /**
      * Destroy the embedded models for the given IDs.
      *
-     * @param  array|int  $ids
+     * @param  mixed  $ids
      * @return int
      */
     public function destroy($ids = array())
     {
-        // We'll initialize a count here so we will return the total number of deletes
-        // for the operation. The developers can then check this number as a boolean
-        // type value or get this total count of records deleted for logging, etc.
-        $count = 0;
+        $ids = $this->getIdsArrayFrom($ids);
 
-        if ($ids instanceof Model) $ids = (array) $ids->getKey();
+        $models = $this->find($ids);
 
-        // If associated IDs were passed to the method we will only delete those
-        // associations, otherwise all of the association ties will be broken.
-        // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array) $ids;
+        $ids = array();
 
         $primaryKey = $this->related->getKeyName();
 
         // Pull the documents from the database.
-        foreach ($ids as $id)
+        foreach ($models as $model)
         {
+            if ($this->fireModelEvent($model, 'deleting') === false) continue;
+
+            $id = $model->getKey();
             $this->query->pull($this->localKey, array($primaryKey => $this->getForeignKeyValue($id)));
-            $count++;
+
+            $ids[] = $id;
+
+            $this->fireModelEvent($model, 'deleted', false);
         }
+
+        return $this->dissociate($ids);
+    }
+
+    /**
+     * Dissociate the embedded models for the given IDs without persistence.
+     *
+     * @param  mixed  $ids
+     * @return int
+     */
+    public function dissociate($ids = array())
+    {
+        $ids = $this->getIdsArrayFrom($ids);
+
+        $primaryKey = $this->related->getKeyName();
 
         // Get existing embedded documents.
         $documents = $this->getEmbeddedRecords();
@@ -313,13 +421,34 @@ class EmbedsMany extends Relation {
 
         $this->setEmbeddedRecords($documents);
 
-        return $count;
+        // We return the total number of deletes for the operation. The developers
+        // can then check this number as a boolean type value or get this total count
+        // of records deleted for logging, etc.
+        return count($ids);
+    }
+
+    /**
+     * Transform single ID, single Model or array of Models into an array of IDs
+     *
+     * @param  mixed  $ids
+     * @return array
+     */
+    protected function getIdsArrayFrom($ids)
+    {
+        if (! is_array($ids)) $ids = array($ids);
+
+        foreach ($ids as &$id)
+        {
+            if ($id instanceof Model) $id = $id->getKey();
+        }
+
+        return $ids;
     }
 
     /**
      * Delete alias.
      *
-     * @param  int|array  $ids
+     * @param  mixed  $ids
      * @return int
      */
     public function detach($ids = array())
@@ -392,6 +521,7 @@ class EmbedsMany extends Relation {
      * Set the embedded documents array.
      *
      * @param array $models
+     * @return void
      */
     protected function setEmbeddedRecords(array $models)
     {
@@ -436,6 +566,29 @@ class EmbedsMany extends Relation {
     {
         // Convert the id to MongoId if necessary.
         return $this->getBaseQuery()->convertKey($id);
+    }
+
+    /**
+     * Fire the given event for the given model.
+     *
+     * @param  string  $event
+     * @param  bool    $halt
+     * @return mixed
+     */
+    protected function fireModelEvent(Model $model, $event, $halt = true)
+    {
+        $dispatcher = $model->getEventDispatcher();
+
+        if ( is_null($dispatcher)) return true;
+
+        // We will append the names of the class to the event to distinguish it from
+        // other model events that are fired, allowing us to listen on each model
+        // event set individually instead of catching event for all the models.
+        $event = "eloquent.{$event}: ".get_class($model);
+
+        $method = $halt ? 'until' : 'fire';
+
+        return $dispatcher->$method($event, $model);
     }
 
 }

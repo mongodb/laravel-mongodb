@@ -81,4 +81,10 @@ class ConnectionTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(5, count(DB::getQueryLog()));
 	}
 
+	public function testSchemaBuilder()
+	{
+		$schema = DB::connection('mongodb')->getSchemaBuilder();
+		$this->assertInstanceOf('Jenssegers\Mongodb\Schema\Builder', $schema);
+	}
+
 }

@@ -164,11 +164,9 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(null, $item);
 	}
 
-	/**
-     * @expectedException Illuminate\Database\Eloquent\ModelNotFoundException
-     */
 	public function testFindOrfail()
 	{
+		$this->setExpectedException('Illuminate\Database\Eloquent\ModelNotFoundException');
 		User::findOrfail('51c33d8981fec6813e00000a');
 	}
 
@@ -342,6 +340,38 @@ class ModelTest extends PHPUnit_Framework_TestCase {
 		$this->assertTrue(is_int($result));
 		$this->assertTrue(is_array($user->tags));
 		$this->assertEquals(1, count($user->tags));
+	}
+
+	public function testRaw()
+	{
+		User::create(array('name' => 'John Doe', 'age' => 35));
+		User::create(array('name' => 'Jane Doe', 'age' => 35));
+		User::create(array('name' => 'Harry Hoe', 'age' => 15));
+
+		$users = User::raw(function($collection)
+		{
+			return $collection->find(array('age' => 35));
+		});
+		$this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
+		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $users[0]);
+
+		$user = User::raw(function($collection)
+		{
+			return $collection->findOne(array('age' => 35));
+		});
+		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
+
+		$count = User::raw(function($collection)
+		{
+			return $collection->count();
+		});
+		$this->assertEquals(3, $count);
+
+		$result = User::raw(function($collection)
+		{
+			return $collection->insert(array('name' => 'Yvonne Yoe', 'age' => 35));
+		});
+		$this->assertTrue(is_array($result));
 	}
 
 }

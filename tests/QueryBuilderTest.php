@@ -185,7 +185,8 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 			array('name' => 'John Doe', 'age' => 25)
 		));
 
-		$cursor = DB::collection('users')->raw(function($collection) {
+		$cursor = DB::collection('users')->raw(function($collection)
+		{
 			return $collection->find(array('age' => 20));
 		});
 
@@ -193,6 +194,9 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(1, $cursor->count());
 
 		$collection = DB::collection('users')->raw();
+		$this->assertInstanceOf('MongoCollection', $collection);
+
+		$collection = User::raw();
 		$this->assertInstanceOf('MongoCollection', $collection);
 
 		$results = DB::collection('users')->whereRaw(array('age' => 20))->get();
@@ -516,6 +520,9 @@ class QueryBuilderTest extends PHPUnit_Framework_TestCase {
 
 		$regex = new MongoRegex("/.*doe/i");
 		$results = DB::collection('users')->where('name', 'regex', $regex)->get();
+		$this->assertEquals(2, count($results));
+
+		$results = DB::collection('users')->where('name', 'REGEX', $regex)->get();
 		$this->assertEquals(2, count($results));
 	}
 

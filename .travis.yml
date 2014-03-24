@@ -16,6 +16,12 @@ before_script:
   - echo "extension = mongo.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - mysql -e 'create database unittest;'
   - composer self-update
+  - composer require satooshi/php-coveralls:dev-master
   - composer install --dev --no-interaction
 
-script: phpunit
+script:
+  - mkdir -p build/logs
+  - phpunit --coverage-clover build/logs/clover.xml
+
+after_script:
+  - php vendor/bin/coveralls -v

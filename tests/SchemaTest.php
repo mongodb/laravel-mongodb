@@ -16,6 +16,7 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 	{
 		Schema::create('newcollection');
 		$this->assertTrue(Schema::hasCollection('newcollection'));
+		$this->assertTrue(Schema::hasTable('newcollection'));
 	}
 
 	public function testDrop()
@@ -23,6 +24,21 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		Schema::create('newcollection');
 		Schema::drop('newcollection');
 		$this->assertFalse(Schema::hasCollection('newcollection'));
+	}
+
+	public function testBluePrint()
+	{
+		$instance = $this;
+
+		Schema::collection('newcollection', function($collection) use ($instance)
+		{
+			$instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+		});
+
+		Schema::table('newcollection', function($collection) use ($instance)
+		{
+			$instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+		});
 	}
 
 	public function testIndex()

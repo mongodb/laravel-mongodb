@@ -1,7 +1,7 @@
 Laravel MongoDB
 ===============
 
-[![Latest Stable Version](https://poser.pugx.org/jenssegers/mongodb/v/stable.png)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](https://poser.pugx.org/jenssegers/mongodb/downloads.png)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB)
+[![Latest Stable Version](https://poser.pugx.org/jenssegers/mongodb/v/stable.png)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](https://poser.pugx.org/jenssegers/mongodb/downloads.png)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB) [![Coverage Status](https://coveralls.io/repos/jenssegers/Laravel-MongoDB/badge.png?branch=master)](https://coveralls.io/r/jenssegers/Laravel-MongoDB?branch=master)
 
 An Eloquent model and Query builder with support for MongoDB, inspired by LMongo, but using the original Laravel methods. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
@@ -44,7 +44,7 @@ You can connect to multiple servers or replica sets with the following configura
 
     'mongodb' => array(
         'driver'   => 'mongodb',
-        'host'     => array('server1', 'server2),
+        'host'     => array('server1', 'server2'),
         'port'     => 27017,
         'username' => 'username',
         'password' => 'password',
@@ -414,6 +414,11 @@ You can remove an embedded document by using the `destroy()` method:
     // or
     $user->books()->destroy($book);
 
+If you want to add or remove embedded documents, without persistence, you can use the `associate` and `dissociate` methods. To write the changes to the database, save the parent object:
+
+    $user->books()->associate($book);
+    $user->save();
+
 Again, you may override the conventional local key by passing a second argument to the embedsMany method:
 
     return $this->embedsMany('Book', 'local_key');
@@ -458,16 +463,23 @@ These expressions will be injected directly into the query.
 
     User::whereRaw(array('age' => array('$gt' => 30, '$lt' => 40)))->get();
 
-You can also perform raw expressions on the internal MongoCollection object, note that this will return the original response, and not a collection of models.
+You can also perform raw expressions on the internal MongoCollection object. If this is executed on the model class, it will return a collection of models. If this is executed on the query builder, it will return the original response.
 
-    User::raw(function($collection)
+    // Returns a collection of User models.
+    $models = User::raw(function($collection)
     {
         return $collection->find();
     });
 
-Or you can access the internal MongoCollection object directly:
+    // Returns the original MongoCursor.
+    $cursor = DB::collection('users')->raw(function($collection)
+    {
+        return $collection->find();
+    });
 
-    User::raw()->find();
+Optional: if you don't pass a closure to the raw method, the internal MongoCollection object will be accessible:
+
+    $model = User::raw()->findOne(array('age' => array('$lt' => 18)));
 
 The MongoClient and MongoDB objects can be accessed like this:
 
