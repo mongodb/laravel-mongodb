@@ -16,8 +16,7 @@
         "illuminate/events": "4.1.x"
     },
     "require-dev": {
-        "illuminate/cache": "4.1.x",
-        "illuminate/auth": "4.1.x",
+        "orchestra/testbench": "2.1.*",
         "mockery/mockery": "*"
     },
     "autoload": {

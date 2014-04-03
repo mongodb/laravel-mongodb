@@ -1,11 +1,6 @@
 <?php
 
-use Illuminate\Database\Eloquent\Collection;
-
-class RelationsTest extends PHPUnit_Framework_TestCase {
-
-    public function setUp() {
-    }
+class RelationsTest extends TestCase {
 
     public function tearDown()
     {
@@ -148,8 +143,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(array_key_exists('user_ids', $client->getAttributes()));
         $this->assertTrue(array_key_exists('client_ids', $user->getAttributes()));
 
-        $users = $client->getRelation('users');
         $clients = $user->getRelation('clients');
+        $users = $client->getRelation('users');
 
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $clients);

@@ -1,11 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-
-class SchemaTest extends PHPUnit_Framework_TestCase {
-
-	public function setUp() {}
+class SchemaTest extends TestCase {
 
 	public function tearDown()
 	{

@@ -1,10 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-
-class QueryBuilderTest extends PHPUnit_Framework_TestCase {
-
-	public function setUp() {}
+class QueryBuilderTest extends TestCase {
 
 	public function tearDown()
 	{

@@ -1,9 +1,11 @@
 <?php
 
-class MysqlRelationsTest extends PHPUnit_Framework_TestCase {
+class MysqlRelationsTest extends TestCase {
 
     public function setUp()
     {
+        parent::setUp();
+
         MysqlUser::executeSchema();
         MysqlBook::executeSchema();
         MysqlRole::executeSchema();

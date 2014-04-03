@@ -2,10 +2,8 @@
 
 return array(
 
-	'fetch' => PDO::FETCH_CLASS,
-	'default' => 'mongodb',
-
 	'connections' => array(
+
 		'mongodb' => array(
 			'name'	   => 'mongodb',
 			'driver'   => 'mongodb',

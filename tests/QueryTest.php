@@ -1,11 +1,14 @@
 <?php
 
-class QueryTest extends PHPUnit_Framework_TestCase {
+class QueryTest extends TestCase {
 
 	protected static $started = false;
 
 	public function setUp()
 	{
+		parent::setUp();
+
+		// only run this stuff once
 		if (self::$started) return;
 
 		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
