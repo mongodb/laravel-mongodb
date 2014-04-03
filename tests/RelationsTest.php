@@ -337,6 +337,7 @@ class RelationsTest extends TestCase {
         $this->assertInstanceOf('DateTime', $address->created_at);
         $this->assertInstanceOf('DateTime', $address->updated_at);
         $this->assertInstanceOf('User', $address->user);
+        $this->assertEmpty($address->relationsToArray()); // prevent infinite loop
 
         $user = User::find($user->_id);
         $user->addresses()->save(new Address(array('city' => 'Bruxelles')));
