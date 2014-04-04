@@ -275,15 +275,15 @@ class RelationsTest extends TestCase {
         $this->assertEquals(1, $user->photos->count());
         $this->assertEquals($photo->id, $user->photos->first()->id);
 
-        $photo = Photo::create(array('url' => 'http://graph.facebook.com/john.doe/picture'));
-        $client->photos()->save($photo);
+        $photo = Photo::create(array('url' => 'http://graph.facebook.com/jane.doe/picture'));
+        $client->photo()->save($photo);
 
-        $this->assertEquals(1, $client->photos->count());
-        $this->assertEquals($photo->id, $client->photos->first()->id);
+        $this->assertNotNull($client->photo);
+        $this->assertEquals($photo->id, $client->photo->id);
 
         $client = Client::find($client->_id);
-        $this->assertEquals(1, $client->photos->count());
-        $this->assertEquals($photo->id, $client->photos->first()->id);
+        $this->assertNotNull($client->photo);
+        $this->assertEquals($photo->id, $client->photo->id);
 
         $photo = Photo::first();
         $this->assertEquals($photo->imageable->name, $user->name);
