@@ -14,6 +14,18 @@ class SchemaTest extends TestCase {
 		$this->assertTrue(Schema::hasTable('newcollection'));
 	}
 
+	public function testCreateWithCallback()
+	{
+		$instance = $this;
+
+		Schema::create('newcollection', function($collection) use ($instance)
+		{
+			$instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+		});
+
+		$this->assertTrue(Schema::hasCollection('newcollection'));
+	}
+
 	public function testDrop()
 	{
 		Schema::create('newcollection');
