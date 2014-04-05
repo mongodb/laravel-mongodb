@@ -191,8 +191,14 @@ class QueryTest extends TestCase {
 		$this->assertEquals(33, $users[2]->age);
 
 		$users = User::groupBy('age')->skip(1)->take(2)->orderBy('age', 'desc')->get();
+		$this->assertEquals(2, count($users));
 		$this->assertEquals(35, $users[0]->age);
 		$this->assertEquals(33, $users[1]->age);
+		$this->assertNull($users[0]->name);
+
+		$users = User::select('name')->groupBy('age')->skip(1)->take(2)->orderBy('age', 'desc')->get();
+		$this->assertEquals(2, count($users));
+		$this->assertNotNull($users[0]->name);
 	}
 
 	public function testCount()

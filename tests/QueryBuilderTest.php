@@ -234,17 +234,25 @@ class QueryBuilderTest extends TestCase {
 		DB::collection('users')->where('_id', $id)->push('messages', $message);
 		$user = DB::collection('users')->find($id);
 		$this->assertTrue(is_array($user['messages']));
+		$this->assertEquals(1, count($user['messages']));
 		$this->assertEquals($message, $user['messages'][0]);
+
+		// Raw
+		DB::collection('users')->where('_id', $id)->push(array('tags' => 'tag3', 'messages' => array('from' => 'Mark', 'body' => 'Hi John')));
+		$user = DB::collection('users')->find($id);
+		$this->assertEquals(4, count($user['tags']));
+		$this->assertEquals(2, count($user['messages']));
 	}
 
 	public function testPull()
 	{
-		$message = array('from' => 'Jane', 'body' => 'Hi John');
+		$message1 = array('from' => 'Jane', 'body' => 'Hi John');
+		$message2 = array('from' => 'Mark', 'body' => 'Hi John');
 
 		$id = DB::collection('users')->insertGetId(array(
 			'name' => 'John Doe',
 			'tags' => array('tag1', 'tag2', 'tag3', 'tag4'),
-			'messages' => array($message)
+			'messages' => array($message1, $message2)
 		));
 
 		DB::collection('users')->where('_id', $id)->pull('tags', 'tag3');
@@ -254,10 +262,16 @@ class QueryBuilderTest extends TestCase {
 		$this->assertEquals(3, count($user['tags']));
 		$this->assertEquals('tag4', $user['tags'][2]);
 
-		DB::collection('users')->where('_id', $id)->pull('messages', $message);
+		DB::collection('users')->where('_id', $id)->pull('messages', $message1);
 
 		$user = DB::collection('users')->find($id);
 		$this->assertTrue(is_array($user['messages']));
+		$this->assertEquals(1, count($user['messages']));
+
+		// Raw
+		DB::collection('users')->where('_id', $id)->pull(array('tags' => 'tag2', 'messages' => $message2));
+		$user = DB::collection('users')->find($id);
+		$this->assertEquals(2, count($user['tags']));
 		$this->assertEquals(0, count($user['messages']));
 	}
 
