@@ -1,10 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-
-class SeederTest extends PHPUnit_Framework_TestCase {
-
-	public function setUp() {}
+class SeederTest extends TestCase {
 
 	public function tearDown()
 	{

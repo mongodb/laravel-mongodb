@@ -12,8 +12,8 @@ class Client extends Eloquent {
 		return $this->belongsToMany('User');
 	}
 
-	public function photos()
+	public function photo()
     {
-        return $this->morphMany('Photo', 'imageable');
+        return $this->morphOne('Photo', 'imageable');
     }
 }

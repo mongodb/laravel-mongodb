@@ -1,11 +1,6 @@
 <?php
 
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
-
-class SchemaTest extends PHPUnit_Framework_TestCase {
-
-	public function setUp() {}
+class SchemaTest extends TestCase {
 
 	public function tearDown()
 	{
@@ -17,6 +12,18 @@ class SchemaTest extends PHPUnit_Framework_TestCase {
 		Schema::create('newcollection');
 		$this->assertTrue(Schema::hasCollection('newcollection'));
 		$this->assertTrue(Schema::hasTable('newcollection'));
+	}
+
+	public function testCreateWithCallback()
+	{
+		$instance = $this;
+
+		Schema::create('newcollection', function($collection) use ($instance)
+		{
+			$instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+		});
+
+		$this->assertTrue(Schema::hasCollection('newcollection'));
 	}
 
 	public function testDrop()

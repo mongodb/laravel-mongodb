@@ -1,8 +1,6 @@
 <?php
 
-class ModelTest extends PHPUnit_Framework_TestCase {
-
-	public function setUp() {}
+class ModelTest extends TestCase {
 
 	public function tearDown()
 	{

@@ -487,6 +487,7 @@ class EmbedsMany extends Relation {
 
             // Attatch the parent relation to the embedded model.
             $model->setRelation($this->foreignKey, $this->parent);
+            $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
 
             $models[] = $model;
         }

@@ -1,11 +1,14 @@
 <?php
 
-class QueryTest extends PHPUnit_Framework_TestCase {
+class QueryTest extends TestCase {
 
 	protected static $started = false;
 
 	public function setUp()
 	{
+		parent::setUp();
+
+		// only run this stuff once
 		if (self::$started) return;
 
 		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
@@ -188,8 +191,14 @@ class QueryTest extends PHPUnit_Framework_TestCase {
 		$this->assertEquals(33, $users[2]->age);
 
 		$users = User::groupBy('age')->skip(1)->take(2)->orderBy('age', 'desc')->get();
+		$this->assertEquals(2, count($users));
 		$this->assertEquals(35, $users[0]->age);
 		$this->assertEquals(33, $users[1]->age);
+		$this->assertNull($users[0]->name);
+
+		$users = User::select('name')->groupBy('age')->skip(1)->take(2)->orderBy('age', 'desc')->get();
+		$this->assertEquals(2, count($users));
+		$this->assertNotNull($users[0]->name);
 	}
 
 	public function testCount()

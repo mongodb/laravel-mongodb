@@ -39,5 +39,8 @@
             <directory>tests/RelationsTest.php</directory>
             <directory>tests/MysqlRelationsTest.php</directory>
         </testsuite>
+        <testsuite name="validation">
+            <directory>tests/ValidationTest.php</directory>
+        </testsuite>
     </testsuites>
 </phpunit>

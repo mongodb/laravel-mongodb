@@ -1,11 +1,6 @@
 <?php
 
-use Illuminate\Database\Eloquent\Collection;
-
-class RelationsTest extends PHPUnit_Framework_TestCase {
-
-    public function setUp() {
-    }
+class RelationsTest extends TestCase {
 
     public function tearDown()
     {
@@ -148,8 +143,8 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertTrue(array_key_exists('user_ids', $client->getAttributes()));
         $this->assertTrue(array_key_exists('client_ids', $user->getAttributes()));
 
-        $users = $client->getRelation('users');
         $clients = $user->getRelation('clients');
+        $users = $client->getRelation('users');
 
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $clients);
@@ -280,15 +275,15 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(1, $user->photos->count());
         $this->assertEquals($photo->id, $user->photos->first()->id);
 
-        $photo = Photo::create(array('url' => 'http://graph.facebook.com/john.doe/picture'));
-        $client->photos()->save($photo);
+        $photo = Photo::create(array('url' => 'http://graph.facebook.com/jane.doe/picture'));
+        $client->photo()->save($photo);
 
-        $this->assertEquals(1, $client->photos->count());
-        $this->assertEquals($photo->id, $client->photos->first()->id);
+        $this->assertNotNull($client->photo);
+        $this->assertEquals($photo->id, $client->photo->id);
 
         $client = Client::find($client->_id);
-        $this->assertEquals(1, $client->photos->count());
-        $this->assertEquals($photo->id, $client->photos->first()->id);
+        $this->assertNotNull($client->photo);
+        $this->assertEquals($photo->id, $client->photo->id);
 
         $photo = Photo::first();
         $this->assertEquals($photo->imageable->name, $user->name);
@@ -342,6 +337,7 @@ class RelationsTest extends PHPUnit_Framework_TestCase {
         $this->assertInstanceOf('DateTime', $address->created_at);
         $this->assertInstanceOf('DateTime', $address->updated_at);
         $this->assertInstanceOf('User', $address->user);
+        $this->assertEmpty($address->relationsToArray()); // prevent infinite loop
 
         $user = User::find($user->_id);
         $user->addresses()->save(new Address(array('city' => 'Bruxelles')));
