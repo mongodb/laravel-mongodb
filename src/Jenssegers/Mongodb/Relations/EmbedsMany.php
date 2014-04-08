@@ -187,6 +187,16 @@ class EmbedsMany extends Relation {
     }
 
     /**
+     * Get the number of embedded documents.
+     *
+     * @return int
+     */
+    public function count()
+    {
+        return count($this->getEmbeddedRecords());
+    }
+
+    /**
      * Attach a model instance to the parent model without persistence.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model

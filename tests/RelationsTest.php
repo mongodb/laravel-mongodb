@@ -327,6 +327,7 @@ class RelationsTest extends TestCase {
         $this->assertEquals(2, count($user->addresses));
         $this->assertEquals(2, count($user->addresses()->get()));
         $this->assertEquals(2, $user->addresses->count());
+        $this->assertEquals(2, $user->addresses()->count());
         $this->assertEquals(array('London', 'New York'), $user->addresses->lists('city'));
 
         $freshUser = User::find($user->_id);
