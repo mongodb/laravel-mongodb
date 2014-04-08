@@ -166,7 +166,7 @@ class EmbedsMany extends Relation {
         $this->updateTimestamps($model);
 
         // Insert a new document.
-        if ( ! $model->exists)
+        if ( ! $this->contains($model))
         {
             $result = $this->performInsert($model);
         }
@@ -197,6 +197,22 @@ class EmbedsMany extends Relation {
     }
 
     /**
+     * Indicate if a model is already contained in the embedded documents
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return bool
+     */
+    public function contains(Model $model)
+    {
+        foreach ($this->getEmbeddedRecords() as $record)
+        {
+            if ($record[$model->getKeyName()] == $model->getKey()) return true;
+        }
+
+        return false;
+    }
+
+    /**
      * Attach a model instance to the parent model without persistence.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
@@ -205,7 +221,7 @@ class EmbedsMany extends Relation {
     public function associate(Model $model)
     {
         // Insert the related model in the parent instance
-        if ( ! $model->exists)
+        if ( ! $this->contains($model))
         {
             return $this->associateNew($model);
         }
