@@ -382,6 +382,18 @@ class RelationsTest extends TestCase {
         $this->assertEquals(array('London', 'Bristol'), $freshUser->addresses->lists('city'));
     }
 
+    public function testEmbedsManyDuplicate()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address = new Address(array('city' => 'London'));
+        $user->addresses()->save($address);
+        $user->addresses()->save($address);
+        $this->assertEquals(1, $user->addresses->count());
+
+        $freshUser = User::find($user->id);
+        $this->assertEquals(1, $freshUser->addresses->count());
+    }
+
     public function testEmbedsManyCreate()
     {
         $user = User::create(array());
