@@ -399,6 +399,10 @@ class RelationsTest extends TestCase {
         $user->addresses()->save($address);
         $this->assertEquals(1, $user->addresses->count());
         $this->assertEquals(array('Paris'), $user->addresses->lists('city'));
+
+        $user->addresses()->create(array('_id' => $address->_id, 'city' => 'Bruxelles'));
+        $this->assertEquals(1, $user->addresses->count());
+        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
     }
 
     public function testEmbedsManyCreate()
@@ -521,7 +525,7 @@ class RelationsTest extends TestCase {
     {
         $user = User::create(array('name' => 'John Doe'));
         $address = new Address(array('city' => 'New York'));
-        $address->exists = true;
+        $user->addresses()->save($address);
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
