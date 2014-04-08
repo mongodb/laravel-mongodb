@@ -199,14 +199,21 @@ class EmbedsMany extends Relation {
     /**
      * Indicate if a model is already contained in the embedded documents
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  mixed  $key
      * @return bool
      */
-    public function contains(Model $model)
+    public function contains($key)
     {
+        if ($key instanceof Model)
+        {
+            $key = $key->getKey();
+        }
+
+        $primaryKey = $this->related->getKeyName();
+
         foreach ($this->getEmbeddedRecords() as $record)
         {
-            if ($record[$model->getKeyName()] == $model->getKey()) return true;
+            if ($record[$primaryKey] == $key) return true;
         }
 
         return false;
