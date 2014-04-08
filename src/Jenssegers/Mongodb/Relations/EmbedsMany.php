@@ -438,24 +438,6 @@ class EmbedsMany extends Relation {
     }
 
     /**
-     * Transform single ID, single Model or array of Models into an array of IDs
-     *
-     * @param  mixed  $ids
-     * @return array
-     */
-    protected function getIdsArrayFrom($ids)
-    {
-        if (! is_array($ids)) $ids = array($ids);
-
-        foreach ($ids as &$id)
-        {
-            if ($id instanceof Model) $id = $id->getKey();
-        }
-
-        return $ids;
-    }
-
-    /**
      * Delete alias.
      *
      * @param  mixed  $ids
@@ -475,6 +457,24 @@ class EmbedsMany extends Relation {
     public function attach(Model $model)
     {
         return $this->save($model);
+    }
+
+    /**
+     * Transform single ID, single Model or array of Models into an array of IDs
+     *
+     * @param  mixed  $ids
+     * @return array
+     */
+    protected function getIdsArrayFrom($ids)
+    {
+        if (! is_array($ids)) $ids = array($ids);
+
+        foreach ($ids as &$id)
+        {
+            if ($id instanceof Model) $id = $id->getKey();
+        }
+
+        return $ids;
     }
 
     /**
