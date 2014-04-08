@@ -390,9 +390,15 @@ class RelationsTest extends TestCase {
         $user->addresses()->save($address);
         $user->addresses()->save($address);
         $this->assertEquals(1, $user->addresses->count());
+        $this->assertEquals(array('London'), $user->addresses->lists('city'));
 
-        $freshUser = User::find($user->id);
-        $this->assertEquals(1, $freshUser->addresses->count());
+        $user = User::find($user->id);
+        $this->assertEquals(1, $user->addresses->count());
+
+        $address->city = 'Paris';
+        $user->addresses()->save($address);
+        $this->assertEquals(1, $user->addresses->count());
+        $this->assertEquals(array('Paris'), $user->addresses->lists('city'));
     }
 
     public function testEmbedsManyCreate()
