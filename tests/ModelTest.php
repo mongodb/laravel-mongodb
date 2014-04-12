@@ -34,9 +34,13 @@ class ModelTest extends TestCase {
 		$this->assertEquals(1, User::count());
 
 		$this->assertTrue(isset($user->_id));
+		$this->assertTrue(is_string($user->_id));
 		$this->assertNotEquals('', (string) $user->_id);
 		$this->assertNotEquals(0, strlen((string) $user->_id));
 		$this->assertInstanceOf('Carbon\Carbon', $user->created_at);
+
+		$raw = $user->getAttributes();
+		$this->assertInstanceOf('MongoId', $raw['_id']);
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(35, $user->age);
@@ -49,6 +53,9 @@ class ModelTest extends TestCase {
 		$user->title = 'admin';
 		$user->age = 35;
 		$user->save();
+
+		$raw = $user->getAttributes();
+		$this->assertInstanceOf('MongoId', $raw['_id']);
 
 		$check = User::find($user->_id);
 
@@ -64,6 +71,9 @@ class ModelTest extends TestCase {
 		$this->assertEquals(36, $check->age);
 
 		$user->update(array('age' => 20));
+
+		$raw = $user->getAttributes();
+		$this->assertInstanceOf('MongoId', $raw['_id']);
 
 		$check = User::find($user->_id);
 		$this->assertEquals(20, $check->age);

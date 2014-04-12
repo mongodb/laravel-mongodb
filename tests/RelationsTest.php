@@ -308,6 +308,10 @@ class RelationsTest extends TestCase {
         $this->assertInstanceOf('DateTime', $address->created_at);
         $this->assertInstanceOf('DateTime', $address->updated_at);
         $this->assertNotNull($address->_id);
+        $this->assertTrue(is_string($address->_id));
+
+        $raw = $address->getAttributes();
+        $this->assertInstanceOf('MongoId', $raw['_id']);
 
         $address = $user->addresses()->save(new Address(array('city' => 'Paris')));
 
@@ -410,15 +414,21 @@ class RelationsTest extends TestCase {
         $user = User::create(array());
         $address = $user->addresses()->create(array('city' => 'Bruxelles'));
         $this->assertInstanceOf('Address', $address);
-        $this->assertInstanceOf('MongoID', $address->_id);
+        $this->assertTrue(is_string($address->_id));
         $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
+
+        $raw = $address->getAttributes();
+        $this->assertInstanceOf('MongoId', $raw['_id']);
 
         $freshUser = User::find($user->id);
         $this->assertEquals(array('Bruxelles'), $freshUser->addresses->lists('city'));
 
         $user = User::create(array());
         $address = $user->addresses()->create(array('_id' => '', 'city' => 'Bruxelles'));
-        $this->assertInstanceOf('MongoID', $address->_id);
+        $this->assertTrue(is_string($address->_id));
+
+        $raw = $address->getAttributes();
+        $this->assertInstanceOf('MongoId', $raw['_id']);
     }
 
     public function testEmbedsManyCreateMany()
@@ -551,6 +561,22 @@ class RelationsTest extends TestCase {
         $this->assertEquals(array('New York'), $user->addresses->lists('city'));
 
         $address->unsetEventDispatcher();
+    }
+
+    public function testEmbedsManyFindOrContains()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address1 = $user->addresses()->save(new Address(array('city' => 'New York')));
+        $address2 = $user->addresses()->save(new Address(array('city' => 'Paris')));
+
+        $address = $user->addresses()->find($address1->_id);
+        $this->assertEquals($address->city, $address1->city);
+
+        $address = $user->addresses()->find($address2->_id);
+        $this->assertEquals($address->city, $address2->city);
+
+        $this->assertTrue($user->addresses()->contains($address2->_id));
+        $this->assertFalse($user->addresses()->contains('123'));
     }
 
 }

@@ -169,27 +169,23 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     }
 
     /**
-     * Set the array of model attributes. No checking is done.
+     * Get an attribute from the model.
      *
-     * @param  array  $attributes
-     * @param  bool   $sync
-     * @return void
+     * @param  string  $key
+     * @return mixed
      */
-    public function setRawAttributes(array $attributes, $sync = false)
+    public function getAttribute($key)
     {
-        foreach($attributes as $key => &$value)
+        $attribute = parent::getAttribute($key);
+
+        // If the attribute is a MongoId object, return it as a string.
+        // This is makes Eloquent relations a lot easier.
+        if ($attribute instanceof MongoId)
         {
-            /**
-             * MongoIds are converted to string to make it easier to pass
-             * the id to other instances or relations.
-             */
-            if ($value instanceof MongoId)
-            {
-                $value = (string) $value;
-            }
+            return (string) $attribute;
         }
 
-        parent::setRawAttributes($attributes, $sync);
+        return $attribute;
     }
 
     /**
@@ -223,7 +219,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      * @param  mixed $columns
      * @return int
      */
-    public function dropColumn($columns)
+    public function drop($columns)
     {
         if (!is_array($columns)) $columns = array($columns);
 
@@ -234,7 +230,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         }
 
         // Perform unset only on current document
-        return $query = $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
+        return $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
     }
 
     /**
@@ -289,7 +285,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // Unset method
         if ($method == 'unset')
         {
-            return call_user_func_array(array($this, 'dropColumn'), $parameters);
+            return call_user_func_array(array($this, 'drop'), $parameters);
         }
 
         return parent::__call($method, $parameters);

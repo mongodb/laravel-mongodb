@@ -4,7 +4,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Collection;
-
 use MongoId;
 
 class EmbedsMany extends Relation {
@@ -120,7 +119,7 @@ class EmbedsMany extends Relation {
      */
     public function getResults()
     {
-        return $this->toCollection($this->getEmbeddedRecords());
+        return $this->get();
     }
 
     /**
@@ -130,27 +129,32 @@ class EmbedsMany extends Relation {
     */
     public function get()
     {
-        return $this->getResults();
+        return $this->toCollection($this->getEmbeddedRecords());
     }
 
     /**
-     * Get the results with given ids.
+     * Find an embedded model by its primary key.
      *
-     * @param  array  $ids
+     * @param  mixed  $id
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    public function find(array $ids)
+    public function find($id)
     {
-        $documents = $this->getEmbeddedRecords();
+        if ($id instanceof Model)
+        {
+            $id = $id->getKey();
+        }
+
+        $records = $this->getEmbeddedRecords();
 
         $primaryKey = $this->related->getKeyName();
 
-        $documents = array_filter($documents, function ($document) use ($primaryKey, $ids)
+        $record = array_first($records, function($itemKey, $record) use ($primaryKey, $id)
         {
-            return in_array($document[$primaryKey], $ids);
+            return $record[$primaryKey] == $id;
         });
 
-        return $this->toCollection($documents);
+        return $record ? $this->toModel($record) : null;
     }
 
     /**
@@ -165,13 +169,13 @@ class EmbedsMany extends Relation {
 
         $this->updateTimestamps($model);
 
-        // Insert a new document.
+        // Attach a new model.
         if ( ! $this->contains($model))
         {
             $result = $this->performInsert($model);
         }
 
-        // Update an existing document.
+        // Update an existing model.
         else
         {
             $result = $this->performUpdate($model);
@@ -187,7 +191,7 @@ class EmbedsMany extends Relation {
     }
 
     /**
-     * Get the number of embedded documents.
+     * Get the number of embedded models.
      *
      * @return int
      */
@@ -197,159 +201,32 @@ class EmbedsMany extends Relation {
     }
 
     /**
-     * Indicate if a model is already contained in the embedded documents
+     * Check if a model is already embedded.
      *
      * @param  mixed  $key
      * @return bool
      */
     public function contains($key)
     {
-        if ($key instanceof Model)
-        {
-            $key = $key->getKey();
-        }
-
-        $primaryKey = $this->related->getKeyName();
-
-        foreach ($this->getEmbeddedRecords() as $record)
-        {
-            if ($record[$primaryKey] == $key) return true;
-        }
-
-        return false;
+        return ! is_null($this->find($key));
     }
 
     /**
-     * Attach a model instance to the parent model without persistence.
+     * Associate the model instance to the given parent, without saving it to the database.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function associate(Model $model)
     {
-        // Insert the related model in the parent instance
         if ( ! $this->contains($model))
         {
             return $this->associateNew($model);
         }
-
-        // Update the related model in the parent instance
         else
         {
             return $this->associateExisting($model);
         }
-
-    }
-
-    /**
-     * Perform a model insert operation.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    protected function performInsert(Model $model)
-    {
-        if ($this->fireModelEvent($model, 'creating') === false) return false;
-
-        // Insert the related model in the parent instance
-        $this->associateNew($model);
-
-        // Push the document to the database.
-        $result = $this->query->push($this->localKey, $model->getAttributes(), true);
-
-        if ($result)
-        {
-            $this->fireModelEvent($model, 'created', false);
-            return $model;
-        }
-
-        return false;
-    }
-
-    /**
-     * Perform a model update operation.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return Model|bool
-     */
-    protected function performUpdate(Model $model)
-    {
-        if ($this->fireModelEvent($model, 'updating') === false) return false;
-
-        // Update the related model in the parent instance
-        $this->associateExisting($model);
-
-        // Get the correct foreign key value.
-        $id = $this->getForeignKeyValue($model->getKey());
-
-        // Update document in database.
-        $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
-                              ->update(array($this->localKey . '.$' => $model->getAttributes()));
-
-        if ($result)
-        {
-            $this->fireModelEvent($model, 'updated', false);
-            return $model;
-        }
-
-        return false;
-    }
-
-    /**
-     * Attach a new model without persistence
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    protected function associateNew($model)
-    {
-        // Create a new key.
-        if ( ! $model->getAttribute('_id'))
-        {
-            $model->setAttribute('_id', new MongoId);
-        }
-
-        $documents = $this->getEmbeddedRecords();
-
-        // Add the document to the parent model.
-        $documents[] = $model->getAttributes();
-
-        $this->setEmbeddedRecords($documents);
-
-        // Mark the model as existing.
-        $model->exists = true;
-
-        return $model;
-    }
-
-    /**
-     * Update an existing model without persistence
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    protected function associateExisting($model)
-    {
-        // Get existing embedded documents.
-        $documents = $this->getEmbeddedRecords();
-
-        $primaryKey = $this->related->getKeyName();
-
-        $key = $model->getKey();
-
-        // Replace the document in the parent model.
-        foreach ($documents as &$document)
-        {
-            if ($document[$primaryKey] == $key)
-            {
-                $document = $model->getAttributes();
-                break;
-            }
-        }
-
-        $this->setEmbeddedRecords($documents);
-
-        return $model;
     }
 
     /**
@@ -406,30 +283,17 @@ class EmbedsMany extends Relation {
     {
         $ids = $this->getIdsArrayFrom($ids);
 
-        $models = $this->find($ids);
-
-        $ids = array();
-
-        $primaryKey = $this->related->getKeyName();
+        $models = $this->get()->only($ids);
 
         // Pull the documents from the database.
         foreach ($models as $model)
         {
-            if ($this->fireModelEvent($model, 'deleting') === false) continue;
-
-            $id = $model->getKey();
-            $this->query->pull($this->localKey, array($primaryKey => $this->getForeignKeyValue($id)));
-
-            $ids[] = $id;
-
-            $this->fireModelEvent($model, 'deleted', false);
+            $this->performDelete($model);
         }
-
-        return $this->dissociate($ids);
     }
 
     /**
-     * Dissociate the embedded models for the given IDs without persistence.
+     * Dissociate the model instance from the given parent, without saving it to the database.
      *
      * @param  mixed  $ids
      * @return int
@@ -483,6 +347,147 @@ class EmbedsMany extends Relation {
     }
 
     /**
+     * Save a new model and attach it to the parent model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function performInsert(Model $model)
+    {
+        if ($this->fireModelEvent($model, 'creating') === false) return false;
+
+        // Associate the new model to the parent.
+        $this->associateNew($model);
+
+        // Push the new model to the database.
+        $result = $this->query->push($this->localKey, $model->getAttributes(), true);
+
+        if ($result)
+        {
+            $this->fireModelEvent($model, 'created', false);
+
+            return $model;
+        }
+
+        return false;
+    }
+
+    /**
+     * Save an existing model and attach it to the parent model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return Model|bool
+     */
+    protected function performUpdate(Model $model)
+    {
+        if ($this->fireModelEvent($model, 'updating') === false) return false;
+
+        // Update the related model in the parent instance
+        $this->associateExisting($model);
+
+        // Get the correct foreign key value.
+        $id = $this->getForeignKeyValue($model);
+
+        // Update document in database.
+        $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
+                              ->update(array($this->localKey . '.$' => $model->getAttributes()));
+
+        if ($result)
+        {
+            $this->fireModelEvent($model, 'updated', false);
+
+            return $model;
+        }
+
+        return false;
+    }
+
+    /**
+     * Remove an existing model and detach it from the parent model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return bool
+     */
+    protected function performDelete(Model $model)
+    {
+        if ($this->fireModelEvent($model, 'deleting') === false) return false;
+
+        // Get the correct foreign key value.
+        $id = $this->getForeignKeyValue($model);
+
+        $result = $this->query->pull($this->localKey, array($model->getKeyName() => $id));
+
+        if ($result)
+        {
+            $this->fireModelEvent($model, 'deleted', false);
+
+            // Update the related model in the parent instance
+            $this->dissociate($model);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Associate a new model instance to the given parent, without saving it to the database.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function associateNew($model)
+    {
+        // Create a new key.
+        if ( ! $model->getAttribute('_id'))
+        {
+            $model->setAttribute('_id', new MongoId);
+        }
+
+        $documents = $this->getEmbeddedRecords();
+
+        // Add the document to the parent model.
+        $documents[] = $model->getAttributes();
+
+        $this->setEmbeddedRecords($documents);
+
+        // Mark the model as existing.
+        $model->exists = true;
+
+        return $model;
+    }
+
+    /**
+     * Associate an existing model instance to the given parent, without saving it to the database.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    protected function associateExisting($model)
+    {
+        // Get existing embedded documents.
+        $documents = $this->getEmbeddedRecords();
+
+        $primaryKey = $this->related->getKeyName();
+
+        $key = $model->getKey();
+
+        // Replace the document in the parent model.
+        foreach ($documents as &$document)
+        {
+            if ($document[$primaryKey] == $key)
+            {
+                $document = $model->getAttributes();
+                break;
+            }
+        }
+
+        $this->setEmbeddedRecords($documents);
+
+        return $model;
+    }
+
+    /**
      * Transform single ID, single Model or array of Models into an array of IDs
      *
      * @param  mixed  $ids
@@ -501,28 +506,36 @@ class EmbedsMany extends Relation {
     }
 
     /**
+     * Create a related model instanced.
+     *
+     * @param  array  $attributes [description]
+     * @return [type]             [description]
+     */
+    protected function toModel(array $attributes)
+    {
+        $model = $this->related->newFromBuilder($attributes);
+
+        // Attatch the parent relation to the embedded model.
+        $model->setRelation($this->foreignKey, $this->parent);
+        $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
+
+        return $model;
+    }
+
+    /**
      * Convert an array of embedded documents to a Collection.
      *
-     * @param  array  $results
+     * @param  array  $records
      * @return Illuminate\Database\Eloquent\Collection
      */
-    protected function toCollection(array $results = array())
+    protected function toCollection(array $records = array())
     {
         $models = array();
 
-        // Wrap documents in model objects.
-        foreach ($results as $model)
+        // Wrap records in model objects.
+        foreach ($records as $attributes)
         {
-            if ( ! $model instanceof Model)
-            {
-                $model = $this->related->newFromBuilder($model);
-            }
-
-            // Attatch the parent relation to the embedded model.
-            $model->setRelation($this->foreignKey, $this->parent);
-            $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
-
-            $models[] = $model;
+            $models[] = $this->toModel($attributes);
         }
 
         if (count($models) > 0)
@@ -534,7 +547,7 @@ class EmbedsMany extends Relation {
     }
 
     /**
-     * Get the embedded documents array.
+     * Get the embedded records array.
      *
      * @return array
      */
@@ -552,7 +565,7 @@ class EmbedsMany extends Relation {
     }
 
     /**
-     * Set the embedded documents array.
+     * Set the embedded records array.
      *
      * @param array $models
      * @return void
@@ -598,6 +611,11 @@ class EmbedsMany extends Relation {
      */
     protected function getForeignKeyValue($id)
     {
+        if ($id instanceof Model)
+        {
+            $id = $id->getKey();
+        }
+
         // Convert the id to MongoId if necessary.
         return $this->getBaseQuery()->convertKey($id);
     }

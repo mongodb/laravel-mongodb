@@ -59,7 +59,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     /**
      * Execute a query for a single record by ID.
      *
-     * @param  int    $id
+     * @param  mixed  $id
      * @param  array  $columns
      * @return mixed
      */
@@ -377,8 +377,8 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 $sequence = '_id';
             }
 
-            // Return id as a string
-            return (string) $values[$sequence];
+            // Return id
+            return $values[$sequence];
         }
     }
 
@@ -585,7 +585,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  mixed $columns
      * @return int
      */
-    public function dropColumn($columns)
+    public function drop($columns)
     {
         if (!is_array($columns)) $columns = array($columns);
 
@@ -846,7 +846,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     {
         if ($method == 'unset')
         {
-            return call_user_func_array(array($this, 'dropColumn'), $parameters);
+            return call_user_func_array(array($this, 'drop'), $parameters);
         }
 
         return parent::__call($method, $parameters);
