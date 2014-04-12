@@ -287,6 +287,11 @@ class RelationsTest extends TestCase {
 
         $photo = Photo::first();
         $this->assertEquals($photo->imageable->name, $user->name);
+
+        $user = User::with('photos')->find($user->_id);
+        $relations = $user->getRelations();
+        $this->assertTrue(array_key_exists('photos', $relations));
+        $this->assertEquals(1, $relations['photos']->count());
     }
 
     public function testEmbedsManySave()
@@ -577,6 +582,22 @@ class RelationsTest extends TestCase {
 
         $this->assertTrue($user->addresses()->contains($address2->_id));
         $this->assertFalse($user->addresses()->contains('123'));
+    }
+
+    public function testEmbedsManyEagerLoading()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address1 = $user->addresses()->save(new Address(array('city' => 'New York')));
+        $address2 = $user->addresses()->save(new Address(array('city' => 'Paris')));
+
+        $user = User::find($user->id);
+        $relations = $user->getRelations();
+        $this->assertFalse(array_key_exists('addresses', $relations));
+
+        $user = User::with('addresses')->find($user->id);
+        $relations = $user->getRelations();
+        $this->assertTrue(array_key_exists('addresses', $relations));
+        $this->assertEquals(2, $relations['addresses']->count());
     }
 
 }

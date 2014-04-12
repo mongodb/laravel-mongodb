@@ -214,14 +214,4 @@ class BelongsToMany extends EloquentBelongsToMany {
 	{
 		return $this->foreignKey;
 	}
-
-	/**
-	 * Get the fully qualified "other key" for the relation.
-	 *
-	 * @return string
-	 */
-	public function getOtherKey()
-	{
-		return $this->otherKey;
-	}
 }
