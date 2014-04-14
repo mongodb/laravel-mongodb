@@ -318,7 +318,8 @@ class ModelTest extends TestCase {
 
 	public function testDates()
 	{
-		$user = User::create(array('name' => 'John Doe', 'birthday' => new DateTime('1980/1/1')));
+		$birthday = new DateTime('1980/1/1');
+		$user = User::create(array('name' => 'John Doe', 'birthday' => $birthday));
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 
 		$check = User::find($user->_id);
@@ -327,6 +328,16 @@ class ModelTest extends TestCase {
 
 		$user = User::where('birthday', '>', new DateTime('1975/1/1'))->first();
 		$this->assertEquals('John Doe', $user->name);
+
+		// test custom date format for json output
+		$json = $user->toArray();
+		$this->assertEquals($user->birthday->format('U'), $json['birthday']);
+		$this->assertEquals($user->created_at->format('U'), $json['created_at']);
+
+		// test default date format for json output
+		$item = Item::create(array('name' => 'sword'));
+		$json = $item->toArray();
+		$this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
 	}
 
 	public function testIdAttribute()

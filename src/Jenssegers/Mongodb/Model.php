@@ -137,6 +137,16 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     }
 
     /**
+     * Get the format for database stored dates.
+     *
+     * @return string
+     */
+    protected function getDateFormat()
+    {
+        return 'Y-m-d H:i:s';
+    }
+
+    /**
      * Get a fresh timestamp for the model.
      *
      * @return MongoDate
@@ -206,7 +216,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
              */
             if ($value instanceof MongoDate)
             {
-                $value = $this->asDateTime($value)->format('Y-m-d H:i:s');
+                $value = $this->asDateTime($value)->format($this->getDateFormat());
             }
         }
 
