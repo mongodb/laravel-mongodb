@@ -180,7 +180,7 @@ class Connection extends \Illuminate\Database\Connection {
     */
     public function getDriverName()
     {
-        return '';
+        return 'mongodb';
     }
 
     /**
