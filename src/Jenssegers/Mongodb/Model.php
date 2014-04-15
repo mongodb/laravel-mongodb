@@ -195,14 +195,18 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     {
         $attributes = parent::attributesToArray();
 
+        // Because the original Eloquent never returns objects, we convert
+        // MongoDB related objects to a string representation. This kind
+        // of mimics the SQL behaviour so that dates are formatted
+        // nicely when your models are converted to JSON.
         foreach ($attributes as &$value)
         {
-            /**
-             * Here we convert MongoDate instances to string. This mimics
-             * original SQL behaviour so that dates are formatted nicely
-             * when your models are converted to JSON.
-             */
-            if ($value instanceof MongoDate)
+            if ($value instanceof MongoId)
+            {
+                $value = (string) $value;
+            }
+
+            else if ($value instanceof MongoDate)
             {
                 $value = $this->asDateTime($value)->format($this->getDateFormat());
             }

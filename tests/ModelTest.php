@@ -287,6 +287,7 @@ class ModelTest extends TestCase {
 		$this->assertEquals(array('_id', 'created_at', 'name', 'type', 'updated_at'), $keys);
 		$this->assertTrue(is_string($array['created_at']));
 		$this->assertTrue(is_string($array['updated_at']));
+		$this->assertTrue(is_string($array['_id']));
 	}
 
 	public function testUnset()
