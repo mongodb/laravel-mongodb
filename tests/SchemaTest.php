@@ -114,11 +114,11 @@ class SchemaTest extends TestCase {
 	{
 		Schema::collection('newcollection', function($collection)
 		{
-			$collection->background('backgroundkey');
+			$collection->sparse('sparsekey');
 		});
 
-		$index = $this->getIndex('newcollection', 'backgroundkey');
-		$this->assertEquals(1, $index['background']);
+		$index = $this->getIndex('newcollection', 'sparsekey');
+		$this->assertEquals(1, $index['sparse']);
 	}
 
 	public function testExpire()
