@@ -331,13 +331,22 @@ class ModelTest extends TestCase {
 
 		// test custom date format for json output
 		$json = $user->toArray();
-		$this->assertEquals($user->birthday->format('U'), $json['birthday']);
-		$this->assertEquals($user->created_at->format('U'), $json['created_at']);
+		$this->assertEquals($user->birthday->format('l jS \of F Y h:i:s A'), $json['birthday']);
+		$this->assertEquals($user->created_at->format('l jS \of F Y h:i:s A'), $json['created_at']);
 
 		// test default date format for json output
 		$item = Item::create(array('name' => 'sword'));
 		$json = $item->toArray();
 		$this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
+
+		$user = User::create(array('name' => 'Jane Doe', 'birthday' => time()));
+		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
+
+		$user = User::create(array('name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 2005 03:12:46 PM'));
+		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
+
+		$user = User::create(array('name' => 'Jane Doe', 'birthday' => '2005-08-08'));
+		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 	}
 
 	public function testIdAttribute()

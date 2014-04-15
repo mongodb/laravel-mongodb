@@ -87,6 +87,6 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 
     protected function getDateFormat()
     {
-        return 'U';
+        return 'l jS \of F Y h:i:s A';
     }
 }

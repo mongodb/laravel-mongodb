@@ -92,19 +92,19 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function fromDateTime($value)
     {
-        // Convert DateTime to MongoDate
-        if ($value instanceof DateTime)
+        // If the value is already a MongoDate instance, we don't need to parse it.
+        if ($value instanceof MongoDate)
         {
-            $value = new MongoDate($value->getTimestamp());
+            return $value;
         }
 
-        // Convert timestamp to MongoDate
-        elseif (is_numeric($value))
+        // Let Eloquent convert the value to a DateTime instance.
+        if ( ! $value instanceof DateTime)
         {
-            $value = new MongoDate($value);
+            $value = parent::asDateTime($value);
         }
 
-        return $value;
+        return new MongoDate($value->getTimestamp());
     }
 
     /**
@@ -115,25 +115,13 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     protected function asDateTime($value)
     {
-        // Convert timestamp
-        if (is_numeric($value))
-        {
-            return Carbon::createFromTimestamp($value);
-        }
-
-        // Convert string
-        if (is_string($value))
-        {
-            return new Carbon($value);
-        }
-
-        // Convert MongoDate
+        // Convert MongoDate instances.
         if ($value instanceof MongoDate)
         {
             return Carbon::createFromTimestamp($value->sec);
         }
 
-        return Carbon::instance($value);
+        return parent::asDateTime($value);
     }
 
     /**
