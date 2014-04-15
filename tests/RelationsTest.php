@@ -292,6 +292,15 @@ class RelationsTest extends TestCase {
         $relations = $user->getRelations();
         $this->assertTrue(array_key_exists('photos', $relations));
         $this->assertEquals(1, $relations['photos']->count());
+
+        $photos = Photo::with('imageable')->get();
+        $relations = $photos[0]->getRelations();
+        $this->assertTrue(array_key_exists('imageable', $relations));
+        $this->assertInstanceOf('User', $relations['imageable']);
+
+        $relations = $photos[1]->getRelations();
+        $this->assertTrue(array_key_exists('imageable', $relations));
+        $this->assertInstanceOf('Client', $relations['imageable']);
     }
 
     public function testEmbedsManySave()
