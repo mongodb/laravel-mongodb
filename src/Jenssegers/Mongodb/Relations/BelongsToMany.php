@@ -47,7 +47,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 * @param  bool   $detaching
 	 * @return void
 	 */
-	public function sync(array $ids, $detaching = true)
+	public function sync($ids, $detaching = true)
 	{
 		if ($ids instanceof Collection) $ids = $ids->modelKeys();
 
