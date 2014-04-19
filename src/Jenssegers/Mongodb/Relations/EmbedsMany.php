@@ -146,9 +146,10 @@ class EmbedsMany extends Relation {
         }
 
         $records = $this->getEmbeddedRecords();
-
         $primaryKey = $this->related->getKeyName();
 
+        // Traverse all embedded records and find the first record
+        // that matches the given primary key.
         $record = array_first($records, function($itemKey, $record) use ($primaryKey, $id)
         {
             return $record[$primaryKey] == $id;
@@ -283,6 +284,7 @@ class EmbedsMany extends Relation {
     {
         $ids = $this->getIdsArrayFrom($ids);
 
+        // Get all models matching the given ids.
         $models = $this->get()->only($ids);
 
         // Pull the documents from the database.
@@ -302,21 +304,19 @@ class EmbedsMany extends Relation {
     {
         $ids = $this->getIdsArrayFrom($ids);
 
+        $records = $this->getEmbeddedRecords();
         $primaryKey = $this->related->getKeyName();
 
-        // Get existing embedded documents.
-        $documents = $this->getEmbeddedRecords();
-
         // Remove the document from the parent model.
-        foreach ($documents as $i => $document)
+        foreach ($records as $i => $record)
         {
-            if (in_array($document[$primaryKey], $ids))
+            if (in_array($record[$primaryKey], $ids))
             {
-                unset($documents[$i]);
+                unset($records[$i]);
             }
         }
 
-        $this->setEmbeddedRecords($documents);
+        $this->setEmbeddedRecords($records);
 
         // We return the total number of deletes for the operation. The developers
         // can then check this number as a boolean type value or get this total count
@@ -325,7 +325,32 @@ class EmbedsMany extends Relation {
     }
 
     /**
-     * Delete alias.
+     * Delete all embedded models.
+     *
+     * @return int
+     */
+    public function delete()
+    {
+        // Overwrite the local key with an empty array.
+        $result = $this->query->update(array($this->localKey => array()));
+
+        // If the update query was successful, we will remove the embedded records
+        // of the parent instance.
+        if ($result)
+        {
+            $count = $this->count();
+
+            $this->setEmbeddedRecords(array());
+
+            // Return the number of deleted embedded records.
+            return $count;
+        }
+
+        return $result;
+    }
+
+    /**
+     * Destroy alias.
      *
      * @param  mixed  $ids
      * @return int
@@ -356,14 +381,20 @@ class EmbedsMany extends Relation {
     {
         if ($this->fireModelEvent($model, 'creating') === false) return false;
 
-        // Associate the new model to the parent.
-        $this->associateNew($model);
+        // Create a new key if needed.
+        if ( ! $model->getAttribute('_id'))
+        {
+            $model->setAttribute('_id', new MongoId);
+        }
 
         // Push the new model to the database.
         $result = $this->query->push($this->localKey, $model->getAttributes(), true);
 
         if ($result)
         {
+            // Associate the new model to the parent.
+            $this->associateNew($model);
+
             $this->fireModelEvent($model, 'created', false);
 
             return $model;
@@ -382,9 +413,6 @@ class EmbedsMany extends Relation {
     {
         if ($this->fireModelEvent($model, 'updating') === false) return false;
 
-        // Update the related model in the parent instance
-        $this->associateExisting($model);
-
         // Get the correct foreign key value.
         $id = $this->getForeignKeyValue($model);
 
@@ -394,6 +422,9 @@ class EmbedsMany extends Relation {
 
         if ($result)
         {
+            // Update the related model in the parent instance
+            $this->associateExisting($model);
+
             $this->fireModelEvent($model, 'updated', false);
 
             return $model;
@@ -438,18 +469,18 @@ class EmbedsMany extends Relation {
      */
     protected function associateNew($model)
     {
-        // Create a new key.
+        // Create a new key if needed.
         if ( ! $model->getAttribute('_id'))
         {
             $model->setAttribute('_id', new MongoId);
         }
 
-        $documents = $this->getEmbeddedRecords();
+        $records = $this->getEmbeddedRecords();
 
         // Add the document to the parent model.
-        $documents[] = $model->getAttributes();
+        $records[] = $model->getAttributes();
 
-        $this->setEmbeddedRecords($documents);
+        $this->setEmbeddedRecords($records);
 
         // Mark the model as existing.
         $model->exists = true;
@@ -466,23 +497,22 @@ class EmbedsMany extends Relation {
     protected function associateExisting($model)
     {
         // Get existing embedded documents.
-        $documents = $this->getEmbeddedRecords();
+        $records = $this->getEmbeddedRecords();
 
         $primaryKey = $this->related->getKeyName();
-
         $key = $model->getKey();
 
         // Replace the document in the parent model.
-        foreach ($documents as &$document)
+        foreach ($records as &$record)
         {
-            if ($document[$primaryKey] == $key)
+            if ($record[$primaryKey] == $key)
             {
-                $document = $model->getAttributes();
+                $record = $model->getAttributes();
                 break;
             }
         }
 
-        $this->setEmbeddedRecords($documents);
+        $this->setEmbeddedRecords($records);
 
         return $model;
     }

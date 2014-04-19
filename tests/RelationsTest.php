@@ -609,4 +609,28 @@ class RelationsTest extends TestCase {
         $this->assertEquals(2, $relations['addresses']->count());
     }
 
+    public function testEmbedsManyDelete()
+    {
+        $user1 = User::create(array('name' => 'John Doe'));
+        $user1->addresses()->save(new Address(array('city' => 'New York')));
+        $user1->addresses()->save(new Address(array('city' => 'Paris')));
+
+        $user2 = User::create(array('name' => 'Jane Doe'));
+        $user2->addresses()->save(new Address(array('city' => 'Berlin')));
+        $user2->addresses()->save(new Address(array('city' => 'Paris')));
+
+        $user1->addresses()->delete();
+        $this->assertEquals(0, $user1->addresses()->count());
+        $this->assertEquals(0, $user1->addresses->count());
+        $this->assertEquals(2, $user2->addresses()->count());
+        $this->assertEquals(2, $user2->addresses->count());
+
+        $user1 = User::find($user1->id);
+        $user2 = User::find($user2->id);
+        $this->assertEquals(0, $user1->addresses()->count());
+        $this->assertEquals(0, $user1->addresses->count());
+        $this->assertEquals(2, $user2->addresses()->count());
+        $this->assertEquals(2, $user2->addresses->count());
+    }
+
 }
