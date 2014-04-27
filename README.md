@@ -412,6 +412,33 @@ Again, you may override the conventional local key by passing a second argument 
 
     return $this->embedsMany('Book', 'local_key');
 
+### EmbedsOne Relations
+
+There is also an EmbedsOne relation, which works similar to the EmbedsMany relation, but only stores one embedded model.
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class Book extends Eloquent {
+
+        public function author()
+        {
+            return $this->embedsOne('Author');
+        }
+
+    }
+
+Now we can access the book's author through the dynamic property:
+
+    $author = Book::first()->author;
+
+Inserting and updating embedded documents works just like the `embedsMany` relation:
+
+    $author = new Author(array('name' => 'John Doe'));
+
+    $book = Books::first();
+
+    $author = $user->author()->save($author);
+
 ### MySQL Relations
 
 If you're using a hybrid MongoDB and SQL setup, you're in luck! The model will automatically return a MongoDB- or SQL-relation based on the type of the related model. Of course, if you want this functionality to work both ways, your SQL-models will need to extend `Jenssegers\Eloquent\Model`. Note that this functionality only works for hasOne, hasMany and belongsTo relations.
