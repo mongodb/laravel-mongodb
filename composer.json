@@ -5,7 +5,7 @@
     "authors": [
         {
             "name": "Jens Segers",
-            "email": "hello@jenssegers.be"
+            "homepage": "http://jenssegers.be"
         }
     ],
     "license" : "MIT",
@@ -24,5 +24,9 @@
             "Jenssegers\\Mongodb": "src/",
             "Jenssegers\\Eloquent": "src/"
         }
+    },
+    "suggest": {
+        "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB",
+        "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB"
     }
 }
