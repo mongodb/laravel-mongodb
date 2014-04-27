@@ -5,6 +5,7 @@ use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
+use Jenssegers\Mongodb\Relations\EmbedsOne;
 
 use Carbon\Carbon;
 use DateTime;
@@ -82,6 +83,42 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         $instance = new $related;
 
         return new EmbedsMany($query, $this, $instance, $localKey, $foreignKey, $relation);
+    }
+
+    /**
+     * Define an embedded one-to-many relationship.
+     *
+     * @param  string  $related
+     * @param  string  $collection
+     * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
+     */
+    protected function embedsOne($related, $localKey = null, $foreignKey = null, $relation = null)
+    {
+        // If no relation name was given, we will use this debug backtrace to extract
+        // the calling method's name and use that as the relationship name as most
+        // of the time this will be what we desire to use for the relatinoships.
+        if (is_null($relation))
+        {
+            list(, $caller) = debug_backtrace(false);
+
+            $relation = $caller['function'];
+        }
+
+        if (is_null($localKey))
+        {
+            $localKey = '_' . $relation;
+        }
+
+        if (is_null($foreignKey))
+        {
+            $foreignKey = snake_case(class_basename($this));
+        }
+
+        $query = $this->newQuery();
+
+        $instance = new $related;
+
+        return new EmbedsOne($query, $this, $instance, $localKey, $foreignKey, $relation);
     }
 
     /**

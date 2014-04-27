@@ -595,15 +595,19 @@ class RelationsTest extends TestCase {
 
     public function testEmbedsManyEagerLoading()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address1 = $user->addresses()->save(new Address(array('city' => 'New York')));
-        $address2 = $user->addresses()->save(new Address(array('city' => 'Paris')));
+        $user1 = User::create(array('name' => 'John Doe'));
+        $user1->addresses()->save(new Address(array('city' => 'New York')));
+        $user1->addresses()->save(new Address(array('city' => 'Paris')));
 
-        $user = User::find($user->id);
+        $user2 = User::create(array('name' => 'Jane Doe'));
+        $user2->addresses()->save(new Address(array('city' => 'Berlin')));
+        $user2->addresses()->save(new Address(array('city' => 'Paris')));
+
+        $user = User::find($user1->id);
         $relations = $user->getRelations();
         $this->assertFalse(array_key_exists('addresses', $relations));
 
-        $user = User::with('addresses')->find($user->id);
+        $user = User::with('addresses')->get()->first();
         $relations = $user->getRelations();
         $this->assertTrue(array_key_exists('addresses', $relations));
         $this->assertEquals(2, $relations['addresses']->count());
@@ -631,6 +635,68 @@ class RelationsTest extends TestCase {
         $this->assertEquals(0, $user1->addresses->count());
         $this->assertEquals(2, $user2->addresses()->count());
         $this->assertEquals(2, $user2->addresses->count());
+    }
+
+    public function testEmbedsOne()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $father = new User(array('name' => 'Mark Doe'));
+
+        $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
+        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($father), $father)->andReturn(true);
+        $events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($father), $father)->andReturn(true);
+        $events->shouldReceive('fire')->once()->with('eloquent.created: '.get_class($father), $father);
+        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($father), $father);
+
+        $father = $user->father()->save($father);
+        $father->unsetEventDispatcher();
+
+        $this->assertNotNull($user->_father);
+        $this->assertEquals('Mark Doe', $user->father->name);
+        $this->assertInstanceOf('DateTime', $father->created_at);
+        $this->assertInstanceOf('DateTime', $father->updated_at);
+        $this->assertNotNull($father->_id);
+        $this->assertTrue(is_string($father->_id));
+
+        $raw = $father->getAttributes();
+        $this->assertInstanceOf('MongoId', $raw['_id']);
+
+        $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
+        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($father), $father)->andReturn(true);
+        $events->shouldReceive('until')->once()->with('eloquent.updating: '.get_class($father), $father)->andReturn(true);
+        $events->shouldReceive('fire')->once()->with('eloquent.updated: '.get_class($father), $father);
+        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($father), $father);
+
+        $father->name = 'Tom Doe';
+        $user->father()->save($father);
+        $father->unsetEventDispatcher();
+
+        $this->assertNotNull($user->_father);
+        $this->assertEquals('Tom Doe', $user->father->name);
+
+        $father = new User(array('name' => 'Jim Doe'));
+
+        $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
+        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($father), $father)->andReturn(true);
+        $events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($father), $father)->andReturn(true);
+        $events->shouldReceive('fire')->once()->with('eloquent.created: '.get_class($father), $father);
+        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($father), $father);
+
+        $father = $user->father()->save($father);
+        $father->unsetEventDispatcher();
+
+        $this->assertNotNull($user->_father);
+        $this->assertEquals('Jim Doe', $user->father->name);
+    }
+
+    public function testEmbedsOneDelete()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $father = $user->father()->save(new User(array('name' => 'Mark Doe')));
+
+        $user->father()->delete();
+        $this->assertNull($user->_father);
+        $this->assertNull($user->father);
     }
 
 }

@@ -55,6 +55,11 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         return $this->embedsMany('Address');
     }
 
+    public function father()
+    {
+        return $this->embedsOne('User');
+    }
+
     /**
      * Get the unique identifier for the user.
      *
