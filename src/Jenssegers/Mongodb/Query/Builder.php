@@ -27,7 +27,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         '=', '<', '>', '<=', '>=', '<>', '!=',
         'like', 'not like', 'between', 'ilike',
         '&', '|', '^', '<<', '>>',
-        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex',
+        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex', 'elemmatch'
     );
 
     /**
@@ -678,6 +678,12 @@ class Builder extends \Illuminate\Database\Query\Builder {
             if (isset($where['operator']))
             {
                 $where['operator'] = strtolower($where['operator']);
+
+                // Fix elemMatch
+                if ($where['operator'] == 'elemmatch')
+                {
+                    $where['operator'] = 'elemMatch';
+                }
             }
 
             // Convert id's

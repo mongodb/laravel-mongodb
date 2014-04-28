@@ -532,6 +532,27 @@ class QueryBuilderTest extends TestCase {
 
 		$results = DB::collection('users')->where('name', 'REGEX', $regex)->get();
 		$this->assertEquals(2, count($results));
+
+		DB::collection('users')->insert(array(
+			array(
+				'name' => 'John Doe',
+				'addresses' => array(
+					array('city' => 'Ghent'),
+					array('city' => 'Paris')
+				)
+			),
+			array(
+				'name' => 'Jane Doe',
+				'addresses' => array(
+					array('city' => 'Brussels'),
+					array('city' => 'Paris')
+				)
+			)
+		));
+
+		$users = DB::collection('users')->where('addresses', 'elemMatch', array('city' => 'Brussels'))->get();
+		$this->assertEquals(1, count($users));
+		$this->assertEquals('Jane Doe', $users[0]['name']);
 	}
 
 	public function testIncrement()
