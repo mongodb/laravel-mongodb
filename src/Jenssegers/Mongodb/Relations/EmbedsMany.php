@@ -19,36 +19,17 @@ class EmbedsMany extends EmbedsOneOrMany {
     }
 
     /**
-     * Find an embedded model by its primary key.
+     * Simulate order by method.
      *
-     * @param  mixed  $id
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @param  string  $column
+     * @param  string  $direction
+     * @return Illuminate\Database\Eloquent\Collection
      */
-    public function find($id)
+    public function orderBy($column, $direction = 'asc')
     {
-        if ($id instanceof Model) $id = $id->getKey();
+        $descending = strtolower($direction) == 'desc';
 
-        $primaryKey = $this->related->getKeyName();
-
-        // Traverse all embedded records and find the first record
-        // that matches the given primary key.
-        $record = array_first($this->getEmbedded(), function($itemKey, $record) use ($primaryKey, $id)
-        {
-            return $record[$primaryKey] == $id;
-        });
-
-        return $record ? $this->toModel($record) : null;
-    }
-
-    /**
-     * Check if a model is already embedded.
-     *
-     * @param  mixed  $key
-     * @return bool
-     */
-    public function contains($key)
-    {
-        return ! is_null($this->find($key));
+        return $this->getResults()->sortBy($column, SORT_REGULAR, $descending);
     }
 
     /**
@@ -312,6 +293,24 @@ class EmbedsMany extends EmbedsOneOrMany {
         if (! is_array($models)) $models = array($models);
 
         return parent::setEmbedded(array_values($models));
+    }
+
+    /**
+     * Handle dynamic method calls to the relationship.
+     *
+     * @param  string  $method
+     * @param  array   $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        // Collection methods
+        if (method_exists('Illuminate\Database\Eloquent\Collection', $method))
+        {
+            return call_user_func_array(array($this->getResults(), $method), $parameters);
+        }
+
+        return parent::__call($method, $parameters);
     }
 
 }
