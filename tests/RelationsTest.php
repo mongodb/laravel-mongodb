@@ -303,4 +303,79 @@ class RelationsTest extends TestCase {
         $this->assertInstanceOf('Client', $relations['imageable']);
     }
 
+    public function testHasManyHas()
+    {
+        $author1 = User::create(array('name' => 'George R. R. Martin'));
+        $author1->books()->create(array('title' => 'A Game of Thrones', 'rating' => 5));
+        $author1->books()->create(array('title' => 'A Clash of Kings', 'rating' => 5));
+        $author2 = User::create(array('name' => 'John Doe'));
+        $author2->books()->create(array('title' => 'My book', 'rating' => 2));
+        User::create(array('name' => 'Anonymous author'));
+        Book::create(array('title' => 'Anonymous book', 'rating' => 1));
+
+        $authors = User::has('books')->get();
+        $this->assertCount(2, $authors);
+        $this->assertEquals('George R. R. Martin', $authors[0]->name);
+        $this->assertEquals('John Doe', $authors[1]->name);
+
+        $authors = User::has('books', '>', 1)->get();
+        $this->assertCount(1, $authors);
+
+        $authors = User::has('books', '<', 5)->get();
+        $this->assertCount(3, $authors);
+
+        $authors = User::has('books', '>=', 2)->get();
+        $this->assertCount(1, $authors);
+
+        $authors = User::has('books', '<=', 1)->get();
+        $this->assertCount(2, $authors);
+
+        $authors = User::has('books', '=', 2)->get();
+        $this->assertCount(1, $authors);
+
+        $authors = User::has('books', '!=', 2)->get();
+        $this->assertCount(2, $authors);
+
+        $authors = User::has('books', '=', 0)->get();
+        $this->assertCount(1, $authors);
+
+        $authors = User::has('books', '!=', 0)->get();
+        $this->assertCount(2, $authors);
+
+        $authors = User::whereHas('books', function($query)
+        {
+            $query->where('rating', 5);
+
+        })->get();
+        $this->assertCount(1, $authors);
+
+        $authors = User::whereHas('books', function($query)
+        {
+            $query->where('rating', '<', 5);
+
+        })->get();
+        $this->assertCount(1, $authors);
+    }
+
+    public function testHasOneHas()
+    {
+        $user1 = User::create(array('name' => 'John Doe'));
+        $user1->role()->create(array('title' => 'admin'));
+        $user2 = User::create(array('name' => 'Jane Doe'));
+        $user2->role()->create(array('title' => 'reseller'));
+        User::create(array('name' => 'Mark Moe'));
+        Role::create(array('title' => 'Customer'));
+
+        $users = User::has('role')->get();
+        $this->assertCount(2, $users);
+        $this->assertEquals('John Doe', $users[0]->name);
+        $this->assertEquals('Jane Doe', $users[1]->name);
+
+        $users = User::has('role', '=', 0)->get();
+        $this->assertCount(1, $users);
+
+        $users = User::has('role', '!=', 0)->get();
+        $this->assertCount(2, $users);
+    }
+
 }
