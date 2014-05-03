@@ -11,9 +11,9 @@
     "license" : "MIT",
     "require": {
         "php": ">=5.3.0",
-        "illuminate/support": "4.1.x",
-        "illuminate/database": "4.1.x",
-        "illuminate/events": "4.1.x"
+        "illuminate/support": "4.1.*",
+        "illuminate/database": "4.1.*",
+        "illuminate/events": "4.1.*"
     },
     "require-dev": {
         "orchestra/testbench": "2.1.*",
