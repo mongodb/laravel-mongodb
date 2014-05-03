@@ -45,7 +45,7 @@ class MysqlRelationsTest extends TestCase {
         $user = MysqlUser::find($user->id); // refetch
         $this->assertEquals('admin', $user->role->type);
 
-        // MongoDB beelongs to
+        // MongoDB belongs to
         $role = $user->role()->first(); // refetch
         $this->assertEquals('John Doe', $role->mysqlUser->name);
 
