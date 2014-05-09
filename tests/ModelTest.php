@@ -320,16 +320,19 @@ class ModelTest extends TestCase {
 	public function testDates()
 	{
 		$user = User::create(array(
-			'name' => 'John Doe',
-			'birthday' => new DateTime('1980/1/1'),
-			'visa' => array('expiry_date' => new DateTime('2018/4/3')))
+				'name' => 'John Doe',
+				'birthday' => new DateTime('1980/1/1'),
+				'visa' => array('expiry_date' => new DateTime('2018/4/3')),
+				'death' => new MongoDate(strtotime('2051/04/03')))
 		);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
+		$this->assertInstanceOf('MongoDate', $user->death);
 
 		$check = User::find($user->_id);
 		$this->assertInstanceOf('Carbon\Carbon', $check->birthday);
 		$this->assertInstanceOf('Carbon\Carbon', $check->visa['expiry_date']);
+		$this->assertInstanceOf('MongoDate', $user->death);
 		$this->assertEquals($user->birthday, $check->birthday);
 		$this->assertEquals($user->visa['expiry_date'], $check->visa['expiry_date']);
 
@@ -350,28 +353,38 @@ class ModelTest extends TestCase {
 		$this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
 
 		$user = User::create(array(
-			'name' => 'Jane Doe',
-			'birthday' => time(),
-			'visa' => array('expiry_date' => time()))
+				'name' => 'Jane Doe',
+				'birthday' => time(),
+				'visa' => array('expiry_date' => time()))
 		);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
 
 		$user = User::create(array(
-			'name' => 'Jane Doe',
-			'birthday' => 'Monday 8th of August 2005 03:12:46 PM',
-			'visa' => array('expiry_date' => 'Monday 3th of August 2015 03:11:46 AM'))
+				'name' => 'Jane Doe',
+				'birthday' => 'Monday 8th of August 2005 03:12:46 PM',
+				'visa' => array('expiry_date' => 'Monday 3th of August 2015 03:11:46 AM'))
 		);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
 
 		$user = User::create(array(
-			'name' => 'Jane Doe',
-			'birthday' => '2005-08-08',
-			'visa' => array('expiry_date' => '2018-03-03'))
+				'name' => 'Jane Doe',
+				'birthday' => '2005-08-08',
+				'visa' => array('expiry_date' => '2018-03-03'))
 		);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
+
+		// Dot notation multiple dates check
+		$user = User::create(array(
+			'children' => array(
+				'bob' => array('birthday' => new DateTime('2008/4/3')),
+				'bill' => array('birthday' => new DateTime('2003/4/3'))
+			),
+		));
+		$this->assertInstanceOf('Carbon\Carbon', $user->children['bob']['birthday']);
+		$this->assertInstanceOf('Carbon\Carbon', $user->children['bill']['birthday']);
 	}
 
 	public function testIdAttribute()
@@ -398,7 +411,7 @@ class ModelTest extends TestCase {
 	public function testRaw()
 	{
 		User::create(array('name' => 'John Doe', 'age' => 35));
-		User::create(array('name' => 'Jane Doe', 'age' => 35));
+   User::create(array('name' => 'Jane Doe', 'age' => 35));
 		User::create(array('name' => 'Harry Hoe', 'age' => 15));
 
 		$users = User::raw(function($collection)

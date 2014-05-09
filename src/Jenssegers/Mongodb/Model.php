@@ -129,19 +129,26 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function fromDateTime($value)
     {
-        // If the value is already a MongoDate instance, we don't need to parse it.
-        if ($value instanceof MongoDate)
-        {
-            return $value;
-        }
+        $value = array($value);
 
-        // Let Eloquent convert the value to a DateTime instance.
-        if ( ! $value instanceof DateTime)
+        // Find any dates in the array and convert them to DateTime
+        array_walk_recursive($value, function(&$item)
         {
-            $value = parent::asDateTime($value);
-        }
+            if ($item instanceof DateTime)
+            {
+                $item = new MongoDate($item->getTimestamp());
+            }
+            elseif ($item instanceof MongoDate)
+            {
+                $item = parent::fromDateTime($item->sec);
+            }
+            else
+            {
+                $item = parent::fromDateTime($item);
+            }
+        });
 
-        return new MongoDate($value->getTimestamp());
+        return $value[0];
     }
 
     /**
@@ -153,12 +160,22 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     protected function asDateTime($value)
     {
         // Convert MongoDate instances.
-        if ($value instanceof MongoDate)
-        {
-            return Carbon::createFromTimestamp($value->sec);
-        }
+        $value = array($value);
 
-        return parent::asDateTime($value);
+        // Find any dates in the array and convert them to DateTime
+        array_walk_recursive($value, function(&$item)
+        {
+            if ($item instanceof MongoDate)
+            {
+                $item = Carbon::createFromTimestamp($item->sec);
+            }
+            else
+            {
+                $item = parent::asDateTime($item);
+            }
+        });
+
+        return $value[0];
     }
 
     /**
@@ -251,14 +268,12 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             // Check dates in array
             else if (is_array($value))
             {
-                array_walk_recursive($value, function($item)
+                array_walk_recursive($value, function(&$item)
                 {
                     if ($item instanceof MongoDate)
                     {
                         $item = $this->asDateTime($item)->format($this->getDateFormat());
                     }
-
-                    return $item;
                 });
             }
         }
@@ -407,6 +422,8 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
                 // Run action
                 $attribute = $action($attribute);
                 array_set($value, $date, $attribute);
+
+                var_dump($value);
 
             }
         }

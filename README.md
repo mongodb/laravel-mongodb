@@ -298,7 +298,7 @@ All basic insert, update, delete and select methods should be implemented.
 
 ### Dates
 
-Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields you will need to manually specify them as described here: http://laravel.com/docs/eloquent#date-mutators
+Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields you will need to manually specify them as described here: http://laravel.com/docs/eloquent#date-mutators. Unlike Eloquent, any arrays specified will have their dates converted. You can also use dot notation to specify a specific date within an array.
 
 Example:
 
@@ -306,7 +306,7 @@ Example:
 
     class User extends Eloquent {
 
-        protected $dates = array('birthday');
+        protected $dates = array('birthday', 'children.birthday');
 
     }
 
