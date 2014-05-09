@@ -7,7 +7,7 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 
 class User extends Eloquent implements UserInterface, RemindableInterface {
 
-	protected $dates = array('birthday');
+    protected $dates = array('birthday', 'visa.expiry_date');
 	protected static $unguarded = true;
 
 	public function books()

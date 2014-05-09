@@ -247,6 +247,20 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             {
                 $value = $this->asDateTime($value)->format($this->getDateFormat());
             }
+
+            // Check dates in array
+            else if (is_array($value))
+            {
+                array_walk_recursive($value, function($item)
+                {
+                    if ($item instanceof MongoDate)
+                    {
+                        $item = $this->asDateTime($item)->format($this->getDateFormat());
+                    }
+
+                    return $item;
+                });
+            }
         }
 
         return $attributes;
@@ -328,6 +342,76 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * Get a plain attribute (not a relationship).
+     *
+     * @param  string  $key
+     * @return mixed
+     */
+    protected function getAttributeValue($key)
+    {
+        $value = parent::getAttributeValue($key);
+
+        // If any values in the array are listed as a date,
+        // we'll convert them to DateTime
+        if (is_array($value))
+        {
+            return $this->arrayDates($value, $key, function($attribute) {
+                return $this->asDateTime($attribute);
+            });
+        }
+
+        return $value;
+    }
+
+    /**
+     * Set a given attribute on the model.
+     *
+     * @param  string  $key
+     * @param  mixed   $value
+     * @return void
+     */
+    public function setAttribute($key, $value)
+    {
+        // If any values in the array are listed as a date,
+        // we'll convert them to DateTime
+        if (is_array($value))
+        {
+            $value = $this->arrayDates($value, $key, function($attribute) {
+                return $this->fromDateTime($attribute);
+            });
+        }
+
+        parent::setAttribute($key, $value);
+    }
+
+    /**
+     * Return any dates as to DateTime if specified in $this->getDates()
+     *
+     * @param  mixed     $value
+     * @param  string    $key
+     * @param  callable  $action  action to preform on the dates found
+     * @return mixed
+     */
+    protected function arrayDates($value, $key, $action)
+    {
+        foreach ($this->getDates() as $date)
+        {
+            // Remove key from date so we can use dot notation helpers
+            $date = substr($date, strlen("$key."));
+
+            if ($date AND $attribute = array_get($value, $date)) {
+
+                // Run action
+                $attribute = $action($attribute);
+                array_set($value, $date, $attribute);
+
+            }
+        }
+
+        return $value;
     }
 
 }

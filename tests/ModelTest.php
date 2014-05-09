@@ -319,35 +319,59 @@ class ModelTest extends TestCase {
 
 	public function testDates()
 	{
-		$birthday = new DateTime('1980/1/1');
-		$user = User::create(array('name' => 'John Doe', 'birthday' => $birthday));
+		$user = User::create(array(
+			'name' => 'John Doe',
+			'birthday' => new DateTime('1980/1/1'),
+			'visa' => array('expiry_date' => new DateTime('2018/4/3')))
+		);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
+		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
 
 		$check = User::find($user->_id);
 		$this->assertInstanceOf('Carbon\Carbon', $check->birthday);
+		$this->assertInstanceOf('Carbon\Carbon', $check->visa['expiry_date']);
 		$this->assertEquals($user->birthday, $check->birthday);
+		$this->assertEquals($user->visa['expiry_date'], $check->visa['expiry_date']);
 
 		$user = User::where('birthday', '>', new DateTime('1975/1/1'))->first();
+		$this->assertEquals('John Doe', $user->name);
+		$user = User::where('visa.expiry_date', '>', new DateTime('2000/4/1'))->first();
 		$this->assertEquals('John Doe', $user->name);
 
 		// test custom date format for json output
 		$json = $user->toArray();
 		$this->assertEquals($user->birthday->format('l jS \of F Y h:i:s A'), $json['birthday']);
 		$this->assertEquals($user->created_at->format('l jS \of F Y h:i:s A'), $json['created_at']);
+		$this->assertEquals($user->visa['expiry_date']->format('l jS \of F Y h:i:s A'), $json['visa']['expiry_date']);
 
 		// test default date format for json output
 		$item = Item::create(array('name' => 'sword'));
 		$json = $item->toArray();
 		$this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
 
-		$user = User::create(array('name' => 'Jane Doe', 'birthday' => time()));
+		$user = User::create(array(
+			'name' => 'Jane Doe',
+			'birthday' => time(),
+			'visa' => array('expiry_date' => time()))
+		);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
+		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
 
-		$user = User::create(array('name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 2005 03:12:46 PM'));
+		$user = User::create(array(
+			'name' => 'Jane Doe',
+			'birthday' => 'Monday 8th of August 2005 03:12:46 PM',
+			'visa' => array('expiry_date' => 'Monday 3th of August 2015 03:11:46 AM'))
+		);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
+		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
 
-		$user = User::create(array('name' => 'Jane Doe', 'birthday' => '2005-08-08'));
+		$user = User::create(array(
+			'name' => 'Jane Doe',
+			'birthday' => '2005-08-08',
+			'visa' => array('expiry_date' => '2018-03-03'))
+		);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
+		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
 	}
 
 	public function testIdAttribute()
