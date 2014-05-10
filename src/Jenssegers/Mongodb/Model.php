@@ -129,9 +129,11 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function fromDateTime($value)
     {
+        // Flatten $value so we can search through it
         $value = array($value);
         $items = $items = array_dot($value);
 
+        // Change all the dates in the value
         foreach ($items as $key => $item)
         {
             if ($item instanceof DateTime)
@@ -159,9 +161,11 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     protected function asDateTime($value)
     {
+        // Flatten $value so we can search through it
         $value = array($value);
         $items = $items = array_dot($value);
 
+        // Change all the dates in the value
         foreach ($items as $key => $item)
         {
             if ($item instanceof MongoDate)
