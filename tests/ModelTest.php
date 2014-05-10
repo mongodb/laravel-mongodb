@@ -376,7 +376,7 @@ class ModelTest extends TestCase {
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 		$this->assertInstanceOf('Carbon\Carbon', $user->visa['expiry_date']);
 
-		// Dot notation multiple dates check
+		// Multiple dates check
 		$user = User::create(array(
 			'children' => array(
 				'bob' => array('birthday' => new DateTime('2008/4/3')),
@@ -411,7 +411,7 @@ class ModelTest extends TestCase {
 	public function testRaw()
 	{
 		User::create(array('name' => 'John Doe', 'age' => 35));
-   User::create(array('name' => 'Jane Doe', 'age' => 35));
+		User::create(array('name' => 'Jane Doe', 'age' => 35));
 		User::create(array('name' => 'Harry Hoe', 'age' => 15));
 
 		$users = User::raw(function($collection)

@@ -8,9 +8,9 @@ use Illuminate\Auth\Reminders\RemindableInterface;
 class User extends Eloquent implements UserInterface, RemindableInterface {
 
     protected $dates = array('birthday', 'visa.expiry_date', 'children');
-	protected static $unguarded = true;
+    protected static $unguarded = true;
 
-	public function books()
+    public function books()
     {
         return $this->hasMany('Book', 'author_id');
     }
@@ -35,10 +35,10 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
         return $this->hasOne('MysqlRole');
     }
 
-	public function clients()
-	{
-		return $this->belongsToMany('Client');
-	}
+    public function clients()
+    {
+        return $this->belongsToMany('Client');
+    }
 
     public function groups()
     {

@@ -130,23 +130,23 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     public function fromDateTime($value)
     {
         $value = array($value);
+        $items = $items = array_dot($value);
 
-        // Find any dates in the array and convert them to DateTime
-        array_walk_recursive($value, function(&$item)
+        foreach ($items as $key => $item)
         {
             if ($item instanceof DateTime)
             {
-                $item = new MongoDate($item->getTimestamp());
+                array_set($value, $key, new MongoDate($item->getTimestamp()));
             }
             elseif ($item instanceof MongoDate)
             {
-                $item = parent::fromDateTime($item->sec);
+                parent::fromDateTime($item->sec);
             }
             else
             {
-                $item = parent::fromDateTime($item);
+                parent::fromDateTime($item);
             }
-        });
+        }
 
         return $value[0];
     }
@@ -159,21 +159,20 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     protected function asDateTime($value)
     {
-        // Convert MongoDate instances.
         $value = array($value);
+        $items = $items = array_dot($value);
 
-        // Find any dates in the array and convert them to DateTime
-        array_walk_recursive($value, function(&$item)
+        foreach ($items as $key => $item)
         {
             if ($item instanceof MongoDate)
             {
-                $item = Carbon::createFromTimestamp($item->sec);
+                array_set($value, $key, Carbon::createFromTimestamp($item->sec));
             }
             else
             {
-                $item = parent::asDateTime($item);
+                array_set($value, $key, parent::asDateTime($item));
             }
-        });
+        };
 
         return $value[0];
     }
@@ -268,13 +267,15 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             // Check dates in array
             else if (is_array($value))
             {
-                array_walk_recursive($value, function(&$item)
+                $items = array_dot($value);
+
+                foreach ($items as $key => $item)
                 {
                     if ($item instanceof MongoDate)
                     {
-                        $item = $this->asDateTime($item)->format($this->getDateFormat());
+                        array_set($value, $key, $this->asDateTime($item)->format($this->getDateFormat()));
                     }
-                });
+                }
             }
         }
 
@@ -373,9 +374,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // we'll convert them to DateTime
         if (is_array($value))
         {
-            return $this->arrayDates($value, $key, function($attribute) {
-                return $this->asDateTime($attribute);
-            });
+            return $this->arrayDates($value, $key, 'asDateTime');
         }
 
         return $value;
@@ -394,9 +393,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // we'll convert them to DateTime
         if (is_array($value))
         {
-            $value = $this->arrayDates($value, $key, function($attribute) {
-                return $this->fromDateTime($attribute);
-            });
+            $value = $this->arrayDates($value, $key, 'fromDateTime');
         }
 
         parent::setAttribute($key, $value);
@@ -407,7 +404,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      *
      * @param  mixed     $value
      * @param  string    $key
-     * @param  callable  $action  action to preform on the dates found
+     * @param  callable  $action
      * @return mixed
      */
     protected function arrayDates($value, $key, $action)
@@ -420,11 +417,8 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             if ($date AND $attribute = array_get($value, $date)) {
 
                 // Run action
-                $attribute = $action($attribute);
+                $attribute = $this->$action($attribute);
                 array_set($value, $date, $attribute);
-
-                var_dump($value);
-
             }
         }
 
