@@ -1,5 +1,5 @@
 {
-    "name": "jenssegers/mongodb",
+    "name": "kaamaru/mongodb",
     "description": "A MongoDB based Eloquent model and Query builder for Laravel 4",
     "keywords": ["laravel","eloquent","mongodb","mongo","database","model"],
     "authors": [
