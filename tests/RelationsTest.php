@@ -57,6 +57,20 @@ class RelationsTest extends TestCase {
 
         $role = $user->role;
         $this->assertEquals('admin', $role->type);
+        $this->assertEquals($user->_id, $role->user_id);
+
+        $user = User::create(array('name' => 'Jane Doe'));
+        $role = new Role(array('type' => 'user'));
+        $user->role()->save($role);
+
+        $role = $user->role;
+        $this->assertEquals('user', $role->type);
+        $this->assertEquals($user->_id, $role->user_id);
+
+        $user = User::where('name', 'Jane Doe')->first();
+        $role = $user->role;
+        $this->assertEquals('user', $role->type);
+        $this->assertEquals($user->_id, $role->user_id);
     }
 
     public function testWithBelongsTo()

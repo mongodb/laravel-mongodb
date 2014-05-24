@@ -6,7 +6,10 @@ class ConnectionTest extends TestCase {
 	{
 		$connection = DB::connection('mongodb');
 		$this->assertInstanceOf('Jenssegers\Mongodb\Connection', $connection);
+	}
 
+	public function testReconnect()
+	{
 		$c1 = DB::connection('mongodb');
 		$c2 = DB::connection('mongodb');
 		$this->assertEquals(spl_object_hash($c1), spl_object_hash($c2));
