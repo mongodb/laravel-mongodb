@@ -414,6 +414,21 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals('Jim Doe', $user->father->name);
     }
 
+    public function testEmbedsOneAssociate()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $father = new User(array('name' => 'Mark Doe'));
+
+        $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
+        $events->shouldReceive('until')->times(0)->with('eloquent.saving: '.get_class($father), $father);
+
+        $father = $user->father()->associate($father);
+        $father->unsetEventDispatcher();
+
+        $this->assertNotNull($user->_father);
+        $this->assertEquals('Mark Doe', $user->father->name);
+    }
+
     public function testEmbedsOneDelete()
     {
         $user = User::create(array('name' => 'John Doe'));

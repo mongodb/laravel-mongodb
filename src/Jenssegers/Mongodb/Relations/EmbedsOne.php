@@ -36,6 +36,25 @@ class EmbedsOne extends EmbedsOneOrMany {
     }
 
     /**
+     * Associate the model instance to the given parent, without saving it to the database.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function associate(Model $model)
+    {
+        // Create a new key if needed.
+        if ( ! $model->getAttribute('_id'))
+        {
+            $model->setAttribute('_id', new MongoId);
+        }
+
+        $this->setEmbedded($model->getAttributes());
+
+        return $model;
+    }
+
+    /**
      * Save a new model and attach it to the parent model.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
@@ -51,7 +70,7 @@ class EmbedsOne extends EmbedsOneOrMany {
 
         $result = $this->query->update(array($this->localKey => $model->getAttributes()));
 
-        if ($result) $this->setEmbedded($model->getAttributes());
+        if ($result) $this->associate($model);
 
         return $result ? $model : false;
     }
@@ -66,7 +85,7 @@ class EmbedsOne extends EmbedsOneOrMany {
     {
         $result = $this->query->update(array($this->localKey => $model->getAttributes()));
 
-        if ($result) $this->setEmbedded($model->getAttributes());
+        if ($result) $this->associate($model);
 
         return $result ? $model : false;
     }
