@@ -1,6 +1,6 @@
 <?php namespace Jenssegers\Mongodb\Query;
 
-use MongoID;
+use MongoId;
 use MongoRegex;
 use MongoDate;
 use DateTime;
