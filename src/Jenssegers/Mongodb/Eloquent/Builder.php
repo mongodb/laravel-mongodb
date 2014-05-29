@@ -1,8 +1,10 @@
 <?php namespace Jenssegers\Mongodb\Eloquent;
 
 use MongoCursor;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 
-class Builder extends \Illuminate\Database\Eloquent\Builder {
+class Builder extends EloquentBuilder {
 
     /**
      * The methods that should be returned from query builder.
@@ -13,6 +15,56 @@ class Builder extends \Illuminate\Database\Eloquent\Builder {
         'toSql', 'lists', 'insert', 'insertGetId', 'pluck',
         'count', 'min', 'max', 'avg', 'sum', 'exists', 'push', 'pull'
     );
+
+    /**
+     * Add the "has" condition where clause to the query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $hasQuery
+     * @param  \Illuminate\Database\Eloquent\Relations\Relation  $relation
+     * @param  string  $operator
+     * @param  int  $count
+     * @param  string  $boolean
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    protected function addHasWhere(EloquentBuilder $hasQuery, Relation $relation, $operator, $count, $boolean)
+    {
+        $query = $hasQuery->getQuery();
+
+        // Get the number of related objects for each possible parent.
+        $relationCount = array_count_values($query->lists($relation->getHasCompareKey()));
+
+        // Remove unwanted related objects based on the operator and count.
+        $relationCount = array_filter($relationCount, function($counted) use ($count, $operator)
+        {
+            // If we are comparing to 0, we always need all results.
+            if ($count == 0) return true;
+
+            switch ($operator)
+            {
+                case '>=':
+                case '<':
+                    return $counted >= $count;
+                case '>':
+                case '<=':
+                    return $counted > $count;
+                case '=':
+                case '!=':
+                    return $counted == $count;
+            }
+        });
+
+        // If the operator is <, <= or !=, we will use whereNotIn.
+        $not = in_array($operator, array('<', '<=', '!='));
+
+        // If we are comparing to 0, we need an additional $not flip.
+        if ($count == 0) $not = !$not;
+
+        // All related ids.
+        $relatedIds = array_keys($relationCount);
+
+        // Add whereIn to the query.
+        return $this->whereIn($this->model->getKeyName(), $relatedIds, $boolean, $not);
+    }
 
     /**
      * Create a raw database expression.

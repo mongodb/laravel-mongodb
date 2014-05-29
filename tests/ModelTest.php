@@ -34,9 +34,13 @@ class ModelTest extends TestCase {
 		$this->assertEquals(1, User::count());
 
 		$this->assertTrue(isset($user->_id));
+		$this->assertTrue(is_string($user->_id));
 		$this->assertNotEquals('', (string) $user->_id);
 		$this->assertNotEquals(0, strlen((string) $user->_id));
 		$this->assertInstanceOf('Carbon\Carbon', $user->created_at);
+
+		$raw = $user->getAttributes();
+		$this->assertInstanceOf('MongoId', $raw['_id']);
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(35, $user->age);
@@ -49,6 +53,9 @@ class ModelTest extends TestCase {
 		$user->title = 'admin';
 		$user->age = 35;
 		$user->save();
+
+		$raw = $user->getAttributes();
+		$this->assertInstanceOf('MongoId', $raw['_id']);
 
 		$check = User::find($user->_id);
 
@@ -64,6 +71,9 @@ class ModelTest extends TestCase {
 		$this->assertEquals(36, $check->age);
 
 		$user->update(array('age' => 20));
+
+		$raw = $user->getAttributes();
+		$this->assertInstanceOf('MongoId', $raw['_id']);
 
 		$check = User::find($user->_id);
 		$this->assertEquals(20, $check->age);
@@ -277,6 +287,7 @@ class ModelTest extends TestCase {
 		$this->assertEquals(array('_id', 'created_at', 'name', 'type', 'updated_at'), $keys);
 		$this->assertTrue(is_string($array['created_at']));
 		$this->assertTrue(is_string($array['updated_at']));
+		$this->assertTrue(is_string($array['_id']));
 	}
 
 	public function testUnset()
@@ -308,7 +319,8 @@ class ModelTest extends TestCase {
 
 	public function testDates()
 	{
-		$user = User::create(array('name' => 'John Doe', 'birthday' => new DateTime('1980/1/1')));
+		$birthday = new DateTime('1980/1/1');
+		$user = User::create(array('name' => 'John Doe', 'birthday' => $birthday));
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 
 		$check = User::find($user->_id);
@@ -317,6 +329,25 @@ class ModelTest extends TestCase {
 
 		$user = User::where('birthday', '>', new DateTime('1975/1/1'))->first();
 		$this->assertEquals('John Doe', $user->name);
+
+		// test custom date format for json output
+		$json = $user->toArray();
+		$this->assertEquals($user->birthday->format('l jS \of F Y h:i:s A'), $json['birthday']);
+		$this->assertEquals($user->created_at->format('l jS \of F Y h:i:s A'), $json['created_at']);
+
+		// test default date format for json output
+		$item = Item::create(array('name' => 'sword'));
+		$json = $item->toArray();
+		$this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
+
+		$user = User::create(array('name' => 'Jane Doe', 'birthday' => time()));
+		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
+
+		$user = User::create(array('name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 2005 03:12:46 PM'));
+		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
+
+		$user = User::create(array('name' => 'Jane Doe', 'birthday' => '2005-08-08'));
+		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 	}
 
 	public function testIdAttribute()

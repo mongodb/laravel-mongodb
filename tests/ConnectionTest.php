@@ -6,7 +6,10 @@ class ConnectionTest extends TestCase {
 	{
 		$connection = DB::connection('mongodb');
 		$this->assertInstanceOf('Jenssegers\Mongodb\Connection', $connection);
+	}
 
+	public function testReconnect()
+	{
 		$c1 = DB::connection('mongodb');
 		$c2 = DB::connection('mongodb');
 		$this->assertEquals(spl_object_hash($c1), spl_object_hash($c2));
@@ -20,6 +23,9 @@ class ConnectionTest extends TestCase {
 	{
 		$connection = DB::connection('mongodb');
 		$this->assertInstanceOf('MongoDB', $connection->getMongoDB());
+
+		$connection = DB::connection('mongodb');
+		$this->assertInstanceOf('MongoClient', $connection->getMongoClient());
 	}
 
 	public function testCollection()
@@ -79,6 +85,35 @@ class ConnectionTest extends TestCase {
 	{
 		$schema = DB::connection('mongodb')->getSchemaBuilder();
 		$this->assertInstanceOf('Jenssegers\Mongodb\Schema\Builder', $schema);
+	}
+
+	public function testDriverName()
+	{
+		$driver = DB::connection('mongodb')->getDriverName();
+		$this->assertEquals('mongodb', $driver);
+	}
+
+	public function testAuth()
+	{
+		Config::set('database.connections.mongodb.username', 'foo');
+		Config::set('database.connections.mongodb.password', 'bar');
+		$host = Config::get('database.connections.mongodb.host');
+		$port = Config::get('database.connections.mongodb.port', 27017);
+		$database = Config::get('database.connections.mongodb.database');
+
+		$this->setExpectedException('MongoConnectionException', "Failed to connect to: $host:$port: Authentication failed on database '$database' with username 'foo': auth fails");
+		$connection = DB::connection('mongodb');
+	}
+
+	public function testCustomPort()
+	{
+		$port = 27000;
+		Config::set('database.connections.mongodb.port', $port);
+		$host = Config::get('database.connections.mongodb.host');
+		$database = Config::get('database.connections.mongodb.database');
+
+		$this->setExpectedException('MongoConnectionException', "Failed to connect to: $host:$port: Connection refused");
+		$connection = DB::connection('mongodb');
 	}
 
 }

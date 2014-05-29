@@ -1,7 +1,7 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
-use Illuminate\Database\Eloquent\Collection;
 use Jenssegers\Mongodb\Model;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 
 class BelongsToMany extends EloquentBelongsToMany {
@@ -36,27 +36,25 @@ class BelongsToMany extends EloquentBelongsToMany {
 	{
 		if (static::$constraints)
 		{
-			$this->query->where($this->foreignKey, $this->parent->getKey());
+			$this->query->where($this->getForeignKey(), '=', $this->parent->getKey());
 		}
 	}
 
 	/**
-	 * Sync the intermediate tables with a list of IDs.
+	 * Sync the intermediate tables with a list of IDs or collection of models.
 	 *
 	 * @param  array  $ids
 	 * @param  bool   $detaching
 	 * @return void
 	 */
-	public function sync(array $ids, $detaching = true)
+	public function sync($ids, $detaching = true)
 	{
+		if ($ids instanceof Collection) $ids = $ids->modelKeys();
+
 		// First we need to attach any of the associated models that are not currently
 		// in this joining table. We'll spin through the given IDs, checking to see
 		// if they exist in the array of current ones, and if not we will insert.
-		$current = $this->parent->{$this->otherKey};
-
-		// Check if the current array exists or not on the parent model and create it
-		// if it does not exist
-		if (is_null($current)) $current = array();
+		$current = $this->parent->{$this->otherKey} ?: array();
 
 		$records = $this->formatSyncList($ids);
 
@@ -134,27 +132,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 	}
 
 	/**
-	 * Create an array of records to insert into the pivot table.
-	 *
-	 * @param  array  $ids
-	 * @return void
-	 */
-	protected function createAttachRecords($ids, array $attributes)
-	{
-		$records = array();
-
-		// To create the attachment records, we will simply spin through the IDs given
-		// and create a new record to insert for each ID. Each ID may actually be a
-		// key in the array, with extra attributes to be placed in other columns.
-		foreach ($ids as $key => $value)
-		{
-			$records[] = $this->attacher($key, $value, $attributes, false);
-		}
-
-		return $records;
-	}
-
-	/**
 	 * Detach models from the relationship.
 	 *
 	 * @param  int|array  $ids
@@ -164,6 +141,8 @@ class BelongsToMany extends EloquentBelongsToMany {
 	public function detach($ids = array(), $touch = true)
 	{
 		if ($ids instanceof Model) $ids = (array) $ids->getKey();
+
+		$query = $this->getNewRelatedQuery();
 
 		// If associated IDs were passed to the method we will only delete those
 		// associations, otherwise all of the association ties will be broken.
@@ -175,9 +154,6 @@ class BelongsToMany extends EloquentBelongsToMany {
 		{
 			$this->parent->pull($this->otherKey, $id);
 		}
-
-		// Get a new related query.
-		$query = $this->getNewRelatedQuery();
 
 		// Prepare the query to select all related objects.
 		if (count($ids) > 0)
@@ -237,15 +213,5 @@ class BelongsToMany extends EloquentBelongsToMany {
 	public function getForeignKey()
 	{
 		return $this->foreignKey;
-	}
-
-	/**
-	 * Get the fully qualified "other key" for the relation.
-	 *
-	 * @return string
-	 */
-	public function getOtherKey()
-	{
-		return $this->otherKey;
 	}
 }

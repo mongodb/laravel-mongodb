@@ -255,4 +255,29 @@ class QueryTest extends TestCase {
 		$this->assertEquals(6, count($users));
 	}
 
+	public function testMultipleOr()
+	{
+		$users = User::where(function($query)
+		{
+			$query->where('age', 35)->orWhere('age', 33);
+		})
+		->where(function($query)
+		{
+			$query->where('name', 'John Doe')->orWhere('name', 'Jane Doe');
+		})->get();
+
+		$this->assertEquals(2, count($users));
+
+		$users = User::where(function($query)
+		{
+			$query->orWhere('age', 35)->orWhere('age', 33);
+		})
+		->where(function($query)
+		{
+			$query->orWhere('name', 'John Doe')->orWhere('name', 'Jane Doe');
+		})->get();
+
+		$this->assertEquals(2, count($users));
+	}
+
 }

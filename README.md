@@ -1,7 +1,7 @@
 Laravel MongoDB
 ===============
 
-[![Latest Stable Version](https://poser.pugx.org/jenssegers/mongodb/v/stable.png)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](https://poser.pugx.org/jenssegers/mongodb/downloads.png)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](https://travis-ci.org/jenssegers/Laravel-MongoDB.png?branch=master)](https://travis-ci.org/jenssegers/Laravel-MongoDB) [![Coverage Status](https://coveralls.io/repos/jenssegers/Laravel-MongoDB/badge.png?branch=master)](https://coveralls.io/r/jenssegers/Laravel-MongoDB?branch=master)
+[![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](http://img.shields.io/travis/jenssegers/laravel-mongodb.svg)](https://travis-ci.org/jenssegers/laravel-mongodb) [![Coverage Status](http://img.shields.io/coveralls/jenssegers/laravel-mongodb.svg)](https://coveralls.io/r/jenssegers/laravel-mongodb?branch=master)
 
 An Eloquent model and Query builder with support for MongoDB, inspired by LMongo, but using the original Laravel methods. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
@@ -135,6 +135,11 @@ If you want to use Laravel's native Auth functionality, register this included s
     'Jenssegers\Mongodb\Auth\ReminderServiceProvider',
 
 This service provider will slightly modify the internal DatabaseReminderRepository to add support for MongoDB based password reminders. If you don't use password reminders, you don't have to register this service provider and everything else should work just fine.
+
+Sentry
+------
+
+If yo want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
 
 Sessions
 --------
@@ -422,6 +427,33 @@ If you want to add or remove embedded documents, without persistence, you can us
 Again, you may override the conventional local key by passing a second argument to the embedsMany method:
 
     return $this->embedsMany('Book', 'local_key');
+
+### EmbedsOne Relations
+
+There is also an EmbedsOne relation, which works similar to the EmbedsMany relation, but only stores one embedded model.
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class Book extends Eloquent {
+
+        public function author()
+        {
+            return $this->embedsOne('Author');
+        }
+
+    }
+
+Now we can access the book's author through the dynamic property:
+
+    $author = Book::first()->author;
+
+Inserting and updating embedded documents works just like the `embedsMany` relation:
+
+    $author = new Author(array('name' => 'John Doe'));
+
+    $book = Books::first();
+
+    $author = $user->author()->save($author);
 
 ### MySQL Relations
 

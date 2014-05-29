@@ -1,6 +1,6 @@
 <?php namespace Jenssegers\Mongodb\Query;
 
-use MongoID;
+use MongoId;
 use MongoRegex;
 use MongoDate;
 use DateTime;
@@ -27,7 +27,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         '=', '<', '>', '<=', '>=', '<>', '!=',
         'like', 'not like', 'between', 'ilike',
         '&', '|', '^', '<<', '>>',
-        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex',
+        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex', 'elemmatch'
     );
 
     /**
@@ -59,7 +59,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     /**
      * Execute a query for a single record by ID.
      *
-     * @param  int    $id
+     * @param  mixed  $id
      * @param  array  $columns
      * @return mixed
      */
@@ -377,8 +377,8 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 $sequence = '_id';
             }
 
-            // Return id as a string
-            return (string) $values[$sequence];
+            // Return id
+            return $values[$sequence];
         }
     }
 
@@ -585,7 +585,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  mixed $columns
      * @return int
      */
-    public function dropColumn($columns)
+    public function drop($columns)
     {
         if (!is_array($columns)) $columns = array($columns);
 
@@ -667,23 +667,30 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     protected function compileWheres()
     {
-        if (!$this->wheres) return array();
+        // The wheres to compile.
+        $wheres = $this->wheres ?: array();
 
-        // The new list of compiled wheres
-        $wheres = array();
+        // We will add all compiled wheres to this array.
+        $compiled = array();
 
-        foreach ($this->wheres as $i => &$where)
+        foreach ($wheres as $i => &$where)
         {
-            // Make sure the operator is in lowercase
+            // Make sure the operator is in lowercase.
             if (isset($where['operator']))
             {
                 $where['operator'] = strtolower($where['operator']);
+
+                // Fix elemMatch.
+                if ($where['operator'] == 'elemmatch')
+                {
+                    $where['operator'] = 'elemMatch';
+                }
             }
 
-            // Convert id's
+            // Convert id's.
             if (isset($where['column']) && $where['column'] == '_id')
             {
-                // Multiple values
+                // Multiple values.
                 if (isset($where['values']))
                 {
                     foreach ($where['values'] as &$value)
@@ -691,48 +698,57 @@ class Builder extends \Illuminate\Database\Query\Builder {
                         $value = $this->convertKey($value);
                     }
                 }
-                // Single value
-                elseif (isset($where['value']))
+
+                // Single value.
+                else if (isset($where['value']))
                 {
                     $where['value'] = $this->convertKey($where['value']);
                 }
             }
 
-            // Convert dates
+            // Convert DateTime values to MongoDate.
             if (isset($where['value']) && $where['value'] instanceof DateTime)
             {
                 $where['value'] = new MongoDate($where['value']->getTimestamp());
             }
 
-            // First item of chain
-            if ($i == 0 && count($this->wheres) > 1 && $where['boolean'] == 'and')
+            // The next item in a "chain" of wheres devices the boolean of the
+            // first item. So if we see that there are multiple wheres, we will
+            // use the operator of the next where.
+            if ($i == 0 and count($wheres) > 1 and $where['boolean'] == 'and')
             {
-                // Copy over boolean value of next item in chain
-                $where['boolean'] = $this->wheres[$i+1]['boolean'];
+                $where['boolean'] = $wheres[$i+1]['boolean'];
             }
 
-            // Delegate
+            // We use different methods to compile different wheres.
             $method = "compileWhere{$where['type']}";
-            $compiled = $this->{$method}($where);
+            $result = $this->{$method}($where);
 
-            // Check for or
+            // Wrap the where with an $or operator.
             if ($where['boolean'] == 'or')
             {
-                $compiled = array('$or' => array($compiled));
+                $result = array('$or' => array($result));
             }
 
-            // Merge compiled where
-            $wheres = array_merge_recursive($wheres, $compiled);
+            // If there are multiple wheres, we will wrap it with $and. This is needed
+            // to make nested wheres work.
+            else if (count($wheres) > 1)
+            {
+                $result = array('$and' => array($result));
+            }
+
+            // Merge the compiled where with the others.
+            $compiled = array_merge_recursive($compiled, $result);
         }
 
-        return $wheres;
+        return $compiled;
     }
 
     protected function compileWhereBasic($where)
     {
         extract($where);
 
-        // Replace like with MongoRegex
+        // Replace like with a MongoRegex instance.
         if ($operator == 'like')
         {
             $operator = '=';
@@ -745,7 +761,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $value = new MongoRegex("/$regex/i");
         }
 
-        if (!isset($operator) || $operator == '=')
+        if ( ! isset($operator) or $operator == '=')
         {
             $query = array($column => $value);
         }
@@ -846,7 +862,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     {
         if ($method == 'unset')
         {
-            return call_user_func_array(array($this, 'dropColumn'), $parameters);
+            return call_user_func_array(array($this, 'drop'), $parameters);
         }
 
         return parent::__call($method, $parameters);

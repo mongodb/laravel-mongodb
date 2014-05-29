@@ -16,7 +16,7 @@ class MysqlUser extends Eloquent {
 
     public function role()
     {
-        return $this->hasOne('Role', 'role_id');
+        return $this->hasOne('Role');
     }
 
     /**

@@ -57,6 +57,20 @@ class RelationsTest extends TestCase {
 
         $role = $user->role;
         $this->assertEquals('admin', $role->type);
+        $this->assertEquals($user->_id, $role->user_id);
+
+        $user = User::create(array('name' => 'Jane Doe'));
+        $role = new Role(array('type' => 'user'));
+        $user->role()->save($role);
+
+        $role = $user->role;
+        $this->assertEquals('user', $role->type);
+        $this->assertEquals($user->_id, $role->user_id);
+
+        $user = User::where('name', 'Jane Doe')->first();
+        $role = $user->role;
+        $this->assertEquals('user', $role->type);
+        $this->assertEquals($user->_id, $role->user_id);
     }
 
     public function testWithBelongsTo()
@@ -287,247 +301,95 @@ class RelationsTest extends TestCase {
 
         $photo = Photo::first();
         $this->assertEquals($photo->imageable->name, $user->name);
+
+        $user = User::with('photos')->find($user->_id);
+        $relations = $user->getRelations();
+        $this->assertTrue(array_key_exists('photos', $relations));
+        $this->assertEquals(1, $relations['photos']->count());
+
+        $photos = Photo::with('imageable')->get();
+        $relations = $photos[0]->getRelations();
+        $this->assertTrue(array_key_exists('imageable', $relations));
+        $this->assertInstanceOf('User', $relations['imageable']);
+
+        $relations = $photos[1]->getRelations();
+        $this->assertTrue(array_key_exists('imageable', $relations));
+        $this->assertInstanceOf('Client', $relations['imageable']);
     }
 
-    public function testEmbedsManySave()
+    public function testHasManyHas()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
+        $author1 = User::create(array('name' => 'George R. R. Martin'));
+        $author1->books()->create(array('title' => 'A Game of Thrones', 'rating' => 5));
+        $author1->books()->create(array('title' => 'A Clash of Kings', 'rating' => 5));
+        $author2 = User::create(array('name' => 'John Doe'));
+        $author2->books()->create(array('title' => 'My book', 'rating' => 2));
+        User::create(array('name' => 'Anonymous author'));
+        Book::create(array('title' => 'Anonymous book', 'rating' => 1));
 
-        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
-        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
-        $events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($address), $address)->andReturn(true);
-        $events->shouldReceive('fire')->once()->with('eloquent.created: '.get_class($address), $address);
-        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address);
+        $authors = User::has('books')->get();
+        $this->assertCount(2, $authors);
+        $this->assertEquals('George R. R. Martin', $authors[0]->name);
+        $this->assertEquals('John Doe', $authors[1]->name);
 
-        $address = $user->addresses()->save($address);
-        $address->unsetEventDispatcher();
+        $authors = User::has('books', '>', 1)->get();
+        $this->assertCount(1, $authors);
 
-        $this->assertNotNull($user->_addresses);
-        $this->assertEquals(array('London'), $user->addresses->lists('city'));
-        $this->assertInstanceOf('DateTime', $address->created_at);
-        $this->assertInstanceOf('DateTime', $address->updated_at);
-        $this->assertNotNull($address->_id);
+        $authors = User::has('books', '<', 5)->get();
+        $this->assertCount(3, $authors);
 
-        $address = $user->addresses()->save(new Address(array('city' => 'Paris')));
+        $authors = User::has('books', '>=', 2)->get();
+        $this->assertCount(1, $authors);
 
-        $user = User::find($user->_id);
-        $this->assertEquals(array('London', 'Paris'), $user->addresses->lists('city'));
+        $authors = User::has('books', '<=', 1)->get();
+        $this->assertCount(2, $authors);
 
-        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
-        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
-        $events->shouldReceive('until')->once()->with('eloquent.updating: '.get_class($address), $address)->andReturn(true);
-        $events->shouldReceive('fire')->once()->with('eloquent.updated: '.get_class($address), $address);
-        $events->shouldReceive('fire')->once()->with('eloquent.saved: '.get_class($address), $address);
+        $authors = User::has('books', '=', 2)->get();
+        $this->assertCount(1, $authors);
 
-        $address->city = 'New York';
-        $user->addresses()->save($address);
-        $address->unsetEventDispatcher();
+        $authors = User::has('books', '!=', 2)->get();
+        $this->assertCount(2, $authors);
 
-        $this->assertEquals(2, count($user->addresses));
-        $this->assertEquals(2, count($user->addresses()->get()));
-        $this->assertEquals(2, $user->addresses->count());
-        $this->assertEquals(array('London', 'New York'), $user->addresses->lists('city'));
+        $authors = User::has('books', '=', 0)->get();
+        $this->assertCount(1, $authors);
 
-        $freshUser = User::find($user->_id);
-        $this->assertEquals(array('London', 'New York'), $freshUser->addresses->lists('city'));
+        $authors = User::has('books', '!=', 0)->get();
+        $this->assertCount(2, $authors);
 
-        $address = $user->addresses->first();
-        $this->assertEquals('London', $address->city);
-        $this->assertInstanceOf('DateTime', $address->created_at);
-        $this->assertInstanceOf('DateTime', $address->updated_at);
-        $this->assertInstanceOf('User', $address->user);
-        $this->assertEmpty($address->relationsToArray()); // prevent infinite loop
+        $authors = User::whereHas('books', function($query)
+        {
+            $query->where('rating', 5);
 
-        $user = User::find($user->_id);
-        $user->addresses()->save(new Address(array('city' => 'Bruxelles')));
-        $this->assertEquals(array('London', 'New York', 'Bruxelles'), $user->addresses->lists('city'));
-        $address = $user->addresses[1];
-        $address->city = "Manhattan";
-        $user->addresses()->save($address);
-        $this->assertEquals(array('London', 'Manhattan', 'Bruxelles'), $user->addresses->lists('city'));
+        })->get();
+        $this->assertCount(1, $authors);
 
-        $freshUser = User::find($user->_id);
-        $this->assertEquals(array('London', 'Manhattan', 'Bruxelles'), $freshUser->addresses->lists('city'));
+        $authors = User::whereHas('books', function($query)
+        {
+            $query->where('rating', '<', 5);
+
+        })->get();
+        $this->assertCount(1, $authors);
     }
 
-    public function testEmbedsManyAssociate()
+    public function testHasOneHas()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
+        $user1 = User::create(array('name' => 'John Doe'));
+        $user1->role()->create(array('title' => 'admin'));
+        $user2 = User::create(array('name' => 'Jane Doe'));
+        $user2->role()->create(array('title' => 'reseller'));
+        User::create(array('name' => 'Mark Moe'));
+        Role::create(array('title' => 'Customer'));
 
-        $address = $user->addresses()->associate($address);
-        $this->assertNotNull($user->_addresses);
-        $this->assertEquals(array('London'), $user->addresses->lists('city'));
-        $this->assertNotNull($address->_id);
+        $users = User::has('role')->get();
+        $this->assertCount(2, $users);
+        $this->assertEquals('John Doe', $users[0]->name);
+        $this->assertEquals('Jane Doe', $users[1]->name);
 
-        $freshUser = User::find($user->_id);
-        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+        $users = User::has('role', '=', 0)->get();
+        $this->assertCount(1, $users);
 
-        $address->city = 'Londinium';
-        $user->addresses()->associate($address);
-        $this->assertEquals(array('Londinium'), $user->addresses->lists('city'));
-
-        $freshUser = User::find($user->_id);
-        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
-    }
-
-    public function testEmbedsManySaveMany()
-    {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol'))));
-        $this->assertEquals(array('London', 'Bristol'), $user->addresses->lists('city'));
-
-        $freshUser = User::find($user->id);
-        $this->assertEquals(array('London', 'Bristol'), $freshUser->addresses->lists('city'));
-    }
-
-    public function testEmbedsManyCreate()
-    {
-        $user = User::create(array());
-        $address = $user->addresses()->create(array('city' => 'Bruxelles'));
-        $this->assertInstanceOf('Address', $address);
-        $this->assertInstanceOf('MongoID', $address->_id);
-        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
-
-        $freshUser = User::find($user->id);
-        $this->assertEquals(array('Bruxelles'), $freshUser->addresses->lists('city'));
-
-        $user = User::create(array());
-        $address = $user->addresses()->create(array('_id' => '', 'city' => 'Bruxelles'));
-        $this->assertInstanceOf('MongoID', $address->_id);
-    }
-
-    public function testEmbedsManyCreateMany()
-    {
-        $user = User::create(array());
-        list($bruxelles, $paris) = $user->addresses()->createMany(array(array('city' => 'Bruxelles'), array('city' => 'Paris')));
-        $this->assertInstanceOf('Address', $bruxelles);
-        $this->assertEquals('Bruxelles', $bruxelles->city);
-        $this->assertEquals(array('Bruxelles', 'Paris'), $user->addresses->lists('city'));
-
-        $freshUser = User::find($user->id);
-        $this->assertEquals(array('Bruxelles', 'Paris'), $freshUser->addresses->lists('city'));
-    }
-
-    public function testEmbedsManyDestroy()
-    {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
-
-        $address = $user->addresses->first();
-
-        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
-        $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), Mockery::mustBe($address))->andReturn(true);
-        $events->shouldReceive('fire')->once()->with('eloquent.deleted: '.get_class($address), Mockery::mustBe($address));
-
-        $user->addresses()->destroy($address->_id);
-        $this->assertEquals(array('Bristol', 'Bruxelles'), $user->addresses->lists('city'));
-
-        $address->unsetEventDispatcher();
-
-        $address = $user->addresses->first();
-        $user->addresses()->destroy($address);
-        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
-
-        $user->addresses()->create(array('city' => 'Paris'));
-        $user->addresses()->create(array('city' => 'San Francisco'));
-
-        $freshUser = User::find($user->id);
-        $this->assertEquals(array('Bruxelles', 'Paris', 'San Francisco'), $freshUser->addresses->lists('city'));
-
-        $ids = $user->addresses->lists('_id');
-        $user->addresses()->destroy($ids);
-        $this->assertEquals(array(), $user->addresses->lists('city'));
-
-        $freshUser = User::find($user->id);
-        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
-
-        list($london, $bristol, $bruxelles) = $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
-        $user->addresses()->destroy(array($london, $bruxelles));
-        $this->assertEquals(array('Bristol'), $user->addresses->lists('city'));
-    }
-
-    public function testEmbedsManyDissociate()
-    {
-        $user = User::create(array());
-        $cordoba = $user->addresses()->create(array('city' => 'Cordoba'));
-
-        $user->addresses()->dissociate($cordoba->id);
-
-        $freshUser = User::find($user->id);
-        $this->assertEquals(0, $user->addresses->count());
-        $this->assertEquals(1, $freshUser->addresses->count());
-    }
-
-    public function testEmbedsManyAliases()
-    {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
-
-        $address = $user->addresses()->attach($address);
-        $this->assertEquals(array('London'), $user->addresses->lists('city'));
-
-        $user->addresses()->detach($address);
-        $this->assertEquals(array(), $user->addresses->lists('city'));
-    }
-
-    public function testEmbedsManyCreatingEventReturnsFalse()
-    {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
-
-        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
-        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
-        $events->shouldReceive('until')->once()->with('eloquent.creating: '.get_class($address), $address)->andReturn(false);
-
-        $this->assertFalse($user->addresses()->save($address));
-        $address->unsetEventDispatcher();
-    }
-
-    public function testEmbedsManySavingEventReturnsFalse()
-    {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'Paris'));
-        $address->exists = true;
-
-        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
-        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(false);
-
-        $this->assertFalse($user->addresses()->save($address));
-        $address->unsetEventDispatcher();
-    }
-
-    public function testEmbedsManyUpdatingEventReturnsFalse()
-    {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'New York'));
-        $address->exists = true;
-
-        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
-        $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
-        $events->shouldReceive('until')->once()->with('eloquent.updating: '.get_class($address), $address)->andReturn(false);
-
-        $address->city = 'Warsaw';
-
-        $this->assertFalse($user->addresses()->save($address));
-        $address->unsetEventDispatcher();
-    }
-
-    public function testEmbedsManyDeletingEventReturnsFalse()
-    {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->save(new Address(array('city' => 'New York')));
-
-        $address = $user->addresses->first();
-
-        $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
-        $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), Mockery::mustBe($address))->andReturn(false);
-
-        $this->assertEquals(0, $user->addresses()->destroy($address));
-        $this->assertEquals(array('New York'), $user->addresses->lists('city'));
-
-        $address->unsetEventDispatcher();
+        $users = User::has('role', '!=', 0)->get();
+        $this->assertCount(2, $users);
     }
 
 }
