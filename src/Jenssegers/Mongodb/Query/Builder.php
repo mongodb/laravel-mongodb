@@ -667,7 +667,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     protected function compileWheres()
     {
-        // The where's to compile.
+        // The wheres to compile.
         $wheres = $this->wheres ?: array();
 
         // We will add all compiled wheres to this array.
