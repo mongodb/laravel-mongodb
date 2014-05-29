@@ -301,6 +301,9 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function updateTimestamps(Model $model)
     {
+        // Check if this model uses timestamps first.
+        if ( ! $model->timestamps) return;
+
         $time = $model->freshTimestamp();
 
         if ( ! $model->isDirty(Model::UPDATED_AT))
