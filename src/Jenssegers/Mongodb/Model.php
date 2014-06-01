@@ -232,11 +232,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             {
                 $value = (string) $value;
             }
-
-            else if ($value instanceof MongoDate)
-            {
-                $value = $this->asDateTime($value)->format($this->getDateFormat());
-            }
         }
 
         return $attributes;
