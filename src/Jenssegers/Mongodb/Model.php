@@ -182,16 +182,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     }
 
     /**
-     * Get the fully qualified "deleted at" column.
-     *
-     * @return string
-     */
-    public function getQualifiedDeletedAtColumn()
-    {
-        return $this->getDeletedAtColumn();
-    }
-
-    /**
      * Get the table associated with the model.
      *
      * @return string
@@ -241,11 +231,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             if ($value instanceof MongoId)
             {
                 $value = (string) $value;
-            }
-
-            else if ($value instanceof MongoDate)
-            {
-                $value = $this->asDateTime($value)->format($this->getDateFormat());
             }
         }
 
