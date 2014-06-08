@@ -79,6 +79,22 @@ class ModelTest extends TestCase {
 		$this->assertEquals(20, $check->age);
 	}
 
+	public function testManualId()
+	{
+		$user = new User;
+		$user->_id = '4af9f23d8ead0e1d32000000';
+		$user->name = 'John Doe';
+		$user->title = 'admin';
+		$user->age = 35;
+		$user->save();
+
+		$this->assertEquals(true, $user->exists);
+		$this->assertEquals('4af9f23d8ead0e1d32000000', $user->_id);
+
+		$raw = $user->getAttributes();
+		$this->assertInstanceOf('MongoId', $raw['_id']);
+	}
+
 	public function testDelete()
 	{
 		$user = new User;

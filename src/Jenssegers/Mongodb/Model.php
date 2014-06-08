@@ -42,11 +42,13 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function getIdAttribute($value)
     {
-        // If there is an actual id attribute, then return that.
-        if ($value) return $value;
+        if ($value) return (string) $value;
 
-        // Return primary key value if present
-        if (array_key_exists($this->getKeyName(), $this->attributes)) return $this->attributes[$this->getKeyName()];
+        // Return _id as string
+        if (array_key_exists('_id', $this->attributes))
+        {
+            return (string) $this->attributes['_id'];
+        }
     }
 
     /**
@@ -194,23 +196,23 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     }
 
     /**
-     * Get an attribute from the model.
+     * Set a given attribute on the model.
      *
      * @param  string  $key
-     * @return mixed
+     * @param  mixed   $value
+     * @return void
      */
-    public function getAttribute($key)
+    public function setAttribute($key, $value)
     {
-        $attribute = parent::getAttribute($key);
-
-        // If the attribute is a MongoId object, return it as a string.
-        // This is makes Eloquent relations a lot easier.
-        if ($attribute instanceof MongoId)
+        // Convert _id to MongoId.
+        if ($key == '_id' and is_string($value))
         {
-            return (string) $attribute;
+            $this->attributes[$key] = new MongoId($value);
         }
-
-        return $attribute;
+        else
+        {
+            parent::setAttribute($key, $value);
+        }
     }
 
     /**
