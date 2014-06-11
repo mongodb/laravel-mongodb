@@ -27,7 +27,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
         '=', '<', '>', '<=', '>=', '<>', '!=',
         'like', 'not like', 'between', 'ilike',
         '&', '|', '^', '<<', '>>',
-        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex', 'elemmatch'
+        'rlike', 'regexp', 'not regexp',
+        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex', 'text', 'slice', 'elemmatch',
+        'geowithin', 'geointersects', 'near', 'nearsphere', 'geometry',
+        'maxdistance', 'center', 'centersphere', 'box', 'polygon', 'uniquedocs',
     );
 
     /**
@@ -90,7 +93,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups || $this->aggregate)
+        if ($this->groups or $this->aggregate)
         {
             $group = array();
 
@@ -652,7 +655,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function convertKey($id)
     {
-        if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id))
+        if (is_string($id) and strlen($id) === 24 and ctype_xdigit($id))
         {
             return new MongoId($id);
         }
@@ -680,15 +683,26 @@ class Builder extends \Illuminate\Database\Query\Builder {
             {
                 $where['operator'] = strtolower($where['operator']);
 
-                // Fix elemMatch.
-                if ($where['operator'] == 'elemmatch')
+                // Operator conversions
+                $convert = array(
+                    'regexp' => 'regex',
+                    'elemmatch' => 'elemMatch',
+                    'geointersects' => 'geoIntersects',
+                    'geowithin' => 'geoWithin',
+                    'nearsphere' => 'nearSphere',
+                    'maxdistance' => 'maxDistance',
+                    'centersphere' => 'centerSphere',
+                    'uniquedocs' => 'uniqueDocs',
+                );
+
+                if (array_key_exists($where['operator'], $convert))
                 {
-                    $where['operator'] = 'elemMatch';
+                    $where['operator'] = $convert[$where['operator']];
                 }
             }
 
             // Convert id's.
-            if (isset($where['column']) && $where['column'] == '_id')
+            if (isset($where['column']) and $where['column'] == '_id')
             {
                 // Multiple values.
                 if (isset($where['values']))
@@ -707,7 +721,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             }
 
             // Convert DateTime values to MongoDate.
-            if (isset($where['value']) && $where['value'] instanceof DateTime)
+            if (isset($where['value']) and $where['value'] instanceof DateTime)
             {
                 $where['value'] = new MongoDate($where['value']->getTimestamp());
             }
