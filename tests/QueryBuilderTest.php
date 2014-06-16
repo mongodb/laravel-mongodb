@@ -520,6 +520,9 @@ class QueryBuilderTest extends TestCase {
 		$results = DB::collection('items')->where('tags', 'size', 2)->get();
 		$this->assertEquals(2, count($results));
 
+		$results = DB::collection('items')->where('tags', '$size', 2)->get();
+		$this->assertEquals(2, count($results));
+
 		$results = DB::collection('items')->where('tags', 'size', 3)->get();
 		$this->assertEquals(0, count($results));
 

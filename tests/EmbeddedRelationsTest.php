@@ -82,6 +82,16 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(array('London', 'Manhattan', 'Bruxelles'), $freshUser->addresses->lists('city'));
     }
 
+    public function testEmbedsToArray()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol'))));
+
+        $array = $user->toArray();
+        $this->assertFalse(array_key_exists('_addresses', $array));
+        $this->assertTrue(array_key_exists('addresses', $array));
+    }
+
     public function testEmbedsManyAssociate()
     {
         $user = User::create(array('name' => 'John Doe'));

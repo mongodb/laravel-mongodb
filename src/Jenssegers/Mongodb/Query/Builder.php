@@ -664,6 +664,31 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Add a basic where clause to the query.
+     *
+     * @param  string  $column
+     * @param  string  $operator
+     * @param  mixed   $value
+     * @param  string  $boolean
+     * @return \Illuminate\Database\Query\Builder|static
+     *
+     * @throws \InvalidArgumentException
+     */
+    public function where($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        // Remove the leading $ from operators.
+        if (func_num_args() == 3)
+        {
+            if (starts_with($operator, '$'))
+            {
+                $operator = substr($operator, 1);
+            }
+        }
+
+        return parent::where($column, $operator, $value, $boolean);
+    }
+
+    /**
      * Compile the where array.
      *
      * @return array

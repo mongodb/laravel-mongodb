@@ -228,11 +228,27 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // MongoDB related objects to a string representation. This kind
         // of mimics the SQL behaviour so that dates are formatted
         // nicely when your models are converted to JSON.
-        foreach ($attributes as &$value)
+        foreach ($attributes as $key => &$value)
         {
             if ($value instanceof MongoId)
             {
                 $value = (string) $value;
+            }
+
+            // If the attribute starts with an underscore, it might be the
+            // internal array of embedded documents. In that case, we need
+            // to hide these from the output so that the relation-based
+            // attribute can take over.
+            else if (starts_with($key, '_'))
+            {
+                $camelKey = camel_case($key);
+
+                // If we can find a method that responds to this relation we
+                // will remove it from the output.
+                if (method_exists($this, $camelKey))
+                {
+                    unset($attributes[$key]);
+                }
             }
         }
 
