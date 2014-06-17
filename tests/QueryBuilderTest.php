@@ -188,10 +188,10 @@ class QueryBuilderTest extends TestCase {
 		$this->assertEquals(1, $cursor->count());
 
 		$collection = DB::collection('users')->raw();
-		$this->assertInstanceOf('MongoCollection', $collection);
+		$this->assertInstanceOf('Jenssegers\Mongodb\Collection', $collection);
 
 		$collection = User::raw();
-		$this->assertInstanceOf('MongoCollection', $collection);
+		$this->assertInstanceOf('Jenssegers\Mongodb\Collection', $collection);
 
 		$results = DB::collection('users')->whereRaw(array('age' => 20))->get();
 		$this->assertEquals(1, count($results));

@@ -1,5 +1,6 @@
 <?php namespace Jenssegers\Mongodb;
 
+use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoClient;
 
@@ -8,14 +9,14 @@ class Connection extends \Illuminate\Database\Connection {
     /**
      * The MongoDB database handler.
      *
-     * @var resource
+     * @var MongoDB
      */
     protected $db;
 
     /**
      * The MongoClient connection handler.
      *
-     * @var resource
+     * @var MongoClient
      */
     protected $connection;
 
@@ -74,7 +75,7 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function getCollection($name)
     {
-        return $this->db->{$name};
+        return new Collection($this, $this->db->selectCollection($name));
     }
 
     /**

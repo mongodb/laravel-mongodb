@@ -31,7 +31,7 @@ class ConnectionTest extends TestCase {
 	public function testCollection()
 	{
 		$collection = DB::connection('mongodb')->getCollection('unittest');
-		$this->assertInstanceOf('MongoCollection', $collection);
+		$this->assertInstanceOf('Jenssegers\Mongodb\Collection', $collection);
 
 		$collection = DB::connection('mongodb')->collection('unittests');
 		$this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', $collection);
