@@ -204,7 +204,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     public function getAttribute($key)
     {
         // Check if the key is an array dot notation.
-        if (strstr($key, '.'))
+        if (strpos($key, '.') !== false)
         {
             $attributes = array_dot($this->attributes);
 
@@ -230,7 +230,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             return $this->attributes[$key];
         }
 
-        else if (strstr($key, '.'))
+        else if (strpos($key, '.') !== false)
         {
             $attributes = array_dot($this->attributes);
 
