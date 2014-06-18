@@ -207,12 +207,11 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // Convert _id to MongoId.
         if ($key == '_id' and is_string($value))
         {
-            $this->attributes[$key] = new MongoId($value);
+            $builder = $this->newBaseQueryBuilder();
+            $value = $builder->convertKey($value);
         }
-        else
-        {
-            parent::setAttribute($key, $value);
-        }
+
+        parent::setAttribute($key, $value);
     }
 
     /**
