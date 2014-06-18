@@ -328,11 +328,13 @@ class EmbeddedRelationsTest extends TestCase {
         $user = User::find($user1->id);
         $relations = $user->getRelations();
         $this->assertFalse(array_key_exists('addresses', $relations));
+        $this->assertArrayNotHasKey('addresses', $user->toArray());
 
         $user = User::with('addresses')->get()->first();
         $relations = $user->getRelations();
         $this->assertTrue(array_key_exists('addresses', $relations));
         $this->assertEquals(2, $relations['addresses']->count());
+        $this->assertArrayHasKey('addresses', $user->toArray());
     }
 
     public function testEmbedsManyDelete()
