@@ -196,6 +196,52 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     }
 
     /**
+     * Get an attribute from the model.
+     *
+     * @param  string  $key
+     * @return mixed
+     */
+    public function getAttribute($key)
+    {
+        // Check if the key is an array dot notation.
+        if (strstr($key, '.'))
+        {
+            $attributes = array_dot($this->attributes);
+
+            if (array_key_exists($key, $attributes))
+            {
+                return $this->getAttributeValue($key);
+            }
+        }
+
+        return parent::getAttribute($key);
+    }
+
+    /**
+     * Get an attribute from the $attributes array.
+     *
+     * @param  string  $key
+     * @return mixed
+     */
+    protected function getAttributeFromArray($key)
+    {
+        if (array_key_exists($key, $this->attributes))
+        {
+            return $this->attributes[$key];
+        }
+
+        else if (strstr($key, '.'))
+        {
+            $attributes = array_dot($this->attributes);
+
+            if (array_key_exists($key, $attributes))
+            {
+                return $attributes[$key];
+            }
+        }
+    }
+
+    /**
      * Set a given attribute on the model.
      *
      * @param  string  $key

@@ -419,4 +419,19 @@ class ModelTest extends TestCase {
 		$this->assertTrue(is_array($result));
 	}
 
+	public function testDotNotation()
+	{
+		$user = User::create(array(
+			'name' => 'John Doe',
+			'address' => [
+				'city' => 'Paris',
+				'country' => 'France',
+			]
+		));
+
+		$this->assertEquals('Paris', $user->getAttribute('address.city'));
+		$this->assertEquals('Paris', $user['address.city']);
+		$this->assertEquals('Paris', $user->{'address.city'});
+	}
+
 }
