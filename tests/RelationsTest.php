@@ -7,6 +7,8 @@ class RelationsTest extends TestCase {
         Mockery::close();
 
         User::truncate();
+        Client::truncate();
+        Address::truncate();
         Book::truncate();
         Item::truncate();
         Role::truncate();
@@ -390,6 +392,29 @@ class RelationsTest extends TestCase {
 
         $users = User::has('role', '!=', 0)->get();
         $this->assertCount(2, $users);
+    }
+
+    public function testNestedKeys()
+    {
+        $client = Client::create(array(
+            'data' => array(
+                'client_id' => 35298,
+                'name' => 'John Doe'
+            )
+        ));
+
+        $address = $client->addresses()->create(array(
+            'data' => array(
+                'address_id' => 1432,
+                'city' => 'Paris'
+            )
+        ));
+
+        $client = Client::where('data.client_id', 35298)->first();
+        $this->assertEquals(1, $client->addresses->count());
+
+        $address = $client->addresses->first();
+        $this->assertEquals('Paris', $address->data['city']);
     }
 
 }

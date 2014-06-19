@@ -16,4 +16,9 @@ class Client extends Eloquent {
     {
         return $this->morphOne('Photo', 'imageable');
     }
+
+    public function addresses()
+    {
+        return $this->hasMany('Address', 'data.client_id', 'data.address_id');
+    }
 }
