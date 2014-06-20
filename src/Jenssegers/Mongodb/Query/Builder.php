@@ -374,7 +374,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  array   $extra
      * @return int
      */
-    public function increment($column, $amount = 1, array $extra = array())
+    public function increment($column, $amount = 1, array $extra = array(), array $options = array())
     {
         $query = array(
             '$inc' => array($column => $amount)
@@ -392,7 +392,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $query->orWhereNotNull($column);
         });
 
-        return $this->performUpdate($query);
+        return $this->performUpdate($query, $options);
     }
 
     /**
@@ -403,9 +403,9 @@ class Builder extends \Illuminate\Database\Query\Builder {
      * @param  array   $extra
      * @return int
      */
-    public function decrement($column, $amount = 1, array $extra = array())
+    public function decrement($column, $amount = 1, array $extra = array(), array $options = array())
     {
-        return $this->increment($column, -1 * $amount, $extra);
+        return $this->increment($column, -1 * $amount, $extra, $options);
     }
 
     /**
