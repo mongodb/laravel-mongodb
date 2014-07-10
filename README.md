@@ -167,6 +167,10 @@ Examples
 
     $users = User::where('votes', '>', 100)->orWhere('name', 'John')->get();
 
+**And Statements**
+
+    $users = User::where('votes', '>', 100)->where('name', '=', 'John')->get();
+    
 **Using Where In With An Array**
 
     $users = User::whereIn('age', array(16, 18, 20))->get();
