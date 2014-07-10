@@ -34,7 +34,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      *
      * @var array
      */
-    protected $exposeJsonAttributes = [];
+    protected $expose = [];
 
     /**
      * The connection resolver instance.
@@ -292,7 +292,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             // internal array of embedded documents. In that case, we need
             // to hide these from the output so that the relation-based
             // attribute can take over.
-            else if (starts_with($key, '_') and ! in_array($key, $this->exposeJsonAttributes))
+            else if (starts_with($key, '_') and ! in_array($key, $this->expose))
             {
                 $camelKey = camel_case($key);
 
