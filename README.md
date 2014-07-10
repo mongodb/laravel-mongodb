@@ -428,6 +428,17 @@ Again, you may override the conventional local key by passing a second argument 
 
     return $this->embedsMany('Book', 'local_key');
 
+When using embedded documents, they will be stored in a _relation attribute of the parent document. This attribute is hidden by default when using `
+toArray` or `toJson`. If you want the attribute to be exposed, add it to `$exposed` property definition to your model:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class User extends Eloquent {
+
+        protected $exposed = array('_books');
+
+    }
+
 ### EmbedsOne Relations
 
 There is also an EmbedsOne relation, which works similar to the EmbedsMany relation, but only stores one embedded model.

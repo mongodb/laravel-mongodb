@@ -29,12 +29,11 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     protected $primaryKey = '_id';
 
     /**
-     * Allow json attributes to be exposable. This is mainly for
-     * relations that can be kept alive in a toJson()
+     * The attributes that should be exposed for toArray and toJson.
      *
      * @var array
      */
-    protected $expose = [];
+    protected $exposed = array();
 
     /**
      * The connection resolver instance.
@@ -292,7 +291,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             // internal array of embedded documents. In that case, we need
             // to hide these from the output so that the relation-based
             // attribute can take over.
-            else if (starts_with($key, '_') and ! in_array($key, $this->expose))
+            else if (starts_with($key, '_') and ! in_array($key, $this->exposed))
             {
                 $camelKey = camel_case($key);
 
@@ -316,7 +315,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function drop($columns)
     {
-        if (!is_array($columns)) $columns = array($columns);
+        if ( ! is_array($columns)) $columns = array($columns);
 
         // Unset attributes
         foreach ($columns as $column)
@@ -355,6 +354,17 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         $query = $this->setKeysForSaveQuery($this->newQuery());
 
         return call_user_func_array(array($query, 'pull'), func_get_args());
+    }
+
+    /**
+     * Set the exposed attributes for the model.
+     *
+     * @param  array  $exposed
+     * @return void
+     */
+    public function setExposed(array $exposed)
+    {
+        $this->exposed = $exposed;
     }
 
     /**

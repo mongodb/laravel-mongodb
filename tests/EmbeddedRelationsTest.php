@@ -451,4 +451,19 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertNull($user->father);
     }
 
+    public function testEmbedsManyToArray()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->save(new Address(array('city' => 'New York')));
+        $user->addresses()->save(new Address(array('city' => 'Paris')));
+        $user->addresses()->save(new Address(array('city' => 'Brussels')));
+
+        $array = $user->toArray();
+        $this->assertArrayNotHasKey('_addresses', $array);
+
+        $user->setExposed(array('_addresses'));
+        $array = $user->toArray();
+        $this->assertArrayHasKey('_addresses', $array);
+    }
+
 }
