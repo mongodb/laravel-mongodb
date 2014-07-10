@@ -28,13 +28,13 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     protected $primaryKey = '_id';
 
-	/**
-	 * Allow json attributes to be exposable. This is mainly for
-	 * relations that can be kept alive in a toJson()
-	 *
-	 * @var array
-	 */
-	protected $exposeJsonAttributes = [];
+    /**
+     * Allow json attributes to be exposable. This is mainly for
+     * relations that can be kept alive in a toJson()
+     *
+     * @var array
+     */
+    protected $exposeJsonAttributes = [];
 
     /**
      * The connection resolver instance.
