@@ -170,7 +170,7 @@ class ModelTest extends TestCase {
 			array('name' => 'Jane Doe')
 		));
 
-		$user = User::get()->first();
+		$user = User::first();
 		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
 		$this->assertEquals('John Doe', $user->name);
 	}

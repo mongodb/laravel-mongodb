@@ -17,7 +17,7 @@
         "illuminate/events": "4.2.*"
     },
     "require-dev": {
-        "orchestra/testbench": "2.2.x-dev",
+        "orchestra/testbench": "2.2.*",
         "mockery/mockery": "*"
     },
     "autoload": {
