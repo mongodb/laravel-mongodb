@@ -314,7 +314,24 @@ Matches documents that satisfy a JavaScript expression. For more information che
 
 ### Inserts, updates and deletes
 
-All basic insert, update, delete and select methods should be implemented.
+
+**Insert**
+
+Insert documents with array data, returns true if no error.
+
+    User::insert(array('name' => 'Joe', 'age' => 21));
+
+**Update**
+
+Edit document by query, check the __upsert__ [documentation](https://github.com/jenssegers/laravel-mongodb#mongodb-specific-operations)
+
+    User::where('name', '=', 'Joe')->update(array('name' => 'Jack'), array('upsert' => false));
+
+**Delete**
+
+Remove document by query, returns true if no error.
+    
+    User::find($id)->delete();
 
 ### Dates
 
