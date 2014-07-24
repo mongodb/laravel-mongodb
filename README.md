@@ -382,7 +382,7 @@ The belongsToMany relation will not use a pivot "table", but will push id's to a
 
     }
 
-Other relations are not yet supported, but may be added in the future. Read more about these relations on http://four.laravel.com/docs/eloquent#relationships
+Other relations are not yet supported, but may be added in the future. Read more about these relations on http://laravel.com/docs/eloquent#relationships
 
 ### EmbedsMany Relations
 
