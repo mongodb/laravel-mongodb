@@ -18,7 +18,8 @@
     },
     "require-dev": {
         "orchestra/testbench": "2.2.*",
-        "mockery/mockery": "*"
+        "mockery/mockery": "*",
+        "satooshi/php-coveralls": "*"
     },
     "autoload": {
         "psr-0": {
