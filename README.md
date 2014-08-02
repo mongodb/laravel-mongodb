@@ -20,6 +20,8 @@ Add the service provider in `app/config/app.php`:
 
     'Jenssegers\Mongodb\MongodbServiceProvider',
 
+> **Warning**: be sure to add it after `Illuminate\Database\DatabaseServiceProvider` otherwise you will get `Class db does not exist` error.
+
 The service provider will register a mongodb database extension with the original database manager. There is no need to register additional facades or objects. When using mongodb connections, Laravel will automatically provide you with the corresponding mongodb objects.
 
 Configuration
