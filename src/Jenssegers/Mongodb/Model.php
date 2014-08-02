@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
+use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 
@@ -27,13 +28,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      * @var string
      */
     protected $primaryKey = '_id';
-
-    /**
-     * The attributes that should be exposed for toArray and toJson.
-     *
-     * @var array
-     */
-    protected $exposed = array();
 
     /**
      * The connection resolver instance.
@@ -79,7 +73,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         if (is_null($localKey))
         {
-            $localKey = '_' . $relation;
+            $localKey = $relation;
         }
 
         if (is_null($foreignKey))
@@ -115,7 +109,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         if (is_null($localKey))
         {
-            $localKey = '_' . $relation;
+            $localKey = $relation;
         }
 
         if (is_null($foreignKey))
@@ -221,6 +215,32 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             }
         }
 
+        $camelKey = camel_case($key);
+
+        // If the "attribute" exists as a method on the model, it may be an
+        // embedded model. If so, we need to return the result before it
+        // is handled by the parent method.
+        if (method_exists($this, $camelKey))
+        {
+            $relations = $this->$camelKey();
+
+            // This attribute matches an embedsOne or embedsMany relation so we need
+            // to return the relation results instead of the interal attributes.
+            if ($relations instanceof EmbedsOneOrMany)
+            {
+                // If the key already exists in the relationships array, it just means the
+                // relationship has already been loaded, so we'll just return it out of
+                // here because there is no need to query within the relations twice.
+                if (array_key_exists($key, $this->relations))
+                {
+                    return $this->relations[$key];
+                }
+
+                // Get the relation results.
+                return $this->getRelationshipFromMethod($key, $camelKey);
+            }
+        }
+
         return parent::getAttribute($key);
     }
 
@@ -286,22 +306,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             {
                 $value = (string) $value;
             }
-
-            // If the attribute starts with an underscore, it might be the
-            // internal array of embedded documents. In that case, we need
-            // to hide these from the output so that the relation-based
-            // attribute can take over.
-            else if (starts_with($key, '_') and ! in_array($key, $this->exposed))
-            {
-                $camelKey = camel_case($key);
-
-                // If we can find a method that responds to this relation we
-                // will remove it from the output.
-                if (method_exists($this, $camelKey))
-                {
-                    unset($attributes[$key]);
-                }
-            }
         }
 
         return $attributes;
@@ -354,17 +358,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         $query = $this->setKeysForSaveQuery($this->newQuery());
 
         return call_user_func_array(array($query, 'pull'), func_get_args());
-    }
-
-    /**
-     * Set the exposed attributes for the model.
-     *
-     * @param  array  $exposed
-     * @return void
-     */
-    public function setExposed(array $exposed)
-    {
-        $this->exposed = $exposed;
     }
 
     /**

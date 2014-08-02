@@ -29,7 +29,8 @@ class EmbeddedRelationsTest extends TestCase {
         $address = $user->addresses()->save($address);
         $address->unsetEventDispatcher();
 
-        $this->assertNotNull($user->_addresses);
+        $this->assertNotNull($user->addresses);
+        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $user->addresses);
         $this->assertEquals(array('London'), $user->addresses->lists('city'));
         $this->assertInstanceOf('DateTime', $address->created_at);
         $this->assertInstanceOf('DateTime', $address->updated_at);
@@ -328,13 +329,15 @@ class EmbeddedRelationsTest extends TestCase {
         $user = User::find($user1->id);
         $relations = $user->getRelations();
         $this->assertFalse(array_key_exists('addresses', $relations));
-        $this->assertArrayNotHasKey('addresses', $user->toArray());
+        $this->assertArrayHasKey('addresses', $user->toArray());
+        $this->assertTrue(is_array($user->toArray()['addresses']));
 
         $user = User::with('addresses')->get()->first();
         $relations = $user->getRelations();
         $this->assertTrue(array_key_exists('addresses', $relations));
         $this->assertEquals(2, $relations['addresses']->count());
         $this->assertArrayHasKey('addresses', $user->toArray());
+        $this->assertTrue(is_array($user->toArray()['addresses']));
     }
 
     public function testEmbedsManyDelete()
@@ -459,11 +462,8 @@ class EmbeddedRelationsTest extends TestCase {
         $user->addresses()->save(new Address(array('city' => 'Brussels')));
 
         $array = $user->toArray();
-        $this->assertArrayNotHasKey('_addresses', $array);
-
-        $user->setExposed(array('_addresses'));
-        $array = $user->toArray();
-        $this->assertArrayHasKey('_addresses', $array);
+        $this->assertArrayHasKey('addresses', $array);
+        $this->assertTrue(is_array($array['addresses']));
     }
 
 }
