@@ -13,6 +13,12 @@ class MongodbServiceProvider extends ServiceProvider {
      */
     public function boot()
     {
+        // Add a mongodb extension to the original database manager.
+        $this->app['db']->extend('mongodb', function($config)
+        {
+            return new Connection($config);
+        });
+
         Model::setConnectionResolver($this->app['db']);
 
         Model::setEventDispatcher($this->app['events']);
@@ -25,15 +31,7 @@ class MongodbServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        // Add a mongodb extension to the original database manager,
-        // when the database instance is being resolved.
-        $this->app->resolving('db', function($db)
-        {
-            $db->extend('mongodb', function($config)
-            {
-                return new Connection($config);
-            });
-        });
+        // Nothing.
     }
 
 }
