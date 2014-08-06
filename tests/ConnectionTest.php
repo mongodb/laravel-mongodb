@@ -15,7 +15,8 @@ class ConnectionTest extends TestCase {
 		$this->assertEquals(spl_object_hash($c1), spl_object_hash($c2));
 
 		$c1 = DB::connection('mongodb');
-		$c2 = DB::reconnect('mongodb');
+		DB::purge('mongodb');
+		$c2 = DB::connection('mongodb');
 		$this->assertNotEquals(spl_object_hash($c1), spl_object_hash($c2));
 	}
 

@@ -134,6 +134,16 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
+     * Disconnect from the underlying MongoClient connection.
+     *
+     * @return void
+     */
+    public function disconnect()
+    {
+        $this->connection->close();
+    }
+
+    /**
      * Create a DSN string from a configuration.
      *
      * @param  array   $config
