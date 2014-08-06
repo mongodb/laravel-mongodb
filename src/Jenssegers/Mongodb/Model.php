@@ -49,24 +49,16 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function getIdAttribute($value)
     {
-        if ($value) {
-            // Return _id as string
-            if ($value instanceof MongoId) {
-                return (string) $value;
-            }
-
-            return $value;
+        if (!$value && array_key_exists('_id', $this->attributes)) {
+            $value = $this->attributes['_id'];
         }
 
-        if (array_key_exists('_id', $this->attributes))
-        {
-            // Return _id as string
-            if ($this->attributes['_id'] instanceof MongoId) {
-                return (string) $this->attributes['_id'];
-            }
-
-            return $this->attributes['_id'];
+        // Return _id as string
+        if ($value instanceof MongoId) {
+            return (string) $value;
         }
+
+        return $value;
     }
 
     /**
