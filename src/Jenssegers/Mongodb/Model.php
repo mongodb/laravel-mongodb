@@ -45,7 +45,9 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     /**
      * Custom accessor for the model's id.
      *
-     * @return string
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function getIdAttribute($value)
     {
