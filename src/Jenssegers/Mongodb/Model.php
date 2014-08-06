@@ -51,12 +51,16 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function getIdAttribute($value)
     {
-        if (!$value && array_key_exists('_id', $this->attributes)) {
+        // If we don't have a value for 'id', we will use the Mongo '_id' value.
+        // This allows us to work with models in a more sql-like way.
+        if ( ! $value and array_key_exists('_id', $this->attributes))
+        {
             $value = $this->attributes['_id'];
         }
 
-        // Return _id as string
-        if ($value instanceof MongoId) {
+        // Convert MongoId's to string.
+        if ($value instanceof MongoId)
+        {
             return (string) $value;
         }
 
