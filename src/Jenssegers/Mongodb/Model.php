@@ -45,17 +45,22 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     /**
      * Custom accessor for the model's id.
      *
-     * @return string
+     * @param mixed $value
+     *
+     * @return mixed
      */
     public function getIdAttribute($value)
     {
-        if ($value) return (string) $value;
+        if (!$value && array_key_exists('_id', $this->attributes)) {
+            $value = $this->attributes['_id'];
+        }
 
         // Return _id as string
-        if (array_key_exists('_id', $this->attributes))
-        {
-            return (string) $this->attributes['_id'];
+        if ($value instanceof MongoId) {
+            return (string) $value;
         }
+
+        return $value;
     }
 
     /**
