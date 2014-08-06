@@ -79,7 +79,7 @@ class ModelTest extends TestCase {
 		$this->assertEquals(20, $check->age);
 	}
 
-	public function testManualId()
+	public function testManualStringId()
 	{
 		$user = new User;
 		$user->_id = '4af9f23d8ead0e1d32000000';
@@ -93,6 +93,35 @@ class ModelTest extends TestCase {
 
 		$raw = $user->getAttributes();
 		$this->assertInstanceOf('MongoId', $raw['_id']);
+
+		$user = new User;
+		$user->_id = 'customId';
+		$user->name = 'John Doe';
+		$user->title = 'admin';
+		$user->age = 35;
+		$user->save();
+
+		$this->assertEquals(true, $user->exists);
+		$this->assertEquals('customId', $user->_id);
+
+		$raw = $user->getAttributes();
+		$this->assertInternalType('string', $raw['_id']);
+	}
+
+	public function testManualIntId()
+	{
+		$user = new User;
+		$user->_id = 1;
+		$user->name = 'John Doe';
+		$user->title = 'admin';
+		$user->age = 35;
+		$user->save();
+
+		$this->assertEquals(true, $user->exists);
+		$this->assertEquals(1, $user->_id);
+
+		$raw = $user->getAttributes();
+		$this->assertInternalType('integer', $raw['_id']);
 	}
 
 	public function testDelete()

@@ -54,7 +54,11 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // Return _id as string
         if (array_key_exists('_id', $this->attributes))
         {
-            return (string) $this->attributes['_id'];
+            if ($this->attributes['_id'] instanceof MongoId) {
+                return (string) $this->attributes['_id'];
+            }
+
+            return $this->attributes['_id'];
         }
     }
 
