@@ -179,7 +179,7 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(array('Bruxelles', 'Paris'), $freshUser->addresses->lists('city'));
     }
 
-    /*public function testEmbedsManyDestroy()
+    public function testEmbedsManyDestroy()
     {
         $user = User::create(array('name' => 'John Doe'));
         $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
@@ -215,7 +215,7 @@ class EmbeddedRelationsTest extends TestCase {
         list($london, $bristol, $bruxelles) = $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
         $user->addresses()->destroy(array($london, $bruxelles));
         $this->assertEquals(array('Bristol'), $user->addresses->lists('city'));
-    }*/
+    }
 
     public function testEmbedsManyDissociate()
     {
@@ -498,7 +498,6 @@ class EmbeddedRelationsTest extends TestCase {
         $user = User::where('name', 'John Doe')->first();
         $this->assertEquals('Ghent', $user->addresses->first()->city);
         $this->assertEquals('Mark Doe', $user->father->name);
-
     }
 
 }

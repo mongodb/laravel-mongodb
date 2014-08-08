@@ -48,6 +48,12 @@ abstract class EmbedsOneOrMany extends Relation {
         $this->foreignKey = $foreignKey;
         $this->relation = $relation;
 
+         // If this is a nested relation, we need to get the parent query instead.
+        if ($parentRelation = $this->getParentRelation())
+        {
+            $this->query = $parentRelation->getQuery();
+        }
+
         $this->addConstraints();
     }
 
@@ -310,6 +316,16 @@ abstract class EmbedsOneOrMany extends Relation {
         $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
 
         return $model;
+    }
+
+    /**
+     * Get the relation instance of the parent.
+     *
+     * @return Illuminate\Database\Eloquent\Relations\Relation
+     */
+    protected function getParentRelation()
+    {
+        return $this->parent->getParent();
     }
 
 }

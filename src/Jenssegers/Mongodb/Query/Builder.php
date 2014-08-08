@@ -363,7 +363,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function update(array $values, array $options = array())
     {
-        return $this->performUpdate(array('$set' => $values), $options);
+        // Use $set as default operator.
+        if ( ! starts_with(key($values), '$'))
+        {
+            $values = array('$set' => $values);
+        }
+
+        return $this->performUpdate($values, $options);
     }
 
     /**
@@ -376,11 +382,9 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function increment($column, $amount = 1, array $extra = array(), array $options = array())
     {
-        $query = array(
-            '$inc' => array($column => $amount)
-        );
+        $query = array('$inc' => array($column => $amount));
 
-        if (!empty($extra))
+        if ( ! empty($extra))
         {
             $query['$set'] = $extra;
         }
@@ -490,7 +494,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         }
 
         // Create an expression for the given value
-        else if (!is_null($expression))
+        else if ( ! is_null($expression))
         {
             return new Expression($expression);
         }
@@ -552,7 +556,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function drop($columns)
     {
-        if (!is_array($columns)) $columns = array($columns);
+        if ( ! is_array($columns)) $columns = array($columns);
 
         $fields = array();
 
@@ -585,13 +589,14 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     protected function performUpdate($query, array $options = array())
     {
-        // Default options
-        $default = array('multiple' => true);
-
-        // Merge options and override default options
-        $options = array_merge($default, $options);
+        // Update multiple items by default.
+        if ( ! array_key_exists('multiple', $options))
+        {
+            $options['multiple'] = true;
+        }
 
         $wheres = $this->compileWheres();
+
         $result = $this->collection->update($wheres, $query, $options);
 
         if (1 == (int) $result['ok'])
@@ -682,7 +687,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
             }
 
             // Convert id's.
-            if (isset($where['column']) and $where['column'] == '_id')
+            if (isset($where['column']) and ($where['column'] == '_id' or ends_with($where['column'], '._id')))
             {
                 // Multiple values.
                 if (isset($where['values']))
