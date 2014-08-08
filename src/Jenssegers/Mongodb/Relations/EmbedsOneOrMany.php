@@ -51,6 +51,7 @@ abstract class EmbedsOneOrMany extends Relation {
          // If this is a nested relation, we need to get the parent query instead.
         if ($parentRelation = $this->getParentRelation())
         {
+            //$this->query = $parentRelation->parent->newQuery();
             $this->query = $parentRelation->getQuery();
         }
 
@@ -66,7 +67,7 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         if (static::$constraints)
         {
-            $this->query->where($this->parent->getKeyName(), '=', $this->parent->getKey());
+            $this->query->where($this->getQualifiedParentKeyName(), '=', $this->getParentKey());
         }
     }
 
@@ -326,6 +327,56 @@ abstract class EmbedsOneOrMany extends Relation {
     protected function getParentRelation()
     {
         return $this->parent->getParent();
+    }
+
+    /**
+     * Check if this relation is nested in another relation.
+     *
+     * @return boolean
+     */
+    protected function isNested()
+    {
+        return $this->getParentRelation() != null;
+    }
+
+    /**
+     * Get the fully qualified local key name.
+     *
+     * @return string
+     */
+    protected function getPathHierarchy($glue = '.')
+    {
+        if ($parentRelation = $this->getParentRelation())
+        {
+            return $parentRelation->getPathHierarchy($glue) . $glue . $this->localKey;
+        }
+
+        return $this->localKey;
+    }
+
+    /**
+     * Get the parent's fully qualified key name.
+     *
+     * @return string
+     */
+    protected function getQualifiedParentKeyName()
+    {
+        if ($parentRelation = $this->getParentRelation())
+        {
+            return $parentRelation->getPathHierarchy() . '.' . $this->parent->getKeyName();
+        }
+
+        return $this->parent->getKeyName();
+    }
+
+    /**
+     * Get the primary key value of the parent.
+     *
+     * @return string
+     */
+    protected function getParentKey()
+    {
+        return $this->parent->getKey();
     }
 
 }

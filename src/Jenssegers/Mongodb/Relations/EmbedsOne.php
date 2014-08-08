@@ -32,7 +32,15 @@ class EmbedsOne extends EmbedsOneOrMany {
             $model->setAttribute('_id', new MongoId);
         }
 
-        $result = $this->query->update(array($this->localKey => $model->getAttributes()));
+        // For deeply nested documents, let the parent handle the changes.
+        if ($this->isNested())
+        {
+            $this->associate($model);
+
+            return $this->parent->save();
+        }
+
+        $result = $this->getBaseQuery()->update(array($this->localKey => $model->getAttributes()));
 
         // Attach the model to its parent.
         if ($result) $this->associate($model);
@@ -48,7 +56,17 @@ class EmbedsOne extends EmbedsOneOrMany {
      */
     public function performUpdate(Model $model, array $values)
     {
-        $result = $this->query->update(array($this->localKey => $model->getAttributes()));
+        if ($this->isNested())
+        {
+            $this->associate($model);
+
+            return $this->parent->save();
+        }
+
+        // Use array dot notation for better update behavior.
+        $values = array_dot($model->getDirty(), $this->localKey . '.');
+
+        $result = $this->getBaseQuery()->update($values);
 
         // Attach the model to its parent.
         if ($result) $this->associate($model);
