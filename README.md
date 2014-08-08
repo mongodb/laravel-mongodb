@@ -5,9 +5,9 @@ Laravel MongoDB
 
 An Eloquent model and Query builder with support for MongoDB, inspired by LMongo, but using the original Laravel methods. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
-### Upgrading from v1
+### Upgrading from v1 to v2
 
-In this new version, embedded documents are no longer saved to the parent model using an attribute with a leading `_`. If you have a relation like `embedsMany('Book')`, these books are now stored under `$model['books']` instead of `$model['_books']`. This was changed so that embedded relations are less confusing for new developers.
+In this new version, embedded documents are no longer saved to the parent model using an attribute with a leading underscore. If you have a relation like `embedsMany('Book')`, these books are now stored under `$model['books']` instead of `$model['_books']`. This was changed so that embedded relations are less confusing for new developers.
 
 If you want to upgrade to this new version, without having to change all your existing database objects, you can modify your relations to use a local key including the underscore:
 
