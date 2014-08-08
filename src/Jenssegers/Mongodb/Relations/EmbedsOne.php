@@ -19,6 +19,94 @@ class EmbedsOne extends EmbedsOneOrMany {
     }
 
     /**
+     * Save a new model and attach it to the parent model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function performInsert(Model $model, array $values)
+    {
+        // Generate a new key if needed.
+        if ($model->getKeyName() == '_id' and ! $model->getKey())
+        {
+            $model->setAttribute('_id', new MongoId);
+        }
+
+        $result = $this->query->update(array($this->localKey => $model->getAttributes()));
+
+        // Attach the model to its parent.
+        if ($result) $this->associate($model);
+
+        return $result ? $model : false;
+    }
+
+    /**
+     * Save an existing model and attach it to the parent model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return Model|bool
+     */
+    public function performUpdate(Model $model, array $values)
+    {
+        $result = $this->query->update(array($this->localKey => $model->getAttributes()));
+
+        // Attach the model to its parent.
+        if ($result) $this->associate($model);
+
+        return $result ? $model : false;
+    }
+
+    /**
+     * Delete an existing model and detach it from the parent model.
+     *
+     * @param  Model  $model
+     * @return int
+     */
+    public function performDelete(Model $model)
+    {
+        // Overwrite the local key with an empty array.
+        $result = $this->query->update(array($this->localKey => null));
+
+        // Detach the model from its parent.
+        if ($result) $this->dissociate();
+
+        return $result;
+    }
+
+    /**
+     * Attach the model to its parent.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function associate(Model $model)
+    {
+        return $this->setEmbedded($model->getAttributes());
+    }
+
+    /**
+     * Detach the model from its parent.
+     *
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function dissociate()
+    {
+        return $this->setEmbedded(null);
+    }
+
+    /**
+     * Delete all embedded models.
+     *
+     * @return int
+     */
+    public function delete()
+    {
+        $model = $this->getResults();
+
+        return $this->performDelete($model);
+    }
+
+    /**
      * Check if a model is already embedded.
      *
      * @param  mixed  $key
@@ -33,86 +121,6 @@ class EmbedsOne extends EmbedsOneOrMany {
         $primaryKey = $this->related->getKeyName();
 
         return ($embedded and $embedded[$primaryKey] == $key);
-    }
-
-    /**
-     * Associate the model instance to the given parent, without saving it to the database.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    public function associate(Model $model)
-    {
-        // Create a new key if needed.
-        if ( ! $model->getAttribute('_id'))
-        {
-            $model->setAttribute('_id', new MongoId);
-        }
-
-        $this->setEmbedded($model->getAttributes());
-
-        return $model;
-    }
-
-    /**
-     * Save a new model and attach it to the parent model.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    protected function performInsert(Model $model)
-    {
-        // Create a new key if needed.
-        if ( ! $model->getAttribute('_id'))
-        {
-            $model->setAttribute('_id', new MongoId);
-        }
-
-        $result = $this->query->update(array($this->localKey => $model->getAttributes()));
-
-        if ($result) $this->associate($model);
-
-        return $result ? $model : false;
-    }
-
-    /**
-     * Save an existing model and attach it to the parent model.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return Model|bool
-     */
-    protected function performUpdate(Model $model)
-    {
-        $result = $this->query->update(array($this->localKey => $model->getAttributes()));
-
-        if ($result) $this->associate($model);
-
-        return $result ? $model : false;
-    }
-
-    /**
-     * Delete all embedded models.
-     *
-     * @return int
-     */
-    public function delete()
-    {
-        // Overwrite the local key with an empty array.
-        $result = $this->query->update(array($this->localKey => null));
-
-        // If the update query was successful, we will remove the embedded records
-        // of the parent instance.
-        if ($result)
-        {
-            $count = $this->count();
-
-            $this->setEmbedded(null);
-
-            // Return the number of deleted embedded records.
-            return $count;
-        }
-
-        return $result;
     }
 
 }

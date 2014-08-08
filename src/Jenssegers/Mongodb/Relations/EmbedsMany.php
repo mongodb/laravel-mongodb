@@ -19,17 +19,65 @@ class EmbedsMany extends EmbedsOneOrMany {
     }
 
     /**
-     * Simulate order by method.
+     * Save a new model and attach it to the parent model.
      *
-     * @param  string  $column
-     * @param  string  $direction
-     * @return Illuminate\Database\Eloquent\Collection
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return \Illuminate\Database\Eloquent\Model
      */
-    public function orderBy($column, $direction = 'asc')
+    public function performInsert(Model $model, array $values)
     {
-        $descending = strtolower($direction) == 'desc';
+        // Generate a new key if needed.
+        if ($model->getKeyName() == '_id' and ! $model->getKey())
+        {
+            $model->setAttribute('_id', new MongoId);
+        }
 
-        return $this->getResults()->sortBy($column, SORT_REGULAR, $descending);
+        // Push the new model to the database.
+        $result = $this->query->push($this->localKey, $model->getAttributes(), true);
+
+        // Attach the model to its parent.
+        if ($result) $this->associate($model);
+
+        return $result ? $model : false;
+    }
+
+    /**
+     * Save an existing model and attach it to the parent model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return Model|bool
+     */
+    public function performUpdate(Model $model, array $values)
+    {
+        // Get the correct foreign key value.
+        $foreignKey = $this->getForeignKeyValue($model);
+
+        // Update document in database.
+        $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)
+                              ->update(array($this->localKey . '.$' => $model->getAttributes()));
+
+        // Attach the model to its parent.
+        if ($result) $this->associate($model);
+
+        return $result ? $model : false;
+    }
+
+    /**
+     * Delete an existing model and detach it from the parent model.
+     *
+     * @param  Model  $model
+     * @return int
+     */
+    public function performDelete(Model $model)
+    {
+        // Get the correct foreign key value.
+        $foreignKey = $this->getForeignKeyValue($model);
+
+        $result = $this->query->pull($this->localKey, array($model->getKeyName() => $foreignKey));
+
+        if ($result) $this->dissociate($model);
+
+        return $result;
     }
 
     /**
@@ -51,26 +99,6 @@ class EmbedsMany extends EmbedsOneOrMany {
     }
 
     /**
-     * Destroy the embedded models for the given IDs.
-     *
-     * @param  mixed  $ids
-     * @return int
-     */
-    public function destroy($ids = array())
-    {
-        $ids = $this->getIdsArrayFrom($ids);
-
-        // Get all models matching the given ids.
-        $models = $this->get()->only($ids);
-
-        // Pull the documents from the database.
-        foreach ($models as $model)
-        {
-            $this->performDelete($model);
-        }
-    }
-
-    /**
      * Dissociate the model instance from the given parent, without saving it to the database.
      *
      * @param  mixed  $ids
@@ -81,6 +109,7 @@ class EmbedsMany extends EmbedsOneOrMany {
         $ids = $this->getIdsArrayFrom($ids);
 
         $records = $this->getEmbedded();
+
         $primaryKey = $this->related->getKeyName();
 
         // Remove the document from the parent model.
@@ -101,6 +130,30 @@ class EmbedsMany extends EmbedsOneOrMany {
     }
 
     /**
+     * Destroy the embedded models for the given IDs.
+     *
+     * @param  mixed  $ids
+     * @return int
+     */
+    public function destroy($ids = array())
+    {
+        $count = 0;
+
+        $ids = $this->getIdsArrayFrom($ids);
+
+        // Get all models matching the given ids.
+        $models = $this->getResults()->only($ids);
+
+        // Pull the documents from the database.
+        foreach ($models as $model)
+        {
+            if ($model->delete()) $count++;
+        }
+
+        return $count;
+    }
+
+    /**
      * Delete all embedded models.
      *
      * @return int
@@ -110,17 +163,7 @@ class EmbedsMany extends EmbedsOneOrMany {
         // Overwrite the local key with an empty array.
         $result = $this->query->update(array($this->localKey => array()));
 
-        // If the update query was successful, we will remove the embedded records
-        // of the parent instance.
-        if ($result)
-        {
-            $count = $this->count();
-
-            $this->setEmbedded(array());
-
-            // Return the number of deleted embedded records.
-            return $count;
-        }
+        if ($result) $this->setEmbedded(array());
 
         return $result;
     }
@@ -148,78 +191,6 @@ class EmbedsMany extends EmbedsOneOrMany {
     }
 
     /**
-     * Save a new model and attach it to the parent model.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    protected function performInsert(Model $model)
-    {
-        // Create a new key if needed.
-        if ( ! $model->getAttribute('_id'))
-        {
-            $model->setAttribute('_id', new MongoId);
-        }
-
-        // Push the new model to the database.
-        $result = $this->query->push($this->localKey, $model->getAttributes(), true);
-
-        // Associate the new model to the parent.
-        if ($result) $this->associateNew($model);
-
-        return $result ? $model : false;
-    }
-
-    /**
-     * Save an existing model and attach it to the parent model.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return Model|bool
-     */
-    protected function performUpdate(Model $model)
-    {
-        // Get the correct foreign key value.
-        $id = $this->getForeignKeyValue($model);
-
-        // Update document in database.
-        $result = $this->query->where($this->localKey . '.' . $model->getKeyName(), $id)
-                              ->update(array($this->localKey . '.$' => $model->getAttributes()));
-
-        // Update the related model in the parent instance
-        if ($result) $this->associateExisting($model);
-
-        return $result ? $model : false;
-    }
-
-    /**
-     * Remove an existing model and detach it from the parent model.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return bool
-     */
-    protected function performDelete(Model $model)
-    {
-        if ($this->fireModelEvent($model, 'deleting') === false) return false;
-
-        // Get the correct foreign key value.
-        $id = $this->getForeignKeyValue($model);
-
-        $result = $this->query->pull($this->localKey, array($model->getKeyName() => $id));
-
-        if ($result)
-        {
-            $this->fireModelEvent($model, 'deleted', false);
-
-            // Update the related model in the parent instance
-            $this->dissociate($model);
-
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
      * Associate a new model instance to the given parent, without saving it to the database.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
@@ -235,12 +206,10 @@ class EmbedsMany extends EmbedsOneOrMany {
 
         $records = $this->getEmbedded();
 
-        // Add the document to the parent model.
+        // Add the new model to the embedded documents.
         $records[] = $model->getAttributes();
 
-        $this->setEmbedded($records);
-
-        return $model;
+        return $this->setEmbedded($records);
     }
 
     /**
@@ -255,6 +224,7 @@ class EmbedsMany extends EmbedsOneOrMany {
         $records = $this->getEmbedded();
 
         $primaryKey = $this->related->getKeyName();
+
         $key = $model->getKey();
 
         // Replace the document in the parent model.
@@ -267,9 +237,7 @@ class EmbedsMany extends EmbedsOneOrMany {
             }
         }
 
-        $this->setEmbedded($records);
-
-        return $model;
+        return $this->setEmbedded($records);
     }
 
     /**
@@ -290,9 +258,23 @@ class EmbedsMany extends EmbedsOneOrMany {
      */
     protected function setEmbedded($models)
     {
-        if (! is_array($models)) $models = array($models);
+        if ( ! is_array($models)) $models = array($models);
 
         return parent::setEmbedded(array_values($models));
+    }
+
+    /**
+     * Simulate order by method.
+     *
+     * @param  string  $column
+     * @param  string  $direction
+     * @return Illuminate\Database\Eloquent\Collection
+     */
+    public function orderBy($column, $direction = 'asc')
+    {
+        $descending = strtolower($direction) == 'desc';
+
+        return $this->getResults()->sortBy($column, SORT_REGULAR, $descending);
     }
 
     /**

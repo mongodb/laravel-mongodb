@@ -86,6 +86,8 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         foreach ($models as $model)
         {
+            $model->setParent($this);
+
             $model->setRelation($relation, $this->related->newCollection());
         }
 
@@ -105,6 +107,8 @@ abstract class EmbedsOneOrMany extends Relation {
         foreach ($models as $model)
         {
             $results = $model->$relation()->getResults();
+
+            $model->setParent($this);
 
             $model->setRelation($relation, $results);
         }
@@ -140,62 +144,9 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function save(Model $model)
     {
-        if ($this->fireModelEvent($model, 'saving') === false) return false;
+        $model->setParent($this);
 
-        $this->updateTimestamps($model);
-
-        // Attach a new model.
-        if ( ! $this->contains($model))
-        {
-            if ($this->fireModelEvent($model, 'creating') === false) return false;
-
-            $result = $this->performInsert($model);
-
-            if ($result)
-            {
-                $this->fireModelEvent($model, 'created', false);
-
-                // Mark model as existing
-                $model->exists = true;
-            }
-        }
-
-        // Update an existing model.
-        else
-        {
-            if ($this->fireModelEvent($model, 'updating') === false) return false;
-
-            $result = $this->performUpdate($model);
-
-            if ($result) $this->fireModelEvent($model, 'updated', false);
-        }
-
-        if ($result)
-        {
-            $this->fireModelEvent($result, 'saved', false);
-
-            return $result;
-        }
-
-        return false;
-    }
-
-    /**
-     * Create a new instance of the related model.
-     *
-     * @param  array  $attributes
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    public function create(array $attributes)
-    {
-        // Here we will set the raw attributes to avoid hitting the "fill" method so
-        // that we do not have to worry about a mass accessor rules blocking sets
-        // on the models. Otherwise, some of these attributes will not get set.
-        $instance = $this->related->newInstance();
-
-        $instance->setRawAttributes($attributes);
-
-        return $this->save($instance);
+        return $model->save() ? $model : false;
     }
 
     /**
@@ -212,6 +163,26 @@ abstract class EmbedsOneOrMany extends Relation {
     }
 
     /**
+     * Create a new instance of the related model.
+     *
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function create(array $attributes)
+    {
+        // Here we will set the raw attributes to avoid hitting the "fill" method so
+        // that we do not have to worry about a mass accessor rules blocking sets
+        // on the models. Otherwise, some of these attributes will not get set.
+        $instance = $this->related->newInstance($attributes);
+
+        $instance->setParent($this);
+
+        $instance->save();
+
+        return $instance;
+    }
+
+    /**
      * Create an array of new instances of the related model.
      *
      * @param  array  $records
@@ -219,7 +190,12 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function createMany(array $records)
     {
-        $instances = array_map(array($this, 'create'), $records);
+        $instances = array();
+
+        foreach ($records as $record)
+        {
+            $instances[] = $this->create($record);
+        }
 
         return $instances;
     }
@@ -232,7 +208,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getIdsArrayFrom($ids)
     {
-        if (! is_array($ids)) $ids = array($ids);
+        if ( ! is_array($ids)) $ids = array($ids);
 
         foreach ($ids as &$id)
         {
@@ -240,26 +216,6 @@ abstract class EmbedsOneOrMany extends Relation {
         }
 
         return $ids;
-    }
-
-    /**
-     * Create a related model instanced.
-     *
-     * @param  array  $attributes [description]
-     * @return [type]             [description]
-     */
-    protected function toModel($attributes = array())
-    {
-        if (is_null($attributes)) return null;
-
-        $model = $this->related->newFromBuilder((array) $attributes);
-
-        // Attatch the parent relation to the embedded model.
-        $model->setRelation($this->foreignKey, $this->parent);
-
-        $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
-
-        return $model;
     }
 
     /**
@@ -278,43 +234,20 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Set the embedded records array.
      *
-     * @param array $models
-     * @return void
+     * @param  array $records
+     * @return \Illuminate\Database\Eloquent\Model
      */
-    protected function setEmbedded($data)
+    protected function setEmbedded($records)
     {
         $attributes = $this->parent->getAttributes();
 
-        $attributes[$this->localKey] = $data;
+        $attributes[$this->localKey] = $records;
 
         // Set raw attributes to skip mutators.
         $this->parent->setRawAttributes($attributes);
 
         // Set the relation on the parent.
-        $this->parent->setRelation($this->relation, $this->getResults());
-    }
-
-    /**
-     * Update the creation and update timestamps.
-     *
-     * @return void
-     */
-    protected function updateTimestamps(Model $model)
-    {
-        // Check if this model uses timestamps first.
-        if ( ! $model->timestamps) return;
-
-        $time = $model->freshTimestamp();
-
-        if ( ! $model->isDirty(Model::UPDATED_AT))
-        {
-            $model->setUpdatedAt($time);
-        }
-
-        if ( ! $model->exists && ! $model->isDirty(Model::CREATED_AT))
-        {
-            $model->setCreatedAt($time);
-        }
+        return $this->parent->setRelation($this->relation, $this->getResults());
     }
 
     /**
@@ -344,7 +277,6 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         $models = array();
 
-        // Wrap records in model objects.
         foreach ($records as $attributes)
         {
             $models[] = $this->toModel($attributes);
@@ -359,26 +291,25 @@ abstract class EmbedsOneOrMany extends Relation {
     }
 
     /**
-     * Fire the given event for the given model.
+     * Create a related model instanced.
      *
-     * @param  string  $event
-     * @param  bool    $halt
-     * @return mixed
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model
      */
-    protected function fireModelEvent(Model $model, $event, $halt = true)
+    protected function toModel($attributes = array())
     {
-        $dispatcher = $model->getEventDispatcher();
+        if (is_null($attributes)) return null;
 
-        if ( is_null($dispatcher)) return true;
+        $model = $this->related->newFromBuilder((array) $attributes);
 
-        // We will append the names of the class to the event to distinguish it from
-        // other model events that are fired, allowing us to listen on each model
-        // event set individually instead of catching event for all the models.
-        $event = "eloquent.{$event}: ".get_class($model);
+        $model->setParent($this);
 
-        $method = $halt ? 'until' : 'fire';
+        $model->setRelation($this->foreignKey, $this->parent);
 
-        return $dispatcher->$method($event, $model);
+        // If you remove this, you will get segmentation faults!
+        $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
+
+        return $model;
     }
 
 }

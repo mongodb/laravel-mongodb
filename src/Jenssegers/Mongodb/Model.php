@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
@@ -28,6 +29,13 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      * @var string
      */
     protected $primaryKey = '_id';
+
+    /**
+     * The parent relation instance.
+     *
+     * @var Relation
+     */
+    protected $parent;
 
     /**
      * The connection resolver instance.
@@ -290,6 +298,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         if ($key == '_id' and is_string($value))
         {
             $builder = $this->newBaseQueryBuilder();
+
             $value = $builder->convertKey($value);
         }
 
@@ -367,6 +376,26 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         $query = $this->setKeysForSaveQuery($this->newQuery());
 
         return call_user_func_array(array($query, 'pull'), func_get_args());
+    }
+
+    /**
+     * Set the parent relation.
+     *
+     * @param Relation $relation
+     */
+    public function setParent(Relation $relation)
+    {
+        $this->parent = $relation;
+    }
+
+    /**
+     * Get the parent relation.
+     *
+     * @return Relation
+     */
+    public function getParent()
+    {
+        return $this->parent;
     }
 
     /**

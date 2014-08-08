@@ -17,6 +17,86 @@ class Builder extends EloquentBuilder {
     );
 
     /**
+     * Update a record in the database.
+     *
+     * @param  array  $values
+     * @return int
+     */
+    public function update(array $values)
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParent())
+        {
+            $relation->performUpdate($this->model, $values);
+
+            return 1;
+        }
+
+        return parent::update($values);
+    }
+
+    /**
+     * Insert a new record into the database.
+     *
+     * @param  array  $values
+     * @return bool
+     */
+    public function insert(array $values)
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParent())
+        {
+            $relation->performInsert($this->model, $values);
+
+            return true;
+        }
+
+        return parent::insert($values);
+    }
+
+    /**
+     * Insert a new record and get the value of the primary key.
+     *
+     * @param  array   $values
+     * @param  string  $sequence
+     * @return int
+     */
+    public function insertGetId(array $values, $sequence = null)
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParent())
+        {
+            $relation->performInsert($this->model, $values);
+
+            return $this->model->getKey();
+        }
+
+        return parent::insertGetId($values, $sequence);
+    }
+
+    /**
+     * Delete a record from the database.
+     *
+     * @return mixed
+     */
+    public function delete()
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParent())
+        {
+            $relation->performDelete($this->model);
+
+            return $this->model->getKey();
+        }
+
+        return parent::delete();
+    }
+
+    /**
      * Add the "has" condition where clause to the query.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $hasQuery
