@@ -5,6 +5,14 @@ Laravel MongoDB
 
 An Eloquent model and Query builder with support for MongoDB, inspired by LMongo, but using the original Laravel methods. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
+### Upgrading from v1
+
+In this new version, embedded documents are no longer saved to the parent model using an attribute with a leading `_`. If you have a relation like `embedsMany('Book')`, these books are now stored under `$model['books']` instead of `$model['_books']`. This was changed so that embedded relations are less confusing for new developers.
+
+If you want to upgrade to this new version, without having to change all your existing database objects, you can modify your relations to use a local key including the underscore:
+
+    $this->embedsMany('Book', '_books');
+
 Installation
 ------------
 
@@ -170,7 +178,7 @@ Examples
 **And Statements**
 
     $users = User::where('votes', '>', 100)->where('name', '=', 'John')->get();
-    
+
 **Using Where In With An Array**
 
     $users = User::whereIn('age', array(16, 18, 20))->get();
@@ -386,7 +394,7 @@ Other relations are not yet supported, but may be added in the future. Read more
 
 ### EmbedsMany Relations
 
-If you want to embed documents, rather than referencing them, you can use the `embedsMany` relation:
+If you want to embed documents, rather than referencing them, you can use the `embedsMany` relation. This relation is similar to the `hasMany` relation, but embeds the models in the parent object.
 
     use Jenssegers\Mongodb\Model as Eloquent;
 
@@ -414,33 +422,34 @@ Inserting and updating embedded documents works just like the `belongsTo` relati
     $user = User::first();
 
     $book = $user->books()->save($book);
+    // or
+    $book = $user->books()->create(array('title' => 'A Game of Thrones'))
 
-You can remove an embedded document by using the `destroy()` method:
+Modifying and saving embedded documents is as easy as (available since release 2.0.0):
 
     $book = $user->books()->first();
 
-    $user->books()->destroy($book->_id);
+    $book->title = 'A Game of Thrones';
+
+    $book->save();
+
+You can remove an embedded document by using the `destroy()` method on the relation, or the `delete` method on the model (available since release 2.0.0):
+
+    $book = $user->books()->first();
+
+    $book->delete();
     // or
     $user->books()->destroy($book);
 
-If you want to add or remove embedded documents, without persistence, you can use the `associate` and `dissociate` methods. To write the changes to the database, save the parent object:
+If you want to add or remove embedded documents, without persistence, you can use the `associate` and `dissociate` methods. To write the changes to the database, simply save the parent object:
 
     $user->books()->associate($book);
+
     $user->save();
 
 Again, you may override the conventional local key by passing a second argument to the embedsMany method:
 
     return $this->embedsMany('Book', 'local_key');
-
-When using embedded documents, they will be stored in a _relation attribute of the parent document. This attribute is hidden by default when using `toArray` or `toJson`. If you want the attribute to be exposed, add it to `$exposed` property definition to your model:
-
-    use Jenssegers\Mongodb\Model as Eloquent;
-
-    class User extends Eloquent {
-
-        protected $exposed = array('_books');
-
-    }
 
 ### EmbedsOne Relations
 
@@ -461,13 +470,27 @@ Now we can access the book's author through the dynamic property:
 
     $author = Book::first()->author;
 
-Inserting and updating embedded documents works just like the `embedsMany` relation:
+Inserting and updating the embedded document works just like the `embedsMany` relation:
 
     $author = new Author(array('name' => 'John Doe'));
 
     $book = Books::first();
 
-    $author = $user->author()->save($author);
+    $author = $book->author()->save($author);
+    // or
+    $author = $book->author()->create(array('name' => 'John Doe'));
+
+Modifying and saving the embedded document:
+
+    $author = $book->author;
+
+    $author->name = 'Jane Doe';
+    $author->save();
+
+Swapping the embedded document:
+
+    $newAuthor = new Author(array('name' => 'Jane Doe'));
+    $book->author()->save($newAuthor);
 
 ### MySQL Relations
 

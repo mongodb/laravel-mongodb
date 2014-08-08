@@ -482,6 +482,23 @@ class EmbeddedRelationsTest extends TestCase {
         $user = User::where('name', 'John Doe')->first();
         $this->assertEquals('Paris', $user->addresses->first()->city);
         $this->assertEquals('Steve Doe', $user->father->name);
+
+        $address = $user->addresses()->first();
+        $father = $user->father;
+
+        $address->city = 'Ghent';
+        $address->save();
+
+        $father->name = 'Mark Doe';
+        $father->save();
+
+        $this->assertEquals('Ghent', $user->addresses->first()->city);
+        $this->assertEquals('Mark Doe', $user->father->name);
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals('Ghent', $user->addresses->first()->city);
+        $this->assertEquals('Mark Doe', $user->father->name);
+
     }
 
 }
