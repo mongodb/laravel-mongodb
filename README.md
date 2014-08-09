@@ -564,6 +564,12 @@ Update or insert a document. Additional options for the update method are passed
     DB::collection('users')->where('name', 'John')
                            ->update($data, array('upsert' => true));
 
+**Projections**
+
+You can apply projections to your queries using the `project()` method.
+
+    DB::collection('items')->project(array('tags' => array('$slice' => 1)))->get();
+
 **Push**
 
 Add an items to an array.

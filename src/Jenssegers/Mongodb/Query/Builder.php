@@ -19,6 +19,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
     protected $collection;
 
     /**
+     * The column projections.
+     *
+     * @var array
+     */
+    public $projections;
+
+    /**
      * All of the available clause operators.
      *
      * @var array
@@ -57,6 +64,19 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public function __construct(Connection $connection)
     {
         $this->connection = $connection;
+    }
+
+    /**
+     * Set the projections.
+     *
+     * @param  array  $columns
+     * @return $this
+     */
+    public function project($columns)
+    {
+        $this->projections = is_array($columns) ? $columns : func_get_args();
+
+        return $this;
     }
 
     /**
@@ -152,9 +172,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $pipeline[] = array('$group' => $group);
 
             // Apply order and limit
-            if ($this->orders) $pipeline[] = array('$sort' => $this->orders);
-            if ($this->offset) $pipeline[] = array('$skip' => $this->offset);
-            if ($this->limit)  $pipeline[] = array('$limit' => $this->limit);
+            if ($this->orders)      $pipeline[] = array('$sort' => $this->orders);
+            if ($this->offset)      $pipeline[] = array('$skip' => $this->offset);
+            if ($this->limit)       $pipeline[] = array('$limit' => $this->limit);
+            if ($this->projections) $pipeline[] = array('$project' => $this->projections);
 
             // Execute aggregation
             $results = $this->collection->aggregate($pipeline);
@@ -179,9 +200,17 @@ class Builder extends \Illuminate\Database\Query\Builder {
         else
         {
             $columns = array();
+
+            // Convert select columns to simple projections.
             foreach ($this->columns as $column)
             {
                 $columns[$column] = true;
+            }
+
+            // Add custom projections.
+            if ($this->projections)
+            {
+                $columns = array_merge($columns, $this->projections);
             }
 
             // Execute query and get MongoCursor
@@ -543,8 +572,6 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function pull($column, $value = null)
     {
-        var_dump($value);
-
         // Check if we passed an associative array.
         $multipleValues = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
 
