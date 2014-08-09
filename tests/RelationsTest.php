@@ -417,7 +417,7 @@ class RelationsTest extends TestCase {
         $this->assertEquals('Paris', $address->data['city']);
     }
 
-    public function testDoubleSave()
+    public function testDoubleSaveOneToMany()
     {
         $author = User::create(array('name' => 'George R. R. Martin'));
         $book = Book::create(array('title' => 'A Game of Thrones'));
@@ -426,14 +426,45 @@ class RelationsTest extends TestCase {
         $author->books()->save($book);
         $author->save();
         $this->assertEquals(1, $author->books()->count());
+        $this->assertEquals($author->_id, $book->author_id);
 
         $author = User::where('name', 'George R. R. Martin')->first();
+        $book = Book::where('title', 'A Game of Thrones')->first();
         $this->assertEquals(1, $author->books()->count());
+        $this->assertEquals($author->_id, $book->author_id);
 
         $author->books()->save($book);
         $author->books()->save($book);
         $author->save();
         $this->assertEquals(1, $author->books()->count());
+        $this->assertEquals($author->_id, $book->author_id);
+    }
+
+    public function testDoubleSaveManyToMany()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $client = Client::create(array('name' => 'Admins'));
+
+        $user->clients()->save($client);
+        $user->clients()->save($client);
+        $user->save();
+
+        $this->assertEquals(1, $user->clients()->count());
+        //$this->assertEquals(array($user->_id), $client->user_ids); TODO
+        $this->assertEquals(array($client->_id), $user->client_ids);
+
+        $user = User::where('name', 'John Doe')->first();
+        $client = Client::where('name', 'Admins')->first();
+        $this->assertEquals(1, $user->clients()->count());
+        //$this->assertEquals(array($user->_id), $client->user_ids); TODO
+        $this->assertEquals(array($client->_id), $user->client_ids);
+
+        $user->clients()->save($client);
+        $user->clients()->save($client);
+        $user->save();
+        $this->assertEquals(1, $user->clients()->count());
+        //$this->assertEquals(array($user->_id), $client->user_ids); TODO
+        $this->assertEquals(array($client->_id), $user->client_ids);
     }
 
 }

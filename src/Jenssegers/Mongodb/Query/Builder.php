@@ -519,6 +519,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
         {
             $query = array($operator => $column);
         }
+        else if (is_array($value))
+        {
+            $query = array($operator => array($column => array('$each' => $value)));
+        }
         else
         {
             $query = array($operator => array($column => $value));
@@ -536,13 +540,16 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function pull($column, $value = null)
     {
+        // If we are pulling multiple values, we need to use $pullAll.
+        $operator = is_array($value) ? '$pullAll' : '$pull';
+
         if (is_array($column))
         {
-            $query = array('$pull' => $column);
+            $query = array($operator => $column);
         }
         else
         {
-            $query = array('$pull' => array($column => $value));
+            $query = array($operator => array($column => $value));
         }
 
         return $this->performUpdate($query);

@@ -358,9 +358,27 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     {
         if ($parameters = func_get_args())
         {
+            $unique = false;
+
+            if (count($parameters) == 3)
+            {
+                list($column, $values, $unique) = $parameters;
+            }
+            else
+            {
+                list($column, $values) = $parameters;
+            }
+
+            if ( ! is_array($values))
+            {
+                $values = array($values);
+            }
+
             $query = $this->setKeysForSaveQuery($this->newQuery());
 
-            return call_user_func_array(array($query, 'push'), $parameters);
+            $this->pushAttributeValues($column, $values, $unique);
+
+            return $query->push($column, $values, $unique);
         }
 
         return parent::push();
@@ -371,11 +389,69 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      *
      * @return mixed
      */
-    public function pull()
+    public function pull($column, $values)
     {
+        if ( ! is_array($values))
+        {
+            $values = array($values);
+        }
+
         $query = $this->setKeysForSaveQuery($this->newQuery());
 
-        return call_user_func_array(array($query, 'pull'), func_get_args());
+        $this->pullAttributeValues($column, $values);
+
+        return $query->pull($column, $values);
+    }
+
+    /**
+     * Append one or more values to the underlying attribute value and sync with original.
+     *
+     * @param  string  $column
+     * @param  array   $values
+     * @param  bool    $unique
+     * @return void
+     */
+    protected function pushAttributeValues($column, array $values, $unique = false)
+    {
+        $current = $this->getAttributeFromArray($column) ?: array();
+
+        foreach ($values as $value)
+        {
+            // Don't add duplicate values when we only want unique values.
+            if ($unique and in_array($value, $current)) continue;
+
+            array_push($current, $value);
+        }
+
+        $this->attributes[$column] = $current;
+
+        $this->syncOriginalAttribute($column);
+    }
+
+    /**
+     * Rempove one or more values to the underlying attribute value and sync with original.
+     *
+     * @param  string  $column
+     * @param  array   $values
+     * @return void
+     */
+    protected function pullAttributeValues($column, array $values)
+    {
+        $current = $this->getAttributeFromArray($column) ?: array();
+
+        foreach ($values as $value)
+        {
+            $keys = array_keys($current, $value);
+
+            foreach ($keys as $key)
+            {
+                unset($current[$key]);
+            }
+        }
+
+        $this->attributes[$column] = $current;
+
+        $this->syncOriginalAttribute($column);
     }
 
     /**
