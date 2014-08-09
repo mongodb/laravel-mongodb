@@ -651,4 +651,17 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(1, $user->addresses()->count());
     }
 
+    public function testIncrementEmbedded()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address = $user->addresses()->create(array('city' => 'New York', 'visited' => 5));
+
+        $address->increment('visited');
+        $this->assertEquals(6, $address->visited);
+        $this->assertEquals(6, $user->addresses()->first()->visited);
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals(6, $user->addresses()->first()->visited);
+    }
+
 }

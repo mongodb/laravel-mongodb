@@ -97,6 +97,64 @@ class Builder extends EloquentBuilder {
     }
 
     /**
+     * Increment a column's value by a given amount.
+     *
+     * @param  string  $column
+     * @param  int     $amount
+     * @param  array   $extra
+     * @return int
+     */
+    public function increment($column, $amount = 1, array $extra = array())
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParent())
+        {
+            $value = $this->model->{$column};
+
+            // When doing increment and decrements, Eloquent will automatically
+            // sync the original attributes. We need to change the attribute
+            // temporary in order to trigger an update query.
+            $this->model->{$column} = null;
+            $this->model->syncOriginalAttribute($column);
+
+            $result = $this->model->update(array($column => $value));
+
+            return $result;
+        }
+
+        return parent::increment($column, $amount, $extra);
+    }
+
+    /**
+     * Decrement a column's value by a given amount.
+     *
+     * @param  string  $column
+     * @param  int     $amount
+     * @param  array   $extra
+     * @return int
+     */
+    public function decrement($column, $amount = 1, array $extra = array())
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParent())
+        {
+            $value = $this->model->{$column};
+
+            // When doing increment and decrements, Eloquent will automatically
+            // sync the original attributes. We need to change the attribute
+            // temporary in order to trigger an update query.
+            $this->model->{$column} = null;
+            $this->model->syncOriginalAttribute($column);
+
+            return $this->model->update(array($column => $value));
+        }
+
+        return parent::decrement($column, $amount, $extra);
+    }
+
+    /**
      * Add the "has" condition where clause to the query.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $hasQuery

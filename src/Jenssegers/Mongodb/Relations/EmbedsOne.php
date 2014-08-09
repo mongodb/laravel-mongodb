@@ -82,6 +82,14 @@ class EmbedsOne extends EmbedsOneOrMany {
      */
     public function performDelete(Model $model)
     {
+        // For deeply nested documents, let the parent handle the changes.
+        if ($this->isNested())
+        {
+            $this->dissociate($model);
+
+            return $this->parent->save();
+        }
+
         // Overwrite the local key with an empty array.
         $result = $this->query->update(array($this->localKey => null));
 

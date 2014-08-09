@@ -89,6 +89,14 @@ class EmbedsMany extends EmbedsOneOrMany {
      */
     public function performDelete(Model $model)
     {
+        // For deeply nested documents, let the parent handle the changes.
+        if ($this->isNested())
+        {
+            $this->dissociate($model);
+
+            return $this->parent->save();
+        }
+
         // Get the correct foreign key value.
         $foreignKey = $this->getForeignKeyValue($model);
 
