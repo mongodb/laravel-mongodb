@@ -116,6 +116,7 @@ class Builder extends EloquentBuilder {
             // sync the original attributes. We need to change the attribute
             // temporary in order to trigger an update query.
             $this->model->{$column} = null;
+
             $this->model->syncOriginalAttribute($column);
 
             $result = $this->model->update(array($column => $value));
@@ -146,6 +147,7 @@ class Builder extends EloquentBuilder {
             // sync the original attributes. We need to change the attribute
             // temporary in order to trigger an update query.
             $this->model->{$column} = null;
+
             $this->model->syncOriginalAttribute($column);
 
             return $this->model->update(array($column => $value));

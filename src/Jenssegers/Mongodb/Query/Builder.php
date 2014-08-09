@@ -6,10 +6,11 @@ use MongoDate;
 use DateTime;
 use Closure;
 
+use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Query\Expression;
 use Jenssegers\Mongodb\Connection;
 
-class Builder extends \Illuminate\Database\Query\Builder {
+class Builder extends QueryBuilder {
 
     /**
      * The database collection
@@ -193,6 +194,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
                 foreach ($this->columns as $column)
                 {
                     $key = str_replace('.', '_', $column);
+
                     $group[$key] = array('$last' => '$' . $column);
                 }
             }
@@ -374,17 +376,18 @@ class Builder extends \Illuminate\Database\Query\Builder {
         // Since every insert gets treated like a batch insert, we will have to detect
         // if the user is inserting a single document or an array of documents.
         $batch = true;
+
         foreach ($values as $value)
         {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (!is_array($value))
+            if ( ! is_array($value))
             {
                 $batch = false; break;
             }
         }
 
-        if (!$batch) $values = array($values);
+        if ( ! $batch) $values = array($values);
 
         // Batch insert
         $result = $this->collection->batchInsert($values);
@@ -405,7 +408,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
 
         if (1 == (int) $result['ok'])
         {
-            if (!$sequence)
+            if (is_null($sequence))
             {
                 $sequence = '_id';
             }
@@ -454,6 +457,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
         $this->where(function($query) use ($column)
         {
             $query->where($column, 'exists', false);
+
             $query->orWhereNotNull($column);
         });
 
@@ -502,6 +506,7 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public function delete($id = null)
     {
         $wheres = $this->compileWheres();
+
         $result = $this->collection->remove($wheres);
 
         if (1 == (int) $result['ok'])
@@ -577,13 +582,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
         $operator = $unique ? '$addToSet' : '$push';
 
         // Check if we are pushing multiple values.
-        $multipleValues = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
+        $batch = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
 
         if (is_array($column))
         {
             $query = array($operator => $column);
         }
-        else if ($multipleValues)
+        else if ($batch)
         {
             $query = array($operator => array($column => array('$each' => $value)));
         }
@@ -605,10 +610,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public function pull($column, $value = null)
     {
         // Check if we passed an associative array.
-        $multipleValues = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
+        $batch = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
 
         // If we are pulling multiple values, we need to use $pullAll.
-        $operator = $multipleValues ? '$pullAll' : '$pull';
+        $operator = $batch ? '$pullAll' : '$pull';
 
         if (is_array($column))
         {

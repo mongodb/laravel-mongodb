@@ -416,10 +416,10 @@ class EmbeddedRelationsTest extends TestCase {
     public function testEmbedsManyCollectionMethods()
     {
         $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->save(new Address(array('city' => 'Paris', 'country' => 'France')));
-        $user->addresses()->save(new Address(array('city' => 'Bruges', 'country' => 'Belgium')));
-        $user->addresses()->save(new Address(array('city' => 'Brussels', 'country' => 'Belgium')));
-        $user->addresses()->save(new Address(array('city' => 'Ghent', 'country' => 'Belgium')));
+        $user->addresses()->save(new Address(array('city' => 'Paris', 'country' => 'France', 'visited' => 4)));
+        $user->addresses()->save(new Address(array('city' => 'Bruges', 'country' => 'Belgium', 'visited' => 7)));
+        $user->addresses()->save(new Address(array('city' => 'Brussels', 'country' => 'Belgium', 'visited' => 2)));
+        $user->addresses()->save(new Address(array('city' => 'Ghent', 'country' => 'Belgium', 'visited' => 13)));
 
         $this->assertEquals(array('Paris', 'Bruges', 'Brussels', 'Ghent'), $user->addresses()->lists('city'));
         $this->assertEquals(array('Bruges', 'Brussels', 'Ghent', 'Paris'), $user->addresses()->sortBy('city')->lists('city'));
@@ -433,6 +433,24 @@ class EmbeddedRelationsTest extends TestCase {
         $results = $user->addresses()->where('country', 'Belgium')->get();
         $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Collection', $results);
         $this->assertEquals(3, $results->count());
+
+        $results = $user->addresses()->where('country', '!=', 'Belgium')->get();
+        $this->assertEquals(1, $results->count());
+
+        $results = $user->addresses()->where('visited', '>', 4)->get();
+        $this->assertEquals(2, $results->count());
+
+        $results = $user->addresses()->where('visited', '<', 7)->get();
+        $this->assertEquals(2, $results->count());
+
+        $results = $user->addresses()->where('visited', '<=', 7)->get();
+        $this->assertEquals(3, $results->count());
+
+        $results = $user->addresses()->where('visited', '>=', 7)->get();
+        $this->assertEquals(2, $results->count());
+
+        $results = $user->addresses()->where('visited', 'between', array(4, 7))->get();
+        $this->assertEquals(2, $results->count());
     }
 
     public function testEmbedsOne()
@@ -671,6 +689,13 @@ class EmbeddedRelationsTest extends TestCase {
 
         $user = User::where('name', 'John Doe')->first();
         $this->assertEquals(6, $user->addresses()->first()->visited);
+
+        $address->decrement('visited');
+        $this->assertEquals(5, $address->visited);
+        //$this->assertEquals(5, $user->addresses()->first()->visited); TODO
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals(5, $user->addresses()->first()->visited);
     }
 
     public function testPaginateEmbedsMany()

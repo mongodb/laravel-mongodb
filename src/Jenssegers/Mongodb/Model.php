@@ -269,12 +269,8 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     protected function getAttributeFromArray($key)
     {
-        if (array_key_exists($key, $this->attributes))
-        {
-            return $this->attributes[$key];
-        }
-
-        elseif (str_contains($key, '.'))
+        // Support keys in dot notation.
+        if (str_contains($key, '.'))
         {
             $attributes = array_dot($this->attributes);
 
@@ -283,6 +279,8 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
                 return $attributes[$key];
             }
         }
+
+        return parent::getAttributeFromArray($key);
     }
 
     /**
@@ -380,10 +378,8 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
                 list($column, $values) = $parameters;
             }
 
-            if ( ! is_array($values))
-            {
-                $values = array($values);
-            }
+            // Do batch push by default.
+            if ( ! is_array($values)) $values = array($values);
 
             $query = $this->setKeysForSaveQuery($this->newQuery());
 
@@ -402,10 +398,8 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function pull($column, $values)
     {
-        if ( ! is_array($values))
-        {
-            $values = array($values);
-        }
+        // Do batch pull by default.
+        if ( ! is_array($values)) $values = array($values);
 
         $query = $this->setKeysForSaveQuery($this->newQuery());
 

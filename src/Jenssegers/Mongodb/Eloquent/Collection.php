@@ -1,8 +1,8 @@
 <?php namespace Jenssegers\Mongodb\Eloquent;
 
-use Illuminate\Database\Eloquent\Collection as BaseCollection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
-class Collection extends BaseCollection {
+class Collection extends EloquentCollection {
 
     /**
      * Simulate a get clause on the collection.
@@ -61,6 +61,10 @@ class Collection extends BaseCollection {
 
                 case '>=':
                     return $actual >= $value;
+                    break;
+
+                case '<=':
+                    return $actual <= $value;
                     break;
 
                 case 'between':

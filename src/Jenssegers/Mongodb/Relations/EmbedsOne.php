@@ -131,21 +131,4 @@ class EmbedsOne extends EmbedsOneOrMany {
         return $this->performDelete($model);
     }
 
-    /**
-     * Check if a model is already embedded.
-     *
-     * @param  mixed  $key
-     * @return bool
-     */
-    public function contains($key)
-    {
-        if ($key instanceof Model) $key = $key->getKey();
-
-        $embedded = $this->getEmbedded();
-
-        $primaryKey = $this->related->getKeyName();
-
-        return ($embedded and $embedded[$primaryKey] == $key);
-    }
-
 }

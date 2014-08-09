@@ -36,6 +36,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	public function __construct(Connection $connection, $collection)
 	{
 		$this->connection = $connection;
+
 		$this->collection = $connection->getCollection($collection);
 	}
 
@@ -50,11 +51,12 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	{
 		$columns = $this->fluent($columns);
 
-		// Columns are passed as a default array
+		// Columns are passed as a default array.
 		if (is_array($columns) && is_int(key($columns)))
 		{
-			// Transform the columns to the required array format
+			// Transform the columns to the required array format.
 			$transform = array();
+
 			foreach ($columns as $column)
 			{
 				$transform[$column] = 1;
@@ -78,11 +80,12 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	{
 		$columns = $this->fluent($columns);
 
-		// Columns are passed as a default array
+		// Columns are passed as a default array.
 		if (is_array($columns) && is_int(key($columns)))
 		{
-			// Transform the columns to the required array format
+			// Transform the columns to the required array format.
 			$transform = array();
+
 			foreach ($columns as $column)
 			{
 				$transform[$column] = 1;
@@ -105,6 +108,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	public function unique($columns = null, $name = null)
 	{
 		$columns = $this->fluent($columns);
+
 		$this->index($columns, array('unique' => true));
 
 		return $this;
@@ -119,6 +123,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	public function background($columns = null)
 	{
 		$columns = $this->fluent($columns);
+
 		$this->index($columns, array('background' => true));
 
 		return $this;
@@ -149,6 +154,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	public function expire($columns, $seconds)
 	{
 		$columns = $this->fluent($columns);
+
 		$this->index($columns, array('expireAfterSeconds' => $seconds));
 
 		return $this;
@@ -163,8 +169,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	{
 		$collection = $this->collection->getName();
 
-		// Ensure the collection is created
 		$db = $this->connection->getMongoDB();
+
+		// Ensure the collection is created.
 		$db->createCollection($collection);
 	}
 
@@ -189,6 +196,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	protected function addColumn($type, $name, array $parameters = array())
 	{
 		$this->fluent($name);
+
 		return $this;
 	}
 
@@ -221,6 +229,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 	 */
 	public function __call($method, $args)
 	{
+		// Dummy.
 		return $this;
 	}
 

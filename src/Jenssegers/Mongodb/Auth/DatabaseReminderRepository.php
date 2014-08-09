@@ -25,22 +25,17 @@ class DatabaseReminderRepository extends \Illuminate\Auth\Reminders\DatabaseRemi
 	 */
 	protected function reminderExpired($reminder)
 	{
-		// Convert to array so that we can pass it to the parent method
-		if (is_object($reminder))
-		{
-			$reminder = (array) $reminder;
-		}
-
 		// Convert MongoDate to a date string.
 		if ($reminder['created_at'] instanceof MongoDate)
 		{
-			$date = new DateTime();
+			$date = new DateTime;
+
 			$date->setTimestamp($reminder['created_at']->sec);
 
 			$reminder['created_at'] = $date->format('Y-m-d H:i:s');
 		}
 
-		// DEPRECATED: Convert DateTime to a date string.
+		// Convert DateTime to a date string (backwards compatibility).
 		elseif (is_array($reminder['created_at']))
 		{
 			$date = DateTime::__set_state($reminder['created_at']);
