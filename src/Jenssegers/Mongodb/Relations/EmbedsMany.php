@@ -267,6 +267,28 @@ class EmbedsMany extends EmbedsOneOrMany {
     }
 
     /**
+     * Get a paginator for the "select" statement.
+     *
+     * @param  int    $perPage
+     * @param  array  $columns
+     * @return \Illuminate\Pagination\Paginator
+     */
+    public function paginate($perPage = null, $columns = array('*'))
+    {
+        $perPage = $perPage ?: $this->related->getPerPage();
+
+        $paginator = $this->related->getConnection()->getPaginator();
+
+        $results = $this->getEmbedded();
+
+        $start = ($paginator->getCurrentPage() - 1) * $perPage;
+
+        $sliced = array_slice($results, $start, $perPage);
+
+        return $paginator->make($sliced, count($results), $perPage);
+    }
+
+    /**
      * Get the embedded records array.
      *
      * @return array

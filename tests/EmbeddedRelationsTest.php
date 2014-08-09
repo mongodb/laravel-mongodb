@@ -673,4 +673,16 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(6, $user->addresses()->first()->visited);
     }
 
+    public function testPaginateEmbedsMany()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->save(new Address(array('city' => 'New York')));
+        $user->addresses()->save(new Address(array('city' => 'Paris')));
+        $user->addresses()->save(new Address(array('city' => 'Brussels')));
+
+        $results = $user->addresses()->paginate(2);
+        $this->assertEquals(2, $results->count());
+        $this->assertEquals(3, $results->getTotal());
+    }
+
 }
