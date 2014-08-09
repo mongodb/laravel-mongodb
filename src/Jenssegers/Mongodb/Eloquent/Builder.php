@@ -215,26 +215,12 @@ class Builder extends EloquentBuilder {
 		// Get raw results from the query builder.
 		$results = $this->query->raw($expression);
 
-		$connection = $this->model->getConnectionName();
-
 		// Convert MongoCursor results to a collection of models.
 		if ($results instanceof MongoCursor)
 		{
 			$results = iterator_to_array($results, false);
 
-			$models = array();
-
-			// Once we have the results, we can spin through them and instantiate a fresh
-			// model instance for each records we retrieved from the database. We will
-			// also set the proper connection name for the model after we create it.
-			foreach ($results as $result)
-			{
-				$models[] = $model = $this->model->newFromBuilder($result);
-
-				$model->setConnection($connection);
-			}
-
-			return $this->model->newCollection($models);
+			return $this->model->hydrate($results);
 		}
 
 		// The result is a single object.
@@ -242,7 +228,7 @@ class Builder extends EloquentBuilder {
 		{
 			$model = $this->model->newFromBuilder($results);
 
-			$model->setConnection($connection);
+			$model->setConnection($this->model->getConnection());
 
 			return $model;
 		}
