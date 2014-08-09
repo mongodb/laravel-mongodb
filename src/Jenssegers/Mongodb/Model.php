@@ -222,7 +222,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     public function getAttribute($key)
     {
         // Check if the key is an array dot notation.
-        if (strpos($key, '.') !== false)
+        if (str_contains($key, '.'))
         {
             $attributes = array_dot($this->attributes);
 
@@ -274,7 +274,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             return $this->attributes[$key];
         }
 
-        else if (strpos($key, '.') !== false)
+        elseif (str_contains($key, '.'))
         {
             $attributes = array_dot($this->attributes);
 
@@ -300,6 +300,17 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
+        }
+
+        // Support keys in dot notation.
+        elseif (str_contains($key, '.'))
+        {
+            if (in_array($key, $this->getDates()) && $value)
+            {
+                $value = $this->fromDateTime($value);
+            }
+
+            array_set($this->attributes, $key, $value); return;
         }
 
         parent::setAttribute($key, $value);

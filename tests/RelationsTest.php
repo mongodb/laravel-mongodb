@@ -131,6 +131,7 @@ class RelationsTest extends TestCase {
         $items = $user->items;
         $this->assertEquals(1, count($items));
         $this->assertInstanceOf('Item', $items[0]);
+        $this->assertEquals($user->_id, $items[0]->user_id);
 
         // Has one
         $user = User::create(array('name' => 'John Doe'));
@@ -141,6 +142,7 @@ class RelationsTest extends TestCase {
         $role = $user->role;
         $this->assertInstanceOf('Role', $role);
         $this->assertEquals('admin', $role->type);
+        $this->assertEquals($user->_id, $role->user_id);
     }
 
     public function testBelongsToMany()
@@ -415,6 +417,9 @@ class RelationsTest extends TestCase {
 
         $address = $client->addresses->first();
         $this->assertEquals('Paris', $address->data['city']);
+
+        $client = Client::with('addresses')->first();
+        $this->assertEquals('Paris', $client->addresses->first()->data['city']);
     }
 
     public function testDoubleSaveOneToMany()
