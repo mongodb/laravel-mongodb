@@ -60,6 +60,9 @@ class BelongsToMany extends EloquentBelongsToMany {
 		// if they exist in the array of current ones, and if not we will insert.
 		$current = $this->parent->{$this->otherKey} ?: array();
 
+		// See issue #256.
+		if ($current instanceof Collection) $current = $ids->modelKeys();
+
 		$records = $this->formatSyncList($ids);
 
 		$detach = array_diff($current, array_keys($records));
