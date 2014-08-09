@@ -648,6 +648,7 @@ class EmbeddedRelationsTest extends TestCase {
         $user = User::create(array('name' => 'John Doe'));
         $user->addresses()->save(new Address);
         $this->assertNotNull($user->addresses);
+        $this->assertEquals(1, $user->addresses()->count());
     }
 
 }

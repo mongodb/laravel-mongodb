@@ -417,4 +417,23 @@ class RelationsTest extends TestCase {
         $this->assertEquals('Paris', $address->data['city']);
     }
 
+    public function testDoubleSave()
+    {
+        $author = User::create(array('name' => 'George R. R. Martin'));
+        $book = Book::create(array('title' => 'A Game of Thrones'));
+
+        $author->books()->save($book);
+        $author->books()->save($book);
+        $author->save();
+        $this->assertEquals(1, $author->books()->count());
+
+        $author = User::where('name', 'George R. R. Martin')->first();
+        $this->assertEquals(1, $author->books()->count());
+
+        $author->books()->save($book);
+        $author->books()->save($book);
+        $author->save();
+        $this->assertEquals(1, $author->books()->count());
+    }
+
 }
