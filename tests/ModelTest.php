@@ -406,14 +406,28 @@ class ModelTest extends TestCase {
 
 	public function testPushPull()
 	{
-		$user = User::create(array('name' => 'John Doe', 'tags' => array()));
+		$user = User::create(array('name' => 'John Doe'));
 
-		$result = User::where('_id', $user->_id)->push('tags', 'tag1');
+		$user->push('tags', 'tag1');
+		$user->push('tags', array('tag1', 'tag2'));
+		$user->push('tags', 'tag2', true);
+
+		$this->assertEquals(array('tag1', 'tag1', 'tag2'), $user->tags);
 		$user = User::where('_id', $user->_id)->first();
+		$this->assertEquals(array('tag1', 'tag1', 'tag2'), $user->tags);
 
-		$this->assertTrue(is_int($result));
-		$this->assertTrue(is_array($user->tags));
-		$this->assertEquals(1, count($user->tags));
+		$user->pull('tags', 'tag1');
+
+		$this->assertEquals(array('tag2'), $user->tags);
+		$user = User::where('_id', $user->_id)->first();
+		$this->assertEquals(array('tag2'), $user->tags);
+
+		$user->push('tags', 'tag3');
+		$user->pull('tags', array('tag2', 'tag3'));
+
+		$this->assertEquals(array(), $user->tags);
+		$user = User::where('_id', $user->_id)->first();
+		$this->assertEquals(array(), $user->tags);
 	}
 
 	public function testRaw()

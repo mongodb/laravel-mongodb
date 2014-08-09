@@ -449,7 +449,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             }
         }
 
-        $this->attributes[$column] = $current;
+        $this->attributes[$column] = array_values($current);
 
         $this->syncOriginalAttribute($column);
     }
