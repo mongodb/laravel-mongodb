@@ -322,7 +322,40 @@ Matches documents that satisfy a JavaScript expression. For more information che
 
 ### Inserts, updates and deletes
 
-All basic insert, update, delete and select methods should be implemented.
+Inserting, updating and deleting records works just like the original Eloquent.
+
+**Saving a new model**
+
+    $user = new User;
+    $user->name = 'John';
+    $user->save();
+
+You may also use the create method to save a new model in a single line:
+
+    User::create(array('name' => 'John'));
+
+**Updating a model**
+
+o update a model, you may retrieve it, change an attribute, and use the save method.
+
+    $user = User::first();
+    $user->email = 'john@foo.com';
+    $user->save();
+
+*There is also support for upsert operations, check https://github.com/jenssegers/laravel-mongodb#mongodb-specific-operations*
+
+**Deleting a model**
+
+To delete a model, simply call the delete method on the instance:
+
+    $user = User::first();
+    $user->delete();
+
+Or deleting a model by its key:
+
+    User::destroy('517c43667db388101e00000f');
+
+For more information about model manipulation, check http://laravel.com/docs/eloquent#insert-update-delete
 
 ### Dates
 
