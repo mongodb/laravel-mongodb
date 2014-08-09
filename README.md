@@ -13,6 +13,8 @@ If you want to upgrade to this new version, without having to change all your ex
 
     $this->embedsMany('Book', '_books');
 
+You can see the changelog at https://github.com/jenssegers/laravel-mongodb/releases/tag/v2.0.0
+
 Installation
 ------------
 
