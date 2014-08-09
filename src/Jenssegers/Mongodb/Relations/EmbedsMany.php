@@ -1,17 +1,16 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use MongoId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\Collection;
-use MongoId;
 
 class EmbedsMany extends EmbedsOneOrMany {
 
     /**
      * Get the results of the relationship.
      *
-     * @return Illuminate\Database\Eloquent\Collection
+     * @return Jenssegers\Mongodb\Eloquent\Collection
      */
     public function getResults()
     {
@@ -291,20 +290,6 @@ class EmbedsMany extends EmbedsOneOrMany {
     }
 
     /**
-     * Simulate order by method.
-     *
-     * @param  string  $column
-     * @param  string  $direction
-     * @return Illuminate\Database\Eloquent\Collection
-     */
-    public function orderBy($column, $direction = 'asc')
-    {
-        $descending = strtolower($direction) == 'desc';
-
-        return $this->getResults()->sortBy($column, SORT_REGULAR, $descending);
-    }
-
-    /**
      * Handle dynamic method calls to the relationship.
      *
      * @param  string  $method
@@ -314,7 +299,7 @@ class EmbedsMany extends EmbedsOneOrMany {
     public function __call($method, $parameters)
     {
         // Collection methods
-        if (method_exists('Illuminate\Database\Eloquent\Collection', $method))
+        if (method_exists('Jenssegers\Mongodb\Eloquent\Collection', $method))
         {
             return call_user_func_array(array($this->getResults(), $method), $parameters);
         }

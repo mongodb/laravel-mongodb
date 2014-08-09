@@ -1,17 +1,16 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use MongoId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\Collection;
-use MongoId;
 
 class EmbedsOne extends EmbedsOneOrMany {
 
     /**
      * Get the results of the relationship.
      *
-     * @return Illuminate\Database\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Model
      */
     public function getResults()
     {

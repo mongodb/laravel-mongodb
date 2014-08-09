@@ -416,14 +416,19 @@ class EmbeddedRelationsTest extends TestCase {
     public function testEmbedsManyCollectionMethods()
     {
         $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->save(new Address(array('city' => 'New York')));
-        $user->addresses()->save(new Address(array('city' => 'Paris')));
-        $user->addresses()->save(new Address(array('city' => 'Brussels')));
+        $user->addresses()->save(new Address(array('city' => 'Paris', 'country' => 'France')));
+        $user->addresses()->save(new Address(array('city' => 'Bruges', 'country' => 'Belgium')));
+        $user->addresses()->save(new Address(array('city' => 'Brussels', 'country' => 'Belgium')));
+        $user->addresses()->save(new Address(array('city' => 'Ghent', 'country' => 'Belgium')));
 
-        $this->assertEquals(array('New York', 'Paris', 'Brussels'), $user->addresses()->lists('city'));
-        $this->assertEquals(array('Brussels', 'New York', 'Paris'), $user->addresses()->sortBy('city')->lists('city'));
-        $this->assertEquals(array('Brussels', 'New York', 'Paris'), $user->addresses()->orderBy('city')->lists('city'));
-        $this->assertEquals(array('Paris', 'New York', 'Brussels'), $user->addresses()->orderBy('city', 'desc')->lists('city'));
+        $this->assertEquals(array('Paris', 'Bruges', 'Brussels', 'Ghent'), $user->addresses()->lists('city'));
+        $this->assertEquals(array('Bruges', 'Brussels', 'Ghent', 'Paris'), $user->addresses()->sortBy('city')->lists('city'));
+        $this->assertEquals(array('Bruges', 'Brussels', 'Ghent', 'Paris'), $user->addresses()->orderBy('city')->lists('city'));
+        $this->assertEquals(array('Paris', 'Ghent', 'Brussels', 'Bruges'), $user->addresses()->orderBy('city', 'desc')->lists('city'));
+
+        $this->assertEquals(array(), $user->addresses()->where('city', 'New York')->lists('city'));
+        $this->assertEquals(array('Bruges', 'Brussels', 'Ghent'), $user->addresses()->where('country', 'Belgium')->lists('city'));
+        $this->assertEquals(array('Ghent', 'Brussels', 'Bruges'), $user->addresses()->where('country', 'Belgium')->orderBy('city', 'desc')->lists('city'));
     }
 
     public function testEmbedsOne()

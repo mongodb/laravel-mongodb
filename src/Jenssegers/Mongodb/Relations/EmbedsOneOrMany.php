@@ -1,10 +1,11 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use MongoId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\Collection;
-use MongoId;
+use Illuminate\Database\Eloquent\Collection as BaseCollection;
+use Jenssegers\Mongodb\Eloquent\Collection;
 
 abstract class EmbedsOneOrMany extends Relation {
 
@@ -109,7 +110,7 @@ abstract class EmbedsOneOrMany extends Relation {
      * @param  string  $relation
      * @return array
      */
-    public function match(array $models, Collection $results, $relation)
+    public function match(array $models, BaseCollection $results, $relation)
     {
         foreach ($models as $model)
         {
@@ -126,7 +127,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
     * Shorthand to get the results of the relationship.
     *
-    * @return Illuminate\Database\Eloquent\Collection
+    * @return Jenssegers\Mongodb\Eloquent\Collection
     */
     public function get()
     {
@@ -278,7 +279,7 @@ abstract class EmbedsOneOrMany extends Relation {
      * Convert an array of records to a Collection.
      *
      * @param  array  $records
-     * @return Illuminate\Database\Eloquent\Collection
+     * @return Jenssegers\Mongodb\Eloquent\Collection
      */
     protected function toCollection(array $records = array())
     {
@@ -294,7 +295,7 @@ abstract class EmbedsOneOrMany extends Relation {
             $models = $this->eagerLoadRelations($models);
         }
 
-        return $this->related->newCollection($models);
+        return new Collection($models);
     }
 
     /**
