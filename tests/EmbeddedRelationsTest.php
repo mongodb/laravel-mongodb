@@ -643,4 +643,11 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(1, $user->addresses()->count());
     }
 
+    public function testSaveEmptyModel()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->save(new Address);
+        $this->assertNotNull($user->addresses);
+    }
+
 }
