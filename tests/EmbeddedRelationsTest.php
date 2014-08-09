@@ -429,6 +429,10 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(array(), $user->addresses()->where('city', 'New York')->lists('city'));
         $this->assertEquals(array('Bruges', 'Brussels', 'Ghent'), $user->addresses()->where('country', 'Belgium')->lists('city'));
         $this->assertEquals(array('Ghent', 'Brussels', 'Bruges'), $user->addresses()->where('country', 'Belgium')->orderBy('city', 'desc')->lists('city'));
+
+        $results = $user->addresses()->where('country', 'Belgium')->get();
+        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Collection', $results);
+        $this->assertEquals(3, $results->count());
     }
 
     public function testEmbedsOne()

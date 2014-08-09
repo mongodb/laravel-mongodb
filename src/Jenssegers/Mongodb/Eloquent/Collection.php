@@ -5,7 +5,24 @@ use Illuminate\Database\Eloquent\Collection as BaseCollection;
 class Collection extends BaseCollection {
 
     /**
-     * Simulate a basic where clause on the ollection.
+     * Simulate a get clause on the collection.
+     *
+     * @param  mixed  $key
+     * @param  mixed  $default
+     * @return mixed
+     */
+    public function get($key = null, $default = null)
+    {
+        if (is_null($key) and is_null($default))
+        {
+            return $this;
+        }
+
+        return parent::get($key, $default);
+    }
+
+    /**
+     * Simulate a basic where clause on the collection.
      *
      * @param  string  $key
      * @param  string  $operator
@@ -59,7 +76,7 @@ class Collection extends BaseCollection {
     }
 
     /**
-     * Simulate order by.
+     * Simulate order by clause on the collection.
      *
      * @param  string  $key
      * @param  string  $direction
