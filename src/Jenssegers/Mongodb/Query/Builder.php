@@ -112,6 +112,17 @@ class Builder extends \Illuminate\Database\Query\Builder {
     }
 
     /**
+     * Execute the query as a "select" statement.
+     *
+     * @param  array  $columns
+     * @return array|static[]
+     */
+    public function get($columns = array())
+    {
+        return parent::get($columns);
+    }
+
+    /**
      * Execute the query as a fresh "select" statement.
      *
      * @param  array  $columns
