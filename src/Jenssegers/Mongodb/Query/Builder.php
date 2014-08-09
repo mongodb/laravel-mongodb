@@ -515,11 +515,14 @@ class Builder extends \Illuminate\Database\Query\Builder {
         // Use the addToSet operator in case we only want unique items.
         $operator = $unique ? '$addToSet' : '$push';
 
+        // Check if we are pushing multiple values.
+        $multipleValues = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
+
         if (is_array($column))
         {
             $query = array($operator => $column);
         }
-        else if (is_array($value))
+        else if ($multipleValues)
         {
             $query = array($operator => array($column => array('$each' => $value)));
         }
@@ -540,8 +543,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
      */
     public function pull($column, $value = null)
     {
+        var_dump($value);
+
+        // Check if we passed an associative array.
+        $multipleValues = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
+
         // If we are pulling multiple values, we need to use $pullAll.
-        $operator = is_array($value) ? '$pullAll' : '$pull';
+        $operator = $multipleValues ? '$pullAll' : '$pull';
 
         if (is_array($column))
         {
