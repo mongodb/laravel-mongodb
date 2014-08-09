@@ -109,7 +109,7 @@ The database driver plugs right into the original query builder. When using mong
     $users = DB::collection('users')->get();
     $user = DB::collection('users')->where('name', 'John')->first();
 
-If you did not change your default dabatase connection, you will need to specify it when querying.
+If you did not change your default database connection, you will need to specify it when querying.
 
     $user = DB::connection('mongodb')->collection('users')->get();
 
