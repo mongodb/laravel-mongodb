@@ -35,7 +35,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      *
      * @var Relation
      */
-    protected $parent;
+    protected $parentRelation;
 
     /**
      * The connection resolver instance.
@@ -470,9 +470,9 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      *
      * @param Relation $relation
      */
-    public function setParent(Relation $relation)
+    public function setParentRelation(Relation $relation)
     {
-        $this->parent = $relation;
+        $this->parentRelation = $relation;
     }
 
     /**
@@ -480,9 +480,9 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      *
      * @return Relation
      */
-    public function getParent()
+    public function getParentRelation()
     {
-        return $this->parent;
+        return $this->parentRelation;
     }
 
     /**

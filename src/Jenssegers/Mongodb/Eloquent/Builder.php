@@ -26,7 +26,7 @@ class Builder extends EloquentBuilder {
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        if ($relation = $this->model->getParent())
+        if ($relation = $this->model->getParentRelation())
         {
             $relation->performUpdate($this->model, $values);
 
@@ -46,7 +46,7 @@ class Builder extends EloquentBuilder {
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        if ($relation = $this->model->getParent())
+        if ($relation = $this->model->getParentRelation())
         {
             $relation->performInsert($this->model, $values);
 
@@ -67,7 +67,7 @@ class Builder extends EloquentBuilder {
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        if ($relation = $this->model->getParent())
+        if ($relation = $this->model->getParentRelation())
         {
             $relation->performInsert($this->model, $values);
 
@@ -86,7 +86,7 @@ class Builder extends EloquentBuilder {
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        if ($relation = $this->model->getParent())
+        if ($relation = $this->model->getParentRelation())
         {
             $relation->performDelete($this->model);
 
@@ -108,7 +108,7 @@ class Builder extends EloquentBuilder {
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        if ($relation = $this->model->getParent())
+        if ($relation = $this->model->getParentRelation())
         {
             $value = $this->model->{$column};
 
@@ -138,7 +138,7 @@ class Builder extends EloquentBuilder {
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        if ($relation = $this->model->getParent())
+        if ($relation = $this->model->getParentRelation())
         {
             $value = $this->model->{$column};
 

@@ -267,29 +267,33 @@ class ModelTest extends TestCase {
 
 	public function testSoftDelete()
 	{
-		$user = new Soft;
-		$user->name = 'Softy';
-		$user->save();
+		Soft::create(array('name' => 'John Doe'));
+		Soft::create(array('name' => 'Jane Doe'));
+
+		$this->assertEquals(2, Soft::count());
+
+		$user = Soft::where('name', 'John Doe')->first();
 		$this->assertEquals(true, $user->exists);
+		$this->assertEquals(false, $user->trashed());
+		$this->assertNull($user->deleted_at);
 
 		$user->delete();
+		$this->assertEquals(true, $user->trashed());
+		$this->assertNotNull($user->deleted_at);
 
-		$check = Soft::find($user->_id);
-		$this->assertEquals(null, $check);
+		$user = Soft::where('name', 'John Doe')->first();
+		$this->assertNull($user);
 
-		$all = Soft::get();
-		$this->assertEquals(0, $all->count());
+		$this->assertEquals(1, Soft::count());
+		$this->assertEquals(2, Soft::withTrashed()->count());
 
-		$all = Soft::withTrashed()->get();
-		$this->assertEquals(1, $all->count());
+		$user = Soft::withTrashed()->where('name', 'John Doe')->first();
+		$this->assertNotNull($user);
+		$this->assertInstanceOf('Carbon\Carbon', $user->deleted_at);
+		$this->assertEquals(true, $user->trashed());
 
-		$check = $all[0];
-		$this->assertInstanceOf('Carbon\Carbon', $check->deleted_at);
-		$this->assertEquals(true, $check->trashed());
-
-		$check->restore();
-		$all = Soft::get();
-		$this->assertEquals(1, $all->count());
+		$user->restore();
+		$this->assertEquals(2, Soft::count());
 	}
 
 	public function testPrimaryKey()

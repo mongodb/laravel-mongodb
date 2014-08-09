@@ -94,7 +94,7 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         foreach ($models as $model)
         {
-            $model->setParent($this);
+            $model->setParentRelation($this);
 
             $model->setRelation($relation, $this->related->newCollection());
         }
@@ -116,7 +116,7 @@ abstract class EmbedsOneOrMany extends Relation {
         {
             $results = $model->$relation()->getResults();
 
-            $model->setParent($this);
+            $model->setParentRelation($this);
 
             $model->setRelation($relation, $results);
         }
@@ -152,7 +152,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function save(Model $model)
     {
-        $model->setParent($this);
+        $model->setParentRelation($this);
 
         return $model->save() ? $model : false;
     }
@@ -183,7 +183,7 @@ abstract class EmbedsOneOrMany extends Relation {
         // on the models. Otherwise, some of these attributes will not get set.
         $instance = $this->related->newInstance($attributes);
 
-        $instance->setParent($this);
+        $instance->setParentRelation($this);
 
         $instance->save();
 
@@ -310,7 +310,7 @@ abstract class EmbedsOneOrMany extends Relation {
 
         $model = $this->related->newFromBuilder((array) $attributes);
 
-        $model->setParent($this);
+        $model->setParentRelation($this);
 
         $model->setRelation($this->foreignKey, $this->parent);
 
@@ -327,7 +327,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getParentRelation()
     {
-        return $this->parent->getParent();
+        return $this->parent->getParentRelation();
     }
 
     /**
