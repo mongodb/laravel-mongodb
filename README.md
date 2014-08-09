@@ -451,6 +451,10 @@ Again, you may override the conventional local key by passing a second argument 
 
     return $this->embedsMany('Book', 'local_key');
 
+Embedded relations will return a Collection of embedded items instead of a query builder. To simulate a more query-like behavior, embedded relations return a modified version of the Collection class with support for the following operations: `where($key, $operator, $value)` and `orderBy($key, $direction)`. This allows you to do query the collection results like this:
+
+    $books = $user->books()->where('rating', '>', 5)->orderBy('title')->get();
+
 ### EmbedsOne Relations
 
 There is also an EmbedsOne relation, which works similar to the EmbedsMany relation, but only stores one embedded model.
