@@ -557,6 +557,12 @@ The MongoClient and MongoDB objects can be accessed like this:
 
 ### MongoDB specific operations
 
+**Cursor timeout**
+
+To prevent MongoCursorTimeout exceptions, you can manually set a timeout value that will be applied to the cursor:
+
+    DB::collection('users')->timeout(-1)->get();
+
 **Upsert**
 
 Update or insert a document. Additional options for the update method are passed directly to the native update method.

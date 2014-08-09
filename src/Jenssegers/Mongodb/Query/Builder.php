@@ -26,6 +26,13 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public $projections;
 
     /**
+     * The cursor timeout value.
+     *
+     * @var int
+     */
+    public $timeout;
+
+    /**
      * All of the available clause operators.
      *
      * @var array
@@ -75,6 +82,19 @@ class Builder extends \Illuminate\Database\Query\Builder {
     public function project($columns)
     {
         $this->projections = is_array($columns) ? $columns : func_get_args();
+
+        return $this;
+    }
+
+    /**
+     * Set the cursor timeout in seconds.
+     *
+     * @param  int $seconds
+     * @return $this
+     */
+    public function timeout($seconds)
+    {
+        $this->timeout = $seconds;
 
         return $this;
     }
@@ -217,9 +237,10 @@ class Builder extends \Illuminate\Database\Query\Builder {
             $cursor = $this->collection->find($wheres, $columns);
 
             // Apply order, offset and limit
-            if ($this->orders) $cursor->sort($this->orders);
-            if ($this->offset) $cursor->skip($this->offset);
-            if ($this->limit)  $cursor->limit($this->limit);
+            if ($this->timeout) $cursor->timeout($this->timeout);
+            if ($this->orders)  $cursor->sort($this->orders);
+            if ($this->offset)  $cursor->skip($this->offset);
+            if ($this->limit)   $cursor->limit($this->limit);
 
             // Return results as an array with numeric keys
             return iterator_to_array($cursor, false);
