@@ -623,4 +623,24 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals('Steve Doe', $user->father->name);
     }
 
+    public function testDoubleAssociate()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $address = new Address(array('city' => 'Paris'));
+
+        $user->addresses()->associate($address);
+        $user->addresses()->associate($address);
+        $address = $user->addresses()->first();
+        $user->addresses()->associate($address);
+        $this->assertEquals(1, $user->addresses()->count());
+
+        $user = User::where('name', 'John Doe')->first();
+        $user->addresses()->associate($address);
+        $this->assertEquals(1, $user->addresses()->count());
+
+        $user->save();
+        $user->addresses()->associate($address);
+        $this->assertEquals(1, $user->addresses()->count());
+    }
+
 }
