@@ -400,6 +400,9 @@ class ModelTest extends TestCase {
 
 		$user = User::create(array('name' => 'Jane Doe', 'entry' => array('date' => '2005-08-08')));
 		$this->assertInstanceOf('Carbon\Carbon', $user->getAttribute('entry.date'));
+
+		$user->setAttribute('entry.date', new DateTime);
+		$this->assertInstanceOf('Carbon\Carbon', $user->getAttribute('entry.date'));
 	}
 
 	public function testIdAttribute()

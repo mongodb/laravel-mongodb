@@ -486,10 +486,17 @@ Like other relations, embedsMany assumes the local key of the relationship based
 
     return $this->embedsMany('Book', 'local_key');
 
-Embedded relations will return a Collection of embedded items instead of a query builder. To allow a more query-like behavior, embedded relations will return a modified version of the Collection class with support for the following operations:
+Embedded relations will return a Collection of embedded items instead of a query builder. To allow a more query-like behavior, embedded relations will return a modified version of the Collection class with support for the following **additional** operations:
 
  - where($key, $operator, $value)
+ - whereIn($key, $values) and whereNotIn($key, $values)
+ - whereBetween($key, $values) and whereNotBetween($key, $values)
+ - whereNull($key) and whereNotNull($key)
  - orderBy($key, $direction)
+ - oldest() and latest()
+ - limit($value)
+ - offset($value)
+ - skip($value)
 
 This allows you to execute simple queries on the collection results:
 

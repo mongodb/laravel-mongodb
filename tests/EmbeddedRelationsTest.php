@@ -416,10 +416,10 @@ class EmbeddedRelationsTest extends TestCase {
     public function testEmbedsManyCollectionMethods()
     {
         $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->save(new Address(array('city' => 'Paris', 'country' => 'France', 'visited' => 4)));
-        $user->addresses()->save(new Address(array('city' => 'Bruges', 'country' => 'Belgium', 'visited' => 7)));
-        $user->addresses()->save(new Address(array('city' => 'Brussels', 'country' => 'Belgium', 'visited' => 2)));
-        $user->addresses()->save(new Address(array('city' => 'Ghent', 'country' => 'Belgium', 'visited' => 13)));
+        $user->addresses()->save(new Address(array('city' => 'Paris', 'country' => 'France', 'visited' => 4, 'created_at' => new DateTime('3 days ago'))));
+        $user->addresses()->save(new Address(array('city' => 'Bruges', 'country' => 'Belgium', 'visited' => 7, 'created_at' => new DateTime('5 days ago'))));
+        $user->addresses()->save(new Address(array('city' => 'Brussels', 'country' => 'Belgium', 'visited' => 2, 'created_at' => new DateTime('4 days ago'))));
+        $user->addresses()->save(new Address(array('city' => 'Ghent', 'country' => 'Belgium', 'visited' => 13, 'created_at' => new DateTime('2 days ago'))));
 
         $this->assertEquals(array('Paris', 'Bruges', 'Brussels', 'Ghent'), $user->addresses()->lists('city'));
         $this->assertEquals(array('Bruges', 'Brussels', 'Ghent', 'Paris'), $user->addresses()->sortBy('city')->lists('city'));
@@ -429,6 +429,9 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(array(), $user->addresses()->where('city', 'New York')->lists('city'));
         $this->assertEquals(array('Bruges', 'Brussels', 'Ghent'), $user->addresses()->where('country', 'Belgium')->lists('city'));
         $this->assertEquals(array('Ghent', 'Brussels', 'Bruges'), $user->addresses()->where('country', 'Belgium')->orderBy('city', 'desc')->lists('city'));
+
+        $results = $user->addresses->get(0);
+        $this->assertInstanceOf('Address', $results);
 
         $results = $user->addresses()->where('country', 'Belgium')->get();
         $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Collection', $results);
@@ -451,6 +454,39 @@ class EmbeddedRelationsTest extends TestCase {
 
         $results = $user->addresses()->where('visited', 'between', array(4, 7))->get();
         $this->assertEquals(2, $results->count());
+
+        $results = $user->addresses()->whereBetween('visited', array(4, 7))->get();
+        $this->assertEquals(2, $results->count());
+
+        $results = $user->addresses()->whereNotBetween('visited', array(4, 7))->get();
+        $this->assertEquals(2, $results->count());
+
+        $results = $user->addresses()->whereIn('visited', array(7, 13))->get();
+        $this->assertEquals(2, $results->count());
+
+        $results = $user->addresses()->whereNotIn('visited', array(7))->get();
+        $this->assertEquals(3, $results->count());
+
+        $results = $user->addresses()->whereNull('something')->get();
+        $this->assertEquals(4, $results->count());
+
+        $results = $user->addresses()->whereNotNull('visited')->get();
+        $this->assertEquals(4, $results->count());
+
+        $results = $user->addresses()->offset(1)->get();
+        $this->assertEquals(3, $results->count());
+
+        $results = $user->addresses()->skip(1)->get();
+        $this->assertEquals(3, $results->count());
+
+        $results = $user->addresses()->limit(2)->get();
+        $this->assertEquals(2, $results->count());
+
+        $result = $user->addresses()->latest()->first();
+        $this->assertEquals('Ghent', $result->city);
+
+        $result = $user->addresses()->oldest()->first();
+        $this->assertEquals('Bruges', $result->city);
     }
 
     public function testEmbedsOne()
