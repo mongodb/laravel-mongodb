@@ -455,20 +455,20 @@ class RelationsTest extends TestCase {
         $user->save();
 
         $this->assertEquals(1, $user->clients()->count());
-        //$this->assertEquals(array($user->_id), $client->user_ids); TODO
+        $this->assertEquals(array($user->_id), $client->user_ids);
         $this->assertEquals(array($client->_id), $user->client_ids);
 
         $user = User::where('name', 'John Doe')->first();
         $client = Client::where('name', 'Admins')->first();
         $this->assertEquals(1, $user->clients()->count());
-        //$this->assertEquals(array($user->_id), $client->user_ids); TODO
+        $this->assertEquals(array($user->_id), $client->user_ids);
         $this->assertEquals(array($client->_id), $user->client_ids);
 
         $user->clients()->save($client);
         $user->clients()->save($client);
         $user->save();
         $this->assertEquals(1, $user->clients()->count());
-        //$this->assertEquals(array($user->_id), $client->user_ids); TODO
+        $this->assertEquals(array($user->_id), $client->user_ids);
         $this->assertEquals(array($client->_id), $user->client_ids);
     }
 

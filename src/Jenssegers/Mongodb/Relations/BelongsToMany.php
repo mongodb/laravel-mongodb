@@ -1,6 +1,6 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
-use Jenssegers\Mongodb\Model;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 
@@ -38,6 +38,45 @@ class BelongsToMany extends EloquentBelongsToMany {
 		{
 			$this->query->where($this->getForeignKey(), '=', $this->parent->getKey());
 		}
+	}
+
+	/**
+	 * Save a new model and attach it to the parent model.
+	 *
+	 * @param  \Illuminate\Database\Eloquent\Model  $model
+	 * @param  array  $joining
+	 * @param  bool   $touch
+	 * @return \Illuminate\Database\Eloquent\Model
+	 */
+	public function save(Model $model, array $joining = array(), $touch = true)
+	{
+		$model->save(array('touch' => false));
+
+		$this->attach($model, $joining, $touch);
+
+		return $model;
+	}
+
+	/**
+	 * Create a new instance of the related model.
+	 *
+	 * @param  array  $attributes
+	 * @param  array  $joining
+	 * @param  bool   $touch
+	 * @return \Illuminate\Database\Eloquent\Model
+	 */
+	public function create(array $attributes, array $joining = array(), $touch = true)
+	{
+		$instance = $this->related->newInstance($attributes);
+
+		// Once we save the related model, we need to attach it to the base model via
+		// through intermediate table so we'll use the existing "attach" method to
+		// accomplish this which will insert the record and any more attributes.
+		$instance->save(array('touch' => false));
+
+		$this->attach($instance, $joining, $touch);
+
+		return $instance;
 	}
 
 	/**
@@ -102,7 +141,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 */
 	public function updateExistingPivot($id, array $attributes, $touch = true)
 	{
-		// TODO
+		// Do nothing, we have no pivot table.
 	}
 
 	/**
@@ -115,7 +154,10 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 */
 	public function attach($id, array $attributes = array(), $touch = true)
 	{
-		if ($id instanceof Model) $id = $id->getKey();
+		if ($id instanceof Model)
+		{
+			$model = $id; $id = $model->getKey();
+		}
 
 		$records = $this->createAttachRecords((array) $id, $attributes);
 
@@ -126,14 +168,23 @@ class BelongsToMany extends EloquentBelongsToMany {
 		// Attach the new ids to the parent model.
 		$this->parent->push($this->otherKey, $otherIds, true);
 
-		// Generate a new related query instance.
-		$query = $this->newRelatedQuery();
+		// If we have a model instance, we can psuh the ids to that model,
+		// so that the internal attributes are updated as well. Otherwise,
+		// we will just perform a regular database query.
+		if (isset($model))
+		{
+			// Attach the new ids to the related model.
+			$model->push($this->foreignKey, $foreignIds, true);
+		}
+		else
+		{
+			$query = $this->newRelatedQuery();
 
-		// Set contraints on the related query.
-		$query->where($this->related->getKeyName(), $id);
+			$query->where($this->related->getKeyName(), $id);
 
-		// Attach the new ids to the related model.
-		$query->push($this->foreignKey, $foreignIds, true);
+			// Attach the new ids to the related model.
+			$query->push($this->foreignKey, $foreignIds, true);
+		}
 
 		if ($touch) $this->touchIfTouching();
 	}
