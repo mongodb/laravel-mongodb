@@ -26,6 +26,7 @@ class Collection {
     public function __construct(Connection $connection, MongoCollection $collection)
     {
         $this->connection = $connection;
+
         $this->collection = $collection;
     }
 
@@ -38,29 +39,34 @@ class Collection {
      */
     public function __call($method, $parameters)
     {
+        $query = array();
+
         // Build the query string.
-        $query = $parameters;
-        foreach ($query as &$param)
+        foreach ($parameters as $parameter)
         {
             try
             {
-                $param = json_encode($param);
+                $query[] = json_encode($parameter);
             }
             catch (Exception $e)
             {
-                $param = '{...}';
+                $query[] = '{...}';
             }
         }
 
         $start = microtime(true);
 
-        // Execute the query.
         $result = call_user_func_array(array($this->collection, $method), $parameters);
 
-        // Log the query.
-        $this->connection->logQuery(
-            $this->collection->getName() . '.' . $method . '(' . join(',', $query) . ')',
-            array(), $this->connection->getElapsedTime($start));
+        // Once we have run the query we will calculate the time that it took to run and
+        // then log the query, bindings, and execution time so we will report them on
+        // the event that the developer needs them. We'll log time in milliseconds.
+        $time = $this->connection->getElapsedTime($start);
+
+        // Convert the query to a readable string.
+        $queryString = $this->collection->getName() . '.' . $method . '(' . join(',', $query) . ')';
+
+        $this->connection->logQuery($queryString, array(), $time);
 
         return $result;
     }

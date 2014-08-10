@@ -134,7 +134,7 @@ class QueryTest extends TestCase {
 		$this->assertEquals(4, count($users));
 
 		$users = User::whereNotNull('age')
-		             ->whereNotIn('age', array(33, 35))->get();
+					 ->whereNotIn('age', array(33, 35))->get();
 		$this->assertEquals(3, count($users));
 	}
 
@@ -214,31 +214,56 @@ class QueryTest extends TestCase {
 	public function testSubquery()
 	{
 		$users = User::where('title', 'admin')->orWhere(function($query)
-            {
-                $query->where('name', 'Tommy Toe')
-                      ->orWhere('name', 'Error');
-            })
-            ->get();
+			{
+				$query->where('name', 'Tommy Toe')
+					  ->orWhere('name', 'Error');
+			})
+			->get();
 
-        $this->assertEquals(5, count($users));
+		$this->assertEquals(5, count($users));
 
-        $users = User::where('title', 'user')->where(function($query)
-            {
-                $query->where('age', 35)
-                      ->orWhere('name', 'like', '%harry%');
-            })
-            ->get();
+		$users = User::where('title', 'user')->where(function($query)
+			{
+				$query->where('age', 35)
+					  ->orWhere('name', 'like', '%harry%');
+			})
+			->get();
 
-        $this->assertEquals(2, count($users));
+		$this->assertEquals(2, count($users));
 
-        $users = User::where('age', 35)->orWhere(function($query)
-            {
-                $query->where('title', 'admin')
-                      ->orWhere('name', 'Error');
-            })
-            ->get();
+		$users = User::where('age', 35)->orWhere(function($query)
+			{
+				$query->where('title', 'admin')
+					  ->orWhere('name', 'Error');
+			})
+			->get();
 
-        $this->assertEquals(5, count($users));
+		$this->assertEquals(5, count($users));
+
+		$users = User::whereNull('deleted_at')
+				->where('title', 'admin')
+				->where(function($query)
+				{
+					$query->where('age', '>', 15)
+						  ->orWhere('name', 'Harry Hoe');
+				})
+				->get();
+
+		$this->assertEquals(3, $users->count());
+
+		$users = User::whereNull('deleted_at')
+				->where(function($query)
+				{
+					$query->where('name', 'Harry Hoe')
+						  ->orWhere(function($query)
+						  {
+							  $query->where('age', '>', 15)
+									->where('title', '<>', 'admin');
+						  });
+				})
+				->get();
+
+		$this->assertEquals(5, $users->count());
 	}
 
 	public function testWhereRaw()
@@ -278,6 +303,17 @@ class QueryTest extends TestCase {
 		})->get();
 
 		$this->assertEquals(2, count($users));
+	}
+
+	public function testPaginate()
+	{
+		$results = User::paginate(2);
+		$this->assertEquals(2, $results->count());
+		$this->assertNotNull($results->first()->title);
+
+		$results = User::paginate(2, array('name', 'age'));
+		$this->assertEquals(2, $results->count());
+		$this->assertNull($results->first()->title);
 	}
 
 }

@@ -1,10 +1,11 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use MongoId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\Collection;
-use MongoId;
+use Illuminate\Database\Eloquent\Collection as BaseCollection;
+use Jenssegers\Mongodb\Eloquent\Collection;
 
 abstract class EmbedsOneOrMany extends Relation {
 
@@ -48,6 +49,12 @@ abstract class EmbedsOneOrMany extends Relation {
         $this->foreignKey = $foreignKey;
         $this->relation = $relation;
 
+         // If this is a nested relation, we need to get the parent query instead.
+        if ($parentRelation = $this->getParentRelation())
+        {
+            $this->query = $parentRelation->getQuery();
+        }
+
         $this->addConstraints();
     }
 
@@ -60,7 +67,7 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         if (static::$constraints)
         {
-            $this->query->where($this->parent->getKeyName(), '=', $this->parent->getKey());
+            $this->query->where($this->getQualifiedParentKeyName(), '=', $this->getParentKey());
         }
     }
 
@@ -86,6 +93,8 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         foreach ($models as $model)
         {
+            $model->setParentRelation($this);
+
             $model->setRelation($relation, $this->related->newCollection());
         }
 
@@ -100,11 +109,13 @@ abstract class EmbedsOneOrMany extends Relation {
      * @param  string  $relation
      * @return array
      */
-    public function match(array $models, Collection $results, $relation)
+    public function match(array $models, BaseCollection $results, $relation)
     {
         foreach ($models as $model)
         {
             $results = $model->$relation()->getResults();
+
+            $model->setParentRelation($this);
 
             $model->setRelation($relation, $results);
         }
@@ -115,7 +126,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
     * Shorthand to get the results of the relationship.
     *
-    * @return Illuminate\Database\Eloquent\Collection
+    * @return Jenssegers\Mongodb\Eloquent\Collection
     */
     public function get()
     {
@@ -140,62 +151,9 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function save(Model $model)
     {
-        if ($this->fireModelEvent($model, 'saving') === false) return false;
+        $model->setParentRelation($this);
 
-        $this->updateTimestamps($model);
-
-        // Attach a new model.
-        if ( ! $this->contains($model))
-        {
-            if ($this->fireModelEvent($model, 'creating') === false) return false;
-
-            $result = $this->performInsert($model);
-
-            if ($result)
-            {
-                $this->fireModelEvent($model, 'created', false);
-
-                // Mark model as existing
-                $model->exists = true;
-            }
-        }
-
-        // Update an existing model.
-        else
-        {
-            if ($this->fireModelEvent($model, 'updating') === false) return false;
-
-            $result = $this->performUpdate($model);
-
-            if ($result) $this->fireModelEvent($model, 'updated', false);
-        }
-
-        if ($result)
-        {
-            $this->fireModelEvent($result, 'saved', false);
-
-            return $result;
-        }
-
-        return false;
-    }
-
-    /**
-     * Create a new instance of the related model.
-     *
-     * @param  array  $attributes
-     * @return \Illuminate\Database\Eloquent\Model
-     */
-    public function create(array $attributes)
-    {
-        // Here we will set the raw attributes to avoid hitting the "fill" method so
-        // that we do not have to worry about a mass accessor rules blocking sets
-        // on the models. Otherwise, some of these attributes will not get set.
-        $instance = $this->related->newInstance();
-
-        $instance->setRawAttributes($attributes);
-
-        return $this->save($instance);
+        return $model->save() ? $model : false;
     }
 
     /**
@@ -212,6 +170,26 @@ abstract class EmbedsOneOrMany extends Relation {
     }
 
     /**
+     * Create a new instance of the related model.
+     *
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function create(array $attributes)
+    {
+        // Here we will set the raw attributes to avoid hitting the "fill" method so
+        // that we do not have to worry about a mass accessor rules blocking sets
+        // on the models. Otherwise, some of these attributes will not get set.
+        $instance = $this->related->newInstance($attributes);
+
+        $instance->setParentRelation($this);
+
+        $instance->save();
+
+        return $instance;
+    }
+
+    /**
      * Create an array of new instances of the related model.
      *
      * @param  array  $records
@@ -219,7 +197,12 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function createMany(array $records)
     {
-        $instances = array_map(array($this, 'create'), $records);
+        $instances = array();
+
+        foreach ($records as $record)
+        {
+            $instances[] = $this->create($record);
+        }
 
         return $instances;
     }
@@ -232,7 +215,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getIdsArrayFrom($ids)
     {
-        if (! is_array($ids)) $ids = array($ids);
+        if ( ! is_array($ids)) $ids = array($ids);
 
         foreach ($ids as &$id)
         {
@@ -240,26 +223,6 @@ abstract class EmbedsOneOrMany extends Relation {
         }
 
         return $ids;
-    }
-
-    /**
-     * Create a related model instanced.
-     *
-     * @param  array  $attributes [description]
-     * @return [type]             [description]
-     */
-    protected function toModel($attributes = array())
-    {
-        if (is_null($attributes)) return null;
-
-        $model = $this->related->newFromBuilder((array) $attributes);
-
-        // Attatch the parent relation to the embedded model.
-        $model->setRelation($this->foreignKey, $this->parent);
-
-        $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
-
-        return $model;
     }
 
     /**
@@ -278,43 +241,20 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Set the embedded records array.
      *
-     * @param array $models
-     * @return void
+     * @param  array $records
+     * @return \Illuminate\Database\Eloquent\Model
      */
-    protected function setEmbedded($data)
+    protected function setEmbedded($records)
     {
         $attributes = $this->parent->getAttributes();
 
-        $attributes[$this->localKey] = $data;
+        $attributes[$this->localKey] = $records;
 
         // Set raw attributes to skip mutators.
         $this->parent->setRawAttributes($attributes);
 
         // Set the relation on the parent.
-        $this->parent->setRelation($this->relation, $this->getResults());
-    }
-
-    /**
-     * Update the creation and update timestamps.
-     *
-     * @return void
-     */
-    protected function updateTimestamps(Model $model)
-    {
-        // Check if this model uses timestamps first.
-        if ( ! $model->timestamps) return;
-
-        $time = $model->freshTimestamp();
-
-        if ( ! $model->isDirty(Model::UPDATED_AT))
-        {
-            $model->setUpdatedAt($time);
-        }
-
-        if ( ! $model->exists && ! $model->isDirty(Model::CREATED_AT))
-        {
-            $model->setCreatedAt($time);
-        }
+        return $this->parent->setRelation($this->relation, $this->getResults());
     }
 
     /**
@@ -338,13 +278,12 @@ abstract class EmbedsOneOrMany extends Relation {
      * Convert an array of records to a Collection.
      *
      * @param  array  $records
-     * @return Illuminate\Database\Eloquent\Collection
+     * @return Jenssegers\Mongodb\Eloquent\Collection
      */
     protected function toCollection(array $records = array())
     {
         $models = array();
 
-        // Wrap records in model objects.
         foreach ($records as $attributes)
         {
             $models[] = $this->toModel($attributes);
@@ -355,30 +294,113 @@ abstract class EmbedsOneOrMany extends Relation {
             $models = $this->eagerLoadRelations($models);
         }
 
-        return $this->related->newCollection($models);
+        return new Collection($models);
     }
 
     /**
-     * Fire the given event for the given model.
+     * Create a related model instanced.
      *
-     * @param  string  $event
-     * @param  bool    $halt
-     * @return mixed
+     * @param  array  $attributes
+     * @return \Illuminate\Database\Eloquent\Model
      */
-    protected function fireModelEvent(Model $model, $event, $halt = true)
+    protected function toModel($attributes = array())
     {
-        $dispatcher = $model->getEventDispatcher();
+        if (is_null($attributes)) return null;
 
-        if ( is_null($dispatcher)) return true;
+        $model = $this->related->newFromBuilder((array) $attributes);
 
-        // We will append the names of the class to the event to distinguish it from
-        // other model events that are fired, allowing us to listen on each model
-        // event set individually instead of catching event for all the models.
-        $event = "eloquent.{$event}: ".get_class($model);
+        $model->setParentRelation($this);
 
-        $method = $halt ? 'until' : 'fire';
+        $model->setRelation($this->foreignKey, $this->parent);
 
-        return $dispatcher->$method($event, $model);
+        // If you remove this, you will get segmentation faults!
+        $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
+
+        return $model;
+    }
+
+    /**
+     * Get the relation instance of the parent.
+     *
+     * @return Illuminate\Database\Eloquent\Relations\Relation
+     */
+    protected function getParentRelation()
+    {
+        return $this->parent->getParentRelation();
+    }
+
+    /**
+     * Get the underlying query for the relation.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function getQuery()
+    {
+        // Because we are sharing this relation instance to models, we need
+        // to make sure we use separate query instances.
+        return clone $this->query;
+    }
+
+    /**
+     * Get the base query builder driving the Eloquent builder.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function getBaseQuery()
+    {
+        // Because we are sharing this relation instance to models, we need
+        // to make sure we use separate query instances.
+        return clone $this->query->getQuery();
+    }
+
+    /**
+     * Check if this relation is nested in another relation.
+     *
+     * @return boolean
+     */
+    protected function isNested()
+    {
+        return $this->getParentRelation() != null;
+    }
+
+    /**
+     * Get the fully qualified local key name.
+     *
+     * @return string
+     */
+    protected function getPathHierarchy($glue = '.')
+    {
+        if ($parentRelation = $this->getParentRelation())
+        {
+            return $parentRelation->getPathHierarchy($glue) . $glue . $this->localKey;
+        }
+
+        return $this->localKey;
+    }
+
+    /**
+     * Get the parent's fully qualified key name.
+     *
+     * @return string
+     */
+    protected function getQualifiedParentKeyName()
+    {
+        if ($parentRelation = $this->getParentRelation())
+        {
+            return $parentRelation->getPathHierarchy() . '.' . $this->parent->getKeyName();
+        }
+
+        return $this->parent->getKeyName();
+    }
+
+    /**
+     * Get the primary key value of the parent.
+     *
+     * @return string
+     */
+    protected function getParentKey()
+    {
+        return $this->parent->getKey();
     }
 
 }

@@ -20,4 +20,14 @@ class HasOne extends EloquentHasOne {
         return $query->select($this->getHasCompareKey())->where($this->getHasCompareKey(), 'exists', true);
     }
 
+    /**
+     * Get the plain foreign key.
+     *
+     * @return string
+     */
+    public function getPlainForeignKey()
+    {
+        return $this->getForeignKey();
+    }
+
 }

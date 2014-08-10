@@ -131,6 +131,7 @@ class RelationsTest extends TestCase {
         $items = $user->items;
         $this->assertEquals(1, count($items));
         $this->assertInstanceOf('Item', $items[0]);
+        $this->assertEquals($user->_id, $items[0]->user_id);
 
         // Has one
         $user = User::create(array('name' => 'John Doe'));
@@ -141,6 +142,7 @@ class RelationsTest extends TestCase {
         $role = $user->role;
         $this->assertInstanceOf('Role', $role);
         $this->assertEquals('admin', $role->type);
+        $this->assertEquals($user->_id, $role->user_id);
     }
 
     public function testBelongsToMany()
@@ -415,6 +417,59 @@ class RelationsTest extends TestCase {
 
         $address = $client->addresses->first();
         $this->assertEquals('Paris', $address->data['city']);
+
+        $client = Client::with('addresses')->first();
+        $this->assertEquals('Paris', $client->addresses->first()->data['city']);
+    }
+
+    public function testDoubleSaveOneToMany()
+    {
+        $author = User::create(array('name' => 'George R. R. Martin'));
+        $book = Book::create(array('title' => 'A Game of Thrones'));
+
+        $author->books()->save($book);
+        $author->books()->save($book);
+        $author->save();
+        $this->assertEquals(1, $author->books()->count());
+        $this->assertEquals($author->_id, $book->author_id);
+
+        $author = User::where('name', 'George R. R. Martin')->first();
+        $book = Book::where('title', 'A Game of Thrones')->first();
+        $this->assertEquals(1, $author->books()->count());
+        $this->assertEquals($author->_id, $book->author_id);
+
+        $author->books()->save($book);
+        $author->books()->save($book);
+        $author->save();
+        $this->assertEquals(1, $author->books()->count());
+        $this->assertEquals($author->_id, $book->author_id);
+    }
+
+    public function testDoubleSaveManyToMany()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $client = Client::create(array('name' => 'Admins'));
+
+        $user->clients()->save($client);
+        $user->clients()->save($client);
+        $user->save();
+
+        $this->assertEquals(1, $user->clients()->count());
+        $this->assertEquals(array($user->_id), $client->user_ids);
+        $this->assertEquals(array($client->_id), $user->client_ids);
+
+        $user = User::where('name', 'John Doe')->first();
+        $client = Client::where('name', 'Admins')->first();
+        $this->assertEquals(1, $user->clients()->count());
+        $this->assertEquals(array($user->_id), $client->user_ids);
+        $this->assertEquals(array($client->_id), $user->client_ids);
+
+        $user->clients()->save($client);
+        $user->clients()->save($client);
+        $user->save();
+        $this->assertEquals(1, $user->clients()->count());
+        $this->assertEquals(array($user->_id), $client->user_ids);
+        $this->assertEquals(array($client->_id), $user->client_ids);
     }
 
 }
