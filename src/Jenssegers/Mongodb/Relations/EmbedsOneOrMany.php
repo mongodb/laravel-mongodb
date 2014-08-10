@@ -52,7 +52,6 @@ abstract class EmbedsOneOrMany extends Relation {
          // If this is a nested relation, we need to get the parent query instead.
         if ($parentRelation = $this->getParentRelation())
         {
-            //$this->query = $parentRelation->parent->newQuery();
             $this->query = $parentRelation->getQuery();
         }
 
@@ -328,6 +327,30 @@ abstract class EmbedsOneOrMany extends Relation {
     protected function getParentRelation()
     {
         return $this->parent->getParentRelation();
+    }
+
+    /**
+     * Get the underlying query for the relation.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function getQuery()
+    {
+        // Because we are sharing this relation instance to models, we need
+        // to make sure we use separate query instances.
+        return clone $this->query;
+    }
+
+    /**
+     * Get the base query builder driving the Eloquent builder.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function getBaseQuery()
+    {
+        // Because we are sharing this relation instance to models, we need
+        // to make sure we use separate query instances.
+        return clone $this->query->getQuery();
     }
 
     /**

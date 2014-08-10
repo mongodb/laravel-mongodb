@@ -690,9 +690,12 @@ class EmbeddedRelationsTest extends TestCase {
         $user = User::where('name', 'John Doe')->first();
         $this->assertEquals(6, $user->addresses()->first()->visited);
 
+        $user = User::where('name', 'John Doe')->first();
+        $address = $user->addresses()->first();
+
         $address->decrement('visited');
         $this->assertEquals(5, $address->visited);
-        //$this->assertEquals(5, $user->addresses()->first()->visited); TODO
+        $this->assertEquals(5, $user->addresses()->first()->visited);
 
         $user = User::where('name', 'John Doe')->first();
         $this->assertEquals(5, $user->addresses()->first()->visited);

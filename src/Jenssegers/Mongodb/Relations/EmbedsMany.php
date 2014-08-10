@@ -99,7 +99,7 @@ class EmbedsMany extends EmbedsOneOrMany {
         // Get the correct foreign key value.
         $foreignKey = $this->getForeignKeyValue($model);
 
-        $result = $this->query->pull($this->localKey, array($model->getKeyName() => $foreignKey));
+        $result = $this->getBaseQuery()->pull($this->localKey, array($model->getKeyName() => $foreignKey));
 
         if ($result) $this->dissociate($model);
 

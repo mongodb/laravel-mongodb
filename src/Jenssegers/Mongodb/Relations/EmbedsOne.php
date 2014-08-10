@@ -90,7 +90,7 @@ class EmbedsOne extends EmbedsOneOrMany {
         }
 
         // Overwrite the local key with an empty array.
-        $result = $this->query->update(array($this->localKey => null));
+        $result = $this->getBaseQuery()->update(array($this->localKey => null));
 
         // Detach the model from its parent.
         if ($result) $this->dissociate();
