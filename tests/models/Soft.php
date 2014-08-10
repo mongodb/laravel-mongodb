@@ -5,9 +5,10 @@ use Jenssegers\Mongodb\Eloquent\SoftDeletingTrait;
 
 class Soft extends Eloquent {
 
-	use SoftDeletingTrait;
+    use SoftDeletingTrait;
 
-	protected $collection = 'soft';
-	protected $dates = array('deleted_at');
+    protected $collection = 'soft';
+    protected static $unguarded = true;
+    protected $dates = array('deleted_at');
 
 }

@@ -17,6 +17,146 @@ class Builder extends EloquentBuilder {
     );
 
     /**
+     * Update a record in the database.
+     *
+     * @param  array  $values
+     * @return int
+     */
+    public function update(array $values)
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParentRelation())
+        {
+            $relation->performUpdate($this->model, $values);
+
+            return 1;
+        }
+
+        return parent::update($values);
+    }
+
+    /**
+     * Insert a new record into the database.
+     *
+     * @param  array  $values
+     * @return bool
+     */
+    public function insert(array $values)
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParentRelation())
+        {
+            $relation->performInsert($this->model, $values);
+
+            return true;
+        }
+
+        return parent::insert($values);
+    }
+
+    /**
+     * Insert a new record and get the value of the primary key.
+     *
+     * @param  array   $values
+     * @param  string  $sequence
+     * @return int
+     */
+    public function insertGetId(array $values, $sequence = null)
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParentRelation())
+        {
+            $relation->performInsert($this->model, $values);
+
+            return $this->model->getKey();
+        }
+
+        return parent::insertGetId($values, $sequence);
+    }
+
+    /**
+     * Delete a record from the database.
+     *
+     * @return mixed
+     */
+    public function delete()
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParentRelation())
+        {
+            $relation->performDelete($this->model);
+
+            return $this->model->getKey();
+        }
+
+        return parent::delete();
+    }
+
+    /**
+     * Increment a column's value by a given amount.
+     *
+     * @param  string  $column
+     * @param  int     $amount
+     * @param  array   $extra
+     * @return int
+     */
+    public function increment($column, $amount = 1, array $extra = array())
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParentRelation())
+        {
+            $value = $this->model->{$column};
+
+            // When doing increment and decrements, Eloquent will automatically
+            // sync the original attributes. We need to change the attribute
+            // temporary in order to trigger an update query.
+            $this->model->{$column} = null;
+
+            $this->model->syncOriginalAttribute($column);
+
+            $result = $this->model->update(array($column => $value));
+
+            return $result;
+        }
+
+        return parent::increment($column, $amount, $extra);
+    }
+
+    /**
+     * Decrement a column's value by a given amount.
+     *
+     * @param  string  $column
+     * @param  int     $amount
+     * @param  array   $extra
+     * @return int
+     */
+    public function decrement($column, $amount = 1, array $extra = array())
+    {
+        // Intercept operations on embedded models and delegate logic
+        // to the parent relation instance.
+        if ($relation = $this->model->getParentRelation())
+        {
+            $value = $this->model->{$column};
+
+            // When doing increment and decrements, Eloquent will automatically
+            // sync the original attributes. We need to change the attribute
+            // temporary in order to trigger an update query.
+            $this->model->{$column} = null;
+
+            $this->model->syncOriginalAttribute($column);
+
+            return $this->model->update(array($column => $value));
+        }
+
+        return parent::decrement($column, $amount, $extra);
+    }
+
+    /**
      * Add the "has" condition where clause to the query.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $hasQuery
@@ -77,26 +217,12 @@ class Builder extends EloquentBuilder {
 		// Get raw results from the query builder.
 		$results = $this->query->raw($expression);
 
-		$connection = $this->model->getConnectionName();
-
 		// Convert MongoCursor results to a collection of models.
 		if ($results instanceof MongoCursor)
 		{
 			$results = iterator_to_array($results, false);
 
-			$models = array();
-
-			// Once we have the results, we can spin through them and instantiate a fresh
-			// model instance for each records we retrieved from the database. We will
-			// also set the proper connection name for the model after we create it.
-			foreach ($results as $result)
-			{
-				$models[] = $model = $this->model->newFromBuilder($result);
-
-				$model->setConnection($connection);
-			}
-
-			return $this->model->newCollection($models);
+			return $this->model->hydrate($results);
 		}
 
 		// The result is a single object.
@@ -104,7 +230,7 @@ class Builder extends EloquentBuilder {
 		{
 			$model = $this->model->newFromBuilder($results);
 
-			$model->setConnection($connection);
+			$model->setConnection($this->model->getConnection());
 
 			return $model;
 		}

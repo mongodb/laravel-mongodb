@@ -9,7 +9,10 @@ class TestCase extends Orchestra\Testbench\TestCase {
      */
     protected function getPackageProviders()
     {
-        return array('Jenssegers\Mongodb\MongodbServiceProvider');
+        return array(
+            'Jenssegers\Mongodb\MongodbServiceProvider',
+            'Jenssegers\Mongodb\Auth\ReminderServiceProvider',
+        );
     }
 
     /**

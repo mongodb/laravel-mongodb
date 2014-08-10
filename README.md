@@ -3,7 +3,17 @@ Laravel MongoDB
 
 [![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](http://img.shields.io/travis/jenssegers/laravel-mongodb.svg)](https://travis-ci.org/jenssegers/laravel-mongodb) [![Coverage Status](http://img.shields.io/coveralls/jenssegers/laravel-mongodb.svg)](https://coveralls.io/r/jenssegers/laravel-mongodb?branch=master)
 
-An Eloquent model and Query builder with support for MongoDB, inspired by LMongo, but using the original Laravel methods. *This library extends the original Laravel classes, so it uses exactly the same methods.*
+An Eloquent model and Query builder with support for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
+
+### Upgrading from v1 to v2
+
+In this new version, embedded documents are no longer saved to the parent model using an attribute with a leading underscore. If you have a relation like `embedsMany('Book')`, these books are now stored under `$model['books']` instead of `$model['_books']`. This was changed to make embedded relations less confusing for new developers.
+
+If you want to upgrade to this new version without having to change all your existing database objects, you can modify your embedded relations to use a non-default local key including the underscore:
+
+    $this->embedsMany('Book', '_books');
+
+Read the full changelog at https://github.com/jenssegers/laravel-mongodb/releases/tag/v2.0.0
 
 Installation
 ------------
@@ -65,7 +75,7 @@ Tell your model to use the MongoDB model and set the collection (alias for table
 
     }
 
-If you are using a different database driver as the default one, you will need to specify the mongodb connection within your model by changing the `connection` property:
+If you are using a different database driver as the default one, you will need to specify the mongodb connection name within your model by changing the `connection` property:
 
     use Jenssegers\Mongodb\Model as Eloquent;
 
@@ -94,14 +104,14 @@ This will allow you to use your registered alias like:
 Query Builder
 -------------
 
-The database driver plugs right into the original query builder. When using mongodb connections you will be able to build fluent queries to perform database operations. For your convenience, there is a `collection` alias for `table` as well as some additional mongodb specific operators/operations.
+The database driver plugs right into the original query builder. When using mongodb connections, you will be able to build fluent queries to perform database operations. For your convenience, there is a `collection` alias for `table` as well as some additional mongodb specific operators/operations.
 
-    // With custom connection
-    $user = DB::connection('mongodb')->collection('users')->get();
-
-    // Using default connection
     $users = DB::collection('users')->get();
     $user = DB::collection('users')->where('name', 'John')->first();
+
+If you did not change your default database connection, you will need to specify it when querying.
+
+    $user = DB::connection('mongodb')->collection('users')->get();
 
 Read more about the query builder on http://laravel.com/docs/queries
 
@@ -170,7 +180,7 @@ Examples
 **And Statements**
 
     $users = User::where('votes', '>', 100)->where('name', '=', 'John')->get();
-    
+
 **Using Where In With An Array**
 
     $users = User::whereIn('age', array(16, 18, 20))->get();
@@ -258,15 +268,15 @@ You may also specify additional columns to update:
 
 When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record. To enable soft deletes for a model, apply the SoftDeletingTrait to the model:
 
-use Jenssegers\Mongodb\Eloquent\SoftDeletingTrait;
+    use Jenssegers\Mongodb\Eloquent\SoftDeletingTrait;
 
-class User extends Eloquent {
+    class User extends Eloquent {
 
-    use SoftDeletingTrait;
+        use SoftDeletingTrait;
 
-    protected $dates = ['deleted_at'];
+        protected $dates = ['deleted_at'];
 
-}
+    }
 
 For more information check http://laravel.com/docs/eloquent#soft-deleting
 
@@ -314,7 +324,40 @@ Matches documents that satisfy a JavaScript expression. For more information che
 
 ### Inserts, updates and deletes
 
-All basic insert, update, delete and select methods should be implemented.
+Inserting, updating and deleting records works just like the original Eloquent.
+
+**Saving a new model**
+
+    $user = new User;
+    $user->name = 'John';
+    $user->save();
+
+You may also use the create method to save a new model in a single line:
+
+    User::create(array('name' => 'John'));
+
+**Updating a model**
+
+o update a model, you may retrieve it, change an attribute, and use the save method.
+
+    $user = User::first();
+    $user->email = 'john@foo.com';
+    $user->save();
+
+*There is also support for upsert operations, check https://github.com/jenssegers/laravel-mongodb#mongodb-specific-operations*
+
+**Deleting a model**
+
+To delete a model, simply call the delete method on the instance:
+
+    $user = User::first();
+    $user->delete();
+
+Or deleting a model by its key:
+
+    User::destroy('517c43667db388101e00000f');
+
+For more information about model manipulation, check http://laravel.com/docs/eloquent#insert-update-delete
 
 ### Dates
 
@@ -386,7 +429,7 @@ Other relations are not yet supported, but may be added in the future. Read more
 
 ### EmbedsMany Relations
 
-If you want to embed documents, rather than referencing them, you can use the `embedsMany` relation:
+If you want to embed models, rather than referencing them, you can use the `embedsMany` relation. This relation is similar to the `hasMany` relation, but embeds the models inside the parent object.
 
     use Jenssegers\Mongodb\Model as Eloquent;
 
@@ -399,52 +442,71 @@ If you want to embed documents, rather than referencing them, you can use the `e
 
     }
 
-Now we can access the user's books through the dynamic property:
+You access the embedded models through the dynamic property:
 
     $books = User::first()->books;
 
-When using embedded documents, there will also be an inverse relation available:
+The inverse relation is auto*magically* available, you don't need to define this reverse relation.
 
     $user = $book->user;
 
-Inserting and updating embedded documents works just like the `belongsTo` relation:
+Inserting and updating embedded models works similar to the `hasMany` relation:
 
     $book = new Book(array('title' => 'A Game of Thrones'));
 
     $user = User::first();
 
     $book = $user->books()->save($book);
+    // or
+    $book = $user->books()->create(array('title' => 'A Game of Thrones'))
 
-You can remove an embedded document by using the `destroy()` method:
+You can update embedded models using their `save` method (available since release 2.0.0):
 
     $book = $user->books()->first();
 
-    $user->books()->destroy($book->_id);
+    $book->title = 'A Game of Thrones';
+
+    $book->save();
+
+You can remove an embedded model by using the `destroy` method on the relation, or the `delete` method on the model (available since release 2.0.0):
+
+    $book = $user->books()->first();
+
+    $book->delete();
     // or
     $user->books()->destroy($book);
 
-If you want to add or remove embedded documents, without persistence, you can use the `associate` and `dissociate` methods. To write the changes to the database, save the parent object:
+If you want to add or remove an embedded model, without touching the database, you can use the `associate` and `dissociate` methods. To eventually write the changes to the database, save the parent object:
 
     $user->books()->associate($book);
+
     $user->save();
 
-Again, you may override the conventional local key by passing a second argument to the embedsMany method:
+Like other relations, embedsMany assumes the local key of the relationship based on the model name. You can override the default local key by passing a second argument to the embedsMany method:
 
     return $this->embedsMany('Book', 'local_key');
 
-When using embedded documents, they will be stored in a _relation attribute of the parent document. This attribute is hidden by default when using `toArray` or `toJson`. If you want the attribute to be exposed, add it to `$exposed` property definition to your model:
+Embedded relations will return a Collection of embedded items instead of a query builder. To allow a more query-like behavior, a modified version of the Collection class is used, with support for the following **additional** operations:
 
-    use Jenssegers\Mongodb\Model as Eloquent;
+ - where($key, $operator, $value)
+ - whereIn($key, $values) and whereNotIn($key, $values)
+ - whereBetween($key, $values) and whereNotBetween($key, $values)
+ - whereNull($key) and whereNotNull($key)
+ - orderBy($key, $direction)
+ - oldest() and latest()
+ - limit($value)
+ - offset($value)
+ - skip($value)
 
-    class User extends Eloquent {
+This allows you to execute simple queries on the collection results:
 
-        protected $exposed = array('_books');
+    $books = $user->books()->where('rating', '>', 5)->orderBy('title')->get();
 
-    }
+**Note:** Because embedded models are not stored in a separate collection, you can not query all of embedded models. You will always have to access them through the parent model.
 
 ### EmbedsOne Relations
 
-There is also an EmbedsOne relation, which works similar to the EmbedsMany relation, but only stores one embedded model.
+The embedsOne relation is similar to the EmbedsMany relation, but only embeds a single model.
 
     use Jenssegers\Mongodb\Model as Eloquent;
 
@@ -457,17 +519,31 @@ There is also an EmbedsOne relation, which works similar to the EmbedsMany relat
 
     }
 
-Now we can access the book's author through the dynamic property:
+You access the embedded models through the dynamic property:
 
     $author = Book::first()->author;
 
-Inserting and updating embedded documents works just like the `embedsMany` relation:
+Inserting and updating embedded models works similar to the `hasOne` relation:
 
     $author = new Author(array('name' => 'John Doe'));
 
     $book = Books::first();
 
-    $author = $user->author()->save($author);
+    $author = $book->author()->save($author);
+    // or
+    $author = $book->author()->create(array('name' => 'John Doe'));
+
+You can update the embedded model using the `save` method (available since release 2.0.0):
+
+    $author = $book->author;
+
+    $author->name = 'Jane Doe';
+    $author->save();
+
+You can replace the embedded model with a new model like this:
+
+    $newAuthor = new Author(array('name' => 'Jane Doe'));
+    $book->author()->save($newAuthor);
 
 ### MySQL Relations
 
@@ -527,12 +603,18 @@ Optional: if you don't pass a closure to the raw method, the internal MongoColle
 
     $model = User::raw()->findOne(array('age' => array('$lt' => 18)));
 
-The MongoClient and MongoDB objects can be accessed like this:
+The internal MongoClient and MongoDB objects can be accessed like this:
 
     $client = DB::getMongoClient();
     $db = DB::getMongoDB();
 
 ### MongoDB specific operations
+
+**Cursor timeout**
+
+To prevent MongoCursorTimeout exceptions, you can manually set a timeout value that will be applied to the cursor:
+
+    DB::collection('users')->timeout(-1)->get();
 
 **Upsert**
 
@@ -540,6 +622,12 @@ Update or insert a document. Additional options for the update method are passed
 
     DB::collection('users')->where('name', 'John')
                            ->update($data, array('upsert' => true));
+
+**Projections**
+
+You can apply projections to your queries using the `project` method.
+
+    DB::collection('items')->project(array('tags' => array('$slice' => 1)))->get();
 
 **Push**
 

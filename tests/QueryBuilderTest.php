@@ -611,4 +611,20 @@ class QueryBuilderTest extends TestCase {
 		$this->assertEquals(1, $user['age']);
 	}
 
+	public function testProjections()
+	{
+		DB::collection('items')->insert(array(
+			array('name' => 'fork',  'tags' => array('sharp', 'pointy')),
+			array('name' => 'spork', 'tags' => array('sharp', 'pointy', 'round', 'bowl')),
+			array('name' => 'spoon', 'tags' => array('round', 'bowl')),
+		));
+
+		$results = DB::collection('items')->project(array('tags' => array('$slice' => 1)))->get();
+
+		foreach ($results as $result)
+		{
+			$this->assertEquals(1, count($result['tags']));
+		}
+	}
+
 }
