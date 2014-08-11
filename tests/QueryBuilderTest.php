@@ -540,6 +540,12 @@ class QueryBuilderTest extends TestCase {
 		$results = DB::collection('users')->where('name', 'REGEX', $regex)->get();
 		$this->assertEquals(2, count($results));
 
+		$results = DB::collection('users')->where('name', 'regexp', '/.*doe/i')->get();
+		$this->assertEquals(2, count($results));
+
+		$results = DB::collection('users')->where('name', 'not regexp', '/.*doe/i')->get();
+		$this->assertEquals(1, count($results));
+
 		DB::collection('users')->insert(array(
 			array(
 				'name' => 'John Doe',

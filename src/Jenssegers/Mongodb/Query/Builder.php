@@ -832,11 +832,28 @@ class Builder extends QueryBuilder {
             $operator = '=';
             $regex = str_replace('%', '', $value);
 
-            // Prepare regex
-            if (substr($value, 0, 1) != '%') $regex = '^' . $regex;
-            if (substr($value, -1) != '%')   $regex = $regex . '$';
+            // Convert like to regular expression.
+            if (starts_with($value, '%')) $regex = '^' . $regex;
+            if (ends_with($value, '%'))   $regex = $regex . '$';
 
             $value = new MongoRegex("/$regex/i");
+        }
+
+        // Manipulate regexp operations.
+        elseif (in_array($operator, array('regexp', 'not regexp', 'regex', 'not regex')))
+        {
+            // Automatically convert regular expression strings to MongoRegex objects.
+            if ( ! $value instanceof MongoRegex)
+            {
+                $value = new MongoRegex($value);
+            }
+
+            // For inverse regexp operations, we can just use the $not operator
+            // and pass it a MongoRegex instence.
+            if (starts_with($operator, 'not'))
+            {
+                $operator = 'not';
+            }
         }
 
         if ( ! isset($operator) or $operator == '=')
