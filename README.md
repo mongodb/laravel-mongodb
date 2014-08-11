@@ -306,6 +306,14 @@ Selects documents where values match a specified regular expression.
 
     User::where('name', 'regex', new MongoRegex("/.*doe/i"))->get();
 
+**NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a MongoRegex object.
+
+    User::where('name', 'regexp', '/.*doe/i'))->get();
+
+And the inverse:
+
+    User::where('name', 'not regexp', '/.*doe/i'))->get();
+
 **Type**
 
 Selects documents if a field is of the specified type. For more information check: http://docs.mongodb.org/manual/reference/operator/query/type/#op._S_type
