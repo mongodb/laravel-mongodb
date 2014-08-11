@@ -833,8 +833,8 @@ class Builder extends QueryBuilder {
             $regex = str_replace('%', '', $value);
 
             // Convert like to regular expression.
-            if (starts_with($value, '%')) $regex = '^' . $regex;
-            if (ends_with($value, '%'))   $regex = $regex . '$';
+            if ( ! starts_with($value, '%')) $regex = '^' . $regex;
+            if ( ! ends_with($value, '%'))   $regex = $regex . '$';
 
             $value = new MongoRegex("/$regex/i");
         }
