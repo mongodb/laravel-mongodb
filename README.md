@@ -67,17 +67,23 @@ You can connect to multiple servers or replica sets with the following configura
 Eloquent
 --------
 
-Tell your model to use the MongoDB model and set the collection (alias for table) property. The lower-case, plural name of the class will be used for the collection name, unless another name is explicitly specified.
+This package includes a MongoDB enabled Eloquent class that you can use to define models for corresponding collections.
 
     use Jenssegers\Mongodb\Model as Eloquent;
 
-    class MyModel extends Eloquent {
+    class User extends Eloquent {}
 
-        protected $collection = 'mycollection';
+Note that we did not tell Eloquent which collection to use for the `User` model. Just like the original Eloquent, the lower-case, plural name of the class will be used as the table name unless another name is explicitly specified. You may specify a custom collection (alias for table) by defining a `collection` property on your model:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class User extends Eloquent {
+
+        protected $collection = 'users_collection';
 
     }
 
-If you are using a different database driver as the default one, you will need to specify the mongodb connection name within your model by changing the `connection` property:
+**NOTE:** Eloquent will also assume that each collection has a primary key column named id. You may define a `primaryKey` property to override this convention. Likewise, you may define a `connection` property to override the name of the database connection that should be used when utilizing the model.
 
     use Jenssegers\Mongodb\Model as Eloquent;
 
@@ -95,13 +101,9 @@ You may also register an alias for the MongoDB model by adding the following to 
 
     'Moloquent'       => 'Jenssegers\Mongodb\Model',
 
-This will allow you to use your registered alias like:
+This will allow you to use the registered alias like:
 
-    class MyModel extends Moloquent {
-
-        protected $collection = 'mycollection';
-
-    }
+    class MyModel extends Moloquent {}
 
 Query Builder
 -------------
@@ -109,6 +111,7 @@ Query Builder
 The database driver plugs right into the original query builder. When using mongodb connections, you will be able to build fluent queries to perform database operations. For your convenience, there is a `collection` alias for `table` as well as some additional mongodb specific operators/operations.
 
     $users = DB::collection('users')->get();
+
     $user = DB::collection('users')->where('name', 'John')->first();
 
 If you did not change your default database connection, you will need to specify it when querying.
@@ -125,6 +128,7 @@ The database driver also has (limited) schema builder support. You can easily ma
     Schema::create('users', function($collection)
     {
         $collection->index('name');
+
         $collection->unique('email');
     });
 
@@ -137,10 +141,12 @@ Supported operations are:
  - unique
  - background, sparse, expire (MongoDB specific)
 
-Read more about the schema builder on http://laravel.com/docs/schema
+All other (unsupported) operations are implemended as dummy pass-through methods, because MongoDB does not use a predefined schema. Read more about the schema builder on http://laravel.com/docs/schema
 
-Auth
-----
+Extensions
+----------
+
+### Auth
 
 If you want to use Laravel's native Auth functionality, register this included service provider:
 
@@ -148,15 +154,37 @@ If you want to use Laravel's native Auth functionality, register this included s
 
 This service provider will slightly modify the internal DatabaseReminderRepository to add support for MongoDB based password reminders. If you don't use password reminders, you don't have to register this service provider and everything else should work just fine.
 
-Sentry
-------
+### Sentry
 
 If yo want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
 
-Sessions
---------
+### Sessions
 
 The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
+
+Troubleshooting
+---------------
+
+### Class 'MongoClient' not found in ...
+
+The `MongoClient` class is part of the MongoDB PHP driver. Usually, this error means that you forgot to install, or did not install this driver correctly. You can find installation instructions for this driver at http://php.net/manual/en/mongo.installation.php.
+
+To check if you have installed the driver correctly, run the following command:
+
+    $ php -i | grep 'Mongo'
+    MongoDB Support => enabled
+
+### Argument 2 passed to Illuminate\Database\Query\Builder::__construct() must be an instance of Illuminate\Database\Query\Grammars\Grammar, null given
+
+To solve this, you will need to check two things. First check if your model is extending the correct class; this class should be `Jenssegers\Mongodb\Model`. Secondly, check if your model is using a MongoDB connection. If you did not change the default database connection in your database configuration file, you need to specify the MongoDB enabled connection. This is what your class should look like if you did not set up an alias and change the default database connection:
+
+    use Jenssegers\Mongodb\Model as Eloquent;
+
+    class User extends Eloquent {
+
+        protected $connection = 'mongodb';
+
+    }
 
 Examples
 --------
