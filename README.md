@@ -141,7 +141,7 @@ Supported operations are:
  - unique
  - background, sparse, expire (MongoDB specific)
 
-All other (unsupported) operations are implemended as dummy pass-through methods, because MongoDB does not use a predefined schema. Read more about the schema builder on http://laravel.com/docs/schema
+All other (unsupported) operations are implemented as dummy pass-through methods, because MongoDB does not use a predefined schema. Read more about the schema builder on http://laravel.com/docs/schema
 
 Extensions
 ----------
