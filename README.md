@@ -165,7 +165,7 @@ The MongoDB session driver is available in a separate package, check out https:/
 Troubleshooting
 ---------------
 
-### Class 'MongoClient' not found in ...
+#### Class 'MongoClient' not found in ...
 
 The `MongoClient` class is part of the MongoDB PHP driver. Usually, this error means that you forgot to install, or did not install this driver correctly. You can find installation instructions for this driver at http://php.net/manual/en/mongo.installation.php.
 
@@ -174,7 +174,7 @@ To check if you have installed the driver correctly, run the following command:
     $ php -i | grep 'Mongo'
     MongoDB Support => enabled
 
-### Argument 2 passed to Illuminate\Database\Query\Builder::__construct() must be an instance of Illuminate\Database\Query\Grammars\Grammar, null given
+#### Argument 2 passed to Illuminate\Database\Query\Builder::__construct() must be an instance of Illuminate\Database\Query\Grammars\Grammar, null given
 
 To solve this, you will need to check two things. First check if your model is extending the correct class; this class should be `Jenssegers\Mongodb\Model`. Secondly, check if your model is using a MongoDB connection. If you did not change the default database connection in your database configuration file, you need to specify the MongoDB enabled connection. This is what your class should look like if you did not set up an alias and change the default database connection:
 
