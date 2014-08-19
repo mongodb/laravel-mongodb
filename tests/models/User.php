@@ -13,6 +13,7 @@ class User extends Eloquent implements UserInterface, RemindableInterface {
 
 	protected $dates = array('birthday', 'entry.date');
 	protected static $unguarded = true;
+    protected $hidden = array('ssn', 'father.ssn', 'addresses.ownership');
 
 	public function books()
     {
