@@ -3,6 +3,8 @@
 use MongoId;
 use MongoRegex;
 use MongoDate;
+use MongoInt32;
+use MongoInt64;
 use DateTime;
 use Closure;
 
@@ -788,6 +790,14 @@ class Builder extends QueryBuilder {
             if (isset($where['value']) and $where['value'] instanceof DateTime)
             {
                 $where['value'] = new MongoDate($where['value']->getTimestamp());
+            }
+
+            // Convert Integer values to MongoInt32 or MongoInt64 depending on system architecture
+            if (isset($where['value']) and is_int($where['value'])) {
+                if(PHP_INT_SIZE===8) //64bit system
+                    $where['value'] = new MongoInt64($where['value']);
+                elseif(PHP_INT_SIZE===4) //32bit system
+                    $where['value'] = new MongoInt32($where['value']);
             }
 
             // The next item in a "chain" of wheres devices the boolean of the

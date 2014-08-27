@@ -13,6 +13,8 @@ use Carbon\Carbon;
 use DateTime;
 use MongoId;
 use MongoDate;
+use MongoInt32;
+use MongoInt64;
 
 abstract class Model extends \Jenssegers\Eloquent\Model {
 
@@ -309,6 +311,15 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             }
 
             array_set($this->attributes, $key, $value); return;
+        }
+
+        if(is_int($value))
+        {
+            //if the value is an integer, convert to MongoInt
+            if(PHP_INT_SIZE===8) //64bit system
+                $value = new MongoInt64($value);
+            elseif(PHP_INT_SIZE===4) //32bit system
+                $value = new MongoInt32($value);
         }
 
         parent::setAttribute($key, $value);
