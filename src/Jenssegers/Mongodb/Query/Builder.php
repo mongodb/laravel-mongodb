@@ -785,7 +785,20 @@ class Builder extends QueryBuilder {
             }
 
             // Convert DateTime values to MongoDate.
-            if (isset($where['value']) and $where['value'] instanceof DateTime)
+            // Multiple values.
+            if (isset($where['values']))
+            {
+                foreach ($where['values'] as &$value)
+                {
+                    if ($value instanceof DateTime)
+                    {
+                        $value = new MongoDate($value->getTimestamp());
+                    }
+                }
+            }
+
+            // Single value.
+            else if (isset($where['value']) and $where['value'] instanceof DateTime)
             {
                 $where['value'] = new MongoDate($where['value']->getTimestamp());
             }
