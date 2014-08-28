@@ -344,6 +344,11 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             {
                 $value = (string) $value;
             }
+
+            // parse to integer if the value is an MongoInt
+            if($value instanceOf MongoInt64 || $value instanceOf MongoInt32 || is_a($value, 'MongoInt64') || is_a($value, 'MongoInt32')) {
+                $value = (int)$value->value;
+            }
         }
 
         return $attributes;
