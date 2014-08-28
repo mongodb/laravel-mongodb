@@ -44,6 +44,11 @@ class Collection extends EloquentCollection {
         {
             $actual = $item->{$key};
 
+            // parse to integer if the value is an MongoInt
+            if($actual instanceOf MongoInt64 || $actual instanceOf MongoInt32 || is_a($actual, 'MongoInt64') || is_a($actual, 'MongoInt32')) {
+                $actual = (int)$actual->value;
+            }
+
             switch ($operator)
             {
                 case '<>':

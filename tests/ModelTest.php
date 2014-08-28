@@ -487,4 +487,25 @@ class ModelTest extends TestCase {
 		$this->assertEquals('Paris', $user->{'address.city'});
 	}
 
+	public function testIntegers()
+	{
+		$user = new User;
+		$user->_id = 1;
+		$user->name = 'John Doe';
+		$user->title = 'admin';
+		$user->age = 35;
+		$user->save();
+
+		$this->assertEquals(true, $user->exists);
+		$this->assertEquals(35, $user->age);
+
+		$raw = $user->getAttributes();
+		
+		if(PHP_INT_SIZE === 8)
+        	$this->assertInstanceOf('MongoInt64', $raw['age']);
+        elseif(PHP_INT_SIZE === 4)
+        	$this->assertInstanceOf('MongoInt32', $raw['age']);
+		
+	}
+
 }
