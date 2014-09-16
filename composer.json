@@ -11,13 +11,14 @@
     "license" : "MIT",
     "require": {
         "php": ">=5.4.0",
-        "illuminate/support": "4.2.*",
-        "illuminate/container": "4.2.*",
-        "illuminate/database": "4.2.*",
-        "illuminate/events": "4.2.*"
+        "illuminate/support": "5.0.*",
+        "illuminate/contracts": "5.0.*",
+        "illuminate/container": "5.0.*",
+        "illuminate/database": "5.0.*",
+        "illuminate/events": "5.0.*"
     },
     "require-dev": {
-        "orchestra/testbench": "2.2.*",
+        "orchestra/testbench": "3.0.*",
         "mockery/mockery": "*",
         "satooshi/php-coveralls": "*"
     },
@@ -30,5 +31,6 @@
     "suggest": {
         "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB",
         "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB"
-    }
+    },
+    "minimum-stability": "dev"
 }
