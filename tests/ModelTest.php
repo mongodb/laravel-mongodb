@@ -18,7 +18,6 @@ class ModelTest extends TestCase {
 		$this->assertEquals(false, $user->exists);
 		$this->assertEquals('users', $user->getTable());
 		$this->assertEquals('_id', $user->getKeyName());
-		$this->assertEquals('users._id', $user->getQualifiedKeyName());
 	}
 
 	public function testInsert()
