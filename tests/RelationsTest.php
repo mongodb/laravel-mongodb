@@ -258,6 +258,25 @@ class RelationsTest extends TestCase {
         $this->assertStringStartsWith('synced', $user->clients[1]->name);
     }
 
+    public function testBelongsToManySync()
+    {
+        // create test instances
+        $user = User::create(array('name' => 'John Doe'));
+        $client1 = Client::create(array('name' => 'Pork Pies Ltd.'))->_id;
+        $client2 = Client::create(array('name' => 'Buffet Bar Inc.'))->_id;
+
+        // Sync multiple
+        $user->clients()->sync(array($client1, $client2));
+        $this->assertCount(2, $user->clients);
+
+        // Refresh user
+        $user = User::where('name', '=', 'John Doe')->first();
+
+        // Sync single
+        $user->clients()->sync(array($client1));
+        $this->assertCount(1, $user->clients);
+    }
+
     public function testBelongsToManyCustom()
     {
         $user = User::create(array('name' => 'John Doe'));
