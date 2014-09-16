@@ -99,11 +99,11 @@ Everything else works just like the original Eloquent model. Read more about the
 
 You may also register an alias for the MongoDB model by adding the following to the alias array in `app/config/app.php`:
 
-    'Moloquent'       => 'Jenssegers\Mongodb\Model',
+    'Eloquent'       => 'Jenssegers\Mongodb\Model',
 
 This will allow you to use the registered alias like:
 
-    class MyModel extends Moloquent {}
+    class MyModel extends Eloquent {}
 
 Query Builder
 -------------
