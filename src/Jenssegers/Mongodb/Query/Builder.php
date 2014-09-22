@@ -715,16 +715,18 @@ class Builder extends QueryBuilder {
      */
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
+        $params = func_get_args();
+        
         // Remove the leading $ from operators.
         if (func_num_args() == 3)
         {
             if (starts_with($operator, '$'))
             {
-                $operator = substr($operator, 1);
+                $params[2] = substr($operator, 1);
             }
         }
 
-        return parent::where($column, $operator, $value, $boolean);
+        return call_user_func_array('parent::where', $params);
     }
 
     /**
