@@ -894,7 +894,7 @@ class Builder extends QueryBuilder {
     {
         extract($where);
 
-        return array($column => array('$nin' => $values));
+        return array($column => array('$nin' => array_values($values)));
     }
 
     protected function compileWhereNull($where)
