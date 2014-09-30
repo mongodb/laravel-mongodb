@@ -887,7 +887,7 @@ class Builder extends QueryBuilder {
     {
         extract($where);
 
-        return array($column => array('$in' => $values));
+        return array($column => array('$in' => array_values($values)));
     }
 
     protected function compileWhereNotIn($where)
