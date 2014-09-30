@@ -887,14 +887,14 @@ class Builder extends QueryBuilder {
     {
         extract($where);
 
-        return array($column => array('$in' => $values));
+        return array($column => array('$in' => array_values($values)));
     }
 
     protected function compileWhereNotIn($where)
     {
         extract($where);
 
-        return array($column => array('$nin' => $values));
+        return array($column => array('$nin' => array_values($values)));
     }
 
     protected function compileWhereNull($where)
