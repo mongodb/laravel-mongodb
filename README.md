@@ -20,13 +20,9 @@ Installation
 
 Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongo.installation.php
 
-Add the package to your `composer.json` and run `composer update`.
+Install using composer:
 
-    {
-        "require": {
-            "jenssegers/mongodb": "*"
-        }
-    }
+    composer require jenssegers/mongodb
 
 Add the service provider in `app/config/app.php`:
 
