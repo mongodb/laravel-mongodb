@@ -372,7 +372,7 @@ You may also use the create method to save a new model in a single line:
 
 **Updating a model**
 
-o update a model, you may retrieve it, change an attribute, and use the save method.
+To update a model, you may retrieve it, change an attribute, and use the save method.
 
     $user = User::first();
     $user->email = 'john@foo.com';
