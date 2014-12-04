@@ -68,7 +68,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         return $value;
     }
-    
+
     /**
      * Get the table qualified key name.
      *
@@ -78,7 +78,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     {
     	return $this->getKeyName();
     }
-    
+
 
     /**
      * Define an embedded one-to-many relationship.
@@ -499,6 +499,17 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     public function newEloquentBuilder($query)
     {
         return new Builder($query);
+    }
+
+    /**
+     * Create a new Eloquent Collection instance.
+     *
+     * @param array $models
+     * @return \Jenssegers\Mongodb\Collection
+     */
+    public function newCollection(array $models = array())
+    {
+        return new Collection($models);
     }
 
     /**

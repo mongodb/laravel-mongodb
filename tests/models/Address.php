@@ -11,4 +11,10 @@ class Address extends Eloquent {
         return $this->embedsMany('Address');
     }
 
+    public function newCollection(array $models = array())
+    {
+
+        return new AddressCollection($models);
+    }
+
 }
