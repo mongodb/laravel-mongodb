@@ -749,4 +749,17 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(3, $results->getTotal());
     }
 
+    public function testEmbedsOneOrManyCustomNewCollection()
+    {
+
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->save(new Address(array('city' => 'Paris', 'country' => 'France', 'visited' => 4, 'created_at' => new DateTime('3 days ago'))));
+        $user->addresses()->save(new Address(array('city' => 'Bruges', 'country' => 'Belgium', 'visited' => 7, 'created_at' => new DateTime('5 days ago'))));
+        $user->addresses()->save(new Address(array('city' => 'Brussels', 'country' => 'Belgium', 'visited' => 2, 'created_at' => new DateTime('4 days ago'))));
+        $user->addresses()->save(new Address(array('city' => 'Ghent', 'country' => 'Belgium', 'visited' => 13, 'created_at' => new DateTime('2 days ago'))));
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertTrue($user->addresses->notEmpty());
+    }
+
 }
