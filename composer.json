@@ -12,16 +12,17 @@
     "require": {
         "php": ">=5.4.0",
         "ext-mongo": "*",
-        "illuminate/support": "4.2.*",
-        "illuminate/container": "4.2.*",
-        "illuminate/database": "4.2.*",
-        "illuminate/events": "4.2.*"
+        "illuminate/support": "5.0.*",
+        "illuminate/container": "5.0.*",
+        "illuminate/database": "5.0.*",
+        "illuminate/events": "5.0.*"
     },
     "require-dev": {
-        "orchestra/testbench": "2.2.*",
+        "orchestra/testbench": "3.0.*",
         "mockery/mockery": "*",
         "satooshi/php-coveralls": "*"
     },
+    "minimum-stability": "dev",
     "autoload": {
         "psr-0": {
             "Jenssegers\\Mongodb": "src/",
