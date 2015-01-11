@@ -2,8 +2,8 @@
 
 use MongoId;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class EmbedsMany extends EmbedsOneOrMany {
 
@@ -275,17 +275,19 @@ class EmbedsMany extends EmbedsOneOrMany {
      */
     public function paginate($perPage = null, $columns = array('*'))
     {
+        $page = Paginator::resolveCurrentPage();
         $perPage = $perPage ?: $this->related->getPerPage();
-
-        $paginator = $this->related->getConnection()->getPaginator();
 
         $results = $this->getEmbedded();
 
-        $start = ($paginator->getCurrentPage() - 1) * $perPage;
+        $total = count($results);
 
+        $start = ($page - 1) * $perPage;
         $sliced = array_slice($results, $start, $perPage);
 
-        return $paginator->make($sliced, count($results), $perPage);
+        return new LengthAwarePaginator($sliced, $total, $perPage, $page, [
+            'path' => Paginator::resolveCurrentPath()
+        ]);
     }
 
     /**
