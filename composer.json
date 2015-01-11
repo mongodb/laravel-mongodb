@@ -10,7 +10,7 @@
     ],
     "license" : "MIT",
     "require": {
-        "php": ">=5.4.0",
+        "php": ">=5.5.0",
         "ext-mongo": "*",
         "illuminate/support": "5.0.*",
         "illuminate/container": "5.0.*",
