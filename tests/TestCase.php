@@ -11,7 +11,7 @@ class TestCase extends Orchestra\Testbench\TestCase {
     {
         return array(
             'Jenssegers\Mongodb\MongodbServiceProvider',
-            'Jenssegers\Mongodb\Auth\ReminderServiceProvider',
+            'Jenssegers\Mongodb\Auth\PasswordResetServiceProvider',
         );
     }
 
@@ -36,7 +36,7 @@ class TestCase extends Orchestra\Testbench\TestCase {
         $app['config']->set('database.connections.mysql', $config['connections']['mysql']);
         $app['config']->set('database.connections.mongodb', $config['connections']['mongodb']);
 
-        // overwrite cache configuration
+        $app['config']->set('auth.model', 'User');
         $app['config']->set('cache.driver', 'array');
     }
 
