@@ -1,8 +1,8 @@
 <?php namespace Jenssegers\Mongodb\Eloquent;
 
-trait SoftDeletingTrait {
+trait SoftDeletes {
 
-	use \Illuminate\Database\Eloquent\SoftDeletingTrait;
+	use \Illuminate\Database\Eloquent\SoftDeletes;
 
 	/**
 	 * Get the fully qualified "deleted at" column.

@@ -292,13 +292,13 @@ You may also specify additional columns to update:
 
 **Soft deleting**
 
-When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record. To enable soft deletes for a model, apply the SoftDeletingTrait to the model:
+When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record. To enable soft deletes for a model, apply the SoftDeletes to the model:
 
-    use Jenssegers\Mongodb\Eloquent\SoftDeletingTrait;
+    use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 
     class User extends Eloquent {
 
-        use SoftDeletingTrait;
+        use SoftDeletes;
 
         protected $dates = ['deleted_at'];
 
