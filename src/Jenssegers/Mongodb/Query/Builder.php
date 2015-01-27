@@ -33,6 +33,8 @@ class Builder extends QueryBuilder {
      */
     public $timeout;
 
+    protected $useAggregation = false;
+
     /**
      * All of the available clause operators.
      *
@@ -143,7 +145,7 @@ class Builder extends QueryBuilder {
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups or $this->aggregate)
+        if ($this->groups or $this->aggregate or $this->useAggregation)
         {
             $group = array();
 
@@ -159,17 +161,17 @@ class Builder extends QueryBuilder {
                     $group[$column] = array('$last' => '$' . $column);
                 }
             }
-            else
-            {
-                // If we don't use grouping, set the _id to null to prepare the pipeline for
-                // other aggregation functions.
-                $group['_id'] = null;
-            }
 
             // Add aggregation functions to the $group part of the aggregation pipeline,
             // these may override previous aggregations.
             if ($this->aggregate)
             {
+                if(!isset($group['_id'])) {
+                    // If we don't use grouping, set the _id to null to prepare the pipeline for
+                    // other aggregation functions.
+                    $group['_id'] = null;
+                }
+
                 $function = $this->aggregate['function'];
 
                 foreach ($this->aggregate['columns'] as $column)
@@ -202,7 +204,11 @@ class Builder extends QueryBuilder {
             // Build the aggregation pipeline.
             $pipeline = array();
             if ($wheres) $pipeline[] = array('$match' => $wheres);
-            $pipeline[] = array('$group' => $group);
+
+            if (!empty($group)) {
+                $pipeline[] = array('$group' => $group);
+            }
+
 
             // Apply order and limit
             if ($this->orders)      $pipeline[] = array('$sort' => $this->orders);
@@ -308,7 +314,7 @@ class Builder extends QueryBuilder {
     }
 
     /**
-     * Force the query to only return distinct results.
+     * errce the query to only return distinct results.
      *
      * @return Builder
      */
@@ -344,7 +350,35 @@ class Builder extends QueryBuilder {
             $this->orders[$column] = $direction;
         }
 
+        $this->useAggregation = true;
+
         return $this;
+    }
+
+    /**
+     * Set the "limit" value of the query.
+     *
+     * @param int $value
+     * @return $this
+     */
+    public function limit($value)
+    {
+        $this->useAggregation = true;
+
+        return parent::limit((int)$value);
+    }
+
+    /**
+     * Set the "offset" value of the query.
+     *
+     * @param int $value
+     * @return $this
+     */
+    public function offset($value)
+    {
+        $this->useAggregation = true;
+
+        return parent::offset((int)$value);
     }
 
     /**
