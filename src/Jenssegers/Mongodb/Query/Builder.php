@@ -215,15 +215,7 @@ class Builder extends QueryBuilder {
 
 
                 //add cols to filter groups and use mongoDb map/reduce
-                if ($this->columns || $this->groups) {
-                    foreach ($this->columns as $column)
-                    {
-                        if (!in_array($column, $this->paginateCols) ) {
-                            $key = str_replace('.', '_', $column);
-
-                            $group[$key] = array('$last' => '$' . $column);
-                        }
-                    }
+                if ($this->columns) {
 
                     if ($this->columns || $this->groups) {
                         $cols = array_merge((array)$this->columns, (array)$this->groups);
