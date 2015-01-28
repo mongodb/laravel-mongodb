@@ -238,4 +238,10 @@ class Builder extends EloquentBuilder {
 		return $results;
 	}
 
+    public function paginate($perPage = null, $columns = array('*')) {
+
+        $this->query->addPaginateCols($columns);
+        return parent::paginate($perPage, $columns);
+    }
+
 }

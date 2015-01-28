@@ -33,7 +33,19 @@ class Builder extends QueryBuilder {
      */
     public $timeout;
 
+    /**
+     * Flag for use aggregation
+     *
+     * @var bool
+     */
     protected $useAggregation = false;
+
+    /**
+     * Paginate columns
+     *
+     * @var array
+     */
+    protected $paginateCols = [];
 
     /**
      * All of the available clause operators.
@@ -148,6 +160,8 @@ class Builder extends QueryBuilder {
         if ($this->groups or $this->aggregate or $this->useAggregation)
         {
             $group = array();
+            $project = array();
+            $projectEndColumns = array();
 
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups)
@@ -184,24 +198,64 @@ class Builder extends QueryBuilder {
                 }
             }
 
-            // If no aggregation functions are used, we add the additional select columns
-            // to the pipeline here, aggregating them by $last.
+
             else
             {
+
+                // If no aggregation functions are used, we add the additional select columns
+                // to the pipeline here, aggregating them by $last.
                 foreach ($this->columns as $column)
                 {
-                    $key = str_replace('.', '_', $column);
+                    if (!in_array($column, $this->paginateCols) ) {
+                        $key = str_replace('.', '_', $column);
 
-                    $group[$key] = array('$last' => '$' . $column);
+                        $group[$key] = array('$last' => '$' . $column);
+                    }
                 }
+
+
+                //add cols to filter groups and use mongoDb map/reduce
+                if ($this->columns || $this->groups) {
+                    foreach ($this->columns as $column)
+                    {
+                        if (!in_array($column, $this->paginateCols) ) {
+                            $key = str_replace('.', '_', $column);
+
+                            $group[$key] = array('$last' => '$' . $column);
+                        }
+                    }
+
+                    if ($this->columns || $this->groups) {
+                        $cols = array_merge((array)$this->columns, (array)$this->groups);
+                        foreach ($cols as $column) {
+                            $key = str_replace('.', '_', $column);
+                            $project[$key] = 1;
+                        }
+                    }
+
+                    if ($this->columns) {
+                        foreach ($cols as $column) {
+                            $key = str_replace('.', '_', $column);
+                            $projectEndColumns[$key] = 1;
+                        }
+                    }
+                }
+
             }
+
 
             // Build the aggregation pipeline.
             $pipeline = array();
             if ($wheres) $pipeline[] = array('$match' => $wheres);
 
+
+            //filter used columns
+            if(!empty($project)) {
+                $pipeline[] = array('$project' => $project);
+            }
+
             if (!empty($group)) {
-                if(!isset($group['_id'])) {
+                if (!isset($group['_id'])) {
                     // If we don't use grouping, set the _id to null to prepare the pipeline for
                     // other aggregation functions.
                     $group['_id'] = null;
@@ -210,9 +264,23 @@ class Builder extends QueryBuilder {
                 $pipeline[] = array('$group' => $group);
             }
 
+            //filter columns
+            if(!empty($projectEndColumns)) {
+                $pipeline[] = array('$project' => $projectEndColumns);
+            }
+
+
+
 
             // Apply order and limit
-            if ($this->orders)      $pipeline[] = array('$sort' => $this->orders);
+            if ($this->orders)      {
+                if (isset($this->orders['$natural'])) {
+                    unset($this->orders['$natural']);
+                }
+                if(!empty($this->orders)) {
+                    $pipeline[] = array('$sort' => $this->orders);
+                }
+            }
             if ($this->offset)      $pipeline[] = array('$skip' => $this->offset);
             if ($this->limit)       $pipeline[] = array('$limit' => $this->limit);
             if ($this->projections) $pipeline[] = array('$project' => $this->projections);
@@ -309,7 +377,6 @@ class Builder extends QueryBuilder {
         if (isset($results[0]))
         {
             $result = (array) $results[0];
-
             return $result['aggregate'];
         }
     }
@@ -381,6 +448,23 @@ class Builder extends QueryBuilder {
 
         return parent::offset((int)$value);
     }
+
+
+    public function paginate($perPage = 15, $columns = array('*')) {
+
+        $this->addPaginateCols($columns);
+        return parent::paginate($perPage, $columns);
+    }
+
+    public function addPaginateCols($columns)
+    {
+        if (in_array('*', $columns)) {
+            unset($columns[array_search('*', $columns)]);
+        }
+        $this->paginateCols = $this->paginateCols+$columns;
+    }
+
+
 
     /**
      * Add a where between statement to the query.
