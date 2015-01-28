@@ -166,11 +166,6 @@ class Builder extends QueryBuilder {
             // these may override previous aggregations.
             if ($this->aggregate)
             {
-                if(!isset($group['_id'])) {
-                    // If we don't use grouping, set the _id to null to prepare the pipeline for
-                    // other aggregation functions.
-                    $group['_id'] = null;
-                }
 
                 $function = $this->aggregate['function'];
 
@@ -206,6 +201,12 @@ class Builder extends QueryBuilder {
             if ($wheres) $pipeline[] = array('$match' => $wheres);
 
             if (!empty($group)) {
+                if(!isset($group['_id'])) {
+                    // If we don't use grouping, set the _id to null to prepare the pipeline for
+                    // other aggregation functions.
+                    $group['_id'] = null;
+                }
+
                 $pipeline[] = array('$group' => $group);
             }
 
