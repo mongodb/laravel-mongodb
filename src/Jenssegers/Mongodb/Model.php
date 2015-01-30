@@ -1,9 +1,7 @@
 <?php namespace Jenssegers\Mongodb;
 
-use Illuminate\Database\Eloquent\Collection;
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
-use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
