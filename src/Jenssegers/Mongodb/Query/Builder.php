@@ -32,6 +32,13 @@ class Builder extends QueryBuilder {
      * @var int
      */
     public $timeout;
+    
+    /**
+     * The cursor hint value.
+     *
+     * @var int
+     */
+    public $hint;
 
     /**
      * All of the available clause operators.
@@ -96,6 +103,19 @@ class Builder extends QueryBuilder {
     public function timeout($seconds)
     {
         $this->timeout = $seconds;
+
+        return $this;
+    }
+    
+    /**
+     * Set the cursor hint.
+     *
+     * @param  mixed $index
+     * @return $this
+     */
+    public function hint($index)
+    {
+        $this->hint = $index;
 
         return $this;
     }
@@ -249,11 +269,12 @@ class Builder extends QueryBuilder {
             // Execute query and get MongoCursor
             $cursor = $this->collection->find($wheres, $columns);
 
-            // Apply order, offset and limit
+            // Apply order, offset, limit and hint
             if ($this->timeout) $cursor->timeout($this->timeout);
             if ($this->orders)  $cursor->sort($this->orders);
             if ($this->offset)  $cursor->skip($this->offset);
             if ($this->limit)   $cursor->limit($this->limit);
+            if ($this->hint)    $cursor->hint($this->hint);
 
             // Return results as an array with numeric keys
             return iterator_to_array($cursor, false);
