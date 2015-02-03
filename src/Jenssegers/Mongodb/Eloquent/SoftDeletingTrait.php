@@ -2,7 +2,7 @@
 
 trait SoftDeletingTrait {
 
-	use \Illuminate\Database\Eloquent\SoftDeletingTrait;
+	use \Illuminate\Database\Eloquent\SoftDeletes;
 
 	/**
 	 * Get the fully qualified "deleted at" column.
