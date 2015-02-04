@@ -746,7 +746,7 @@ class EmbeddedRelationsTest extends TestCase {
 
         $results = $user->addresses()->paginate(2);
         $this->assertEquals(2, $results->count());
-        $this->assertEquals(3, $results->getTotal());
+        $this->assertEquals(3, $results->total());
     }
 
 }
