@@ -24,11 +24,6 @@ class QueryTest extends TestCase {
 		self::$started = true;
 	}
 
-	public static function tearDownAfterClass()
-	{
-		User::truncate();
-	}
-
 	public function testWhere()
 	{
 		$users = User::where('age', 35)->get();
@@ -314,6 +309,16 @@ class QueryTest extends TestCase {
 		$results = User::paginate(2, array('name', 'age'));
 		$this->assertEquals(2, $results->count());
 		$this->assertNull($results->first()->title);
+	}
+
+	/*
+	 * FIXME: This should be done in tearDownAfterClass, but something doens't work:
+	 *        https://travis-ci.org/duxet/laravel-mongodb/jobs/46657530
+	 */
+	public function testTruncate()
+	{
+		User::truncate();
+		$this->assertEquals(0, User::count());
 	}
 
 }
