@@ -64,6 +64,8 @@ class ConnectionTest extends TestCase {
 
 	public function testQueryLog()
 	{
+		DB::enableQueryLog();
+
 		$this->assertEquals(0, count(DB::getQueryLog()));
 
 		DB::collection('items')->get();

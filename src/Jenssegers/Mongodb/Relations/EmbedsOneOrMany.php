@@ -383,7 +383,7 @@ abstract class EmbedsOneOrMany extends Relation {
      *
      * @return string
      */
-    protected function getQualifiedParentKeyName()
+    public function getQualifiedParentKeyName()
     {
         if ($parentRelation = $this->getParentRelation())
         {
