@@ -104,7 +104,7 @@ class ConnectionTest extends TestCase {
 		$port = Config::get('database.connections.mongodb.port', 27017);
 		$database = Config::get('database.connections.mongodb.database');
 
-		$this->setExpectedException('MongoConnectionException', "Failed to connect to: $host:$port: Authentication failed on database '$database' with username 'foo': auth fails");
+		$this->setExpectedExceptionRegExp('MongoConnectionException', "/Failed to connect to: $host:$port: Authentication failed on database '$database' with username 'foo': auth fail/");
 		$connection = DB::connection('mongodb');
 	}
 
