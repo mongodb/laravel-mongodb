@@ -369,11 +369,11 @@ User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
 When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record. To enable soft deletes for a model, apply the SoftDeletingTrait to the model:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\SoftDeletes;
+use Jenssegers\Mongodb\Eloquent\SoftDeletingTrait;
 
 class User extends Eloquent {
 
-    use SoftDeletes;
+    use SoftDeletingTrait;
 
     protected $dates = ['deleted_at'];
 
