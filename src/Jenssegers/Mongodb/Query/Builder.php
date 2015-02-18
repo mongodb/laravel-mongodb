@@ -826,16 +826,20 @@ class Builder extends QueryBuilder {
      */
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
+        $params = func_get_args();
+        
         // Remove the leading $ from operators.
         if (func_num_args() == 3)
         {
+            $operator = &$params[1];
+            
             if (starts_with($operator, '$'))
             {
                 $operator = substr($operator, 1);
             }
         }
 
-        return parent::where($column, $operator, $value, $boolean);
+        return call_user_func_array('parent::where', $params);
     }
 
     /**
@@ -994,14 +998,14 @@ class Builder extends QueryBuilder {
     {
         extract($where);
 
-        return array($column => array('$in' => $values));
+        return array($column => array('$in' => array_values($values)));
     }
 
     protected function compileWhereNotIn($where)
     {
         extract($where);
 
-        return array($column => array('$nin' => $values));
+        return array($column => array('$nin' => array_values($values)));
     }
 
     protected function compileWhereNull($where)

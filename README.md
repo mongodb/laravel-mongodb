@@ -20,13 +20,9 @@ Installation
 
 Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongo.installation.php
 
-Add the package to your `composer.json` and run `composer update`.
+Install using composer:
 
-    {
-        "require": {
-            "jenssegers/mongodb": "*"
-        }
-    }
+    composer require jenssegers/mongodb
 
 Add the service provider in `app/config/app.php`:
 
@@ -376,7 +372,7 @@ You may also use the create method to save a new model in a single line:
 
 **Updating a model**
 
-o update a model, you may retrieve it, change an attribute, and use the save method.
+To update a model, you may retrieve it, change an attribute, and use the save method.
 
     $user = User::first();
     $user->email = 'john@foo.com';
