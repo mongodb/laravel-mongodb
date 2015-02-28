@@ -1,16 +1,11 @@
 <?php namespace Jenssegers\Mongodb\Query;
 
-use MongoId;
-use MongoRegex;
-use MongoDate;
-use DateTime;
-use Closure;
-
-use Illuminate\Database\Query\Builder as QueryBuilder;
+use MongoId, MongoRegex, MongoDate, DateTime, Closure;
+use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Jenssegers\Mongodb\Connection;
 
-class Builder extends QueryBuilder {
+class Builder extends BaseBuilder {
 
     /**
      * The database collection
@@ -69,9 +64,10 @@ class Builder extends QueryBuilder {
      * @param Connection $connection
      * @return void
      */
-    public function __construct(Connection $connection)
+    public function __construct(Connection $connection, Processor $processor)
     {
         $this->connection = $connection;
+        $this->processor = $processor;
     }
 
     /**
@@ -656,7 +652,7 @@ class Builder extends QueryBuilder {
      */
     public function newQuery()
     {
-        return new Builder($this->connection);
+        return new Builder($this->connection, $this->processor);
     }
 
     /**
@@ -716,12 +712,12 @@ class Builder extends QueryBuilder {
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
         $params = func_get_args();
-        
+
         // Remove the leading $ from operators.
         if (func_num_args() == 3)
         {
             $operator = &$params[1];
-            
+
             if (starts_with($operator, '$'))
             {
                 $operator = substr($operator, 1);

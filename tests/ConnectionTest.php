@@ -119,4 +119,15 @@ class ConnectionTest extends TestCase {
 		$connection = DB::connection('mongodb');
 	}
 
+	public function testHostWithPorts()
+	{
+		$hosts = ['localhost:27001', 'localhost:27002'];
+		Config::set('database.connections.mongodb.port', 27000);
+		Config::set('database.connections.mongodb.host', ['localhost:27001', 'localhost:27002']);
+		$database = Config::get('database.connections.mongodb.database');
+
+		$this->setExpectedException('MongoConnectionException', "Failed to connect to: " . $hosts[0] . ": Connection refused; Failed to connect to: " . $hosts[1] . ": Connection refused");
+		$connection = DB::connection('mongodb');
+	}
+
 }

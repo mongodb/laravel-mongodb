@@ -1,7 +1,5 @@
 <?php namespace Jenssegers\Mongodb;
 
-use Jenssegers\Mongodb\Collection;
-use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoClient;
 
 class Connection extends \Illuminate\Database\Connection {
@@ -34,13 +32,25 @@ class Connection extends \Illuminate\Database\Connection {
         $dsn = $this->getDsn($config);
 
         // You can pass options directly to the MongoClient constructor
-        $options = array_get($config, 'options', array());
+        $options = array_get($config, 'options', []);
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
 
         // Select database
         $this->db = $this->connection->{$config['database']};
+
+        $this->useDefaultPostProcessor();
+    }
+
+    /**
+     * Get the default post processor instance.
+     *
+     * @return Query\Processor
+     */
+    protected function getDefaultPostProcessor()
+    {
+        return new Query\Processor;
     }
 
     /**
@@ -51,7 +61,9 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function collection($collection)
     {
-        $query = new QueryBuilder($this);
+        $processor = $this->getPostProcessor();
+
+        $query = new Query\Builder($this, $processor);
 
         return $query->from($collection);
     }
@@ -120,12 +132,12 @@ class Connection extends \Illuminate\Database\Connection {
     {
         // Add credentials as options, this makes sure the connection will not fail if
         // the username or password contains strange characters.
-        if (isset($config['username']) && $config['username'])
+        if ( ! empty($config['username']))
         {
             $options['username'] = $config['username'];
         }
 
-        if (isset($config['password']) && $config['password'])
+        if ( ! empty($config['password']))
         {
             $options['password'] = $config['password'];
         }
@@ -156,13 +168,19 @@ class Connection extends \Illuminate\Database\Connection {
         // need to establish the MongoClient and return them back for use.
         extract($config);
 
-        // Treat host option as array of hosts
-        $hosts = is_array($config['host']) ? $config['host'] : array($config['host']);
+        // Check if the user passed a complete dsn to the configuration.
+        if ( ! empty($dsn))
+        {
+            return $dsn;
+        }
 
-        // Add ports to hosts
+        // Treat host option as array of hosts
+        $hosts = is_array($host) ? $host : [$host];
+
         foreach ($hosts as &$host)
         {
-            if (isset($config['port']))
+            // Check if we need to add a port to the host
+            if (strpos($host, ':') === false and isset($port))
             {
                 $host = "{$host}:{$port}";
             }

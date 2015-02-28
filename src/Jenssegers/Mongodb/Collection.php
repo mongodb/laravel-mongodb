@@ -1,7 +1,6 @@
 <?php namespace Jenssegers\Mongodb;
 
-use Exception;
-use MongoCollection;
+use Exception, MongoCollection;
 use Jenssegers\Mongodb\Connection;
 
 class Collection {

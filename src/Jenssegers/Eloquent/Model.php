@@ -143,7 +143,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
 
             $relation = $caller['function'];
         }
-		
+
         // Check if it is a relation with an original model.
         if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
         {
@@ -234,7 +234,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         {
             $relation = $this->getBelongsToManyCaller();
         }
-		
+
         // Check if it is a relation with an original model.
         if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
         {
@@ -278,7 +278,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         // Check the connection type
         if ($connection instanceof \Jenssegers\Mongodb\Connection)
         {
-            return new QueryBuilder($connection);
+            return new QueryBuilder($connection, $connection->getPostProcessor());
         }
 
         return parent::newBaseQueryBuilder();
