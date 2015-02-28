@@ -13,7 +13,7 @@ class Collection {
     protected $connection;
 
     /**
-     * The MongoCollection instance..
+     * The MongoCollection instance.
      *
      * @var MongoCollection
      */
@@ -21,11 +21,13 @@ class Collection {
 
     /**
      * Constructor.
+     *
+     * @param Connection      $connection
+     * @param MongoCollection $collection
      */
     public function __construct(Connection $connection, MongoCollection $collection)
     {
         $this->connection = $connection;
-
         $this->collection = $collection;
     }
 
@@ -38,13 +40,10 @@ class Collection {
      */
     public function __call($method, $parameters)
     {
-        $query = [];
-
         $start = microtime(true);
 
         $result = call_user_func_array(array($this->collection, $method), $parameters);
 
-        // Check if we need to log this query.
         if ($this->connection->logging())
         {
             // Once we have run the query we will calculate the time that it took to run and
@@ -52,7 +51,9 @@ class Collection {
             // the event that the developer needs them. We'll log time in milliseconds.
             $time = $this->connection->getElapsedTime($start);
 
-            // Convert the query to a json string.
+            $query = [];
+
+            // Convert the query paramters to a json string.
             foreach ($parameters as $parameter)
             {
                 try

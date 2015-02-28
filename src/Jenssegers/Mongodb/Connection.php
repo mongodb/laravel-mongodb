@@ -28,16 +28,12 @@ class Connection extends \Illuminate\Database\Connection {
     {
         $this->config = $config;
 
-        // Build the connection string
         $dsn = $this->getDsn($config);
 
-        // You can pass options directly to the MongoClient constructor
         $options = array_get($config, 'options', []);
 
-        // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
 
-        // Select database
         $this->db = $this->connection->{$config['database']};
 
         $this->useDefaultPostProcessor();
@@ -87,6 +83,9 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function getCollection($name)
     {
+        // Instead of returning the original MongoDB Collection we wrap it in
+        // a custom Collection class. This will enable logging features for
+        // all methods that are executed on the iternal instance.
         return new Collection($this, $this->db->selectCollection($name));
     }
 
@@ -174,7 +173,6 @@ class Connection extends \Illuminate\Database\Connection {
             return $dsn;
         }
 
-        // Treat host option as array of hosts
         $hosts = is_array($host) ? $host : [$host];
 
         foreach ($hosts as &$host)
