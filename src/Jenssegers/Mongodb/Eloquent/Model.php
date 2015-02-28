@@ -1,8 +1,9 @@
-<?php namespace Jenssegers\Mongodb;
+<?php namespace Jenssegers\Mongodb\Eloquent;
 
 use DateTime, MongoId, MongoDate, Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
@@ -507,7 +508,7 @@ abstract class Model extends BaseModel {
     {
         $connection = $this->getConnection();
 
-        return new Query\Builder($connection, $connection->getPostProcessor());
+        return new QueryBuilder($connection, $connection->getPostProcessor());
     }
 
     /**

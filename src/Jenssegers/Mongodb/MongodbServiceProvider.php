@@ -1,6 +1,6 @@
 <?php namespace Jenssegers\Mongodb;
 
-use Jenssegers\Mongodb\Model;
+use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\DatabaseManager;
 use Illuminate\Support\ServiceProvider;
 
