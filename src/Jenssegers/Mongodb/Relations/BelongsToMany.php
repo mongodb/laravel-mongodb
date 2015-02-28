@@ -22,7 +22,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 *
 	 * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
 	 */
-	protected function getSelectColumns(array $columns = array('*'))
+	protected function getSelectColumns(array $columns = ['*'])
 	{
 		return $columns;
 	}
@@ -48,9 +48,9 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 * @param  bool   $touch
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
-	public function save(Model $model, array $joining = array(), $touch = true)
+	public function save(Model $model, array $joining = [], $touch = true)
 	{
-		$model->save(array('touch' => false));
+		$model->save(['touch' => false]);
 
 		$this->attach($model, $joining, $touch);
 
@@ -65,14 +65,14 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 * @param  bool   $touch
 	 * @return \Illuminate\Database\Eloquent\Model
 	 */
-	public function create(array $attributes, array $joining = array(), $touch = true)
+	public function create(array $attributes, array $joining = [], $touch = true)
 	{
 		$instance = $this->related->newInstance($attributes);
 
 		// Once we save the related model, we need to attach it to the base model via
 		// through intermediate table so we'll use the existing "attach" method to
 		// accomplish this which will insert the record and any more attributes.
-		$instance->save(array('touch' => false));
+		$instance->save(['touch' => false]);
 
 		$this->attach($instance, $joining, $touch);
 
@@ -88,16 +88,16 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 */
 	public function sync($ids, $detaching = true)
 	{
-		$changes = array(
-			'attached' => array(), 'detached' => array(), 'updated' => array()
-		);
+		$changes = [
+			'attached' => [], 'detached' => [], 'updated' => []
+		];
 
 		if ($ids instanceof Collection) $ids = $ids->modelKeys();
 
 		// First we need to attach any of the associated models that are not currently
 		// in this joining table. We'll spin through the given IDs, checking to see
 		// if they exist in the array of current ones, and if not we will insert.
-		$current = $this->parent->{$this->otherKey} ?: array();
+		$current = $this->parent->{$this->otherKey} ?: [];
 
 		// See issue #256.
 		if ($current instanceof Collection) $current = $ids->modelKeys();
@@ -152,7 +152,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 * @param  bool   $touch
 	 * @return void
 	 */
-	public function attach($id, array $attributes = array(), $touch = true)
+	public function attach($id, array $attributes = [], $touch = true)
 	{
 		if ($id instanceof Model)
 		{
@@ -196,7 +196,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 * @param  bool  $touch
 	 * @return int
 	 */
-	public function detach($ids = array(), $touch = true)
+	public function detach($ids = [], $touch = true)
 	{
 		if ($ids instanceof Model) $ids = (array) $ids->getKey();
 
@@ -237,7 +237,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 		// First we will build a dictionary of child models keyed by the foreign key
 		// of the relation so that we will easily and quickly match them to their
 		// parents without having a possibly slow inner loops for every models.
-		$dictionary = array();
+		$dictionary = [];
 
 		foreach ($results as $result)
 		{

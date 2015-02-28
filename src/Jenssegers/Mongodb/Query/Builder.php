@@ -33,7 +33,7 @@ class Builder extends BaseBuilder {
      *
      * @var array
      */
-    protected $operators = array(
+    protected $operators = [
         '=', '<', '>', '<=', '>=', '<>', '!=',
         'like', 'not like', 'between', 'ilike',
         '&', '|', '^', '<<', '>>',
@@ -41,14 +41,14 @@ class Builder extends BaseBuilder {
         'exists', 'type', 'mod', 'where', 'all', 'size', 'regex', 'text', 'slice', 'elemmatch',
         'geowithin', 'geointersects', 'near', 'nearsphere', 'geometry',
         'maxdistance', 'center', 'centersphere', 'box', 'polygon', 'uniquedocs',
-    );
+    ];
 
     /**
      * Operator conversion.
      *
      * @var array
      */
-    protected $conversion = array(
+    protected $conversion = [
         '='  => '=',
         '!=' => '$ne',
         '<>' => '$ne',
@@ -56,7 +56,7 @@ class Builder extends BaseBuilder {
         '<=' => '$lte',
         '>'  => '$gt',
         '>=' => '$gte',
-    );
+    ];
 
     /**
      * Create a new query builder instance.
@@ -103,7 +103,7 @@ class Builder extends BaseBuilder {
      * @param  array  $columns
      * @return mixed
      */
-    public function find($id, $columns = array())
+    public function find($id, $columns = [])
     {
         return $this->where('_id', '=', $this->convertKey($id))->first($columns);
     }
@@ -114,7 +114,7 @@ class Builder extends BaseBuilder {
      * @param  array  $columns
      * @return array|static[]
      */
-    public function get($columns = array())
+    public function get($columns = [])
     {
         return parent::get($columns);
     }
@@ -125,7 +125,7 @@ class Builder extends BaseBuilder {
      * @param  array  $columns
      * @return array|static[]
      */
-    public function getFresh($columns = array())
+    public function getFresh($columns = [])
     {
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
@@ -133,7 +133,7 @@ class Builder extends BaseBuilder {
         if (is_null($this->columns)) $this->columns = $columns;
 
         // Drop all columns if * is present, MongoDB does not work this way.
-        if (in_array('*', $this->columns)) $this->columns = array();
+        if (in_array('*', $this->columns)) $this->columns = [];
 
         // Compile wheres
         $wheres = $this->compileWheres();
@@ -141,7 +141,7 @@ class Builder extends BaseBuilder {
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups or $this->aggregate)
         {
-            $group = array();
+            $group = [];
 
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups)
@@ -152,7 +152,7 @@ class Builder extends BaseBuilder {
 
                     // When grouping, also add the $last operator to each grouped field,
                     // this mimics MySQL's behaviour a bit.
-                    $group[$column] = array('$last' => '$' . $column);
+                    $group[$column] = ['$last' => '$' . $column];
                 }
             }
             else
@@ -173,12 +173,12 @@ class Builder extends BaseBuilder {
                     // Translate count into sum.
                     if ($function == 'count')
                     {
-                        $group['aggregate'] = array('$sum' => 1);
+                        $group['aggregate'] = ['$sum' => 1];
                     }
                     // Pass other functions directly.
                     else
                     {
-                        $group['aggregate'] = array('$' . $function => '$' . $column);
+                        $group['aggregate'] = ['$' . $function => '$' . $column];
                     }
                 }
             }
@@ -191,20 +191,20 @@ class Builder extends BaseBuilder {
                 {
                     $key = str_replace('.', '_', $column);
 
-                    $group[$key] = array('$last' => '$' . $column);
+                    $group[$key] = ['$last' => '$' . $column];
                 }
             }
 
             // Build the aggregation pipeline.
-            $pipeline = array();
-            if ($wheres) $pipeline[] = array('$match' => $wheres);
-            $pipeline[] = array('$group' => $group);
+            $pipeline = [];
+            if ($wheres) $pipeline[] = ['$match' => $wheres];
+            $pipeline[] = ['$group' => $group];
 
             // Apply order and limit
-            if ($this->orders)      $pipeline[] = array('$sort' => $this->orders);
-            if ($this->offset)      $pipeline[] = array('$skip' => $this->offset);
-            if ($this->limit)       $pipeline[] = array('$limit' => $this->limit);
-            if ($this->projections) $pipeline[] = array('$project' => $this->projections);
+            if ($this->orders)      $pipeline[] = ['$sort' => $this->orders];
+            if ($this->offset)      $pipeline[] = ['$skip' => $this->offset];
+            if ($this->limit)       $pipeline[] = ['$limit' => $this->limit];
+            if ($this->projections) $pipeline[] = ['$project' => $this->projections];
 
             // Execute aggregation
             $results = $this->collection->aggregate($pipeline);
@@ -228,7 +228,7 @@ class Builder extends BaseBuilder {
         // Normal query
         else
         {
-            $columns = array();
+            $columns = [];
 
             // Convert select columns to simple projections.
             foreach ($this->columns as $column)
@@ -263,7 +263,7 @@ class Builder extends BaseBuilder {
      */
     public function generateCacheKey()
     {
-        $key = array(
+        $key = [
             'connection' => $this->connection->getName(),
             'collection' => $this->collection->getName(),
             'wheres'     => $this->wheres,
@@ -272,7 +272,7 @@ class Builder extends BaseBuilder {
             'orders'     => $this->orders,
             'offset'     => $this->offset,
             'aggregate'  => $this->aggregate,
-        );
+        ];
 
         return md5(serialize(array_values($key)));
     }
@@ -284,7 +284,7 @@ class Builder extends BaseBuilder {
      * @param  array   $columns
      * @return mixed
      */
-    public function aggregate($function, $columns = array())
+    public function aggregate($function, $columns = [])
     {
         $this->aggregate = compact('function', 'columns');
 
@@ -314,7 +314,7 @@ class Builder extends BaseBuilder {
 
         if ($column)
         {
-            $this->columns = array($column);
+            $this->columns = [$column];
         }
 
         return $this;
@@ -383,7 +383,7 @@ class Builder extends BaseBuilder {
             }
         }
 
-        if ( ! $batch) $values = array($values);
+        if ( ! $batch) $values = [$values];
 
         // Batch insert
         $result = $this->collection->batchInsert($values);
@@ -421,12 +421,12 @@ class Builder extends BaseBuilder {
      * @param  array  $options
      * @return int
      */
-    public function update(array $values, array $options = array())
+    public function update(array $values, array $options = [])
     {
         // Use $set as default operator.
         if ( ! starts_with(key($values), '$'))
         {
-            $values = array('$set' => $values);
+            $values = ['$set' => $values];
         }
 
         return $this->performUpdate($values, $options);
@@ -440,9 +440,9 @@ class Builder extends BaseBuilder {
      * @param  array   $extra
      * @return int
      */
-    public function increment($column, $amount = 1, array $extra = array(), array $options = array())
+    public function increment($column, $amount = 1, array $extra = [], array $options = [])
     {
-        $query = array('$inc' => array($column => $amount));
+        $query = ['$inc' => [$column => $amount]];
 
         if ( ! empty($extra))
         {
@@ -468,7 +468,7 @@ class Builder extends BaseBuilder {
      * @param  array   $extra
      * @return int
      */
-    public function decrement($column, $amount = 1, array $extra = array(), array $options = array())
+    public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
         return $this->increment($column, -1 * $amount, $extra, $options);
     }
@@ -481,7 +481,7 @@ class Builder extends BaseBuilder {
      */
     public function pluck($column)
     {
-        $result = (array) $this->first(array($column));
+        $result = (array) $this->first([$column]);
 
         // MongoDB returns the _id field even if you did not ask for it, so we need to
         // remove this from the result.
@@ -582,15 +582,15 @@ class Builder extends BaseBuilder {
 
         if (is_array($column))
         {
-            $query = array($operator => $column);
+            $query = [$operator => $column];
         }
         else if ($batch)
         {
-            $query = array($operator => array($column => array('$each' => $value)));
+            $query = [$operator => [$column => ['$each' => $value]]];
         }
         else
         {
-            $query = array($operator => array($column => $value));
+            $query = [$operator => [$column => $value]];
         }
 
         return $this->performUpdate($query);
@@ -613,11 +613,11 @@ class Builder extends BaseBuilder {
 
         if (is_array($column))
         {
-            $query = array($operator => $column);
+            $query = [$operator => $column];
         }
         else
         {
-            $query = array($operator => array($column => $value));
+            $query = [$operator => [$column => $value]];
         }
 
         return $this->performUpdate($query);
@@ -631,16 +631,16 @@ class Builder extends BaseBuilder {
      */
     public function drop($columns)
     {
-        if ( ! is_array($columns)) $columns = array($columns);
+        if ( ! is_array($columns)) $columns = [$columns];
 
-        $fields = array();
+        $fields = [];
 
         foreach ($columns as $column)
         {
             $fields[$column] = 1;
         }
 
-        $query = array('$unset' => $fields);
+        $query = ['$unset' => $fields];
 
         return $this->performUpdate($query);
     }
@@ -662,7 +662,7 @@ class Builder extends BaseBuilder {
      * @param  array  $options
      * @return int
      */
-    protected function performUpdate($query, array $options = array())
+    protected function performUpdate($query, array $options = [])
     {
         // Update multiple items by default.
         if ( ! array_key_exists('multiple', $options))
@@ -735,10 +735,10 @@ class Builder extends BaseBuilder {
     protected function compileWheres()
     {
         // The wheres to compile.
-        $wheres = $this->wheres ?: array();
+        $wheres = $this->wheres ?: [];
 
         // We will add all compiled wheres to this array.
-        $compiled = array();
+        $compiled = [];
 
         foreach ($wheres as $i => &$where)
         {
@@ -748,7 +748,7 @@ class Builder extends BaseBuilder {
                 $where['operator'] = strtolower($where['operator']);
 
                 // Operator conversions
-                $convert = array(
+                $convert = [
                     'regexp' => 'regex',
                     'elemmatch' => 'elemMatch',
                     'geointersects' => 'geoIntersects',
@@ -757,7 +757,7 @@ class Builder extends BaseBuilder {
                     'maxdistance' => 'maxDistance',
                     'centersphere' => 'centerSphere',
                     'uniquedocs' => 'uniqueDocs',
-                );
+                ];
 
                 if (array_key_exists($where['operator'], $convert))
                 {
@@ -805,14 +805,14 @@ class Builder extends BaseBuilder {
             // Wrap the where with an $or operator.
             if ($where['boolean'] == 'or')
             {
-                $result = array('$or' => array($result));
+                $result = ['$or' => [$result]];
             }
 
             // If there are multiple wheres, we will wrap it with $and. This is needed
             // to make nested wheres work.
             else if (count($wheres) > 1)
             {
-                $result = array('$and' => array($result));
+                $result = ['$and' => [$result]];
             }
 
             // Merge the compiled where with the others.
@@ -840,7 +840,7 @@ class Builder extends BaseBuilder {
         }
 
         // Manipulate regexp operations.
-        elseif (in_array($operator, array('regexp', 'not regexp', 'regex', 'not regex')))
+        elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex']))
         {
             // Automatically convert regular expression strings to MongoRegex objects.
             if ( ! $value instanceof MongoRegex)
@@ -858,15 +858,15 @@ class Builder extends BaseBuilder {
 
         if ( ! isset($operator) or $operator == '=')
         {
-            $query = array($column => $value);
+            $query = [$column => $value];
         }
         else if (array_key_exists($operator, $this->conversion))
         {
-            $query = array($column => array($this->conversion[$operator] => $value));
+            $query = [$column => [$this->conversion[$operator] => $value]];
         }
         else
         {
-            $query = array($column => array('$' . $operator => $value));
+            $query = [$column => ['$' . $operator => $value]];
         }
 
         return $query;
@@ -883,14 +883,14 @@ class Builder extends BaseBuilder {
     {
         extract($where);
 
-        return array($column => array('$in' => array_values($values)));
+        return [$column => ['$in' => array_values($values)]];
     }
 
     protected function compileWhereNotIn($where)
     {
         extract($where);
 
-        return array($column => array('$nin' => array_values($values)));
+        return [$column => ['$nin' => array_values($values)]];
     }
 
     protected function compileWhereNull($where)
@@ -915,29 +915,29 @@ class Builder extends BaseBuilder {
 
         if ($not)
         {
-            return array(
-                '$or' => array(
-                    array(
-                        $column => array(
+            return [
+                '$or' => [
+                    [
+                        $column => [
                             '$lte' => $values[0]
-                        )
-                    ),
-                    array(
-                        $column => array(
+                        ]
+                    ],
+                    [
+                        $column => [
                             '$gte' => $values[1]
-                        )
-                    )
-                )
-            );
+                        ]
+                    ]
+                ]
+            ];
         }
         else
         {
-            return array(
-                $column => array(
+            return [
+                $column => [
                     '$gte' => $values[0],
                     '$lte' => $values[1]
-                )
-            );
+                ]
+            ];
         }
     }
 
@@ -957,7 +957,7 @@ class Builder extends BaseBuilder {
     {
         if ($method == 'unset')
         {
-            return call_user_func_array(array($this, 'drop'), $parameters);
+            return call_user_func_array([$this, 'drop'], $parameters);
         }
 
         return parent::__call($method, $parameters);

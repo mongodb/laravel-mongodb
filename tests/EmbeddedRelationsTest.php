@@ -17,8 +17,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManySave()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'London']);
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
@@ -31,7 +31,7 @@ class EmbeddedRelationsTest extends TestCase {
 
         $this->assertNotNull($user->addresses);
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $user->addresses);
-        $this->assertEquals(array('London'), $user->addresses->lists('city'));
+        $this->assertEquals(['London'], $user->addresses->lists('city'));
         $this->assertInstanceOf('DateTime', $address->created_at);
         $this->assertInstanceOf('DateTime', $address->updated_at);
         $this->assertNotNull($address->_id);
@@ -40,10 +40,10 @@ class EmbeddedRelationsTest extends TestCase {
         $raw = $address->getAttributes();
         $this->assertInstanceOf('MongoId', $raw['_id']);
 
-        $address = $user->addresses()->save(new Address(array('city' => 'Paris')));
+        $address = $user->addresses()->save(new Address(['city' => 'Paris']));
 
         $user = User::find($user->_id);
-        $this->assertEquals(array('London', 'Paris'), $user->addresses->lists('city'));
+        $this->assertEquals(['London', 'Paris'], $user->addresses->lists('city'));
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
@@ -59,10 +59,10 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(2, count($user->addresses()->get()));
         $this->assertEquals(2, $user->addresses->count());
         $this->assertEquals(2, $user->addresses()->count());
-        $this->assertEquals(array('London', 'New York'), $user->addresses->lists('city'));
+        $this->assertEquals(['London', 'New York'], $user->addresses->lists('city'));
 
         $freshUser = User::find($user->_id);
-        $this->assertEquals(array('London', 'New York'), $freshUser->addresses->lists('city'));
+        $this->assertEquals(['London', 'New York'], $freshUser->addresses->lists('city'));
 
         $address = $user->addresses->first();
         $this->assertEquals('London', $address->city);
@@ -72,22 +72,22 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEmpty($address->relationsToArray()); // prevent infinite loop
 
         $user = User::find($user->_id);
-        $user->addresses()->save(new Address(array('city' => 'Bruxelles')));
-        $this->assertEquals(array('London', 'New York', 'Bruxelles'), $user->addresses->lists('city'));
+        $user->addresses()->save(new Address(['city' => 'Bruxelles']));
+        $this->assertEquals(['London', 'New York', 'Bruxelles'], $user->addresses->lists('city'));
 
         $address = $user->addresses[1];
         $address->city = "Manhattan";
         $user->addresses()->save($address);
-        $this->assertEquals(array('London', 'Manhattan', 'Bruxelles'), $user->addresses->lists('city'));
+        $this->assertEquals(['London', 'Manhattan', 'Bruxelles'], $user->addresses->lists('city'));
 
         $freshUser = User::find($user->_id);
-        $this->assertEquals(array('London', 'Manhattan', 'Bruxelles'), $freshUser->addresses->lists('city'));
+        $this->assertEquals(['London', 'Manhattan', 'Bruxelles'], $freshUser->addresses->lists('city'));
     }
 
     public function testEmbedsManySaveModel()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'London']);
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
@@ -109,8 +109,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsToArray()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol'))));
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->saveMany([new Address(['city' => 'London']), new Address(['city' => 'Bristol'])]);
 
         $array = $user->toArray();
         $this->assertFalse(array_key_exists('_addresses', $array));
@@ -119,42 +119,42 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyAssociate()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'London']);
 
         $user->addresses()->associate($address);
-        $this->assertEquals(array('London'), $user->addresses->lists('city'));
+        $this->assertEquals(['London'], $user->addresses->lists('city'));
         $this->assertNotNull($address->_id);
 
         $freshUser = User::find($user->_id);
-        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+        $this->assertEquals([], $freshUser->addresses->lists('city'));
 
         $address->city = 'Londinium';
         $user->addresses()->associate($address);
-        $this->assertEquals(array('Londinium'), $user->addresses->lists('city'));
+        $this->assertEquals(['Londinium'], $user->addresses->lists('city'));
 
         $freshUser = User::find($user->_id);
-        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+        $this->assertEquals([], $freshUser->addresses->lists('city'));
     }
 
     public function testEmbedsManySaveMany()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol'))));
-        $this->assertEquals(array('London', 'Bristol'), $user->addresses->lists('city'));
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->saveMany([new Address(['city' => 'London']), new Address(['city' => 'Bristol'])]);
+        $this->assertEquals(['London', 'Bristol'], $user->addresses->lists('city'));
 
         $freshUser = User::find($user->id);
-        $this->assertEquals(array('London', 'Bristol'), $freshUser->addresses->lists('city'));
+        $this->assertEquals(['London', 'Bristol'], $freshUser->addresses->lists('city'));
     }
 
     public function testEmbedsManyDuplicate()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'London']);
         $user->addresses()->save($address);
         $user->addresses()->save($address);
         $this->assertEquals(1, $user->addresses->count());
-        $this->assertEquals(array('London'), $user->addresses->lists('city'));
+        $this->assertEquals(['London'], $user->addresses->lists('city'));
 
         $user = User::find($user->id);
         $this->assertEquals(1, $user->addresses->count());
@@ -162,29 +162,29 @@ class EmbeddedRelationsTest extends TestCase {
         $address->city = 'Paris';
         $user->addresses()->save($address);
         $this->assertEquals(1, $user->addresses->count());
-        $this->assertEquals(array('Paris'), $user->addresses->lists('city'));
+        $this->assertEquals(['Paris'], $user->addresses->lists('city'));
 
-        $user->addresses()->create(array('_id' => $address->_id, 'city' => 'Bruxelles'));
+        $user->addresses()->create(['_id' => $address->_id, 'city' => 'Bruxelles']);
         $this->assertEquals(1, $user->addresses->count());
-        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
+        $this->assertEquals(['Bruxelles'], $user->addresses->lists('city'));
     }
 
     public function testEmbedsManyCreate()
     {
-        $user = User::create(array());
-        $address = $user->addresses()->create(array('city' => 'Bruxelles'));
+        $user = User::create([]);
+        $address = $user->addresses()->create(['city' => 'Bruxelles']);
         $this->assertInstanceOf('Address', $address);
         $this->assertTrue(is_string($address->_id));
-        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
+        $this->assertEquals(['Bruxelles'], $user->addresses->lists('city'));
 
         $raw = $address->getAttributes();
         $this->assertInstanceOf('MongoId', $raw['_id']);
 
         $freshUser = User::find($user->id);
-        $this->assertEquals(array('Bruxelles'), $freshUser->addresses->lists('city'));
+        $this->assertEquals(['Bruxelles'], $freshUser->addresses->lists('city'));
 
-        $user = User::create(array());
-        $address = $user->addresses()->create(array('_id' => '', 'city' => 'Bruxelles'));
+        $user = User::create([]);
+        $address = $user->addresses()->create(['_id' => '', 'city' => 'Bruxelles']);
         $this->assertTrue(is_string($address->_id));
 
         $raw = $address->getAttributes();
@@ -193,20 +193,20 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyCreateMany()
     {
-        $user = User::create(array());
-        list($bruxelles, $paris) = $user->addresses()->createMany(array(array('city' => 'Bruxelles'), array('city' => 'Paris')));
+        $user = User::create([]);
+        list($bruxelles, $paris) = $user->addresses()->createMany([['city' => 'Bruxelles'], ['city' => 'Paris']]);
         $this->assertInstanceOf('Address', $bruxelles);
         $this->assertEquals('Bruxelles', $bruxelles->city);
-        $this->assertEquals(array('Bruxelles', 'Paris'), $user->addresses->lists('city'));
+        $this->assertEquals(['Bruxelles', 'Paris'], $user->addresses->lists('city'));
 
         $freshUser = User::find($user->id);
-        $this->assertEquals(array('Bruxelles', 'Paris'), $freshUser->addresses->lists('city'));
+        $this->assertEquals(['Bruxelles', 'Paris'], $freshUser->addresses->lists('city'));
     }
 
     public function testEmbedsManyDestroy()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->saveMany([new Address(['city' => 'London']), new Address(['city' => 'Bristol']), new Address(['city' => 'Bruxelles'])]);
 
         $address = $user->addresses->first();
 
@@ -215,36 +215,36 @@ class EmbeddedRelationsTest extends TestCase {
         $events->shouldReceive('fire')->once()->with('eloquent.deleted: '.get_class($address), Mockery::type('Address'));
 
         $user->addresses()->destroy($address->_id);
-        $this->assertEquals(array('Bristol', 'Bruxelles'), $user->addresses->lists('city'));
+        $this->assertEquals(['Bristol', 'Bruxelles'], $user->addresses->lists('city'));
 
         $address->unsetEventDispatcher();
 
         $address = $user->addresses->first();
         $user->addresses()->destroy($address);
-        $this->assertEquals(array('Bruxelles'), $user->addresses->lists('city'));
+        $this->assertEquals(['Bruxelles'], $user->addresses->lists('city'));
 
-        $user->addresses()->create(array('city' => 'Paris'));
-        $user->addresses()->create(array('city' => 'San Francisco'));
+        $user->addresses()->create(['city' => 'Paris']);
+        $user->addresses()->create(['city' => 'San Francisco']);
 
         $freshUser = User::find($user->id);
-        $this->assertEquals(array('Bruxelles', 'Paris', 'San Francisco'), $freshUser->addresses->lists('city'));
+        $this->assertEquals(['Bruxelles', 'Paris', 'San Francisco'], $freshUser->addresses->lists('city'));
 
         $ids = $user->addresses->lists('_id');
         $user->addresses()->destroy($ids);
-        $this->assertEquals(array(), $user->addresses->lists('city'));
+        $this->assertEquals([], $user->addresses->lists('city'));
 
         $freshUser = User::find($user->id);
-        $this->assertEquals(array(), $freshUser->addresses->lists('city'));
+        $this->assertEquals([], $freshUser->addresses->lists('city'));
 
-        list($london, $bristol, $bruxelles) = $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
-        $user->addresses()->destroy(array($london, $bruxelles));
-        $this->assertEquals(array('Bristol'), $user->addresses->lists('city'));
+        list($london, $bristol, $bruxelles) = $user->addresses()->saveMany([new Address(['city' => 'London']), new Address(['city' => 'Bristol']), new Address(['city' => 'Bruxelles'])]);
+        $user->addresses()->destroy([$london, $bruxelles]);
+        $this->assertEquals(['Bristol'], $user->addresses->lists('city'));
     }
 
     public function testEmbedsManyDelete()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->saveMany(array(new Address(array('city' => 'London')), new Address(array('city' => 'Bristol')), new Address(array('city' => 'Bruxelles'))));
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->saveMany([new Address(['city' => 'London']), new Address(['city' => 'Bristol']), new Address(['city' => 'Bruxelles'])]);
 
         $address = $user->addresses->first();
 
@@ -269,8 +269,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyDissociate()
     {
-        $user = User::create(array());
-        $cordoba = $user->addresses()->create(array('city' => 'Cordoba'));
+        $user = User::create([]);
+        $cordoba = $user->addresses()->create(['city' => 'Cordoba']);
 
         $user->addresses()->dissociate($cordoba->id);
 
@@ -281,20 +281,20 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyAliases()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'London']);
 
         $address = $user->addresses()->attach($address);
-        $this->assertEquals(array('London'), $user->addresses->lists('city'));
+        $this->assertEquals(['London'], $user->addresses->lists('city'));
 
         $user->addresses()->detach($address);
-        $this->assertEquals(array(), $user->addresses->lists('city'));
+        $this->assertEquals([], $user->addresses->lists('city'));
     }
 
     public function testEmbedsManyCreatingEventReturnsFalse()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'London'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'London']);
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($address), $address)->andReturn(true);
@@ -306,8 +306,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManySavingEventReturnsFalse()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'Paris'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'Paris']);
         $address->exists = true;
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
@@ -319,8 +319,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyUpdatingEventReturnsFalse()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'New York'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'New York']);
         $user->addresses()->save($address);
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
@@ -335,8 +335,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyDeletingEventReturnsFalse()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->save(new Address(array('city' => 'New York')));
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'New York']));
 
         $address = $user->addresses->first();
 
@@ -344,16 +344,16 @@ class EmbeddedRelationsTest extends TestCase {
         $events->shouldReceive('until')->once()->with('eloquent.deleting: '.get_class($address), Mockery::mustBe($address))->andReturn(false);
 
         $this->assertEquals(0, $user->addresses()->destroy($address));
-        $this->assertEquals(array('New York'), $user->addresses->lists('city'));
+        $this->assertEquals(['New York'], $user->addresses->lists('city'));
 
         $address->unsetEventDispatcher();
     }
 
     public function testEmbedsManyFindOrContains()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address1 = $user->addresses()->save(new Address(array('city' => 'New York')));
-        $address2 = $user->addresses()->save(new Address(array('city' => 'Paris')));
+        $user = User::create(['name' => 'John Doe']);
+        $address1 = $user->addresses()->save(new Address(['city' => 'New York']));
+        $address2 = $user->addresses()->save(new Address(['city' => 'Paris']));
 
         $address = $user->addresses()->find($address1->_id);
         $this->assertEquals($address->city, $address1->city);
@@ -367,13 +367,13 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyEagerLoading()
     {
-        $user1 = User::create(array('name' => 'John Doe'));
-        $user1->addresses()->save(new Address(array('city' => 'New York')));
-        $user1->addresses()->save(new Address(array('city' => 'Paris')));
+        $user1 = User::create(['name' => 'John Doe']);
+        $user1->addresses()->save(new Address(['city' => 'New York']));
+        $user1->addresses()->save(new Address(['city' => 'Paris']));
 
-        $user2 = User::create(array('name' => 'Jane Doe'));
-        $user2->addresses()->save(new Address(array('city' => 'Berlin')));
-        $user2->addresses()->save(new Address(array('city' => 'Paris')));
+        $user2 = User::create(['name' => 'Jane Doe']);
+        $user2->addresses()->save(new Address(['city' => 'Berlin']));
+        $user2->addresses()->save(new Address(['city' => 'Paris']));
 
         $user = User::find($user1->id);
         $relations = $user->getRelations();
@@ -391,13 +391,13 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyDeleteAll()
     {
-        $user1 = User::create(array('name' => 'John Doe'));
-        $user1->addresses()->save(new Address(array('city' => 'New York')));
-        $user1->addresses()->save(new Address(array('city' => 'Paris')));
+        $user1 = User::create(['name' => 'John Doe']);
+        $user1->addresses()->save(new Address(['city' => 'New York']));
+        $user1->addresses()->save(new Address(['city' => 'Paris']));
 
-        $user2 = User::create(array('name' => 'Jane Doe'));
-        $user2->addresses()->save(new Address(array('city' => 'Berlin')));
-        $user2->addresses()->save(new Address(array('city' => 'Paris')));
+        $user2 = User::create(['name' => 'Jane Doe']);
+        $user2->addresses()->save(new Address(['city' => 'Berlin']));
+        $user2->addresses()->save(new Address(['city' => 'Paris']));
 
         $user1->addresses()->delete();
         $this->assertEquals(0, $user1->addresses()->count());
@@ -415,20 +415,20 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyCollectionMethods()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->save(new Address(array('city' => 'Paris', 'country' => 'France', 'visited' => 4, 'created_at' => new DateTime('3 days ago'))));
-        $user->addresses()->save(new Address(array('city' => 'Bruges', 'country' => 'Belgium', 'visited' => 7, 'created_at' => new DateTime('5 days ago'))));
-        $user->addresses()->save(new Address(array('city' => 'Brussels', 'country' => 'Belgium', 'visited' => 2, 'created_at' => new DateTime('4 days ago'))));
-        $user->addresses()->save(new Address(array('city' => 'Ghent', 'country' => 'Belgium', 'visited' => 13, 'created_at' => new DateTime('2 days ago'))));
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'Paris', 'country' => 'France', 'visited' => 4, 'created_at' => new DateTime('3 days ago')]));
+        $user->addresses()->save(new Address(['city' => 'Bruges', 'country' => 'Belgium', 'visited' => 7, 'created_at' => new DateTime('5 days ago')]));
+        $user->addresses()->save(new Address(['city' => 'Brussels', 'country' => 'Belgium', 'visited' => 2, 'created_at' => new DateTime('4 days ago')]));
+        $user->addresses()->save(new Address(['city' => 'Ghent', 'country' => 'Belgium', 'visited' => 13, 'created_at' => new DateTime('2 days ago')]));
 
-        $this->assertEquals(array('Paris', 'Bruges', 'Brussels', 'Ghent'), $user->addresses()->lists('city'));
-        $this->assertEquals(array('Bruges', 'Brussels', 'Ghent', 'Paris'), $user->addresses()->sortBy('city')->lists('city'));
-        $this->assertEquals(array('Bruges', 'Brussels', 'Ghent', 'Paris'), $user->addresses()->orderBy('city')->lists('city'));
-        $this->assertEquals(array('Paris', 'Ghent', 'Brussels', 'Bruges'), $user->addresses()->orderBy('city', 'desc')->lists('city'));
+        $this->assertEquals(['Paris', 'Bruges', 'Brussels', 'Ghent'], $user->addresses()->lists('city'));
+        $this->assertEquals(['Bruges', 'Brussels', 'Ghent', 'Paris'], $user->addresses()->sortBy('city')->lists('city'));
+        $this->assertEquals(['Bruges', 'Brussels', 'Ghent', 'Paris'], $user->addresses()->orderBy('city')->lists('city'));
+        $this->assertEquals(['Paris', 'Ghent', 'Brussels', 'Bruges'], $user->addresses()->orderBy('city', 'desc')->lists('city'));
 
-        $this->assertEquals(array(), $user->addresses()->where('city', 'New York')->lists('city'));
-        $this->assertEquals(array('Bruges', 'Brussels', 'Ghent'), $user->addresses()->where('country', 'Belgium')->lists('city'));
-        $this->assertEquals(array('Ghent', 'Brussels', 'Bruges'), $user->addresses()->where('country', 'Belgium')->orderBy('city', 'desc')->lists('city'));
+        $this->assertEquals([], $user->addresses()->where('city', 'New York')->lists('city'));
+        $this->assertEquals(['Bruges', 'Brussels', 'Ghent'], $user->addresses()->where('country', 'Belgium')->lists('city'));
+        $this->assertEquals(['Ghent', 'Brussels', 'Bruges'], $user->addresses()->where('country', 'Belgium')->orderBy('city', 'desc')->lists('city'));
 
         $results = $user->addresses->get(0);
         $this->assertInstanceOf('Address', $results);
@@ -452,19 +452,19 @@ class EmbeddedRelationsTest extends TestCase {
         $results = $user->addresses()->where('visited', '>=', 7)->get();
         $this->assertEquals(2, $results->count());
 
-        $results = $user->addresses()->where('visited', 'between', array(4, 7))->get();
+        $results = $user->addresses()->where('visited', 'between', [4, 7])->get();
         $this->assertEquals(2, $results->count());
 
-        $results = $user->addresses()->whereBetween('visited', array(4, 7))->get();
+        $results = $user->addresses()->whereBetween('visited', [4, 7])->get();
         $this->assertEquals(2, $results->count());
 
-        $results = $user->addresses()->whereNotBetween('visited', array(4, 7))->get();
+        $results = $user->addresses()->whereNotBetween('visited', [4, 7])->get();
         $this->assertEquals(2, $results->count());
 
-        $results = $user->addresses()->whereIn('visited', array(7, 13))->get();
+        $results = $user->addresses()->whereIn('visited', [7, 13])->get();
         $this->assertEquals(2, $results->count());
 
-        $results = $user->addresses()->whereNotIn('visited', array(7))->get();
+        $results = $user->addresses()->whereNotIn('visited', [7])->get();
         $this->assertEquals(3, $results->count());
 
         $results = $user->addresses()->whereNull('something')->get();
@@ -491,8 +491,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsOne()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $father = new User(array('name' => 'Mark Doe'));
+        $user = User::create(['name' => 'John Doe']);
+        $father = new User(['name' => 'Mark Doe']);
 
         $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($father), $father)->andReturn(true);
@@ -526,7 +526,7 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertNotNull($user->father);
         $this->assertEquals('Tom Doe', $user->father->name);
 
-        $father = new User(array('name' => 'Jim Doe'));
+        $father = new User(['name' => 'Jim Doe']);
 
         $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: '.get_class($father), $father)->andReturn(true);
@@ -543,8 +543,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsOneAssociate()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $father = new User(array('name' => 'Mark Doe'));
+        $user = User::create(['name' => 'John Doe']);
+        $father = new User(['name' => 'Mark Doe']);
 
         $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->times(0)->with('eloquent.saving: '.get_class($father), $father);
@@ -558,8 +558,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsOneDelete()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $father = $user->father()->save(new User(array('name' => 'Mark Doe')));
+        $user = User::create(['name' => 'John Doe']);
+        $father = $user->father()->save(new User(['name' => 'Mark Doe']));
 
         $user->father()->delete();
         $this->assertNull($user->father);
@@ -567,10 +567,10 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbedsManyToArray()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->save(new Address(array('city' => 'New York')));
-        $user->addresses()->save(new Address(array('city' => 'Paris')));
-        $user->addresses()->save(new Address(array('city' => 'Brussels')));
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'New York']));
+        $user->addresses()->save(new Address(['city' => 'Paris']));
+        $user->addresses()->save(new Address(['city' => 'Brussels']));
 
         $array = $user->toArray();
         $this->assertArrayHasKey('addresses', $array);
@@ -579,9 +579,9 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testEmbeddedSave()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = $user->addresses()->create(array('city' => 'New York'));
-        $father = $user->father()->create(array('name' => 'Mark Doe'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = $user->addresses()->create(['city' => 'New York']);
+        $father = $user->father()->create(['name' => 'Mark Doe']);
 
         $address->city = 'Paris';
         $address->save();
@@ -615,10 +615,10 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testNestedEmbedsOne()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $father = $user->father()->create(array('name' => 'Mark Doe'));
-        $grandfather = $father->father()->create(array('name' => 'Steve Doe'));
-        $greatgrandfather = $grandfather->father()->create(array('name' => 'Tom Doe'));
+        $user = User::create(['name' => 'John Doe']);
+        $father = $user->father()->create(['name' => 'Mark Doe']);
+        $grandfather = $father->father()->create(['name' => 'Steve Doe']);
+        $greatgrandfather = $grandfather->father()->create(['name' => 'Tom Doe']);
 
         $user->name = 'Tim Doe';
         $user->save();
@@ -643,12 +643,12 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testNestedEmbedsMany()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $country1 = $user->addresses()->create(array('country' => 'France'));
-        $country2 = $user->addresses()->create(array('country' => 'Belgium'));
-        $city1 = $country1->addresses()->create(array('city' => 'Paris'));
-        $city2 = $country2->addresses()->create(array('city' => 'Ghent'));
-        $city3 = $country2->addresses()->create(array('city' => 'Brussels'));
+        $user = User::create(['name' => 'John Doe']);
+        $country1 = $user->addresses()->create(['country' => 'France']);
+        $country2 = $user->addresses()->create(['country' => 'Belgium']);
+        $city1 = $country1->addresses()->create(['city' => 'Paris']);
+        $city2 = $country2->addresses()->create(['city' => 'Ghent']);
+        $city3 = $country2->addresses()->create(['city' => 'Brussels']);
 
         $city3->city = 'Bruges';
         $city3->save();
@@ -665,10 +665,10 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testNestedMixedEmbeds()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $father = $user->father()->create(array('name' => 'Mark Doe'));
-        $country1 = $father->addresses()->create(array('country' => 'France'));
-        $country2 = $father->addresses()->create(array('country' => 'Belgium'));
+        $user = User::create(['name' => 'John Doe']);
+        $father = $user->father()->create(['name' => 'Mark Doe']);
+        $country1 = $father->addresses()->create(['country' => 'France']);
+        $country2 = $father->addresses()->create(['country' => 'Belgium']);
 
         $country2->country = 'England';
         $country2->save();
@@ -688,8 +688,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testDoubleAssociate()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = new Address(array('city' => 'Paris'));
+        $user = User::create(['name' => 'John Doe']);
+        $address = new Address(['city' => 'Paris']);
 
         $user->addresses()->associate($address);
         $user->addresses()->associate($address);
@@ -708,7 +708,7 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testSaveEmptyModel()
     {
-        $user = User::create(array('name' => 'John Doe'));
+        $user = User::create(['name' => 'John Doe']);
         $user->addresses()->save(new Address);
         $this->assertNotNull($user->addresses);
         $this->assertEquals(1, $user->addresses()->count());
@@ -716,8 +716,8 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testIncrementEmbedded()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $address = $user->addresses()->create(array('city' => 'New York', 'visited' => 5));
+        $user = User::create(['name' => 'John Doe']);
+        $address = $user->addresses()->create(['city' => 'New York', 'visited' => 5]);
 
         $address->increment('visited');
         $this->assertEquals(6, $address->visited);
@@ -739,10 +739,10 @@ class EmbeddedRelationsTest extends TestCase {
 
     public function testPaginateEmbedsMany()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $user->addresses()->save(new Address(array('city' => 'New York')));
-        $user->addresses()->save(new Address(array('city' => 'Paris')));
-        $user->addresses()->save(new Address(array('city' => 'Brussels')));
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'New York']));
+        $user->addresses()->save(new Address(['city' => 'Paris']));
+        $user->addresses()->save(new Address(['city' => 'Brussels']));
 
         $results = $user->addresses()->paginate(2);
         $this->assertEquals(2, $results->count());

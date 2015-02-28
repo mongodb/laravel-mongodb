@@ -69,7 +69,7 @@ class ModelTest extends TestCase {
 		$this->assertEquals('John Doe', $check->name);
 		$this->assertEquals(36, $check->age);
 
-		$user->update(array('age' => 20));
+		$user->update(['age' => 20]);
 
 		$raw = $user->getAttributes();
 		$this->assertInstanceOf('MongoId', $raw['_id']);
@@ -180,10 +180,10 @@ class ModelTest extends TestCase {
 
 	public function testGet()
 	{
-		User::insert(array(
-			array('name' => 'John Doe'),
-			array('name' => 'Jane Doe')
-		));
+		User::insert([
+			['name' => 'John Doe'],
+			['name' => 'Jane Doe']
+		]);
 
 		$users = User::get();
 		$this->assertEquals(2, count($users));
@@ -193,10 +193,10 @@ class ModelTest extends TestCase {
 
 	public function testFirst()
 	{
-		User::insert(array(
-			array('name' => 'John Doe'),
-			array('name' => 'Jane Doe')
-		));
+		User::insert([
+			['name' => 'John Doe'],
+			['name' => 'Jane Doe']
+		]);
 
 		$user = User::first();
 		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
@@ -224,7 +224,7 @@ class ModelTest extends TestCase {
 
 	public function testCreate()
 	{
-		$user = User::create(array('name' => 'Jane Poe'));
+		$user = User::create(['name' => 'Jane Poe']);
 
 		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
 		$this->assertEquals(true, $user->exists);
@@ -266,8 +266,8 @@ class ModelTest extends TestCase {
 
 	public function testSoftDelete()
 	{
-		Soft::create(array('name' => 'John Doe'));
-		Soft::create(array('name' => 'Jane Doe'));
+		Soft::create(['name' => 'John Doe']);
+		Soft::create(['name' => 'Jane Doe']);
 
 		$this->assertEquals(2, Soft::count());
 
@@ -317,10 +317,10 @@ class ModelTest extends TestCase {
 
 	public function testScope()
 	{
-		Item::insert(array(
-			array('name' => 'knife', 'type' => 'sharp'),
-			array('name' => 'spoon', 'type' => 'round')
-		));
+		Item::insert([
+			['name' => 'knife', 'type' => 'sharp'],
+			['name' => 'spoon', 'type' => 'round']
+		]);
 
 		$sharp = Item::sharp()->get();
 		$this->assertEquals(1, $sharp->count());
@@ -328,11 +328,11 @@ class ModelTest extends TestCase {
 
 	public function testToArray()
 	{
-		$item = Item::create(array('name' => 'fork', 'type' => 'sharp'));
+		$item = Item::create(['name' => 'fork', 'type' => 'sharp']);
 
 		$array = $item->toArray();
 		$keys = array_keys($array); sort($keys);
-		$this->assertEquals(array('_id', 'created_at', 'name', 'type', 'updated_at'), $keys);
+		$this->assertEquals(['_id', 'created_at', 'name', 'type', 'updated_at'], $keys);
 		$this->assertTrue(is_string($array['created_at']));
 		$this->assertTrue(is_string($array['updated_at']));
 		$this->assertTrue(is_string($array['_id']));
@@ -340,8 +340,8 @@ class ModelTest extends TestCase {
 
 	public function testUnset()
 	{
-		$user1 = User::create(array('name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF'));
-		$user2 = User::create(array('name' => 'Jane Doe', 'note1' => 'ABC', 'note2' => 'DEF'));
+		$user1 = User::create(['name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
+		$user2 = User::create(['name' => 'Jane Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
 
 		$user1->unset('note1');
 
@@ -359,7 +359,7 @@ class ModelTest extends TestCase {
 		$this->assertTrue(isset($user2->note1));
 		$this->assertTrue(isset($user2->note2));
 
-		$user2->unset(array('note1', 'note2'));
+		$user2->unset(['note1', 'note2']);
 
 		$this->assertFalse(isset($user2->note1));
 		$this->assertFalse(isset($user2->note2));
@@ -368,7 +368,7 @@ class ModelTest extends TestCase {
 	public function testDates()
 	{
 		$birthday = new DateTime('1980/1/1');
-		$user = User::create(array('name' => 'John Doe', 'birthday' => $birthday));
+		$user = User::create(['name' => 'John Doe', 'birthday' => $birthday]);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 
 		$check = User::find($user->_id);
@@ -384,20 +384,20 @@ class ModelTest extends TestCase {
 		$this->assertEquals((string) $user->created_at, $json['created_at']);
 
 		// test default date format for json output
-		$item = Item::create(array('name' => 'sword'));
+		$item = Item::create(['name' => 'sword']);
 		$json = $item->toArray();
 		$this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
 
-		$user = User::create(array('name' => 'Jane Doe', 'birthday' => time()));
+		$user = User::create(['name' => 'Jane Doe', 'birthday' => time()]);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 
-		$user = User::create(array('name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 2005 03:12:46 PM'));
+		$user = User::create(['name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 2005 03:12:46 PM']);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 
-		$user = User::create(array('name' => 'Jane Doe', 'birthday' => '2005-08-08'));
+		$user = User::create(['name' => 'Jane Doe', 'birthday' => '2005-08-08']);
 		$this->assertInstanceOf('Carbon\Carbon', $user->birthday);
 
-		$user = User::create(array('name' => 'Jane Doe', 'entry' => array('date' => '2005-08-08')));
+		$user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => '2005-08-08']]);
 		$this->assertInstanceOf('Carbon\Carbon', $user->getAttribute('entry.date'));
 
 		$user->setAttribute('entry.date', new DateTime);
@@ -406,55 +406,55 @@ class ModelTest extends TestCase {
 
 	public function testIdAttribute()
 	{
-		$user = User::create(array('name' => 'John Doe'));
+		$user = User::create(['name' => 'John Doe']);
 		$this->assertEquals($user->id, $user->_id);
 
-		$user = User::create(array('id' => 'custom_id', 'name' => 'John Doe'));
+		$user = User::create(['id' => 'custom_id', 'name' => 'John Doe']);
 		$this->assertNotEquals($user->id, $user->_id);
 	}
 
 	public function testPushPull()
 	{
-		$user = User::create(array('name' => 'John Doe'));
+		$user = User::create(['name' => 'John Doe']);
 
 		$user->push('tags', 'tag1');
-		$user->push('tags', array('tag1', 'tag2'));
+		$user->push('tags', ['tag1', 'tag2']);
 		$user->push('tags', 'tag2', true);
 
-		$this->assertEquals(array('tag1', 'tag1', 'tag2'), $user->tags);
+		$this->assertEquals(['tag1', 'tag1', 'tag2'], $user->tags);
 		$user = User::where('_id', $user->_id)->first();
-		$this->assertEquals(array('tag1', 'tag1', 'tag2'), $user->tags);
+		$this->assertEquals(['tag1', 'tag1', 'tag2'], $user->tags);
 
 		$user->pull('tags', 'tag1');
 
-		$this->assertEquals(array('tag2'), $user->tags);
+		$this->assertEquals(['tag2'], $user->tags);
 		$user = User::where('_id', $user->_id)->first();
-		$this->assertEquals(array('tag2'), $user->tags);
+		$this->assertEquals(['tag2'], $user->tags);
 
 		$user->push('tags', 'tag3');
-		$user->pull('tags', array('tag2', 'tag3'));
+		$user->pull('tags', ['tag2', 'tag3']);
 
-		$this->assertEquals(array(), $user->tags);
+		$this->assertEquals([], $user->tags);
 		$user = User::where('_id', $user->_id)->first();
-		$this->assertEquals(array(), $user->tags);
+		$this->assertEquals([], $user->tags);
 	}
 
 	public function testRaw()
 	{
-		User::create(array('name' => 'John Doe', 'age' => 35));
-		User::create(array('name' => 'Jane Doe', 'age' => 35));
-		User::create(array('name' => 'Harry Hoe', 'age' => 15));
+		User::create(['name' => 'John Doe', 'age' => 35]);
+		User::create(['name' => 'Jane Doe', 'age' => 35]);
+		User::create(['name' => 'Harry Hoe', 'age' => 15]);
 
 		$users = User::raw(function($collection)
 		{
-			return $collection->find(array('age' => 35));
+			return $collection->find(['age' => 35]);
 		});
 		$this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
 		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $users[0]);
 
 		$user = User::raw(function($collection)
 		{
-			return $collection->findOne(array('age' => 35));
+			return $collection->findOne(['age' => 35]);
 		});
 		$this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
 
@@ -466,20 +466,20 @@ class ModelTest extends TestCase {
 
 		$result = User::raw(function($collection)
 		{
-			return $collection->insert(array('name' => 'Yvonne Yoe', 'age' => 35));
+			return $collection->insert(['name' => 'Yvonne Yoe', 'age' => 35]);
 		});
 		$this->assertTrue(is_array($result));
 	}
 
 	public function testDotNotation()
 	{
-		$user = User::create(array(
+		$user = User::create([
 			'name' => 'John Doe',
 			'address' => [
 				'city' => 'Paris',
 				'country' => 'France',
 			]
-		));
+		]);
 
 		$this->assertEquals('Paris', $user->getAttribute('address.city'));
 		$this->assertEquals('Paris', $user['address.city']);

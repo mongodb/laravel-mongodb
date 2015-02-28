@@ -219,7 +219,7 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function __call($method, $parameters)
     {
-        return call_user_func_array(array($this->db, $method), $parameters);
+        return call_user_func_array([$this->db, $method], $parameters);
     }
 
 }

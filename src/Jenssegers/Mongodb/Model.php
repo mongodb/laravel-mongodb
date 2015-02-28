@@ -1,6 +1,7 @@
 <?php namespace Jenssegers\Mongodb;
 
-use DateTime, Carbon\Carbon, MongoId, MongoDate;
+use DateTime, MongoId, MongoDate, Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
@@ -8,7 +9,7 @@ use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 
-abstract class Model extends \Illuminate\Database\Eloquent\Model {
+abstract class Model extends BaseModel {
 
     use HybridRelations;
 
@@ -353,7 +354,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     public function drop($columns)
     {
-        if ( ! is_array($columns)) $columns = array($columns);
+        if ( ! is_array($columns)) $columns = [$columns];
 
         // Unset attributes
         foreach ($columns as $column)
@@ -386,7 +387,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
             }
 
             // Do batch push by default.
-            if ( ! is_array($values)) $values = array($values);
+            if ( ! is_array($values)) $values = [$values];
 
             $query = $this->setKeysForSaveQuery($this->newQuery());
 
@@ -406,7 +407,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     public function pull($column, $values)
     {
         // Do batch pull by default.
-        if ( ! is_array($values)) $values = array($values);
+        if ( ! is_array($values)) $values = [$values];
 
         $query = $this->setKeysForSaveQuery($this->newQuery());
 
@@ -425,7 +426,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     protected function pushAttributeValues($column, array $values, $unique = false)
     {
-        $current = $this->getAttributeFromArray($column) ?: array();
+        $current = $this->getAttributeFromArray($column) ?: [];
 
         foreach ($values as $value)
         {
@@ -449,7 +450,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
      */
     protected function pullAttributeValues($column, array $values)
     {
-        $current = $this->getAttributeFromArray($column) ?: array();
+        $current = $this->getAttributeFromArray($column) ?: [];
 
         foreach ($values as $value)
         {
@@ -521,7 +522,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         // Unset method
         if ($method == 'unset')
         {
-            return call_user_func_array(array($this, 'drop'), $parameters);
+            return call_user_func_array([$this, 'drop'], $parameters);
         }
 
         return parent::__call($method, $parameters);

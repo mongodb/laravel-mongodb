@@ -30,7 +30,7 @@ class MysqlRelationsTest extends TestCase {
         $this->assertTrue(is_int($user->id));
 
         // SQL has many
-        $book = new Book(array('title' => 'Game of Thrones'));
+        $book = new Book(['title' => 'Game of Thrones']);
         $user->books()->save($book);
         $user = MysqlUser::find($user->id); // refetch
         $this->assertEquals(1, count($user->books));
@@ -40,7 +40,7 @@ class MysqlRelationsTest extends TestCase {
         $this->assertEquals('John Doe', $book->mysqlAuthor->name);
 
         // SQL has one
-        $role = new Role(array('type' => 'admin'));
+        $role = new Role(['type' => 'admin']);
         $user->role()->save($role);
         $user = MysqlUser::find($user->id); // refetch
         $this->assertEquals('admin', $user->role->type);
@@ -55,7 +55,7 @@ class MysqlRelationsTest extends TestCase {
         $user->save();
 
         // MongoDB has many
-        $book = new MysqlBook(array('title' => 'Game of Thrones'));
+        $book = new MysqlBook(['title' => 'Game of Thrones']);
         $user->mysqlBooks()->save($book);
         $user = User::find($user->_id); // refetch
         $this->assertEquals(1, count($user->mysqlBooks));
@@ -65,7 +65,7 @@ class MysqlRelationsTest extends TestCase {
         $this->assertEquals('John Doe', $book->author->name);
 
         // MongoDB has one
-        $role = new MysqlRole(array('type' => 'admin'));
+        $role = new MysqlRole(['type' => 'admin']);
         $user->mysqlRole()->save($role);
         $user = User::find($user->_id); // refetch
         $this->assertEquals('admin', $user->mysqlRole->type);

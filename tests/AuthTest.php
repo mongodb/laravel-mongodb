@@ -12,13 +12,13 @@ class AuthTest extends TestCase {
 
     public function testAuthAttempt()
     {
-        $user = User::create(array(
+        $user = User::create([
             'name' => 'John Doe',
             'email' => 'john@doe.com',
             'password' => Hash::make('foobar')
-        ));
+        ]);
 
-        $this->assertTrue(Auth::attempt(array('email' => 'john@doe.com', 'password' => 'foobar'), true));
+        $this->assertTrue(Auth::attempt(['email' => 'john@doe.com', 'password' => 'foobar'], true));
         $this->assertTrue(Auth::check());
     }
 
@@ -30,14 +30,14 @@ class AuthTest extends TestCase {
 
         $broker = new PasswordBroker($tokens, $users, $mailer, '');
 
-        $user = User::create(array(
+        $user = User::create([
             'name' => 'John Doe',
             'email' => 'john@doe.com',
             'password' => Hash::make('foobar')
-        ));
+        ]);
 
         $mailer->shouldReceive('send')->once();
-        $broker->sendResetLink(array('email' => 'john@doe.com'));
+        $broker->sendResetLink(['email' => 'john@doe.com']);
 
         $this->assertEquals(1, DB::collection('password_resets')->count());
         $reminder = DB::collection('password_resets')->first();
@@ -45,12 +45,12 @@ class AuthTest extends TestCase {
         $this->assertNotNull($reminder['token']);
         $this->assertInstanceOf('MongoDate', $reminder['created_at']);
 
-        $credentials = array(
+        $credentials = [
             'email' => 'john@doe.com',
             'password' => 'foobar',
             'password_confirmation' => 'foobar',
             'token' => $reminder['token']
-        );
+        ];
 
         $response = $broker->reset($credentials, function($user, $password)
         {

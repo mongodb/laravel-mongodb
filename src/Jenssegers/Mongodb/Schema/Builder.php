@@ -1,10 +1,10 @@
 <?php namespace Jenssegers\Mongodb\Schema;
 
 use Closure;
+use Illuminate\Database\Schema\Builder as BaseBuilder;
 use Jenssegers\Mongodb\Connection;
-use Jenssegers\Mongodb\Schema\Blueprint;
 
-class Builder extends \Illuminate\Database\Schema\Builder {
+class Builder extends BaseBuilder {
 
 	/**
 	 * Create a new database Schema manager.

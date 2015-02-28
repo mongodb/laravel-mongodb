@@ -9,6 +9,6 @@ class Soft extends Eloquent {
 
     protected $collection = 'soft';
     protected static $unguarded = true;
-    protected $dates = array('deleted_at');
+    protected $dates = ['deleted_at'];
 
 }

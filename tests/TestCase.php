@@ -10,10 +10,10 @@ class TestCase extends Orchestra\Testbench\TestCase {
      */
     protected function getPackageProviders($app)
     {
-        return array(
+        return [
             'Jenssegers\Mongodb\MongodbServiceProvider',
             'Jenssegers\Mongodb\Auth\PasswordResetServiceProvider',
-        );
+        ];
     }
 
     /**

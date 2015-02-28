@@ -11,7 +11,7 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
 
     use Authenticatable, CanResetPassword;
 
-	protected $dates = array('birthday', 'entry.date');
+	protected $dates = ['birthday', 'entry.date'];
 	protected static $unguarded = true;
 
 	public function books()

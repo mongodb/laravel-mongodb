@@ -42,7 +42,7 @@ class Collection {
     {
         $start = microtime(true);
 
-        $result = call_user_func_array(array($this->collection, $method), $parameters);
+        $result = call_user_func_array([$this->collection, $method], $parameters);
 
         if ($this->connection->logging())
         {
