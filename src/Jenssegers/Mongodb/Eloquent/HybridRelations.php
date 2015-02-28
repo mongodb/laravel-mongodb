@@ -2,13 +2,11 @@
 
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Relations\HasOne;
 use Jenssegers\Mongodb\Relations\HasMany;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\MorphTo;
-use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 
 trait HybridRelations {
 

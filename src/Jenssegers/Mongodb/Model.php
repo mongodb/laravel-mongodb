@@ -2,7 +2,6 @@
 
 use DateTime, Carbon\Carbon, MongoId, MongoDate;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
