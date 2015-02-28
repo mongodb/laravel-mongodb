@@ -1,4 +1,4 @@
-<?php namespace Jenssegers\Eloquent;
+<?php namespace Jenssegers\Mongodb\Eloquent;
 
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -10,9 +10,9 @@ use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\MorphTo;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 
-abstract class Model extends \Illuminate\Database\Eloquent\Model {
+trait HybridRelations {
 
-    /**
+	/**
     * Define a one-to-one relationship.
     *
     * @param  string  $related
@@ -23,7 +23,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if ( ! is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
         {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
@@ -50,7 +50,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if ( ! is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
         {
             return parent::morphOne($related, $name, $type, $id, $localKey );
         }
@@ -77,7 +77,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if ( ! is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
         {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
@@ -104,7 +104,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if ( ! is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
         {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
@@ -145,7 +145,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if ( ! is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
         {
             return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
         }
@@ -236,7 +236,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if ( ! is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
         {
             return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $relation);
         }
@@ -264,24 +264,6 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         $query = $instance->newQuery();
 
         return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
-    }
-
-    /**
-     * Get a new query builder instance for the connection.
-     *
-     * @return Builder
-     */
-    protected function newBaseQueryBuilder()
-    {
-        $connection = $this->getConnection();
-
-        // Check the connection type
-        if ($connection instanceof \Jenssegers\Mongodb\Connection)
-        {
-            return new QueryBuilder($connection, $connection->getPostProcessor());
-        }
-
-        return parent::newBaseQueryBuilder();
     }
 
 }

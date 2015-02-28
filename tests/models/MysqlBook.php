@@ -1,9 +1,11 @@
 <?php
 
-use \Illuminate\Support\Facades\Schema;
-use Jenssegers\Eloquent\Model as Eloquent;
+use Illuminate\Support\Facades\Schema;
+use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
 class MysqlBook extends Eloquent {
+
+    use HybridRelations;
 
     protected $connection = 'mysql';
 	protected $table = 'books';

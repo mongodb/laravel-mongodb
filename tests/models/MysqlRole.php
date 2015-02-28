@@ -1,9 +1,12 @@
 <?php
 
-use \Illuminate\Support\Facades\Schema;
-use Jenssegers\Eloquent\Model as Eloquent;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Database\Eloquent\Model as Eloquent;
+use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
 class MysqlRole extends Eloquent {
+
+    use HybridRelations;
 
     protected $connection = 'mysql';
 	protected $table = 'roles';

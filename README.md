@@ -5,18 +5,6 @@ Laravel MongoDB
 
 An Eloquent model and Query builder with support for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
-### Upgrading from v1 to v2
-
-In this new version, embedded documents are no longer saved to the parent model using an attribute with a leading underscore. If you have a relation like `embedsMany('Book')`, these books are now stored under `$model['books']` instead of `$model['_books']`. This was changed to make embedded relations less confusing for new developers.
-
-If you want to upgrade to this new version without having to change all your existing database objects, you can modify your embedded relations to use a non-default local key including the underscore:
-
-```php
-$this->embedsMany('Book', '_books');
-```
-
-Read the full changelog at https://github.com/jenssegers/laravel-mongodb/releases/tag/v2.0.0
-
 Installation
 ------------
 
@@ -48,28 +36,36 @@ Change your default database connection name in `app/config/database.php`:
 And add a new mongodb connection:
 
 ```php
-'mongodb' => array(
+'mongodb' => [
     'driver'   => 'mongodb',
     'host'     => 'localhost',
     'port'     => 27017,
     'username' => 'username',
     'password' => 'password',
     'database' => 'database'
-),
+],
 ```
 
 You can connect to multiple servers or replica sets with the following configuration:
 
 ```php
-'mongodb' => array(
+'mongodb' => [
     'driver'   => 'mongodb',
-    'host'     => array('server1', 'server2'),
-    'port'     => 27017,
+    'host'     => ['server1:27017', 'server2:27018'],
     'username' => 'username',
     'password' => 'password',
     'database' => 'database',
-    'options'  => array('replicaSet' => 'replicaSetName')
-),
+    'options'  => ['replicaSet' => 'replicaSetName']
+],
+```
+
+Or if you prefer to pass the entire DSN at once:
+
+```php
+'mongodb' => [
+    'driver'   => 'mongodb',
+    'dsn'      => 'mongodb://db1.example.net,db2.example.net:2500/?replicaSet=test'
+],
 ```
 
 Eloquent
@@ -722,14 +718,16 @@ $book->author()->save($newAuthor);
 
 ### MySQL Relations
 
-If you're using a hybrid MongoDB and SQL setup, you're in luck! The model will automatically return a MongoDB- or SQL-relation based on the type of the related model. Of course, if you want this functionality to work both ways, your SQL-models will need to extend `Jenssegers\Eloquent\Model`. Note that this functionality only works for hasOne, hasMany and belongsTo relations.
+If you're using a hybrid MongoDB and SQL setup, you're in luck! The model will automatically return a MongoDB- or SQL-relation based on the type of the related model. Of course, if you want this functionality to work both ways, your SQL-models will need to use the `Jenssegers\Mongodb\Eloquent\HybridRelations` trait. Note that this functionality only works for hasOne, hasMany and belongsTo relations.
 
 Example SQL-based User model:
 
 ```php
-use Jenssegers\Eloquent\Model as Eloquent;
+use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
-class User extends Eloquent {
+class User extends \Illuminate\Database\Eloquent\Model {
+
+    use HybridRelations;
 
     protected $connection = 'mysql';
 
@@ -744,9 +742,7 @@ class User extends Eloquent {
 And the Mongodb-based Message model:
 
 ```php
-use Jenssegers\Mongodb\Model as Eloquent;
-
-class Message extends Eloquent {
+class Message extends \Jenssegers\Mongodb\Model {
 
     protected $connection = 'mongodb';
 

@@ -1,18 +1,17 @@
 <?php namespace Jenssegers\Mongodb;
 
+use DateTime, Carbon\Carbon, MongoId, MongoDate;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use Jenssegers\Mongodb\Eloquent\HybridRelations;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 
-use Carbon\Carbon;
-use DateTime;
-use MongoId;
-use MongoDate;
+abstract class Model extends \Illuminate\Database\Eloquent\Model {
 
-abstract class Model extends \Jenssegers\Eloquent\Model {
+    use HybridRelations;
 
     /**
      * The collection associated with the model.
@@ -66,7 +65,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         return $value;
     }
-    
+
     /**
      * Get the table qualified key name.
      *
@@ -76,7 +75,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     {
     	return $this->getKeyName();
     }
-    
+
 
     /**
      * Define an embedded one-to-many relationship.
@@ -497,6 +496,18 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     public function newEloquentBuilder($query)
     {
         return new Builder($query);
+    }
+
+    /**
+     * Get a new query builder instance for the connection.
+     *
+     * @return Builder
+     */
+    protected function newBaseQueryBuilder()
+    {
+        $connection = $this->getConnection();
+
+        return new Query\Builder($connection, $connection->getPostProcessor());
     }
 
     /**
