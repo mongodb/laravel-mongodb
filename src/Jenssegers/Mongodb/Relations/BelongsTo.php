@@ -1,6 +1,8 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
-class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
+use Illuminate\Database\Eloquent\Relations\BelongsTo as EloquentBelongsTo;
+
+class BelongsTo extends EloquentBelongsTo {
 
 	/**
 	* Set the base constraints on the relation query.
