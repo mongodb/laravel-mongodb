@@ -220,7 +220,14 @@ class Builder extends BaseBuilder {
             $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
 
             // Execute distinct
-            $result = $this->collection->distinct($column, $wheres);
+            if ($wheres)
+            {
+                $result = $this->collection->distinct($column, $wheres);
+            }
+            else
+            {
+                $result = $this->collection->distinct($column);
+            }
 
             return $result;
         }
