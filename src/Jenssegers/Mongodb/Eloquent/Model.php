@@ -29,13 +29,6 @@ abstract class Model extends BaseModel {
     protected $primaryKey = '_id';
 
     /**
-     * The parent relation instance.
-     *
-     * @var Relation
-     */
-    protected $parentRelation;
-
-    /**
      * The connection resolver instance.
      *
      * @var \Illuminate\Database\ConnectionResolverInterface
@@ -97,29 +90,22 @@ abstract class Model extends BaseModel {
             $relation = $caller['function'];
         }
 
-        if (is_null($localKey))
-        {
-            $localKey = $relation;
-        }
+        $localKey = $localKey ?: $relation;
 
-        if (is_null($foreignKey))
-        {
-            $foreignKey = snake_case(class_basename($this));
-        }
-
-        $query = $this->newQuery();
+        $foreignKey = $foreignKey ?: snake_case(class_basename($this));
 
         $instance = new $related;
 
-        return new EmbedsMany($query, $this, $instance, $localKey, $foreignKey, $relation);
+        return new EmbedsMany($this->newQuery(), $this, $instance, $foreignKey, $localKey, $relation);
     }
 
     /**
-     * Define an embedded one-to-many relationship.
+     * Define an embedded one-to-one relationship.
      *
      * @param  string  $related
-     * @param  string  $collection
-     * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
+     * @param  string  $foreignKey
+     * @param  string  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\EmbedsOne
      */
     protected function embedsOne($related, $localKey = null, $foreignKey = null, $relation = null)
     {
@@ -133,21 +119,13 @@ abstract class Model extends BaseModel {
             $relation = $caller['function'];
         }
 
-        if (is_null($localKey))
-        {
-            $localKey = $relation;
-        }
+        $localKey = $localKey ?: $relation;
 
-        if (is_null($foreignKey))
-        {
-            $foreignKey = snake_case(class_basename($this));
-        }
-
-        $query = $this->newQuery();
+        $foreignKey = $foreignKey ?: snake_case(class_basename($this));
 
         $instance = new $related;
 
-        return new EmbedsOne($query, $this, $instance, $localKey, $foreignKey, $relation);
+        return new EmbedsOne($this->newQuery(), $this, $instance, $foreignKey, $localKey, $relation);
     }
 
     /**
@@ -230,29 +208,20 @@ abstract class Model extends BaseModel {
      */
     public function getAttribute($key)
     {
-        // Check if the key is an array dot notation.
-        if (str_contains($key, '.'))
+        // Array dot notation support.
+        if (str_contains($key, '.') and array_has($this->attributes, $key))
         {
-            $attributes = array_dot($this->attributes);
-
-            if (array_key_exists($key, $attributes))
-            {
-                return $this->getAttributeValue($key);
-            }
+            return $this->getAttributeValue($key);
         }
-
-        $camelKey = camel_case($key);
 
         // If the "attribute" exists as a method on the model, it may be an
         // embedded model. If so, we need to return the result before it
         // is handled by the parent method.
-        if (method_exists($this, $camelKey))
+        if (method_exists($this, $key))
         {
-            $relations = $this->$camelKey();
+            $relations = $this->$key();
 
-            // This attribute matches an embedsOne or embedsMany relation so we need
-            // to return the relation results instead of the interal attributes.
-            if ($relations instanceof EmbedsOneOrMany)
+            if ($relations instanceof EmbedsOne or $relations instanceof EmbedsMany)
             {
                 // If the key already exists in the relationships array, it just means the
                 // relationship has already been loaded, so we'll just return it out of
@@ -262,8 +231,13 @@ abstract class Model extends BaseModel {
                     return $this->relations[$key];
                 }
 
-                // Get the relation results.
-                return $this->getRelationshipFromMethod($key, $camelKey);
+                // If the "attribute" exists as a method on the model, we will just assume
+                // it is a relationship and will load and return results from the query
+                // and hydrate the relationship's value on the "relationships" array.
+                if (method_exists($this, $key))
+                {
+                    return $this->getRelationshipFromMethod($key);
+                }
             }
         }
 
@@ -278,15 +252,10 @@ abstract class Model extends BaseModel {
      */
     protected function getAttributeFromArray($key)
     {
-        // Support keys in dot notation.
-        if (str_contains($key, '.'))
+        // Array dot notation support.
+        if (str_contains($key, '.') and $attribute = array_get($this->attributes, $key))
         {
-            $attributes = array_dot($this->attributes);
-
-            if (array_key_exists($key, $attributes))
-            {
-                return $attributes[$key];
-            }
+            return $attribute;
         }
 
         return parent::getAttributeFromArray($key);
@@ -466,26 +435,6 @@ abstract class Model extends BaseModel {
         $this->attributes[$column] = array_values($current);
 
         $this->syncOriginalAttribute($column);
-    }
-
-    /**
-     * Set the parent relation.
-     *
-     * @param Relation $relation
-     */
-    public function setParentRelation(Relation $relation)
-    {
-        $this->parentRelation = $relation;
-    }
-
-    /**
-     * Get the parent relation.
-     *
-     * @return Relation
-     */
-    public function getParentRelation()
-    {
-        return $this->parentRelation;
     }
 
     /**

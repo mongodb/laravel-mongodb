@@ -37,6 +37,7 @@ class TestCase extends Orchestra\Testbench\TestCase {
         $app['config']->set('database.connections.mysql', $config['connections']['mysql']);
         $app['config']->set('database.connections.mongodb', $config['connections']['mongodb']);
 
+        // other defaults
         $app['config']->set('auth.model', 'User');
         $app['config']->set('cache.driver', 'array');
     }
