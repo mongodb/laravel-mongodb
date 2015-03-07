@@ -23,7 +23,7 @@ trait Model {
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Contracts\Mongo'))
         {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
@@ -50,7 +50,7 @@ trait Model {
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Contracts\Mongo'))
         {
             return parent::morphOne($related, $name, $type, $id, $localKey );
         }
@@ -77,7 +77,7 @@ trait Model {
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Contracts\Mongo'))
         {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
@@ -104,7 +104,7 @@ trait Model {
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Contracts\Mongo'))
         {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
@@ -145,7 +145,7 @@ trait Model {
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Contracts\Mongo'))
         {
             return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
         }
