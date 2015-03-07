@@ -10,7 +10,7 @@ use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\MorphTo;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 
-abstract class Model extends \Illuminate\Database\Eloquent\Model {
+trait Model {
 
     /**
     * Define a one-to-one relationship.
@@ -236,7 +236,7 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Model'))
+        if (!is_subclass_of($related, 'Jenssegers\Mongodb\Contracts\Mongo'))
         {
             return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $relation);
         }
