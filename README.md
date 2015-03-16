@@ -17,6 +17,18 @@ $this->embedsMany('Book', '_books');
 
 Read the full changelog at https://github.com/jenssegers/laravel-mongodb/releases/tag/v2.0.0
 
+Table of contents
+-----------------
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [Eloquent](#eloquent)
+* [Optional: Alias](#optional-alias)
+* [Query Builder](#query-builder)
+* [Schema](#schema)
+* [Extensions](#extensions)
+* [Troubleshooting](#troubleshooting)
+* [Examples](#examples)
+
 Installation
 ------------
 
@@ -821,6 +833,15 @@ You can apply projections to your queries using the `project` method.
 ```php
 DB::collection('items')->project(array('tags' => array('$slice' => 1)))->get();
 ```
+
+**Projections with Pagination**
+
+```php
+$limit = 25;
+$projections = array('id', 'name');
+DB::collection('items')->paginate($limit, $projections);
+```
+
 
 **Push**
 
