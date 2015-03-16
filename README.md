@@ -836,8 +836,6 @@ DB::collection('items')->project(array('tags' => array('$slice' => 1)))->get();
 
 **Projections with Pagination**
 
-You can apply projections to your queries using the `project` method.
-
 ```php
 $limit = 25;
 $projections = array('id', 'name');
