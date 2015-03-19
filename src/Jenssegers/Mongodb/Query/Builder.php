@@ -198,12 +198,12 @@ class Builder extends BaseBuilder {
             // Build the aggregation pipeline.
             $pipeline = array();
             if ($wheres) $pipeline[] = array('$match' => $wheres);
-            $pipeline[] = array('$group' => $group);
 
             // Apply order and limit
             if ($this->orders)      $pipeline[] = array('$sort' => $this->orders);
             if ($this->offset)      $pipeline[] = array('$skip' => $this->offset);
             if ($this->limit)       $pipeline[] = array('$limit' => $this->limit);
+            $pipeline[] = array('$group' => $group);
             if ($this->projections) $pipeline[] = array('$project' => $this->projections);
 
             // Execute aggregation
