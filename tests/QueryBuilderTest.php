@@ -375,6 +375,20 @@ class QueryBuilderTest extends TestCase {
 		$this->assertEquals(4, count($list));
 		$this->assertEquals(24, strlen(key($list)));
 	}
+	
+	public function testListId()
+	{
+		$mongoId = new MongoId();
+
+		DB::collection('items')->insert(array(
+			array('_id'=> $mongoId, 'name' => 'knife', 'type' => 'sharp', 'amount' => 34)
+		));
+
+		$list = DB::collection('items')->lists('name', '_id');
+
+		$this->assertEquals(1, count($list));
+		$this->assertEquals([ strval($mongoId) => 'knife' ], $list);
+	}
 
 	public function testAggregate()
 	{

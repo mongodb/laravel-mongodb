@@ -485,5 +485,28 @@ class ModelTest extends TestCase {
 		$this->assertEquals('Paris', $user['address.city']);
 		$this->assertEquals('Paris', $user->{'address.city'});
 	}
+	
+	public function testLists()
+	{
+		$mongoId = new MongoId();
+
+		$user = new User;
+		$user->_id = $mongoId;
+		$user->name = 'John Doe';
+		$user->save();
+
+		$u = User::first();
+		$raw = $u->getAttributes();
+		$this->assertInstanceOf('MongoId', $raw['_id']);
+		$this->assertEquals($mongoId, $raw['_id']);
+
+		$list = $u->lists('name');
+		$this->assertEquals(1, count($list));
+		$this->assertEquals( [$u->name], $list );
+
+		$list = $u->lists('name', '_id');
+		$this->assertEquals(1, count($list));
+		$this->assertEquals( [$u->_id => $u->name], $list );
+	}
 
 }
