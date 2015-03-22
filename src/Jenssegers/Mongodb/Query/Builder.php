@@ -3,6 +3,7 @@
 use MongoId, MongoRegex, MongoDate, DateTime, Closure;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Collection;
 use Jenssegers\Mongodb\Connection;
 
 class Builder extends BaseBuilder {
@@ -547,6 +548,33 @@ class Builder extends BaseBuilder {
         $result = $this->collection->remove();
 
         return (1 == (int) $result['ok']);
+    }
+
+    /**
+     * Get an array with the values of a given column.
+     *
+     * @param  string  $column
+     * @param  string  $key
+     * @return array
+     */
+    public function lists($column, $key = null)
+    {
+        if ($key == '_id')
+        {
+            $results = new Collection($this->get([$column, $key]));
+
+            // Convert MongoId's to strings so that lists can do its work.
+            $results = $results->map(function($item)
+            {
+                $item['_id'] = (string) $item['_id'];
+
+                return $item;
+            });
+
+            return $results->lists($column, $key);
+        }
+
+        return parent::lists($column, $key);
     }
 
     /**
