@@ -277,6 +277,34 @@ class RelationsTest extends TestCase {
         $this->assertCount(1, $user->clients);
     }
 
+    public function testBelongsToManyAttachArray()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $client1 = Client::create(array('name' => 'Test 1'))->_id;
+        $client2 = Client::create(array('name' => 'Test 2'))->_id;
+
+        $user = User::where('name', '=', 'John Doe')->first();
+        $user->clients()->attach([$client1, $client2]);
+        $this->assertCount(2, $user->clients);
+    }
+
+    public function testBelongsToManySyncAlreadyPresent()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $client1 = Client::create(array('name' => 'Test 1'))->_id;
+        $client2 = Client::create(array('name' => 'Test 2'))->_id;
+
+        $user->clients()->sync([$client1, $client2]);
+        $this->assertCount(2, $user->clients);
+
+        $user = User::where('name', '=', 'John Doe')->first();
+        $user->clients()->sync([$client1]);
+        $this->assertCount(1, $user->clients);
+
+        $user = User::where('name', '=', 'John Doe')->first()->toArray();
+        $this->assertCount(1, $user['client_ids']);
+    }
+
     public function testBelongsToManyCustom()
     {
         $user = User::create(array('name' => 'John Doe'));
