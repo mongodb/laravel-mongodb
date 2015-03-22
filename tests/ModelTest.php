@@ -350,6 +350,8 @@ class ModelTest extends TestCase {
 		$this->assertTrue(isset($user2->note1));
 		$this->assertTrue(isset($user2->note2));
 
+		$user1->save();
+
 		// Re-fetch to be sure
 		$user1 = User::find($user1->_id);
 		$user2 = User::find($user2->_id);

@@ -29,13 +29,6 @@ abstract class Model extends BaseModel {
     protected $primaryKey = '_id';
 
     /**
-     * The connection resolver instance.
-     *
-     * @var \Illuminate\Database\ConnectionResolverInterface
-     */
-    protected static $resolver;
-
-    /**
      * Custom accessor for the model's id.
      *
      * @param mixed $value
@@ -253,9 +246,9 @@ abstract class Model extends BaseModel {
     protected function getAttributeFromArray($key)
     {
         // Array dot notation support.
-        if (str_contains($key, '.') and $attribute = array_get($this->attributes, $key))
+        if (str_contains($key, '.') and array_has($this->attributes, $key))
         {
-            return $attribute;
+            return array_get($this->attributes, $key);
         }
 
         return parent::getAttributeFromArray($key);
@@ -326,13 +319,11 @@ abstract class Model extends BaseModel {
     {
         if ( ! is_array($columns)) $columns = [$columns];
 
-        // Unset attributes
         foreach ($columns as $column)
         {
             $this->__unset($column);
         }
 
-        // Perform unset only on current document
         return $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
     }
 
@@ -356,12 +347,13 @@ abstract class Model extends BaseModel {
                 list($column, $values) = $parameters;
             }
 
-            // Do batch push by default.
             if ( ! is_array($values)) $values = [$values];
 
             $query = $this->setKeysForSaveQuery($this->newQuery());
 
             $this->pushAttributeValues($column, $values, $unique);
+
+            $this->syncOriginalAttribute($column);
 
             return $query->push($column, $values, $unique);
         }
@@ -376,12 +368,13 @@ abstract class Model extends BaseModel {
      */
     public function pull($column, $values)
     {
-        // Do batch pull by default.
         if ( ! is_array($values)) $values = [$values];
 
         $query = $this->setKeysForSaveQuery($this->newQuery());
 
         $this->pullAttributeValues($column, $values);
+
+        $this->syncOriginalAttribute($column);
 
         return $query->pull($column, $values);
     }
@@ -400,15 +393,12 @@ abstract class Model extends BaseModel {
 
         foreach ($values as $value)
         {
-            // Don't add duplicate values when we only want unique values.
             if ($unique and in_array($value, $current)) continue;
 
             array_push($current, $value);
         }
 
         $this->attributes[$column] = $current;
-
-        $this->syncOriginalAttribute($column);
     }
 
     /**
@@ -433,8 +423,6 @@ abstract class Model extends BaseModel {
         }
 
         $this->attributes[$column] = array_values($current);
-
-        $this->syncOriginalAttribute($column);
     }
 
     /**

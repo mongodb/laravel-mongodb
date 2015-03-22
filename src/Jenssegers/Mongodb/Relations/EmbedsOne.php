@@ -1,5 +1,6 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use MongoId;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -14,7 +15,15 @@ class EmbedsOne extends EmbedsOneOrMany {
      */
     public function associate(Model $model)
     {
+        if ( ! $model->exists)
+        {
+            $model->setAttribute('_id', new MongoId);
+
+            $this->updateTimestamps($model);
+        }
+
         $this->parent->setAttribute($this->localKey, $model->getAttributes());
+        //$this->parent->setAttribute($this->localKey, $model);
 
         return $this->parent->setRelation($this->relation, $model);
     }

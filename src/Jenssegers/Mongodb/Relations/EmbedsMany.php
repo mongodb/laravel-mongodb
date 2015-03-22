@@ -1,5 +1,6 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use MongoId;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
@@ -15,9 +16,31 @@ class EmbedsMany extends EmbedsOneOrMany {
     {
         $siblings = $this->getResults();
 
-        $siblings->push($model);
+        if ( ! $model->exists)
+        {
+            $model->setAttribute('_id', new MongoId);
+
+            $this->updateTimestamps($model);
+        }
+
+        if ($siblings->contains($model))
+        {
+            foreach ($siblings as $i => $sibling)
+            {
+                if ($sibling->getKey() == $model->getKey())
+                {
+                    $siblings->put($i, $model);
+                    break;
+                }
+            }
+        }
+        else
+        {
+            $siblings->push($model);
+        }
 
         $this->parent->setAttribute($this->localKey, $siblings->toArray());
+        //$this->parent->setAttribute($this->localKey, $siblings);
 
         return $this->parent->setRelation($this->relation, $siblings);
     }

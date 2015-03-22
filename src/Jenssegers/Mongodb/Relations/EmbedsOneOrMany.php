@@ -173,6 +173,26 @@ abstract class EmbedsOneOrMany extends Relation {
     }
 
     /**
+     * Update the creation and update timestamps for a model.
+     *
+     * @return void
+     */
+    protected function updateTimestamps(Model $model)
+    {
+        $time = $model->freshTimestamp();
+
+        if ( ! $model->isDirty($model::UPDATED_AT))
+        {
+            $model->setUpdatedAt($time);
+        }
+
+        if ( ! $model->exists && ! $model->isDirty($model::CREATED_AT))
+        {
+            $model->setCreatedAt($time);
+        }
+    }
+
+    /**
      * Get the key for comparing against the parent key in "has" query.
      *
      * @return string

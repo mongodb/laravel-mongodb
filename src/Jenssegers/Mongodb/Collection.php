@@ -44,7 +44,7 @@ class Collection {
 
         $result = call_user_func_array([$this->collection, $method], $parameters);
 
-        if (true or $this->connection->logging())
+        if ($this->connection->logging())
         {
             // Once we have run the query we will calculate the time that it took to run and
             // then log the query, bindings, and execution time so we will report them on
