@@ -104,7 +104,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 
 		$records = $this->formatSyncList($ids);
 
-		$detach = array_diff($current, array_keys($records));
+		$detach = array_values(array_diff($current, array_keys($records)));
 
 		// Next, we will take the differences of the currents and given IDs and detach
 		// all of the entities that exist in the "current" array but are not in the
@@ -159,31 +159,28 @@ class BelongsToMany extends EloquentBelongsToMany {
 			$model = $id; $id = $model->getKey();
 		}
 
-		$records = $this->createAttachRecords((array) $id, $attributes);
-
-		// Get the ids to attach to the parent and related model.
-		$otherIds = array_pluck($records, $this->otherKey);
-		$foreignIds = array_pluck($records, $this->foreignKey);
+		$ids = (array) $id;
 
 		// Attach the new ids to the parent model.
-		$this->parent->push($this->otherKey, $otherIds, true);
+		$this->parent->push($this->otherKey, $ids, true);
 
-		// If we have a model instance, we can psuh the ids to that model,
+		// If we have a model instance, we can push the ids to that model,
 		// so that the internal attributes are updated as well. Otherwise,
 		// we will just perform a regular database query.
 		if (isset($model))
 		{
 			// Attach the new ids to the related model.
-			$model->push($this->foreignKey, $foreignIds, true);
+			$model->push($this->foreignKey, $this->parent->getKey(), true);
 		}
 		else
 		{
 			$query = $this->newRelatedQuery();
 
-			$query->where($this->related->getKeyName(), $id);
+			// Select related models.
+			$query->whereIn($this->related->getKeyName(), $ids);
 
-			// Attach the new ids to the related model.
-			$query->push($this->foreignKey, $foreignIds, true);
+			// Attach the new parent id to the related model.
+			$query->push($this->foreignKey, $this->parent->getKey(), true);
 		}
 
 		if ($touch) $this->touchIfTouching();

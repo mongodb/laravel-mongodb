@@ -8,6 +8,7 @@ use Closure;
 
 use Illuminate\Database\Query\Builder as QueryBuilder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Collection;
 use Jenssegers\Mongodb\Connection;
 
 class Builder extends QueryBuilder {
@@ -545,6 +546,33 @@ class Builder extends QueryBuilder {
         return (1 == (int) $result['ok']);
     }
 
+     /**
+     * Get an array with the values of a given column.
+     *
+     * @param  string  $column
+     * @param  string  $key
+     * @return array
+     */
+    public function lists($column, $key = null)
+    {
+        if ($key == '_id')
+        {
+            $results = new Collection($this->get([$column, $key]));
+
+            // Convert MongoId's to strings so that lists can do its work.
+            $results = $results->map(function($item)
+            {
+                $item['_id'] = (string) $item['_id'];
+
+                return $item;
+            });
+
+            return $results->lists($column, $key);
+        }
+
+        return parent::lists($column, $key);
+    }
+
     /**
      * Create a raw database expression.
      *
@@ -716,12 +744,12 @@ class Builder extends QueryBuilder {
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
         $params = func_get_args();
-        
+
         // Remove the leading $ from operators.
         if (func_num_args() == 3)
         {
             $operator = &$params[1];
-            
+
             if (starts_with($operator, '$'))
             {
                 $operator = substr($operator, 1);
