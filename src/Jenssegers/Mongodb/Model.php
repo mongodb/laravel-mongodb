@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use DateTime;
 use MongoId;
 use MongoDate;
+use ReflectionMethod;
 
 abstract class Model extends \Jenssegers\Eloquent\Model {
 
@@ -248,23 +249,32 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
         // is handled by the parent method.
         if (method_exists($this, $camelKey))
         {
-            $relations = $this->$camelKey();
+            $method = new ReflectionMethod(get_called_class(), $camelKey);
 
-            // This attribute matches an embedsOne or embedsMany relation so we need
-            // to return the relation results instead of the interal attributes.
-            if ($relations instanceof EmbedsOneOrMany)
+            // Ensure the method is not static to avoid conflicting with 'search methods'.
+            // e.g. find, in, all, where, etc...
+            if(!$method->isStatic())
             {
-                // If the key already exists in the relationships array, it just means the
-                // relationship has already been loaded, so we'll just return it out of
-                // here because there is no need to query within the relations twice.
-                if (array_key_exists($key, $this->relations))
+                $relations = $this->$camelKey();
+
+                // This attribute matches an embedsOne or embedsMany relation so we need
+                // to return the relation results instead of the interal attributes.
+                if ($relations instanceof EmbedsOneOrMany)
                 {
-                    return $this->relations[$key];
+                    // If the key already exists in the relationships array, it just means the
+                    // relationship has already been loaded, so we'll just return it out of
+                    // here because there is no need to query within the relations twice.
+                    if (array_key_exists($key, $this->relations))
+                    {
+                        return $this->relations[$key];
+                    }
+
+                    // Get the relation results.
+                    return $this->getRelationshipFromMethod($key, $camelKey);
                 }
 
-                // Get the relation results.
-                return $this->getRelationshipFromMethod($key, $camelKey);
             }
+
         }
 
         return parent::getAttribute($key);
