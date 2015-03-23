@@ -240,6 +240,10 @@ class QueryBuilderTest extends TestCase {
 		$user = DB::collection('users')->find($id);
 		$this->assertEquals(4, count($user['tags']));
 		$this->assertEquals(2, count($user['messages']));
+
+		DB::collection('users')->where('_id', $id)->push(array('messages' => array('date' => new MongoDate(), 'body' => 'Hi John')));
+		$user = DB::collection('users')->find($id);
+		$this->assertEquals(3, count($user['messages']));
 	}
 
 	public function testPull()
