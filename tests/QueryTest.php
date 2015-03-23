@@ -305,10 +305,12 @@ class QueryTest extends TestCase {
 		$results = User::paginate(2);
 		$this->assertEquals(2, $results->count());
 		$this->assertNotNull($results->first()->title);
+		$this->assertEquals(9, $results->total());
 
 		$results = User::paginate(2, array('name', 'age'));
 		$this->assertEquals(2, $results->count());
 		$this->assertNull($results->first()->title);
+		$this->assertEquals(9, $results->total());
 	}
 
 	/*
