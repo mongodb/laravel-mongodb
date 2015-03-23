@@ -1,16 +1,12 @@
 <?php namespace Jenssegers\Mongodb;
 
+use DateTime, MongoId, MongoDate, Carbon\Carbon;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
-
-use Carbon\Carbon;
-use DateTime;
-use MongoId;
-use MongoDate;
 
 abstract class Model extends \Jenssegers\Eloquent\Model {
 
@@ -36,13 +32,6 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     protected $parentRelation;
 
     /**
-     * The connection resolver instance.
-     *
-     * @var \Illuminate\Database\ConnectionResolverInterface
-     */
-    protected static $resolver;
-
-    /**
      * Custom accessor for the model's id.
      *
      * @param mixed $value
@@ -66,7 +55,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
         return $value;
     }
-    
+
     /**
      * Get the table qualified key name.
      *
@@ -76,7 +65,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     {
     	return $this->getKeyName();
     }
-    
+
 
     /**
      * Define an embedded one-to-many relationship.
