@@ -30,6 +30,13 @@ class Builder extends BaseBuilder {
     public $timeout;
 
     /**
+     * Indicate if we are executing a pagination query.
+     *
+     * @var bool
+     */
+    public $paginating = false;
+
+    /**
      * All of the available clause operators.
      *
      * @var array
@@ -140,7 +147,7 @@ class Builder extends BaseBuilder {
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups or $this->aggregate)
+        if ($this->groups or $this->aggregate or $this->paginating)
         {
             $group = array();
 
@@ -155,12 +162,14 @@ class Builder extends BaseBuilder {
                     // this mimics MySQL's behaviour a bit.
                     $group[$column] = array('$last' => '$' . $column);
                 }
-            }
-            else
-            {
-                // If we don't use grouping, set the _id to null to prepare the pipeline for
-                // other aggregation functions.
-                $group['_id'] = null;
+
+                // Do the same for other columns that are selected.
+                foreach ($this->columns as $column)
+                {
+                    $key = str_replace('.', '_', $column);
+
+                    $group[$key] = array('$last' => '$' . $column);
+                }
             }
 
             // Add aggregation functions to the $group part of the aggregation pipeline,
@@ -184,22 +193,26 @@ class Builder extends BaseBuilder {
                 }
             }
 
-            // If no aggregation functions are used, we add the additional select columns
-            // to the pipeline here, aggregating them by $last.
-            else
+            // When using pagination, we limit the number of returned columns
+            // by adding a projection.
+            if ($this->paginating)
             {
                 foreach ($this->columns as $column)
                 {
-                    $key = str_replace('.', '_', $column);
-
-                    $group[$key] = array('$last' => '$' . $column);
+                    $this->projections[$column] = 1;
                 }
+            }
+
+            // The _id field is mandatory when using grouping.
+            if ($group and empty($group['_id']))
+            {
+                $group['_id'] = null;
             }
 
             // Build the aggregation pipeline.
             $pipeline = array();
             if ($wheres) $pipeline[] = array('$match' => $wheres);
-            $pipeline[] = array('$group' => $group);
+            if ($group)  $pipeline[] = array('$group' => $group);
 
             // Apply order and limit
             if ($this->orders)      $pipeline[] = array('$sort' => $this->orders);
@@ -368,6 +381,20 @@ class Builder extends BaseBuilder {
         $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
 
         return $this;
+    }
+
+    /**
+     * Set the limit and offset for a given page.
+     *
+     * @param  int  $page
+     * @param  int  $perPage
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function forPage($page, $perPage = 15)
+    {
+        $this->paginating = true;
+
+        return $this->skip(($page - 1) * $perPage)->take($perPage);
     }
 
     /**
