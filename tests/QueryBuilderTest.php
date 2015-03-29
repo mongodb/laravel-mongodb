@@ -240,6 +240,10 @@ class QueryBuilderTest extends TestCase {
 		$user = DB::collection('users')->find($id);
 		$this->assertEquals(4, count($user['tags']));
 		$this->assertEquals(2, count($user['messages']));
+
+		DB::collection('users')->where('_id', $id)->push(['messages' => ['date' => new MongoDate(), 'body' => 'Hi John']]);
+		$user = DB::collection('users')->find($id);
+		$this->assertEquals(3, count($user['messages']));
 	}
 
 	public function testPull()
@@ -370,6 +374,10 @@ class QueryBuilderTest extends TestCase {
 		$list = DB::collection('items')->lists('type', 'name');
 		$this->assertEquals(3, count($list));
 		$this->assertEquals(['knife' => 'sharp', 'fork' => 'sharp', 'spoon' => 'round'], $list);
+
+		$list = DB::collection('items')->lists('name', '_id');
+		$this->assertEquals(4, count($list));
+		$this->assertEquals(24, strlen(key($list)));
 	}
 
 	public function testAggregate()

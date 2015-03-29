@@ -3,6 +3,7 @@
 use MongoId, MongoRegex, MongoDate, DateTime, Closure;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Collection;
 use Jenssegers\Mongodb\Connection;
 
 class Builder extends BaseBuilder {
@@ -27,6 +28,13 @@ class Builder extends BaseBuilder {
      * @var int
      */
     public $timeout;
+
+    /**
+     * Indicate if we are executing a pagination query.
+     *
+     * @var bool
+     */
+    public $paginating = false;
 
     /**
      * All of the available clause operators.
@@ -139,7 +147,7 @@ class Builder extends BaseBuilder {
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups or $this->aggregate)
+        if ($this->groups or $this->aggregate or $this->paginating)
         {
             $group = [];
 
@@ -154,12 +162,14 @@ class Builder extends BaseBuilder {
                     // this mimics MySQL's behaviour a bit.
                     $group[$column] = ['$last' => '$' . $column];
                 }
-            }
-            else
-            {
-                // If we don't use grouping, set the _id to null to prepare the pipeline for
-                // other aggregation functions.
-                $group['_id'] = null;
+
+                // Do the same for other columns that are selected.
+                foreach ($this->columns as $column)
+                {
+                    $key = str_replace('.', '_', $column);
+
+                    $group[$key] = array('$last' => '$' . $column);
+                }
             }
 
             // Add aggregation functions to the $group part of the aggregation pipeline,
@@ -183,22 +193,26 @@ class Builder extends BaseBuilder {
                 }
             }
 
-            // If no aggregation functions are used, we add the additional select columns
-            // to the pipeline here, aggregating them by $last.
-            else
+            // When using pagination, we limit the number of returned columns
+            // by adding a projection.
+            if ($this->paginating)
             {
                 foreach ($this->columns as $column)
                 {
-                    $key = str_replace('.', '_', $column);
-
-                    $group[$key] = ['$last' => '$' . $column];
+                    $this->projections[$column] = 1;
                 }
+            }
+
+            // The _id field is mandatory when using grouping.
+            if ($group and empty($group['_id']))
+            {
+                $group['_id'] = null;
             }
 
             // Build the aggregation pipeline.
             $pipeline = [];
             if ($wheres) $pipeline[] = ['$match' => $wheres];
-            $pipeline[] = ['$group' => $group];
+            if ($group)  $pipeline[] = ['$group' => $group];
 
             // Apply order and limit
             if ($this->orders)      $pipeline[] = ['$sort' => $this->orders];
@@ -220,7 +234,14 @@ class Builder extends BaseBuilder {
             $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
 
             // Execute distinct
-            $result = $this->collection->distinct($column, $wheres);
+            if ($wheres)
+            {
+                $result = $this->collection->distinct($column, $wheres);
+            }
+            else
+            {
+                $result = $this->collection->distinct($column);
+            }
 
             return $result;
         }
@@ -360,6 +381,20 @@ class Builder extends BaseBuilder {
         $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
 
         return $this;
+    }
+
+    /**
+     * Set the limit and offset for a given page.
+     *
+     * @param  int  $page
+     * @param  int  $perPage
+     * @return \Illuminate\Database\Query\Builder|static
+     */
+    public function forPage($page, $perPage = 15)
+    {
+        $this->paginating = true;
+
+        return $this->skip(($page - 1) * $perPage)->take($perPage);
     }
 
     /**
@@ -540,6 +575,33 @@ class Builder extends BaseBuilder {
         $result = $this->collection->remove();
 
         return (1 == (int) $result['ok']);
+    }
+
+    /**
+     * Get an array with the values of a given column.
+     *
+     * @param  string  $column
+     * @param  string  $key
+     * @return array
+     */
+    public function lists($column, $key = null)
+    {
+        if ($key == '_id')
+        {
+            $results = new Collection($this->get([$column, $key]));
+
+            // Convert MongoId's to strings so that lists can do its work.
+            $results = $results->map(function($item)
+            {
+                $item['_id'] = (string) $item['_id'];
+
+                return $item;
+            });
+
+            return $results->lists($column, $key);
+        }
+
+        return parent::lists($column, $key);
     }
 
     /**

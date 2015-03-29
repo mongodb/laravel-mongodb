@@ -5,6 +5,18 @@ Laravel MongoDB
 
 An Eloquent model and Query builder with support for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
+Table of contents
+-----------------
+* [Installation](#installation)
+* [Configuration](#configuration)
+* [Eloquent](#eloquent)
+* [Optional: Alias](#optional-alias)
+* [Query Builder](#query-builder)
+* [Schema](#schema)
+* [Extensions](#extensions)
+* [Troubleshooting](#troubleshooting)
+* [Examples](#examples)
+
 Installation
 ------------
 
@@ -365,11 +377,11 @@ User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
 When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record. To enable soft deletes for a model, apply the SoftDeletingTrait to the model:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\SoftDeletingTrait;
+use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 
 class User extends Eloquent {
 
-    use SoftDeletingTrait;
+    use SoftDeletes;
 
     protected $dates = ['deleted_at'];
 
@@ -817,6 +829,15 @@ You can apply projections to your queries using the `project` method.
 ```php
 DB::collection('items')->project(array('tags' => array('$slice' => 1)))->get();
 ```
+
+**Projections with Pagination**
+
+```php
+$limit = 25;
+$projections = array('id', 'name');
+DB::collection('items')->paginate($limit, $projections);
+```
+
 
 **Push**
 

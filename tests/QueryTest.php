@@ -7,10 +7,6 @@ class QueryTest extends TestCase {
 	public function setUp()
 	{
 		parent::setUp();
-
-		// only run this stuff once
-		if (self::$started) return;
-
 		User::create(['name' => 'John Doe', 'age' => 35, 'title' => 'admin']);
 		User::create(['name' => 'Jane Doe', 'age' => 33, 'title' => 'admin']);
 		User::create(['name' => 'Harry Hoe', 'age' => 13, 'title' => 'user']);
@@ -20,8 +16,12 @@ class QueryTest extends TestCase {
 		User::create(['name' => 'Tommy Toe', 'age' => 33, 'title' => 'user']);
 		User::create(['name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin']);
 		User::create(['name' => 'Error', 'age' => null, 'title' => null]);
+	}
 
-		self::$started = true;
+	public function tearDown()
+	{
+		User::truncate();
+		parent::tearDown();
 	}
 
 	public function testWhere()
@@ -305,20 +305,13 @@ class QueryTest extends TestCase {
 		$results = User::paginate(2);
 		$this->assertEquals(2, $results->count());
 		$this->assertNotNull($results->first()->title);
+		$this->assertEquals(9, $results->total());
 
 		$results = User::paginate(2, ['name', 'age']);
 		$this->assertEquals(2, $results->count());
 		$this->assertNull($results->first()->title);
-	}
-
-	/*
-	 * FIXME: This should be done in tearDownAfterClass, but something doens't work:
-	 *        https://travis-ci.org/duxet/laravel-mongodb/jobs/46657530
-	 */
-	public function testTruncate()
-	{
-		User::truncate();
-		$this->assertEquals(0, User::count());
+		$this->assertEquals(9, $results->total());
+		$this->assertEquals(1, $results->currentPage());
 	}
 
 }
