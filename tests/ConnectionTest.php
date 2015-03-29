@@ -71,13 +71,13 @@ class ConnectionTest extends TestCase {
 		DB::collection('items')->get();
 		$this->assertEquals(1, count(DB::getQueryLog()));
 
-		DB::collection('items')->insert(array('name' => 'test'));
+		DB::collection('items')->insert(['name' => 'test']);
 		$this->assertEquals(2, count(DB::getQueryLog()));
 
 		DB::collection('items')->count();
 		$this->assertEquals(3, count(DB::getQueryLog()));
 
-		DB::collection('items')->where('name', 'test')->update(array('name' => 'test'));
+		DB::collection('items')->where('name', 'test')->update(['name' => 'test']);
 		$this->assertEquals(4, count(DB::getQueryLog()));
 
 		DB::collection('items')->where('name', 'test')->delete();

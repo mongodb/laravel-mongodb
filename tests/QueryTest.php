@@ -7,15 +7,15 @@ class QueryTest extends TestCase {
 	public function setUp()
 	{
 		parent::setUp();
-		User::create(array('name' => 'John Doe', 'age' => 35, 'title' => 'admin'));
-		User::create(array('name' => 'Jane Doe', 'age' => 33, 'title' => 'admin'));
-		User::create(array('name' => 'Harry Hoe', 'age' => 13, 'title' => 'user'));
-		User::create(array('name' => 'Robert Roe', 'age' => 37, 'title' => 'user'));
-		User::create(array('name' => 'Mark Moe', 'age' => 23, 'title' => 'user'));
-		User::create(array('name' => 'Brett Boe', 'age' => 35, 'title' => 'user'));
-		User::create(array('name' => 'Tommy Toe', 'age' => 33, 'title' => 'user'));
-		User::create(array('name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin'));
-		User::create(array('name' => 'Error', 'age' => null, 'title' => null));
+		User::create(['name' => 'John Doe', 'age' => 35, 'title' => 'admin']);
+		User::create(['name' => 'Jane Doe', 'age' => 33, 'title' => 'admin']);
+		User::create(['name' => 'Harry Hoe', 'age' => 13, 'title' => 'user']);
+		User::create(['name' => 'Robert Roe', 'age' => 37, 'title' => 'user']);
+		User::create(['name' => 'Mark Moe', 'age' => 23, 'title' => 'user']);
+		User::create(['name' => 'Brett Boe', 'age' => 35, 'title' => 'user']);
+		User::create(['name' => 'Tommy Toe', 'age' => 33, 'title' => 'user']);
+		User::create(['name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin']);
+		User::create(['name' => 'Error', 'age' => null, 'title' => null]);
 	}
 
 	public function tearDown()
@@ -83,13 +83,13 @@ class QueryTest extends TestCase {
 		$this->assertEquals('admin', $user->title);
 		$this->assertEquals(null, $user->age);
 
-		$user = User::where('name', 'John Doe')->select(array('name', 'title'))->get()->first();
+		$user = User::where('name', 'John Doe')->select(['name', 'title'])->get()->first();
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals('admin', $user->title);
 		$this->assertEquals(null, $user->age);
 
-		$user = User::where('name', 'John Doe')->get(array('name'))->first();
+		$user = User::where('name', 'John Doe')->get(['name'])->first();
 
 		$this->assertEquals('John Doe', $user->name);
 		$this->assertEquals(null, $user->age);
@@ -106,30 +106,30 @@ class QueryTest extends TestCase {
 
 	public function testBetween()
 	{
-		$users = User::whereBetween('age', array(0, 25))->get();
+		$users = User::whereBetween('age', [0, 25])->get();
 		$this->assertEquals(2, count($users));
 
-		$users = User::whereBetween('age', array(13, 23))->get();
+		$users = User::whereBetween('age', [13, 23])->get();
 		$this->assertEquals(2, count($users));
 
 		// testing whereNotBetween for version 4.1
-		$users = User::whereBetween('age', array(0, 25), 'and', true)->get();
+		$users = User::whereBetween('age', [0, 25], 'and', true)->get();
 		$this->assertEquals(6, count($users));
 	}
 
 	public function testIn()
 	{
-		$users = User::whereIn('age', array(13, 23))->get();
+		$users = User::whereIn('age', [13, 23])->get();
 		$this->assertEquals(2, count($users));
 
-		$users = User::whereIn('age', array(33, 35, 13))->get();
+		$users = User::whereIn('age', [33, 35, 13])->get();
 		$this->assertEquals(6, count($users));
 
-		$users = User::whereNotIn('age', array(33, 35))->get();
+		$users = User::whereNotIn('age', [33, 35])->get();
 		$this->assertEquals(4, count($users));
 
 		$users = User::whereNotNull('age')
-					 ->whereNotIn('age', array(33, 35))->get();
+					 ->whereNotIn('age', [33, 35])->get();
 		$this->assertEquals(3, count($users));
 	}
 
@@ -263,13 +263,13 @@ class QueryTest extends TestCase {
 
 	public function testWhereRaw()
 	{
-		$where = array('age' => array('$gt' => 30, '$lt' => 40));
+		$where = ['age' => ['$gt' => 30, '$lt' => 40]];
 		$users = User::whereRaw($where)->get();
 
 		$this->assertEquals(6, count($users));
 
-		$where1 = array('age' => array('$gt' => 30, '$lte' => 35));
-		$where2 = array('age' => array('$gt' => 35, '$lt' => 40));
+		$where1 = ['age' => ['$gt' => 30, '$lte' => 35]];
+		$where2 = ['age' => ['$gt' => 35, '$lt' => 40]];
 		$users = User::whereRaw($where1)->orWhereRaw($where2)->get();
 
 		$this->assertEquals(6, count($users));
@@ -307,7 +307,7 @@ class QueryTest extends TestCase {
 		$this->assertNotNull($results->first()->title);
 		$this->assertEquals(9, $results->total());
 
-		$results = User::paginate(2, array('name', 'age'));
+		$results = User::paginate(2, ['name', 'age']);
 		$this->assertEquals(2, $results->count());
 		$this->assertNull($results->first()->title);
 		$this->assertEquals(9, $results->total());

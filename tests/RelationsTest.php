@@ -19,18 +19,18 @@ class RelationsTest extends TestCase {
 
     public function testHasMany()
     {
-        $author = User::create(array('name' => 'George R. R. Martin'));
-        Book::create(array('title' => 'A Game of Thrones', 'author_id' => $author->_id));
-        Book::create(array('title' => 'A Clash of Kings', 'author_id' => $author->_id));
+        $author = User::create(['name' => 'George R. R. Martin']);
+        Book::create(['title' => 'A Game of Thrones', 'author_id' => $author->_id]);
+        Book::create(['title' => 'A Clash of Kings', 'author_id' => $author->_id]);
 
         $books = $author->books;
         $this->assertEquals(2, count($books));
 
-        $user = User::create(array('name' => 'John Doe'));
-        Item::create(array('type' => 'knife', 'user_id' => $user->_id));
-        Item::create(array('type' => 'shield', 'user_id' => $user->_id));
-        Item::create(array('type' => 'sword', 'user_id' => $user->_id));
-        Item::create(array('type' => 'bag', 'user_id' => null));
+        $user = User::create(['name' => 'John Doe']);
+        Item::create(['type' => 'knife', 'user_id' => $user->_id]);
+        Item::create(['type' => 'shield', 'user_id' => $user->_id]);
+        Item::create(['type' => 'sword', 'user_id' => $user->_id]);
+        Item::create(['type' => 'bag', 'user_id' => null]);
 
         $items = $user->items;
         $this->assertEquals(3, count($items));
@@ -38,15 +38,15 @@ class RelationsTest extends TestCase {
 
     public function testBelongsTo()
     {
-        $user = User::create(array('name' => 'George R. R. Martin'));
-        Book::create(array('title' => 'A Game of Thrones', 'author_id' => $user->_id));
-        $book = Book::create(array('title' => 'A Clash of Kings', 'author_id' => $user->_id));
+        $user = User::create(['name' => 'George R. R. Martin']);
+        Book::create(['title' => 'A Game of Thrones', 'author_id' => $user->_id]);
+        $book = Book::create(['title' => 'A Clash of Kings', 'author_id' => $user->_id]);
 
         $author = $book->author;
         $this->assertEquals('George R. R. Martin', $author->name);
 
-        $user = User::create(array('name' => 'John Doe'));
-        $item = Item::create(array('type' => 'sword', 'user_id' => $user->_id));
+        $user = User::create(['name' => 'John Doe']);
+        $item = Item::create(['type' => 'sword', 'user_id' => $user->_id]);
 
         $owner = $item->user;
         $this->assertEquals('John Doe', $owner->name);
@@ -54,15 +54,15 @@ class RelationsTest extends TestCase {
 
     public function testHasOne()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        Role::create(array('type' => 'admin', 'user_id' => $user->_id));
+        $user = User::create(['name' => 'John Doe']);
+        Role::create(['type' => 'admin', 'user_id' => $user->_id]);
 
         $role = $user->role;
         $this->assertEquals('admin', $role->type);
         $this->assertEquals($user->_id, $role->user_id);
 
-        $user = User::create(array('name' => 'Jane Doe'));
-        $role = new Role(array('type' => 'user'));
+        $user = User::create(['name' => 'Jane Doe']);
+        $role = new Role(['type' => 'user']);
         $user->role()->save($role);
 
         $role = $user->role;
@@ -77,11 +77,11 @@ class RelationsTest extends TestCase {
 
     public function testWithBelongsTo()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        Item::create(array('type' => 'knife', 'user_id' => $user->_id));
-        Item::create(array('type' => 'shield', 'user_id' => $user->_id));
-        Item::create(array('type' => 'sword', 'user_id' => $user->_id));
-        Item::create(array('type' => 'bag', 'user_id' => null));
+        $user = User::create(['name' => 'John Doe']);
+        Item::create(['type' => 'knife', 'user_id' => $user->_id]);
+        Item::create(['type' => 'shield', 'user_id' => $user->_id]);
+        Item::create(['type' => 'sword', 'user_id' => $user->_id]);
+        Item::create(['type' => 'bag', 'user_id' => null]);
 
         $items = Item::with('user')->orderBy('user_id', 'desc')->get();
 
@@ -94,11 +94,11 @@ class RelationsTest extends TestCase {
 
     public function testWithHashMany()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        Item::create(array('type' => 'knife', 'user_id' => $user->_id));
-        Item::create(array('type' => 'shield', 'user_id' => $user->_id));
-        Item::create(array('type' => 'sword', 'user_id' => $user->_id));
-        Item::create(array('type' => 'bag', 'user_id' => null));
+        $user = User::create(['name' => 'John Doe']);
+        Item::create(['type' => 'knife', 'user_id' => $user->_id]);
+        Item::create(['type' => 'shield', 'user_id' => $user->_id]);
+        Item::create(['type' => 'sword', 'user_id' => $user->_id]);
+        Item::create(['type' => 'bag', 'user_id' => null]);
 
         $user = User::with('items')->find($user->_id);
 
@@ -109,9 +109,9 @@ class RelationsTest extends TestCase {
 
     public function testWithHasOne()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        Role::create(array('type' => 'admin', 'user_id' => $user->_id));
-        Role::create(array('type' => 'guest', 'user_id' => $user->_id));
+        $user = User::create(['name' => 'John Doe']);
+        Role::create(['type' => 'admin', 'user_id' => $user->_id]);
+        Role::create(['type' => 'guest', 'user_id' => $user->_id]);
 
         $user = User::with('role')->find($user->_id);
 
@@ -123,8 +123,8 @@ class RelationsTest extends TestCase {
     public function testEasyRelation()
     {
         // Has Many
-        $user = User::create(array('name' => 'John Doe'));
-        $item = Item::create(array('type' => 'knife'));
+        $user = User::create(['name' => 'John Doe']);
+        $item = Item::create(['type' => 'knife']);
         $user->items()->save($item);
 
         $user = User::find($user->_id);
@@ -134,8 +134,8 @@ class RelationsTest extends TestCase {
         $this->assertEquals($user->_id, $items[0]->user_id);
 
         // Has one
-        $user = User::create(array('name' => 'John Doe'));
-        $role = Role::create(array('type' => 'admin'));
+        $user = User::create(['name' => 'John Doe']);
+        $role = Role::create(['type' => 'admin']);
         $user->role()->save($role);
 
         $user = User::find($user->_id);
@@ -147,11 +147,11 @@ class RelationsTest extends TestCase {
 
     public function testBelongsToMany()
     {
-        $user = User::create(array('name' => 'John Doe'));
+        $user = User::create(['name' => 'John Doe']);
 
         // Add 2 clients
-        $user->clients()->save(new Client(array('name' => 'Pork Pies Ltd.')));
-        $user->clients()->create(array('name' => 'Buffet Bar Inc.'));
+        $user->clients()->save(new Client(['name' => 'Pork Pies Ltd.']));
+        $user->clients()->create(['name' => 'Buffet Bar Inc.']);
 
         // Refetch
         $user = User::with('clients')->find($user->_id);
@@ -172,7 +172,7 @@ class RelationsTest extends TestCase {
         $this->assertCount(1, $client->users);
 
         // Now create a new user to an existing client
-        $user = $client->users()->create(array('name' => 'Jane Doe'));
+        $user = $client->users()->create(['name' => 'Jane Doe']);
 
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $user->clients);
         $this->assertInstanceOf('Client', $user->clients->first());
@@ -206,7 +206,7 @@ class RelationsTest extends TestCase {
         $this->assertCount(2, $client->users);
 
         // Detach clients from user
-        $user->clients()->sync(array());
+        $user->clients()->sync([]);
 
         // Get the new user model
         $user = User::where('name', '=', 'Jane Doe')->first();
@@ -221,17 +221,17 @@ class RelationsTest extends TestCase {
 
     public function testBelongsToManyAttachesExistingModels()
     {
-        $user = User::create(array('name' => 'John Doe', 'client_ids' => array('1234523')));
+        $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523']]);
 
-        $clients = array(
-            Client::create(array('name' => 'Pork Pies Ltd.'))->_id,
-            Client::create(array('name' => 'Buffet Bar Inc.'))->_id
-        );
+        $clients = [
+            Client::create(['name' => 'Pork Pies Ltd.'])->_id,
+            Client::create(['name' => 'Buffet Bar Inc.'])->_id
+        ];
 
-        $moreClients = array(
-            Client::create(array('name' => 'synced Boloni Ltd.'))->_id,
-            Client::create(array('name' => 'synced Meatballs Inc.'))->_id
-        );
+        $moreClients = [
+            Client::create(['name' => 'synced Boloni Ltd.'])->_id,
+            Client::create(['name' => 'synced Meatballs Inc.'])->_id
+        ];
 
         // Sync multiple records
         $user->clients()->sync($clients);
@@ -261,27 +261,27 @@ class RelationsTest extends TestCase {
     public function testBelongsToManySync()
     {
         // create test instances
-        $user = User::create(array('name' => 'John Doe'));
-        $client1 = Client::create(array('name' => 'Pork Pies Ltd.'))->_id;
-        $client2 = Client::create(array('name' => 'Buffet Bar Inc.'))->_id;
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Pork Pies Ltd.'])->_id;
+        $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
 
         // Sync multiple
-        $user->clients()->sync(array($client1, $client2));
+        $user->clients()->sync([$client1, $client2]);
         $this->assertCount(2, $user->clients);
 
         // Refresh user
         $user = User::where('name', '=', 'John Doe')->first();
 
         // Sync single
-        $user->clients()->sync(array($client1));
+        $user->clients()->sync([$client1]);
         $this->assertCount(1, $user->clients);
     }
 
     public function testBelongsToManyAttachArray()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $client1 = Client::create(array('name' => 'Test 1'))->_id;
-        $client2 = Client::create(array('name' => 'Test 2'))->_id;
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Test 1'])->_id;
+        $client2 = Client::create(['name' => 'Test 2'])->_id;
 
         $user = User::where('name', '=', 'John Doe')->first();
         $user->clients()->attach([$client1, $client2]);
@@ -290,9 +290,9 @@ class RelationsTest extends TestCase {
 
     public function testBelongsToManySyncAlreadyPresent()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $client1 = Client::create(array('name' => 'Test 1'))->_id;
-        $client2 = Client::create(array('name' => 'Test 2'))->_id;
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Test 1'])->_id;
+        $client2 = Client::create(['name' => 'Test 2'])->_id;
 
         $user->clients()->sync([$client1, $client2]);
         $this->assertCount(2, $user->clients);
@@ -307,8 +307,8 @@ class RelationsTest extends TestCase {
 
     public function testBelongsToManyCustom()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $group = $user->groups()->create(array('name' => 'Admins'));
+        $user = User::create(['name' => 'John Doe']);
+        $group = $user->groups()->create(['name' => 'Admins']);
 
         // Refetch
         $user = User::find($user->_id);
@@ -327,10 +327,10 @@ class RelationsTest extends TestCase {
 
     public function testMorph()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $client = Client::create(array('name' => 'Jane Doe'));
+        $user = User::create(['name' => 'John Doe']);
+        $client = Client::create(['name' => 'Jane Doe']);
 
-        $photo = Photo::create(array('url' => 'http://graph.facebook.com/john.doe/picture'));
+        $photo = Photo::create(['url' => 'http://graph.facebook.com/john.doe/picture']);
         $photo = $user->photos()->save($photo);
 
         $this->assertEquals(1, $user->photos->count());
@@ -340,7 +340,7 @@ class RelationsTest extends TestCase {
         $this->assertEquals(1, $user->photos->count());
         $this->assertEquals($photo->id, $user->photos->first()->id);
 
-        $photo = Photo::create(array('url' => 'http://graph.facebook.com/jane.doe/picture'));
+        $photo = Photo::create(['url' => 'http://graph.facebook.com/jane.doe/picture']);
         $client->photo()->save($photo);
 
         $this->assertNotNull($client->photo);
@@ -370,13 +370,13 @@ class RelationsTest extends TestCase {
 
     public function testHasManyHas()
     {
-        $author1 = User::create(array('name' => 'George R. R. Martin'));
-        $author1->books()->create(array('title' => 'A Game of Thrones', 'rating' => 5));
-        $author1->books()->create(array('title' => 'A Clash of Kings', 'rating' => 5));
-        $author2 = User::create(array('name' => 'John Doe'));
-        $author2->books()->create(array('title' => 'My book', 'rating' => 2));
-        User::create(array('name' => 'Anonymous author'));
-        Book::create(array('title' => 'Anonymous book', 'rating' => 1));
+        $author1 = User::create(['name' => 'George R. R. Martin']);
+        $author1->books()->create(['title' => 'A Game of Thrones', 'rating' => 5]);
+        $author1->books()->create(['title' => 'A Clash of Kings', 'rating' => 5]);
+        $author2 = User::create(['name' => 'John Doe']);
+        $author2->books()->create(['title' => 'My book', 'rating' => 2]);
+        User::create(['name' => 'Anonymous author']);
+        Book::create(['title' => 'Anonymous book', 'rating' => 1]);
 
         $authors = User::has('books')->get();
         $this->assertCount(2, $authors);
@@ -424,12 +424,12 @@ class RelationsTest extends TestCase {
 
     public function testHasOneHas()
     {
-        $user1 = User::create(array('name' => 'John Doe'));
-        $user1->role()->create(array('title' => 'admin'));
-        $user2 = User::create(array('name' => 'Jane Doe'));
-        $user2->role()->create(array('title' => 'reseller'));
-        User::create(array('name' => 'Mark Moe'));
-        Role::create(array('title' => 'Customer'));
+        $user1 = User::create(['name' => 'John Doe']);
+        $user1->role()->create(['title' => 'admin']);
+        $user2 = User::create(['name' => 'Jane Doe']);
+        $user2->role()->create(['title' => 'reseller']);
+        User::create(['name' => 'Mark Moe']);
+        Role::create(['title' => 'Customer']);
 
         $users = User::has('role')->get();
         $this->assertCount(2, $users);
@@ -445,19 +445,19 @@ class RelationsTest extends TestCase {
 
     public function testNestedKeys()
     {
-        $client = Client::create(array(
-            'data' => array(
+        $client = Client::create([
+            'data' => [
                 'client_id' => 35298,
                 'name' => 'John Doe'
-            )
-        ));
+            ]
+        ]);
 
-        $address = $client->addresses()->create(array(
-            'data' => array(
+        $address = $client->addresses()->create([
+            'data' => [
                 'address_id' => 1432,
                 'city' => 'Paris'
-            )
-        ));
+            ]
+        ]);
 
         $client = Client::where('data.client_id', 35298)->first();
         $this->assertEquals(1, $client->addresses->count());
@@ -471,8 +471,8 @@ class RelationsTest extends TestCase {
 
     public function testDoubleSaveOneToMany()
     {
-        $author = User::create(array('name' => 'George R. R. Martin'));
-        $book = Book::create(array('title' => 'A Game of Thrones'));
+        $author = User::create(['name' => 'George R. R. Martin']);
+        $book = Book::create(['title' => 'A Game of Thrones']);
 
         $author->books()->save($book);
         $author->books()->save($book);
@@ -494,29 +494,29 @@ class RelationsTest extends TestCase {
 
     public function testDoubleSaveManyToMany()
     {
-        $user = User::create(array('name' => 'John Doe'));
-        $client = Client::create(array('name' => 'Admins'));
+        $user = User::create(['name' => 'John Doe']);
+        $client = Client::create(['name' => 'Admins']);
 
         $user->clients()->save($client);
         $user->clients()->save($client);
         $user->save();
 
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals(array($user->_id), $client->user_ids);
-        $this->assertEquals(array($client->_id), $user->client_ids);
+        $this->assertEquals([$user->_id], $client->user_ids);
+        $this->assertEquals([$client->_id], $user->client_ids);
 
         $user = User::where('name', 'John Doe')->first();
         $client = Client::where('name', 'Admins')->first();
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals(array($user->_id), $client->user_ids);
-        $this->assertEquals(array($client->_id), $user->client_ids);
+        $this->assertEquals([$user->_id], $client->user_ids);
+        $this->assertEquals([$client->_id], $user->client_ids);
 
         $user->clients()->save($client);
         $user->clients()->save($client);
         $user->save();
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals(array($user->_id), $client->user_ids);
-        $this->assertEquals(array($client->_id), $user->client_ids);
+        $this->assertEquals([$user->_id], $client->user_ids);
+        $this->assertEquals([$client->_id], $user->client_ids);
     }
 
 }

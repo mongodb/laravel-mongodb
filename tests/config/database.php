@@ -1,17 +1,17 @@
 <?php
 
-return array(
+return [
 
-	'connections' => array(
+	'connections' => [
 
-		'mongodb' => array(
+		'mongodb' => [
 			'name'	   => 'mongodb',
 			'driver'   => 'mongodb',
 			'host'     => 'localhost',
 			'database' => 'unittest',
-		),
+		],
 
-		'mysql' => array(
+		'mysql' => [
 			'driver'    => 'mysql',
 			'host'      => 'localhost',
 			'database'  => 'unittest',
@@ -20,7 +20,7 @@ return array(
 			'charset'   => 'utf8',
 			'collation' => 'utf8_unicode_ci',
 			'prefix'    => '',
-		),
-	)
+		],
+	]
 
-);
+];

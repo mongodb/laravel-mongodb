@@ -60,7 +60,7 @@ class SchemaTest extends TestCase {
 
 		Schema::collection('newcollection', function($collection)
 		{
-			$collection->index(array('mykey'));
+			$collection->index(['mykey']);
 		});
 
 		$index = $this->getIndex('newcollection', 'mykey');
@@ -92,7 +92,7 @@ class SchemaTest extends TestCase {
 		Schema::collection('newcollection', function($collection)
 		{
 			$collection->unique('uniquekey');
-			$collection->dropIndex(array('uniquekey'));
+			$collection->dropIndex(['uniquekey']);
 		});
 
 		$index = $this->getIndex('newcollection', 'uniquekey');
