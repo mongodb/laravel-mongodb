@@ -21,15 +21,4 @@ class MorphTo extends EloquentMorphTo {
 		}
 	}
 
-	/**
-	 * Set the constraints for an eager load of the relation.
-	 *
-	 * @param  array  $models
-	 * @return void
-	 */
-	public function addEagerConstraints(array $models)
-	{
-		$this->buildDictionary($this->models = Collection::make($models));
-	}
-
 }
