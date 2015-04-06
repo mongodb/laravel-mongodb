@@ -142,7 +142,15 @@ class Connection extends \Illuminate\Database\Connection {
             $options['password'] = $config['password'];
         }
 
-        return new MongoClient($dsn, $options);
+        // By default driver options is an empty array.
+        $driverOptions = array();
+
+        if (isset($config['driver_options']) && is_array($config['driver_options']))
+        {
+            $driverOptions = $config['driver_options'];
+        }
+
+        return new MongoClient($dsn, $options, $driverOptions);
     }
 
     /**
