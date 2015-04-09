@@ -792,6 +792,22 @@ class Builder extends BaseBuilder {
                 }
             }
 
+            // Convert numeric values to ints or floats
+            if (isset($where['values']))
+            {
+                foreach ($where['values'] as &$value)
+                {
+                    if (is_numeric($value))
+                    {
+                        $value = $value + 0;
+                    }
+                }
+            }
+            else if (isset($where['value']) and is_numeric($where['value']))
+            {
+                $where['value'] = $where['value'] + 0;
+            }
+
             // Convert DateTime values to MongoDate.
             if (isset($where['value']) and $where['value'] instanceof DateTime)
             {
