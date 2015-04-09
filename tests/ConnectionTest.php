@@ -104,7 +104,7 @@ class ConnectionTest extends TestCase {
 		$port = Config::get('database.connections.mongodb.port', 27017);
 		$database = Config::get('database.connections.mongodb.database');
 
-		$this->setExpectedException('MongoConnectionException', "Failed to connect to: $host:$port: Authentication failed on database '$database' with username 'foo': auth fails");
+		$this->setExpectedExceptionRegExp('MongoConnectionException', "/Failed to connect to: $host:$port: Authentication failed on database '$database' with username 'foo': auth fail/");
 		$connection = DB::connection('mongodb');
 	}
 
@@ -116,6 +116,17 @@ class ConnectionTest extends TestCase {
 		$database = Config::get('database.connections.mongodb.database');
 
 		$this->setExpectedException('MongoConnectionException', "Failed to connect to: $host:$port: Connection refused");
+		$connection = DB::connection('mongodb');
+	}
+
+	public function testHostWithPorts()
+	{
+		$hosts = ['localhost:27001', 'localhost:27002'];
+		Config::set('database.connections.mongodb.port', 27000);
+		Config::set('database.connections.mongodb.host', ['localhost:27001', 'localhost:27002']);
+		$database = Config::get('database.connections.mongodb.database');
+
+		$this->setExpectedException('MongoConnectionException', "Failed to connect to: " . $hosts[0] . ": Connection refused; Failed to connect to: " . $hosts[1] . ": Connection refused");
 		$connection = DB::connection('mongodb');
 	}
 
