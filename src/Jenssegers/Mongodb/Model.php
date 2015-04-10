@@ -1,6 +1,8 @@
 <?php namespace Jenssegers\Mongodb;
 
-abstract class Model extends \Illuminate\Database\Eloquent\Model {
+use Jenssegers\Mongodb\Contracts\Mongo as MongoContract;
+
+abstract class Model extends \Illuminate\Database\Eloquent\Model implements MongoContract {
 
 	use \Jenssegers\Mongodb\Mongo;
 
