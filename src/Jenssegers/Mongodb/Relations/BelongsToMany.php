@@ -104,7 +104,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 
 		$records = $this->formatSyncList($ids);
 
-		$detach = array_diff($current, array_keys($records));
+		$detach = array_values(array_diff($current, array_keys($records)));
 
 		// Next, we will take the differences of the currents and given IDs and detach
 		// all of the entities that exist in the "current" array but are not in the
