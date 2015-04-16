@@ -21,7 +21,8 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
             }
             catch (ErrorException $ex)
             {
-            	// The property doesn't exists. Set it to null
+            	// The property doesn't exists.
+            	// Set it to null
                 $foreign_key = null;
             }
 
