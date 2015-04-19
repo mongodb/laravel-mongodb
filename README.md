@@ -78,6 +78,15 @@ You can connect to multiple servers or replica sets with the following configura
 ),
 ```
 
+For usage outside Laravel, check out the [Capsule manager](https://github.com/illuminate/database/blob/master/README.md) and add:
+
+```php
+$capsule->getDatabaseManager()->extend('mongodb', function($config)
+{
+    return new Jenssegers\Mongodb\Connection($config);
+});
+```
+
 Eloquent
 --------
 
