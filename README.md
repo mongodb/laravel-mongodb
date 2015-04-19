@@ -42,6 +42,15 @@ Add the service provider in `app/config/app.php`:
 
 The service provider will register a mongodb database extension with the original database manager. There is no need to register additional facades or objects. When using mongodb connections, Laravel will automatically provide you with the corresponding mongodb objects.
 
+For usage outside Laravel, check out the [Capsule manager](https://github.com/illuminate/database/blob/master/README.md) and add:
+
+```php
+$capsule->getDatabaseManager()->extend('mongodb', function($config)
+{
+    return new Jenssegers\Mongodb\Connection($config);
+});
+```
+
 Configuration
 -------------
 
@@ -76,15 +85,6 @@ You can connect to multiple servers or replica sets with the following configura
     'database' => 'database',
     'options'  => array('replicaSet' => 'replicaSetName')
 ),
-```
-
-For usage outside Laravel, check out the [Capsule manager](https://github.com/illuminate/database/blob/master/README.md) and add:
-
-```php
-$capsule->getDatabaseManager()->extend('mongodb', function($config)
-{
-    return new Jenssegers\Mongodb\Connection($config);
-});
 ```
 
 Eloquent
