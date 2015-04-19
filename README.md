@@ -22,10 +22,16 @@ Installation
 
 Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongo.installation.php
 
-Install using composer:
+For Laravel 5, install the latest stable version using composer:
 
 ```json
 composer require jenssegers/mongodb
+```
+
+For Laravel 4.2, use version `~2.0`:
+
+```json
+composer require jenssegers/mongodb ~2.0
 ```
 
 Add the service provider in `app/config/app.php`:
