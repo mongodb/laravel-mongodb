@@ -24,13 +24,13 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
 
 For Laravel 5, install the latest stable version using composer:
 
-```json
+```
 composer require jenssegers/mongodb
 ```
 
 For Laravel 4.2, use version `~2.0`:
 
-```json
+```
 composer require jenssegers/mongodb ~2.0
 ```
 
