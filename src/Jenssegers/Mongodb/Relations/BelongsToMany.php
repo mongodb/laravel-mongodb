@@ -116,7 +116,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 
 		$records = $this->formatSyncList($ids);
 
-		$detach = array_diff($current, array_keys($records));
+		$detach = array_values(array_diff($current, array_keys($records)));
 
 		// We need to make sure we pass a clean array, so that it is not interpreted
 		// as an associative array.
