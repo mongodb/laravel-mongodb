@@ -50,6 +50,9 @@ class RelationsTest extends TestCase {
 
         $owner = $item->user;
         $this->assertEquals('John Doe', $owner->name);
+
+        $book = Book::create(['title' => 'A Clash of Kings']);
+        $this->assertEquals(null, $book->author);
     }
 
     public function testHasOne()
