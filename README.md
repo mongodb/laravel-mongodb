@@ -69,7 +69,10 @@ And add a new mongodb connection:
     'port'     => 27017,
     'username' => 'username',
     'password' => 'password',
-    'database' => 'database'
+    'database' => 'database',
+    'options' => array(
+        'db' => 'admin' // sets the authenication database required by mongo 3
+    )
 ),
 ```
 
