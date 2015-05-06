@@ -749,4 +749,25 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(3, $results->total());
     }
 
+    public function testHiddenAttributesEmbedsMany()
+    {
+        $user = User::create(array('name' => 'John Doe'));
+        $user->addresses()->save(new Address(array('city' => 'New York', 'ownership' => 'own')));
+
+        $user = User::find($user->_id);
+
+        $this->assertFalse(array_key_exists('ownership', $user->toArray()['addresses'][0]));
+        $this->assertFalse(array_key_exists('ownership', $user->addresses()->first()->toArray()));
+    }
+
+    public function testHiddenAttributeEmbedsOne()
+    {
+        $user = User::create(array('name' => 'John Doe', 'ssn' => '123456789'));
+        $user->father()->save(new User(array('name' => 'Mark Doe', 'ssn' => '123456789')));
+
+        $user = User::find($user->_id);
+
+        $this->assertFalse(array_key_exists('ssn', $user->toArray()['father']));
+    }
+
 }

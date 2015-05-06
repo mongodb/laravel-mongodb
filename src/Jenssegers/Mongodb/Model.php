@@ -331,6 +331,56 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
             {
                 $value = (string) $value;
             }
+
+            $camelKey = camel_case($key);
+
+            // If the "attribute" exists as a method on the model, it may be an
+            // embedded model. If so, we need to return the result before it
+            // is handled by the parent method.
+            if (method_exists($this, $camelKey))
+            {
+                $relations = $this->$camelKey();
+
+                // This attribute matches an embedsOne or embedsMany relation so we need
+                // to return the relation results instead of the internal attributes.
+                if ($relations instanceof EmbedsMany)
+                {
+                    // Check to see if any values matches hidden attribtues on
+                    // parent model
+                    $value = array_map(function($embedded) use($camelKey) {
+
+                        return $this->removeEmbeddedHiddenAttrs($camelKey, $embedded);
+
+                    }, $value);
+                }
+                elseif($relations instanceof EmbedsOne)
+                {
+                    $value = $this->removeEmbeddedHiddenAttrs($camelKey, $value);
+                }
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * Remove hidden attributes from embedded model
+     *
+     * @param $camelKey
+     * @param $embedded
+     * @return array
+     */
+    protected function removeEmbeddedHiddenAttrs($camelKey, $embedded)
+    {
+        $attributes = array();
+
+        foreach($embedded as $key => $value)
+        {
+            $hidden = $camelKey . '.' . $key;
+
+            if(in_array($hidden, $this->hidden)) continue;
+
+            $attributes[$key] = $value;
         }
 
         return $attributes;
