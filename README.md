@@ -71,7 +71,7 @@ And add a new mongodb connection:
     'password' => 'password',
     'database' => 'database',
     'options' => array(
-        'db' => 'admin' // sets the authenication database required by mongo 3
+        'db' => 'admin' // sets the authentication database required by mongo 3
     )
 ),
 ```
