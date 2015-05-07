@@ -11,10 +11,25 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
 	{
 		if (static::$constraints)
 		{
+			// The foreign key field may be non-existent in mongodb.
+			// In this case, the property $this->parent->{$this->foreignKey} cannot be retrieved
+			// and an ErrorException will be thrown.
+			// The following try-catch construct avoids the case in which the field doesn't exists.
+			try
+			{
+                $foreign_key = $this->parent->{$this->foreignKey};
+            }
+            catch (ErrorException $ex)
+            {
+            	// The property doesn't exists.
+            	// Set it to null
+                $foreign_key = null;
+            }
+
 			// For belongs to relationships, which are essentially the inverse of has one
 			// or has many relationships, we need to actually query on the primary key
 			// of the related models matching on the foreign key that's on a parent.
-			$this->query->where($this->otherKey, '=', $this->parent->{$this->foreignKey});
+			$this->query->where($this->otherKey, '=', $foreign_key);
 		}
 	}
 
