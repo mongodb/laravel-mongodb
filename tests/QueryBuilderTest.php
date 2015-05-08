@@ -473,11 +473,17 @@ class QueryBuilderTest extends TestCase {
 		$user = DB::collection('users')->where('birthday', '=', new DateTime("1980-01-01 00:00:00"))->first();
 		$this->assertEquals('John Doe', $user['name']);
 
-		$start = new MongoDate(strtotime("1981-01-01 00:00:00"));
-		$stop = new MongoDate(strtotime("1982-01-01 00:00:00"));
+		$start = new DateTime("1981-01-01 00:00:00");
+		$stop = new DateTime("1982-01-01 00:00:00");
 
 		$users = DB::collection('users')->whereBetween('birthday', [$start, $stop])->get();
 		$this->assertEquals(2, count($users));
+
+		$start = new MongoDate(strtotime("1981-01-01 00:00:00"));
+		$stop = new MongoDate(strtotime("1983-01-01 00:00:00"));
+
+		$users = DB::collection('users')->whereBetween('birthday', array($start, $stop))->get();
+		$this->assertEquals(3, count($users));
 	}
 
 	public function testOperators()
