@@ -6,21 +6,21 @@ use Jenssegers\Eloquent\Model as Eloquent;
 class MysqlRole extends Eloquent {
 
     protected $connection = 'mysql';
-	protected $table = 'roles';
-	protected static $unguarded = true;
+    protected $table = 'roles';
+    protected static $unguarded = true;
 
     public function user()
     {
-    	return $this->belongsTo('User');
+        return $this->belongsTo('User');
     }
 
     public function mysqlUser()
     {
-    	return $this->belongsTo('MysqlUser');
+        return $this->belongsTo('MysqlUser');
     }
 
     /**
-     * Check if we need to run the schema
+     * Check if we need to run the schema.
      * @return [type] [description]
      */
     public static function executeSchema()
@@ -29,7 +29,7 @@ class MysqlRole extends Eloquent {
 
         if (!$schema->hasTable('roles'))
         {
-            Schema::connection('mysql')->create('roles', function($table)
+            Schema::connection('mysql')->create('roles', function ($table)
             {
                 $table->string('type');
                 $table->string('user_id');

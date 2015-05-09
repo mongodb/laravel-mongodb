@@ -6,9 +6,9 @@ use Jenssegers\Eloquent\Model as Eloquent;
 class MysqlBook extends Eloquent {
 
     protected $connection = 'mysql';
-	protected $table = 'books';
-	protected static $unguarded = true;
-	protected $primaryKey = 'title';
+    protected $table = 'books';
+    protected static $unguarded = true;
+    protected $primaryKey = 'title';
 
     public function author()
     {
@@ -16,7 +16,7 @@ class MysqlBook extends Eloquent {
     }
 
     /**
-     * Check if we need to run the schema
+     * Check if we need to run the schema.
      * @return [type] [description]
      */
     public static function executeSchema()
@@ -25,7 +25,7 @@ class MysqlBook extends Eloquent {
 
         if (!$schema->hasTable('books'))
         {
-            Schema::connection('mysql')->create('books', function($table)
+            Schema::connection('mysql')->create('books', function ($table)
             {
                 $table->string('title');
                 $table->string('author_id');

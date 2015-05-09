@@ -1,0 +1,16 @@
+preset: psr2
+
+enabled:
+  - duplicate_semicolon
+  - empty_return
+  - extra_empty_lines
+  - operators_spaces
+  - phpdoc_indent
+  - remove_leading_slash_use
+  - spaces_cast
+  - ternary_spaces
+  - unused_use
+
+disabled:
+  - braces
+  - parenthesis

@@ -40,7 +40,7 @@ class Collection extends EloquentCollection {
             list($value, $operator) = array($operator, '=');
         }
 
-        return $this->filter(function($item) use ($key, $operator, $value)
+        return $this->filter(function ($item) use ($key, $operator, $value)
         {
             $actual = $item->{$key};
 

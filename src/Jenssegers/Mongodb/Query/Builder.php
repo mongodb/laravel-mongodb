@@ -1,6 +1,10 @@
 <?php namespace Jenssegers\Mongodb\Query;
 
-use MongoId, MongoRegex, MongoDate, DateTime, Closure;
+use MongoId;
+use MongoRegex;
+use MongoDate;
+use DateTime;
+use Closure;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Collection;
@@ -9,7 +13,7 @@ use Jenssegers\Mongodb\Connection;
 class Builder extends BaseBuilder {
 
     /**
-     * The database collection
+     * The database collection.
      *
      * @var MongoCollection
      */
@@ -28,7 +32,7 @@ class Builder extends BaseBuilder {
      * @var int
      */
     public $timeout;
-    
+
     /**
      * The cursor hint value.
      *
@@ -110,7 +114,7 @@ class Builder extends BaseBuilder {
 
         return $this;
     }
-    
+
     /**
      * Set the cursor hint.
      *
@@ -248,7 +252,7 @@ class Builder extends BaseBuilder {
         }
 
         // Distinct query
-        else if ($this->distinct)
+        elseif ($this->distinct)
         {
             // Return distinct results directly
             $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
@@ -507,7 +511,7 @@ class Builder extends BaseBuilder {
         }
 
         // Protect
-        $this->where(function($query) use ($column)
+        $this->where(function ($query) use ($column)
         {
             $query->where($column, 'exists', false);
 
@@ -612,7 +616,7 @@ class Builder extends BaseBuilder {
             $results = new Collection($this->get([$column, $key]));
 
             // Convert MongoId's to strings so that lists can do its work.
-            $results = $results->map(function($item)
+            $results = $results->map(function ($item)
             {
                 $item['_id'] = (string) $item['_id'];
 
@@ -640,7 +644,7 @@ class Builder extends BaseBuilder {
         }
 
         // Create an expression for the given value
-        else if ( ! is_null($expression))
+        elseif ( ! is_null($expression))
         {
             return new Expression($expression);
         }
@@ -668,7 +672,7 @@ class Builder extends BaseBuilder {
         {
             $query = array($operator => $column);
         }
-        else if ($batch)
+        elseif ($batch)
         {
             $query = array($operator => array($column => array('$each' => $value)));
         }
@@ -833,14 +837,14 @@ class Builder extends BaseBuilder {
 
                 // Operator conversions
                 $convert = array(
-                    'regexp' => 'regex',
-                    'elemmatch' => 'elemMatch',
+                    'regexp'        => 'regex',
+                    'elemmatch'     => 'elemMatch',
                     'geointersects' => 'geoIntersects',
-                    'geowithin' => 'geoWithin',
-                    'nearsphere' => 'nearSphere',
-                    'maxdistance' => 'maxDistance',
-                    'centersphere' => 'centerSphere',
-                    'uniquedocs' => 'uniqueDocs',
+                    'geowithin'     => 'geoWithin',
+                    'nearsphere'    => 'nearSphere',
+                    'maxdistance'   => 'maxDistance',
+                    'centersphere'  => 'centerSphere',
+                    'uniquedocs'    => 'uniqueDocs',
                 );
 
                 if (array_key_exists($where['operator'], $convert))
@@ -862,7 +866,7 @@ class Builder extends BaseBuilder {
                 }
 
                 // Single value.
-                else if (isset($where['value']))
+                elseif (isset($where['value']))
                 {
                     $where['value'] = $this->convertKey($where['value']);
                 }
@@ -879,7 +883,7 @@ class Builder extends BaseBuilder {
             // use the operator of the next where.
             if ($i == 0 and count($wheres) > 1 and $where['boolean'] == 'and')
             {
-                $where['boolean'] = $wheres[$i+1]['boolean'];
+                $where['boolean'] = $wheres[$i + 1]['boolean'];
             }
 
             // We use different methods to compile different wheres.
@@ -894,7 +898,7 @@ class Builder extends BaseBuilder {
 
             // If there are multiple wheres, we will wrap it with $and. This is needed
             // to make nested wheres work.
-            else if (count($wheres) > 1)
+            elseif (count($wheres) > 1)
             {
                 $result = array('$and' => array($result));
             }
@@ -944,7 +948,7 @@ class Builder extends BaseBuilder {
         {
             $query = array($column => $value);
         }
-        else if (array_key_exists($operator, $this->conversion))
+        elseif (array_key_exists($operator, $this->conversion))
         {
             $query = array($column => array($this->conversion[$operator] => $value));
         }
@@ -1003,15 +1007,15 @@ class Builder extends BaseBuilder {
                 '$or' => array(
                     array(
                         $column => array(
-                            '$lte' => $values[0]
-                        )
+                            '$lte' => $values[0],
+                        ),
                     ),
                     array(
                         $column => array(
-                            '$gte' => $values[1]
-                        )
-                    )
-                )
+                            '$gte' => $values[1],
+                        ),
+                    ),
+                ),
             );
         }
         else
@@ -1019,8 +1023,8 @@ class Builder extends BaseBuilder {
             return array(
                 $column => array(
                     '$gte' => $values[0],
-                    '$lte' => $values[1]
-                )
+                    '$lte' => $values[1],
+                ),
             );
         }
     }

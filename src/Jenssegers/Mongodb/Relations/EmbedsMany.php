@@ -286,7 +286,7 @@ class EmbedsMany extends EmbedsOneOrMany {
         $sliced = array_slice($results, $start, $perPage);
 
         return new LengthAwarePaginator($sliced, $total, $perPage, $page, [
-            'path' => Paginator::resolveCurrentPath()
+            'path' => Paginator::resolveCurrentPath(),
         ]);
     }
 

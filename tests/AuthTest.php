@@ -13,9 +13,9 @@ class AuthTest extends TestCase {
     public function testAuthAttempt()
     {
         $user = User::create([
-            'name' => 'John Doe',
-            'email' => 'john@doe.com',
-            'password' => Hash::make('foobar')
+            'name'     => 'John Doe',
+            'email'    => 'john@doe.com',
+            'password' => Hash::make('foobar'),
         ]);
 
         $this->assertTrue(Auth::attempt(['email' => 'john@doe.com', 'password' => 'foobar'], true));
@@ -31,9 +31,9 @@ class AuthTest extends TestCase {
         $broker = new PasswordBroker($tokens, $users, $mailer, '');
 
         $user = User::create([
-            'name' => 'John Doe',
-            'email' => 'john@doe.com',
-            'password' => Hash::make('foobar')
+            'name'     => 'John Doe',
+            'email'    => 'john@doe.com',
+            'password' => Hash::make('foobar'),
         ]);
 
         $mailer->shouldReceive('send')->once();
@@ -46,13 +46,13 @@ class AuthTest extends TestCase {
         $this->assertInstanceOf('MongoDate', $reminder['created_at']);
 
         $credentials = [
-            'email' => 'john@doe.com',
-            'password' => 'foobar',
+            'email'                 => 'john@doe.com',
+            'password'              => 'foobar',
             'password_confirmation' => 'foobar',
-            'token' => $reminder['token']
+            'token'                 => $reminder['token'],
         ];
 
-        $response = $broker->reset($credentials, function($user, $password)
+        $response = $broker->reset($credentials, function ($user, $password)
         {
             $user->password = bcrypt($password);
             $user->save();

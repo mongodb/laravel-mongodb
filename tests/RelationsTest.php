@@ -228,12 +228,12 @@ class RelationsTest extends TestCase {
 
         $clients = [
             Client::create(['name' => 'Pork Pies Ltd.'])->_id,
-            Client::create(['name' => 'Buffet Bar Inc.'])->_id
+            Client::create(['name' => 'Buffet Bar Inc.'])->_id,
         ];
 
         $moreClients = [
             Client::create(['name' => 'synced Boloni Ltd.'])->_id,
-            Client::create(['name' => 'synced Meatballs Inc.'])->_id
+            Client::create(['name' => 'synced Meatballs Inc.'])->_id,
         ];
 
         // Sync multiple records
@@ -410,14 +410,14 @@ class RelationsTest extends TestCase {
         $authors = User::has('books', '!=', 0)->get();
         $this->assertCount(2, $authors);
 
-        $authors = User::whereHas('books', function($query)
+        $authors = User::whereHas('books', function ($query)
         {
             $query->where('rating', 5);
 
         })->get();
         $this->assertCount(1, $authors);
 
-        $authors = User::whereHas('books', function($query)
+        $authors = User::whereHas('books', function ($query)
         {
             $query->where('rating', '<', 5);
 
@@ -451,15 +451,15 @@ class RelationsTest extends TestCase {
         $client = Client::create([
             'data' => [
                 'client_id' => 35298,
-                'name' => 'John Doe'
-            ]
+                'name'      => 'John Doe',
+            ],
         ]);
 
         $address = $client->addresses()->create([
             'data' => [
                 'address_id' => 1432,
-                'city' => 'Paris'
-            ]
+                'city'       => 'Paris',
+            ],
         ]);
 
         $client = Client::where('data.client_id', 35298)->first();

@@ -1,7 +1,6 @@
 <?php
 
 use Jenssegers\Mongodb\Model as Eloquent;
-
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -11,10 +10,10 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
 
     use Authenticatable, CanResetPassword;
 
-	protected $dates = ['birthday', 'entry.date'];
-	protected static $unguarded = true;
+    protected $dates = ['birthday', 'entry.date'];
+    protected static $unguarded = true;
 
-	public function books()
+    public function books()
     {
         return $this->hasMany('Book', 'author_id');
     }
@@ -39,10 +38,10 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->hasOne('MysqlRole');
     }
 
-	public function clients()
-	{
-		return $this->belongsToMany('Client');
-	}
+    public function clients()
+    {
+        return $this->belongsToMany('Client');
+    }
 
     public function groups()
     {

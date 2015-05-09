@@ -6,283 +6,283 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMan
 
 class BelongsToMany extends EloquentBelongsToMany {
 
-	/**
-	 * Hydrate the pivot table relationship on the models.
-	 *
-	 * @param  array  $models
-	 * @return void
-	 */
-	protected function hydratePivotRelation(array $models)
-	{
-		// Do nothing.
-	}
+    /**
+     * Hydrate the pivot table relationship on the models.
+     *
+     * @param  array  $models
+     * @return void
+     */
+    protected function hydratePivotRelation(array $models)
+    {
+        // Do nothing.
+    }
 
-	/**
-	 * Set the select clause for the relation query.
-	 *
-	 * @param  array  $columns
-	 * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
-	 */
-	protected function getSelectColumns(array $columns = array('*'))
-	{
-		return $columns;
-	}
+    /**
+     * Set the select clause for the relation query.
+     *
+     * @param  array  $columns
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     */
+    protected function getSelectColumns(array $columns = array('*'))
+    {
+        return $columns;
+    }
 
-	/**
-	 * Set the base constraints on the relation query.
-	 *
-	 * @return void
-	 */
-	public function addConstraints()
-	{
-		if (static::$constraints) $this->setWhere();
-	}
+    /**
+     * Set the base constraints on the relation query.
+     *
+     * @return void
+     */
+    public function addConstraints()
+    {
+        if (static::$constraints) $this->setWhere();
+    }
 
-	/**
-	 * Set the where clause for the relation query.
-	 *
-	 * @return $this
-	 */
-	protected function setWhere()
-	{
-		$foreign = $this->getForeignKey();
+    /**
+     * Set the where clause for the relation query.
+     *
+     * @return $this
+     */
+    protected function setWhere()
+    {
+        $foreign = $this->getForeignKey();
 
-		$this->query->where($foreign, '=', $this->parent->getKey());
+        $this->query->where($foreign, '=', $this->parent->getKey());
 
-		return $this;
-	}
+        return $this;
+    }
 
-	/**
-	 * Save a new model and attach it to the parent model.
-	 *
-	 * @param  \Illuminate\Database\Eloquent\Model  $model
-	 * @param  array  $joining
-	 * @param  bool   $touch
-	 * @return \Illuminate\Database\Eloquent\Model
-	 */
-	public function save(Model $model, array $joining = array(), $touch = true)
-	{
-		$model->save(array('touch' => false));
+    /**
+     * Save a new model and attach it to the parent model.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  array  $joining
+     * @param  bool   $touch
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function save(Model $model, array $joining = array(), $touch = true)
+    {
+        $model->save(array('touch' => false));
 
-		$this->attach($model, $joining, $touch);
+        $this->attach($model, $joining, $touch);
 
-		return $model;
-	}
+        return $model;
+    }
 
-	/**
-	 * Create a new instance of the related model.
-	 *
-	 * @param  array  $attributes
-	 * @param  array  $joining
-	 * @param  bool   $touch
-	 * @return \Illuminate\Database\Eloquent\Model
-	 */
-	public function create(array $attributes, array $joining = array(), $touch = true)
-	{
-		$instance = $this->related->newInstance($attributes);
+    /**
+     * Create a new instance of the related model.
+     *
+     * @param  array  $attributes
+     * @param  array  $joining
+     * @param  bool   $touch
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function create(array $attributes, array $joining = array(), $touch = true)
+    {
+        $instance = $this->related->newInstance($attributes);
 
-		// Once we save the related model, we need to attach it to the base model via
-		// through intermediate table so we'll use the existing "attach" method to
-		// accomplish this which will insert the record and any more attributes.
-		$instance->save(array('touch' => false));
+        // Once we save the related model, we need to attach it to the base model via
+        // through intermediate table so we'll use the existing "attach" method to
+        // accomplish this which will insert the record and any more attributes.
+        $instance->save(array('touch' => false));
 
-		$this->attach($instance, $joining, $touch);
+        $this->attach($instance, $joining, $touch);
 
-		return $instance;
-	}
+        return $instance;
+    }
 
-	/**
-	 * Sync the intermediate tables with a list of IDs or collection of models.
-	 *
-	 * @param  array  $ids
-	 * @param  bool   $detaching
-	 * @return array
-	 */
-	public function sync($ids, $detaching = true)
-	{
-		$changes = array(
-			'attached' => array(), 'detached' => array(), 'updated' => array()
-		);
+    /**
+     * Sync the intermediate tables with a list of IDs or collection of models.
+     *
+     * @param  array  $ids
+     * @param  bool   $detaching
+     * @return array
+     */
+    public function sync($ids, $detaching = true)
+    {
+        $changes = array(
+            'attached' => array(), 'detached' => array(), 'updated' => array(),
+        );
 
-		if ($ids instanceof Collection) $ids = $ids->modelKeys();
+        if ($ids instanceof Collection) $ids = $ids->modelKeys();
 
-		// First we need to attach any of the associated models that are not currently
-		// in this joining table. We'll spin through the given IDs, checking to see
-		// if they exist in the array of current ones, and if not we will insert.
-		$current = $this->parent->{$this->otherKey} ?: array();
+        // First we need to attach any of the associated models that are not currently
+        // in this joining table. We'll spin through the given IDs, checking to see
+        // if they exist in the array of current ones, and if not we will insert.
+        $current = $this->parent->{$this->otherKey} ?: array();
 
-		// See issue #256.
-		if ($current instanceof Collection) $current = $ids->modelKeys();
+        // See issue #256.
+        if ($current instanceof Collection) $current = $ids->modelKeys();
 
-		$records = $this->formatSyncList($ids);
+        $records = $this->formatSyncList($ids);
 
-		$detach = array_diff($current, array_keys($records));
+        $detach = array_diff($current, array_keys($records));
 
-		// We need to make sure we pass a clean array, so that it is not interpreted
-		// as an associative array.
-		$detach = array_values($detach);
+        // We need to make sure we pass a clean array, so that it is not interpreted
+        // as an associative array.
+        $detach = array_values($detach);
 
-		// Next, we will take the differences of the currents and given IDs and detach
-		// all of the entities that exist in the "current" array but are not in the
-		// the array of the IDs given to the method which will complete the sync.
-		if ($detaching and count($detach) > 0)
-		{
-			$this->detach($detach);
+        // Next, we will take the differences of the currents and given IDs and detach
+        // all of the entities that exist in the "current" array but are not in the
+        // the array of the IDs given to the method which will complete the sync.
+        if ($detaching and count($detach) > 0)
+        {
+            $this->detach($detach);
 
-			$changes['detached'] = (array) array_map(function($v) { return (int) $v; }, $detach);
-		}
+            $changes['detached'] = (array) array_map(function ($v) { return (int) $v; }, $detach);
+        }
 
-		// Now we are finally ready to attach the new records. Note that we'll disable
-		// touching until after the entire operation is complete so we don't fire a
-		// ton of touch operations until we are totally done syncing the records.
-		$changes = array_merge(
-			$changes, $this->attachNew($records, $current, false)
-		);
+        // Now we are finally ready to attach the new records. Note that we'll disable
+        // touching until after the entire operation is complete so we don't fire a
+        // ton of touch operations until we are totally done syncing the records.
+        $changes = array_merge(
+            $changes, $this->attachNew($records, $current, false)
+        );
 
-		if (count($changes['attached']) || count($changes['updated']))
-		{
-			$this->touchIfTouching();
-		}
+        if (count($changes['attached']) || count($changes['updated']))
+        {
+            $this->touchIfTouching();
+        }
 
-		return $changes;
-	}
+        return $changes;
+    }
 
-	/**
-	 * Update an existing pivot record on the table.
-	 *
-	 * @param  mixed  $id
-	 * @param  array  $attributes
-	 * @param  bool   $touch
-	 * @return void
-	 */
-	public function updateExistingPivot($id, array $attributes, $touch = true)
-	{
-		// Do nothing, we have no pivot table.
-	}
+    /**
+     * Update an existing pivot record on the table.
+     *
+     * @param  mixed  $id
+     * @param  array  $attributes
+     * @param  bool   $touch
+     * @return void
+     */
+    public function updateExistingPivot($id, array $attributes, $touch = true)
+    {
+        // Do nothing, we have no pivot table.
+    }
 
-	/**
-	 * Attach a model to the parent.
-	 *
-	 * @param  mixed  $id
-	 * @param  array  $attributes
-	 * @param  bool   $touch
-	 * @return void
-	 */
-	public function attach($id, array $attributes = array(), $touch = true)
-	{
-		if ($id instanceof Model)
-		{
-			$model = $id;
+    /**
+     * Attach a model to the parent.
+     *
+     * @param  mixed  $id
+     * @param  array  $attributes
+     * @param  bool   $touch
+     * @return void
+     */
+    public function attach($id, array $attributes = array(), $touch = true)
+    {
+        if ($id instanceof Model)
+        {
+            $model = $id;
 
-			$id = $model->getKey();
+            $id = $model->getKey();
 
-			// Attach the new parent id to the related model.
-			$model->push($this->foreignKey, $this->parent->getKey(), true);
-		}
-		else
-		{
-			$query = $this->newRelatedQuery();
+            // Attach the new parent id to the related model.
+            $model->push($this->foreignKey, $this->parent->getKey(), true);
+        }
+        else
+        {
+            $query = $this->newRelatedQuery();
 
-			$query->whereIn($this->related->getKeyName(), (array) $id);
+            $query->whereIn($this->related->getKeyName(), (array) $id);
 
-			// Attach the new parent id to the related model.
-			$query->push($this->foreignKey, $this->parent->getKey(), true);
-		}
+            // Attach the new parent id to the related model.
+            $query->push($this->foreignKey, $this->parent->getKey(), true);
+        }
 
-		// Attach the new ids to the parent model.
-		$this->parent->push($this->otherKey, (array) $id, true);
+        // Attach the new ids to the parent model.
+        $this->parent->push($this->otherKey, (array) $id, true);
 
-		if ($touch) $this->touchIfTouching();
-	}
+        if ($touch) $this->touchIfTouching();
+    }
 
-	/**
-	 * Detach models from the relationship.
-	 *
-	 * @param  int|array  $ids
-	 * @param  bool  $touch
-	 * @return int
-	 */
-	public function detach($ids = array(), $touch = true)
-	{
-		if ($ids instanceof Model) $ids = (array) $ids->getKey();
+    /**
+     * Detach models from the relationship.
+     *
+     * @param  int|array  $ids
+     * @param  bool  $touch
+     * @return int
+     */
+    public function detach($ids = array(), $touch = true)
+    {
+        if ($ids instanceof Model) $ids = (array) $ids->getKey();
 
-		$query = $this->newRelatedQuery();
+        $query = $this->newRelatedQuery();
 
-		// If associated IDs were passed to the method we will only delete those
-		// associations, otherwise all of the association ties will be broken.
-		// We'll return the numbers of affected rows when we do the deletes.
-		$ids = (array) $ids;
+        // If associated IDs were passed to the method we will only delete those
+        // associations, otherwise all of the association ties will be broken.
+        // We'll return the numbers of affected rows when we do the deletes.
+        $ids = (array) $ids;
 
-		// Detach all ids from the parent model.
-		$this->parent->pull($this->otherKey, $ids);
+        // Detach all ids from the parent model.
+        $this->parent->pull($this->otherKey, $ids);
 
-		// Prepare the query to select all related objects.
-		if (count($ids) > 0)
-		{
-			$query->whereIn($this->related->getKeyName(), $ids);
-		}
+        // Prepare the query to select all related objects.
+        if (count($ids) > 0)
+        {
+            $query->whereIn($this->related->getKeyName(), $ids);
+        }
 
-		// Remove the relation to the parent.
-		$query->pull($this->foreignKey, $this->parent->getKey());
+        // Remove the relation to the parent.
+        $query->pull($this->foreignKey, $this->parent->getKey());
 
-		if ($touch) $this->touchIfTouching();
+        if ($touch) $this->touchIfTouching();
 
-		return count($ids);
-	}
+        return count($ids);
+    }
 
-	/**
-	 * Build model dictionary keyed by the relation's foreign key.
-	 *
-	 * @param  \Illuminate\Database\Eloquent\Collection  $results
-	 * @return array
-	 */
-	protected function buildDictionary(Collection $results)
-	{
-		$foreign = $this->foreignKey;
+    /**
+     * Build model dictionary keyed by the relation's foreign key.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection  $results
+     * @return array
+     */
+    protected function buildDictionary(Collection $results)
+    {
+        $foreign = $this->foreignKey;
 
-		// First we will build a dictionary of child models keyed by the foreign key
-		// of the relation so that we will easily and quickly match them to their
-		// parents without having a possibly slow inner loops for every models.
-		$dictionary = array();
+        // First we will build a dictionary of child models keyed by the foreign key
+        // of the relation so that we will easily and quickly match them to their
+        // parents without having a possibly slow inner loops for every models.
+        $dictionary = array();
 
-		foreach ($results as $result)
-		{
-			foreach ($result->$foreign as $item)
-			{
-				$dictionary[$item][] = $result;
-			}
-		}
+        foreach ($results as $result)
+        {
+            foreach ($result->$foreign as $item)
+            {
+                $dictionary[$item][] = $result;
+            }
+        }
 
-		return $dictionary;
-	}
+        return $dictionary;
+    }
 
-	/**
-	 * Create a new query builder for the related model.
-	 *
-	 * @return \Illuminate\Database\Query\Builder
-	 */
-	protected function newPivotQuery()
-	{
-		return $this->newRelatedQuery();
-	}
+    /**
+     * Create a new query builder for the related model.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    protected function newPivotQuery()
+    {
+        return $this->newRelatedQuery();
+    }
 
-	/**
-	 * Create a new query builder for the related model.
-	 *
-	 * @return \Illuminate\Database\Query\Builder
-	 */
-	public function newRelatedQuery()
-	{
-		return $this->related->newQuery();
-	}
+    /**
+     * Create a new query builder for the related model.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function newRelatedQuery()
+    {
+        return $this->related->newQuery();
+    }
 
-	/**
-	 * Get the fully qualified foreign key for the relation.
-	 *
-	 * @return string
-	 */
-	public function getForeignKey()
-	{
-		return $this->foreignKey;
-	}
+    /**
+     * Get the fully qualified foreign key for the relation.
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        return $this->foreignKey;
+    }
 }

@@ -111,7 +111,7 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
-     * return MongoClient object
+     * return MongoClient object.
      *
      * @return MongoClient
      */
@@ -211,10 +211,10 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
-    * Get the PDO driver name.
-    *
-    * @return string
-    */
+     * Get the PDO driver name.
+     *
+     * @return string
+     */
     public function getDriverName()
     {
         return 'mongodb';

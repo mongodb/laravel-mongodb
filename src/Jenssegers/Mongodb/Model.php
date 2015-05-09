@@ -1,8 +1,10 @@
 <?php namespace Jenssegers\Mongodb;
 
-use DateTime, MongoId, MongoDate, Carbon\Carbon;
+use DateTime;
+use MongoId;
+use MongoDate;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Jenssegers\Mongodb\DatabaseManager as Resolver;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
@@ -63,9 +65,8 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      */
     public function getQualifiedKeyName()
     {
-    	return $this->getKeyName();
+        return $this->getKeyName();
     }
-
 
     /**
      * Define an embedded one-to-many relationship.
@@ -306,7 +307,9 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
                 $value = $this->fromDateTime($value);
             }
 
-            array_set($this->attributes, $key, $value); return;
+            array_set($this->attributes, $key, $value);
+
+return;
         }
 
         parent::setAttribute($key, $value);

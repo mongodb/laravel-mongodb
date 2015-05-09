@@ -1,7 +1,7 @@
 <?php namespace Jenssegers\Mongodb;
 
-use Exception, MongoCollection;
-use Jenssegers\Mongodb\Connection;
+use Exception;
+use MongoCollection;
 
 class Collection {
 
@@ -63,7 +63,7 @@ class Collection {
                 }
             }
 
-            $queryString = $this->collection->getName() . '.' . $method . '(' . join(',', $query) . ')';
+            $queryString = $this->collection->getName() . '.' . $method . '(' . implode(',', $query) . ')';
 
             $this->connection->logQuery($queryString, [], $time);
         }

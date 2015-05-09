@@ -124,10 +124,10 @@ abstract class EmbedsOneOrMany extends Relation {
     }
 
     /**
-    * Shorthand to get the results of the relationship.
-    *
-    * @return Jenssegers\Mongodb\Eloquent\Collection
-    */
+     * Shorthand to get the results of the relationship.
+     *
+     * @return Jenssegers\Mongodb\Eloquent\Collection
+     */
     public function get()
     {
         return $this->getResults();
@@ -208,7 +208,7 @@ abstract class EmbedsOneOrMany extends Relation {
     }
 
     /**
-     * Transform single ID, single Model or array of Models into an array of IDs
+     * Transform single ID, single Model or array of Models into an array of IDs.
      *
      * @param  mixed  $ids
      * @return array
@@ -305,7 +305,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function toModel($attributes = array())
     {
-        if (is_null($attributes)) return null;
+        if (is_null($attributes)) return;
 
         $model = $this->related->newFromBuilder((array) $attributes);
 

@@ -13,13 +13,13 @@ use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 abstract class Model extends \Illuminate\Database\Eloquent\Model {
 
     /**
-    * Define a one-to-one relationship.
-    *
-    * @param  string  $related
-    * @param  string  $foreignKey
-    * @param  string  $localKey
-    * @return \Illuminate\Database\Eloquent\Relations\HasOne
-    */
+     * Define a one-to-one relationship.
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @param  string  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
@@ -67,13 +67,13 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     }
 
     /**
-    * Define a one-to-many relationship.
-    *
-    * @param  string  $related
-    * @param  string  $foreignKey
-    * @param  string  $localKey
-    * @return \Illuminate\Database\Eloquent\Relations\HasMany
-    */
+     * Define a one-to-many relationship.
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @param  string  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
@@ -124,14 +124,14 @@ abstract class Model extends \Illuminate\Database\Eloquent\Model {
     }
 
     /**
-    * Define an inverse one-to-one or many relationship.
-    *
-    * @param  string  $related
-    * @param  string  $foreignKey
-    * @param  string  $otherKey
-    * @param  string  $relation
-    * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
-    */
+     * Define an inverse one-to-one or many relationship.
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @param  string  $otherKey
+     * @param  string  $relation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function belongsTo($related, $foreignKey = null, $otherKey = null, $relation = null)
     {
         // If no relation name was given, we will use this debug backtrace to extract

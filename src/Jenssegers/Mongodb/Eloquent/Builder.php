@@ -13,7 +13,7 @@ class Builder extends EloquentBuilder {
      */
     protected $passthru = array(
         'toSql', 'lists', 'insert', 'insertGetId', 'pluck',
-        'count', 'min', 'max', 'avg', 'sum', 'exists', 'push', 'pull'
+        'count', 'min', 'max', 'avg', 'sum', 'exists', 'push', 'pull',
     );
 
     /**
@@ -174,7 +174,7 @@ class Builder extends EloquentBuilder {
         $relationCount = array_count_values($query->lists($relation->getHasCompareKey()));
 
         // Remove unwanted related objects based on the operator and count.
-        $relationCount = array_filter($relationCount, function($counted) use ($count, $operator)
+        $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator)
         {
             // If we are comparing to 0, we always need all results.
             if ($count == 0) return true;
@@ -213,29 +213,29 @@ class Builder extends EloquentBuilder {
      * @return mixed
      */
     public function raw($expression = null)
-	{
-		// Get raw results from the query builder.
-		$results = $this->query->raw($expression);
+    {
+        // Get raw results from the query builder.
+        $results = $this->query->raw($expression);
 
-		// Convert MongoCursor results to a collection of models.
-		if ($results instanceof MongoCursor)
-		{
-			$results = iterator_to_array($results, false);
+        // Convert MongoCursor results to a collection of models.
+        if ($results instanceof MongoCursor)
+        {
+            $results = iterator_to_array($results, false);
 
-			return $this->model->hydrate($results);
-		}
+            return $this->model->hydrate($results);
+        }
 
-		// The result is a single object.
-		else if (is_array($results) and array_key_exists('_id', $results))
-		{
-			$model = $this->model->newFromBuilder($results);
+        // The result is a single object.
+        elseif (is_array($results) and array_key_exists('_id', $results))
+        {
+            $model = $this->model->newFromBuilder($results);
 
-			$model->setConnection($this->model->getConnection());
+            $model->setConnection($this->model->getConnection());
 
-			return $model;
-		}
+            return $model;
+        }
 
-		return $results;
-	}
+        return $results;
+    }
 
 }
