@@ -336,6 +336,15 @@ return;
             }
         }
 
+        // If an attribute is a date; and used as a dot-notation date - fix it after parent
+        foreach ($this->getDates() as $key) {
+            // iterate over dates if dot-notation ONLY, and exists
+            if (!str_contains($key, '.') || !array_has($attributes, $key)) continue;
+
+            $value = (string)$this->asDateTime(array_get($attributes, $key));
+            array_set($attributes, $key, $value);
+        }
+
         return $attributes;
     }
 
