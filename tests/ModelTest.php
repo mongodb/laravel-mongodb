@@ -402,6 +402,10 @@ class ModelTest extends TestCase {
 
 		$user->setAttribute('entry.date', new DateTime);
 		$this->assertInstanceOf('Carbon\Carbon', $user->getAttribute('entry.date'));
+
+        // test custom dot-date format for json output
+        $json = $user->toArray();
+        $this->assertEquals((string) $user->entry['date']->format('Y-m-d H:i:s'), $json['entry']['date']);
 	}
 
 	public function testIdAttribute()
