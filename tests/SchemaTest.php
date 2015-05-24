@@ -52,19 +52,38 @@ class SchemaTest extends TestCase {
     {
         Schema::collection('newcollection', function ($collection)
         {
-            $collection->index('mykey');
+            $collection->index('mykey1');
         });
 
-        $index = $this->getIndex('newcollection', 'mykey');
-        $this->assertEquals(1, $index['key']['mykey']);
+        $index = $this->getIndex('newcollection', 'mykey1');
+        $this->assertEquals(1, $index['key']['mykey1']);
 
         Schema::collection('newcollection', function ($collection)
         {
-            $collection->index(['mykey']);
+            $collection->index(['mykey2']);
+        });
+
+        $index = $this->getIndex('newcollection', 'mykey2');
+        $this->assertEquals(1, $index['key']['mykey2']);
+
+        Schema::collection('newcollection', function ($collection)
+        {
+            $collection->string('mykey3')->index();
+        });
+
+        $index = $this->getIndex('newcollection', 'mykey3');
+        $this->assertEquals(1, $index['key']['mykey3']);
+    }
+
+    public function testPrimary()
+    {
+        Schema::collection('newcollection', function ($collection)
+        {
+            $collection->string('mykey', 100)->primary();
         });
 
         $index = $this->getIndex('newcollection', 'mykey');
-        $this->assertEquals(1, $index['key']['mykey']);
+        $this->assertEquals(1, $index['unique']);
     }
 
     public function testUnique()

@@ -71,6 +71,18 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
     }
 
     /**
+     * Specify the primary key(s) for the table.
+     *
+     * @param  string|array  $columns
+     * @param  array         $options
+     * @return \Illuminate\Support\Fluent
+     */
+    public function primary($columns = null, $options = array())
+    {
+        return $this->unique($columns, $options);
+    }
+
+    /**
      * Indicate that the given index should be dropped.
      *
      * @param  string|array  $columns
