@@ -336,6 +336,15 @@ return;
             }
         }
 
+        // Convert dot-notation dates.
+        foreach ($this->getDates() as $key)
+        {
+            if (str_contains($key, '.') and array_has($attributes, $key))
+            {
+                array_set($attributes, $key, (string) $this->asDateTime(array_get($attributes, $key)));
+            }
+        }
+
         return $attributes;
     }
 

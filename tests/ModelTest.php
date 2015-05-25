@@ -402,6 +402,10 @@ class ModelTest extends TestCase {
 
         $user->setAttribute('entry.date', new DateTime);
         $this->assertInstanceOf('Carbon\Carbon', $user->getAttribute('entry.date'));
+
+        $data = $user->toArray();
+        $this->assertNotInstanceOf('MongoDate', $data['entry']['date']);
+        $this->assertEquals((string) $user->getAttribute('entry.date')->format('Y-m-d H:i:s'), $data['entry']['date']);
     }
 
     public function testIdAttribute()
