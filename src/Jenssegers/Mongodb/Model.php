@@ -221,14 +221,9 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     public function getAttribute($key)
     {
         // Check if the key is an array dot notation.
-        if (str_contains($key, '.'))
+        if (str_contains($key, '.') and array_has($this->attributes, $key))
         {
-            $attributes = array_dot($this->attributes);
-
-            if (array_key_exists($key, $attributes))
-            {
-                return $this->getAttributeValue($key);
-            }
+            return $this->getAttributeValue($key);
         }
 
         $camelKey = camel_case($key);
