@@ -36,7 +36,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
         $this->query->whereIn($key, $this->getEagerModelKeys($models));
     }
 
-    public function match ( array $models, Collection $results, $relation )
+    public function match(array $models, Collection $results, $relation)
     {
         $foreign = $this->foreignKey;
 
