@@ -7,7 +7,7 @@ class Connection extends \Illuminate\Database\Connection {
     /**
      * The MongoDB database handler.
      *
-     * @var MongoDB
+     * @var \MongoDB
      */
     protected $db;
 
@@ -22,7 +22,6 @@ class Connection extends \Illuminate\Database\Connection {
      * Create a new database connection instance.
      *
      * @param  array   $config
-     * @return void
      */
     public function __construct(array $config)
     {
@@ -53,7 +52,7 @@ class Connection extends \Illuminate\Database\Connection {
      * Begin a fluent query against a database collection.
      *
      * @param  string  $collection
-     * @return QueryBuilder
+     * @return Query\Builder
      */
     public function collection($collection)
     {
@@ -68,7 +67,7 @@ class Connection extends \Illuminate\Database\Connection {
      * Begin a fluent query against a database collection.
      *
      * @param  string  $table
-     * @return QueryBuilder
+     * @return Query\Builder
      */
     public function table($table)
     {
@@ -79,13 +78,13 @@ class Connection extends \Illuminate\Database\Connection {
      * Get a MongoDB collection.
      *
      * @param  string   $name
-     * @return MongoDB
+     * @return Collection
      */
     public function getCollection($name)
     {
         // Instead of returning the original MongoDB Collection we wrap it in
         // a custom Collection class. This will enable logging features for
-        // all methods that are executed on the iternal instance.
+        // all methods that are executed on the internal instance.
         return new Collection($this, $this->db->selectCollection($name));
     }
 
@@ -102,7 +101,7 @@ class Connection extends \Illuminate\Database\Connection {
     /**
      * Get the MongoDB database object.
      *
-     * @return  MongoDB
+     * @return  \MongoDB
      */
     public function getMongoDB()
     {
@@ -166,6 +165,8 @@ class Connection extends \Illuminate\Database\Connection {
         // in the configuration options. This will give us the basic DSN we will
         // need to establish the MongoClient and return them back for use.
         extract($config);
+        /* @var $host array|string */
+        /* @var $database string */
 
         // Check if the user passed a complete dsn to the configuration.
         if ( ! empty($dsn))
