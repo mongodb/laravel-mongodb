@@ -329,12 +329,14 @@ class Builder extends QueryBuilder {
      * Add an "order by" clause to the query.
      *
      * @param  string  $column
-     * @param  string  $direction
+     * @param  mixed   $direction Direction of soring or metadata sorting.
      * @return Builder
      */
     public function orderBy($column, $direction = 'asc')
     {
-        $direction = (strtolower($direction) == 'asc' ? 1 : -1);
+        if (!is_array($direction)) {
+            $direction = (strtolower($direction) == 'asc' ? 1 : -1);
+        }
 
         if ($column == 'natural')
         {
