@@ -28,16 +28,30 @@ For Laravel 5, install the latest stable version using composer:
 composer require jenssegers/mongodb
 ```
 
+And add the service provider in `config/app.php`:
+
+```php
+Jenssegers\Mongodb\MongodbServiceProvider::class,
+```
+
 For Laravel 4.2, use version `~2.0`:
 
 ```
 composer require jenssegers/mongodb ~2.0
 ```
 
-Add the service provider in `app/config/app.php`:
+And add the service provider as follows in `app/config/app.php`:
 
 ```php
 'Jenssegers\Mongodb\MongodbServiceProvider',
+```
+
+For usage with [Lumen](http://lumen.laravel.com), add the service provider in `bootstrap/app.php`. In this file, you will also need to enable Eloquent. You must however ensure that your call to `$app->withEloquent();` is **below** where you have registered the `MongodbServiceProvider`:
+
+```php
+$app->register('Jenssegers\Mongodb\MongodbServiceProvider');
+
+$app->withEloquent();
 ```
 
 The service provider will register a mongodb database extension with the original database manager. There is no need to register additional facades or objects. When using mongodb connections, Laravel will automatically provide you with the corresponding mongodb objects.
