@@ -311,8 +311,12 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
             array_set($this->attributes, $key, $value);
 
-return;
+            return;
         }
+		else if ($this->castOverride() && $this->isCastableAttribute($key))
+		{
+			$value = $this->castAttribute($key, $value);
+		}
 
         parent::setAttribute($key, $value);
     }
@@ -519,5 +523,72 @@ return;
 
         return parent::__call($method, $parameters);
     }
+
+
+	/**
+	 * Get a given attribute on the model.  If the attribute is typecast-able,
+	 * then cast the value before getting it.
+	 *
+	 * @param  string  $key
+	 * @return mixed
+	 */
+	public function getAttributeValue($key)
+	{
+		$value = parent::getAttributeValue($key);
+
+		if ($this->isCastableAttribute($key))
+		{
+			$value = $this->castAttribute($key, $value);
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Return the array of attributes to cast.
+	 *
+	 * @return array
+	 */
+	protected function getCastAttributes()
+	{
+		return isset($this->casts) ? $this->casts : array();
+	}
+
+
+	/**
+	 * Return the array of attributes to cast.
+	 *
+	 * @return array
+	 */
+	protected function castOverride()
+	{
+		return isset($this->casts_override) ? $this->casts_override : false;
+	}
+
+
+	/**
+	 * Is the given attribute typecast-able.
+	 *
+	 * @return bool
+	 */
+	protected function isCastableAttribute($key)
+	{
+		return array_key_exists($key, $this->getCastAttributes());
+	}
+
+
+	/**
+	 * Cast an attribute to a PHP variable type.
+	 *
+	 * @param  string $key
+	 * @param  mixed $value
+	 * @throws EloquentTypecastException
+	 * @return  mixed
+	 */
+	protected function castAttribute($key, $value)
+	{
+	       if( empty($key) || ! isset($this->casts[$key]) ) return $value;
+	        return parent::castAttribute($key, $value);
+	}
 
 }
