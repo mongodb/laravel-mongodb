@@ -582,13 +582,22 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 	 *
 	 * @param  string $key
 	 * @param  mixed $value
-	 * @throws EloquentTypecastException
 	 * @return  mixed
 	 */
 	protected function castAttribute($key, $value)
 	{
 	       if( empty($key) || ! isset($this->casts[$key]) ) return $value;
-	        return parent::castAttribute($key, $value);
+	       
+		$type = $this->casts[$key];
+		
+		try {
+			if ( settype($value, $type) ) {
+				return $value;
+			}
+			throw new \Exception("Value could not be cast to type \"$type\"", 1);
+		} catch (\Exception $e) {
+			throw new \Exception("Value could not be cast to type \"$type\"", 1);
+		}
 	}
 
 }
