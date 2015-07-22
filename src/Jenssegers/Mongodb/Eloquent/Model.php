@@ -39,7 +39,7 @@ abstract class Model extends BaseModel {
     {
         // If we don't have a value for 'id', we will use the Mongo '_id' value.
         // This allows us to work with models in a more sql-like way.
-        if ( ! $value and array_key_exists('_id', $this->attributes))
+        if ( isset($value) and array_key_exists('_id', $this->attributes))
         {
             $value = $this->attributes['_id'];
         }
