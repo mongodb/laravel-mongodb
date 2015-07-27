@@ -804,7 +804,7 @@ class Builder extends BaseBuilder {
         // Remove the leading $ from operators.
         if (func_num_args() == 3)
         {
-            $operator = &$params[1];
+            $operator = $params[1]; //&$params[1];
 
             if (starts_with($operator, '$'))
             {
