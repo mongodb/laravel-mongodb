@@ -79,11 +79,11 @@ And add a new mongodb connection:
 ```php
 'mongodb' => array(
     'driver'   => 'mongodb',
-    'host'     => 'localhost',
-    'port'     => 27017,
-    'username' => 'username',
-    'password' => 'password',
-    'database' => 'database',
+    'host'     => env('DB_HOST', 'localhost'),
+    'port'     => env('DB_PORT', 27017),
+    'database' => env('DB_DATABASE', ''),
+    'username' => env('DB_USERNAME', ''),
+    'password' => env('DB_PASSWORD', ''),
     'options' => array(
         'db' => 'admin' // sets the authentication database required by mongo 3
     )
@@ -96,10 +96,10 @@ You can connect to multiple servers or replica sets with the following configura
 'mongodb' => array(
     'driver'   => 'mongodb',
     'host'     => array('server1', 'server2'),
-    'port'     => 27017,
-    'username' => 'username',
-    'password' => 'password',
-    'database' => 'database',
+    'port'     => env('DB_PORT', 27017),
+    'database' => env('DB_DATABASE', ''),
+    'username' => env('DB_USERNAME', ''),
+    'password' => env('DB_PASSWORD', ''),
     'options'  => array('replicaSet' => 'replicaSetName')
 ),
 ```
