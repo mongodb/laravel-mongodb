@@ -1,16 +1,16 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
-use MongoId;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Pagination\Paginator;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use MongoId;
 
 class EmbedsMany extends EmbedsOneOrMany {
 
     /**
      * Get the results of the relationship.
      *
-     * @return Jenssegers\Mongodb\Eloquent\Collection
+     * @return \Jenssegers\Mongodb\Eloquent\Collection
      */
     public function getResults()
     {
@@ -20,10 +20,10 @@ class EmbedsMany extends EmbedsOneOrMany {
     /**
      * Save a new model and attach it to the parent model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model $model
      * @return \Illuminate\Database\Eloquent\Model
      */
-    public function performInsert(Model $model, array $values)
+    public function performInsert(Model $model)
     {
         // Generate a new key if needed.
         if ($model->getKeyName() == '_id' and ! $model->getKey())
@@ -54,7 +54,7 @@ class EmbedsMany extends EmbedsOneOrMany {
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return Model|bool
      */
-    public function performUpdate(Model $model, array $values)
+    public function performUpdate(Model $model)
     {
         // For deeply nested documents, let the parent handle the changes.
         if ($this->isNested())
@@ -269,11 +269,10 @@ class EmbedsMany extends EmbedsOneOrMany {
     /**
      * Get a paginator for the "select" statement.
      *
-     * @param  int    $perPage
-     * @param  array  $columns
+     * @param  int  $perPage
      * @return \Illuminate\Pagination\Paginator
      */
-    public function paginate($perPage = null, $columns = array('*'))
+    public function paginate($perPage = null)
     {
         $page = Paginator::resolveCurrentPage();
         $perPage = $perPage ?: $this->related->getPerPage();
@@ -303,7 +302,7 @@ class EmbedsMany extends EmbedsOneOrMany {
     /**
      * Set the embedded records array.
      *
-     * @param array $models
+     * @param  array  $models
      * @return void
      */
     protected function setEmbedded($models)

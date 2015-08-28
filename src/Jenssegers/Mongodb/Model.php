@@ -1,15 +1,15 @@
 <?php namespace Jenssegers\Mongodb;
 
-use DateTime;
-use MongoId;
-use MongoDate;
 use Carbon\Carbon;
-use ReflectionMethod;
+use DateTime;
+use MongoDate;
+use MongoId;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Eloquent\Builder;
-use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
+use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
+use ReflectionMethod;
 
 abstract class Model extends \Jenssegers\Eloquent\Model {
 
@@ -37,8 +37,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
     /**
      * Custom accessor for the model's id.
      *
-     * @param mixed $value
-     *
+     * @param  mixed  $value
      * @return mixed
      */
     public function getIdAttribute($value)
@@ -73,8 +72,10 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      * Define an embedded one-to-many relationship.
      *
      * @param  string  $related
-     * @param  string  $collection
-     * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
+     * @param  string  $localKey
+     * @param  string  $foreignKey
+     * @param  string  $relation
+     * @return EmbedsMany
      */
     protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
     {
@@ -109,8 +110,10 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      * Define an embedded one-to-many relationship.
      *
      * @param  string  $related
-     * @param  string  $collection
-     * @return \Illuminate\Database\Eloquent\Relations\EmbedsMany
+     * @param  string  $localKey
+     * @param  string  $foreignKey
+     * @param  string  $relation
+     * @return \Jenssegers\Mongodb\Relations\EmbedsOne
      */
     protected function embedsOne($related, $localKey = null, $foreignKey = null, $relation = null)
     {
@@ -311,7 +314,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
 
             array_set($this->attributes, $key, $value);
 
-return;
+            return;
         }
 
         parent::setAttribute($key, $value);
@@ -353,7 +356,7 @@ return;
     /**
      * Remove one or more fields.
      *
-     * @param  mixed $columns
+     * @param  mixed  $columns
      * @return int
      */
     public function drop($columns)
@@ -406,6 +409,8 @@ return;
     /**
      * Remove one or more values from an array.
      *
+     * @param  string  $column
+     * @param  mixed   $values
      * @return mixed
      */
     public function pull($column, $values)
@@ -446,7 +451,7 @@ return;
     }
 
     /**
-     * Rempove one or more values to the underlying attribute value and sync with original.
+     * Remove one or more values to the underlying attribute value and sync with original.
      *
      * @param  string  $column
      * @param  array   $values
@@ -474,7 +479,7 @@ return;
     /**
      * Set the parent relation.
      *
-     * @param Relation $relation
+     * @param  \Illuminate\Database\Eloquent\Relations\Relation  $relation
      */
     public function setParentRelation(Relation $relation)
     {
@@ -484,7 +489,7 @@ return;
     /**
      * Get the parent relation.
      *
-     * @return Relation
+     * @return \Illuminate\Database\Eloquent\Relations\Relation
      */
     public function getParentRelation()
     {

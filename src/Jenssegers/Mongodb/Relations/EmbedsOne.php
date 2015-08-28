@@ -1,7 +1,7 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
-use MongoId;
 use Illuminate\Database\Eloquent\Model;
+use MongoId;
 
 class EmbedsOne extends EmbedsOneOrMany {
 
@@ -21,7 +21,7 @@ class EmbedsOne extends EmbedsOneOrMany {
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return \Illuminate\Database\Eloquent\Model
      */
-    public function performInsert(Model $model, array $values)
+    public function performInsert(Model $model)
     {
         // Generate a new key if needed.
         if ($model->getKeyName() == '_id' and ! $model->getKey())
@@ -49,9 +49,9 @@ class EmbedsOne extends EmbedsOneOrMany {
      * Save an existing model and attach it to the parent model.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @return Model|bool
+     * @return \Illuminate\Database\Eloquent\Model|bool
      */
-    public function performUpdate(Model $model, array $values)
+    public function performUpdate(Model $model)
     {
         if ($this->isNested())
         {
@@ -74,7 +74,7 @@ class EmbedsOne extends EmbedsOneOrMany {
     /**
      * Delete an existing model and detach it from the parent model.
      *
-     * @param  Model  $model
+     * @param  \Illuminate\Database\Eloquent\Model  $model
      * @return int
      */
     public function performDelete(Model $model)
