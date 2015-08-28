@@ -1,10 +1,9 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
-use MongoId;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Eloquent\Collection as BaseCollection;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Eloquent\Collection;
 
 abstract class EmbedsOneOrMany extends Relation {
@@ -35,10 +34,10 @@ abstract class EmbedsOneOrMany extends Relation {
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @param  \Illuminate\Database\Eloquent\Model    $parent
+     * @param  \Illuminate\Database\Eloquent\Model    $related
      * @param  string  $localKey
      * @param  string  $foreignKey
      * @param  string  $relation
-     * @return void
      */
     public function __construct(Builder $query, Model $parent, Model $related, $localKey, $foreignKey, $relation)
     {
@@ -126,7 +125,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Shorthand to get the results of the relationship.
      *
-     * @return Jenssegers\Mongodb\Eloquent\Collection
+     * @return \Jenssegers\Mongodb\Eloquent\Collection
      */
     public function get()
     {
@@ -241,7 +240,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Set the embedded records array.
      *
-     * @param  array $records
+     * @param  array  $records
      * @return \Illuminate\Database\Eloquent\Model
      */
     protected function setEmbedded($records)
@@ -260,7 +259,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Get the foreign key value for the relation.
      *
-     * @param  mixed $id
+     * @param  mixed  $id
      * @return mixed
      */
     protected function getForeignKeyValue($id)
@@ -278,7 +277,7 @@ abstract class EmbedsOneOrMany extends Relation {
      * Convert an array of records to a Collection.
      *
      * @param  array  $records
-     * @return Jenssegers\Mongodb\Eloquent\Collection
+     * @return \Jenssegers\Mongodb\Eloquent\Collection
      */
     protected function toCollection(array $records = array())
     {
@@ -322,7 +321,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Get the relation instance of the parent.
      *
-     * @return Illuminate\Database\Eloquent\Relations\Relation
+     * @return \Illuminate\Database\Eloquent\Relations\Relation
      */
     protected function getParentRelation()
     {
@@ -366,6 +365,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Get the fully qualified local key name.
      *
+     * @param  string  $glue
      * @return string
      */
     protected function getPathHierarchy($glue = '.')
