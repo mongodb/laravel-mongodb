@@ -156,15 +156,17 @@ abstract class EmbedsOneOrMany extends Relation {
     }
 
     /**
-     * Attach an array of models to the parent instance.
+     * Attach a collection of models to the parent instance.
      *
-     * @param  array  $models
-     * @return array
+     * @param  \Illuminate\Database\Eloquent\Collection|array  $models
+     * @return \Illuminate\Database\Eloquent\Collection|array
      */
-    public function saveMany(array $models)
+    public function saveMany($models)
     {
-        array_walk($models, array($this, 'save'));
-
+        foreach ($models as $model) {
+            $this->save($model);
+        }
+        
         return $models;
     }
 
