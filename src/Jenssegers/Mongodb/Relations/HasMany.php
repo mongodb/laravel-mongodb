@@ -4,7 +4,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
 
 class HasMany extends EloquentHasMany {
-
+    use RelationKeysTrait;
     /**
      * Add the constraints for a relationship count query.
      *

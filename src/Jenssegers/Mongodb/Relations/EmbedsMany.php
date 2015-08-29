@@ -6,6 +6,7 @@ use Illuminate\Pagination\Paginator;
 use MongoId;
 
 class EmbedsMany extends EmbedsOneOrMany {
+    use RelationKeysTrait;
 
     /**
      * Get the results of the relationship.

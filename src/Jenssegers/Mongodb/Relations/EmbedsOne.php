@@ -4,6 +4,7 @@ use Illuminate\Database\Eloquent\Model;
 use MongoId;
 
 class EmbedsOne extends EmbedsOneOrMany {
+    use RelationKeysTrait;
 
     /**
      * Get the results of the relationship.
