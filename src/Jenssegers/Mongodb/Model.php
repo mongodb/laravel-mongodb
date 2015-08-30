@@ -75,7 +75,7 @@ abstract class Model extends \Jenssegers\Eloquent\Model {
      * @param  string  $localKey
      * @param  string  $foreignKey
      * @param  string  $relation
-     * @return EmbedsMany
+     * @return \Jenssegers\Mongodb\Relations\EmbedsMany
      */
     protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
     {
