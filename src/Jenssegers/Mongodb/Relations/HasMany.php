@@ -46,7 +46,7 @@ class HasMany extends EloquentHasMany {
         // relationship as this will allow us to quickly access all of the related
         // models without having to do nested looping which will be quite slow.
         foreach ($results as $result) {
-            $dictionary[(string)$result->{$foreign}][] = $result;
+            $dictionary[(string) $result->{$foreign}][] = $result;
         }
 
         return $dictionary;
