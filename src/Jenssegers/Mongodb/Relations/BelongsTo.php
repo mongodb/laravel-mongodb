@@ -1,5 +1,7 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use Illuminate\Database\Eloquent\Collection;
+
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
 
     /**
