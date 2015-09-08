@@ -971,14 +971,28 @@ class Builder extends BaseBuilder {
     {
         extract($where);
 
-        return array($column => array('$in' => array_values($values)));
+        $arr = [];
+
+        foreach ($values as $value)
+        {
+            $arr[] = $this->convertKey($value);
+        }
+
+        return array($column => array('$in' => array_values($arr)));
     }
 
     protected function compileWhereNotIn($where)
     {
         extract($where);
 
-        return array($column => array('$nin' => array_values($values)));
+        $arr = [];
+
+        foreach ($values as $value)
+        {
+            $arr[] = $this->convertKey($value);
+        }
+
+        return array($column => array('$nin' => array_values($arr)));
     }
 
     protected function compileWhereNull($where)
