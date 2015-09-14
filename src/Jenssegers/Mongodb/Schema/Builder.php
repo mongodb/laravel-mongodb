@@ -37,7 +37,7 @@ class Builder extends \Illuminate\Database\Schema\Builder {
     public function hasColumns($table, array $columns)
     {
         return true;
-    }    
+    }
     /**
      * Determine if the given collection exists.
      *
