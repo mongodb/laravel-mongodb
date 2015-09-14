@@ -620,7 +620,7 @@ class Builder extends BaseBuilder {
                 return $item;
             });
 
-            return $results->lists($column, $key);
+            return $results->lists($column, $key)->all();
         }
 
         return parent::lists($column, $key);

@@ -196,17 +196,7 @@ abstract class Model extends BaseModel {
      */
     protected function getDateFormat()
     {
-        return 'Y-m-d H:i:s';
-    }
-
-    /**
-     * Get a fresh timestamp for the model.
-     *
-     * @return MongoDate
-     */
-    public function freshTimestamp()
-    {
-        return new MongoDate;
+        return $this->dateFormat ?: 'Y-m-d H:i:s';
     }
 
     /**
@@ -216,9 +206,7 @@ abstract class Model extends BaseModel {
      */
     public function getTable()
     {
-        if (isset($this->collection)) return $this->collection;
-
-        return parent::getTable();
+        return $this->collection ?: parent::getTable();
     }
 
     /**

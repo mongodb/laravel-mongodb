@@ -212,6 +212,11 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getIdsArrayFrom($ids)
     {
+        if ($ids instanceof Collection)
+        {
+            $ids = $ids->all();
+        }
+
         if ( ! is_array($ids)) $ids = [$ids];
 
         foreach ($ids as &$id)
