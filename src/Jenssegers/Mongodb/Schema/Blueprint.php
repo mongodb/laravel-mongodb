@@ -24,14 +24,13 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
      *
      * @var array
      */
-    protected $columns = array();
+    protected $columns = [];
 
     /**
      * Create a new schema blueprint.
      *
      * @param  string   $table
      * @param  Closure  $callback
-     * @return void
      */
     public function __construct(Connection $connection, $collection)
     {
@@ -47,7 +46,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
      * @param  array         $options
      * @return Blueprint
      */
-    public function index($columns = null, $options = array())
+    public function index($columns = null, $options = [])
     {
         $columns = $this->fluent($columns);
 
@@ -55,7 +54,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
         if (is_array($columns) && is_int(key($columns)))
         {
             // Transform the columns to the required array format.
-            $transform = array();
+            $transform = [];
 
             foreach ($columns as $column)
             {
@@ -77,7 +76,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
      * @param  array         $options
      * @return \Illuminate\Support\Fluent
      */
-    public function primary($columns = null, $options = array())
+    public function primary($columns = null, $options = [])
     {
         return $this->unique($columns, $options);
     }
@@ -96,7 +95,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
         if (is_array($columns) && is_int(key($columns)))
         {
             // Transform the columns to the required array format.
-            $transform = array();
+            $transform = [];
 
             foreach ($columns as $column)
             {
@@ -121,7 +120,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
     {
         $columns = $this->fluent($columns);
 
-        $this->index($columns, array('unique' => true));
+        $this->index($columns, ['unique' => true]);
 
         return $this;
     }
@@ -136,7 +135,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
     {
         $columns = $this->fluent($columns);
 
-        $this->index($columns, array('background' => true));
+        $this->index($columns, ['background' => true]);
 
         return $this;
     }
@@ -150,7 +149,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
     public function sparse($columns = null)
     {
         $columns = $this->fluent($columns);
-        $this->index($columns, array('sparse' => true));
+        $this->index($columns, ['sparse' => true]);
 
         return $this;
     }
@@ -167,7 +166,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
     {
         $columns = $this->fluent($columns);
 
-        $this->index($columns, array('expireAfterSeconds' => $seconds));
+        $this->index($columns, ['expireAfterSeconds' => $seconds]);
 
         return $this;
     }
@@ -205,7 +204,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
      * @param  array   $parameters
      * @return Blueprint
      */
-    protected function addColumn($type, $name, array $parameters = array())
+    protected function addColumn($type, $name, array $parameters = [])
     {
         $this->fluent($name);
 
@@ -226,7 +225,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
         }
         elseif (is_string($columns))
         {
-            return $this->columns = array($columns);
+            return $this->columns = [$columns];
         }
         else
         {

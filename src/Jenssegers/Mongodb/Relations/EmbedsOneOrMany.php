@@ -59,8 +59,6 @@ abstract class EmbedsOneOrMany extends Relation {
 
     /**
      * Set the base constraints on the relation query.
-     *
-     * @return void
      */
     public function addConstraints()
     {
@@ -74,7 +72,6 @@ abstract class EmbedsOneOrMany extends Relation {
      * Set the constraints for an eager load of the relation.
      *
      * @param  array  $models
-     * @return void
      */
     public function addEagerConstraints(array $models)
     {
@@ -86,7 +83,6 @@ abstract class EmbedsOneOrMany extends Relation {
      *
      * @param  array   $models
      * @param  string  $relation
-     * @return void
      */
     public function initRelation(array $models, $relation)
     {
@@ -166,7 +162,7 @@ abstract class EmbedsOneOrMany extends Relation {
         foreach ($models as $model) {
             $this->save($model);
         }
-        
+
         return $models;
     }
 
@@ -198,7 +194,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function createMany(array $records)
     {
-        $instances = array();
+        $instances = [];
 
         foreach ($records as $record)
         {
@@ -216,7 +212,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getIdsArrayFrom($ids)
     {
-        if ( ! is_array($ids)) $ids = array($ids);
+        if ( ! is_array($ids)) $ids = [$ids];
 
         foreach ($ids as &$id)
         {
@@ -281,9 +277,9 @@ abstract class EmbedsOneOrMany extends Relation {
      * @param  array  $records
      * @return \Jenssegers\Mongodb\Eloquent\Collection
      */
-    protected function toCollection(array $records = array())
+    protected function toCollection(array $records = [])
     {
-        $models = array();
+        $models = [];
 
         foreach ($records as $attributes)
         {
@@ -304,7 +300,7 @@ abstract class EmbedsOneOrMany extends Relation {
      * @param  array  $attributes
      * @return \Illuminate\Database\Eloquent\Model
      */
-    protected function toModel($attributes = array())
+    protected function toModel($attributes = [])
     {
         if (is_null($attributes)) return;
 
@@ -315,7 +311,7 @@ abstract class EmbedsOneOrMany extends Relation {
         $model->setRelation($this->foreignKey, $this->parent);
 
         // If you remove this, you will get segmentation faults!
-        $model->setHidden(array_merge($model->getHidden(), array($this->foreignKey)));
+        $model->setHidden(array_merge($model->getHidden(), [$this->foreignKey]));
 
         return $model;
     }
@@ -357,7 +353,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Check if this relation is nested in another relation.
      *
-     * @return boolean
+     * @return bool
      */
     protected function isNested()
     {

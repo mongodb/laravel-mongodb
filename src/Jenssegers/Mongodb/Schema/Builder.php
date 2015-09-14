@@ -14,7 +14,7 @@ class Builder extends \Illuminate\Database\Schema\Builder {
     {
         $this->connection = $connection;
     }
-    
+
     /**
      * Determine if the given table has a given column.
      *

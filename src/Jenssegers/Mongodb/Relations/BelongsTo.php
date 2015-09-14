@@ -4,8 +4,6 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
 
     /**
      * Set the base constraints on the relation query.
-     *
-     * @return void
      */
     public function addConstraints()
     {
@@ -22,7 +20,6 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
      * Set the constraints for an eager load of the relation.
      *
      * @param  array  $models
-     * @return void
      */
     public function addEagerConstraints(array $models)
     {
