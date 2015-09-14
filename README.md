@@ -28,22 +28,18 @@ For Laravel 5, install the latest stable version using composer:
 composer require jenssegers/mongodb
 ```
 
+### Version Compatibility
+
+ Laravel  | MongoDB
+:---------|:----------
+ 4.2.x    | 2.0.x
+ 5.0.x    | 2.1.x
+ 5.1.x    | 2.2.x
+
 And add the service provider in `config/app.php`:
 
 ```php
 Jenssegers\Mongodb\MongodbServiceProvider::class,
-```
-
-For Laravel 4.2, use version `~2.0`:
-
-```
-composer require jenssegers/mongodb ~2.0
-```
-
-And add the service provider as follows in `app/config/app.php`:
-
-```php
-'Jenssegers\Mongodb\MongodbServiceProvider',
 ```
 
 For usage with [Lumen](http://lumen.laravel.com), add the service provider in `bootstrap/app.php`. In this file, you will also need to enable Eloquent. You must however ensure that your call to `$app->withEloquent();` is **below** where you have registered the `MongodbServiceProvider`:
