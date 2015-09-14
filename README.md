@@ -30,7 +30,7 @@ composer require jenssegers/mongodb
 
 ### Version Compatibility
 
- Laravel  | MongoDB
+ Laravel  | Package
 :---------|:----------
  4.2.x    | 2.0.x
  5.0.x    | 2.1.x
