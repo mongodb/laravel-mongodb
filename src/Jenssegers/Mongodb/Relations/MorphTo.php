@@ -6,8 +6,6 @@ class MorphTo extends EloquentMorphTo {
 
     /**
      * Set the base constraints on the relation query.
-     *
-     * @return void
      */
     public function addConstraints()
     {

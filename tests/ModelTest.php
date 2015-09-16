@@ -231,7 +231,7 @@ class ModelTest extends TestCase {
         $this->assertEquals('Jane Poe', $user->name);
 
         $check = User::where('name', 'Jane Poe')->first();
-        $this->assertEquals($user, $check);
+        $this->assertEquals($user->_id, $check->_id);
     }
 
     public function testDestroy()
@@ -380,8 +380,8 @@ class ModelTest extends TestCase {
 
         // test custom date format for json output
         $json = $user->toArray();
-        $this->assertEquals((string) $user->birthday, $json['birthday']);
-        $this->assertEquals((string) $user->created_at, $json['created_at']);
+        $this->assertEquals($user->birthday->format('l jS \of F Y h:i:s A'), $json['birthday']);
+        $this->assertEquals($user->created_at->format('l jS \of F Y h:i:s A'), $json['created_at']);
 
         // test default date format for json output
         $item = Item::create(['name' => 'sword']);

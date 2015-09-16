@@ -16,6 +16,29 @@ class Builder extends \Illuminate\Database\Schema\Builder {
     }
 
     /**
+     * Determine if the given table has a given column.
+     *
+     * @param  string  $table
+     * @param  string  $column
+     * @return bool
+     */
+    public function hasColumn($table, $column)
+    {
+        return true;
+    }
+
+    /**
+     * Determine if the given table has given columns.
+     *
+     * @param  string  $table
+     * @param  array   $columns
+     * @return bool
+     */
+    public function hasColumns($table, array $columns)
+    {
+        return true;
+    }
+    /**
      * Determine if the given collection exists.
      *
      * @param  string  $collection
