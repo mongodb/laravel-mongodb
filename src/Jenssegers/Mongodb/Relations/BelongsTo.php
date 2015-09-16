@@ -64,12 +64,12 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
         // the primary key of the children to map them onto the correct instances.
         foreach ($models as $model) {
             if(\MongoId::isValid((string)$model->$foreign)){
-                $foreign =(string)$model->$foreign;
+                $modelForeign =(string)$model->$foreign;
             }else{
-                $foreign = $model->$foreign;
+                $modelForeign = $model->$foreign;
             }
-            if (isset($dictionary[$foreign])) {
-                $model->setRelation($relation, $dictionary[$foreign]);
+            if (isset($dictionary[$modelForeign])) {
+                $model->setRelation($relation, $dictionary[$modelForeign]);
             }
         }
 
