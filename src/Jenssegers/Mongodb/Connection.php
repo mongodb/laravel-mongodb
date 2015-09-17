@@ -1,5 +1,6 @@
 <?php namespace Jenssegers\Mongodb;
 
+use Illuminate\Support\Str;
 use MongoClient;
 
 class Connection extends \Illuminate\Database\Connection {
@@ -22,6 +23,7 @@ class Connection extends \Illuminate\Database\Connection {
      * Create a new database connection instance.
      *
      * @param  array   $config
+     * @return void
      */
     public function __construct(array $config)
     {
@@ -125,9 +127,10 @@ class Connection extends \Illuminate\Database\Connection {
      * @param  string  $dsn
      * @param  array   $config
      * @param  array   $options
+     * @param  int     $remaining_retries
      * @return MongoClient
      */
-    protected function createConnection($dsn, array $config, array $options)
+    protected function createConnection($dsn, array $config, array $options, $remaining_retries = 3)
     {
         // Add credentials as options, this makes sure the connection will not fail if
         // the username or password contains strange characters.
@@ -142,18 +145,40 @@ class Connection extends \Illuminate\Database\Connection {
         }
 
         // By default driver options is an empty array.
-        $driverOptions = [];
+        $driverOptions = array();
 
         if (isset($config['driver_options']) && is_array($config['driver_options']))
         {
             $driverOptions = $config['driver_options'];
         }
 
-        return new MongoClient($dsn, $options, $driverOptions);
+        // Tries connection and retries if it doesn't work (issue #508).
+        try
+        {
+            return new MongoClient($dsn, $options, $driverOptions);
+        }
+        catch (\Exception $ex)
+        {
+            if ($this->resultOfLostConnection($ex))
+            {
+                if ($remaining_retries > 0)
+                {
+                    return $this->createConnection($dsn, $config, $options, $remaining_retries - 1);
+                }
+                else
+                {
+                    throw new \Exception('Exceeded connection attempts.', $ex->getCode(), $ex);
+                }
+            }
+
+            throw $ex;
+        }
     }
 
     /**
      * Disconnect from the underlying MongoClient connection.
+     *
+     * @return void
      */
     public function disconnect()
     {
@@ -218,6 +243,22 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
+     * Determine if the given exception was caused by a lost connection.
+     *
+     * @param \Exception $ex
+     * @return mixed
+     */
+    protected function resultOfLostConnection(\Exception $ex)
+    {
+        $message = $ex->getMessage();
+
+        return Str::contains($message, [
+            'Failed to connect to',
+            'Remote server has closed'
+        ]);
+    }
+
+    /**
      * Dynamically pass methods to the connection.
      *
      * @param  string  $method
@@ -226,7 +267,7 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function __call($method, $parameters)
     {
-        return call_user_func_array([$this->db, $method], $parameters);
+        return call_user_func_array(array($this->db, $method), $parameters);
     }
 
 }
