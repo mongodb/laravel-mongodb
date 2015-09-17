@@ -200,6 +200,16 @@ abstract class Model extends BaseModel {
     }
 
     /**
+    * Get a fresh timestamp for the model.
+    *
+    * @return MongoDate
+    */
+    public function freshTimestamp()
+    {
+        return new MongoDate;
+    }
+
+    /**
      * Get the table associated with the model.
      *
      * @return string
