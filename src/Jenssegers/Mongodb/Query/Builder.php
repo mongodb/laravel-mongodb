@@ -149,6 +149,17 @@ class Builder extends BaseBuilder {
     {
         return parent::get($columns);
     }
+    
+    /**
+     * Determine if any rows exist for the current query.
+     *
+     * @return bool
+     */
+    public function exists()
+    {
+        $result = !empty($this->first());
+        return $result;
+    }
 
     /**
      * Execute the query as a fresh "select" statement.
