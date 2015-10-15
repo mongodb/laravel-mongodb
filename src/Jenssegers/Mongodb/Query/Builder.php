@@ -147,7 +147,7 @@ class Builder extends BaseBuilder {
      */
     public function get($columns = [])
     {
-        return parent::get($columns);
+        return $this->getFresh($columns);
     }
 
     /**
