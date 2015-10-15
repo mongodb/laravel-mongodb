@@ -2,7 +2,6 @@
 
 namespace Jenssegers\Mongodb\Queue;
 
-use Jenssegers\Mongodb\Queue\MongodbQueue;
 use Illuminate\Container\Container;
 use Illuminate\Queue\Jobs\Job;
 use Illuminate\Contracts\Queue\Job as JobContract;

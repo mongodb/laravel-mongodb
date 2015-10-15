@@ -5,7 +5,6 @@ namespace Jenssegers\Mongodb\Queue;
 use DateTime;
 use Carbon\Carbon;
 use Illuminate\Database\Connection;
-use Jenssegers\Mongodb\Queue\MongodbJob;
 use Illuminate\Queue\Queue;
 use Illuminate\Contracts\Queue\Queue as QueueContract;
 

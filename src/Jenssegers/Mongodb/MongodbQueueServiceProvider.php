@@ -18,9 +18,9 @@ class MongodbQueueServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        $this->app->resolving('queue', function($queue)
+        $this->app->resolving('queue', function ($queue)
         {
-          $queue->extend('mongodb', function() {
+          $queue->extend('mongodb', function () {
             return new MongodbConnector($this->app['db']);
           });
         });

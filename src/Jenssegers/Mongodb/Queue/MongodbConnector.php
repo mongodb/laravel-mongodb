@@ -3,7 +3,6 @@
 namespace Jenssegers\Mongodb\Queue;
 
 use Illuminate\Support\Arr;
-use Jenssegers\Mongodb\Queue\MongodbQueue;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Queue\Connectors\ConnectorInterface;
 
