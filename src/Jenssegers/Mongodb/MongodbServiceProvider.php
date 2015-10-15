@@ -1,7 +1,6 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Illuminate\Support\ServiceProvider;
-use Jenssegers\Mongodb\Queue\MongodbConnector;
 
 class MongodbServiceProvider extends ServiceProvider {
 
@@ -26,13 +25,6 @@ class MongodbServiceProvider extends ServiceProvider {
             {
                 return new Connection($config);
             });
-        });
-
-        $this->app->resolving('queue', function($queue)
-        {
-          $queue->addConnector('mongodb', function() {
-            return new MongodbConnector($this->app['db']);
-          });
         });
 
     }
