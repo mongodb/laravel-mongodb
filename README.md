@@ -42,6 +42,11 @@ And add the service provider in `config/app.php`:
 Jenssegers\Mongodb\MongodbServiceProvider::class,
 ```
 
+For job queue support add the optional:
+```php
+Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
+```
+
 For usage with [Lumen](http://lumen.laravel.com), add the service provider in `bootstrap/app.php`. In this file, you will also need to enable Eloquent. You must however ensure that your call to `$app->withEloquent();` is **below** where you have registered the `MongodbServiceProvider`:
 
 ```php
@@ -99,6 +104,18 @@ You can connect to multiple servers or replica sets with the following configura
     'options'  => array('replicaSet' => 'replicaSetName')
 ),
 ```
+
+For job queue support add a mongodb connection in config/queue.php:
+```
+        'mongodb' => [
+            'driver' => 'mongodb',
+            'table' => 'jobs',
+            'queue' => 'default',
+            'expire' => 60,
+        ],
+```
+
+You also need to set your QUEUE_DRIVER to 'mongodb' in your environment or .env
 
 Eloquent
 --------
@@ -917,3 +934,4 @@ DB::connection()->disableQueryLog();
 ```
 
 *From: http://laravel.com/docs/database#query-logging*
+
