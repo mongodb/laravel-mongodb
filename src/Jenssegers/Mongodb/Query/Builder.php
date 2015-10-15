@@ -350,6 +350,16 @@ class Builder extends BaseBuilder {
     }
 
     /**
+     * Determine if any rows exist for the current query.
+     *
+     * @return bool
+     */
+    public function exists()
+    {
+        return ! is_null($this->first());
+    }
+
+    /**
      * Force the query to only return distinct results.
      *
      * @return Builder
