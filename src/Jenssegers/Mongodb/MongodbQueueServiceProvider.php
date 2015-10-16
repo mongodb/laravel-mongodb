@@ -20,7 +20,7 @@ class MongodbQueueServiceProvider extends ServiceProvider {
     {
         $this->app->resolving('queue', function ($queue)
         {
-          $queue->extend('mongodb', function () {
+          $queue->extend('database', function () {
             return new MongodbConnector($this->app['db']);
           });
         });

@@ -105,17 +105,7 @@ You can connect to multiple servers or replica sets with the following configura
 ),
 ```
 
-For job queue support add a mongodb connection in config/queue.php:
-```
-        'mongodb' => [
-            'driver' => 'mongodb',
-            'table' => 'jobs',
-            'queue' => 'default',
-            'expire' => 60,
-        ],
-```
-
-You also need to set your QUEUE_DRIVER to 'mongodb' in your environment or .env
+You also need to set your QUEUE_DRIVER to 'database' in your environment or .env
 
 Eloquent
 --------
@@ -934,4 +924,3 @@ DB::connection()->disableQueryLog();
 ```
 
 *From: http://laravel.com/docs/database#query-logging*
-
