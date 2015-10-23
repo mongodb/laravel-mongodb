@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Eloquent\Collection;
 
 abstract class EmbedsOneOrMany extends Relation {
+    use RelationKeysTrait;
 
     /**
      * The local key of the parent model.
