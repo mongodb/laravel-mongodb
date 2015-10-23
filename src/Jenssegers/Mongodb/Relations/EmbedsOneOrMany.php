@@ -396,4 +396,15 @@ abstract class EmbedsOneOrMany extends Relation {
 
         return $this->parent->getKeyName();
     }
+
+    /**
+     * Get the primary key value of the parent.
+     *
+     * @return string
+     */
+    public function getParentKey()
+    {
+        return $this->parent->getKey();
+    }
+
 }
