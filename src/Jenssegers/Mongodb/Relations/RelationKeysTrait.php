@@ -8,7 +8,6 @@
 
 namespace Jenssegers\Mongodb\Relations;
 
-
 trait RelationKeysTrait
 {
     /**

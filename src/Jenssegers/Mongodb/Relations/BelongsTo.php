@@ -60,8 +60,8 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
         // and match back onto their children using these keys of the dictionary and
         // the primary key of the children to map them onto the correct instances.
         foreach ($models as $model) {
-            if(\MongoId::isValid((string)$model->$foreign)){
-                $modelForeign =(string)$model->$foreign;
+            if(\MongoId::isValid((string) $model->$foreign)){
+                $modelForeign =(string) $model->$foreign;
             }else{
                 $modelForeign = $model->$foreign;
             }
