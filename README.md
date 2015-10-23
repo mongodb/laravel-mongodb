@@ -82,8 +82,8 @@ And add a new mongodb connection:
     'password' => env('DB_PASSWORD', ''),
     'options' => [
         'db' => 'admin', // sets the authentication database required by mongo 3
-        'mongoid' => true, // sets to use mongoID object instead of mongoID as string in relations.
     ]
+    'mongoid' => true, // sets to use mongoID object instead of mongoID as string in relations.
 ],
 ```
 
