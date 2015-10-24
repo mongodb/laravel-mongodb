@@ -404,7 +404,9 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function getParentKey()
     {
-        return $this->parent->getKey();
+        $value = $this->parent->getKey();
+
+        return $this->evaluateObjectID($value);
     }
 
 }

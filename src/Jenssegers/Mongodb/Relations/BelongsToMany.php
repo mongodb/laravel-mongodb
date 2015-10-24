@@ -126,7 +126,16 @@ class BelongsToMany extends EloquentBelongsToMany {
         {
             $this->detach($detach);
 
-            $changes['detached'] = (array) array_map(function ($v) { return (int) $v; }, $detach);
+            $changes['detached'] = (array) array_map(function ($v) {
+
+                $isObject = config('database.connections.mongodb.mongoid', false);
+                if($isObject && $v instanceof \MongoId){
+
+                    return (string) $v;
+                }
+
+                return (int) $v;
+            }, $detach);
         }
 
         // Now we are finally ready to attach the new records. Note that we'll disable
@@ -169,7 +178,7 @@ class BelongsToMany extends EloquentBelongsToMany {
         {
             $model = $id;
 
-            $id = $model->getKey();
+            $id = [$model->getKey()];
 
             // Attach the new parent id to the related model.
             $model->push($this->foreignKey, $this->parent->getKey(), true);
@@ -244,7 +253,7 @@ class BelongsToMany extends EloquentBelongsToMany {
         {
             foreach ($result->$foreign as $item)
             {
-                $dictionary[$item][] = $result;
+                $dictionary[(string) $item][] = $result;
             }
         }
 
@@ -279,5 +288,52 @@ class BelongsToMany extends EloquentBelongsToMany {
     public function getForeignKey()
     {
         return $this->foreignKey;
+    }
+
+    /**
+     * Match the eagerly loaded results to their parents.
+     *
+     * @param  array   $models
+     * @param  \Illuminate\Database\Eloquent\Collection  $results
+     * @param  string  $relation
+     * @return array
+     */
+    public function match(array $models, Collection $results, $relation)
+    {
+        $dictionary = $this->buildDictionary($results);
+
+        // Once we have an array dictionary of child objects we can easily match the
+        // children back to their parent using the dictionary and the keys on the
+        // the parent models. Then we will return the hydrated models back out.
+        foreach ($models as $model) {
+            if (isset($dictionary[$key = (string) $model->getKey()])) {
+                $collection = $this->related->newCollection($dictionary[$key]);
+
+                $model->setRelation($relation, $collection);
+            }
+        }
+
+        return $models;
+    }
+
+    /**
+     * Format the sync list so that it is keyed by ID.
+     *
+     * @param  array  $records
+     * @return array
+     */
+    protected function formatSyncList(array $records)
+    {
+        $results = [];
+
+        foreach ($records as $id => $attributes) {
+            if (! is_array($attributes)) {
+                list($id, $attributes) = [$attributes, []];
+            }
+
+            $results[(string) $id] = $attributes;
+        }
+
+        return $results;
     }
 }

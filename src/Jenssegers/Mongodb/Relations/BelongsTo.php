@@ -53,7 +53,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo {
         $dictionary = [];
 
         foreach ($results as $result) {
-            $dictionary[$result->getAttribute($other)] = $result;
+            $dictionary[(string) $result->getAttribute($other)] = $result;
         }
 
         // Once we have the dictionary constructed, we can loop through all the parents
