@@ -2,7 +2,6 @@
 
 namespace Jenssegers\Mongodb\Relations;
 
-
 use Illuminate\Database\Eloquent\Collection;
 
 trait HasOneOrManyTrait

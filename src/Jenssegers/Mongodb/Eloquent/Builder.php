@@ -171,7 +171,7 @@ class Builder extends EloquentBuilder {
         $query = $hasQuery->getQuery();
 
         // Get the number of related objects for each possible parent.
-        $lists = array_map(function($value){
+        $lists = array_map(function ($value) {
             if($value instanceof \MongoId){
 
                 return (string) $value;
