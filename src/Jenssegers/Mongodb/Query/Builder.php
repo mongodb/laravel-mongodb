@@ -147,7 +147,7 @@ class Builder extends BaseBuilder {
      */
     public function get($columns = [])
     {
-        return parent::get($columns);
+        return $this->getFresh($columns);
     }
 
     /**
@@ -347,6 +347,16 @@ class Builder extends BaseBuilder {
 
             return $result['aggregate'];
         }
+    }
+
+    /**
+     * Determine if any rows exist for the current query.
+     *
+     * @return bool
+     */
+    public function exists()
+    {
+        return ! is_null($this->first());
     }
 
     /**

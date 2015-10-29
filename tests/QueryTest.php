@@ -206,6 +206,12 @@ class QueryTest extends TestCase {
         $this->assertEquals(6, $count);
     }
 
+    public function testExists()
+    {
+        $this->assertFalse(User::where('age', '>', 37)->exists());
+        $this->assertTrue(User::where('age', '<', 37)->exists());
+    }
+
     public function testSubquery()
     {
         $users = User::where('title', 'admin')->orWhere(function ($query)
