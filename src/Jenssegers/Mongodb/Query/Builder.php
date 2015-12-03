@@ -4,6 +4,7 @@ use Closure;
 use DateTime;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Jenssegers\Mongodb\Connection;
 use MongoDate;
@@ -547,23 +548,24 @@ class Builder extends BaseBuilder {
     }
 
     /**
-     * Pluck a single column from the database.
+     * Get an array with the values of a given column.
      *
      * @param  string  $column
-     * @return mixed
+     * @param  string|null  $key
+     * @return array
      */
-    public function pluck($column)
+    public function pluck($column, $key = null)
     {
-        $result = (array) $this->first([$column]);
+        $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
 
-        // MongoDB returns the _id field even if you did not ask for it, so we need to
-        // remove this from the result.
-        if (array_key_exists('_id', $result))
-        {
-            unset($result['_id']);
-        }
-
-        return count($result) > 0 ? reset($result) : null;
+        // If the columns are qualified with a table or have an alias, we cannot use
+        // those directly in the "pluck" operations since the results from the DB
+        // are only keyed by the column itself. We'll strip the table out here.
+        return Arr::pluck(
+            $results,
+            $column,
+            $key
+        );
     }
 
     /**

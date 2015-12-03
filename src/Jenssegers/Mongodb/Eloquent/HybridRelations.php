@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
+use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Model;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
@@ -135,10 +136,10 @@ trait HybridRelations {
     {
         // If no relation name was given, we will use this debug backtrace to extract
         // the calling method's name and use that as the relationship name as most
-        // of the time this will be what we desire to use for the relatinoships.
+        // of the time this will be what we desire to use for the relationships.
         if (is_null($relation))
         {
-            list(, $caller) = debug_backtrace(false);
+            list($current, $caller) = debug_backtrace(false, 2);
 
             $relation = $caller['function'];
         }
@@ -154,7 +155,7 @@ trait HybridRelations {
         // when combined with an "_id" should conventionally match the columns.
         if (is_null($foreignKey))
         {
-            $foreignKey = snake_case($relation) . '_id';
+            $foreignKey = Str::snake($relation) . '_id';
         }
 
         $instance = new $related;
@@ -184,9 +185,9 @@ trait HybridRelations {
         // use that to get both the class and foreign key that will be utilized.
         if (is_null($name))
         {
-            list(, $caller) = debug_backtrace(false);
+            list($current, $caller) = debug_backtrace(false, 2);
 
-            $name = snake_case($caller['function']);
+            $name = Str::snake($caller['function']);
         }
 
         list($type, $id) = $this->getMorphs($name, $type, $id);
@@ -201,15 +202,17 @@ trait HybridRelations {
             );
         }
 
-        // If we are not eager loading the relatinship, we will essentially treat this
+        // If we are not eager loading the relationship we will essentially treat this
         // as a belongs-to style relationship since morph-to extends that class and
         // we will pass in the appropriate values so that it behaves as expected.
         else
         {
+            $class = $this->getActualClassNameForMorph($class);
+
             $instance = new $class;
 
             return new MorphTo(
-                with($instance)->newQuery(), $this, $id, $instance->getKeyName(), $type, $name
+                $instance->newQuery(), $this, $id, $instance->getKeyName(), $type, $name
             );
         }
     }
