@@ -1,6 +1,5 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
 
 class MorphTo extends EloquentMorphTo {
