@@ -2,10 +2,11 @@
     "name": "jenssegers/mongodb",
     "description": "A MongoDB based Eloquent model and Query builder for Laravel 4",
     "keywords": ["laravel","eloquent","mongodb","mongo","database","model"],
+    "homepage": "https://github.com/jenssegers/laravel-mongodb",
     "authors": [
         {
             "name": "Jens Segers",
-            "homepage": "http://jenssegers.be"
+            "homepage": "https://jenssegers.com"
         }
     ],
     "license" : "MIT",
@@ -16,9 +17,10 @@
         "illuminate/events": "^5.1"
     },
     "require-dev": {
-        "orchestra/testbench": "~3.1.0",
-        "mockery/mockery": "*",
-        "satooshi/php-coveralls": "*"
+        "phpunit/phpunit": "^4.0|^5.0",
+        "orchestra/testbench": "^3.1",
+        "mockery/mockery": "^0.9",
+        "satooshi/php-coveralls": "^0.6"
     },
     "autoload": {
         "psr-0": {
@@ -36,6 +38,5 @@
     "suggest": {
         "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB",
         "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB"
-    },
-    "minimum-stability": "dev"
+    }
 }

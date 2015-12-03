@@ -364,11 +364,11 @@ class RelationsTest extends TestCase {
         $photos = Photo::with('imageable')->get();
         $relations = $photos[0]->getRelations();
         $this->assertTrue(array_key_exists('imageable', $relations));
-        $this->assertInstanceOf('User', $relations['imageable']);
+        $this->assertInstanceOf('User', $photos[0]->imageable);
 
         $relations = $photos[1]->getRelations();
         $this->assertTrue(array_key_exists('imageable', $relations));
-        $this->assertInstanceOf('Client', $relations['imageable']);
+        $this->assertInstanceOf('Client', $photos[1]->imageable);
     }
 
     public function testHasManyHas()

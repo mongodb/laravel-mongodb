@@ -354,7 +354,7 @@ class QueryBuilderTest extends TestCase {
         ]);
 
         $age = DB::collection('users')->where('name', 'John Doe')->pluck('age');
-        $this->assertEquals(25, $age);
+        $this->assertEquals([25], $age);
     }
 
     public function testList()
