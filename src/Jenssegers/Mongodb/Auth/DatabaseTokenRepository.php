@@ -33,6 +33,11 @@ class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRe
             $date->setTimestamp($token['created_at']->sec);
 
             $token['created_at'] = $date->format('Y-m-d H:i:s');
+
+        }elseif(is_array($token['created_at']) && isset($token['created_at']['date'])){
+
+           $token['created_at'] = $token['created_at']['date'];
+
         }
 
         return parent::tokenExpired($token);
