@@ -111,7 +111,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
     }
 
     /**
-     * Specify a unique index for the collection.
+     * Specify a sparse unique index for the collection.
      *
      * @param  string|array  $columns
      * @return Blueprint
