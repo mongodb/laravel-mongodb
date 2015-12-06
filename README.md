@@ -148,6 +148,8 @@ You may also register an alias for the MongoDB model by adding the following to 
 This will allow you to use the registered alias like:
 
 ```php
+use Moloquent;
+
 class MyModel extends Moloquent {}
 ```
 
