@@ -67,7 +67,7 @@ Configuration
 Change your default database connection name in `app/config/database.php`:
 
 ```php
-'default' => 'mongodb',
+'default' => env('DB_CONNECTION', 'mongodb'),
 ```
 
 And add a new mongodb connection:
