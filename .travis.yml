@@ -19,7 +19,7 @@ services: mongodb
 before_script:
   - echo "extension = mongo.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
   - mysql -e 'create database unittest;'
-  - composer self-update
+  - travis_retry self-update
   - travis_retry composer install --dev --no-interaction
 
 script:
