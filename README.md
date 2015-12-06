@@ -223,7 +223,7 @@ Troubleshooting
 
 #### Class 'MongoClient' not found in ...
 
-The `MongoClient` class is part of the MongoDB PHP driver. Usually, this error means that you forgot to install, or did not install this driver correctly. You can find installation instructions for this driver at http://php.net/manual/en/mongo.installation.php.
+The `MongoClient` class is part of the MongoDB PHP driver. Usually, this error means that you forgot to install, or did not install this driver correctly. You can find installation instructions for this driver at http://php.net/manual/en/set.mongodb.php.
 
 To check if you have installed the driver correctly, run the following command:
 
