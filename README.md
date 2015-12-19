@@ -210,7 +210,7 @@ This service provider will slightly modify the internal DatabaseReminderReposito
 
 ### Sentry
 
-If yo want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
+If you want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
 
 ### Sessions
 
