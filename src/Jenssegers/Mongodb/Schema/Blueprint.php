@@ -114,13 +114,16 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
      * Specify a unique index for the collection.
      *
      * @param  string|array  $columns
+     * @param  array         $options
      * @return Blueprint
      */
-    public function unique($columns = null, $name = null)
+    public function unique($columns = null, $options = [])
     {
         $columns = $this->fluent($columns);
 
-        $this->index($columns, ['unique' => true]);
+        $options['unique'] = true;
+
+        $this->index($columns, $options);
 
         return $this;
     }
@@ -144,12 +147,16 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
      * Specify a sparse index for the collection.
      *
      * @param  string|array  $columns
+     * @param  array         $options
      * @return Blueprint
      */
-    public function sparse($columns = null)
+    public function sparse($columns = null, $options = [])
     {
         $columns = $this->fluent($columns);
-        $this->index($columns, ['sparse' => true]);
+
+        $options['sparse'] = true;
+
+        $this->index($columns, $options);
 
         return $this;
     }
