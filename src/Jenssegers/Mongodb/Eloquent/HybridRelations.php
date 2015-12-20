@@ -185,7 +185,7 @@ trait HybridRelations {
         // use that to get both the class and foreign key that will be utilized.
         if (is_null($name))
         {
-            list($current, $caller) = debug_backtrace(false, 2);
+            list($current, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
             $name = Str::snake($caller['function']);
         }

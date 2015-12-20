@@ -18,4 +18,23 @@ class MorphTo extends EloquentMorphTo {
         }
     }
 
+    /**
+     * Get all of the relation results for a type.
+     *
+     * @param  string  $type
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    protected function getResultsByType($type)
+    {
+        $instance = $this->createModelByType($type);
+
+        $key = $instance->getKeyName();
+
+        $query = $instance->newQuery();
+
+        $query = $this->useWithTrashed($query);
+
+        return $query->whereIn($key, $this->gatherKeysByType($type)->all())->get();
+    }
+
 }
