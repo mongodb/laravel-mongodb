@@ -790,7 +790,7 @@ class Builder extends BaseBuilder {
      */
     public function convertKey($id)
     {
-        if (is_string($id) and strlen($id) === 24 and ctype_xdigit($id))
+        if (MongoId::isValid($id))
         {
             return new MongoId($id);
         }
