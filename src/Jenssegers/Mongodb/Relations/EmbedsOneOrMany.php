@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Eloquent\Collection;
 
 abstract class EmbedsOneOrMany extends Relation {
+    use RelationKeysTrait;
 
     /**
      * The local key of the parent model.
@@ -401,9 +402,11 @@ abstract class EmbedsOneOrMany extends Relation {
      *
      * @return string
      */
-    protected function getParentKey()
+    public function getParentKey()
     {
-        return $this->parent->getKey();
+        $value = $this->parent->getKey();
+
+        return $this->evaluateObjectID($value);
     }
 
 }

@@ -4,6 +4,8 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne as EloquentHasOne;
 
 class HasOne extends EloquentHasOne {
+    use RelationKeysTrait;
+    use HasOneOrManyTrait;
 
     /**
      * Add the constraints for a relationship count query.

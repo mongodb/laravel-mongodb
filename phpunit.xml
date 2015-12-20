@@ -31,6 +31,7 @@
         <testsuite name="model">
             <directory>tests/ModelTest.php</directory>
             <directory>tests/RelationsTest.php</directory>
+            <directory>tests/ObjectIdRelationsTest.php</directory>
         </testsuite>
         <testsuite name="relations">
             <directory>tests/RelationsTest.php</directory>

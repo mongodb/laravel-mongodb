@@ -55,7 +55,8 @@ abstract class Model extends BaseModel {
         }
 
         // Convert MongoId's to string.
-        if ($value instanceof MongoId)
+        $isObject = config('database.connections.mongodb.mongoid', false);
+        if ($value instanceof MongoId && !$isObject)
         {
             return (string) $value;
         }
