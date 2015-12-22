@@ -38,6 +38,13 @@ abstract class Model extends BaseModel {
      * @var Relation
      */
     protected $parentRelation;
+    
+    /**
+     * To indicate if attributes with empty values need to be removed from model.
+     *
+     * @var bool
+     */
+    protected  $filterAttributes = true;
 
     /**
      * Custom accessor for the model's id.
@@ -353,6 +360,23 @@ abstract class Model extends BaseModel {
         }
 
         return $attributes;
+    }
+    
+    /**
+     * Save the model to the database.
+     *
+     * @param  array  $options
+     * @return bool
+     */
+    public function save(array $options = array())
+    {
+        // Remove empty attributes if needed
+        if($this->filterAttributes)
+        {
+            $this->attributes = array_filter($this->attributes);
+        }
+
+        return parent::save($options);
     }
 
     /**
