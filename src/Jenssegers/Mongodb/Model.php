@@ -356,6 +356,29 @@ abstract class Model extends BaseModel {
     }
 
     /**
+     * Determine if the new and old values for a given key are numerically equivalent.
+     *
+     * @param  string  $key
+     * @return bool
+     */
+    protected function originalIsNumericallyEquivalent($key)
+    {
+        $current = $this->attributes[$key];
+
+        $original = $this->original[$key];
+
+        // Date comparison.
+        if (in_array($key, $this->getDates()))
+        {
+            $current = $current instanceof MongoDate ? $this->asDateTime($current) : $current;
+            $original = $original instanceof MongoDate ? $this->asDateTime($original) : $original;
+            return $current == $original;
+        }
+
+        return parent::originalIsNumericallyEquivalent($key);
+    }
+
+    /**
      * Remove one or more fields.
      *
      * @param  mixed  $columns

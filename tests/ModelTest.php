@@ -490,4 +490,14 @@ class ModelTest extends TestCase {
         $this->assertEquals('Paris', $user->{'address.city'});
     }
 
+    public function testGetDirtyDates()
+    {
+        $user = new User();
+        $user->setRawAttributes(['name' => 'John Doe', 'birthday' => new DateTime('19 august 1989')], true);
+        $this->assertEmpty($user->getDirty());
+
+        $user->birthday = new DateTime('19 august 1989');
+        $this->assertEmpty($user->getDirty());
+    }
+
 }
