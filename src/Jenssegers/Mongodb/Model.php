@@ -233,19 +233,17 @@ abstract class Model extends BaseModel {
             return $this->getAttributeValue($key);
         }
 
-        $camelKey = camel_case($key);
-
         // If the "attribute" exists as a method on the model, it may be an
         // embedded model. If so, we need to return the result before it
         // is handled by the parent method.
-        if (method_exists($this, $camelKey))
+        if (method_exists($this, $key))
         {
-            $method = new ReflectionMethod(get_called_class(), $camelKey);
+            $method = new ReflectionMethod(get_called_class(), $key);
 
             // Ensure the method is not static to avoid conflicting with Eloquent methods.
             if ( ! $method->isStatic())
             {
-                $relations = $this->$camelKey();
+                $relations = $this->$key();
 
                 // This attribute matches an embedsOne or embedsMany relation so we need
                 // to return the relation results instead of the interal attributes.
@@ -260,7 +258,7 @@ abstract class Model extends BaseModel {
                     }
 
                     // Get the relation results.
-                    return $this->getRelationshipFromMethod($key, $camelKey);
+                    return $this->getRelationshipFromMethod($key);
                 }
             }
         }
