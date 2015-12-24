@@ -206,7 +206,7 @@ abstract class Model extends BaseModel {
      */
     public function freshTimestamp()
     {
-        return new MongoDate;
+        return new MongoDate(Carbon::now->timestamp);
     }
 
     /**
