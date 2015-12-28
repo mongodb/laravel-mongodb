@@ -318,6 +318,12 @@ abstract class Model extends BaseModel {
 
             return;
         }
+        
+        // Support nested arrays/objects
+        if (is_array($value))
+        {
+            $value = json_decode(json_encode($value), false);
+        }
 
         parent::setAttribute($key, $value);
     }
