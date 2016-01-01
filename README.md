@@ -20,7 +20,7 @@ Table of contents
 Installation
 ------------
 
-Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongo.installation.php
+Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongodb.installation.php.php
 
 For Laravel 5, install the latest stable version using composer:
 
