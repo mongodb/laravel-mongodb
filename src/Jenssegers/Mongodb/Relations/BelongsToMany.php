@@ -126,9 +126,10 @@ class BelongsToMany extends EloquentBelongsToMany {
         {
             $this->detach($detach);
 
-            $changes['detached'] = (array) array_map(function ($v) { return (int) $v; }, $detach);
+             $changes['detached'] = (array) array_map(function ($v) {
+                return is_numeric($v) ? (int) $v : (string) $v;
+            }, $detach);
         }
-
         // Now we are finally ready to attach the new records. Note that we'll disable
         // touching until after the entire operation is complete so we don't fire a
         // ton of touch operations until we are totally done syncing the records.
