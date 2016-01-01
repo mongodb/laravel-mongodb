@@ -126,9 +126,7 @@ class BelongsToMany extends EloquentBelongsToMany {
         {
             $this->detach($detach);
 
-             $changes['detached'] = (array) array_map(function ($v) {
-                return is_numeric($v) ? (int) $v : (string) $v;
-            }, $detach);
+            $changes['detached'] = (array) array_map(function ($v) { return (int) $v; }, $detach);
         }
 
         // Now we are finally ready to attach the new records. Note that we'll disable

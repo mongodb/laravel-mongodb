@@ -10,10 +10,8 @@ use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
-use MongoDate;
-use MongoId;
 use ReflectionMethod;
-
+use MongoDB;
 abstract class Model extends BaseModel {
 
     use HybridRelations;
@@ -54,8 +52,8 @@ abstract class Model extends BaseModel {
             $value = $this->attributes['_id'];
         }
 
-        // Convert MongoId's to string.
-        if ($value instanceof MongoId)
+        // Convert MongoDB\BSON\ObjectID's to string.
+        if ($value instanceof MongoDB\BSON\ObjectID)
         {
             return (string) $value;
         }
@@ -150,15 +148,15 @@ abstract class Model extends BaseModel {
     }
 
     /**
-     * Convert a DateTime to a storable MongoDate object.
+     * Convert a DateTime to a storable MongoDB\BSON\UTCDateTime object.
      *
      * @param  DateTime|int  $value
-     * @return MongoDate
+     * @return MongoDB\BSON\UTCDateTime
      */
     public function fromDateTime($value)
     {
-        // If the value is already a MongoDate instance, we don't need to parse it.
-        if ($value instanceof MongoDate)
+        // If the value is already a MongoDB\BSON\UTCDateTime instance, we don't need to parse it.
+        if ($value instanceof MongoDB\BSON\UTCDateTime)
         {
             return $value;
         }
@@ -169,7 +167,8 @@ abstract class Model extends BaseModel {
             $value = parent::asDateTime($value);
         }
 
-        return new MongoDate($value->getTimestamp());
+
+        return new MongoDB\BSON\UTCDateTime($value->getTimestamp());
     }
 
     /**
@@ -180,8 +179,8 @@ abstract class Model extends BaseModel {
      */
     protected function asDateTime($value)
     {
-        // Convert MongoDate instances.
-        if ($value instanceof MongoDate)
+        // Convert MongoDB\BSON\UTCDateTime instances.
+        if ($value instanceof MongoDB\BSON\UTCDateTime)
         {
             return Carbon::createFromTimestamp($value->sec);
         }
@@ -202,11 +201,11 @@ abstract class Model extends BaseModel {
     /**
      * Get a fresh timestamp for the model.
      *
-     * @return MongoDate
+     * @return MongoDB\BSON\UTCDateTime
      */
     public function freshTimestamp()
-    {
-        return new MongoDate;
+    {	
+	    return round(microtime(true) * 1000);
     }
 
     /**
@@ -298,7 +297,7 @@ abstract class Model extends BaseModel {
      */
     public function setAttribute($key, $value)
     {
-        // Convert _id to MongoId.
+        // Convert _id to MongoDB\BSON\ObjectID.
         if ($key == '_id' and is_string($value))
         {
             $builder = $this->newBaseQueryBuilder();
@@ -337,7 +336,7 @@ abstract class Model extends BaseModel {
         // nicely when your models are converted to JSON.
         foreach ($attributes as $key => &$value)
         {
-            if ($value instanceof MongoId)
+            if ($value instanceof MongoDB\BSON\ObjectID)
             {
                 $value = (string) $value;
             }
@@ -353,29 +352,6 @@ abstract class Model extends BaseModel {
         }
 
         return $attributes;
-    }
-
-    /**
-     * Determine if the new and old values for a given key are numerically equivalent.
-     *
-     * @param  string  $key
-     * @return bool
-     */
-    protected function originalIsNumericallyEquivalent($key)
-    {
-        $current = $this->attributes[$key];
-
-        $original = $this->original[$key];
-
-        // Date comparison.
-        if (in_array($key, $this->getDates()))
-        {
-            $current = $current instanceof MongoDate ? $this->asDateTime($current) : $current;
-            $original = $original instanceof MongoDate ? $this->asDateTime($original) : $original;
-            return $current == $original;
-        }
-
-        return parent::originalIsNumericallyEquivalent($key);
     }
 
     /**

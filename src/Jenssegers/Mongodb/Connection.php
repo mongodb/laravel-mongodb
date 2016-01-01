@@ -1,7 +1,6 @@
-<?php namespace Jenssegers\Mongodb;
-
-use MongoClient;
-
+<?php 
+namespace Jenssegers\Mongodb;
+use MongoDB;
 class Connection extends \Illuminate\Database\Connection {
 
     /**
@@ -37,7 +36,7 @@ class Connection extends \Illuminate\Database\Connection {
         $this->connection = $this->createConnection($dsn, $config, $options);
 
         // Select database
-        $this->db = $this->connection->{$config['database']};
+        $this->db = $this->connection->selectDatabase($config['database']);
 
         $this->useDefaultPostProcessor();
     }
@@ -148,8 +147,7 @@ class Connection extends \Illuminate\Database\Connection {
         {
             $driverOptions = $config['driver_options'];
         }
-
-        return new MongoClient($dsn, $options, $driverOptions);
+        return new MongoDB\Client($dsn, $options, $driverOptions);
     }
 
     /**
@@ -157,7 +155,7 @@ class Connection extends \Illuminate\Database\Connection {
      */
     public function disconnect()
     {
-        $this->connection->close();
+        unset($this->connection);
     }
 
     /**
@@ -193,7 +191,14 @@ class Connection extends \Illuminate\Database\Connection {
 
         // The database name needs to be in the connection string, otherwise it will
         // authenticate to the admin database, which may result in permission errors.
-        return "mongodb://" . implode(',', $hosts) . "/{$database}";
+        $auth = '';
+        if(isset($username) && $username)
+        	$auth .= $username;
+        if(isset($password) && $password)
+        	$auth .= ':'.$password;
+        if($auth)
+        	$auth .= '@';
+        return "mongodb://" . $auth . implode(',', $hosts) . "/{$database}";
     }
 
     /**
