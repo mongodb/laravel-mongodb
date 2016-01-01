@@ -1,7 +1,7 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Exception;
-use MongoCollection;
+use MongoDB\Collection as MongoCollection;
 
 class Collection {
 
@@ -38,7 +38,6 @@ class Collection {
     public function __call($method, $parameters)
     {
         $start = microtime(true);
-
         $result = call_user_func_array([$this->collection, $method], $parameters);
 
         if ($this->connection->logging())
