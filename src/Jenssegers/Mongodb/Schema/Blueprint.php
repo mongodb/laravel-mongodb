@@ -64,7 +64,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
             $columns = $transform;
         }
 
-        $this->collection->ensureIndex($columns, $options);
+        $this->collection->createIndex($columns, $options);
 
         return $this;
     }
@@ -185,7 +185,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
      */
     public function create()
     {
-        $collection = $this->collection->getName();
+        $collection = $this->collection->getCollectionName();
 
         $db = $this->connection->getMongoDB();
 
