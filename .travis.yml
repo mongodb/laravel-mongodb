@@ -10,14 +10,13 @@ matrix:
   fast_finish: true
   allow_failures:
     - php: hhvm
-    - php: 7.0
 
 sudo: false
 
 services: mongodb
 
 before_script:
-  - echo "extension = mongo.so" >> ~/.phpenv/versions/$(phpenv version-name)/etc/php.ini
+  - pecl install mongodb
   - mysql -e 'create database unittest;'
   - travis_retry composer self-update
   - travis_retry composer install --no-interaction
