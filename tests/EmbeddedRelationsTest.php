@@ -38,7 +38,7 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertTrue(is_string($address->_id));
 
         $raw = $address->getAttributes();
-        $this->assertInstanceOf('MongoId', $raw['_id']);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
 
         $address = $user->addresses()->save(new Address(['city' => 'Paris']));
 
@@ -178,7 +178,7 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(['Bruxelles'], $user->addresses->lists('city')->all());
 
         $raw = $address->getAttributes();
-        $this->assertInstanceOf('MongoId', $raw['_id']);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
 
         $freshUser = User::find($user->id);
         $this->assertEquals(['Bruxelles'], $freshUser->addresses->lists('city')->all());
@@ -188,7 +188,7 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertTrue(is_string($address->_id));
 
         $raw = $address->getAttributes();
-        $this->assertInstanceOf('MongoId', $raw['_id']);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
     }
 
     public function testEmbedsManyCreateMany()
@@ -511,7 +511,7 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertTrue(is_string($father->_id));
 
         $raw = $father->getAttributes();
-        $this->assertInstanceOf('MongoId', $raw['_id']);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
 
         $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.saving: ' . get_class($father), $father)->andReturn(true);

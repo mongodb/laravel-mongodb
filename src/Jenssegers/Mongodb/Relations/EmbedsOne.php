@@ -1,7 +1,7 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Model;
-use MongoId;
+use MongoDB\BSON\ObjectID;
 
 class EmbedsOne extends EmbedsOneOrMany {
 
@@ -26,7 +26,7 @@ class EmbedsOne extends EmbedsOneOrMany {
         // Generate a new key if needed.
         if ($model->getKeyName() == '_id' and ! $model->getKey())
         {
-            $model->setAttribute('_id', new MongoId);
+            $model->setAttribute('_id', new ObjectID);
         }
 
         // For deeply nested documents, let the parent handle the changes.

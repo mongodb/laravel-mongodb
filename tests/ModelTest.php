@@ -39,7 +39,7 @@ class ModelTest extends TestCase {
         $this->assertInstanceOf('Carbon\Carbon', $user->created_at);
 
         $raw = $user->getAttributes();
-        $this->assertInstanceOf('MongoId', $raw['_id']);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
 
         $this->assertEquals('John Doe', $user->name);
         $this->assertEquals(35, $user->age);
@@ -54,7 +54,7 @@ class ModelTest extends TestCase {
         $user->save();
 
         $raw = $user->getAttributes();
-        $this->assertInstanceOf('MongoId', $raw['_id']);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
 
         $check = User::find($user->_id);
 
@@ -72,7 +72,7 @@ class ModelTest extends TestCase {
         $user->update(['age' => 20]);
 
         $raw = $user->getAttributes();
-        $this->assertInstanceOf('MongoId', $raw['_id']);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
 
         $check = User::find($user->_id);
         $this->assertEquals(20, $check->age);
@@ -91,7 +91,7 @@ class ModelTest extends TestCase {
         $this->assertEquals('4af9f23d8ead0e1d32000000', $user->_id);
 
         $raw = $user->getAttributes();
-        $this->assertInstanceOf('MongoId', $raw['_id']);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
 
         $user = new User;
         $user->_id = 'customId';
@@ -404,7 +404,7 @@ class ModelTest extends TestCase {
         $this->assertInstanceOf('Carbon\Carbon', $user->getAttribute('entry.date'));
 
         $data = $user->toArray();
-        $this->assertNotInstanceOf('MongoDate', $data['entry']['date']);
+        $this->assertNotInstanceOf('MongoDB\BSON\UTCDateTime', $data['entry']['date']);
         $this->assertEquals((string) $user->getAttribute('entry.date')->format('Y-m-d H:i:s'), $data['entry']['date']);
     }
 
@@ -470,9 +470,9 @@ class ModelTest extends TestCase {
 
         $result = User::raw(function ($collection)
         {
-            return $collection->insert(['name' => 'Yvonne Yoe', 'age' => 35]);
+            return $collection->insertOne(['name' => 'Yvonne Yoe', 'age' => 35]);
         });
-        $this->assertTrue(is_array($result));
+        $this->assertNotNull($result);
     }
 
     public function testDotNotation()

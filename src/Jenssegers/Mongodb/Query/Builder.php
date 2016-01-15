@@ -7,7 +7,9 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Jenssegers\Mongodb\Connection;
-use MongoDB;
+use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\Regex;
+use MongoDB\BSON\UTCDateTime;
 
 class Builder extends BaseBuilder {
 
@@ -242,8 +244,12 @@ class Builder extends BaseBuilder {
             if ($this->limit)       $pipeline[] = ['$limit' => $this->limit];
             if ($this->projections) $pipeline[] = ['$project' => $this->projections];
 
+            $options = [
+                'typeMap' => ['root' => 'array', 'document' => 'array'],
+            ];
+
             // Execute aggregation
-            $results = $this->collection->aggregate($pipeline, ['useCursor'=>false]);
+            $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
             // Return results
             return $results;
@@ -291,7 +297,10 @@ class Builder extends BaseBuilder {
             if ($this->orders)  $options['sort'] = $this->orders;
             if ($this->offset)  $options['skip'] = $this->offset;
             if ($this->limit)   $options['limit'] = $this->limit;
-            if ($this->hint)    $cursor->hint($this->hint);
+            // if ($this->hint)    $cursor->hint($this->hint);
+
+            // Fix for legacy support, converts the results to arrays instead of objects.
+            $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
 
             // Execute query and get MongoCursor
             $cursor = $this->collection->find($wheres, $options);
@@ -459,7 +468,7 @@ class Builder extends BaseBuilder {
         if ( ! $batch) $values = [$values];
 
         // Batch insert
-        $result = $this->collection->InsertMany($values);
+        $result = $this->collection->insertMany($values);
 
         return (1 == (int) $result->isAcknowledged());
     }
@@ -473,7 +482,8 @@ class Builder extends BaseBuilder {
      */
     public function insertGetId(array $values, $sequence = null)
     {
-        $result = $this->collection->InsertOne($values);
+        $result = $this->collection->insertOne($values);
+
         if (1 == (int) $result->isAcknowledged())
         {
             if (is_null($sequence))
@@ -482,7 +492,7 @@ class Builder extends BaseBuilder {
             }
 
             // Return id
-            return $sequence == '_id' ? $result->getInsertedId()->__toString() : $values[$sequence];
+            return $sequence == '_id' ? $result->getInsertedId() : $values[$sequence];
         }
     }
 
@@ -606,6 +616,7 @@ class Builder extends BaseBuilder {
     public function truncate()
     {
         $result = $this->collection->drop();
+
         return (1 == (int) $result->ok);
     }
 
@@ -622,7 +633,7 @@ class Builder extends BaseBuilder {
         {
             $results = new Collection($this->get([$column, $key]));
 
-            // Convert MongoDB\BSON\ObjectID's to strings so that lists can do its work.
+            // Convert ObjectID's to strings so that lists can do its work.
             $results = $results->map(function ($item)
             {
                 $item['_id'] = (string) $item['_id'];
@@ -776,19 +787,19 @@ class Builder extends BaseBuilder {
     }
 
     /**
-     * Convert a key to MongoDB\BSON\ObjectID if needed.
+     * Convert a key to ObjectID if needed.
      *
      * @param  mixed $id
      * @return mixed
      */
     public function convertKey($id)
     {
-		try {
-			$id = new MongoDB\BSON\ObjectID($id);
-		} catch (MongoDB\Driver\Exception\InvalidArgumentException $e) {
-			return false;
-		}
-		return $id;
+        if (is_string($id) and strlen($id) === 24 and ctype_xdigit($id))
+        {
+            return new ObjectID($id);
+        }
+
+        return $id;
     }
 
     /**
@@ -877,10 +888,10 @@ class Builder extends BaseBuilder {
                 }
             }
 
-            // Convert DateTime values to MongoDB\BSON\UTCDateTime.
+            // Convert DateTime values to UTCDateTime.
             if (isset($where['value']) and $where['value'] instanceof DateTime)
             {
-                $where['value'] = new MongoDB\BSON\UTCDateTime($where['value']->getTimestamp());
+                $where['value'] = new UTCDateTime($where['value']->getTimestamp());
             }
 
             // The next item in a "chain" of wheres devices the boolean of the
@@ -919,7 +930,7 @@ class Builder extends BaseBuilder {
     {
         extract($where);
 
-        // Replace like with a MongoDB\BSON\Regex instance.
+        // Replace like with a Regex instance.
         if ($operator == 'like')
         {
             $operator = '=';
@@ -928,24 +939,24 @@ class Builder extends BaseBuilder {
             // Convert like to regular expression.
             if ( ! starts_with($value, '%')) $regex = '^' . $regex;
             if ( ! ends_with($value, '%'))   $regex = $regex . '$';
-            
-            $value = new MongoDB\BSON\Regex($regex, 'i');
+
+            $value = new Regex($regex, 'i');
         }
 
         // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex']))
         {
-            // Automatically convert regular expression strings to MongoDB\BSON\Regex objects.
-            if ( ! $value instanceof MongoDB\BSON\Regex)
+            // Automatically convert regular expression strings to Regex objects.
+            if ( ! $value instanceof Regex)
             {
-            	$e = explode('/', $value);
-            	$flag = end($e);
-            	$regstr = substr($value, 1, -(strlen($flag)+1));
-                $value = new MongoDB\BSON\Regex($regstr, $flag);
+                $e = explode('/', $value);
+                $flag = end($e);
+                $regstr = substr($value, 1, -(strlen($flag) + 1));
+                $value = new Regex($regstr, $flag);
             }
 
             // For inverse regexp operations, we can just use the $not operator
-            // and pass it a MongoDB\BSON\Regex instence.
+            // and pass it a Regex instence.
             if (starts_with($operator, 'not'))
             {
                 $operator = 'not';
@@ -964,6 +975,7 @@ class Builder extends BaseBuilder {
         {
             $query = [$column => ['$' . $operator => $value]];
         }
+
         return $query;
     }
 

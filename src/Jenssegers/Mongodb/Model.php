@@ -10,8 +10,10 @@ use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
+use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\UTCDateTime;
 use ReflectionMethod;
-use MongoDB;
+
 abstract class Model extends BaseModel {
 
     use HybridRelations;
@@ -52,8 +54,8 @@ abstract class Model extends BaseModel {
             $value = $this->attributes['_id'];
         }
 
-        // Convert MongoDB\BSON\ObjectID's to string.
-        if ($value instanceof MongoDB\BSON\ObjectID)
+        // Convert ObjectID to string.
+        if ($value instanceof ObjectID)
         {
             return (string) $value;
         }
@@ -148,15 +150,15 @@ abstract class Model extends BaseModel {
     }
 
     /**
-     * Convert a DateTime to a storable MongoDB\BSON\UTCDateTime object.
+     * Convert a DateTime to a storable UTCDateTime object.
      *
      * @param  DateTime|int  $value
-     * @return MongoDB\BSON\UTCDateTime
+     * @return UTCDateTime
      */
     public function fromDateTime($value)
     {
-        // If the value is already a MongoDB\BSON\UTCDateTime instance, we don't need to parse it.
-        if ($value instanceof MongoDB\BSON\UTCDateTime)
+        // If the value is already a UTCDateTime instance, we don't need to parse it.
+        if ($value instanceof UTCDateTime)
         {
             return $value;
         }
@@ -167,8 +169,7 @@ abstract class Model extends BaseModel {
             $value = parent::asDateTime($value);
         }
 
-
-        return new MongoDB\BSON\UTCDateTime($value->getTimestamp());
+        return new UTCDateTime($value->getTimestamp() * 1000);
     }
 
     /**
@@ -179,10 +180,10 @@ abstract class Model extends BaseModel {
      */
     protected function asDateTime($value)
     {
-        // Convert MongoDB\BSON\UTCDateTime instances.
-        if ($value instanceof MongoDB\BSON\UTCDateTime)
+        // Convert UTCDateTime instances.
+        if ($value instanceof UTCDateTime)
         {
-            return Carbon::createFromTimestamp($value->sec);
+            return Carbon::createFromTimestamp($value->toDateTime()->getTimestamp());
         }
 
         return parent::asDateTime($value);
@@ -201,11 +202,11 @@ abstract class Model extends BaseModel {
     /**
      * Get a fresh timestamp for the model.
      *
-     * @return MongoDB\BSON\UTCDateTime
+     * @return UTCDateTime
      */
     public function freshTimestamp()
-    {	
-	    return round(microtime(true) * 1000);
+    {
+        return new UTCDateTime(round(microtime(true) * 1000));
     }
 
     /**
@@ -297,7 +298,7 @@ abstract class Model extends BaseModel {
      */
     public function setAttribute($key, $value)
     {
-        // Convert _id to MongoDB\BSON\ObjectID.
+        // Convert _id to ObjectID.
         if ($key == '_id' and is_string($value))
         {
             $builder = $this->newBaseQueryBuilder();
@@ -336,7 +337,7 @@ abstract class Model extends BaseModel {
         // nicely when your models are converted to JSON.
         foreach ($attributes as $key => &$value)
         {
-            if ($value instanceof MongoDB\BSON\ObjectID)
+            if ($value instanceof ObjectID)
             {
                 $value = (string) $value;
             }
@@ -352,6 +353,39 @@ abstract class Model extends BaseModel {
         }
 
         return $attributes;
+    }
+
+    /**
+     * Get the casts array.
+     *
+     * @return array
+     */
+    protected function getCasts()
+    {
+        return $this->casts;
+    }
+
+    /**
+     * Determine if the new and old values for a given key are numerically equivalent.
+     *
+     * @param  string  $key
+     * @return bool
+     */
+    protected function originalIsNumericallyEquivalent($key)
+    {
+        $current = $this->attributes[$key];
+        $original = $this->original[$key];
+
+        // Date comparison.
+        if (in_array($key, $this->getDates()))
+        {
+            $current = $current instanceof UTCDateTime ? $this->asDateTime($current) : $current;
+            $original = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
+
+            return $current == $original;
+        }
+
+        return parent::originalIsNumericallyEquivalent($key);
     }
 
     /**

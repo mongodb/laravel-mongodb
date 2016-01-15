@@ -1,6 +1,7 @@
-<?php 
-namespace Jenssegers\Mongodb;
-use MongoDB;
+<?php namespace Jenssegers\Mongodb;
+
+use MongoDB\Client;
+
 class Connection extends \Illuminate\Database\Connection {
 
     /**
@@ -11,9 +12,9 @@ class Connection extends \Illuminate\Database\Connection {
     protected $db;
 
     /**
-     * The MongoClient connection handler.
+     * The MongoDB connection handler.
      *
-     * @var MongoClient
+     * @var MongoDB
      */
     protected $connection;
 
@@ -29,7 +30,7 @@ class Connection extends \Illuminate\Database\Connection {
         // Build the connection string
         $dsn = $this->getDsn($config);
 
-        // You can pass options directly to the MongoClient constructor
+        // You can pass options directly to the MongoDB constructor
         $options = array_get($config, 'options', []);
 
         // Create the connection
@@ -109,9 +110,9 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
-     * return MongoClient object.
+     * return MongoDB object.
      *
-     * @return MongoClient
+     * @return MongoDB
      */
     public function getMongoClient()
     {
@@ -119,27 +120,15 @@ class Connection extends \Illuminate\Database\Connection {
     }
 
     /**
-     * Create a new MongoClient connection.
+     * Create a new MongoDB connection.
      *
      * @param  string  $dsn
      * @param  array   $config
      * @param  array   $options
-     * @return MongoClient
+     * @return MongoDB
      */
     protected function createConnection($dsn, array $config, array $options)
     {
-        // Add credentials as options, this makes sure the connection will not fail if
-        // the username or password contains strange characters.
-        if ( ! empty($config['username']))
-        {
-            $options['username'] = $config['username'];
-        }
-
-        if ( ! empty($config['password']))
-        {
-            $options['password'] = $config['password'];
-        }
-
         // By default driver options is an empty array.
         $driverOptions = [];
 
@@ -147,11 +136,12 @@ class Connection extends \Illuminate\Database\Connection {
         {
             $driverOptions = $config['driver_options'];
         }
-        return new MongoDB\Client($dsn, $options, $driverOptions);
+
+        return new Client($dsn, $options, $driverOptions);
     }
 
     /**
-     * Disconnect from the underlying MongoClient connection.
+     * Disconnect from the underlying MongoDB connection.
      */
     public function disconnect()
     {
@@ -168,7 +158,7 @@ class Connection extends \Illuminate\Database\Connection {
     {
         // First we will create the basic DSN setup as well as the port if it is in
         // in the configuration options. This will give us the basic DSN we will
-        // need to establish the MongoClient and return them back for use.
+        // need to establish the MongoDB and return them back for use.
         extract($config);
 
         // Check if the user passed a complete dsn to the configuration.
@@ -192,12 +182,10 @@ class Connection extends \Illuminate\Database\Connection {
         // The database name needs to be in the connection string, otherwise it will
         // authenticate to the admin database, which may result in permission errors.
         $auth = '';
-        if(isset($username) && $username)
-        	$auth .= $username;
-        if(isset($password) && $password)
-        	$auth .= ':'.$password;
-        if($auth)
-        	$auth .= '@';
+        if (! empty($username)) $auth .= $username;
+        if (! empty($password)) $auth .= ':'.$password;
+        if ($auth) $auth .= '@';
+
         return "mongodb://" . $auth . implode(',', $hosts) . "/{$database}";
     }
 

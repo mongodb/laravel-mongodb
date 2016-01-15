@@ -3,7 +3,7 @@
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
-use MongoId;
+use MongoDB\BSON\ObjectID;
 
 class EmbedsMany extends EmbedsOneOrMany {
 
@@ -28,7 +28,7 @@ class EmbedsMany extends EmbedsOneOrMany {
         // Generate a new key if needed.
         if ($model->getKeyName() == '_id' and ! $model->getKey())
         {
-            $model->setAttribute('_id', new MongoId);
+            $model->setAttribute('_id', new ObjectID);
         }
 
         // For deeply nested documents, let the parent handle the changes.
@@ -227,7 +227,7 @@ class EmbedsMany extends EmbedsOneOrMany {
         // Create a new key if needed.
         if ( ! $model->getAttribute('_id'))
         {
-            $model->setAttribute('_id', new MongoId);
+            $model->setAttribute('_id', new ObjectID);
         }
 
         $records = $this->getEmbedded();

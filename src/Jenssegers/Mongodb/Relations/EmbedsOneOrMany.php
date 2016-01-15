@@ -212,7 +212,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getIdsArrayFrom($ids)
     {
-        if ($ids instanceof Collection)
+        if ($ids instanceof \Illuminate\Support\Collection)
         {
             $ids = $ids->all();
         }
@@ -237,7 +237,10 @@ abstract class EmbedsOneOrMany extends Relation {
         // Get raw attributes to skip relations and accessors.
         $attributes = $this->parent->getAttributes();
 
-        return isset($attributes[$this->localKey]) ? $attributes[$this->localKey] : null;
+        // Get embedded models form parent attributes.
+        $embedded = isset($attributes[$this->localKey]) ? (array) $attributes[$this->localKey] : [];
+
+        return $embedded;
     }
 
     /**
@@ -248,15 +251,15 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function setEmbedded($records)
     {
+        // Assign models to parent attributes array.
         $attributes = $this->parent->getAttributes();
-
         $attributes[$this->localKey] = $records;
 
         // Set raw attributes to skip mutators.
         $this->parent->setRawAttributes($attributes);
 
         // Set the relation on the parent.
-        return $this->parent->setRelation($this->relation, $this->getResults());
+        return $this->parent->setRelation($this->relation, $records === null ? null : $this->getResults());
     }
 
     /**

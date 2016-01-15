@@ -54,7 +54,7 @@ class QueryBuilderTest extends TestCase {
     public function testInsertGetId()
     {
         $id = DB::collection('users')->insertGetId(['name' => 'John Doe']);
-        $this->assertInstanceOf('MongoId', $id);
+        $this->assertInstanceOf('MongoDB\BSON\ObjectID', $id);
     }
 
     public function testBatchInsert()

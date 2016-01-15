@@ -2,7 +2,7 @@
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use MongoCursor;
+use MongoDB\Driver\Cursor;
 
 class Builder extends EloquentBuilder {
 
@@ -218,7 +218,7 @@ class Builder extends EloquentBuilder {
         $results = $this->query->raw($expression);
 
         // Convert MongoCursor results to a collection of models.
-        if ($results instanceof MongoCursor)
+        if ($results instanceof Cursor)
         {
             $results = iterator_to_array($results, false);
 
@@ -228,7 +228,7 @@ class Builder extends EloquentBuilder {
         // The result is a single object.
         elseif (is_array($results) and array_key_exists('_id', $results))
         {
-            $model = $this->model->newFromBuilder($results);
+            $model = $this->model->newFromBuilder((array) $results);
 
             $model->setConnection($this->model->getConnection());
 
