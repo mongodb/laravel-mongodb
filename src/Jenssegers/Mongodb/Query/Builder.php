@@ -892,7 +892,7 @@ class Builder extends BaseBuilder {
             // Convert DateTime values to UTCDateTime.
             if (isset($where['value']) and $where['value'] instanceof DateTime)
             {
-                $where['value'] = new UTCDateTime($where['value']->getTimestamp());
+                $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
             }
 
             // The next item in a "chain" of wheres devices the boolean of the
