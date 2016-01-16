@@ -285,18 +285,14 @@ class Builder extends BaseBuilder {
                 $columns[$column] = true;
             }
 
-            // Add custom projections.
-            if ($this->projections)
-            {
-                $columns = array_merge($columns, $this->projections);
-            }
             $options = [];
 
-            // Apply order, offset, limit and hint
+            // Apply order, offset, limit and projection
             if ($this->timeout) $options['maxTimeMS'] = $this->timeout;
             if ($this->orders)  $options['sort'] = $this->orders;
             if ($this->offset)  $options['skip'] = $this->offset;
             if ($this->limit)   $options['limit'] = $this->limit;
+            if ($this->projections)   $options['projection'] = $this->projections;
             // if ($this->hint)    $cursor->hint($this->hint);
 
             // Fix for legacy support, converts the results to arrays instead of objects.
