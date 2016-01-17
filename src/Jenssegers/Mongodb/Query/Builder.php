@@ -292,11 +292,12 @@ class Builder extends BaseBuilder {
             }
             $options = [];
 
-            // Apply order, offset, limit and hint
+            // Apply order, offset, limit and projection
             if ($this->timeout) $options['maxTimeMS'] = $this->timeout;
             if ($this->orders)  $options['sort'] = $this->orders;
             if ($this->offset)  $options['skip'] = $this->offset;
             if ($this->limit)   $options['limit'] = $this->limit;
+            if ($columns)   $options['projection'] = $columns;
             // if ($this->hint)    $cursor->hint($this->hint);
 
             // Fix for legacy support, converts the results to arrays instead of objects.
@@ -891,7 +892,7 @@ class Builder extends BaseBuilder {
             // Convert DateTime values to UTCDateTime.
             if (isset($where['value']) and $where['value'] instanceof DateTime)
             {
-                $where['value'] = new UTCDateTime($where['value']->getTimestamp());
+                $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
             }
 
             // The next item in a "chain" of wheres devices the boolean of the
