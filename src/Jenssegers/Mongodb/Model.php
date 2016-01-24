@@ -360,7 +360,7 @@ abstract class Model extends BaseModel {
      *
      * @return array
      */
-    protected function getCasts()
+    public function getCasts()
     {
         return $this->casts;
     }

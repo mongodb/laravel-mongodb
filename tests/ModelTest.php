@@ -460,6 +460,7 @@ class ModelTest extends TestCase {
         {
             return $collection->findOne(['age' => 35]);
         });
+
         $this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
 
         $count = User::raw(function ($collection)
