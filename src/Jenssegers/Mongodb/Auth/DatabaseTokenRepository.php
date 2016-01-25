@@ -28,7 +28,6 @@ class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRe
         // Convert UTCDateTime to a date string.
         if ($token['created_at'] instanceof UTCDateTime) {
             $date = $token['created_at']->toDateTime();
-
             $token['created_at'] = $date->format('Y-m-d H:i:s');
         } elseif (is_array($token['created_at']) and isset($token['created_at']['date'])) {
             $token['created_at'] = $token['created_at']['date'];

@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Auth\Passwords\PasswordBroker;
+use Illuminate\Foundation\Application;
 
 class AuthTest extends TestCase
 {
@@ -25,6 +26,10 @@ class AuthTest extends TestCase
 
     public function testRemind()
     {
+        if (Application::VERSION >= '5.2') {
+            return;
+        }
+
         $mailer = Mockery::mock('Illuminate\Mail\Mailer');
         $tokens = $this->app->make('auth.password.tokens');
         $users = $this->app['auth']->driver()->getProvider();
