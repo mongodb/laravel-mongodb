@@ -1,4 +1,4 @@
-<?php namespace Jenssegers\Mongodb;
+<?php namespace Jenssegers\Mongodb\Eloquent;
 
 use Carbon\Carbon;
 use DateTime;

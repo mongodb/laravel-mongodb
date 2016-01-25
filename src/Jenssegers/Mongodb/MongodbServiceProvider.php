@@ -1,6 +1,7 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Illuminate\Support\ServiceProvider;
+use Jenssegers\Mongodb\Eloquent\Model;
 
 class MongodbServiceProvider extends ServiceProvider {
 
