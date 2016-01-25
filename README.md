@@ -39,26 +39,27 @@ Change your default database connection name in `app/config/database.php`:
 
 And add a new mongodb connection:
 
-    'mongodb' => array(
+    'mongodb' => [
         'driver'   => 'mongodb',
         'host'     => 'localhost',
         'port'     => 27017,
         'username' => 'username',
         'password' => 'password',
-        'database' => 'database'
-    ),
+        'database' => 'database',
+        'options' => ['db' => 'admin'] // Required to authenticate on MongoDB 3.0 or higher
+    ],
 
 You can connect to multiple servers or replica sets with the following configuration:
 
-    'mongodb' => array(
+    'mongodb' => [
         'driver'   => 'mongodb',
-        'host'     => array('server1', 'server2'),
+        'host'     => ['server1', 'server2'],
         'port'     => 27017,
         'username' => 'username',
         'password' => 'password',
         'database' => 'database',
-        'options'  => array('replicaSet' => 'replicaSetName')
-    ),
+        'options'  => ['replicaSet' => 'replicaSetName']
+    ],
 
 Eloquent
 --------
