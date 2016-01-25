@@ -99,13 +99,16 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
 
             foreach ($columns as $column)
             {
-                $transform[$column] = 1;
+                $transform[$column] = $column . '_1';
             }
 
             $columns = $transform;
         }
 
-        $this->collection->deleteIndex($columns);
+        foreach ($columns as $column)
+        {
+            $this->collection->dropIndex($column);
+        }
 
         return $this;
     }

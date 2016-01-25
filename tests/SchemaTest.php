@@ -196,7 +196,7 @@ class SchemaTest extends TestCase {
     {
         $collection = DB::getCollection($collection);
 
-        foreach ($collection->getIndexInfo() as $index)
+        foreach ($collection->listIndexes() as $index)
         {
             if (isset($index['key'][$name])) return $index;
         }

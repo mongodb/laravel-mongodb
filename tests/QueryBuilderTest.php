@@ -187,8 +187,8 @@ class QueryBuilderTest extends TestCase {
             return $collection->find(['age' => 20]);
         });
 
-        $this->assertInstanceOf('MongoCursor', $cursor);
-        $this->assertEquals(1, $cursor->count());
+        $this->assertInstanceOf('MongoDB\Driver\Cursor', $cursor);
+        $this->assertEquals(1, count($cursor->toArray()));
 
         $collection = DB::collection('users')->raw();
         $this->assertInstanceOf('Jenssegers\Mongodb\Collection', $collection);
@@ -540,11 +540,11 @@ class QueryBuilderTest extends TestCase {
         $results = DB::collection('items')->where('tags', 'size', 4)->get();
         $this->assertEquals(1, count($results));
 
-        $regex = new Regex("/.*doe/i");
+        $regex = new Regex(".*doe", "i");
         $results = DB::collection('users')->where('name', 'regex', $regex)->get();
         $this->assertEquals(2, count($results));
 
-        $regex = new Regex("/.*doe/i");
+        $regex = new Regex(".*doe", "i");
         $results = DB::collection('users')->where('name', 'regexp', $regex)->get();
         $this->assertEquals(2, count($results));
 

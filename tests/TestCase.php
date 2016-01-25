@@ -12,7 +12,7 @@ class TestCase extends Orchestra\Testbench\TestCase {
     {
         return [
             'Jenssegers\Mongodb\MongodbServiceProvider',
-            'Jenssegers\Mongodb\Auth\PasswordResetServiceProvider',
+            'Jenssegers\Mongodb\Auth\PasswordResetServiceProvider'
         ];
     }
 

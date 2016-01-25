@@ -38,6 +38,7 @@ class Builder extends \Illuminate\Database\Schema\Builder {
     {
         return true;
     }
+ 
     /**
      * Determine if the given collection exists.
      *
@@ -48,9 +49,15 @@ class Builder extends \Illuminate\Database\Schema\Builder {
     {
         $db = $this->connection->getMongoDB();
 
-        return in_array($collection, $db->getCollectionNames());
-    }
+        foreach($db->listCollections() as $collectionFromMongo) {
+            if($collectionFromMongo->getName() == $collection) {
+                return true;
+            }
+        }
 
+        return false;
+    }
+    
     /**
      * Determine if the given collection exists.
      *

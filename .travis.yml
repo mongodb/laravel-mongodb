@@ -3,7 +3,7 @@ language: php
 php:
   - 5.5
   - 5.6
-  - 7.0
+  - 7
   - hhvm
 
 matrix:
@@ -13,7 +13,16 @@ matrix:
 
 sudo: false
 
-services: mongodb
+services:
+  - mongodb
+  - mysql
+
+addons:
+  apt:
+    sources:
+    - mongodb-3.0-precise
+    packages:
+    - mongodb-org-server
 
 before_script:
   - pecl install mongodb
@@ -23,7 +32,7 @@ before_script:
 
 script:
   - mkdir -p build/logs
-  - phpunit --coverage-clover build/logs/clover.xml
+  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
 
 after_success:
   - sh -c 'if [ "$TRAVIS_PHP_VERSION" != "hhvm" ]; then php vendor/bin/coveralls -v; fi;'
