@@ -1,7 +1,7 @@
 <?php namespace Jenssegers\Mongodb\Auth;
 
-use DateTime;
-use MongoDate;
+use Carbon\Carbon;
+use MongoDB\BSON\UTCDateTime;
 
 class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRepository {
 
@@ -14,7 +14,7 @@ class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRe
      */
     protected function getPayload($email, $token)
     {
-        return ['email' => $email, 'token' => $token, 'created_at' => new MongoDate];
+        return ['email' => $email, 'token' => $token, 'created_at' => new UTCDateTime(round(microtime(true) * 1000))];
     }
 
     /**
@@ -25,12 +25,10 @@ class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRe
      */
     protected function tokenExpired($token)
     {
-        // Convert MongoDate to a date string.
-        if ($token['created_at'] instanceof MongoDate)
+        // Convert UTCDateTime to a date string.
+        if ($token['created_at'] instanceof UTCDateTime)
         {
-            $date = new DateTime;
-
-            $date->setTimestamp($token['created_at']->sec);
+            $date = $token['created_at']->toDateTime();
 
             $token['created_at'] = $date->format('Y-m-d H:i:s');
         }
