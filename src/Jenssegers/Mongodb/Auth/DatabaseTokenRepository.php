@@ -1,6 +1,5 @@
 <?php namespace Jenssegers\Mongodb\Auth;
 
-use Carbon\Carbon;
 use MongoDB\BSON\UTCDateTime;
 
 class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRepository {
