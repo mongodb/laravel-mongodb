@@ -2,7 +2,8 @@
 
 use MongoDB\BSON\UTCDateTime;
 
-class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRepository {
+class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRepository
+{
 
     /**
      * Build the record payload for the table.
@@ -25,18 +26,14 @@ class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRe
     protected function tokenExpired($token)
     {
         // Convert UTCDateTime to a date string.
-        if ($token['created_at'] instanceof UTCDateTime)
-        {
+        if ($token['created_at'] instanceof UTCDateTime) {
             $date = $token['created_at']->toDateTime();
 
             $token['created_at'] = $date->format('Y-m-d H:i:s');
-        }
-        elseif (is_array($token['created_at']) and isset($token['created_at']['date']))
-        {
-           $token['created_at'] = $token['created_at']['date'];
+        } elseif (is_array($token['created_at']) and isset($token['created_at']['date'])) {
+            $token['created_at'] = $token['created_at']['date'];
         }
 
         return parent::tokenExpired($token);
     }
-
 }

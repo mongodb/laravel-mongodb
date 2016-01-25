@@ -2,7 +2,8 @@
 
 use Illuminate\Auth\Passwords\PasswordBroker;
 
-class AuthTest extends TestCase {
+class AuthTest extends TestCase
+{
 
     public function tearDown()
     {
@@ -52,8 +53,7 @@ class AuthTest extends TestCase {
             'token'                 => $reminder['token'],
         ];
 
-        $response = $broker->reset($credentials, function ($user, $password)
-        {
+        $response = $broker->reset($credentials, function ($user, $password) {
             $user->password = bcrypt($password);
             $user->save();
         });
@@ -61,5 +61,4 @@ class AuthTest extends TestCase {
         $this->assertEquals('passwords.reset', $response);
         $this->assertEquals(0, DB::collection('password_resets')->count());
     }
-
 }

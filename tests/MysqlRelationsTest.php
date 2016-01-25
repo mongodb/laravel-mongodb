@@ -1,6 +1,7 @@
 <?php
 
-class MysqlRelationsTest extends TestCase {
+class MysqlRelationsTest extends TestCase
+{
 
     public function setUp()
     {

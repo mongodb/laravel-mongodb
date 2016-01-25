@@ -1,6 +1,7 @@
 <?php
 
-class TestCase extends Orchestra\Testbench\TestCase {
+class TestCase extends Orchestra\Testbench\TestCase
+{
 
     /**
      * Get package providers.
@@ -36,5 +37,4 @@ class TestCase extends Orchestra\Testbench\TestCase {
         $app['config']->set('auth.model', 'User');
         $app['config']->set('cache.driver', 'array');
     }
-
 }

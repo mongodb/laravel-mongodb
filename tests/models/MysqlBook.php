@@ -3,7 +3,8 @@
 use Illuminate\Support\Facades\Schema;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
-class MysqlBook extends Eloquent {
+class MysqlBook extends Eloquent
+{
 
     use HybridRelations;
 
@@ -24,15 +25,12 @@ class MysqlBook extends Eloquent {
     {
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('books'))
-        {
-            Schema::connection('mysql')->create('books', function ($table)
-            {
+        if (!$schema->hasTable('books')) {
+            Schema::connection('mysql')->create('books', function ($table) {
                 $table->string('title');
                 $table->string('author_id');
                 $table->timestamps();
             });
         }
     }
-
 }

@@ -1,6 +1,7 @@
 <?php
 
-class ConnectionTest extends TestCase {
+class ConnectionTest extends TestCase
+{
 
     public function testConnection()
     {
@@ -129,5 +130,4 @@ class ConnectionTest extends TestCase {
         // $this->setExpectedException('MongoConnectionException', "Failed to connect to: " . $hosts[0] . ": Connection refused; Failed to connect to: " . $hosts[1] . ": Connection refused");
         $connection = DB::connection('mongodb');
     }
-
 }

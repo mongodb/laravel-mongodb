@@ -2,7 +2,8 @@
 
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
-class Item extends Eloquent {
+class Item extends Eloquent
+{
 
     protected $collection = 'items';
     protected static $unguarded = true;
@@ -16,5 +17,4 @@ class Item extends Eloquent {
     {
         return $query->where('type', 'sharp');
     }
-
 }

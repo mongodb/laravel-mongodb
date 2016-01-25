@@ -1,6 +1,7 @@
 <?php
 
-class ModelTest extends TestCase {
+class ModelTest extends TestCase
+{
 
     public function tearDown()
     {
@@ -331,7 +332,8 @@ class ModelTest extends TestCase {
         $item = Item::create(['name' => 'fork', 'type' => 'sharp']);
 
         $array = $item->toArray();
-        $keys = array_keys($array); sort($keys);
+        $keys = array_keys($array);
+        sort($keys);
         $this->assertEquals(['_id', 'created_at', 'name', 'type', 'updated_at'], $keys);
         $this->assertTrue(is_string($array['created_at']));
         $this->assertTrue(is_string($array['updated_at']));
@@ -449,28 +451,24 @@ class ModelTest extends TestCase {
         User::create(['name' => 'Jane Doe', 'age' => 35]);
         User::create(['name' => 'Harry Hoe', 'age' => 15]);
 
-        $users = User::raw(function ($collection)
-        {
+        $users = User::raw(function ($collection) {
             return $collection->find(['age' => 35]);
         });
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
         $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $users[0]);
 
-        $user = User::raw(function ($collection)
-        {
+        $user = User::raw(function ($collection) {
             return $collection->findOne(['age' => 35]);
         });
 
         $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $user);
 
-        $count = User::raw(function ($collection)
-        {
+        $count = User::raw(function ($collection) {
             return $collection->count();
         });
         $this->assertEquals(3, $count);
 
-        $result = User::raw(function ($collection)
-        {
+        $result = User::raw(function ($collection) {
             return $collection->insertOne(['name' => 'Yvonne Yoe', 'age' => 35]);
         });
         $this->assertNotNull($result);
@@ -500,5 +498,4 @@ class ModelTest extends TestCase {
         $user->birthday = new DateTime('19 august 1989');
         $this->assertEmpty($user->getDirty());
     }
-
 }

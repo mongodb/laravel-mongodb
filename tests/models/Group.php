@@ -2,7 +2,8 @@
 
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
-class Group extends Eloquent {
+class Group extends Eloquent
+{
 
     protected $collection = 'groups';
     protected static $unguarded = true;

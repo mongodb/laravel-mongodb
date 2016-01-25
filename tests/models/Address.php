@@ -2,7 +2,8 @@
 
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
-class Address extends Eloquent {
+class Address extends Eloquent
+{
 
     protected static $unguarded = true;
 
@@ -10,5 +11,4 @@ class Address extends Eloquent {
     {
         return $this->embedsMany('Address');
     }
-
 }

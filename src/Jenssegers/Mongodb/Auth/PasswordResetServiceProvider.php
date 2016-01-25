@@ -2,7 +2,8 @@
 
 use Jenssegers\Mongodb\Auth\DatabaseTokenRepository as DbRepository;
 
-class PasswordResetServiceProvider extends \Illuminate\Auth\Passwords\PasswordResetServiceProvider {
+class PasswordResetServiceProvider extends \Illuminate\Auth\Passwords\PasswordResetServiceProvider
+{
 
     /**
      * Register the token repository implementation.
@@ -11,8 +12,7 @@ class PasswordResetServiceProvider extends \Illuminate\Auth\Passwords\PasswordRe
      */
     protected function registerTokenRepository()
     {
-        $this->app->singleton('auth.password.tokens', function ($app)
-        {
+        $this->app->singleton('auth.password.tokens', function ($app) {
             $connection = $app['db']->connection();
 
             // The database token repository is an implementation of the token repository
@@ -27,5 +27,4 @@ class PasswordResetServiceProvider extends \Illuminate\Auth\Passwords\PasswordRe
             return new DbRepository($connection, $table, $key, $expire);
         });
     }
-
 }

@@ -2,7 +2,8 @@
 
 use MongoDB\Client;
 
-class Connection extends \Illuminate\Database\Connection {
+class Connection extends \Illuminate\Database\Connection
+{
 
     /**
      * The MongoDB database handler.
@@ -132,8 +133,7 @@ class Connection extends \Illuminate\Database\Connection {
         // By default driver options is an empty array.
         $driverOptions = [];
 
-        if (isset($config['driver_options']) && is_array($config['driver_options']))
-        {
+        if (isset($config['driver_options']) && is_array($config['driver_options'])) {
             $driverOptions = $config['driver_options'];
         }
 
@@ -162,19 +162,16 @@ class Connection extends \Illuminate\Database\Connection {
         extract($config);
 
         // Check if the user passed a complete dsn to the configuration.
-        if ( ! empty($dsn))
-        {
+        if (! empty($dsn)) {
             return $dsn;
         }
 
         // Treat host option as array of hosts
         $hosts = is_array($host) ? $host : [$host];
 
-        foreach ($hosts as &$host)
-        {
+        foreach ($hosts as &$host) {
             // Check if we need to add a port to the host
-            if (strpos($host, ':') === false and isset($port))
-            {
+            if (strpos($host, ':') === false and isset($port)) {
                 $host = "{$host}:{$port}";
             }
         }
@@ -182,9 +179,15 @@ class Connection extends \Illuminate\Database\Connection {
         // The database name needs to be in the connection string, otherwise it will
         // authenticate to the admin database, which may result in permission errors.
         $auth = '';
-        if (! empty($username)) $auth .= $username;
-        if (! empty($password)) $auth .= ':'.$password;
-        if ($auth) $auth .= '@';
+        if (! empty($username)) {
+            $auth .= $username;
+        }
+        if (! empty($password)) {
+            $auth .= ':'.$password;
+        }
+        if ($auth) {
+            $auth .= '@';
+        }
 
         return "mongodb://" . $auth . implode(',', $hosts) . "/{$database}";
     }
@@ -221,5 +224,4 @@ class Connection extends \Illuminate\Database\Connection {
     {
         return call_user_func_array([$this->db, $method], $parameters);
     }
-
 }

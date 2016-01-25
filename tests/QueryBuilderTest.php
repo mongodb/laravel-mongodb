@@ -3,7 +3,8 @@
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\BSON\Regex;
 
-class QueryBuilderTest extends TestCase {
+class QueryBuilderTest extends TestCase
+{
 
     public function tearDown()
     {
@@ -182,8 +183,7 @@ class QueryBuilderTest extends TestCase {
             ['name' => 'John Doe', 'age' => 25],
         ]);
 
-        $cursor = DB::collection('users')->raw(function ($collection)
-        {
+        $cursor = DB::collection('users')->raw(function ($collection) {
             return $collection->find(['age' => 20]);
         });
 
@@ -289,11 +289,13 @@ class QueryBuilderTest extends TestCase {
             ['name' => 'spoon', 'type' => 'round'],
         ]);
 
-        $items = DB::collection('items')->distinct('name')->get(); sort($items);
+        $items = DB::collection('items')->distinct('name')->get();
+        sort($items);
         $this->assertEquals(3, count($items));
         $this->assertEquals(['fork', 'knife', 'spoon'], $items);
 
-        $types = DB::collection('items')->distinct('type')->get(); sort($types);
+        $types = DB::collection('items')->distinct('type')->get();
+        sort($types);
         $this->assertEquals(2, count($types));
         $this->assertEquals(['round', 'sharp'], $types);
     }
@@ -638,10 +640,8 @@ class QueryBuilderTest extends TestCase {
 
         $results = DB::collection('items')->project(['tags' => ['$slice' => 1]])->get();
 
-        foreach ($results as $result)
-        {
+        foreach ($results as $result) {
             $this->assertEquals(1, count($result['tags']));
         }
     }
-
 }

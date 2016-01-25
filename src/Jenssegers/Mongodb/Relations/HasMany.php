@@ -3,7 +3,8 @@
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
 
-class HasMany extends EloquentHasMany {
+class HasMany extends EloquentHasMany
+{
 
     /**
      * Add the constraints for a relationship count query.
@@ -43,5 +44,4 @@ class HasMany extends EloquentHasMany {
     {
         return $this->getForeignKey();
     }
-
 }

@@ -2,7 +2,8 @@
 
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 
-class Collection extends EloquentCollection {
+class Collection extends EloquentCollection
+{
 
     /**
      * Simulate a get clause on the collection.
@@ -13,8 +14,7 @@ class Collection extends EloquentCollection {
      */
     public function get($key = null, $default = null)
     {
-        if (is_null($key) and is_null($default))
-        {
+        if (is_null($key) and is_null($default)) {
             return $this;
         }
 
@@ -35,17 +35,14 @@ class Collection extends EloquentCollection {
         // Here we will make some assumptions about the operator. If only 2 values are
         // passed to the method, we will assume that the operator is an equals sign
         // and keep going.
-        if (func_num_args() == 2)
-        {
+        if (func_num_args() == 2) {
             list($value, $operator) = [$operator, '='];
         }
 
-        return $this->filter(function ($item) use ($key, $operator, $value)
-        {
+        return $this->filter(function ($item) use ($key, $operator, $value) {
             $actual = $item->{$key};
 
-            switch ($operator)
-            {
+            switch ($operator) {
                 case '<>':
                 case '!=':
                     return $actual != $value;
@@ -244,5 +241,4 @@ class Collection extends EloquentCollection {
     {
         return $this->take($value);
     }
-
 }

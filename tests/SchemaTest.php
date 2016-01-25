@@ -1,6 +1,7 @@
 <?php
 
-class SchemaTest extends TestCase {
+class SchemaTest extends TestCase
+{
 
     public function tearDown()
     {
@@ -18,8 +19,7 @@ class SchemaTest extends TestCase {
     {
         $instance = $this;
 
-        Schema::create('newcollection', function ($collection) use ($instance)
-        {
+        Schema::create('newcollection', function ($collection) use ($instance) {
             $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
         });
 
@@ -37,37 +37,32 @@ class SchemaTest extends TestCase {
     {
         $instance = $this;
 
-        Schema::collection('newcollection', function ($collection) use ($instance)
-        {
+        Schema::collection('newcollection', function ($collection) use ($instance) {
             $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
         });
 
-        Schema::table('newcollection', function ($collection) use ($instance)
-        {
+        Schema::table('newcollection', function ($collection) use ($instance) {
             $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
         });
     }
 
     public function testIndex()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->index('mykey1');
         });
 
         $index = $this->getIndex('newcollection', 'mykey1');
         $this->assertEquals(1, $index['key']['mykey1']);
 
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->index(['mykey2']);
         });
 
         $index = $this->getIndex('newcollection', 'mykey2');
         $this->assertEquals(1, $index['key']['mykey2']);
 
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->string('mykey3')->index();
         });
 
@@ -77,8 +72,7 @@ class SchemaTest extends TestCase {
 
     public function testPrimary()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->string('mykey', 100)->primary();
         });
 
@@ -88,8 +82,7 @@ class SchemaTest extends TestCase {
 
     public function testUnique()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->unique('uniquekey');
         });
 
@@ -99,8 +92,7 @@ class SchemaTest extends TestCase {
 
     public function testDropIndex()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->unique('uniquekey');
             $collection->dropIndex('uniquekey');
         });
@@ -108,8 +100,7 @@ class SchemaTest extends TestCase {
         $index = $this->getIndex('newcollection', 'uniquekey');
         $this->assertEquals(null, $index);
 
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->unique('uniquekey');
             $collection->dropIndex(['uniquekey']);
         });
@@ -120,8 +111,7 @@ class SchemaTest extends TestCase {
 
     public function testBackground()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->background('backgroundkey');
         });
 
@@ -131,8 +121,7 @@ class SchemaTest extends TestCase {
 
     public function testSparse()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->sparse('sparsekey');
         });
 
@@ -142,8 +131,7 @@ class SchemaTest extends TestCase {
 
     public function testExpire()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->expire('expirekey', 60);
         });
 
@@ -153,13 +141,11 @@ class SchemaTest extends TestCase {
 
     public function testSoftDeletes()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->softDeletes();
         });
 
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->string('email')->nullable()->index();
         });
 
@@ -169,8 +155,7 @@ class SchemaTest extends TestCase {
 
     public function testFluent()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->string('email')->index();
             $collection->string('token')->index();
             $collection->timestamp('created_at');
@@ -185,8 +170,7 @@ class SchemaTest extends TestCase {
 
     public function testDummies()
     {
-        Schema::collection('newcollection', function ($collection)
-        {
+        Schema::collection('newcollection', function ($collection) {
             $collection->boolean('activated')->default(0);
             $collection->integer('user_id')->unsigned();
         });
@@ -196,12 +180,12 @@ class SchemaTest extends TestCase {
     {
         $collection = DB::getCollection($collection);
 
-        foreach ($collection->listIndexes() as $index)
-        {
-            if (isset($index['key'][$name])) return $index;
+        foreach ($collection->listIndexes() as $index) {
+            if (isset($index['key'][$name])) {
+                return $index;
+            }
         }
 
         return false;
     }
-
 }

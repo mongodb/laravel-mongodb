@@ -1,6 +1,7 @@
 <?php
 
-class EmbeddedRelationsTest extends TestCase {
+class EmbeddedRelationsTest extends TestCase
+{
 
     public function tearDown()
     {
@@ -748,5 +749,4 @@ class EmbeddedRelationsTest extends TestCase {
         $this->assertEquals(2, $results->count());
         $this->assertEquals(3, $results->total());
     }
-
 }
