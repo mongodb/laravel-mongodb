@@ -298,7 +298,7 @@ class Builder extends QueryBuilder {
         ( !array_key_exists('$and', $wheres) && !array_key_exists('$or', $wheres) )
         ||
         //Otherwise, check that there is only one $and
-        ( array_key_exists('$and', $wheres) && sizeof(array_keys($wheres)) === 1 ) 
+        ( array_key_exists('$and', $wheres) && sizeof(array_keys($wheres)) === 1 )
         ){
 
         $valid = true;
@@ -316,7 +316,7 @@ class Builder extends QueryBuilder {
             }
 
             // if the value is an array, then unpack and use each key/value as wheres
-            foreach( $value as $k=>$v){
+            foreach( $value as $k => $v){
               // if any of the values are arrays then do not use the standard count
               if( is_array($v) ){
                 $valid = false;
