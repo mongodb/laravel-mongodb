@@ -283,6 +283,64 @@ class Builder extends QueryBuilder {
     }
 
     /**
+     * Retrieve the "count" result of the query.
+     *
+     * @param  string  $columns
+     * @return int
+     */
+    public function count($columns = '*')
+    {
+      //Get the compiled wheres
+      $wheres = $this->compileWheres();
+
+      if( 
+        //If there is no $and or $or key, then assume all the wheres can be applied onto the count
+        ( !array_key_exists('$and', $wheres) && !array_key_exists('$or', $wheres) )
+        ||
+        //Otherwise, check that there is only one $and
+        ( array_key_exists('$and', $wheres) && sizeof(array_keys($wheres)) === 1 ) 
+        ){
+
+        $valid = true;
+        $query = [];
+
+        $whereLoop = array_key_exists('$and', $wheres) ? $wheres['$and'] : $wheres;
+
+        foreach( $whereLoop as $key => $value ){
+          if( is_array($value) ){
+            // do any of the keys container modifiers?
+            $invalidKeys = preg_grep('/^\$.*/', array_keys($value));
+            if( count($invalidKeys) > 0 ){
+              $valid = false;
+              break;
+            }
+
+            // if the value is an array, then unpack and use each key/value as wheres
+            foreach( $value as $k=>$v){
+              // if any of the values are arrays then do not use the standard count
+              if( is_array($v) ){
+                $valid = false;
+                break;
+              }
+
+              $query[$k] = $v;
+            }
+          } else {
+            // else just use the key and value
+            $query[$key] = $value;
+          }
+        }
+
+
+        if( $valid ){
+          return $this->collection->count($query);
+        }
+      }
+      
+      return parent::count($columns);
+    }
+
+    /**
      * Execute an aggregate function on the database.
      *
      * @param  string  $function
