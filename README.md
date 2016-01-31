@@ -80,7 +80,7 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 class User extends Eloquent {}
 ```
 
-If you are using hybrid relations, your MySQL classes should now extend the original Eloquent model class `Illuminate\Database\Eloquent\Model` instead of the removed `Jenssegers\Eloquent\Model`. Instead it should now use the `Jenssegers\Mongodb\Eloquent\HybridRelations` trait. This should make things more clear as there is only one single model class in this package.
+If you are using hybrid relations, your MySQL classes should now extend the original Eloquent model class `Illuminate\Database\Eloquent\Model` instead of the removed `Jenssegers\Eloquent\Model`. Instead use the new `Jenssegers\Mongodb\Eloquent\HybridRelations` trait. This should make things more clear as there is only one single model class in this package.
 
 ```php
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
