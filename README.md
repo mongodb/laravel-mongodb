@@ -68,21 +68,31 @@ $capsule->getDatabaseManager()->extend('mongodb', function($config)
 Upgrading
 ---------
 
-### Upgrading 2.2.x to 3.0.x
+### Upgrading from version 2 to 3
 
-In this new major release which supports the new mongodb PHP extension, we also moved the location of the Model class from:
+In this new major release which supports the new mongodb PHP extension, we also moved the location of the Model class and replaced the MySQL model class with a trait.
 
-```
-Jenssegers\Mongodb\Model
-```
+Please change all `Jenssegers\Mongodb\Model` references to `Jenssegers\Mongodb\Eloquent\Model` either at the top of your model files, or your registered alias.
 
-To:
+```php
+use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
-```
-Jenssegers\Mongodb\Eloquent\Model
+class User extends Eloquent {}
 ```
 
-So please use the new namespace at the top of your model files, or in your alias.
+If you are using hybrid relations, your MySQL classes should now extend the original Eloquent model class `Illuminate\Database\Eloquent\Model` instead of the removed `Jenssegers\Eloquent\Model`. Instead it should now use the `Jenssegers\Mongodb\Eloquent\HybridRelations` trait. This should make things more clear as there is only one single model class in this package.
+
+```php
+use Jenssegers\Mongodb\Eloquent\HybridRelations;
+
+class User extends Eloquent {
+
+    use HybridRelations;
+
+    protected $connection = 'mysql';
+
+}
+```
 
 Configuration
 -------------
