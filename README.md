@@ -22,19 +22,22 @@ Installation
 
 Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongodb.installation.php.php
 
-For Laravel 5, install the latest stable version using composer:
+**WARNING**: The old mongo PHP driver is not supported anymore in versions >= 3.0.
+
+Installation using composer:
 
 ```
 composer require jenssegers/mongodb
 ```
 
-### Version Compatibility
+### Laravel version Compatibility
 
  Laravel  | Package
 :---------|:----------
  4.2.x    | 2.0.x
  5.0.x    | 2.1.x
- 5.1.x    | 2.2.x
+ 5.1.x    | 2.2.x or 3.0.x
+ 5.2.x    | 2.2.x or 3.0.x
 
 And add the service provider in `config/app.php`:
 
@@ -73,31 +76,31 @@ Change your default database connection name in `app/config/database.php`:
 And add a new mongodb connection:
 
 ```php
-'mongodb' => array(
+'mongodb' => [
     'driver'   => 'mongodb',
     'host'     => env('DB_HOST', 'localhost'),
     'port'     => env('DB_PORT', 27017),
     'database' => env('DB_DATABASE', ''),
     'username' => env('DB_USERNAME', ''),
     'password' => env('DB_PASSWORD', ''),
-    'options' => array(
+    'options' => [
         'db' => 'admin' // sets the authentication database required by mongo 3
-    )
-),
+    ]
+],
 ```
 
 You can connect to multiple servers or replica sets with the following configuration:
 
 ```php
-'mongodb' => array(
+'mongodb' => [
     'driver'   => 'mongodb',
-    'host'     => array('server1', 'server2'),
+    'host'     => ['server1', 'server2'],
     'port'     => env('DB_PORT', 27017),
     'database' => env('DB_DATABASE', ''),
     'username' => env('DB_USERNAME', ''),
     'password' => env('DB_PASSWORD', ''),
-    'options'  => array('replicaSet' => 'replicaSetName')
-),
+    'options'  => ['replicaSet' => 'replicaSetName']
+],
 ```
 
 Eloquent
@@ -135,7 +138,7 @@ class MyModel extends Eloquent {
 }
 ```
 
-Everything else works just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
+Everything else (should) work just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
 
 ### Optional: Alias
 
@@ -216,34 +219,6 @@ If you want to use this library with [Sentry](https://cartalyst.com/manual/sentr
 
 The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
 
-Troubleshooting
----------------
-
-#### Class 'MongoClient' not found in ...
-
-The `MongoClient` class is part of the MongoDB PHP driver. Usually, this error means that you forgot to install, or did not install this driver correctly. You can find installation instructions for this driver at http://php.net/manual/en/mongo.installation.php.
-
-To check if you have installed the driver correctly, run the following command:
-
-```sh
-$ php -i | grep 'Mongo'
-MongoDB Support => enabled
-```
-
-#### Argument 2 passed to Illuminate\Database\Query\Builder::__construct() must be an instance of Illuminate\Database\Query\Grammars\Grammar, null given
-
-To solve this, you will need to check two things. First check if your model is extending the correct class; this class should be `Jenssegers\Mongodb\Eloquent\Model`. Secondly, check if your model is using a MongoDB connection. If you did not change the default database connection in your database configuration file, you need to specify the MongoDB enabled connection. This is what your class should look like if you did not set up an alias and change the default database connection:
-
-```php
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
-
-class User extends Eloquent {
-
-    protected $connection = 'mongodb';
-
-}
-```
-
 Examples
 --------
 
@@ -282,7 +257,7 @@ $users = User::where('votes', '>', 100)->where('name', '=', 'John')->get();
 **Using Where In With An Array**
 
 ```php
-$users = User::whereIn('age', array(16, 18, 20))->get();
+$users = User::whereIn('age', [16, 18, 20])->get();
 ```
 
 When using `whereNotIn` objects will be returned if the field is non existent. Combine with `whereNotNull('age')` to leave out those documents.
@@ -290,7 +265,7 @@ When using `whereNotIn` objects will be returned if the field is non existent. C
 **Using Where Between**
 
 ```php
-$users = User::whereBetween('votes', array(1, 100))->get();
+$users = User::whereBetween('votes', [1, 100])->get();
 ```
 
 **Where null**
@@ -316,7 +291,7 @@ $users = User::skip(10)->take(5)->get();
 Distinct requires a field for which to return the distinct values.
 
 ```php
-$users = User::distinct()->get(array('name'));
+$users = User::distinct()->get(['name']);
 // or
 $users = User::distinct('name')->get();
 ```
@@ -343,7 +318,7 @@ $users = User::where('name', '=', 'John')->orWhere(function($query)
 Selected columns that are not grouped will be aggregated with the $last function.
 
 ```php
-$users = Users::groupBy('title')->get(array('title', 'name'));
+$users = Users::groupBy('title')->get(['title', 'name']);
 ```
 
 **Aggregation**
@@ -388,8 +363,8 @@ $count = User->increment('age');
 You may also specify additional columns to update:
 
 ```php
-User::where('age', '29')->increment('age', 1, array('group' => 'thirty something'));
-User::where('bmi', 30)->decrement('bmi', 1, array('category' => 'overweight'));
+User::where('age', '29')->increment('age', 1, ['group' => 'thirty something']);
+User::where('bmi', 30)->decrement('bmi', 1, ['category' => 'overweight']);
 ```
 
 **Soft deleting**
@@ -425,7 +400,7 @@ User::where('age', 'exists', true)->get();
 Matches arrays that contain all elements specified in the query.
 
 ```php
-User::where('roles', 'all', array('moderator', 'author'))->get();
+User::where('roles', 'all', ['moderator', 'author'])->get();
 ```
 
 **Size**
@@ -469,7 +444,7 @@ User::where('age', 'type', 2)->get();
 Performs a modulo operation on the value of a field and selects documents with a specified result.
 
 ```php
-User::where('age', 'mod', array(10, 0))->get();
+User::where('age', 'mod', [10, 0])->get();
 ```
 
 **Where**
@@ -491,7 +466,7 @@ $user->save();
 You may also use the create method to save a new model in a single line:
 
 ```php
-User::create(array('name' => 'John'));
+User::create(['name' => 'John']);
 ```
 
 **Updating a model**
@@ -534,7 +509,7 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class User extends Eloquent {
 
-    protected $dates = array('birthday');
+    protected $dates = ['birthday'];
 
 }
 ```
@@ -634,13 +609,13 @@ $user = $book->user;
 Inserting and updating embedded models works similar to the `hasMany` relation:
 
 ```php
-$book = new Book(array('title' => 'A Game of Thrones'));
+$book = new Book(['title' => 'A Game of Thrones']);
 
 $user = User::first();
 
 $book = $user->books()->save($book);
 // or
-$book = $user->books()->create(array('title' => 'A Game of Thrones'))
+$book = $user->books()->create(['title' => 'A Game of Thrones'])
 ```
 
 You can update embedded models using their `save` method (available since release 2.0.0):
@@ -723,13 +698,13 @@ $author = Book::first()->author;
 Inserting and updating embedded models works similar to the `hasOne` relation:
 
 ```php
-$author = new Author(array('name' => 'John Doe'));
+$author = new Author(['name' => 'John Doe']);
 
 $book = Books::first();
 
 $author = $book->author()->save($author);
 // or
-$author = $book->author()->create(array('name' => 'John Doe'));
+$author = $book->author()->create(['name' => 'John Doe']);
 ```
 
 You can update the embedded model using the `save` method (available since release 2.0.0):
@@ -744,7 +719,7 @@ $author->save();
 You can replace the embedded model with a new model like this:
 
 ```php
-$newAuthor = new Author(array('name' => 'Jane Doe'));
+$newAuthor = new Author(['name' => 'Jane Doe']);
 $book->author()->save($newAuthor);
 ```
 
@@ -793,7 +768,7 @@ class Message extends Eloquent {
 These expressions will be injected directly into the query.
 
 ```php
-User::whereRaw(array('age' => array('$gt' => 30, '$lt' => 40)))->get();
+User::whereRaw(['age' => array('$gt' => 30, '$lt' => 40]))->get();
 ```
 
 You can also perform raw expressions on the internal MongoCollection object. If this is executed on the model class, it will return a collection of models. If this is executed on the query builder, it will return the original response.
@@ -815,7 +790,7 @@ $cursor = DB::collection('users')->raw(function($collection)
 Optional: if you don't pass a closure to the raw method, the internal MongoCollection object will be accessible:
 
 ```php
-$model = User::raw()->findOne(array('age' => array('$lt' => 18)));
+$model = User::raw()->findOne(['age' => array('$lt' => 18]));
 ```
 
 The internal MongoClient and MongoDB objects can be accessed like this:
@@ -841,7 +816,7 @@ Update or insert a document. Additional options for the update method are passed
 
 ```php
 DB::collection('users')->where('name', 'John')
-                       ->update($data, array('upsert' => true));
+                       ->update($data, ['upsert' => true]);
 ```
 
 **Projections**
@@ -849,14 +824,14 @@ DB::collection('users')->where('name', 'John')
 You can apply projections to your queries using the `project` method.
 
 ```php
-DB::collection('items')->project(array('tags' => array('$slice' => 1)))->get();
+DB::collection('items')->project(['tags' => array('$slice' => 1]))->get();
 ```
 
 **Projections with Pagination**
 
 ```php
 $limit = 25;
-$projections = array('id', 'name');
+$projections = ['id', 'name'];
 DB::collection('items')->paginate($limit, $projections);
 ```
 
@@ -867,7 +842,7 @@ Add an items to an array.
 
 ```php
 DB::collection('users')->where('name', 'John')->push('items', 'boots');
-DB::collection('users')->where('name', 'John')->push('messages', array('from' => 'Jane Doe', 'message' => 'Hi John'));
+DB::collection('users')->where('name', 'John')->push('messages', ['from' => 'Jane Doe', 'message' => 'Hi John']);
 ```
 
 If you don't want duplicate items, set the third parameter to `true`:
@@ -882,7 +857,7 @@ Remove an item from an array.
 
 ```php
 DB::collection('users')->where('name', 'John')->pull('items', 'boots');
-DB::collection('users')->where('name', 'John')->pull('messages', array('from' => 'Jane Doe', 'message' => 'Hi John'));
+DB::collection('users')->where('name', 'John')->pull('messages', ['from' => 'Jane Doe', 'message' => 'Hi John']);
 ```
 
 **Unset**
