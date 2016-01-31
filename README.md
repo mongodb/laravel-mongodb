@@ -8,6 +8,7 @@ An Eloquent model and Query builder with support for MongoDB, using the original
 Table of contents
 -----------------
 * [Installation](#installation)
+* [Upgrading](#upgrading)
 * [Configuration](#configuration)
 * [Eloquent](#eloquent)
 * [Optional: Alias](#optional-alias)
@@ -63,6 +64,25 @@ $capsule->getDatabaseManager()->extend('mongodb', function($config)
     return new Jenssegers\Mongodb\Connection($config);
 });
 ```
+
+Upgrading
+---------
+
+### Upgrading 2.2.x to 3.0.x
+
+In this new major release which supports the new mongodb PHP extension, we also moved the location of the Model class from:
+
+```
+Jenssegers\Mongodb\Model
+```
+
+To:
+
+```
+Jenssegers\Mongodb\Eloquent\Model
+```
+
+So please use the new namespace at the top of your model files, or in your alias.
 
 Configuration
 -------------
