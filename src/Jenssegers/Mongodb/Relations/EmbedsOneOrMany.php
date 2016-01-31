@@ -8,7 +8,6 @@ use Jenssegers\Mongodb\Eloquent\Collection;
 
 abstract class EmbedsOneOrMany extends Relation
 {
-
     /**
      * The local key of the parent model.
      *

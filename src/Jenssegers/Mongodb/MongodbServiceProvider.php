@@ -5,7 +5,6 @@ use Jenssegers\Mongodb\Eloquent\Model;
 
 class MongodbServiceProvider extends ServiceProvider
 {
-
     /**
      * Bootstrap the application events.
      */

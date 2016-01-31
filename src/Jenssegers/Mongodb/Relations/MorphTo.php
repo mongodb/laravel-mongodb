@@ -4,7 +4,6 @@ use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
 
 class MorphTo extends EloquentMorphTo
 {
-
     /**
      * Set the base constraints on the relation query.
      */

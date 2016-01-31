@@ -5,7 +5,6 @@ use Illuminate\Database\Connection;
 
 class Blueprint extends \Illuminate\Database\Schema\Blueprint
 {
-
     /**
      * The MongoConnection object for this blueprint.
      *

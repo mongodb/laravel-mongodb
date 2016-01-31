@@ -5,7 +5,6 @@ use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 
 class Soft extends Eloquent
 {
-
     use SoftDeletes;
 
     protected $collection = 'soft';

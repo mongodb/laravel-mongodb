@@ -7,7 +7,6 @@ use MongoDB\Model\BSONDocument;
 
 class Builder extends EloquentBuilder
 {
-
     /**
      * The methods that should be returned from query builder.
      *

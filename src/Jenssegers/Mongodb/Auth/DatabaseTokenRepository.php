@@ -4,7 +4,6 @@ use MongoDB\BSON\UTCDateTime;
 
 class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRepository
 {
-
     /**
      * Build the record payload for the table.
      *

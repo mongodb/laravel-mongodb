@@ -5,7 +5,6 @@ use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
 class MysqlBook extends Eloquent
 {
-
     use HybridRelations;
 
     protected $connection = 'mysql';

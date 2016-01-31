@@ -13,7 +13,6 @@ use MongoDB\BSON\UTCDateTime;
 
 class Builder extends BaseBuilder
 {
-
     /**
      * The database collection.
      *

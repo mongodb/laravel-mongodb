@@ -5,7 +5,6 @@ use MongoDB\Collection as MongoCollection;
 
 class Collection
 {
-
     /**
      * The connection instance.
      *
@@ -40,7 +39,7 @@ class Collection
     {
         $start = microtime(true);
         $result = call_user_func_array([$this->collection, $method], $parameters);
-        
+
         if ($this->connection->logging()) {
             // Once we have run the query we will calculate the time that it took to run and
             // then log the query, bindings, and execution time so we will report them on

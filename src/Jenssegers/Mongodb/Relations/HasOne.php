@@ -5,7 +5,6 @@ use Illuminate\Database\Eloquent\Relations\HasOne as EloquentHasOne;
 
 class HasOne extends EloquentHasOne
 {
-
     /**
      * Add the constraints for a relationship count query.
      *
@@ -31,7 +30,9 @@ class HasOne extends EloquentHasOne
     public function getRelationQuery(Builder $query, Builder $parent, $columns = ['*'])
     {
         $query->select($columns);
+
         $key = $this->wrap($this->getQualifiedParentKeyName());
+
         return $query->where($this->getHasCompareKey(), 'exists', true);
     }
 

@@ -2,7 +2,6 @@
 
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
-
     /**
      * Set the base constraints on the relation query.
      */

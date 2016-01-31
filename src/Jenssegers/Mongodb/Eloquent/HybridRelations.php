@@ -11,7 +11,6 @@ use Jenssegers\Mongodb\Relations\MorphTo;
 
 trait HybridRelations
 {
-
     /**
      * Define a one-to-one relationship.
      *

@@ -4,7 +4,6 @@ use Jenssegers\Mongodb\Auth\DatabaseTokenRepository as DbRepository;
 
 class PasswordResetServiceProvider extends \Illuminate\Auth\Passwords\PasswordResetServiceProvider
 {
-
     /**
      * Register the token repository implementation.
      *

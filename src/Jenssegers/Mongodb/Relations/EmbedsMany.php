@@ -7,7 +7,6 @@ use MongoDB\BSON\ObjectID;
 
 class EmbedsMany extends EmbedsOneOrMany
 {
-
     /**
      * Get the results of the relationship.
      *

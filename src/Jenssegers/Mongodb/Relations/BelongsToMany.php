@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMan
 
 class BelongsToMany extends EloquentBelongsToMany
 {
-
     /**
      * Hydrate the pivot table relationship on the models.
      *

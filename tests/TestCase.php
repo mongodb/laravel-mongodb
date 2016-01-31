@@ -2,7 +2,6 @@
 
 class TestCase extends Orchestra\Testbench\TestCase
 {
-
     /**
      * Get package providers.
      *

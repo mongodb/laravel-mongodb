@@ -4,7 +4,6 @@ use MongoDB\Client;
 
 class Connection extends \Illuminate\Database\Connection
 {
-
     /**
      * The MongoDB database handler.
      *

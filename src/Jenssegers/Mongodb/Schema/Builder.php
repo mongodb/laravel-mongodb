@@ -5,7 +5,6 @@ use Jenssegers\Mongodb\Connection;
 
 class Builder extends \Illuminate\Database\Schema\Builder
 {
-
     /**
      * Create a new database Schema manager.
      *
@@ -39,7 +38,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         return true;
     }
- 
+
     /**
      * Determine if the given collection exists.
      *
@@ -58,7 +57,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
         return false;
     }
-    
+
     /**
      * Determine if the given collection exists.
      *
