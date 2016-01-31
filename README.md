@@ -68,7 +68,7 @@ $capsule->getDatabaseManager()->extend('mongodb', function($config)
 Upgrading
 ---------
 
-### Upgrading from version 2 to 3
+#### Upgrading from version 2 to 3
 
 In this new major release which supports the new mongodb PHP extension, we also moved the location of the Model class and replaced the MySQL model class with a trait.
 
