@@ -32,6 +32,24 @@ class Collection {
     }
 
     /**
+     * @param array $document
+     * @return array|bool
+     */
+    public function insert(array &$document = [])
+    {
+        return $this->collection->insert($document);
+    }
+
+    /**
+     * @param array $documents
+     * @return mixed
+     */
+    public function batchInsert(array &$documents = [])
+    {
+        return $this->collection->batchInsert($documents);
+    }
+
+    /**
      * Handle dynamic method calls.
      *
      * @param  string  $method
