@@ -10,7 +10,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Get the results of the relationship.
      *
-     * @return \Jenssegers\Mongodb\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getResults()
     {
@@ -319,8 +319,7 @@ class EmbedsMany extends EmbedsOneOrMany
      */
     public function __call($method, $parameters)
     {
-        // Collection methods
-        if (method_exists('Jenssegers\Mongodb\Eloquent\Collection', $method)) {
+        if (method_exists('Illuminate\Database\Eloquent\Collection', $method)) {
             return call_user_func_array([$this->getResults(), $method], $parameters);
         }
 

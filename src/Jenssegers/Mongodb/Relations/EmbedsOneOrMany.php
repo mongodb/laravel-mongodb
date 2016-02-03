@@ -1,10 +1,9 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection as BaseCollection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Jenssegers\Mongodb\Eloquent\Collection;
 
 abstract class EmbedsOneOrMany extends Relation
 {
@@ -101,7 +100,7 @@ abstract class EmbedsOneOrMany extends Relation
      * @param  string  $relation
      * @return array
      */
-    public function match(array $models, BaseCollection $results, $relation)
+    public function match(array $models, Collection $results, $relation)
     {
         foreach ($models as $model) {
             $results = $model->$relation()->getResults();
@@ -117,7 +116,7 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * Shorthand to get the results of the relationship.
      *
-     * @return \Jenssegers\Mongodb\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function get()
     {

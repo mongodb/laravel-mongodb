@@ -94,6 +94,8 @@ class User extends Eloquent {
 }
 ```
 
+Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rather than a custom Collection class. If you were using one of the special methods that were available, convert them to Collection operations.
+
 Configuration
 -------------
 
@@ -558,6 +560,8 @@ Supported relations are:
  - hasMany
  - belongsTo
  - belongsToMany
+ - embedsOne
+ - embedsMany
 
 Example:
 
@@ -610,6 +614,8 @@ Other relations are not yet supported, but may be added in the future. Read more
 ### EmbedsMany Relations
 
 If you want to embed models, rather than referencing them, you can use the `embedsMany` relation. This relation is similar to the `hasMany` relation, but embeds the models inside the parent object.
+
+**REMEMBER**: these relations return Eloquent collections, they don't return query builder objects!
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;

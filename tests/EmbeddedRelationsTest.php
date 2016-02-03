@@ -424,70 +424,19 @@ class EmbeddedRelationsTest extends TestCase
 
         $this->assertEquals(['Paris', 'Bruges', 'Brussels', 'Ghent'], $user->addresses()->lists('city')->all());
         $this->assertEquals(['Bruges', 'Brussels', 'Ghent', 'Paris'], $user->addresses()->sortBy('city')->lists('city')->all());
-        $this->assertEquals(['Bruges', 'Brussels', 'Ghent', 'Paris'], $user->addresses()->orderBy('city')->lists('city')->all());
-        $this->assertEquals(['Paris', 'Ghent', 'Brussels', 'Bruges'], $user->addresses()->orderBy('city', 'desc')->lists('city')->all());
-
         $this->assertEquals([], $user->addresses()->where('city', 'New York')->lists('city')->all());
         $this->assertEquals(['Bruges', 'Brussels', 'Ghent'], $user->addresses()->where('country', 'Belgium')->lists('city')->all());
-        $this->assertEquals(['Ghent', 'Brussels', 'Bruges'], $user->addresses()->where('country', 'Belgium')->orderBy('city', 'desc')->lists('city')->all());
+        $this->assertEquals(['Bruges', 'Brussels', 'Ghent'], $user->addresses()->where('country', 'Belgium')->sortBy('city')->lists('city')->all());
 
-        $results = $user->addresses->get(0);
+        $results = $user->addresses->first();
         $this->assertInstanceOf('Address', $results);
 
-        $results = $user->addresses()->where('country', 'Belgium')->get();
-        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Collection', $results);
+        $results = $user->addresses()->where('country', 'Belgium');
+        $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $results);
         $this->assertEquals(3, $results->count());
 
-        $results = $user->addresses()->where('country', '!=', 'Belgium')->get();
-        $this->assertEquals(1, $results->count());
-
-        $results = $user->addresses()->where('visited', '>', 4)->get();
+        $results = $user->addresses()->whereIn('visited', [7, 13]);
         $this->assertEquals(2, $results->count());
-
-        $results = $user->addresses()->where('visited', '<', 7)->get();
-        $this->assertEquals(2, $results->count());
-
-        $results = $user->addresses()->where('visited', '<=', 7)->get();
-        $this->assertEquals(3, $results->count());
-
-        $results = $user->addresses()->where('visited', '>=', 7)->get();
-        $this->assertEquals(2, $results->count());
-
-        $results = $user->addresses()->where('visited', 'between', [4, 7])->get();
-        $this->assertEquals(2, $results->count());
-
-        $results = $user->addresses()->whereBetween('visited', [4, 7])->get();
-        $this->assertEquals(2, $results->count());
-
-        $results = $user->addresses()->whereNotBetween('visited', [4, 7])->get();
-        $this->assertEquals(2, $results->count());
-
-        $results = $user->addresses()->whereIn('visited', [7, 13])->get();
-        $this->assertEquals(2, $results->count());
-
-        $results = $user->addresses()->whereNotIn('visited', [7])->get();
-        $this->assertEquals(3, $results->count());
-
-        $results = $user->addresses()->whereNull('something')->get();
-        $this->assertEquals(4, $results->count());
-
-        $results = $user->addresses()->whereNotNull('visited')->get();
-        $this->assertEquals(4, $results->count());
-
-        $results = $user->addresses()->offset(1)->get();
-        $this->assertEquals(3, $results->count());
-
-        $results = $user->addresses()->skip(1)->get();
-        $this->assertEquals(3, $results->count());
-
-        $results = $user->addresses()->limit(2)->get();
-        $this->assertEquals(2, $results->count());
-
-        $result = $user->addresses()->latest()->first();
-        $this->assertEquals('Ghent', $result->city);
-
-        $result = $user->addresses()->oldest()->first();
-        $this->assertEquals('Bruges', $result->city);
     }
 
     public function testEmbedsOne()
