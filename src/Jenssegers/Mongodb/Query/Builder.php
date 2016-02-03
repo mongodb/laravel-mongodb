@@ -930,7 +930,9 @@ class Builder extends BaseBuilder {
         if ($operator == 'like')
         {
             $operator = '=';
-            $regex = str_replace('%', '', $value);
+
+            // Convert to regular expression.
+            $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
 
             // Convert like to regular expression.
             if ( ! starts_with($value, '%')) $regex = '^' . $regex;
