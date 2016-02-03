@@ -96,6 +96,10 @@ class User extends Eloquent {
 
 Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rather than a custom Collection class. If you were using one of the special methods that were available, convert them to Collection operations.
 
+```php
+$books = $user->books()->sortBy('title');
+```
+
 Configuration
 -------------
 
