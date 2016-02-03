@@ -3,7 +3,8 @@
 use \Illuminate\Support\Facades\Schema;
 use Jenssegers\Eloquent\Model as Eloquent;
 
-class MysqlRole extends Eloquent {
+class MysqlRole extends Eloquent
+{
 
     protected $connection = 'mysql';
     protected $table = 'roles';
@@ -27,15 +28,12 @@ class MysqlRole extends Eloquent {
     {
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('roles'))
-        {
-            Schema::connection('mysql')->create('roles', function ($table)
-            {
+        if (!$schema->hasTable('roles')) {
+            Schema::connection('mysql')->create('roles', function ($table) {
                 $table->string('type');
                 $table->string('user_id');
                 $table->timestamps();
             });
         }
     }
-
 }

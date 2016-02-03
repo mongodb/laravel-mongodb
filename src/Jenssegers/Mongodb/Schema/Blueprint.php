@@ -3,8 +3,8 @@
 use Closure;
 use Illuminate\Database\Connection;
 
-class Blueprint extends \Illuminate\Database\Schema\Blueprint {
-
+class Blueprint extends \Illuminate\Database\Schema\Blueprint
+{
     /**
      * The MongoConnection object for this blueprint.
      *
@@ -51,13 +51,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
         $columns = $this->fluent($columns);
 
         // Columns are passed as a default array.
-        if (is_array($columns) && is_int(key($columns)))
-        {
+        if (is_array($columns) && is_int(key($columns))) {
             // Transform the columns to the required array format.
             $transform = [];
 
-            foreach ($columns as $column)
-            {
+            foreach ($columns as $column) {
                 $transform[$column] = 1;
             }
 
@@ -92,13 +90,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
         $columns = $this->fluent($columns);
 
         // Columns are passed as a default array.
-        if (is_array($columns) && is_int(key($columns)))
-        {
+        if (is_array($columns) && is_int(key($columns))) {
             // Transform the columns to the required array format.
             $transform = [];
 
-            foreach ($columns as $column)
-            {
+            foreach ($columns as $column) {
                 $transform[$column] = 1;
             }
 
@@ -226,16 +222,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
      */
     protected function fluent($columns = null)
     {
-        if (is_null($columns))
-        {
+        if (is_null($columns)) {
             return $this->columns;
-        }
-        elseif (is_string($columns))
-        {
+        } elseif (is_string($columns)) {
             return $this->columns = [$columns];
-        }
-        else
-        {
+        } else {
             return $this->columns = $columns;
         }
     }
@@ -250,5 +241,4 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint {
         // Dummy.
         return $this;
     }
-
 }

@@ -1,6 +1,7 @@
 <?php
 
-class QueryTest extends TestCase {
+class QueryTest extends TestCase
+{
 
     protected static $started = false;
 
@@ -214,8 +215,7 @@ class QueryTest extends TestCase {
 
     public function testSubquery()
     {
-        $users = User::where('title', 'admin')->orWhere(function ($query)
-            {
+        $users = User::where('title', 'admin')->orWhere(function ($query) {
                 $query->where('name', 'Tommy Toe')
                       ->orWhere('name', 'Error');
             })
@@ -223,8 +223,7 @@ class QueryTest extends TestCase {
 
         $this->assertEquals(5, count($users));
 
-        $users = User::where('title', 'user')->where(function ($query)
-            {
+        $users = User::where('title', 'user')->where(function ($query) {
                 $query->where('age', 35)
                       ->orWhere('name', 'like', '%harry%');
             })
@@ -232,8 +231,7 @@ class QueryTest extends TestCase {
 
         $this->assertEquals(2, count($users));
 
-        $users = User::where('age', 35)->orWhere(function ($query)
-            {
+        $users = User::where('age', 35)->orWhere(function ($query) {
                 $query->where('title', 'admin')
                       ->orWhere('name', 'Error');
             })
@@ -243,8 +241,7 @@ class QueryTest extends TestCase {
 
         $users = User::whereNull('deleted_at')
                 ->where('title', 'admin')
-                ->where(function ($query)
-                {
+                ->where(function ($query) {
                     $query->where('age', '>', 15)
                           ->orWhere('name', 'Harry Hoe');
                 })
@@ -253,11 +250,9 @@ class QueryTest extends TestCase {
         $this->assertEquals(3, $users->count());
 
         $users = User::whereNull('deleted_at')
-                ->where(function ($query)
-                {
+                ->where(function ($query) {
                     $query->where('name', 'Harry Hoe')
-                          ->orWhere(function ($query)
-                          {
+                          ->orWhere(function ($query) {
                               $query->where('age', '>', 15)
                                     ->where('title', '<>', 'admin');
                           });
@@ -283,23 +278,19 @@ class QueryTest extends TestCase {
 
     public function testMultipleOr()
     {
-        $users = User::where(function ($query)
-        {
+        $users = User::where(function ($query) {
             $query->where('age', 35)->orWhere('age', 33);
         })
-        ->where(function ($query)
-        {
+        ->where(function ($query) {
             $query->where('name', 'John Doe')->orWhere('name', 'Jane Doe');
         })->get();
 
         $this->assertEquals(2, count($users));
 
-        $users = User::where(function ($query)
-        {
+        $users = User::where(function ($query) {
             $query->orWhere('age', 35)->orWhere('age', 33);
         })
-        ->where(function ($query)
-        {
+        ->where(function ($query) {
             $query->orWhere('name', 'John Doe')->orWhere('name', 'Jane Doe');
         })->get();
 
@@ -319,5 +310,4 @@ class QueryTest extends TestCase {
         $this->assertEquals(9, $results->total());
         $this->assertEquals(1, $results->currentPage());
     }
-
 }

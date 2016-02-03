@@ -5,8 +5,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
-abstract class EmbedsOneOrMany extends Relation {
-
+abstract class EmbedsOneOrMany extends Relation
+{
     /**
      * The local key of the parent model.
      *
@@ -48,8 +48,7 @@ abstract class EmbedsOneOrMany extends Relation {
         $this->relation = $relation;
 
          // If this is a nested relation, we need to get the parent query instead.
-        if ($parentRelation = $this->getParentRelation())
-        {
+        if ($parentRelation = $this->getParentRelation()) {
             $this->query = $parentRelation->getQuery();
         }
 
@@ -61,8 +60,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function addConstraints()
     {
-        if (static::$constraints)
-        {
+        if (static::$constraints) {
             $this->query->where($this->getQualifiedParentKeyName(), '=', $this->getParentKey());
         }
     }
@@ -85,8 +83,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function initRelation(array $models, $relation)
     {
-        foreach ($models as $model)
-        {
+        foreach ($models as $model) {
             $model->setParentRelation($this);
 
             $model->setRelation($relation, $this->related->newCollection());
@@ -105,8 +102,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function match(array $models, Collection $results, $relation)
     {
-        foreach ($models as $model)
-        {
+        foreach ($models as $model) {
             $results = $model->$relation()->getResults();
 
             $model->setParentRelation($this);
@@ -195,8 +191,7 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         $instances = [];
 
-        foreach ($records as $record)
-        {
+        foreach ($records as $record) {
             $instances[] = $this->create($record);
         }
 
@@ -211,16 +206,18 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getIdsArrayFrom($ids)
     {
-        if ($ids instanceof \Illuminate\Support\Collection)
-        {
+        if ($ids instanceof \Illuminate\Support\Collection) {
             $ids = $ids->all();
         }
 
-        if ( ! is_array($ids)) $ids = [$ids];
+        if (! is_array($ids)) {
+            $ids = [$ids];
+        }
 
-        foreach ($ids as &$id)
-        {
-            if ($id instanceof Model) $id = $id->getKey();
+        foreach ($ids as &$id) {
+            if ($id instanceof Model) {
+                $id = $id->getKey();
+            }
         }
 
         return $ids;
@@ -269,8 +266,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getForeignKeyValue($id)
     {
-        if ($id instanceof Model)
-        {
+        if ($id instanceof Model) {
             $id = $id->getKey();
         }
 
@@ -288,13 +284,11 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         $models = [];
 
-        foreach ($records as $attributes)
-        {
+        foreach ($records as $attributes) {
             $models[] = $this->toModel($attributes);
         }
 
-        if (count($models) > 0)
-        {
+        if (count($models) > 0) {
             $models = $this->eagerLoadRelations($models);
         }
 
@@ -309,7 +303,9 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function toModel($attributes = [])
     {
-        if (is_null($attributes)) return;
+        if (is_null($attributes)) {
+            return;
+        }
 
         $model = $this->related->newFromBuilder((array) $attributes);
 
@@ -375,8 +371,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getPathHierarchy($glue = '.')
     {
-        if ($parentRelation = $this->getParentRelation())
-        {
+        if ($parentRelation = $this->getParentRelation()) {
             return $parentRelation->getPathHierarchy($glue) . $glue . $this->localKey;
         }
 
@@ -390,8 +385,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     public function getQualifiedParentKeyName()
     {
-        if ($parentRelation = $this->getParentRelation())
-        {
+        if ($parentRelation = $this->getParentRelation()) {
             return $parentRelation->getPathHierarchy() . '.' . $this->parent->getKeyName();
         }
 
@@ -407,5 +401,4 @@ abstract class EmbedsOneOrMany extends Relation {
     {
         return $this->parent->getKey();
     }
-
 }

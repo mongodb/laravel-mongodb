@@ -3,7 +3,8 @@
 use \Illuminate\Support\Facades\Schema;
 use Jenssegers\Eloquent\Model as Eloquent;
 
-class MysqlUser extends Eloquent {
+class MysqlUser extends Eloquent
+{
 
     protected $connection = 'mysql';
     protected $table = 'users';
@@ -27,15 +28,12 @@ class MysqlUser extends Eloquent {
     {
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('users'))
-        {
-            Schema::connection('mysql')->create('users', function ($table)
-            {
+        if (!$schema->hasTable('users')) {
+            Schema::connection('mysql')->create('users', function ($table) {
                 $table->increments('id');
                 $table->string('name');
                 $table->timestamps();
             });
         }
     }
-
 }

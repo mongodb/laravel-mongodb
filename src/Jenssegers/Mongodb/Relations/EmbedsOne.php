@@ -3,8 +3,8 @@
 use Illuminate\Database\Eloquent\Model;
 use MongoId;
 
-class EmbedsOne extends EmbedsOneOrMany {
-
+class EmbedsOne extends EmbedsOneOrMany
+{
     /**
      * Get the results of the relationship.
      *
@@ -24,14 +24,12 @@ class EmbedsOne extends EmbedsOneOrMany {
     public function performInsert(Model $model)
     {
         // Generate a new key if needed.
-        if ($model->getKeyName() == '_id' and ! $model->getKey())
-        {
+        if ($model->getKeyName() == '_id' and ! $model->getKey()) {
             $model->setAttribute('_id', new MongoId);
         }
 
         // For deeply nested documents, let the parent handle the changes.
-        if ($this->isNested())
-        {
+        if ($this->isNested()) {
             $this->associate($model);
 
             return $this->parent->save();
@@ -40,7 +38,9 @@ class EmbedsOne extends EmbedsOneOrMany {
         $result = $this->getBaseQuery()->update([$this->localKey => $model->getAttributes()]);
 
         // Attach the model to its parent.
-        if ($result) $this->associate($model);
+        if ($result) {
+            $this->associate($model);
+        }
 
         return $result ? $model : false;
     }
@@ -53,8 +53,7 @@ class EmbedsOne extends EmbedsOneOrMany {
      */
     public function performUpdate(Model $model)
     {
-        if ($this->isNested())
-        {
+        if ($this->isNested()) {
             $this->associate($model);
 
             return $this->parent->save();
@@ -66,7 +65,9 @@ class EmbedsOne extends EmbedsOneOrMany {
         $result = $this->getBaseQuery()->update($values);
 
         // Attach the model to its parent.
-        if ($result) $this->associate($model);
+        if ($result) {
+            $this->associate($model);
+        }
 
         return $result ? $model : false;
     }
@@ -80,8 +81,7 @@ class EmbedsOne extends EmbedsOneOrMany {
     public function performDelete(Model $model)
     {
         // For deeply nested documents, let the parent handle the changes.
-        if ($this->isNested())
-        {
+        if ($this->isNested()) {
             $this->dissociate($model);
 
             return $this->parent->save();
@@ -91,7 +91,9 @@ class EmbedsOne extends EmbedsOneOrMany {
         $result = $this->getBaseQuery()->update([$this->localKey => null]);
 
         // Detach the model from its parent.
-        if ($result) $this->dissociate();
+        if ($result) {
+            $this->dissociate();
+        }
 
         return $result;
     }
@@ -128,5 +130,4 @@ class EmbedsOne extends EmbedsOneOrMany {
 
         return $this->performDelete($model);
     }
-
 }

@@ -3,8 +3,8 @@
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasOne as EloquentHasOne;
 
-class HasOne extends EloquentHasOne {
-
+class HasOne extends EloquentHasOne
+{
     /**
      * Add the constraints for a relationship query.
      *
@@ -45,5 +45,4 @@ class HasOne extends EloquentHasOne {
     {
         return $this->getForeignKey();
     }
-
 }
