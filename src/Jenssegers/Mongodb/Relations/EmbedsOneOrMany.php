@@ -1,10 +1,9 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection as BaseCollection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Jenssegers\Mongodb\Eloquent\Collection;
 
 abstract class EmbedsOneOrMany extends Relation {
 
@@ -104,7 +103,7 @@ abstract class EmbedsOneOrMany extends Relation {
      * @param  string  $relation
      * @return array
      */
-    public function match(array $models, BaseCollection $results, $relation)
+    public function match(array $models, Collection $results, $relation)
     {
         foreach ($models as $model)
         {
@@ -121,7 +120,7 @@ abstract class EmbedsOneOrMany extends Relation {
     /**
      * Shorthand to get the results of the relationship.
      *
-     * @return \Jenssegers\Mongodb\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     public function get()
     {
@@ -212,7 +211,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function getIdsArrayFrom($ids)
     {
-        if ($ids instanceof Collection)
+        if ($ids instanceof \Illuminate\Support\Collection)
         {
             $ids = $ids->all();
         }
@@ -237,7 +236,9 @@ abstract class EmbedsOneOrMany extends Relation {
         // Get raw attributes to skip relations and accessors.
         $attributes = $this->parent->getAttributes();
 
-        return isset($attributes[$this->localKey]) ? $attributes[$this->localKey] : null;
+        $embedded = isset($attributes[$this->localKey]) ? (array) $attributes[$this->localKey] : [];
+
+        return $embedded;
     }
 
     /**
@@ -248,6 +249,7 @@ abstract class EmbedsOneOrMany extends Relation {
      */
     protected function setEmbedded($records)
     {
+        // Assign models to parent attributes array.
         $attributes = $this->parent->getAttributes();
 
         $attributes[$this->localKey] = $records;
@@ -256,7 +258,7 @@ abstract class EmbedsOneOrMany extends Relation {
         $this->parent->setRawAttributes($attributes);
 
         // Set the relation on the parent.
-        return $this->parent->setRelation($this->relation, $this->getResults());
+        return $this->parent->setRelation($this->relation, $records === null ? null : $this->getResults());
     }
 
     /**
@@ -280,7 +282,7 @@ abstract class EmbedsOneOrMany extends Relation {
      * Convert an array of records to a Collection.
      *
      * @param  array  $records
-     * @return \Jenssegers\Mongodb\Eloquent\Collection
+     * @return \Illuminate\Database\Eloquent\Collection
      */
     protected function toCollection(array $records = [])
     {

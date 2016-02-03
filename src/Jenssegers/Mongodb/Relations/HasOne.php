@@ -6,6 +6,23 @@ use Illuminate\Database\Eloquent\Relations\HasOne as EloquentHasOne;
 class HasOne extends EloquentHasOne {
 
     /**
+     * Add the constraints for a relationship query.
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @param  \Illuminate\Database\Eloquent\Builder  $parent
+     * @param  array|mixed $columns
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function getRelationQuery(Builder $query, Builder $parent, $columns = ['*'])
+    {
+        $query->select($columns);
+
+        $key = $this->wrap($this->getQualifiedParentKeyName());
+
+        return $query->where($this->getHasCompareKey(), 'exists', true);
+    }
+
+    /**
      * Add the constraints for a relationship count query.
      *
      * @param  \Illuminate\Database\Eloquent\Builder  $query

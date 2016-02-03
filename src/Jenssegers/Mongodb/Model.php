@@ -323,6 +323,16 @@ abstract class Model extends BaseModel {
     }
 
     /**
+     * Get the casts array.
+     *
+     * @return array
+     */
+    public function getCasts()
+    {
+        return $this->casts;
+    }
+
+    /**
      * Convert the model's attributes to an array.
      *
      * @return array
@@ -372,6 +382,7 @@ abstract class Model extends BaseModel {
         {
             $current = $current instanceof MongoDate ? $this->asDateTime($current) : $current;
             $original = $original instanceof MongoDate ? $this->asDateTime($original) : $original;
+
             return $current == $original;
         }
 
