@@ -7,14 +7,14 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * The MongoDB database handler.
      *
-     * @var MongoDB
+     * @var \MongoDB
      */
     protected $db;
 
     /**
      * The MongoDB connection handler.
      *
-     * @var MongoDB
+     * @var \MongoDB
      */
     protected $connection;
 
@@ -82,7 +82,7 @@ class Connection extends \Illuminate\Database\Connection
      * Get a MongoDB collection.
      *
      * @param  string   $name
-     * @return MongoDB
+     * @return \MongoDB
      */
     public function getCollection($name)
     {
@@ -102,7 +102,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Get the MongoDB database object.
      *
-     * @return  MongoDB
+     * @return  \MongoDB
      */
     public function getMongoDB()
     {
@@ -112,7 +112,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * return MongoDB object.
      *
-     * @return MongoDB
+     * @return \MongoDB
      */
     public function getMongoClient()
     {
@@ -125,7 +125,7 @@ class Connection extends \Illuminate\Database\Connection
      * @param  string  $dsn
      * @param  array   $config
      * @param  array   $options
-     * @return MongoDB
+     * @return \MongoDB
      */
     protected function createConnection($dsn, array $config, array $options)
     {
