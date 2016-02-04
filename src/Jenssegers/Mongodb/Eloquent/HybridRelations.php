@@ -3,7 +3,7 @@
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
-use Jenssegers\Mongodb\Model;
+use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\HasMany;
@@ -23,7 +23,7 @@ trait HybridRelations
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Model')) {
+        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
 
@@ -49,7 +49,7 @@ trait HybridRelations
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Model')) {
+        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
@@ -75,7 +75,7 @@ trait HybridRelations
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Model')) {
+        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
 
@@ -101,7 +101,7 @@ trait HybridRelations
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Model')) {
+        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
@@ -140,7 +140,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Model')) {
+        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
             return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
         }
 
@@ -227,7 +227,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Model')) {
+        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
             return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $relation);
         }
 

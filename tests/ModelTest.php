@@ -14,7 +14,7 @@ class ModelTest extends TestCase
     public function testNewModel()
     {
         $user = new User;
-        $this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
+        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $user);
         $this->assertInstanceOf('Jenssegers\Mongodb\Connection', $user->getConnection());
         $this->assertEquals(false, $user->exists);
         $this->assertEquals('users', $user->getTable());
@@ -171,7 +171,7 @@ class ModelTest extends TestCase
 
         $check = User::find($user->_id);
 
-        $this->assertInstanceOf('Jenssegers\Mongodb\Model', $check);
+        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $check);
         $this->assertEquals(true, $check->exists);
         $this->assertEquals($user->_id, $check->_id);
 
@@ -189,7 +189,7 @@ class ModelTest extends TestCase
         $users = User::get();
         $this->assertEquals(2, count($users));
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
-        $this->assertInstanceOf('Jenssegers\Mongodb\Model', $users[0]);
+        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $users[0]);
     }
 
     public function testFirst()
@@ -200,7 +200,7 @@ class ModelTest extends TestCase
         ]);
 
         $user = User::first();
-        $this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
+        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $user);
         $this->assertEquals('John Doe', $user->name);
     }
 
@@ -227,7 +227,7 @@ class ModelTest extends TestCase
     {
         $user = User::create(['name' => 'Jane Poe']);
 
-        $this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
+        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $user);
         $this->assertEquals(true, $user->exists);
         $this->assertEquals('Jane Poe', $user->name);
 
@@ -455,12 +455,12 @@ class ModelTest extends TestCase
             return $collection->find(['age' => 35]);
         });
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
-        $this->assertInstanceOf('Jenssegers\Mongodb\Model', $users[0]);
+        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $users[0]);
 
         $user = User::raw(function ($collection) {
             return $collection->findOne(['age' => 35]);
         });
-        $this->assertInstanceOf('Jenssegers\Mongodb\Model', $user);
+        $this->assertInstanceOf('Jenssegers\Mongodb\Eloquent\Model', $user);
 
         $count = User::raw(function ($collection) {
             return $collection->count();
