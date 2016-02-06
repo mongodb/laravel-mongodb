@@ -429,6 +429,14 @@ class QueryBuilderTest extends TestCase
                                 );
 
         $this->assertEquals(1, DB::collection('items')->count());
+
+        Item::where('name', 'spoon')
+             ->update(
+                ['amount' => 1],
+                ['upsert' => true]
+            );
+
+        $this->assertEquals(2, DB::collection('items')->count());
     }
 
     public function testUnset()
