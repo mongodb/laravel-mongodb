@@ -20,9 +20,10 @@ class Builder extends EloquentBuilder
      * Update a record in the database.
      *
      * @param  array  $values
+     * @param  array  $options
      * @return int
      */
-    public function update(array $values)
+    public function update(array $values, array $options = [])
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
@@ -32,7 +33,7 @@ class Builder extends EloquentBuilder
             return 1;
         }
 
-        return parent::update($values);
+        return $this->query->update($this->addUpdatedAtColumn($values), $options);
     }
 
     /**
