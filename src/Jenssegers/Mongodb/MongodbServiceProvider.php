@@ -25,5 +25,6 @@ class MongodbServiceProvider extends ServiceProvider
                 return new Connection($config);
             });
         });
+
     }
 }
