@@ -3,8 +3,8 @@
 use Closure;
 use Jenssegers\Mongodb\Connection;
 
-class Builder extends \Illuminate\Database\Schema\Builder {
-
+class Builder extends \Illuminate\Database\Schema\Builder
+{
     /**
      * Create a new database Schema manager.
      *
@@ -73,8 +73,7 @@ class Builder extends \Illuminate\Database\Schema\Builder {
     {
         $blueprint = $this->createBlueprint($collection);
 
-        if ($callback)
-        {
+        if ($callback) {
             $callback($blueprint);
         }
     }
@@ -104,8 +103,7 @@ class Builder extends \Illuminate\Database\Schema\Builder {
 
         $blueprint->create();
 
-        if ($callback)
-        {
+        if ($callback) {
             $callback($blueprint);
         }
     }
@@ -133,5 +131,4 @@ class Builder extends \Illuminate\Database\Schema\Builder {
     {
         return new Blueprint($this->connection, $collection);
     }
-
 }

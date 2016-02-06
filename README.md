@@ -117,7 +117,6 @@ Note that we did not tell Eloquent which collection to use for the `User` model.
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class User extends Eloquent {
-
     protected $collection = 'users_collection';
 
 }
@@ -129,7 +128,6 @@ class User extends Eloquent {
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class MyModel extends Eloquent {
-
     protected $connection = 'mongodb';
 
 }
@@ -238,7 +236,6 @@ To solve this, you will need to check two things. First check if your model is e
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class User extends Eloquent {
-
     protected $connection = 'mongodb';
 
 }
@@ -533,7 +530,6 @@ Example:
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class User extends Eloquent {
-
     protected $dates = array('birthday');
 
 }
@@ -758,7 +754,6 @@ Example SQL-based User model:
 use Jenssegers\Eloquent\Model as Eloquent;
 
 class User extends Eloquent {
-
     protected $connection = 'mysql';
 
     public function messages()
@@ -775,7 +770,6 @@ And the Mongodb-based Message model:
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class Message extends Eloquent {
-
     protected $connection = 'mongodb';
 
     public function user()

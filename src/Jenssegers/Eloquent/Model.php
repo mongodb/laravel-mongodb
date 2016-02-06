@@ -2,8 +2,8 @@
 
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
-abstract class Model extends \Illuminate\Database\Eloquent\Model {
+abstract class Model extends \Illuminate\Database\Eloquent\Model
+{
 
     use HybridRelations;
-
 }

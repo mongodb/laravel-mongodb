@@ -2,6 +2,6 @@
 
 use Jenssegers\Mongodb\Eloquent\Model as BaseModel;
 
-abstract class Model extends BaseModel {
-
+abstract class Model extends BaseModel
+{
 }

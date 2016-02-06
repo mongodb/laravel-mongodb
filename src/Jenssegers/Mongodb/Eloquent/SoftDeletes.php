@@ -1,7 +1,7 @@
 <?php namespace Jenssegers\Mongodb\Eloquent;
 
-trait SoftDeletes {
-
+trait SoftDeletes
+{
     use \Illuminate\Database\Eloquent\SoftDeletes;
 
     /**
@@ -13,5 +13,4 @@ trait SoftDeletes {
     {
         return $this->getDeletedAtColumn();
     }
-
 }

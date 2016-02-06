@@ -3,8 +3,8 @@
 use \Illuminate\Support\Facades\Schema;
 use Jenssegers\Eloquent\Model as Eloquent;
 
-class MysqlBook extends Eloquent {
-
+class MysqlBook extends Eloquent
+{
     protected $connection = 'mysql';
     protected $table = 'books';
     protected static $unguarded = true;
@@ -23,15 +23,12 @@ class MysqlBook extends Eloquent {
     {
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('books'))
-        {
-            Schema::connection('mysql')->create('books', function ($table)
-            {
+        if (!$schema->hasTable('books')) {
+            Schema::connection('mysql')->create('books', function ($table) {
                 $table->string('title');
                 $table->string('author_id');
                 $table->timestamps();
             });
         }
     }
-
 }

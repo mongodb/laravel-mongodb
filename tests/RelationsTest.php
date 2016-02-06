@@ -1,6 +1,7 @@
 <?php
 
-class RelationsTest extends TestCase {
+class RelationsTest extends TestCase
+{
 
     public function tearDown()
     {
@@ -410,15 +411,13 @@ class RelationsTest extends TestCase {
         $authors = User::has('books', '!=', 0)->get();
         $this->assertCount(2, $authors);
 
-        $authors = User::whereHas('books', function ($query)
-        {
+        $authors = User::whereHas('books', function ($query) {
             $query->where('rating', 5);
 
         })->get();
         $this->assertCount(1, $authors);
 
-        $authors = User::whereHas('books', function ($query)
-        {
+        $authors = User::whereHas('books', function ($query) {
             $query->where('rating', '<', 5);
 
         })->get();
@@ -521,5 +520,4 @@ class RelationsTest extends TestCase {
         $this->assertEquals([$user->_id], $client->user_ids);
         $this->assertEquals([$client->_id], $user->client_ids);
     }
-
 }

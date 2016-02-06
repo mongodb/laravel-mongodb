@@ -4,8 +4,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 
-class BelongsToMany extends EloquentBelongsToMany {
-
+class BelongsToMany extends EloquentBelongsToMany
+{
     /**
      * Hydrate the pivot table relationship on the models.
      *
@@ -32,7 +32,9 @@ class BelongsToMany extends EloquentBelongsToMany {
      */
     public function addConstraints()
     {
-        if (static::$constraints) $this->setWhere();
+        if (static::$constraints) {
+            $this->setWhere();
+        }
     }
 
     /**
@@ -101,7 +103,9 @@ class BelongsToMany extends EloquentBelongsToMany {
             'attached' => [], 'detached' => [], 'updated' => [],
         ];
 
-        if ($ids instanceof Collection) $ids = $ids->modelKeys();
+        if ($ids instanceof Collection) {
+            $ids = $ids->modelKeys();
+        }
 
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
@@ -109,7 +113,9 @@ class BelongsToMany extends EloquentBelongsToMany {
         $current = $this->parent->{$this->otherKey} ?: [];
 
         // See issue #256.
-        if ($current instanceof Collection) $current = $ids->modelKeys();
+        if ($current instanceof Collection) {
+            $current = $ids->modelKeys();
+        }
 
         $records = $this->formatSyncList($ids);
 
@@ -122,11 +128,10 @@ class BelongsToMany extends EloquentBelongsToMany {
         // Next, we will take the differences of the currents and given IDs and detach
         // all of the entities that exist in the "current" array but are not in the
         // the array of the IDs given to the method which will complete the sync.
-        if ($detaching and count($detach) > 0)
-        {
+        if ($detaching and count($detach) > 0) {
             $this->detach($detach);
 
-             $changes['detached'] = (array) array_map(function ($v) {
+            $changes['detached'] = (array) array_map(function ($v) {
                 return is_numeric($v) ? (int) $v : (string) $v;
             }, $detach);
         }
@@ -138,8 +143,7 @@ class BelongsToMany extends EloquentBelongsToMany {
             $changes, $this->attachNew($records, $current, false)
         );
 
-        if (count($changes['attached']) || count($changes['updated']))
-        {
+        if (count($changes['attached']) || count($changes['updated'])) {
             $this->touchIfTouching();
         }
 
@@ -167,17 +171,14 @@ class BelongsToMany extends EloquentBelongsToMany {
      */
     public function attach($id, array $attributes = [], $touch = true)
     {
-        if ($id instanceof Model)
-        {
+        if ($id instanceof Model) {
             $model = $id;
 
             $id = $model->getKey();
 
             // Attach the new parent id to the related model.
             $model->push($this->foreignKey, $this->parent->getKey(), true);
-        }
-        else
-        {
+        } else {
             $query = $this->newRelatedQuery();
 
             $query->whereIn($this->related->getKeyName(), (array) $id);
@@ -189,7 +190,9 @@ class BelongsToMany extends EloquentBelongsToMany {
         // Attach the new ids to the parent model.
         $this->parent->push($this->otherKey, (array) $id, true);
 
-        if ($touch) $this->touchIfTouching();
+        if ($touch) {
+            $this->touchIfTouching();
+        }
     }
 
     /**
@@ -201,7 +204,9 @@ class BelongsToMany extends EloquentBelongsToMany {
      */
     public function detach($ids = [], $touch = true)
     {
-        if ($ids instanceof Model) $ids = (array) $ids->getKey();
+        if ($ids instanceof Model) {
+            $ids = (array) $ids->getKey();
+        }
 
         $query = $this->newRelatedQuery();
 
@@ -214,15 +219,16 @@ class BelongsToMany extends EloquentBelongsToMany {
         $this->parent->pull($this->otherKey, $ids);
 
         // Prepare the query to select all related objects.
-        if (count($ids) > 0)
-        {
+        if (count($ids) > 0) {
             $query->whereIn($this->related->getKeyName(), $ids);
         }
 
         // Remove the relation to the parent.
         $query->pull($this->foreignKey, $this->parent->getKey());
 
-        if ($touch) $this->touchIfTouching();
+        if ($touch) {
+            $this->touchIfTouching();
+        }
 
         return count($ids);
     }
@@ -242,10 +248,8 @@ class BelongsToMany extends EloquentBelongsToMany {
         // parents without having a possibly slow inner loops for every models.
         $dictionary = [];
 
-        foreach ($results as $result)
-        {
-            foreach ($result->$foreign as $item)
-            {
+        foreach ($results as $result) {
+            foreach ($result->$foreign as $item) {
                 $dictionary[$item][] = $result;
             }
         }

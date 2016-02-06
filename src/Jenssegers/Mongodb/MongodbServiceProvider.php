@@ -2,8 +2,8 @@
 
 use Illuminate\Support\ServiceProvider;
 
-class MongodbServiceProvider extends ServiceProvider {
-
+class MongodbServiceProvider extends ServiceProvider
+{
     /**
      * Bootstrap the application events.
      */
@@ -19,13 +19,10 @@ class MongodbServiceProvider extends ServiceProvider {
      */
     public function register()
     {
-        $this->app->resolving('db', function ($db)
-        {
-            $db->extend('mongodb', function ($config)
-            {
+        $this->app->resolving('db', function ($db) {
+            $db->extend('mongodb', function ($config) {
                 return new Connection($config);
             });
         });
     }
-
 }

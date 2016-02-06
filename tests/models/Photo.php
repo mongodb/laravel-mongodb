@@ -2,8 +2,8 @@
 
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
-class Photo extends Eloquent {
-
+class Photo extends Eloquent
+{
     protected $collection = 'photos';
     protected static $unguarded = true;
 
@@ -11,5 +11,4 @@ class Photo extends Eloquent {
     {
         return $this->morphTo();
     }
-
 }

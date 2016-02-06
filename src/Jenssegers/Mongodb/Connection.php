@@ -2,8 +2,8 @@
 
 use MongoClient;
 
-class Connection extends \Illuminate\Database\Connection {
-
+class Connection extends \Illuminate\Database\Connection
+{
     /**
      * The MongoDB database handler.
      *
@@ -131,21 +131,18 @@ class Connection extends \Illuminate\Database\Connection {
     {
         // Add credentials as options, this makes sure the connection will not fail if
         // the username or password contains strange characters.
-        if ( ! empty($config['username']))
-        {
+        if (! empty($config['username'])) {
             $options['username'] = $config['username'];
         }
 
-        if ( ! empty($config['password']))
-        {
+        if (! empty($config['password'])) {
             $options['password'] = $config['password'];
         }
 
         // By default driver options is an empty array.
         $driverOptions = [];
 
-        if (isset($config['driver_options']) && is_array($config['driver_options']))
-        {
+        if (isset($config['driver_options']) && is_array($config['driver_options'])) {
             $driverOptions = $config['driver_options'];
         }
 
@@ -174,19 +171,16 @@ class Connection extends \Illuminate\Database\Connection {
         extract($config);
 
         // Check if the user passed a complete dsn to the configuration.
-        if ( ! empty($dsn))
-        {
+        if (! empty($dsn)) {
             return $dsn;
         }
 
         // Treat host option as array of hosts
         $hosts = is_array($host) ? $host : [$host];
 
-        foreach ($hosts as &$host)
-        {
+        foreach ($hosts as &$host) {
             // Check if we need to add a port to the host
-            if (strpos($host, ':') === false and isset($port))
-            {
+            if (strpos($host, ':') === false and isset($port)) {
                 $host = "{$host}:{$port}";
             }
         }
@@ -228,5 +222,4 @@ class Connection extends \Illuminate\Database\Connection {
     {
         return call_user_func_array([$this->db, $method], $parameters);
     }
-
 }
