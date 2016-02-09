@@ -522,7 +522,12 @@ abstract class Model extends BaseModel
     {
         $connection = $this->getConnection();
 
-        return new QueryBuilder($connection, $connection->getPostProcessor());
+        // Check the connection type
+        if ($connection instanceof \Jenssegers\Mongodb\Connection) {
+            return new QueryBuilder($connection, $connection->getPostProcessor());
+        }
+
+        return parent::newBaseQueryBuilder();
     }
 
     /**
