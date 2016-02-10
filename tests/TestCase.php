@@ -29,11 +29,21 @@ class TestCase extends Orchestra\Testbench\TestCase
 
         $config = require 'config/database.php';
 
+        $app['config']->set('app.key', 'ZsZewWyUJ5FsKp9lMwv4tYbNlegQilM7');
+
         $app['config']->set('database.default', 'mongodb');
         $app['config']->set('database.connections.mysql', $config['connections']['mysql']);
         $app['config']->set('database.connections.mongodb', $config['connections']['mongodb']);
 
         $app['config']->set('auth.model', 'User');
         $app['config']->set('cache.driver', 'array');
+
+        $app['config']->set('queue.default', 'mongodb');
+        $app['config']->set('queue.connections.mongodb', [
+            'driver' => 'mongodb',
+            'table'  => 'jobs',
+            'queue'  => 'default',
+            'expire' => 60,
+        ]);
     }
 }
