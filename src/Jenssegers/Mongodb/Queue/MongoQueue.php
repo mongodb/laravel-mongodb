@@ -13,13 +13,20 @@ class MongoQueue extends DatabaseQueue
      */
     protected function getNextAvailableJob($queue)
     {
-        $job = parent::getNextAvailableJob($queue);
+        $job = $this->database->table($this->table)
+                    ->lockForUpdate()
+                    ->where('queue', $this->getQueue($queue))
+                    ->where('reserved', 0)
+                    ->where('available_at', '<=', $this->getTime())
+                    ->orderBy('id', 'asc')
+                    ->first();
 
         if ($job) {
+            $job = (object) $job;
             $job->id = $job->_id;
         }
 
-        return $job;
+        return $job ?: null;
     }
 
     /**
