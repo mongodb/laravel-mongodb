@@ -247,6 +247,26 @@ If you want to use Laravel's native Auth functionality, register this included s
 
 This service provider will slightly modify the internal DatabaseReminderRepository to add support for MongoDB based password reminders. If you don't use password reminders, you don't have to register this service provider and everything else should work just fine.
 
+### Queues
+
+If you want to use MongoDB as your database backend, change the default queue driver in `config/queue.php`:
+
+```php
+'default' => 'mongodb',
+```
+
+And add the following connection:
+
+```php
+'connections' => [
+    'mongodb' => [
+        'driver' => 'mongodb',
+        'table'  => 'jobs',
+        'queue'  => 'default',
+        'expire' => 60,
+    ],
+```
+
 ### Sentry
 
 If you want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
