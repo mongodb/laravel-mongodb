@@ -1,8 +1,9 @@
 <?php namespace Jenssegers\Mongodb\Auth;
 
+use Illuminate\Auth\Passwords\DatabaseTokenRepository as BaseDatabaseTokenRepository;
 use MongoDB\BSON\UTCDateTime;
 
-class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRepository
+class DatabaseTokenRepository extends BaseDatabaseTokenRepository
 {
     /**
      * Build the record payload for the table.

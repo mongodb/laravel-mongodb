@@ -24,7 +24,7 @@ class AuthTest extends TestCase
         $this->assertTrue(Auth::check());
     }
 
-    public function testRemind()
+    public function testRemindOld()
     {
         if (Application::VERSION >= '5.2') {
             return;
