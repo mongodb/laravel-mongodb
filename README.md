@@ -249,17 +249,11 @@ This service provider will slightly modify the internal DatabaseReminderReposito
 
 ### Queues
 
-If you want to use MongoDB as your database backend, change the default queue driver in `config/queue.php`:
-
-```php
-'default' => 'mongodb',
-```
-
-And add the following connection:
+If you want to use MongoDB as your database backend, change the the driver in `config/queue.php`:
 
 ```php
 'connections' => [
-    'mongodb' => [
+    'database' => [
         'driver' => 'mongodb',
         'table'  => 'jobs',
         'queue'  => 'default',
