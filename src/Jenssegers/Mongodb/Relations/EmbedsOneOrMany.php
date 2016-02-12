@@ -76,23 +76,6 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * Initialize the relation on a set of models.
-     *
-     * @param  array   $models
-     * @param  string  $relation
-     */
-    public function initRelation(array $models, $relation)
-    {
-        foreach ($models as $model) {
-            $model->setParentRelation($this);
-
-            $model->setRelation($relation, $this->related->newCollection());
-        }
-
-        return $models;
-    }
-
-    /**
      * Match the eagerly loaded results to their parents.
      *
      * @param  array   $models

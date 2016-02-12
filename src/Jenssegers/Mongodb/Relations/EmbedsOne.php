@@ -6,6 +6,21 @@ use MongoDB\BSON\ObjectID;
 class EmbedsOne extends EmbedsOneOrMany
 {
     /**
+     * Initialize the relation on a set of models.
+     *
+     * @param  array   $models
+     * @param  string  $relation
+     */
+    public function initRelation(array $models, $relation)
+    {
+        foreach ($models as $model) {
+            $model->setRelation($relation, null);
+        }
+
+        return $models;
+    }
+
+    /**
      * Get the results of the relationship.
      *
      * @return \Illuminate\Database\Eloquent\Model
