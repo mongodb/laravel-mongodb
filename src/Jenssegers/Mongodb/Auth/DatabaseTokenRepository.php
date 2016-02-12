@@ -1,9 +1,10 @@
 <?php namespace Jenssegers\Mongodb\Auth;
 
 use DateTime;
+use Illuminate\Auth\Passwords\DatabaseTokenRepository as BaseDatabaseTokenRepository;
 use MongoDate;
 
-class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRepository
+class DatabaseTokenRepository extends BaseDatabaseTokenRepository
 {
     /**
      * Build the record payload for the table.
@@ -28,9 +29,7 @@ class DatabaseTokenRepository extends \Illuminate\Auth\Passwords\DatabaseTokenRe
         // Convert MongoDate to a date string.
         if ($token['created_at'] instanceof MongoDate) {
             $date = new DateTime;
-
             $date->setTimestamp($token['created_at']->sec);
-
             $token['created_at'] = $date->format('Y-m-d H:i:s');
         } elseif (is_array($token['created_at']) and isset($token['created_at']['date'])) {
             $token['created_at'] = $token['created_at']['date'];
