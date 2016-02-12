@@ -14,7 +14,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
      */
     protected function getPayload($email, $token)
     {
-        return ['email' => $email, 'token' => $token, 'created_at' => new UTCDateTime(round(microtime(true) * 1000))];
+        return ['email' => $email, 'token' => $token, 'created_at' => new UTCDateTime((int) round(microtime(true) * 1000))];
     }
 
     /**
