@@ -3,6 +3,22 @@
 class TestCase extends Orchestra\Testbench\TestCase
 {
     /**
+     * Get application providers.
+     *
+     * @param  \Illuminate\Foundation\Application  $app
+     *
+     * @return array
+     */
+    protected function getApplicationProviders($app)
+    {
+        $providers = parent::getApplicationProviders($app);
+
+        unset($providers[array_search('Illuminate\Auth\Passwords\PasswordResetServiceProvider', $providers)]);
+
+        return $providers;
+    }
+
+    /**
      * Get package providers.
      *
      * @param  \Illuminate\Foundation\Application  $app
@@ -11,8 +27,8 @@ class TestCase extends Orchestra\Testbench\TestCase
     protected function getPackageProviders($app)
     {
         return [
-            'Jenssegers\Mongodb\MongodbServiceProvider',
-            'Jenssegers\Mongodb\Auth\PasswordResetServiceProvider'
+            Jenssegers\Mongodb\MongodbServiceProvider::class,
+            Jenssegers\Mongodb\Auth\PasswordResetServiceProvider::class,
         ];
     }
 
