@@ -194,7 +194,7 @@ abstract class Model extends BaseModel
      */
     public function freshTimestamp()
     {
-        return new UTCDateTime(round(microtime(true) * 1000));
+        return Carbon::now();
     }
 
     /**
