@@ -87,7 +87,7 @@ class DatabaseFailedJobProvider implements FailedJobProviderInterface {
             unset($fail['_id']);
             return (object) $fail;
         }
-        return NULL;
+        return $fail;
     }
 
     /**
