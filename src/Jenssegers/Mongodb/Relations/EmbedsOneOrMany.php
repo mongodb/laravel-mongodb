@@ -233,7 +233,7 @@ abstract class EmbedsOneOrMany extends Relation
         // Get raw attributes to skip relations and accessors.
         $attributes = $this->parent->getAttributes();
 
-        $embedded = isset($attributes[$this->localKey]) ? (array) $attributes[$this->localKey] : [];
+        $embedded = isset($attributes[$this->localKey]) ? (array) $attributes[$this->localKey] : null;
 
         return $embedded;
     }
