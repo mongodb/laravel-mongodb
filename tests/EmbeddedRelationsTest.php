@@ -506,6 +506,12 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertEquals('Mark Doe', $user->father->name);
     }
 
+    public function testEmbedsOneNullAssociation()
+    {
+        $user = User::create();
+        $this->assertNull($user->father);
+    }
+
     public function testEmbedsOneDelete()
     {
         $user = User::create(['name' => 'John Doe']);

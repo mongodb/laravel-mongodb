@@ -217,7 +217,7 @@ abstract class EmbedsOneOrMany extends Relation
         $attributes = $this->parent->getAttributes();
 
         // Get embedded models form parent attributes.
-        $embedded = isset($attributes[$this->localKey]) ? (array) $attributes[$this->localKey] : [];
+        $embedded = isset($attributes[$this->localKey]) ? (array) $attributes[$this->localKey] : null;
 
         return $embedded;
     }
