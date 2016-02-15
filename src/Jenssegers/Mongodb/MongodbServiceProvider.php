@@ -35,10 +35,14 @@ class MongodbServiceProvider extends ServiceProvider
         });
 
         // Support queue failer to record failed jobs
-        $this->app->bindShared('queue.failer', function ($app)
-        {
+        $this->app->singleton('queue.failer', function ($app) {
             $config = $app['config']['queue.failed'];
-            return new DatabaseFailedJobProvider($app['db'], $config['database'], $config['collection']);
+
+            if (isset($config['collection'])) {
+                return new DatabaseFailedJobProvider($app['db'], $config['database'], $config['collection']);
+            } else {
+                return new NullFailedJobProvider;
+            }
         });
     }
 }
