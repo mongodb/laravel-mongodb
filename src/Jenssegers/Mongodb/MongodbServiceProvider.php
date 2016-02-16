@@ -1,7 +1,9 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Queue\Failed\NullFailedJobProvider;
 use Jenssegers\Mongodb\Queue\MongoConnector;
+use Jenssegers\Mongodb\Queue\Failed\DatabaseFailedJobProvider;
 
 class MongodbServiceProvider extends ServiceProvider
 {
