@@ -182,7 +182,7 @@ class Connection extends \Illuminate\Database\Connection
             $auth .= $username;
         }
         if (! empty($password)) {
-            $auth .= ':'.$password;
+            $auth .= ':' . urlencode($password);
         }
         if ($auth) {
             $auth .= '@';
