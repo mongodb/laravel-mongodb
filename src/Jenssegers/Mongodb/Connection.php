@@ -136,6 +136,14 @@ class Connection extends \Illuminate\Database\Connection
             $driverOptions = $config['driver_options'];
         }
 
+        // Check if the credentials are not already set in the options
+        if (!isset($options['username']) && isset($config['username'])) {
+            $options['username'] = $config['username'];
+        }
+        if (!isset($options['password']) && isset($config['password'])) {
+            $options['password'] = $config['password'];
+        }
+
         return new Client($dsn, $options, $driverOptions);
     }
 
@@ -175,20 +183,7 @@ class Connection extends \Illuminate\Database\Connection
             }
         }
 
-        // The database name needs to be in the connection string, otherwise it will
-        // authenticate to the admin database, which may result in permission errors.
-        $auth = '';
-        if (! empty($username)) {
-            $auth .= $username;
-        }
-        if (! empty($password)) {
-            $auth .= ':' . urlencode($password);
-        }
-        if ($auth) {
-            $auth .= '@';
-        }
-
-        return "mongodb://" . $auth . implode(',', $hosts) . "/{$database}";
+        return "mongodb://" . implode(',', $hosts) . "/{$database}";
     }
 
     /**
