@@ -136,6 +136,13 @@ class Connection extends \Illuminate\Database\Connection
             $driverOptions = $config['driver_options'];
         }
 
+        if (!isset($options['username'])){
+            $options['username'] = isset($config['username']) ? $config['username'] : '';
+        }
+        if (!isset($options['password'])){
+            $options['password'] = isset($config['password']) ? $config['password'] : '';
+        }
+
         return new Client($dsn, $options, $driverOptions);
     }
 
