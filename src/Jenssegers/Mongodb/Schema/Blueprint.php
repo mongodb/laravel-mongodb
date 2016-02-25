@@ -209,7 +209,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * @param  array   $parameters
      * @return Blueprint
      */
-    protected function addColumn($type, $name, array $parameters = [])
+    public function addColumn($type, $name, array $parameters = [])
     {
         $this->fluent($name);
 
