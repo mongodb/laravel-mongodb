@@ -135,10 +135,6 @@ class Connection extends \Illuminate\Database\Connection
         if (isset($config['driver_options']) && is_array($config['driver_options'])) {
             $driverOptions = $config['driver_options'];
         }
-        
-        // Get the credentials from the config and check if they are set
-        $options['username'] = isset($options['username']) ? $config['username'] : '';
-        $options['password'] = isset($options['password']) ? $config['password'] : '';
 
         return new Client($dsn, $options, $driverOptions);
     }
