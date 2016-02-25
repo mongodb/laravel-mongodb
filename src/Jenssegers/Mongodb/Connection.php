@@ -137,11 +137,11 @@ class Connection extends \Illuminate\Database\Connection
         }
 
         // Check if the credentials are not already set in the options
-        if (!isset($options['username'])) {
-            $options['username'] = isset($config['username']) ? $config['username'] : '';
+        if (!isset($options['username']) && isset($config['username'])) {
+            $options['username'] = $config['username'];
         }
-        if (!isset($options['password'])) {
-            $options['password'] = isset($config['password']) ? $config['password'] : '';
+        if (!isset($options['password']) && isset($config['password'])) {
+            $options['password'] = $config['password'];
         }
 
         return new Client($dsn, $options, $driverOptions);
