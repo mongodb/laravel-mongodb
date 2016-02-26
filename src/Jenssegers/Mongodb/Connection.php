@@ -137,10 +137,10 @@ class Connection extends \Illuminate\Database\Connection
         }
 
         // Check if the credentials are not already set in the options
-        if (!isset($options['username']) && isset($config['username'])) {
+        if (!isset($options['username']) && !empty($config['username'])) {
             $options['username'] = $config['username'];
         }
-        if (!isset($options['password']) && isset($config['password'])) {
+        if (!isset($options['password']) && !empty($config['password'])) {
             $options['password'] = $config['password'];
         }
 
