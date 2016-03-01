@@ -1,8 +1,9 @@
 <?php namespace Jenssegers\Mongodb;
 
+use Jenssegers\Mongodb\Contracts\ConnectionContract;
 use MongoDB\Client;
 
-class Connection extends \Illuminate\Database\Connection
+class Connection extends \Illuminate\Database\Connection implements ConnectionContract
 {
     /**
      * The MongoDB database handler.

@@ -2,6 +2,7 @@
 
 use Exception;
 use MongoDB\Collection as MongoCollection;
+use Jenssegers\Mongodb\Contracts\ConnectionContract;
 
 class Collection
 {
@@ -22,7 +23,7 @@ class Collection
     /**
      * Constructor.
      */
-    public function __construct(Connection $connection, MongoCollection $collection)
+    public function __construct(ConnectionContract $connection, MongoCollection $collection)
     {
         $this->connection = $connection;
         $this->collection = $collection;
