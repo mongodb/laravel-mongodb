@@ -22,7 +22,7 @@ class Collection
     /**
      * Constructor.
      */
-    public function __construct(Connection $connection, MongoCollection $collection)
+    public function __construct(ConnectionContract $connection, MongoCollection $collection)
     {
         $this->connection = $connection;
         $this->collection = $collection;

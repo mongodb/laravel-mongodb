@@ -6,7 +6,7 @@ use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Jenssegers\Mongodb\Connection;
+use Jenssegers\Mongodb\Contracts\ConnectionContract;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -81,9 +81,9 @@ class Builder extends BaseBuilder
     /**
      * Create a new query builder instance.
      *
-     * @param Connection $connection
+     * @param ConnectionContract $connection
      */
-    public function __construct(Connection $connection, Processor $processor)
+    public function __construct(ConnectionContract $connection, Processor $processor)
     {
         $this->grammar = new Grammar;
         $this->connection = $connection;
