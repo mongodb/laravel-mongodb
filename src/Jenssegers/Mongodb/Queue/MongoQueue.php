@@ -49,4 +49,45 @@ class MongoQueue extends DatabaseQueue
             $this->releaseJob($job['_id'], $attempts);
         }
     }
+    
+    /**
+     * Release the given job ID from reservation.
+     *
+     * @param  string $id
+     *
+     * @return void
+     */
+    protected function releaseJob($id, $attempts)
+    {
+        $this->database->table($this->table)->where('_id', $id)->update([
+            'reserved'    => 0,
+            'reserved_at' => null,
+            'attempts'    => $attempts,
+        ]);
+    }
+
+    /**
+     * Mark the given job ID as reserved.
+     *
+     * @param  string  $id
+     * @return void
+     */
+    protected function markJobAsReserved($id)
+    {
+        $this->database->collection($this->table)->where('_id', $id)->update([
+            'reserved' => 1, 'reserved_at' => $this->getTime(),
+        ]);
+    }
+
+    /**
+     * Delete a reserved job from the queue.
+     *
+     * @param  string  $queue
+     * @param  string  $id
+     * @return void
+     */
+    public function deleteReserved($queue, $id)
+    {
+        $this->database->table($this->table)->where('_id', $id)->delete();
+    }
 }
