@@ -360,6 +360,10 @@ class QueryBuilderTest extends TestCase
 
         $age = DB::collection('users')->where('name', 'John Doe')->pluck('age');
         $this->assertEquals([25], $age);
+
+        $list = DB::collection('users')->pluck('age', '_id');
+        $this->assertEquals(2, count($list));
+        $this->assertEquals(24, strlen(key($list)));
     }
 
     public function testList()
