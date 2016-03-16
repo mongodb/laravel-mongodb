@@ -118,7 +118,7 @@ And add a new mongodb connection:
     'port'     => env('DB_PORT', 27017),
     'database' => env('DB_DATABASE'),
     'username' => env('DB_USERNAME'),
-    'password' => env('DB_PASSWORD''),
+    'password' => env('DB_PASSWORD'),
     'options' => [
         'db' => 'admin' // sets the authentication database required by mongo 3
     ]
