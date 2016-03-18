@@ -2,31 +2,78 @@
 
 use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
+use Illuminate\Queue\Jobs\DatabaseJob;
+use MongoDB\Operation\FindOneAndUpdate;
+use DB;
 
 class MongoQueue extends DatabaseQueue
 {
     /**
-     * Get the next available job for the queue.
+     * Pop the next job off of the queue.
      *
-     * @param  string|null  $queue
+     * @param  string $queue
+     *
+     * @return \Illuminate\Contracts\Queue\Job|null
+     */
+    public function pop($queue = null)
+    {
+        $queue = $this->getQueue($queue);
+
+        if (!is_null($this->expire))
+        {
+            $this->releaseJobsThatHaveBeenReservedTooLong($queue);
+        }
+
+        if ($job = $this->getNextAvailableJobAndReserve($queue))
+        {
+            return new DatabaseJob(
+                $this->container, $this, $job, $queue
+            );
+        }
+    }
+
+    /**
+     * Get the next available job for the queue and mark it as reserved.
+     *
+     * When using multiple daemon queue listeners to process jobs there
+     * is a possibility that multiple processes can end up reading the
+     * same record before one has flagged it as reserved.
+     *
+     * This race condition can result in random jobs being run more then
+     * once. To solve this we use findOneAndUpdate to lock the next jobs
+     * record while flagging it as reserved at the same time.
+     *
+     * @param  string|null $queue
+     *
      * @return \StdClass|null
      */
-    protected function getNextAvailableJob($queue)
+    protected function getNextAvailableJobAndReserve($queue)
     {
-        $job = $this->database->table($this->table)
-                    ->lockForUpdate()
-                    ->where('queue', $this->getQueue($queue))
-                    ->where('reserved', 0)
-                    ->where('available_at', '<=', $this->getTime())
-                    ->orderBy('id', 'asc')
-                    ->first();
+        $job = DB::getCollection($this->table)->findOneAndUpdate(
+            [
+                'queue'        => $this->getQueue($queue),
+                'reserved'     => 0,
+                'available_at' => ['$lte' => $this->getTime()],
 
-        if ($job) {
-            $job = (object) $job;
+            ],
+            [
+                '$set' => [
+                    'reserved'    => 1,
+                    'reserved_at' => $this->getTime(),
+                ],
+            ],
+            [
+                'returnNewDocument ' => true,
+                'sort'               => ['available_at' => 1],
+            ]
+        );
+
+        if ($job)
+        {
             $job->id = $job->_id;
         }
 
-        return $job ?: null;
+        return $job;
     }
 
     /**
@@ -40,16 +87,16 @@ class MongoQueue extends DatabaseQueue
         $expired = Carbon::now()->subSeconds($this->expire)->getTimestamp();
 
         $reserved = $this->database->collection($this->table)
-                    ->where('queue', $this->getQueue($queue))
-                    ->where('reserved', 1)
-                    ->where('reserved_at', '<=', $expired)->get();
+            ->where('queue', $this->getQueue($queue))
+            ->where('reserved', 1)
+            ->where('reserved_at', '<=', $expired)->get();
 
         foreach ($reserved as $job) {
             $attempts = $job['attempts'] + 1;
             $this->releaseJob($job['_id'], $attempts);
         }
     }
-    
+
     /**
      * Release the given job ID from reservation.
      *
