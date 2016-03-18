@@ -19,13 +19,11 @@ class MongoQueue extends DatabaseQueue
     {
         $queue = $this->getQueue($queue);
 
-        if (!is_null($this->expire))
-        {
+        if (!is_null($this->expire)) {
             $this->releaseJobsThatHaveBeenReservedTooLong($queue);
         }
 
-        if ($job = $this->getNextAvailableJobAndReserve($queue))
-        {
+        if ($job = $this->getNextAvailableJobAndReserve($queue)) {
             return new DatabaseJob(
                 $this->container, $this, $job, $queue
             );
@@ -68,8 +66,7 @@ class MongoQueue extends DatabaseQueue
             ]
         );
 
-        if ($job)
-        {
+        if ($job) {
             $job->id = $job->_id;
         }
 
