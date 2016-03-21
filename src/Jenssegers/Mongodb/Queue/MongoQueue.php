@@ -111,19 +111,6 @@ class MongoQueue extends DatabaseQueue
     }
 
     /**
-     * Mark the given job ID as reserved.
-     *
-     * @param  string  $id
-     * @return void
-     */
-    protected function markJobAsReserved($id)
-    {
-        $this->database->collection($this->table)->where('_id', $id)->update([
-            'reserved' => 1, 'reserved_at' => $this->getTime(),
-        ]);
-    }
-
-    /**
      * Delete a reserved job from the queue.
      *
      * @param  string  $queue
