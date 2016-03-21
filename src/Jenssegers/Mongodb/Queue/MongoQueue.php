@@ -61,8 +61,8 @@ class MongoQueue extends DatabaseQueue
                 ],
             ],
             [
-                'returnNewDocument ' => true,
-                'sort'               => ['available_at' => 1],
+                'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+                'sort'           => ['available_at' => 1],
             ]
         );
 
