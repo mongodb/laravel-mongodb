@@ -31,7 +31,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
         $all = $this->getTable()->orderBy('_id', 'desc')->get();
 
         $all = array_map(function($job) {
-            $job['id'] = (string)$job['_id'];
+            $job['id'] = (string) $job['_id'];
             return $job;
         }, $all);
 
@@ -48,7 +48,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     {
         $job = $this->getTable()->find($id);
 
-        $job['id'] = (string)$job['_id'];
+        $job['id'] = (string) $job['_id'];
 
         return $job;
     }
