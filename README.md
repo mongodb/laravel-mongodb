@@ -116,9 +116,9 @@ And add a new mongodb connection:
     'driver'   => 'mongodb',
     'host'     => env('DB_HOST', 'localhost'),
     'port'     => env('DB_PORT', 27017),
-    'database' => env('DB_DATABASE', ''),
-    'username' => env('DB_USERNAME', ''),
-    'password' => env('DB_PASSWORD', ''),
+    'database' => env('DB_DATABASE'),
+    'username' => env('DB_USERNAME'),
+    'password' => env('DB_PASSWORD'),
     'options' => [
         'db' => 'admin' // sets the authentication database required by mongo 3
     ]
@@ -132,9 +132,9 @@ You can connect to multiple servers or replica sets with the following configura
     'driver'   => 'mongodb',
     'host'     => ['server1', 'server2'],
     'port'     => env('DB_PORT', 27017),
-    'database' => env('DB_DATABASE', ''),
-    'username' => env('DB_USERNAME', ''),
-    'password' => env('DB_PASSWORD', ''),
+    'database' => env('DB_DATABASE'),
+    'username' => env('DB_USERNAME'),
+    'password' => env('DB_PASSWORD'),
     'options'  => ['replicaSet' => 'replicaSetName']
 ],
 ```
