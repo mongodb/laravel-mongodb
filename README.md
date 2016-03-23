@@ -262,6 +262,21 @@ If you want to use MongoDB as your database backend, change the the driver in `c
     ],
 ```
 
+If you want to use MongoDB to handle failed jobs, change the database in `config/queue.php`:
+
+```php
+'failed' => [
+    'database' => 'mongodb',
+    'table'    => 'failed_jobs',
+    ],
+```
+
+And add the service provider in `config/app.php`: 
+
+```php
+Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
+```
+
 ### Sentry
 
 If you want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
