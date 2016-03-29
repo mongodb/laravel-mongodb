@@ -2,8 +2,8 @@
 
 use Illuminate\Auth\Passwords\DatabaseTokenRepository as BaseDatabaseTokenRepository;
 use MongoDB\BSON\UTCDateTime;
-use \DateTime;
-use \DateTimeZone;
+use DateTime;
+use DateTimeZone;
 
 class DatabaseTokenRepository extends BaseDatabaseTokenRepository
 {
