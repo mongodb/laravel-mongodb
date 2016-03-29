@@ -2,6 +2,8 @@
 
 use Illuminate\Auth\Passwords\DatabaseTokenRepository as BaseDatabaseTokenRepository;
 use MongoDB\BSON\UTCDateTime;
+use \DateTime;
+use \DateTimeZone;
 
 class DatabaseTokenRepository extends BaseDatabaseTokenRepository
 {
@@ -28,7 +30,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
         // Convert UTCDateTime to a date string.
         if ($token['created_at'] instanceof UTCDateTime) {
             $date = $token['created_at']->toDateTime();
-            $date->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+            $date->setTimezone(new DateTimeZone(date_default_timezone_get()));
             $token['created_at'] = $date->format('Y-m-d H:i:s');
         } elseif (is_array($token['created_at']) and isset($token['created_at']['date'])) {
             $date = new DateTime($token['created_at']['date'], new DateTimeZone(isset($token['created_at']['timezone']) ? $token['created_at']['timezone'] : 'UTC'));
