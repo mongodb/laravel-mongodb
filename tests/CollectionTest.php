@@ -26,7 +26,7 @@ class CollectionTest extends TestCase
         $connection->expects($this->once())->method('logging')->willReturn(true);
         $connection->expects($this->once())->method('getElapsedTime')->willReturn($time);
         $connection->expects($this->once())->method('logQuery')->with($queryString, [], $time);
-        
+
         $collection = new Collection($connection, $mongoCollection);
 
         $this->assertEquals($return, $collection->findOne($where));
