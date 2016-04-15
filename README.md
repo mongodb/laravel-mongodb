@@ -804,7 +804,7 @@ class Message extends Eloquent {
 These expressions will be injected directly into the query.
 
 ```php
-User::whereRaw(['age' => array('$gt' => 30, '$lt' => 40]))->get();
+User::whereRaw(['age' => array('$gt' => 30, '$lt' => 40)])->get();
 ```
 
 You can also perform raw expressions on the internal MongoCollection object. If this is executed on the model class, it will return a collection of models. If this is executed on the query builder, it will return the original response.
