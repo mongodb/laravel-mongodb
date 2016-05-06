@@ -39,6 +39,14 @@ abstract class Model extends BaseModel
     protected $parentRelation;
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $saveCasts = [];
+
+
+    /**
      * Custom accessor for the model's id.
      *
      * @param  mixed  $value
@@ -279,15 +287,15 @@ abstract class Model extends BaseModel
      */
     public function setAttribute($key, $value)
     {
-        // Convert _id to ObjectID.
-        if ($key == '_id' and is_string($value)) {
-            $builder = $this->newBaseQueryBuilder();
-
-            $value = $builder->convertKey($value);
+        // cast data for saving.
+        // set _id to converted into ObjectID if its possible.
+        $this->saveCasts['_id'] = 'ObjectID';
+        if($this->hasSaveCast($key)){
+            $value = $this->saveCastAttribute($key, $value);
         }
 
         // Support keys in dot notation.
-        elseif (str_contains($key, '.')) {
+        if (str_contains($key, '.')) {
             if (in_array($key, $this->getDates()) && $value) {
                 $value = $this->fromDateTime($value);
             }
@@ -540,5 +548,112 @@ abstract class Model extends BaseModel
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * Get the saving casts array.
+     *
+     * @return array
+     */
+    public function getSaveCasts()
+    {
+        return $this->saveCasts;
+    }
+
+    /**
+     * Get the type of save cast for a model attribute.
+     *
+     * @param  string $key
+     * @return string
+     */
+    protected function getSaveCastType($key)
+    {
+        return trim(strtolower($this->getSaveCasts()[$key]));
+    }
+
+    /**
+     * Determine whether an attribute should be cast to a native type.
+     *
+     * @param  string  $key
+     * @param  array|string|null  $types
+     * @return bool
+     */
+    public function hasSaveCast($key, $types = null)
+    {
+        if (array_key_exists($key, $this->getSaveCasts())) {
+            return $types ? in_array($this->getSaveCastType($key), (array) $types, true) : true;
+        }
+
+        return false;
+    }
+
+
+
+    /**
+     * Cast an attribute to a mongo type.
+     *
+     * @param  string $key
+     * @param  mixed $value
+     * @return mixed
+     */
+    protected function saveCastAttribute($key, $value)
+    {
+        if (is_null($value)) {
+            return null;
+        }
+
+        switch ($this->getSaveCastType($key)) {
+            case 'int':
+            case 'integer':
+                return (int)$value;
+            case 'real':
+            case 'float':
+            case 'double':
+                return (float)$value;
+            case 'string':
+                return (string)$value;
+            case 'bool':
+            case 'boolean':
+                return (bool)$value;
+            case 'date':
+            case 'utcdatetime':
+            case 'mongodate':
+                return $this->asMongoDate($value);
+            case 'objectid':
+                return $this->asMongoID($value);
+            case 'timestamp':
+                return $this->asTimeStamp($value);
+            default:
+                return $value;
+        }
+    }
+
+    /**
+     * convert value into ObjectID if its possible
+     *
+     * @param $value
+     * @return UTCDatetime
+     */
+    protected function asMongoID($value)
+    {
+        if (is_string($value) and strlen($value) === 24 and ctype_xdigit($value)) {
+            return new ObjectID($value);
+        }
+
+        return $value;
+    }
+    
+    /**
+     * convert value into UTCDatetime
+     * @param $value
+     * @return UTCDatetime
+     */
+    protected function asMongoDate($value)
+    {
+        if ($value instanceof UTCDatetime) {
+            return $value;
+        }
+
+        return new UTCDatetime($this->asTimeStamp($value) * 1000);
     }
 }
