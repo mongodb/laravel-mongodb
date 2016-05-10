@@ -2,7 +2,6 @@
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Collection;
-use MongoDB\BSON\ObjectID;
 
 /**
  * Class HasOneOrManyTrait
@@ -10,6 +9,7 @@ use MongoDB\BSON\ObjectID;
  *
  * @property $this parent Jenssegers\Mongodb\Relations
  * @property $this localKey
+ * @property $this related
  */
 trait HasOneOrManyTrait
 {
