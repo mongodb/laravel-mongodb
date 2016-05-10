@@ -167,7 +167,11 @@ class Builder extends EloquentBuilder
         $query = $hasQuery->getQuery();
 
         // Get the number of related objects for each possible parent.
-        $relationCount = array_count_values($query->lists($relation->getHasCompareKey()));
+        $compareKeys = $query->pluck($relation->getHasCompareKey());
+        $compareKeys = array_map(function ($id) {
+            return (string)$id;
+        }, $compareKeys);
+        $relationCount = array_count_values($compareKeys);
 
         // Remove unwanted related objects based on the operator and count.
         $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator) {
