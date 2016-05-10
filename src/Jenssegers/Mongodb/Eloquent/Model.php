@@ -538,6 +538,21 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * setter for casts
+     * @param $cast
+     * @param string $castType
+     * @return void
+     */
+    public function setCasts($cast, $castType = 'get')
+    {
+        if ($castType == 'set') {
+            $this->saveCasts = $cast;
+            return;
+        }
+        $this->casts = $cast;
+    }
+
+    /**
      * Get the casts array.
      *
      * @param string $castType
@@ -600,7 +615,7 @@ abstract class Model extends BaseModel
     public function castAttribute($key, $value, $castType = 'get')
     {
         if (is_null($value)) {
-            return;
+            return null;
         }
 
         if (!$this->hasCast($key, null, $castType)) {

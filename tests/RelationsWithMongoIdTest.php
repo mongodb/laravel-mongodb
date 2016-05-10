@@ -527,4 +527,40 @@ class RelationsWithMongoIdTest extends TestCase
         $this->assertEquals([$user->_id], $client->user_ids);
         $this->assertEquals([$client->_id], $user->client_ids);
     }
+
+    public function testCastAttribute()
+    {
+        $user = new User;
+        $user->setCasts([
+            'last_seen' => 'UTCDatetime',
+            'age'=>'int',
+            'name'=>'string',
+            'rate'=>'float',
+            'birthday'=>'timestamp',
+            'isActive'=>'bool',
+            'default'=>'default',
+        ], 'set');
+        $user->setCasts([
+            'name'=>'string',
+        ]);
+        $carbon = Carbon\Carbon::now();
+        $UTCDateTime = new \MongoDB\BSON\UTCDateTime($carbon->timestamp * 1000);
+        $test = $user->castAttribute('last_seen', $carbon, 'set');
+        $this->assertEquals($UTCDateTime, $test);
+        $test = $user->castAttribute('last_seen', $UTCDateTime, 'set');
+        $this->assertEquals($UTCDateTime, $test);
+        $test = $user->castAttribute('age', '1', 'set');
+        $this->assertEquals(1, $test);
+        $test = $user->castAttribute('name', 40000, 'set');
+        $this->assertEquals('40000', $test);
+        $test = $user->castAttribute('rate', '3.14', 'set');
+        $this->assertEquals(3.14, $test);
+        $test = $user->castAttribute('birthday', $carbon, 'set');
+        $this->assertEquals($carbon->timestamp, $test);
+        $test = $user->castAttribute('isActive', 1, 'set');
+        $this->assertEquals(true, $test);
+        $test = $user->castAttribute('default', 'test', 'set');
+        $this->assertEquals('test', $test);
+    }
+
 }
