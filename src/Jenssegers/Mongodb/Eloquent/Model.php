@@ -45,7 +45,6 @@ abstract class Model extends BaseModel
      */
     protected $saveCasts = [];
 
-
     /**
      * Custom accessor for the model's id.
      *
@@ -290,7 +289,7 @@ abstract class Model extends BaseModel
         // cast data for saving.
         // set _id to converted into ObjectID if its possible.
         $this->setRelationCast($key);
-        $value = $this->castAttribute($key, $value,'set');
+        $value = $this->castAttribute($key, $value, 'set');
 
         // Support keys in dot notation.
         if (str_contains($key, '.')) {
@@ -575,7 +574,7 @@ abstract class Model extends BaseModel
     public function hasCast($key, $types = null, $castType = 'get')
     {
         if (array_key_exists($key, $this->getCasts($castType))) {
-            return $types ? in_array($this->getCastType($key, $castType), (array)$types, true) : true;
+            return $types ? in_array($this->getCastType($key, $castType), (array) $types, true) : true;
         }
 
         return false;
@@ -587,9 +586,8 @@ abstract class Model extends BaseModel
      */
     public function useMongoId()
     {
-        return (bool)config('database.connections.mongodb.use_mongo_id', false);
+        return (bool) config('database.connections.mongodb.use_mongo_id', false);
     }
-
 
     /**
      * Cast an attribute to a mongo type.
@@ -602,7 +600,7 @@ abstract class Model extends BaseModel
     public function castAttribute($key, $value, $castType = 'get')
     {
         if (is_null($value)) {
-            return null;
+            return;
         }
 
         if (!$this->hasCast($key, null, $castType)) {
@@ -612,16 +610,16 @@ abstract class Model extends BaseModel
         switch ($this->getCastType($key, $castType)) {
             case 'int':
             case 'integer':
-                return (int)$value;
+                return (int) $value;
             case 'real':
             case 'float':
             case 'double':
-                return (float)$value;
+                return (float) $value;
             case 'string':
-                return (string)$value;
+                return (string) $value;
             case 'bool':
             case 'boolean':
-                return (bool)$value;
+                return (bool) $value;
             case 'date':
             case 'utcdatetime':
             case 'mongodate':
@@ -672,11 +670,11 @@ abstract class Model extends BaseModel
      */
     public function setRelationCast($key)
     {
-        if($key == '_id'){
+        if ($key == '_id') {
             $this->saveCasts['_id'] = 'ObjectID';
             return;
         }
-        if($this->useMongoId()){
+        if ($this->useMongoId()) {
             if (ends_with($key, '_id')) {
                 $this->saveCasts[$key] = 'ObjectID';
             }

@@ -30,11 +30,10 @@ class MorphTo extends EloquentMorphTo
     {
         foreach ($models as $model) {
             if ($model->{$this->morphType}) {
-                $this->dictionary[$model->{$this->morphType}][(string)$model->{$this->foreignKey}][] = $model;
+                $this->dictionary[$model->{$this->morphType}][(string) $model->{$this->foreignKey}][] = $model;
             }
         }
     }
-
 
     /**
      * Get all of the relation results for a type.

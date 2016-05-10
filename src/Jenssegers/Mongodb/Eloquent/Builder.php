@@ -169,7 +169,7 @@ class Builder extends EloquentBuilder
         // Get the number of related objects for each possible parent.
         $compareKeys = $query->pluck($relation->getHasCompareKey());
         $compareKeys = array_map(function ($id) {
-            return (string)$id;
+            return (string) $id;
         }, $compareKeys);
         $relationCount = array_count_values($compareKeys);
 
@@ -205,13 +205,12 @@ class Builder extends EloquentBuilder
         $relatedIds = array_map(function ($id) use ($relation) {
             $relationModel = $relation->getRelated();
             $relationModel->setRelationCast($relation->getHasCompareKey());
-            if($relationModel->useMongoId()
-                && $relationModel->hasCast($relation->getHasCompareKey(), null,'set')){
-                $id = $relationModel->castAttribute($relation->getHasCompareKey(), $id,'set');
+            if ($relationModel->useMongoId()
+                && $relationModel->hasCast($relation->getHasCompareKey(), null, 'set')) {
+                $id = $relationModel->castAttribute($relation->getHasCompareKey(), $id, 'set');
             }
             return $id;
         }, array_keys($relationCount));
-
 
         // Add whereIn to the query.
         return $this->whereIn($this->model->getKeyName(), $relatedIds, $boolean, $not);

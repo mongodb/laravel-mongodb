@@ -22,14 +22,13 @@ trait HasOneOrManyTrait
      */
     protected function getKeys(array $models, $key = null)
     {
-
         return array_unique(array_values(array_map(function ($model) use ($key) {
             $id = $key ? $model->getAttribute($key) : $model->getKey();
             
-            if($this->related->useMongoId()){
+            if ($this->related->useMongoId()) {
                 $model->setRelationCast($key);
 
-                return $model->castAttribute($key, $id,'set');
+                return $model->castAttribute($key, $id, 'set');
             }
 
             return $id;
@@ -50,7 +49,7 @@ trait HasOneOrManyTrait
         // relationship as this will allow us to quickly access all of the related
         // models without having to do nested looping which will be quite slow.
         foreach ($results as $result) {
-            $dictionary[(string)$result->{$foreign}][] = $result;
+            $dictionary[(string) $result->{$foreign}][] = $result;
         }
         return $dictionary;
     }
@@ -64,10 +63,9 @@ trait HasOneOrManyTrait
     {
         $id = $this->parent->getAttribute($this->localKey);
         $this->related->setRelationCast($this->localKey);
-        if($this->related->useMongoId()
-            && $this->related->hasCast($this->localKey, null,'set')){
-
-            $id = $this->related->castAttribute($this->localKey, $id,'set');
+        if ($this->related->useMongoId()
+            && $this->related->hasCast($this->localKey, null, 'set')) {
+            $id = $this->related->castAttribute($this->localKey, $id, 'set');
         }
         return $id;
     }
