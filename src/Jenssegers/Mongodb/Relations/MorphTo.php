@@ -1,9 +1,12 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
 
 class MorphTo extends EloquentMorphTo
 {
+    use HasOneOrManyTrait;
+
     /**
      * Set the base constraints on the relation query.
      */
@@ -16,6 +19,22 @@ class MorphTo extends EloquentMorphTo
             $this->query->where($this->otherKey, '=', $this->parent->{$this->foreignKey});
         }
     }
+
+    /**
+     * Build a dictionary with the models.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection  $models
+     * @return void
+     */
+    protected function buildDictionary(Collection $models)
+    {
+        foreach ($models as $model) {
+            if ($model->{$this->morphType}) {
+                $this->dictionary[$model->{$this->morphType}][(string)$model->{$this->foreignKey}][] = $model;
+            }
+        }
+    }
+
 
     /**
      * Get all of the relation results for a type.
