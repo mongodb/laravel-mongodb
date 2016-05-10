@@ -202,7 +202,15 @@ class Builder extends EloquentBuilder
         }
 
         // All related ids.
-        $relatedIds = array_keys($relationCount);
+        $relatedIds = array_map(function ($id) use ($relation) {
+            $relationModel = $relation->getRelated();
+            $relationModel->setRelationCast($relation->getHasCompareKey());
+            if($relationModel->hasCast($relation->getHasCompareKey(), null,'set')){
+                $id = $relationModel->castAttribute($relation->getHasCompareKey(), $id,'set');
+            }
+            return $id;
+        }, array_keys($relationCount));
+
 
         // Add whereIn to the query.
         return $this->whereIn($this->model->getKeyName(), $relatedIds, $boolean, $not);
