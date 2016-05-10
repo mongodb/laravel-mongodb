@@ -22,10 +22,17 @@ trait HasOneOrManyTrait
      */
     protected function getKeys(array $models, $key = null)
     {
+
         return array_unique(array_values(array_map(function ($model) use ($key) {
-            $model->setRelationCast($key);
             $id = $key ? $model->getAttribute($key) : $model->getKey();
-            return $model->castAttribute($key, $id,'set');
+            
+            if($this->related->useMongoId()){
+                $model->setRelationCast($key);
+
+                return $model->castAttribute($key, $id,'set');
+            }
+
+            return $id;
         }, $models)));
     }
 
@@ -57,7 +64,9 @@ trait HasOneOrManyTrait
     {
         $id = $this->parent->getAttribute($this->localKey);
         $this->related->setRelationCast($this->localKey);
-        if($this->related->hasCast($this->localKey, null,'set')){
+        if($this->related->useMongoId()
+            && $this->related->hasCast($this->localKey, null,'set')){
+
             $id = $this->related->castAttribute($this->localKey, $id,'set');
         }
         return $id;

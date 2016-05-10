@@ -580,6 +580,15 @@ abstract class Model extends BaseModel
 
         return false;
     }
+    /**
+     * check if driver uses mongoId in relations.
+     *
+     * @return bool
+     */
+    public function useMongoId()
+    {
+        return (bool)config('database.connections.mongodb.use_mongo_id', false);
+    }
 
 
     /**
@@ -663,8 +672,11 @@ abstract class Model extends BaseModel
      */
     public function setRelationCast($key)
     {
-        $useMongoId = config('database.connections.mongodb.use_mongo_id',false);
-        if($useMongoId){
+        if($key == '_id'){
+            $this->saveCasts['_id'] = 'ObjectID';
+            return;
+        }
+        if($this->useMongoId()){
             if (ends_with($key, '_id')) {
                 $this->saveCasts[$key] = 'ObjectID';
             }

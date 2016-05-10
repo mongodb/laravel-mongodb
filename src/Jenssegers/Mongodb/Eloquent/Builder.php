@@ -205,7 +205,8 @@ class Builder extends EloquentBuilder
         $relatedIds = array_map(function ($id) use ($relation) {
             $relationModel = $relation->getRelated();
             $relationModel->setRelationCast($relation->getHasCompareKey());
-            if($relationModel->hasCast($relation->getHasCompareKey(), null,'set')){
+            if($relationModel->useMongoId()
+                && $relationModel->hasCast($relation->getHasCompareKey(), null,'set')){
                 $id = $relationModel->castAttribute($relation->getHasCompareKey(), $id,'set');
             }
             return $id;
