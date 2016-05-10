@@ -615,7 +615,7 @@ abstract class Model extends BaseModel
     public function castAttribute($key, $value, $castType = 'get')
     {
         if (is_null($value)) {
-            return null;
+            return;
         }
 
         if (!$this->hasCast($key, null, $castType)) {

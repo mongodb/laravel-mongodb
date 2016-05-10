@@ -533,15 +533,15 @@ class RelationsWithMongoIdTest extends TestCase
         $user = new User;
         $user->setCasts([
             'last_seen' => 'UTCDatetime',
-            'age'=>'int',
-            'name'=>'string',
-            'rate'=>'float',
-            'birthday'=>'timestamp',
-            'isActive'=>'bool',
-            'default'=>'default',
+            'age' => 'int',
+            'name' => 'string',
+            'rate' => 'float',
+            'birthday' => 'timestamp',
+            'isActive' => 'bool',
+            'default' => 'default',
         ], 'set');
         $user->setCasts([
-            'name'=>'string',
+            'name' => 'string',
         ]);
         $carbon = Carbon\Carbon::now();
         $UTCDateTime = new \MongoDB\BSON\UTCDateTime($carbon->timestamp * 1000);
@@ -562,5 +562,4 @@ class RelationsWithMongoIdTest extends TestCase
         $test = $user->castAttribute('default', 'test', 'set');
         $this->assertEquals('test', $test);
     }
-
 }
