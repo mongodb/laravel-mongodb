@@ -178,13 +178,13 @@ class SchemaTest extends TestCase
 
     public function testSparseUnique()
     {
-      Schema::collection('newcollection', function ($collection) {
+        Schema::collection('newcollection', function ($collection) {
           $collection->sparse_and_unique('sparseuniquekey');
-      });
+        });
 
-      $index = $this->getIndex('newcollection', 'sparseuniquekey');
-      $this->assertEquals(1, $index['sparse']);
-      $this->assertEquals(1, $index['unique']);
+        $index = $this->getIndex('newcollection', 'sparseuniquekey');
+        $this->assertEquals(1, $index['sparse']);
+        $this->assertEquals(1, $index['unique']);
     }
 
     protected function getIndex($collection, $name)

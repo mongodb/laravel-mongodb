@@ -225,14 +225,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function sparse_and_unique($columns = null, $options = [])
     {
-      $columns = $this->fluent($columns);
+        $columns = $this->fluent($columns);
 
-      $options['sparse'] = true;
-      $options['unique'] = true;
+        $options['sparse'] = true;
+        $options['unique'] = true;
 
-      $this->index($columns, $options);
+        $this->index($columns, $options);
 
-      return $this;
+        return $this;
     }
 
     /**
