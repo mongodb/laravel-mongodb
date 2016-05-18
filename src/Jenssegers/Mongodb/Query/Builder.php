@@ -283,6 +283,83 @@ class Builder extends QueryBuilder {
     }
 
     /**
+     * Retrieve the "count" result of the query.
+     *
+     * @param  string  $columns
+     * @return int
+     */
+    public function count($columns = '*', $hint = null)
+    {
+      //Get the compiled wheres
+      $wheres = $this->compileWheres();
+      $useFind = true;
+      $useNative = false;
+
+      if ($columns === '*' && is_null($hint)) {
+        // if no special params are parsed, then lets use the native aggregate method
+        $useNative = true;
+      }
+
+      if (!$useNative) {
+        if( 
+          //If there is no $and or $or key, then assume all the wheres can be applied onto the count
+          ( !array_key_exists('$and', $wheres) && !array_key_exists('$or', $wheres) )
+          ||
+          //Otherwise, check that there is only one $and
+          ( array_key_exists('$and', $wheres) && sizeof(array_keys($wheres)) === 1 )
+          ){
+          $useFind = false;
+        }
+
+        $query = [];
+
+        $whereLoop = array_key_exists('$and', $wheres) ? $wheres['$and'] : $wheres;
+
+        foreach( $whereLoop as $key => $value ){
+          if( is_array($value) ){
+            // do any of the keys container modifiers?
+            $invalidKeys = preg_grep('/^\$.*/', array_keys($value));
+            if( count($invalidKeys) > 0 ){
+              $useFind = true;
+            }
+
+            // if the value is an array, then unpack and use each key/value as wheres
+            foreach( $value as $k => $v){
+              // if any of the values are arrays then do not use the standard count
+              if( is_array($v) ){
+                $useFind = true;
+              }
+
+              $query[$k] = $v;
+            }
+          } else {
+            // else just use the key and value
+            $query[$key] = $value;
+          }
+        }
+
+
+        if( $useFind ){
+          $cursor =  $this->collection->find($query, $columns);
+          if ($hint) {
+            $cursor = $cursor->hint($hint);
+          }
+          $count = $cursor->count();
+        } else {
+          $options = [];
+          if ($hint) {
+            $options['hint'] = $hint;
+          }
+          $count = $this->collection->count($query, $options);
+        }
+
+        return $count;
+      }
+      
+      return parent::count($columns);
+    }
+
+    /**
      * Execute an aggregate function on the database.
      *
      * @param  string  $function
@@ -995,6 +1072,25 @@ class Builder extends QueryBuilder {
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * Get the count of the total records for pagination.
+     *
+     * @return int
+     */
+    public function getPaginationCount($countColumns = null, $countHint = null)
+    {
+      $this->backupFieldsForCount();
+
+      // Because some database engines may throw errors if we leave the ordering
+      // statements on the query, we will "back them up" and remove them from
+      // the query. Once we have the count we will put them back onto this.
+      $total = $this->count($countColumns, $countHint);
+
+      $this->restoreFieldsForCount();
+
+      return $total;
     }
 
 }
