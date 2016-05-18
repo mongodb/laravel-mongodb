@@ -238,4 +238,50 @@ class Builder extends EloquentBuilder {
 		return $results;
 	}
 
+  /**
+   * Get a paginator for the "select" statement.
+   *
+   * @param  int    $perPage
+   * @param  array  $columns
+   * @param  array  $countColumns
+   * @return \Illuminate\Pagination\Paginator
+   */
+  public function paginate($perPage = null, $columns = array('*'), $countColumns = null, $countHint = null)
+  {
+    $perPage = $perPage ?: $this->model->getPerPage();
+
+    $paginator = $this->query->getConnection()->getPaginator();
+
+    if (isset($this->query->groups))
+    {
+      return $this->groupedPaginate($paginator, $perPage, $columns);
+    }
+
+    return $this->ungroupedPaginate($paginator, $perPage, $columns, $countColumns, $countHint);
+  }
+
+  /**
+   * Get a paginator for an ungrouped statement.
+   *
+   * @param  \Illuminate\Pagination\Factory  $paginator
+   * @param  int    $perPage
+   * @param  array  $columns
+   * @param  array  $countColumns
+   * @param  array  $countHint
+   * @return \Illuminate\Pagination\Paginator
+   */
+  protected function ungroupedPaginate($paginator, $perPage, $columns, $countColumns = null, $countHint = null)
+  {
+    $total = $this->query->getPaginationCount($countColumns, $countHint);
+
+    // Once we have the paginator we need to set the limit and offset values for
+    // the query so we can get the properly paginated items. Once we have an
+    // array of items we can create the paginator instances for the items.
+    $page = $paginator->getCurrentPage($total);
+
+    $this->query->forPage($page, $perPage);
+
+    return $paginator->make($this->get($columns)->all(), $total, $perPage);
+  }
+
 }
