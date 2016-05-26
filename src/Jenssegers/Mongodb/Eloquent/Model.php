@@ -38,6 +38,51 @@ abstract class Model extends BaseModel
      */
     protected $parentRelation;
 
+
+    /**
+     * Get next id value.
+     * 
+     * @return int
+     */
+    private function _getNextSequence()
+    {
+        // counters is a collection for saving inserted ids.
+        $collection = \DB::connection('mongodb')->collection('counters');
+
+        $counter = $collection->where('_id', $this->collection)->first();
+
+        if ($counter === null) {
+            $seq = 1;
+
+            $counter = [
+                "_id" => $this->collection,
+                "seq" => $seq
+            ];
+            $collection->insert($counter);
+        } else {
+            $seq = $counter["seq"] + 1;
+
+            $collection->where('_id', $this->collection)->increment('seq');
+        }
+
+        return $seq;
+    }
+
+    /**
+     * Override insert method for generating auto incrementing id.
+     *
+     * @param array $data
+     * @return array|bool
+     */
+    public function insert(array $data)
+    {
+        if ($this->incrementing) {
+            $data['_id'] = $this->_getNextSequence();
+        }
+
+        return parent::insert($data);
+    }
+
     /**
      * Custom accessor for the model's id.
      *
