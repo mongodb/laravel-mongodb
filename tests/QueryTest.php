@@ -2,7 +2,6 @@
 
 class QueryTest extends TestCase
 {
-
     protected static $started = false;
 
     public function setUp()
@@ -216,10 +215,10 @@ class QueryTest extends TestCase
     public function testSubquery()
     {
         $users = User::where('title', 'admin')->orWhere(function ($query) {
-                $query->where('name', 'Tommy Toe')
+            $query->where('name', 'Tommy Toe')
                       ->orWhere('name', 'Error');
-            })
-            ->get();
+        })
+        ->get();
 
         $this->assertEquals(5, count($users));
 
