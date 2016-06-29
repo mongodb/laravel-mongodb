@@ -2,7 +2,6 @@
 
 class ModelTest extends TestCase
 {
-
     public function tearDown()
     {
         User::truncate();

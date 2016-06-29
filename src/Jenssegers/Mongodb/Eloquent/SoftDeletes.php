@@ -2,7 +2,6 @@
 
 trait SoftDeletes
 {
-
     use \Illuminate\Database\Eloquent\SoftDeletes;
 
     /**

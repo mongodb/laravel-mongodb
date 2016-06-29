@@ -2,7 +2,6 @@
 
 class EmbeddedRelationsTest extends TestCase
 {
-
     public function tearDown()
     {
         Mockery::close();

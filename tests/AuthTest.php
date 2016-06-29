@@ -5,7 +5,6 @@ use Illuminate\Foundation\Application;
 
 class AuthTest extends TestCase
 {
-
     public function tearDown()
     {
         User::truncate();

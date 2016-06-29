@@ -5,7 +5,6 @@ use MongoDB\BSON\Regex;
 
 class QueryBuilderTest extends TestCase
 {
-
     public function tearDown()
     {
         DB::collection('users')->truncate();
