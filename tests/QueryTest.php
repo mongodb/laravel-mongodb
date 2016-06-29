@@ -223,18 +223,18 @@ class QueryTest extends TestCase
         $this->assertEquals(5, count($users));
 
         $users = User::where('title', 'user')->where(function ($query) {
-                $query->where('age', 35)
+            $query->where('age', 35)
                       ->orWhere('name', 'like', '%harry%');
-            })
-            ->get();
+        })
+        ->get();
 
         $this->assertEquals(2, count($users));
 
         $users = User::where('age', 35)->orWhere(function ($query) {
-                $query->where('title', 'admin')
+            $query->where('title', 'admin')
                       ->orWhere('name', 'Error');
-            })
-            ->get();
+        })
+        ->get();
 
         $this->assertEquals(5, count($users));
 
