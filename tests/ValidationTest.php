@@ -2,7 +2,6 @@
 
 class ValidationTest extends TestCase
 {
-
     public function tearDown()
     {
         User::truncate();

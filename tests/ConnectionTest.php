@@ -2,7 +2,6 @@
 
 class ConnectionTest extends TestCase
 {
-
     public function testConnection()
     {
         $connection = DB::connection('mongodb');
