@@ -4,15 +4,13 @@ use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
 use Illuminate\Queue\Jobs\DatabaseJob;
 use MongoDB\Operation\FindOneAndUpdate;
-use DB;
 
 class MongoQueue extends DatabaseQueue
 {
     /**
      * Pop the next job off of the queue.
      *
-     * @param  string $queue
-     *
+     * @param  string  $queue
      * @return \Illuminate\Contracts\Queue\Job|null
      */
     public function pop($queue = null)
@@ -47,7 +45,7 @@ class MongoQueue extends DatabaseQueue
      */
     protected function getNextAvailableJobAndReserve($queue)
     {
-        $job = DB::getCollection($this->table)->findOneAndUpdate(
+        $job = $this->database->getCollection($this->table)->findOneAndUpdate(
             [
                 'queue'        => $this->getQueue($queue),
                 'reserved'     => 0,
@@ -98,7 +96,7 @@ class MongoQueue extends DatabaseQueue
      * Release the given job ID from reservation.
      *
      * @param  string $id
-     *
+     * @param  int $attempts
      * @return void
      */
     protected function releaseJob($id, $attempts)
@@ -119,6 +117,6 @@ class MongoQueue extends DatabaseQueue
      */
     public function deleteReserved($queue, $id)
     {
-        $this->database->table($this->table)->where('_id', $id)->delete();
+        $this->database->collection($this->table)->where('_id', $id)->delete();
     }
 }
