@@ -49,6 +49,12 @@ class Collection
             $query = [];
 
             // Convert the query paramters to a json string.
+            array_walk_recursive($parameters, function (&$item, $key) {
+                if ($item instanceof \MongoDB\BSON\ObjectID) {
+                    $item = (string) $item;
+                }
+            });
+
             foreach ($parameters as $parameter) {
                 try {
                     $query[] = json_encode($parameter);
