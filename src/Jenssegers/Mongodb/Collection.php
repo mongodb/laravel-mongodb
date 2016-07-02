@@ -2,6 +2,7 @@
 
 use Exception;
 use MongoDB\Collection as MongoCollection;
+use MongoDB\BSON\ObjectID;
 
 class Collection
 {
@@ -48,13 +49,14 @@ class Collection
 
             $query = [];
 
-            // Convert the query paramters to a json string.
+            // Convert the query parameters to a json string.
             array_walk_recursive($parameters, function (&$item, $key) {
-                if ($item instanceof \MongoDB\BSON\ObjectID) {
+                if ($item instanceof ObjectID) {
                     $item = (string) $item;
                 }
             });
 
+            // Convert the query parameters to a json string.
             foreach ($parameters as $parameter) {
                 try {
                     $query[] = json_encode($parameter);
