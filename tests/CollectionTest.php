@@ -7,7 +7,6 @@ use MongoDB\BSON\ObjectID;
 
 class CollectionTest extends TestCase
 {
-
     public function testExecuteMethodCall()
     {
         $return = ['foo' => 'bar'];
