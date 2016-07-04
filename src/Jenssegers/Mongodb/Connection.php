@@ -183,7 +183,7 @@ class Connection extends \Illuminate\Database\Connection
             }
         }
 
-        return "mongodb://" . implode(',', $hosts) . "/{$database}";
+        return "mongodb://" . implode(',', $hosts) . "/{$options['db']}";
     }
 
     /**
