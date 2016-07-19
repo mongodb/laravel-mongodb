@@ -14,7 +14,6 @@ use ReflectionMethod;
 
 abstract class Model extends BaseModel
 {
-
     use HybridRelations;
 
     /**

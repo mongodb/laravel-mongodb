@@ -2,7 +2,6 @@
 
 class SeederTest extends TestCase
 {
-
     public function tearDown()
     {
         User::truncate();

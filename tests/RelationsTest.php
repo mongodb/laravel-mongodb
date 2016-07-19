@@ -2,7 +2,6 @@
 
 class RelationsTest extends TestCase
 {
-
     public function tearDown()
     {
         Mockery::close();
@@ -413,13 +412,11 @@ class RelationsTest extends TestCase
 
         $authors = User::whereHas('books', function ($query) {
             $query->where('rating', 5);
-
         })->get();
         $this->assertCount(1, $authors);
 
         $authors = User::whereHas('books', function ($query) {
             $query->where('rating', '<', 5);
-
         })->get();
         $this->assertCount(1, $authors);
     }

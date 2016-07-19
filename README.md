@@ -120,7 +120,7 @@ And add a new mongodb connection:
     'username' => env('DB_USERNAME'),
     'password' => env('DB_PASSWORD'),
     'options' => [
-        'db' => 'admin' // sets the authentication database required by mongo 3
+        'database' => 'admin' // sets the authentication database required by mongo 3
     ]
 ],
 ```
