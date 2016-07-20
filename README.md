@@ -313,7 +313,7 @@ to:
 
 If you prefer to use routes setup manually just replace the instance of ```use App\User;``` with ```use Jenssegers\Mongodb\Auth\UserModel as User;``` inside of your AuthController.php 
 
-Either of these methods listed above will prevent issues with errors registration POST submissions as the AuthController.php does not use the user provider driver in the same way.  
+Either of these methods listed above will prevent issues with errors on registration POST submissions as the AuthController.php does not use the user provider driver in the same way.  
 
 
 ### Queues
