@@ -258,6 +258,7 @@ Then update the user provider driver to mongodb in config/app.php
     'providers' => [
         'users' => [
             'driver' => 'mongodb',
+            'model' =>  Jenssegers\Mongodb\Auth\UserModel::class,
             'table' => 'users'
         ],
     ],
@@ -273,6 +274,8 @@ to:
 ```
 
 If you prefer to use routes setup manually just replace the instance of ```use App\User;``` with ```use Jenssegers\Mongodb\Auth\UserModel as User;``` inside of your AuthController.php 
+
+Either of these methods listed above will prevent issues with errors registration POST submissions as the AuthController.php does not use the user provider driver in the same way.  
 
 
 ### Queues
