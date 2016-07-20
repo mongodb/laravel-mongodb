@@ -247,6 +247,34 @@ If you want to use Laravel's native Auth functionality, register this included s
 
 This service provider will slightly modify the internal DatabaseReminderRepository to add support for MongoDB based password reminders. If you don't use password reminders, you don't have to register this service provider and everything else should work just fine.
 
+In Laravel 5.2 you will also need to include a custom auth service provider to bypass a hardcoded identifier in the GenericUser class (getAuthIdentifierName) that causes authentication to fail. First register the service provider:   
+
+```php
+'Jenssegers\Mongodb\Auth\MongoDBAuthServiceProvider',
+```
+
+Then update the user provider driver to mongodb in config/app.php
+```
+    'providers' => [
+        'users' => [
+            'driver' => 'mongodb',
+            'table' => 'users'
+        ],
+    ],
+```
+
+If you are planning on using the Laravel auth route helper with Route::auth() you will also need to edit your app/User.php file changing:
+```php
+'use Illuminate\Foundation\Auth\User as Authenticatable;
+```
+to:
+```php
+'use Jenssegers\Mongodb\Auth\User as Authenticatable;
+```
+
+If you prefer to use routes setup manually just replace the instance of ```use App\User;``` with ```use Jenssegers\Mongodb\Auth\UserModel as User;``` inside of your AuthController.php 
+
+
 ### Queues
 
 If you want to use MongoDB as your database backend, change the the driver in `config/queue.php`:
