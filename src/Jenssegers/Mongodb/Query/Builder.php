@@ -143,6 +143,18 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * Execute the query as a "select" statement return Cursor.
+     *
+     * @param array $columns
+     *
+     * @return MongoDB\Driver\Cursor|static[]
+     */
+    public function getCursor($columns = [])
+    {
+        return $this->getFresh($columns, true);
+    }
+
+    /**
      * Execute the query as a "select" statement.
      *
      * @param  array  $columns
@@ -159,7 +171,7 @@ class Builder extends BaseBuilder
      * @param  array  $columns
      * @return array|static[]
      */
-    public function getFresh($columns = [])
+    public function getFresh($columns = [], $returnCursor = false)
     {
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
@@ -274,6 +286,7 @@ class Builder extends BaseBuilder
                 $result = $this->collection->distinct($column);
             }
 
+            // Return results as an array
             return $result;
         }
 
@@ -315,6 +328,10 @@ class Builder extends BaseBuilder
 
             // Execute query and get MongoCursor
             $cursor = $this->collection->find($wheres, $options);
+
+            if ($returnCursor) {
+                return $cursor;
+            }
 
             // Return results as an array with numeric keys
             return iterator_to_array($cursor, false);

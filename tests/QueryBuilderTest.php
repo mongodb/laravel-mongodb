@@ -27,6 +27,19 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(1, count($users));
     }
 
+    public function testGetCursorShouldReceiveCursor()
+    {
+        $columns = [];
+        $users = DB::collection('users')->getCursor($columns, true);
+        $this->assertInstanceOf('MongoDB\Driver\Cursor', $users);
+        $this->assertEquals([], $users->toArray());
+
+        DB::collection('users')->insert(['name' => 'John Doe']);
+
+        $users = DB::collection('users')->getCursor($columns, true);
+        $this->assertEquals(1, count($users->toArray()));
+    }
+
     public function testNoDocument()
     {
         $items = DB::collection('items')->where('name', 'nothing')->get();
