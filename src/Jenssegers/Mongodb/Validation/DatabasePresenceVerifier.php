@@ -40,7 +40,7 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
     public function getMultiCount($collection, $column, array $values, array $extra = [])
     {
         foreach ($values as &$value) {
-           $value = new \MongoRegex("/$value/i");
+            $value = new \MongoRegex("/$value/i");
         }
         
         $query = $this->table($collection)->whereIn($column, $values);

@@ -10,5 +10,4 @@ class MongodbValidationServiceProvider extends ValidationServiceProvider
             return new DatabasePresenceVerifier($app['db']);
         });
     }
-
 }
