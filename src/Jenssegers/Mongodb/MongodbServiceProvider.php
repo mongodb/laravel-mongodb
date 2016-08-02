@@ -15,8 +15,10 @@ class MongodbServiceProvider extends ServiceProvider
 
         Model::setEventDispatcher($this->app['events']);
 
-        $s = explode('.', \Illuminate\Foundation\Application::VERSION);
-        define('SHOULD_RETURN_COLLECTION', (10 * $s[0] + $s[1]) >= 53);
+        if(!defined('SHOULD_RETURN_COLLECTION')) {
+            $s = explode('.', \Illuminate\Foundation\Application::VERSION);
+            define('SHOULD_RETURN_COLLECTION', (10 * $s[0] + $s[1]) >= 53);
+        }
     }
 
     /**
