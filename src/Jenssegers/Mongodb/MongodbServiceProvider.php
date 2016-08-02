@@ -14,6 +14,9 @@ class MongodbServiceProvider extends ServiceProvider
         Model::setConnectionResolver($this->app['db']);
 
         Model::setEventDispatcher($this->app['events']);
+
+        $s=explode('.',\Illuminate\Foundation\Application::VERSION);
+        define('SHOULD_RETURN_COLLECTION',(10*$s[0]+$s[1])>=53);
     }
 
     /**
