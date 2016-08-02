@@ -146,7 +146,7 @@ class Builder extends BaseBuilder
      * Execute the query as a "select" statement.
      *
      * @param  array  $columns
-     * @return array|static[]
+     * @return array|static[]|Collection
      */
     public function get($columns = [])
     {
@@ -157,7 +157,7 @@ class Builder extends BaseBuilder
      * Execute the query as a fresh "select" statement.
      *
      * @param  array  $columns
-     * @return array|static[]
+     * @return array|static[]|Collection
      */
     public function getFresh($columns = [])
     {
@@ -259,7 +259,7 @@ class Builder extends BaseBuilder
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
             // Return results
-            return $results;
+            return new Collection($results);
         }
 
         // Distinct query
@@ -274,7 +274,7 @@ class Builder extends BaseBuilder
                 $result = $this->collection->distinct($column);
             }
 
-            return $result;
+            return new Collection($result);
         }
 
         // Normal query
@@ -317,7 +317,7 @@ class Builder extends BaseBuilder
             $cursor = $this->collection->find($wheres, $options);
 
             // Return results as an array with numeric keys
-            return iterator_to_array($cursor, false);
+            return new Collection(iterator_to_array($cursor, false));
         }
     }
 
