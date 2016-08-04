@@ -288,10 +288,10 @@ This service provider will slightly modify the internal DatabaseReminderReposito
 In Laravel 5.2 you will also need to include a custom auth service provider to bypass a hardcoded identifier in the GenericUser class (getAuthIdentifierName) that causes authentication to fail. First register the service provider:   
 
 ```php
-'Jenssegers\Mongodb\Auth\MongoDBAuthServiceProvider',
+'Jenssegers\Mongodb\Auth\AuthServiceProvider',
 ```
 
-Then update the user provider driver to mongodb in config/app.php
+Then update the user provider driver to mongodb in config/auth.php
 ```
     'providers' => [
         'users' => [
