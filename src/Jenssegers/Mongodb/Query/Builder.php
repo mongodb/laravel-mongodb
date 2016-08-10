@@ -873,7 +873,7 @@ class Builder extends BaseBuilder
                             $item = new UTCDateTime($item->getTimestamp() * 1000);
                         }
                     });
-                }else{
+                } else {
                     if ($where['value'] instanceof DateTime) {
                         $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
                     }
