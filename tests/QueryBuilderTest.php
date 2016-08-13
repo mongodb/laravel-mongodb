@@ -422,17 +422,17 @@ class QueryBuilderTest extends TestCase
     public function testSubdocumentArrayAggregate()
     {
         DB::collection('items')->insert([
-            ['name' => 'knife', 'amount' => [['hidden' => 10, 'found' => 3]]],
-            ['name' => 'fork',  'amount' => [['hidden' => 35, 'found' => 12]]],
+            ['name' => 'knife', 'amount' => [['hidden' => 10, 'found' => 3],['hidden' => 5, 'found' => 2]]],
+            ['name' => 'fork',  'amount' => [['hidden' => 35, 'found' => 12],['hidden' => 7, 'found' => 17],['hidden' => 1, 'found' => 19]]],
             ['name' => 'spoon', 'amount' => [['hidden' => 14, 'found' => 21]]],
-            ['name' => 'spoon', 'amount' => [['hidden' => 6, 'found' => 4]]],
+            ['name' => 'teaspoon', 'amount' => []],
         ]);
 
-        $this->assertEquals(65, DB::collection('items')->sum('amount.*.hidden'));
-        $this->assertEquals(4, DB::collection('items')->count('amount.*.hidden'));
-        $this->assertEquals(6, DB::collection('items')->min('amount.*.hidden'));
+        $this->assertEquals(72, DB::collection('items')->sum('amount.*.hidden'));
+        $this->assertEquals(6, DB::collection('items')->count('amount.*.hidden'));
+        $this->assertEquals(1, DB::collection('items')->min('amount.*.hidden'));
         $this->assertEquals(35, DB::collection('items')->max('amount.*.hidden'));
-        $this->assertEquals(16.25, DB::collection('items')->avg('amount.*.hidden'));
+        $this->assertEquals(12, DB::collection('items')->avg('amount.*.hidden'));
     }
 
     public function testUpsert()
