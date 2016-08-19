@@ -183,11 +183,27 @@ class Builder extends BaseBuilder
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                    $group['_id'][$column] = '$' . $column;
+                    /**
+                     * allowing group count
+                     * 
+                     * $results = $results->groupBy( $groupby_column, function( $group ){
+                     *   // set count
+                     *   $group['count'] = ['$sum' => 1];
+                     *   
+                     *   return $group;
+                     * } );
+                     * 
+                     */ 
+                    if ($column instanceof Closure) {
+                        $group = call_user_func($column, $group);
+                    }else{
+                    // default master    
+                        $group['_id'][$column] = '$' . $column;
 
-                    // When grouping, also add the $last operator to each grouped field,
-                    // this mimics MySQL's behaviour a bit.
-                    $group[$column] = ['$last' => '$' . $column];
+                        // When grouping, also add the $last operator to each grouped field,
+                        // this mimics MySQL's behaviour a bit.
+                        $group[$column] = ['$last' => '$' . $column];
+                    }    
                 }
 
                 // Do the same for other columns that are selected.
