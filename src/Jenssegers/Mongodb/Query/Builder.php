@@ -193,9 +193,10 @@ class Builder extends BaseBuilder
                      *   return $group;
                      * } );
                      * 
+                     * @see https://docs.mongodb.com/manual/tutorial/aggregation-with-user-preference-data/
                      */ 
                     if ($column instanceof Closure) {
-                        $group = call_user_func($column, $group);
+                        $group = call_user_func($column, $group);// or $column($group);
                     }else{
                     // default master    
                         $group['_id'][$column] = '$' . $column;
