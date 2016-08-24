@@ -620,7 +620,7 @@ class User extends Eloquent {
 
     public function groups()
     {
-        return $this->belongsToMany('Group', null, 'users', 'groups');
+        return $this->belongsToMany('Group', null, 'user_ids', 'group_ids');
     }
 
 }
