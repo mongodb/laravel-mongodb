@@ -226,12 +226,12 @@ class Builder extends EloquentBuilder
         // Convert Mongo BSONDocument to a single object.
         elseif ($results instanceof BSONDocument) {
             $results = $results->getArrayCopy();
-            return $this->model->newFromBuilder((array)$results);
+            return $this->model->newFromBuilder((array) $results);
         }
 
         // The result is a single object.
         elseif (is_array($results) and array_key_exists('_id', $results)) {
-            return $this->model->newFromBuilder((array)$results);
+            return $this->model->newFromBuilder((array) $results);
         }
 
         return $results;

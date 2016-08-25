@@ -267,7 +267,7 @@ class Builder extends BaseBuilder
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
             // Return results
-            return SHOULD_RETURN_COLLECTION ? new Collection($results) : $results;
+            return $this->use_collection ? new Collection($results) : $results;
         }
 
         // Distinct query
@@ -282,7 +282,7 @@ class Builder extends BaseBuilder
                 $result = $this->collection->distinct($column);
             }
 
-            return SHOULD_RETURN_COLLECTION ? new Collection($result) : $result;
+            return $this->use_collection ? new Collection($result) : $result;
         }
 
         // Normal query
@@ -326,7 +326,7 @@ class Builder extends BaseBuilder
 
             // Return results as an array with numeric keys
             $results = iterator_to_array($cursor, false);
-            return SHOULD_RETURN_COLLECTION ? new Collection($results) : $results;
+            return $this->use_collection ? new Collection($results) : $results;
         }
     }
 
