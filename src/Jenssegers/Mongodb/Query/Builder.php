@@ -569,14 +569,7 @@ class Builder extends BaseBuilder
     {
         $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
 
-        // If the columns are qualified with a table or have an alias, we cannot use
-        // those directly in the "pluck" operations since the results from the DB
-        // are only keyed by the column itself. We'll strip the table out here.
-        return Arr::pluck(
-            $results,
-            $column,
-            $key
-        );
+        return $results->pluck($column,$key);
     }
 
     /**
@@ -624,6 +617,7 @@ class Builder extends BaseBuilder
     /**
      * Get an array with the values of a given column.
      *
+     * @deprecated
      * @param  string  $column
      * @param  string  $key
      * @return array
@@ -640,10 +634,10 @@ class Builder extends BaseBuilder
                 return $item;
             });
 
-            return $results->lists($column, $key)->all();
+            return $results->pluck($column, $key)->all();
         }
 
-        return parent::lists($column, $key);
+        return parent::pluck($column, $key);
     }
 
     /**
