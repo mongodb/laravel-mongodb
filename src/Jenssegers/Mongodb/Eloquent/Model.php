@@ -537,11 +537,11 @@ abstract class Model extends BaseModel
     }
     
     /**
-    * We just return original key here in order to support keys in dot-notation 
-    *
-    * @param  string  $key
-    * @return string
-    */
+     * We just return original key here in order to support keys in dot-notation
+     *
+     * @param  string  $key
+     * @return string
+     */
     protected function removeTableFromKey($key)
     {
         return $key;
