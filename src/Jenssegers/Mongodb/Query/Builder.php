@@ -578,7 +578,7 @@ class Builder extends BaseBuilder
     {
         $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
 
-        return $this->use_collection ? $results->pluck($column, $key) : Arr::pluck($results,$column,$key);
+        return $this->use_collection ? $results->pluck($column, $key) : Arr::pluck($results, $column, $key);
     }
 
     /**
