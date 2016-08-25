@@ -168,7 +168,7 @@ class Builder extends EloquentBuilder
 
         // Get the number of related objects for each possible parent.
         $relationCount = array_count_values(array_map(function ($id) {
-            return (string)$id; // Convert Back ObjectIds to Strings
+            return (string) $id; // Convert Back ObjectIds to Strings
         }, $query->pluck($relation->getHasCompareKey())));
 
         // Remove unwanted related objects based on the operator and count.
@@ -224,10 +224,10 @@ class Builder extends EloquentBuilder
         } // Convert Mongo BSONDocument to a single object.
         elseif ($results instanceof BSONDocument) {
             $results = $results->getArrayCopy();
-            return $this->model->newFromBuilder((array)$results);
+            return $this->model->newFromBuilder((array) $results);
         } // The result is a single object.
         elseif (is_array($results) and array_key_exists('_id', $results)) {
-            return $this->model->newFromBuilder((array)$results);
+            return $this->model->newFromBuilder((array) $results);
         }
 
         return $results;
