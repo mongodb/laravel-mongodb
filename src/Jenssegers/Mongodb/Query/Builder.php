@@ -4,6 +4,7 @@ use Closure;
 use DateTime;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Jenssegers\Mongodb\Connection;
 use MongoDB\BSON\ObjectID;
@@ -577,7 +578,7 @@ class Builder extends BaseBuilder
     {
         $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
 
-        return $results->pluck($column, $key);
+        return $this->use_collection?$results->pluck($column, $key): Arr::pluck($results,$column,$key);
     }
 
     /**
