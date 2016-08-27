@@ -96,7 +96,7 @@ class Builder extends BaseBuilder
         $this->grammar = new Grammar;
         $this->connection = $connection;
         $this->processor = $processor;
-        $this->useCollections = version_compare(\Illuminate\Foundation\Application::VERSION, '5.3.0', '>=');
+        $this->useCollections = version_compare(\Illuminate\Foundation\Application::VERSION, '5.3', '>=');
     }
 
     /**
