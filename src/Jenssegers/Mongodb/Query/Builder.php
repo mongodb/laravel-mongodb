@@ -83,7 +83,7 @@ class Builder extends BaseBuilder
      *
      * @var boolean
      */
-    protected $use_collection;
+    protected $useCollections;
 
     /**
      * Create a new query builder instance.
@@ -96,8 +96,7 @@ class Builder extends BaseBuilder
         $this->grammar = new Grammar;
         $this->connection = $connection;
         $this->processor = $processor;
-        $s = explode('.', \Illuminate\Foundation\Application::VERSION);
-        $this->use_collection = (10 * $s[0] + $s[1]) >= 53;
+        $this->useCollections = version_compare(\Illuminate\Foundation\Application::VERSION, '5.3.0', '>=');
     }
 
     /**
@@ -268,7 +267,7 @@ class Builder extends BaseBuilder
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
             // Return results
-            return $this->use_collection ? new Collection($results) : $results;
+            return $this->useCollections ? new Collection($results) : $results;
         }
 
         // Distinct query
@@ -283,7 +282,7 @@ class Builder extends BaseBuilder
                 $result = $this->collection->distinct($column);
             }
 
-            return $this->use_collection ? new Collection($result) : $result;
+            return $this->useCollections ? new Collection($result) : $result;
         }
 
         // Normal query
@@ -327,7 +326,7 @@ class Builder extends BaseBuilder
 
             // Return results as an array with numeric keys
             $results = iterator_to_array($cursor, false);
-            return $this->use_collection ? new Collection($results) : $results;
+            return $this->useCollections ? new Collection($results) : $results;
         }
     }
 
@@ -578,7 +577,7 @@ class Builder extends BaseBuilder
     {
         $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
 
-        return $this->use_collection ? $results->pluck($column, $key) : Arr::pluck($results, $column, $key);
+        return $this->useCollections ? $results->pluck($column, $key) : Arr::pluck($results, $column, $key);
     }
 
     /**
