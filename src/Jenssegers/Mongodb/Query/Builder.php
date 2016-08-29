@@ -577,7 +577,16 @@ class Builder extends BaseBuilder
     {
         $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
 
-        return $this->useCollections ? $results->pluck($column, $key) : Arr::pluck($results, $column, $key);
+        // Convert ObjectID's to strings
+        if ($key == '_id') {
+            $results = $results->map(function ($item) {
+                $item['_id'] = (string) $item['_id'];
+                return $item;
+            });
+        }
+
+        $p = Arr::pluck($results, $column, $key);
+        return $this->useCollections ? new Collection($p) : $p;
     }
 
     /**
@@ -632,20 +641,7 @@ class Builder extends BaseBuilder
      */
     public function lists($column, $key = null)
     {
-        if ($key == '_id') {
-            $results = new Collection($this->get([$column, $key]));
-
-            // Convert ObjectID's to strings so that lists can do its work.
-            $results = $results->map(function ($item) {
-                $item['_id'] = (string) $item['_id'];
-
-                return $item;
-            });
-
-            return $results->pluck($column, $key)->all();
-        }
-
-        return parent::pluck($column, $key);
+        return $this->pluck($column, $key);
     }
 
     /**
