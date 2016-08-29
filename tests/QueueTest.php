@@ -38,7 +38,7 @@ class QueueTest extends TestCase
 
         // Expect an attempted older job in the queue
         $job = Queue::pop('test');
-        $this->assertEquals(2, $job->getDatabaseJob()->attempts);
+        $this->assertEquals(1, $job->getDatabaseJob()->attempts);
         $this->assertGreaterThan($expiry, $job->getDatabaseJob()->reserved_at);
 
         $job->delete();
