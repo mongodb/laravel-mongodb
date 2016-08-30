@@ -322,8 +322,8 @@ class RelationsTest extends TestCase
         $this->assertTrue(array_key_exists('groups', $user->getAttributes()));
 
         // Assert they are attached
-        $this->assertTrue(in_array($group->_id, $user->groups));
-        $this->assertTrue(in_array($user->_id, $group->users));
+        $this->assertTrue(in_array($group->_id, $user->groups->pluck('_id')->toArray()));
+        $this->assertTrue(in_array($user->_id, $group->users->pluck('_id')->toArray()));
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
         $this->assertEquals($user->_id, $group->users()->first()->_id);
     }

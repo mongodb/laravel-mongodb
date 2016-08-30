@@ -244,6 +244,18 @@ abstract class Model extends BaseModel
                     // Get the relation results.
                     return $this->getRelationshipFromMethod($key, $camelKey);
                 }
+
+                if ($relations instanceof Relation) {
+                    // If the key already exists in the relationships array, it just means the
+                    // relationship has already been loaded, so we'll just return it out of
+                    // here because there is no need to query within the relations twice.
+                    if (array_key_exists($key, $this->relations) && $this->relations[$key] != null) {
+                        return $this->relations[$key];
+                    }
+
+                    // Get the relation results.
+                    return $this->getRelationshipFromMethod($key, $camelKey);
+                }
             }
         }
 

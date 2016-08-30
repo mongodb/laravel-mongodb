@@ -29,7 +29,7 @@ class QueryBuilderTest extends TestCase
 
     public function testNoDocument()
     {
-        $items = DB::collection('items')->where('name', 'nothing')->get();
+        $items = DB::collection('items')->where('name', 'nothing')->get()->toArray();
         $this->assertEquals([], $items);
 
         $item = DB::collection('items')->where('name', 'nothing')->first();
@@ -288,12 +288,12 @@ class QueryBuilderTest extends TestCase
             ['name' => 'spoon', 'type' => 'round'],
         ]);
 
-        $items = DB::collection('items')->distinct('name')->get();
+        $items = DB::collection('items')->distinct('name')->get()->toArray();
         sort($items);
         $this->assertEquals(3, count($items));
         $this->assertEquals(['fork', 'knife', 'spoon'], $items);
 
-        $types = DB::collection('items')->distinct('type')->get();
+        $types = DB::collection('items')->distinct('type')->get()->toArray();
         sort($types);
         $this->assertEquals(2, count($types));
         $this->assertEquals(['round', 'sharp'], $types);
@@ -357,7 +357,7 @@ class QueryBuilderTest extends TestCase
             ['name' => 'John Doe', 'age' => 25],
         ]);
 
-        $age = DB::collection('users')->where('name', 'John Doe')->pluck('age');
+        $age = DB::collection('users')->where('name', 'John Doe')->pluck('age')->toArray();
         $this->assertEquals([25], $age);
     }
 
@@ -370,16 +370,16 @@ class QueryBuilderTest extends TestCase
             ['name' => 'spoon', 'type' => 'round', 'amount' => 14],
         ]);
 
-        $list = DB::collection('items')->lists('name');
+        $list = DB::collection('items')->pluck('name')->toArray();
         sort($list);
         $this->assertEquals(4, count($list));
         $this->assertEquals(['fork', 'knife', 'spoon', 'spoon'], $list);
 
-        $list = DB::collection('items')->lists('type', 'name');
+        $list = DB::collection('items')->pluck('type', 'name')->toArray();
         $this->assertEquals(3, count($list));
         $this->assertEquals(['knife' => 'sharp', 'fork' => 'sharp', 'spoon' => 'round'], $list);
 
-        $list = DB::collection('items')->lists('name', '_id');
+        $list = DB::collection('items')->pluck('name', '_id')->toArray();
         $this->assertEquals(4, count($list));
         $this->assertEquals(24, strlen(key($list)));
     }

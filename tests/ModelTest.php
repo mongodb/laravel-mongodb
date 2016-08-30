@@ -156,8 +156,8 @@ class ModelTest extends TestCase
         $all = User::all();
 
         $this->assertEquals(2, count($all));
-        $this->assertContains('John Doe', $all->lists('name'));
-        $this->assertContains('Jane Doe', $all->lists('name'));
+        $this->assertContains('John Doe', $all->pluck('name'));
+        $this->assertContains('Jane Doe', $all->pluck('name'));
     }
 
     public function testFind()
