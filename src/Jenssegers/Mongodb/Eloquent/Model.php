@@ -8,6 +8,7 @@ use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
+use Jenssegers\Mongodb\Relations\MorphTo;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use ReflectionMethod;
@@ -233,11 +234,11 @@ abstract class Model extends BaseModel
 
                 // This attribute matches an embedsOne or embedsMany relation so we need
                 // to return the relation results instead of the interal attributes.
-                if ($relations instanceof EmbedsOneOrMany) {
+                if ($relations instanceof EmbedsOneOrMany or $relations instanceof MorphTo) {
                     // If the key already exists in the relationships array, it just means the
                     // relationship has already been loaded, so we'll just return it out of
                     // here because there is no need to query within the relations twice.
-                    if (array_key_exists($key, $this->relations)) {
+                    if (array_key_exists($key, $this->relations) && $this->relations[$key] != null) {
                         return $this->relations[$key];
                     }
 
