@@ -79,6 +79,13 @@ class Builder extends BaseBuilder
     ];
 
     /**
+     * Check if we need to return Collections instead of plain arrays (laravel >= 5.3 )
+     *
+     * @var boolean
+     */
+    protected $useCollections;
+
+    /**
      * Create a new query builder instance.
      *
      * @param Connection $connection
@@ -89,6 +96,7 @@ class Builder extends BaseBuilder
         $this->grammar = new Grammar;
         $this->connection = $connection;
         $this->processor = $processor;
+        $this->useCollections = version_compare(\Illuminate\Foundation\Application::VERSION, '5.3', '>=');
     }
 
     /**
@@ -146,7 +154,7 @@ class Builder extends BaseBuilder
      * Execute the query as a "select" statement.
      *
      * @param  array  $columns
-     * @return array|static[]
+     * @return array|static[]|Collection
      */
     public function get($columns = [])
     {
@@ -157,7 +165,7 @@ class Builder extends BaseBuilder
      * Execute the query as a fresh "select" statement.
      *
      * @param  array  $columns
-     * @return array|static[]
+     * @return array|static[]|Collection
      */
     public function getFresh($columns = [])
     {
@@ -259,7 +267,7 @@ class Builder extends BaseBuilder
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
             // Return results
-            return $results;
+            return $this->useCollections ? new Collection($results) : $results;
         }
 
         // Distinct query
@@ -274,7 +282,7 @@ class Builder extends BaseBuilder
                 $result = $this->collection->distinct($column);
             }
 
-            return $result;
+            return $this->useCollections ? new Collection($result) : $result;
         }
 
         // Normal query
@@ -317,7 +325,8 @@ class Builder extends BaseBuilder
             $cursor = $this->collection->find($wheres, $options);
 
             // Return results as an array with numeric keys
-            return iterator_to_array($cursor, false);
+            $results = iterator_to_array($cursor, false);
+            return $this->useCollections ? new Collection($results) : $results;
         }
     }
 
@@ -568,14 +577,16 @@ class Builder extends BaseBuilder
     {
         $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
 
-        // If the columns are qualified with a table or have an alias, we cannot use
-        // those directly in the "pluck" operations since the results from the DB
-        // are only keyed by the column itself. We'll strip the table out here.
-        return Arr::pluck(
-            $results,
-            $column,
-            $key
-        );
+        // Convert ObjectID's to strings
+        if ($key == '_id') {
+            $results = $results->map(function ($item) {
+                $item['_id'] = (string) $item['_id'];
+                return $item;
+            });
+        }
+
+        $p = Arr::pluck($results, $column, $key);
+        return $this->useCollections ? new Collection($p) : $p;
     }
 
     /**
@@ -623,26 +634,14 @@ class Builder extends BaseBuilder
     /**
      * Get an array with the values of a given column.
      *
+     * @deprecated
      * @param  string  $column
      * @param  string  $key
      * @return array
      */
     public function lists($column, $key = null)
     {
-        if ($key == '_id') {
-            $results = new Collection($this->get([$column, $key]));
-
-            // Convert ObjectID's to strings so that lists can do its work.
-            $results = $results->map(function ($item) {
-                $item['_id'] = (string) $item['_id'];
-
-                return $item;
-            });
-
-            return $results->lists($column, $key)->all();
-        }
-
-        return parent::lists($column, $key);
+        return $this->pluck($column, $key);
     }
 
     /**

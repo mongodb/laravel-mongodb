@@ -79,12 +79,21 @@ class MongoQueue extends DatabaseQueue
      */
     protected function releaseJobsThatHaveBeenReservedTooLong($queue)
     {
-        $expired = Carbon::now()->subSeconds($this->expire)->getTimestamp();
+        $expiration = Carbon::now()->subSeconds($this->expire)->getTimestamp();
+        $now = time();
 
         $reserved = $this->database->collection($this->table)
             ->where('queue', $this->getQueue($queue))
-            ->where('reserved', 1)
-            ->where('reserved_at', '<=', $expired)->get();
+            ->where(function ($query) use ($expiration, $now) {
+                // Check for available jobs
+                $query->where(function ($query) use ($now) {
+                    $query->whereNull('reserved_at');
+                    $query->where('available_at', '<=', $now);
+                });
+
+                // Check for jobs that are reserved but have expired
+                $query->orWhere('reserved_at', '<=', $expiration);
+            })->get();
 
         foreach ($reserved as $job) {
             $attempts = $job['attempts'] + 1;
