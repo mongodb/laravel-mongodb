@@ -223,6 +223,25 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
+     * Specify a sparse and unique index for the collection.
+     *
+     * @param  string|array  $columns
+     * @param  array         $options
+     * @return Blueprint
+     */
+    public function sparse_and_unique($columns = null, $options = [])
+    {
+        $columns = $this->fluent($columns);
+
+        $options['sparse'] = true;
+        $options['unique'] = true;
+
+        $this->index($columns, $options);
+
+        return $this;
+    }
+
+    /**
      * Allow fluent columns.
      *
      * @param  string|array  $columns
