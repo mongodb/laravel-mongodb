@@ -251,7 +251,7 @@ class Builder extends BaseBuilder
             }
 
             // apply unwinds for subdocument array aggregation
-            foreach($unwinds as $unwind){
+            foreach ($unwinds as $unwind) {
                 $pipeline[] = ['$unwind' => '$' . $unwind];
             }
 
