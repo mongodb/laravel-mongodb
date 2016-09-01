@@ -236,7 +236,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         $options['sparse'] = true;
         $options['unique'] = true;
 
-        $this->index($columns, $options);
+        $this->index($columns, null, null, $options);
 
         return $this;
     }
