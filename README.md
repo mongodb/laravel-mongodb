@@ -39,7 +39,7 @@ composer require jenssegers/mongodb
  5.0.x    | 2.1.x
  5.1.x    | 2.2.x or 3.0.x
  5.2.x    | 2.3.x or 3.0.x
- 5.3.x    | 3.0.x
+ 5.3.x    | 3.1.x
 
 And add the service provider in `config/app.php`:
 
@@ -260,6 +260,21 @@ If you want to use MongoDB as your database backend, change the the driver in `c
         'queue'  => 'default',
         'expire' => 60,
     ],
+```
+
+If you want to use MongoDB to handle failed jobs, change the database in `config/queue.php`:
+
+```php
+'failed' => [
+    'database' => 'mongodb',
+    'table'    => 'failed_jobs',
+    ],
+```
+
+And add the service provider in `config/app.php`: 
+
+```php
+Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
 ```
 
 ### Sentry
