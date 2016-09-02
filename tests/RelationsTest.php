@@ -291,6 +291,18 @@ class RelationsTest extends TestCase
         $this->assertCount(2, $user->clients);
     }
 
+    public function testBelongsToManyAttachEloquentCollection()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Test 1']);
+        $client2 = Client::create(['name' => 'Test 2']);
+        $collection = new \Illuminate\Database\Eloquent\Collection([$client1, $client2]);
+
+        $user = User::where('name', '=', 'John Doe')->first();
+        $user->clients()->attach($collection);
+        $this->assertCount(2, $user->clients);
+    }
+
     public function testBelongsToManySyncAlreadyPresent()
     {
         $user = User::create(['name' => 'John Doe']);
