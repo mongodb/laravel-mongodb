@@ -1,49 +1,57 @@
 {
-    "name": "moloquent/moloquent",
-    "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
-    "keywords": ["laravel","eloquent","mongodb","mongo","database","model","moloquent"],
-    "homepage": "https://github.com/moloquent/moloquent",
-    "authors": [
-        {
-            "name": "Moloquent",
-            "homepage": "https://moloquent.github.io"
-        },
-        {
-            "name": "Jens Segers",
-            "homepage": "https://jenssegers.com"
-        }
-    ],
-    "license" : "MIT",
-    "require": {
-        "illuminate/support": "^5.1",
-        "illuminate/container": "^5.1",
-        "illuminate/database": "^5.1",
-        "illuminate/events": "^5.1",
-        "mongodb/mongodb": "^1.0.0"
-
+  "name": "moloquent/moloquent",
+  "version": "3.1.0",
+  "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
+  "keywords": [
+    "laravel",
+    "eloquent",
+    "mongodb",
+    "mongo",
+    "database",
+    "model",
+    "moloquent"
+  ],
+  "homepage": "https://github.com/moloquent/moloquent",
+  "authors": [
+    {
+      "name": "Moloquent",
+      "homepage": "https://moloquent.github.io"
     },
-    "require-dev": {
-        "phpunit/phpunit": "^4.0|^5.0",
-        "orchestra/testbench": "^3.1",
-        "mockery/mockery": "^0.9",
-        "satooshi/php-coveralls": "^0.6"
-    },
-    "autoload": {
-        "psr-0": {
-            "Moloquent\\Moloquent": "src/",
-            "Jenssegers\\Mongodb": "src/",
-            "Jenssegers\\Eloquent": "src/"
-        }
-    },
-    "autoload-dev": {
-        "classmap": [
-            "tests/TestCase.php",
-            "tests/models",
-            "tests/seeds"
-        ]
-    },
-    "suggest": {
-        "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB",
-        "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB"
+    {
+      "name": "Jens Segers",
+      "homepage": "https://jenssegers.com"
     }
+  ],
+  "license": "MIT",
+  "require": {
+    "illuminate/support": "^5.1",
+    "illuminate/container": "^5.1",
+    "illuminate/database": "^5.1",
+    "illuminate/events": "^5.1",
+    "mongodb/mongodb": "^1.0.0"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^4.0|^5.0",
+    "orchestra/testbench": "^3.1",
+    "mockery/mockery": "^0.9",
+    "satooshi/php-coveralls": "^0.6"
+  },
+  "autoload": {
+    "psr-0": {
+      "Moloquent\\Moloquent": "src/",
+      "Jenssegers\\Mongodb": "src/",
+      "Jenssegers\\Eloquent": "src/"
+    }
+  },
+  "autoload-dev": {
+    "classmap": [
+      "tests/TestCase.php",
+      "tests/models",
+      "tests/seeds"
+    ]
+  },
+  "suggest": {
+    "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB",
+    "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB"
+  }
 }

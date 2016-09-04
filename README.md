@@ -2,8 +2,8 @@ Moloquent (Laravel MongoDB)
 =============================
 
 
-[![Latest Stable Version](http://img.shields.io/github/release/moloquent/moloquent.svg)](https://packagist.org/packages/jenssegers/mongodb)
-[![Total Downloads](http://img.shields.io/packagist/dm/moloquent/moloquent.svg)](https://packagist.org/packages/moloquent/moloquent)
+[![Latest Version](http://img.shields.io/packagist/v/moloquent/moloquent.svg)](https://packagist.org/packages/moloquent/moloquent)
+[![Downloads](http://img.shields.io/packagist/dt/moloquent/moloquent.svg)](https://packagist.org/packages/moloquent/moloquent)
 [![Build Status](http://img.shields.io/travis/moloquent/moloquent.svg)](https://travis-ci.org/moloquent/moloquent)
 [![Coverage Status](http://img.shields.io/coveralls/moloquent/moloquent.svg)](https://coveralls.io/r/moloquent/moloquent?branch=master)
 [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
