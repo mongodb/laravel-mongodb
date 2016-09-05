@@ -486,6 +486,13 @@ class ModelTest extends TestCase
         $this->assertEquals('Paris', $user->getAttribute('address.city'));
         $this->assertEquals('Paris', $user['address.city']);
         $this->assertEquals('Paris', $user->{'address.city'});
+
+        // Fill
+        $user->fill([
+            'address.city' => 'Strasbourg',
+        ]);
+
+        $this->assertEquals('Strasbourg', $user['address.city']);
     }
 
     public function testGetDirtyDates()
