@@ -8,17 +8,17 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     /**
      * Log a failed job into storage.
      *
-     * @param  string $connection
-     * @param  string $queue
-     * @param  string $payload
-     *
-     * @return void
+     * @param  string  $connection
+     * @param  string  $queue
+     * @param  string  $payload
+     * @param  \Exception  $exception
+     * @return int|null
      */
-    public function log($connection, $queue, $payload)
+    public function log($connection, $queue, $payload, $exception)
     {
         $failed_at = Carbon::now()->getTimestamp();
 
-        $this->getTable()->insert(compact('connection', 'queue', 'payload', 'failed_at'));
+        $this->getTable()->insert(compact('connection', 'queue', 'payload', 'failed_at','exception'));
     }
 
     /**
