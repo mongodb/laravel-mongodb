@@ -13,7 +13,7 @@ class QueryBuilderTest extends TestCase
 
     public function testCollection()
     {
-        $this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', DB::collection('users'));
+        $this->assertInstanceOf('Moloquent\Query\Builder', DB::collection('users'));
     }
 
     public function testGet()
@@ -190,10 +190,10 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(1, count($cursor->toArray()));
 
         $collection = DB::collection('users')->raw();
-        $this->assertInstanceOf('Jenssegers\Mongodb\Collection', $collection);
+        $this->assertInstanceOf('Moloquent\Collection', $collection);
 
         $collection = User::raw();
-        $this->assertInstanceOf('Jenssegers\Mongodb\Collection', $collection);
+        $this->assertInstanceOf('Moloquent\Collection', $collection);
 
         $results = DB::collection('users')->whereRaw(['age' => 20])->get();
         $this->assertEquals(1, count($results));

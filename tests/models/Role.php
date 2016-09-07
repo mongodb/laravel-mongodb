@@ -1,6 +1,6 @@
 <?php
 
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use Moloquent\Eloquent\Model as Eloquent;
 
 class Role extends Eloquent
 {

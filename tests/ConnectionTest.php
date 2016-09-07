@@ -5,7 +5,7 @@ class ConnectionTest extends TestCase
     public function testConnection()
     {
         $connection = DB::connection('mongodb');
-        $this->assertInstanceOf('Jenssegers\Mongodb\Connection', $connection);
+        $this->assertInstanceOf('Moloquent\Connection', $connection);
     }
 
     public function testReconnect()
@@ -32,13 +32,13 @@ class ConnectionTest extends TestCase
     public function testCollection()
     {
         $collection = DB::connection('mongodb')->getCollection('unittest');
-        $this->assertInstanceOf('Jenssegers\Mongodb\Collection', $collection);
+        $this->assertInstanceOf('Moloquent\Collection', $collection);
 
         $collection = DB::connection('mongodb')->collection('unittests');
-        $this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', $collection);
+        $this->assertInstanceOf('Moloquent\Query\Builder', $collection);
 
         $collection = DB::connection('mongodb')->table('unittests');
-        $this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', $collection);
+        $this->assertInstanceOf('Moloquent\Query\Builder', $collection);
     }
 
     // public function testDynamic()
@@ -87,7 +87,7 @@ class ConnectionTest extends TestCase
     public function testSchemaBuilder()
     {
         $schema = DB::connection('mongodb')->getSchemaBuilder();
-        $this->assertInstanceOf('Jenssegers\Mongodb\Schema\Builder', $schema);
+        $this->assertInstanceOf('Moloquent\Schema\Builder', $schema);
     }
 
     public function testDriverName()

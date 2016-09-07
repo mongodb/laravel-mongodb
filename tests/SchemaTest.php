@@ -19,7 +19,7 @@ class SchemaTest extends TestCase
         $instance = $this;
 
         Schema::create('newcollection', function ($collection) use ($instance) {
-            $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+            $instance->assertInstanceOf('Moloquent\Schema\Blueprint', $collection);
         });
 
         $this->assertTrue(Schema::hasCollection('newcollection'));
@@ -37,11 +37,11 @@ class SchemaTest extends TestCase
         $instance = $this;
 
         Schema::collection('newcollection', function ($collection) use ($instance) {
-            $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+            $instance->assertInstanceOf('Moloquent\Schema\Blueprint', $collection);
         });
 
         Schema::table('newcollection', function ($collection) use ($instance) {
-            $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+            $instance->assertInstanceOf('Moloquent\Schema\Blueprint', $collection);
         });
     }
 

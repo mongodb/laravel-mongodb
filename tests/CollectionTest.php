@@ -1,7 +1,7 @@
 <?php
 
-use Jenssegers\Mongodb\Connection;
-use Jenssegers\Mongodb\Collection;
+use Moloquent\Connection;
+use Moloquent\Collection;
 use MongoDB\Collection as MongoCollection;
 use MongoDB\BSON\ObjectID;
 
