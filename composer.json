@@ -1,6 +1,5 @@
 {
   "name": "moloquent/moloquent",
-  "version": "5.3.0",
   "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
   "keywords": [
     "laravel",
