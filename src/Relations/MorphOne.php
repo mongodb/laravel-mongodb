@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Relations;
+<?php
+
+namespace Moloquent\Relations;
 
 use Illuminate\Database\Eloquent\Relations\MorphOne as EloquentMorphOne;
 

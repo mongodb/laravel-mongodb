@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Relations;
+<?php
+
+namespace Moloquent\Relations;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
@@ -23,7 +25,8 @@ class MorphTo extends EloquentMorphTo
     /**
      * Build a dictionary with the models.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection  $models
+     * @param \Illuminate\Database\Eloquent\Collection $models
+     *
      * @return void
      */
     protected function buildDictionary(Collection $models)
@@ -38,7 +41,8 @@ class MorphTo extends EloquentMorphTo
     /**
      * Get all of the relation results for a type.
      *
-     * @param  string  $type
+     * @param string $type
+     *
      * @return \Illuminate\Database\Eloquent\Collection
      */
     protected function getResultsByType($type)

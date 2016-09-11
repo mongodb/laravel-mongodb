@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Relations;
+<?php
+
+namespace Moloquent\Relations;
 
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
@@ -18,7 +20,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     /**
      * Set the constraints for an eager load of the relation.
      *
-     * @param  array  $models
+     * @param array $models
      */
     public function addEagerConstraints(array $models)
     {
@@ -33,9 +35,10 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     /**
      * Match the eagerly loaded results to their parents.
      *
-     * @param  array   $models
-     * @param  \Illuminate\Database\Eloquent\Collection  $results
-     * @param  string  $relation
+     * @param array                                    $models
+     * @param \Illuminate\Database\Eloquent\Collection $results
+     * @param string                                   $relation
+     *
      * @return array
      */
     public function match(array $models, \Illuminate\Database\Eloquent\Collection $results, $relation)
@@ -57,6 +60,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
                 $model->setRelation($relation, $dictionary[(string) $model->$foreign]);
             }
         }
+
         return $models;
     }
 }

@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Queue;
+<?php
+
+namespace Moloquent\Queue;
 
 use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
@@ -10,7 +12,8 @@ class MongoQueue extends DatabaseQueue
     /**
      * Pop the next job off of the queue.
      *
-     * @param  string  $queue
+     * @param string $queue
+     *
      * @return \Illuminate\Contracts\Queue\Job|null
      */
     public function pop($queue = null)
@@ -39,7 +42,7 @@ class MongoQueue extends DatabaseQueue
      * once. To solve this we use findOneAndUpdate to lock the next jobs
      * record while flagging it as reserved at the same time.
      *
-     * @param  string|null $queue
+     * @param string|null $queue
      *
      * @return \StdClass|null
      */
@@ -74,7 +77,8 @@ class MongoQueue extends DatabaseQueue
     /**
      * Release the jobs that have been reserved for too long.
      *
-     * @param  string  $queue
+     * @param string $queue
+     *
      * @return void
      */
     protected function releaseJobsThatHaveBeenReservedTooLong($queue)
@@ -104,8 +108,9 @@ class MongoQueue extends DatabaseQueue
     /**
      * Release the given job ID from reservation.
      *
-     * @param  string $id
-     * @param  int $attempts
+     * @param string $id
+     * @param int    $attempts
+     *
      * @return void
      */
     protected function releaseJob($id, $attempts)
@@ -120,8 +125,9 @@ class MongoQueue extends DatabaseQueue
     /**
      * Delete a reserved job from the queue.
      *
-     * @param  string  $queue
-     * @param  string  $id
+     * @param string $queue
+     * @param string $id
+     *
      * @return void
      */
     public function deleteReserved($queue, $id)

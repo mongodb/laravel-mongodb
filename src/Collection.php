@@ -1,8 +1,10 @@
-<?php namespace Moloquent;
+<?php
+
+namespace Moloquent;
 
 use Exception;
-use MongoDB\Collection as MongoCollection;
 use MongoDB\BSON\ObjectID;
+use MongoDB\Collection as MongoCollection;
 
 class Collection
 {
@@ -32,8 +34,9 @@ class Collection
     /**
      * Handle dynamic method calls.
      *
-     * @param  string  $method
-     * @param  array   $parameters
+     * @param string $method
+     * @param array  $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -65,7 +68,7 @@ class Collection
                 }
             }
 
-            $queryString = $this->collection->getCollectionName() . '.' . $method . '(' . implode(',', $query) . ')';
+            $queryString = $this->collection->getCollectionName().'.'.$method.'('.implode(',', $query).')';
 
             $this->connection->logQuery($queryString, [], $time);
         }

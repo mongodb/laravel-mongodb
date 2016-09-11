@@ -1,10 +1,11 @@
-<?php namespace Moloquent\Relations;
+<?php
+
+namespace Moloquent\Relations;
 
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Class HasOneOrManyTrait
- * @package Moloquent\Relations
+ * Class HasOneOrManyTrait.
  *
  * @property $this parent Moloquent\Relations
  * @property $this localKey
@@ -15,15 +16,16 @@ trait HasOneOrManyTrait
     /**
      * Get all of the primary keys for an array of models.
      *
-     * @param  array $models
-     * @param  string $key
+     * @param array  $models
+     * @param string $key
+     *
      * @return array
      */
     protected function getKeys(array $models, $key = null)
     {
         return array_unique(array_values(array_map(function ($model) use ($key) {
             $id = $key ? $model->getAttribute($key) : $model->getKey();
-            
+
             if ($this->related->useMongoId()) {
                 $model->setRelationCast($key);
 
@@ -37,7 +39,8 @@ trait HasOneOrManyTrait
     /**
      * Build model dictionary keyed by the relation's foreign key.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection $results
+     * @param \Illuminate\Database\Eloquent\Collection $results
+     *
      * @return array
      */
     protected function buildDictionary(Collection $results)
@@ -50,6 +53,7 @@ trait HasOneOrManyTrait
         foreach ($results as $result) {
             $dictionary[(string) $result->{$foreign}][] = $result;
         }
+
         return $dictionary;
     }
 
@@ -66,6 +70,7 @@ trait HasOneOrManyTrait
             && $this->related->hasCast($this->localKey, null, 'set')) {
             $id = $this->related->castAttribute($this->localKey, $id, 'set');
         }
+
         return $id;
     }
 }

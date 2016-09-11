@@ -1,4 +1,6 @@
-<?php namespace Moloquent;
+<?php
+
+namespace Moloquent;
 
 use Illuminate\Queue\QueueServiceProvider;
 use Moloquent\Queue\Failed\MongoFailedJobProvider;
