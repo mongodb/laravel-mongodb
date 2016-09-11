@@ -40,7 +40,7 @@
       "Moloquent\\": "src/"
     },
     "files" : [
-      "src/Moloquent/SupportClasses/JenssegersModel.php"
+      "src/Moloquent/SupportClasses/Support.php"
     ]
   },
   "autoload-dev": {
