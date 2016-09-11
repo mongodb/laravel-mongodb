@@ -527,15 +527,15 @@ class RelationsWithMongoIdTest extends TestCase
 
     public function testCastAttribute()
     {
-        $user = new User;
+        $user = new User();
         $user->setCasts([
             'last_seen' => 'UTCDatetime',
-            'age' => 'int',
-            'name' => 'string',
-            'rate' => 'float',
-            'birthday' => 'timestamp',
-            'isActive' => 'bool',
-            'default' => 'default',
+            'age'       => 'int',
+            'name'      => 'string',
+            'rate'      => 'float',
+            'birthday'  => 'timestamp',
+            'isActive'  => 'bool',
+            'default'   => 'default',
         ], 'set');
         $user->setCasts([
             'name' => 'string',

@@ -36,7 +36,7 @@
     "satooshi/php-coveralls": "^0.6"
   },
   "autoload": {
-    "psr-0" :{
+    "psr-4" :{
       "Moloquent\\": "src/"
     },
     "files" : [

@@ -1,7 +1,7 @@
 <?php
 
-use MongoDB\BSON\UTCDateTime;
 use MongoDB\BSON\Regex;
+use MongoDB\BSON\UTCDateTime;
 
 class QueryBuilderTest extends TestCase
 {
@@ -422,8 +422,8 @@ class QueryBuilderTest extends TestCase
     public function testSubdocumentArrayAggregate()
     {
         DB::collection('items')->insert([
-            ['name' => 'knife', 'amount' => [['hidden' => 10, 'found' => 3],['hidden' => 5, 'found' => 2]]],
-            ['name' => 'fork',  'amount' => [['hidden' => 35, 'found' => 12],['hidden' => 7, 'found' => 17],['hidden' => 1, 'found' => 19]]],
+            ['name' => 'knife', 'amount' => [['hidden' => 10, 'found' => 3], ['hidden' => 5, 'found' => 2]]],
+            ['name' => 'fork',  'amount' => [['hidden' => 35, 'found' => 12], ['hidden' => 7, 'found' => 17], ['hidden' => 1, 'found' => 19]]],
             ['name' => 'spoon', 'amount' => [['hidden' => 14, 'found' => 21]]],
             ['name' => 'teaspoon', 'amount' => []],
         ]);
@@ -489,20 +489,20 @@ class QueryBuilderTest extends TestCase
     public function testDates()
     {
         DB::collection('users')->insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(1000 * strtotime("1980-01-01 00:00:00"))],
-            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(1000 * strtotime("1981-01-01 00:00:00"))],
-            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(1000 * strtotime("1982-01-01 00:00:00"))],
-            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(1000 * strtotime("1983-01-01 00:00:00"))],
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(1000 * strtotime('1980-01-01 00:00:00'))],
+            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(1000 * strtotime('1981-01-01 00:00:00'))],
+            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(1000 * strtotime('1982-01-01 00:00:00'))],
+            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(1000 * strtotime('1983-01-01 00:00:00'))],
         ]);
 
-        $user = DB::collection('users')->where('birthday', new UTCDateTime(1000 * strtotime("1980-01-01 00:00:00")))->first();
+        $user = DB::collection('users')->where('birthday', new UTCDateTime(1000 * strtotime('1980-01-01 00:00:00')))->first();
         $this->assertEquals('John Doe', $user['name']);
 
-        $user = DB::collection('users')->where('birthday', '=', new DateTime("1980-01-01 00:00:00"))->first();
+        $user = DB::collection('users')->where('birthday', '=', new DateTime('1980-01-01 00:00:00'))->first();
         $this->assertEquals('John Doe', $user['name']);
 
-        $start = new UTCDateTime(1000 * strtotime("1981-01-01 00:00:00"));
-        $stop = new UTCDateTime(1000 * strtotime("1982-01-01 00:00:00"));
+        $start = new UTCDateTime(1000 * strtotime('1981-01-01 00:00:00'));
+        $stop = new UTCDateTime(1000 * strtotime('1982-01-01 00:00:00'));
 
         $users = DB::collection('users')->whereBetween('birthday', [$start, $stop])->get();
         $this->assertEquals(2, count($users));
@@ -565,11 +565,11 @@ class QueryBuilderTest extends TestCase
         $results = DB::collection('items')->where('tags', 'size', 4)->get();
         $this->assertEquals(1, count($results));
 
-        $regex = new Regex(".*doe", "i");
+        $regex = new Regex('.*doe', 'i');
         $results = DB::collection('users')->where('name', 'regex', $regex)->get();
         $this->assertEquals(2, count($results));
 
-        $regex = new Regex(".*doe", "i");
+        $regex = new Regex('.*doe', 'i');
         $results = DB::collection('users')->where('name', 'regexp', $regex)->get();
         $this->assertEquals(2, count($results));
 

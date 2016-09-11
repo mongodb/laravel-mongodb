@@ -1,9 +1,9 @@
 <?php
 
-use Moloquent\Connection;
 use Moloquent\Collection;
-use MongoDB\Collection as MongoCollection;
+use Moloquent\Connection;
 use MongoDB\BSON\ObjectID;
+use MongoDB\Collection as MongoCollection;
 
 class CollectionTest extends TestCase
 {
