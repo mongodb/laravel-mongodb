@@ -40,7 +40,7 @@
       "Moloquent\\": "src/"
     },
     "files" : [
-      "src/Moloquent/SupportClasses/Support.php"
+      "src/SupportClasses/Support.php"
     ]
   },
   "autoload-dev": {
