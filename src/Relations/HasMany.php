@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Relations;
+<?php
+
+namespace Moloquent\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
@@ -6,12 +8,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
 class HasMany extends EloquentHasMany
 {
     use HasOneOrManyTrait;
-    
+
     /**
      * Add the constraints for a relationship count query.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Builder  $parent
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param \Illuminate\Database\Eloquent\Builder $parent
+     *
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function getRelationCountQuery(Builder $query, Builder $parent)
@@ -24,9 +27,10 @@ class HasMany extends EloquentHasMany
     /**
      * Add the constraints for a relationship query.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Builder  $parent
-     * @param  array|mixed $columns
+     * @param \Illuminate\Database\Eloquent\Builder $query
+     * @param \Illuminate\Database\Eloquent\Builder $parent
+     * @param array|mixed                           $columns
+     *
      * @return \Illuminate\Database\Eloquent\Builder
      */
     public function getRelationQuery(Builder $query, Builder $parent, $columns = ['*'])

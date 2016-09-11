@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Query;
+<?php
+
+namespace Moloquent\Query;
 
 use Illuminate\Database\Query\Processors\Processor as BaseProcessor;
 

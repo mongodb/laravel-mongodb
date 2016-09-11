@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Relations;
+<?php
+
+namespace Moloquent\Relations;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -9,7 +11,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Hydrate the pivot table relationship on the models.
      *
-     * @param  array  $models
+     * @param array $models
      */
     protected function hydratePivotRelation(array $models)
     {
@@ -19,7 +21,8 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Set the select clause for the relation query.
      *
-     * @param  array  $columns
+     * @param array $columns
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     protected function getSelectColumns(array $columns = ['*'])
@@ -54,9 +57,10 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Save a new model and attach it to the parent model.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  array  $joining
-     * @param  bool   $touch
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param array                               $joining
+     * @param bool                                $touch
+     *
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function save(Model $model, array $joining = [], $touch = true)
@@ -71,9 +75,10 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Create a new instance of the related model.
      *
-     * @param  array  $attributes
-     * @param  array  $joining
-     * @param  bool   $touch
+     * @param array $attributes
+     * @param array $joining
+     * @param bool  $touch
+     *
      * @return \Illuminate\Database\Eloquent\Model
      */
     public function create(array $attributes, array $joining = [], $touch = true)
@@ -93,8 +98,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Sync the intermediate tables with a list of IDs or collection of models.
      *
-     * @param  array  $ids
-     * @param  bool   $detaching
+     * @param array $ids
+     * @param bool  $detaching
+     *
      * @return array
      */
     public function sync($ids, $detaching = true)
@@ -153,9 +159,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Update an existing pivot record on the table.
      *
-     * @param  mixed  $id
-     * @param  array  $attributes
-     * @param  bool   $touch
+     * @param mixed $id
+     * @param array $attributes
+     * @param bool  $touch
      */
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
@@ -165,9 +171,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Attach a model to the parent.
      *
-     * @param  mixed  $id
-     * @param  array  $attributes
-     * @param  bool   $touch
+     * @param mixed $id
+     * @param array $attributes
+     * @param bool  $touch
      */
     public function attach($id, array $attributes = [], $touch = true)
     {
@@ -202,8 +208,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Detach models from the relationship.
      *
-     * @param  int|array  $ids
-     * @param  bool  $touch
+     * @param int|array $ids
+     * @param bool      $touch
+     *
      * @return int
      */
     public function detach($ids = [], $touch = true)
@@ -240,7 +247,8 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Build model dictionary keyed by the relation's foreign key.
      *
-     * @param  \Illuminate\Database\Eloquent\Collection  $results
+     * @param \Illuminate\Database\Eloquent\Collection $results
+     *
      * @return array
      */
     protected function buildDictionary(Collection $results)
@@ -293,21 +301,24 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Format the sync list so that it is keyed by ID. (Legacy Support)
-     * The original function has been renamed to formatRecordsList since Laravel 5.3
+     * The original function has been renamed to formatRecordsList since Laravel 5.3.
      *
      * @deprecated
-     * @param  array  $records
+     *
+     * @param array $records
+     *
      * @return array
      */
     protected function formatSyncList(array $records)
     {
         $results = [];
         foreach ($records as $id => $attributes) {
-            if (! is_array($attributes)) {
+            if (!is_array($attributes)) {
                 list($id, $attributes) = [$attributes, []];
             }
             $results[$id] = $attributes;
         }
+
         return $results;
     }
 }

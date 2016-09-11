@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Eloquent;
+<?php
+
+namespace Moloquent\Eloquent;
 
 trait SoftDeletes
 {

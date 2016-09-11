@@ -1,4 +1,6 @@
-<?php namespace Moloquent\Auth;
+<?php
+
+namespace Moloquent\Auth;
 
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider as BasePasswordResetServiceProvider;
 

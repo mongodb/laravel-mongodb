@@ -1,17 +1,20 @@
-<?php namespace Moloquent\Auth;
+<?php
 
-use Illuminate\Auth\Passwords\DatabaseTokenRepository as BaseDatabaseTokenRepository;
-use MongoDB\BSON\UTCDateTime;
+namespace Moloquent\Auth;
+
 use DateTime;
 use DateTimeZone;
+use Illuminate\Auth\Passwords\DatabaseTokenRepository as BaseDatabaseTokenRepository;
+use MongoDB\BSON\UTCDateTime;
 
 class DatabaseTokenRepository extends BaseDatabaseTokenRepository
 {
     /**
      * Build the record payload for the table.
      *
-     * @param  string  $email
-     * @param  string  $token
+     * @param string $email
+     * @param string $token
+     *
      * @return array
      */
     protected function getPayload($email, $token)
@@ -22,7 +25,8 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
     /**
      * Determine if the token has expired.
      *
-     * @param  array  $token
+     * @param array $token
+     *
      * @return bool
      */
     protected function tokenExpired($token)

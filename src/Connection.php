@@ -1,4 +1,6 @@
-<?php namespace Moloquent;
+<?php
+
+namespace Moloquent;
 
 use MongoDB\Client;
 
@@ -21,7 +23,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a new database connection instance.
      *
-     * @param  array   $config
+     * @param array $config
      */
     public function __construct(array $config)
     {
@@ -49,13 +51,14 @@ class Connection extends \Illuminate\Database\Connection
      */
     protected function getDefaultPostProcessor()
     {
-        return new Query\Processor;
+        return new Query\Processor();
     }
 
     /**
      * Begin a fluent query against a database collection.
      *
-     * @param  string  $collection
+     * @param string $collection
+     *
      * @return Query\Builder
      */
     public function collection($collection)
@@ -70,7 +73,8 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Begin a fluent query against a database collection.
      *
-     * @param  string  $table
+     * @param string $table
+     *
      * @return Query\Builder
      */
     public function table($table)
@@ -81,7 +85,8 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Get a MongoDB collection.
      *
-     * @param  string   $name
+     * @param string $name
+     *
      * @return Collection
      */
     public function getCollection($name)
@@ -122,9 +127,10 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a new MongoDB connection.
      *
-     * @param  string  $dsn
-     * @param  array   $config
-     * @param  array   $options
+     * @param string $dsn
+     * @param array  $config
+     * @param array  $options
+     *
      * @return \MongoDB\Client
      */
     protected function createConnection($dsn, array $config, array $options)
@@ -158,7 +164,8 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a DSN string from a configuration.
      *
-     * @param  array   $config
+     * @param array $config
+     *
      * @return string
      */
     protected function getDsn(array $config)
@@ -170,7 +177,7 @@ class Connection extends \Illuminate\Database\Connection
         extract($config);
 
         // Check if the user passed a complete dsn to the configuration.
-        if (! empty($dsn)) {
+        if (!empty($dsn)) {
             return $dsn;
         }
 
@@ -184,13 +191,14 @@ class Connection extends \Illuminate\Database\Connection
             }
         }
 
-        return "mongodb://" . implode(',', $hosts) . "/{$database}";
+        return 'mongodb://'.implode(',', $hosts)."/{$database}";
     }
 
     /**
      * Get the elapsed time since a given starting point.
      *
-     * @param  int    $start
+     * @param int $start
+     *
      * @return float
      */
     public function getElapsedTime($start)
@@ -211,8 +219,9 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Dynamically pass methods to the connection.
      *
-     * @param  string  $method
-     * @param  array   $parameters
+     * @param string $method
+     * @param array  $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)

@@ -1,4 +1,6 @@
-<?php namespace Moloquent;
+<?php
+
+namespace Moloquent;
 
 use Illuminate\Support\ServiceProvider;
 use Moloquent\Eloquent\Model;
