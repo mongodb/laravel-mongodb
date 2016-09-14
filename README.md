@@ -482,10 +482,10 @@ User::where('tags', 'size', 3)->get();
 Selects documents where values match a specified regular expression.
 
 ```php
-User::where('name', 'regex', new MongoRegex("/.*doe/i"))->get();
+User::where('name', 'regex', new \MongoDB\BSON\Regex("/.*doe/i"))->get();
 ```
 
-**NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a MongoRegex object.
+**NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a MongoDB\BSON\Regex object.
 
 ```php
 User::where('name', 'regexp', '/.*doe/i'))->get();
