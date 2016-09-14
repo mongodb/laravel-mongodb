@@ -496,7 +496,6 @@ class QueryBuilderTest extends TestCase
 
         $usersWithDateTimeFilter = DB::collection('users')->whereBetween('birthday', [$dateTimeStart, $dateTimeStop])->get();
         $this->assertEquals(2, count($usersWithDateTimeFilter));
-
     }
 
     public function testOperators()
