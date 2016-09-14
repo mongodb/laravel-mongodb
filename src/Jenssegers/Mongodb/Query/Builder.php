@@ -866,7 +866,16 @@ class Builder extends BaseBuilder
 
             // Convert DateTime values to UTCDateTime.
             if (isset($where['value']) and $where['value'] instanceof DateTime) {
-                $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
+                $where['value'] = $this->dateTimeConvertion($where['value']);
+            }
+
+            // Convert DateTime values to UTCDateTime in $where['values'] key.
+            if (isset($where['values'])) {
+                foreach ($where['values'] as $key => $value) {
+                    if ($value instanceof DateTime) {
+                        $where['values'][$key] = $this->dateTimeConvertion($value);
+                    }
+                }
             }
 
             // The next item in a "chain" of wheres devices the boolean of the
@@ -894,7 +903,7 @@ class Builder extends BaseBuilder
             // Merge the compiled where with the others.
             $compiled = array_merge_recursive($compiled, $result);
         }
-
+        
         return $compiled;
     }
 
@@ -1017,6 +1026,20 @@ class Builder extends BaseBuilder
     protected function compileWhereRaw($where)
     {
         return $where['sql'];
+    }
+    
+    /**
+     * Convert to MongoDB\BSON\UTCDateTime if $value is a DateTime object.
+     *
+     * @param  mixed   $value
+     * @return mixed
+     */
+    protected function dateTimeConvertion($value)
+    {
+        if ($value instanceof DateTime) {
+            return new UTCDateTime($value->getTimestamp() * 1000);
+        }
+        return $value;
     }
 
     /**
