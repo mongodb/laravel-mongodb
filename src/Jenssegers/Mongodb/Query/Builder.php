@@ -870,10 +870,12 @@ class Builder extends BaseBuilder
             }
 
             // Convert DateTime values to UTCDateTime in $where['values'] key.
-            if (isset($where['values'])) {
-                foreach ($where['values'] as $key => $value) {
-                    if ($value instanceof DateTime) {
-                        $where['values'][$key] = $this->dateTimeConvertion($value);
+            if (array_key_exists('values', $where)) {
+                if (is_array($where['values']) && !empty($where['values'])) {
+                    foreach ($where['values'] as $keyWhere => $valueWhere) {
+                        if ($valueWhere instanceof DateTime) {
+                            $where['values'][$keyWhere] = $this->dateTimeConvertion($valueWhere);
+                        }
                     }
                 }
             }
