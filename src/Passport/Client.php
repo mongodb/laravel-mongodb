@@ -38,8 +38,8 @@ class Client extends Model
      */
     protected $casts = [
         'personal_access_client' => 'bool',
-        'password_client' => 'bool',
-        'revoked' => 'bool',
+        'password_client'        => 'bool',
+        'revoked'                => 'bool',
     ];
 
     /**
