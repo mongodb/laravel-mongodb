@@ -965,7 +965,7 @@ class Builder extends BaseBuilder
             // Merge the compiled where with the others.
             $compiled = array_merge_recursive($compiled, $result);
         }
-        
+
         return $compiled;
     }
 
@@ -1089,11 +1089,12 @@ class Builder extends BaseBuilder
     {
         return $where['sql'];
     }
-    
+
     /**
      * Convert to MongoDB\BSON\UTCDateTime if $value is a DateTime object.
      *
-     * @param  mixed   $value
+     * @param mixed $value
+     *
      * @return mixed
      */
     protected function dateTimeConvertion($value)
@@ -1101,6 +1102,7 @@ class Builder extends BaseBuilder
         if ($value instanceof DateTime) {
             return new UTCDateTime($value->getTimestamp() * 1000);
         }
+
         return $value;
     }
 
