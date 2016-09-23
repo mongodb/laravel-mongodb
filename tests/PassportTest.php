@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 
-
 class PassportTest extends TestCase
 {
     public function setUp()
@@ -19,8 +18,7 @@ class PassportTest extends TestCase
 
     public function testPassportInstall()
     {
-        $result=Artisan::call('passport:install',[]);
-        $this->assertEquals(0,$result);
+        $result = Artisan::call('passport:install', []);
+        $this->assertEquals(0, $result);
     }
-
 }
