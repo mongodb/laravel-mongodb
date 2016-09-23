@@ -30,6 +30,7 @@
     "mongodb/mongodb": "^1.0.0"
   },
   "require-dev": {
+    "laravel/passport": "^1.0",
     "phpunit/phpunit": "^4.0|^5.0",
     "orchestra/testbench": "^3.1",
     "mockery/mockery": "^0.9",

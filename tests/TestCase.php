@@ -30,6 +30,8 @@ class TestCase extends Orchestra\Testbench\TestCase
         return [
             Moloquent\MongodbServiceProvider::class,
             Moloquent\Auth\PasswordResetServiceProvider::class,
+            Moloquent\Passport\PassportServiceProvider::class,
+            Laravel\Passport\PassportServiceProvider::class,
         ];
     }
 
