@@ -234,6 +234,11 @@ abstract class Model extends BaseModel
             return $this->getAttributeValue($key);
         }
 
+        // Eloquent behaviour would prioritise the mutator, so Check for hasGetMutator first
+        if ($this->hasGetMutator($key)){
+            return $this->getAttributeValue($key);
+        }
+
         $camelKey = camel_case($key);
 
         // If the "attribute" exists as a method on the model, it may be an
@@ -274,8 +279,7 @@ abstract class Model extends BaseModel
             }
         }
 
-        // Eloquent behaviour would prioritise the mutator, so Check for hasGetMutator first
-        return $this->hasGetMutator($key) ? $this->getAttributeValue($key) : parent::getAttribute($key);
+        return parent::getAttribute($key);
     }
 
     /**
