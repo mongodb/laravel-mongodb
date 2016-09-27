@@ -274,7 +274,8 @@ abstract class Model extends BaseModel
             }
         }
 
-        return parent::getAttribute($key);
+        // Eloquent behaviour would prioritise the mutator, so Check for hasGetMutator first
+        return $this->hasGetMutator($key) ? $this->getAttributeValue($key) : parent::getAttribute($key);
     }
 
     /**
