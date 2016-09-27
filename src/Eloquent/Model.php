@@ -235,7 +235,7 @@ abstract class Model extends BaseModel
         }
 
         // Eloquent behaviour would prioritise the mutator, so Check for hasGetMutator first
-        if ($this->hasGetMutator($key)){
+        if ($this->hasGetMutator($key)) {
             return $this->getAttributeValue($key);
         }
 
