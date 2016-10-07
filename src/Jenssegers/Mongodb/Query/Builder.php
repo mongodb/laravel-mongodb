@@ -208,6 +208,7 @@ class Builder extends BaseBuilder
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups or $this->aggregate or $this->paginating) {
             $group = [];
+            $unwinds = [];
 
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
@@ -233,6 +234,13 @@ class Builder extends BaseBuilder
                 $function = $this->aggregate['function'];
 
                 foreach ($this->aggregate['columns'] as $column) {
+                    // Add unwind if a subdocument array should be aggregated
+                    // column: subarray.price => {$unwind: '$subarray'}
+                    if (count($splitColumns = explode('.*.', $column)) == 2) {
+                        $unwinds[] = $splitColumns[0];
+                        $column = implode('.', $splitColumns);
+                    }
+
                     // Translate count into sum.
                     if ($function == 'count') {
                         $group['aggregate'] = ['$sum' => 1];
@@ -262,6 +270,12 @@ class Builder extends BaseBuilder
             if ($wheres) {
                 $pipeline[] = ['$match' => $wheres];
             }
+
+            // apply unwinds for subdocument array aggregation
+            foreach ($unwinds as $unwind) {
+                $pipeline[] = ['$unwind' => '$' . $unwind];
+            }
+
             if ($group) {
                 $pipeline[] = ['$group' => $group];
             }
