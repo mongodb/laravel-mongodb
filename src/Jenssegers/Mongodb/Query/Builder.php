@@ -103,7 +103,21 @@ class Builder extends BaseBuilder
         $this->grammar = new Grammar;
         $this->connection = $connection;
         $this->processor = $processor;
-        $this->useCollections = version_compare(\Illuminate\Foundation\Application::VERSION, '5.3', '>=');
+        $this->useCollections = $this->shouldUseCollections();
+    }
+    
+    /**
+     * Returns true if Laravel or Lumen >= 5.3
+     *
+     * @return bool
+     */
+    protected function shouldUseCollections()
+    {
+        if (function_exists('app')) {
+            $version = app()->version();
+            $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
+            return version_compare($version, '5.3', '>=');
+        }
     }
 
     /**
