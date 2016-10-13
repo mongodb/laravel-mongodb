@@ -2,8 +2,6 @@
 
 namespace Moloquent\Passport;
 
-use Laravel\Passport\AuthCode;
-use Laravel\Passport\Token;
 use Moloquent\Eloquent\Model;
 
 class Client extends Model
@@ -38,8 +36,8 @@ class Client extends Model
      */
     protected $casts = [
         'personal_access_client' => 'bool',
-        'password_client'        => 'bool',
-        'revoked'                => 'bool',
+        'password_client' => 'bool',
+        'revoked' => 'bool',
     ];
 
     /**
