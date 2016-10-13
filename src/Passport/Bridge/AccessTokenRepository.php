@@ -2,16 +2,11 @@
 
 namespace Moloquent\Passport\Bridge;
 
-use DateTime;
-use Illuminate\Database\Connection;
-use League\OAuth2\Server\Entities\ClientEntityInterface;
 use League\OAuth2\Server\Entities\AccessTokenEntityInterface;
-use League\OAuth2\Server\Repositories\AccessTokenRepositoryInterface;
 use Moloquent\Passport\Token;
 
 class AccessTokenRepository extends \Laravel\Passport\Bridge\AccessTokenRepository
 {
-
     /**
      * {@inheritdoc}
      */
@@ -19,11 +14,11 @@ class AccessTokenRepository extends \Laravel\Passport\Bridge\AccessTokenReposito
     {
         // Use Token model to save token instead of direct database insert
         $token = new Token([
-            'id' => $accessTokenEntity->getIdentifier(),
-            'user_id' => $accessTokenEntity->getUserIdentifier(),
+            'id'        => $accessTokenEntity->getIdentifier(),
+            'user_id'   => $accessTokenEntity->getUserIdentifier(),
             'client_id' => $accessTokenEntity->getClient()->getIdentifier(),
-            'scopes' => $this->formatScopesForStorage($accessTokenEntity->getScopes()),
-            'revoked' => false,
+            'scopes'    => $this->formatScopesForStorage($accessTokenEntity->getScopes()),
+            'revoked'   => false,
         ]);
 
         $token->save();
@@ -35,5 +30,4 @@ class AccessTokenRepository extends \Laravel\Passport\Bridge\AccessTokenReposito
             return $scope->getIdentifier();
         }, $scopes);
     }
-
 }
