@@ -7,7 +7,8 @@ class TokenRepository extends \Laravel\Passport\TokenRepository
     /**
      * Get a token by the given ID.
      *
-     * @param  string $id
+     * @param string $id
+     *
      * @return Token
      */
     public function find($id)
