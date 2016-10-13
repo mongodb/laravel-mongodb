@@ -39,10 +39,7 @@
   "autoload": {
     "psr-4" :{
       "Moloquent\\": "src/"
-    },
-    "files" : [
-      "src/SupportClasses/Support.php"
-    ]
+    }
   },
   "autoload-dev": {
     "classmap": [
