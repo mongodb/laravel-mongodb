@@ -7,6 +7,13 @@ use Moloquent\Eloquent\Model;
 class Token extends Model
 {
     /**
+     * The primary key for the model.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'id';
+
+    /**
      * The database table used by the model.
      *
      * @var string
@@ -33,7 +40,6 @@ class Token extends Model
      * @var array
      */
     protected $casts = [
-        'scopes'  => 'array',
         'revoked' => 'bool',
     ];
 
@@ -47,11 +53,21 @@ class Token extends Model
     ];
 
     /**
-     * Indicates if the model should be timestamped.
+     * Overwrite scopes setter to handle default passport JSON string
+     * and save native array.
      *
-     * @var bool
+     * @param mixed $scopes
      */
-    public $timestamps = false;
+    public function setScopesAttribute($scopes)
+    {
+        if (is_string($scopes)) {
+            $scopes = json_decode($scopes, true);
+        }
+
+        // If successfully decoded into array, then it will be saved as array.
+        // If still string, will be converted to array to preserve consistency.
+        $this->attributes['scopes'] = (array) $scopes;
+    }
 
     /**
      * Get the client that the token belongs to.
