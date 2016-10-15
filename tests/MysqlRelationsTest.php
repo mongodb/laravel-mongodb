@@ -20,12 +20,12 @@ class MysqlRelationsTest extends TestCase
 
     public function testMysqlRelations()
     {
-        $user = new MysqlUser;
+        $user = new MysqlUser();
         $this->assertInstanceOf('MysqlUser', $user);
         $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
 
         // Mysql User
-        $user->name = "John Doe";
+        $user->name = 'John Doe';
         $user->save();
         $this->assertTrue(is_int($user->id));
 
@@ -50,8 +50,8 @@ class MysqlRelationsTest extends TestCase
         $this->assertEquals('John Doe', $role->mysqlUser->name);
 
         // MongoDB User
-        $user = new User;
-        $user->name = "John Doe";
+        $user = new User();
+        $user->name = 'John Doe';
         $user->save();
 
         // MongoDB has many

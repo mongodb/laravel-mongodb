@@ -1,14 +1,11 @@
 <?php
 
-use Moloquent\Eloquent\Model as Eloquent;
-use Illuminate\Auth\Authenticatable;
-use Illuminate\Auth\Passwords\CanResetPassword;
-use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
-use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
+use Illuminate\Notifications\Notifiable;
+use Moloquent\Auth\User as Authenticatable;
 
-class User extends Eloquent implements AuthenticatableContract, CanResetPasswordContract
+class User extends Authenticatable
 {
-    use Authenticatable, CanResetPassword;
+    use Notifiable;
 
     protected $dates = ['birthday', 'entry.date'];
     protected static $unguarded = true;

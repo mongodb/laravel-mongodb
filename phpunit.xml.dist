@@ -45,6 +45,9 @@
         <testsuite name="validation">
             <directory>tests/ValidationTest.php</directory>
         </testsuite>
+        <testsuite name="passport">
+            <directory>tests/PassportTest.php</directory>
+        </testsuite>
     </testsuites>
 
     <filter>

@@ -31,4 +31,7 @@ script:
   - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
 
 after_success:
-    - sh -c 'php vendor/bin/coveralls -v'
+  - sh -c 'php vendor/bin/coveralls -v'
+
+notifications:
+  - email: false

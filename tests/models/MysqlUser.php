@@ -1,8 +1,8 @@
 <?php
 
+use Illuminate\Database\Eloquent\Model as Eloquent;
 use Illuminate\Support\Facades\Schema;
 use Moloquent\Eloquent\HybridRelations;
-use Illuminate\Database\Eloquent\Model as Eloquent;
 
 class MysqlUser extends Eloquent
 {
