@@ -40,9 +40,10 @@ class MongodbServiceProvider extends ServiceProvider
         });
     }
 
-    private function loadSupportClasses(){
+    private function loadSupportClasses()
+    {
         if (!class_exists('Jenssegers\Mongodb\Eloquent\Model')) {
-            require_once __DIR__ . '/SupportClasses/Jenssegers/Model.php';
+            require_once __DIR__.'/SupportClasses/Jenssegers/Model.php';
         }
     }
 }
