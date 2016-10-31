@@ -910,8 +910,18 @@ class Builder extends BaseBuilder
             }
 
             // Convert DateTime values to UTCDateTime.
-            if (isset($where['value']) and $where['value'] instanceof DateTime) {
-                $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
+            if (isset($where['value'])) {
+                if (is_array($where['value'])) {
+                    array_walk_recursive($where['value'], function (&$item, $key) {
+                        if ($item instanceof DateTime) {
+                            $item = new UTCDateTime($item->getTimestamp() * 1000);
+                        }
+                    });
+                } else {
+                    if ($where['value'] instanceof DateTime) {
+                        $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
+                    }
+                }
             }
 
             // The next item in a "chain" of wheres devices the boolean of the
