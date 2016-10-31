@@ -185,7 +185,9 @@ class Connection extends \Illuminate\Database\Connection
             }
         }
 
-        return "mongodb://" . implode(',', $hosts) . ($database ? "/{$database}" : '');
+        $auth_database = isset($options) ? array_get($options, 'database', null) : null;
+
+        return "mongodb://" . implode(',', $hosts) . ($auth_database? "/{$auth_database}" : '');
     }
 
     /**
