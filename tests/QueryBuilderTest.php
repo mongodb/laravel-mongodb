@@ -422,8 +422,8 @@ class QueryBuilderTest extends TestCase
     public function testSubdocumentArrayAggregate()
     {
         DB::collection('items')->insert([
-            ['name' => 'knife', 'amount' => [['hidden' => 10, 'found' => 3],['hidden' => 5, 'found' => 2]]],
-            ['name' => 'fork',  'amount' => [['hidden' => 35, 'found' => 12],['hidden' => 7, 'found' => 17],['hidden' => 1, 'found' => 19]]],
+            ['name' => 'knife', 'amount' => [['hidden' => 10, 'found' => 3], ['hidden' => 5, 'found' => 2]]],
+            ['name' => 'fork',  'amount' => [['hidden' => 35, 'found' => 12], ['hidden' => 7, 'found' => 17], ['hidden' => 1, 'found' => 19]]],
             ['name' => 'spoon', 'amount' => [['hidden' => 14, 'found' => 21]]],
             ['name' => 'teaspoon', 'amount' => []],
         ]);

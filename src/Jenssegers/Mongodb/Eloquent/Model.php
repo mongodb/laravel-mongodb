@@ -212,13 +212,17 @@ abstract class Model extends BaseModel
      */
     public function getAttribute($key)
     {
-        // Check if the key is an array dot notation.
-        if ($key and str_contains($key, '.') and array_has($this->attributes, $key)) {
+        if (! $key) {
+            return;
+        }
+
+        // Dot notation support.
+        if (str_contains($key, '.') and array_has($this->attributes, $key)) {
             return $this->getAttributeValue($key);
         }
 
         // This checks for embedded relation support.
-        if (method_exists($this, $key) && ! method_exists(self::class, $key)) {
+        if (method_exists($this, $key) and ! method_exists(self::class, $key)) {
             return $this->getRelationValue($key);
         }
 

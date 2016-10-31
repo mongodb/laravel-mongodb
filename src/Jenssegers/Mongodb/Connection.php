@@ -127,7 +127,7 @@ class Connection extends \Illuminate\Database\Connection
      * @param  string  $dsn
      * @param  array   $config
      * @param  array   $options
-     * @return MongoDB
+     * @return \MongoDB\Client
      */
     protected function createConnection($dsn, array $config, array $options)
     {
@@ -165,27 +165,25 @@ class Connection extends \Illuminate\Database\Connection
      */
     protected function getDsn(array $config)
     {
-        // First we will create the basic DSN setup as well as the port if it is in
-        // in the configuration options. This will give us the basic DSN we will
-        // need to establish the MongoDB and return them back for use.
-        extract($config);
-
         // Check if the user passed a complete dsn to the configuration.
-        if (! empty($dsn)) {
-            return $dsn;
+        if (! empty($config['dsn'])) {
+            return $config['dsn'];
         }
 
         // Treat host option as array of hosts
-        $hosts = is_array($host) ? $host : [$host];
+        $hosts = is_array($config['host']) ? $config['host'] : [$config['host']];
 
         foreach ($hosts as &$host) {
             // Check if we need to add a port to the host
-            if (strpos($host, ':') === false and isset($port)) {
-                $host = "{$host}:{$port}";
+            if (strpos($host, ':') === false && ! empty($config['port'])) {
+                $host = $host . ':' . $config['port'];
             }
         }
 
-        return "mongodb://" . implode(',', $hosts) . ($database ? "/{$database}" : '');
+        // Check if we want to authenticate against a specific database.
+        $auth_database = isset($config['options']) && ! empty($config['options']['database']) ? $config['options']['database'] : null;
+
+        return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
     }
 
     /**

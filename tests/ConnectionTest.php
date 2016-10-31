@@ -100,33 +100,27 @@ class ConnectionTest extends TestCase
     {
         Config::set('database.connections.mongodb.username', 'foo');
         Config::set('database.connections.mongodb.password', 'bar');
-        $host = Config::get('database.connections.mongodb.host');
-        $port = Config::get('database.connections.mongodb.port', 27017);
-        $database = Config::get('database.connections.mongodb.database');
+        Config::set('database.connections.mongodb.options.database', 'custom');
 
-        // $this->setExpectedExceptionRegExp('MongoConnectionException', "/Failed to connect to: $host:$port: Authentication failed on database '$database' with username 'foo': auth fail/");
         $connection = DB::connection('mongodb');
+        $this->assertEquals('mongodb://127.0.0.1/custom', (string) $connection->getMongoClient());
     }
 
-    public function testCustomPort()
+    public function testCustomHostAndPort()
     {
-        $port = 27000;
-        Config::set('database.connections.mongodb.port', $port);
-        $host = Config::get('database.connections.mongodb.host');
-        $database = Config::get('database.connections.mongodb.database');
+        Config::set('database.connections.mongodb.host', 'db1');
+        Config::set('database.connections.mongodb.port', 27000);
 
-        // $this->setExpectedException('MongoConnectionException', "Failed to connect to: $host:$port: Connection refused");
         $connection = DB::connection('mongodb');
+        $this->assertEquals("mongodb://db1:27000", (string) $connection->getMongoClient());
     }
 
     public function testHostWithPorts()
     {
-        $hosts = ['localhost:27001', 'localhost:27002'];
         Config::set('database.connections.mongodb.port', 27000);
-        Config::set('database.connections.mongodb.host', ['localhost:27001', 'localhost:27002']);
-        $database = Config::get('database.connections.mongodb.database');
+        Config::set('database.connections.mongodb.host', ['db1:27001', 'db2:27002', 'db3:27000']);
 
-        // $this->setExpectedException('MongoConnectionException', "Failed to connect to: " . $hosts[0] . ": Connection refused; Failed to connect to: " . $hosts[1] . ": Connection refused");
         $connection = DB::connection('mongodb');
+        $this->assertEquals('mongodb://db1:27001,db2:27002,db3:27000', (string) $connection->getMongoClient());
     }
 }
