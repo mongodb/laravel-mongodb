@@ -40,6 +40,8 @@ class Connection extends \Illuminate\Database\Connection
         $this->db = $this->connection->selectDatabase($config['database']);
 
         $this->useDefaultPostProcessor();
+
+        $this->useDefaultSchemaGrammar();
     }
 
     /**
@@ -205,6 +207,16 @@ class Connection extends \Illuminate\Database\Connection
     public function getDriverName()
     {
         return 'mongodb';
+    }
+
+    /**
+     * Get the default schema grammar instance.
+     *
+     * @return Schema\Grammar
+     */
+    protected function getDefaultSchemaGrammar()
+    {
+        return new Schema\Grammar;
     }
 
     /**
