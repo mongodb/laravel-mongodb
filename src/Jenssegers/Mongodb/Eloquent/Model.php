@@ -7,10 +7,8 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
-use Jenssegers\Mongodb\Relations\EmbedsOneOrMany;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
-use ReflectionMethod;
 
 abstract class Model extends BaseModel
 {
