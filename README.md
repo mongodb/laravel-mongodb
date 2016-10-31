@@ -405,6 +405,15 @@ Aggregations can be combined with **where**:
 $sold = Orders::where('sold', true)->sum('price');
 ```
 
+Aggregations can be also used on subdocuments:
+
+```php
+$total = Order::max('suborder.price');
+...
+```
+
+**NOTE**: this aggreagtion only works with single subdocuments (like embedsOne) not subdocument arrays (like embedsMany)
+
 **Like**
 
 ```php
