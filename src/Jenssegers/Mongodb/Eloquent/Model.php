@@ -215,48 +215,13 @@ abstract class Model extends BaseModel
     public function getAttribute($key)
     {
         // Check if the key is an array dot notation.
-        if (str_contains($key, '.') and array_has($this->attributes, $key)) {
+        if ($key and str_contains($key, '.') and array_has($this->attributes, $key)) {
             return $this->getAttributeValue($key);
         }
 
-        $camelKey = camel_case($key);
-
-        // If the "attribute" exists as a method on the model, it may be an
-        // embedded model. If so, we need to return the result before it
-        // is handled by the parent method.
-        if (method_exists($this, $camelKey)) {
-            $method = new ReflectionMethod(get_called_class(), $camelKey);
-
-            // Ensure the method is not static to avoid conflicting with Eloquent methods.
-            if (! $method->isStatic()) {
-                $relations = $this->$camelKey();
-
-                // This attribute matches an embedsOne or embedsMany relation so we need
-                // to return the relation results instead of the interal attributes.
-                if ($relations instanceof EmbedsOneOrMany) {
-                    // If the key already exists in the relationships array, it just means the
-                    // relationship has already been loaded, so we'll just return it out of
-                    // here because there is no need to query within the relations twice.
-                    if (array_key_exists($key, $this->relations)) {
-                        return $this->relations[$key];
-                    }
-
-                    // Get the relation results.
-                    return $this->getRelationshipFromMethod($key, $camelKey);
-                }
-
-                if ($relations instanceof Relation) {
-                    // If the key already exists in the relationships array, it just means the
-                    // relationship has already been loaded, so we'll just return it out of
-                    // here because there is no need to query within the relations twice.
-                    if (array_key_exists($key, $this->relations) && $this->relations[$key] != null) {
-                        return $this->relations[$key];
-                    }
-
-                    // Get the relation results.
-                    return $this->getRelationshipFromMethod($key, $camelKey);
-                }
-            }
+        // This checks for embedded relation support.
+        if (method_exists($this, $key) && ! method_exists(self::class, $key)) {
+            return $this->getRelationValue($key);
         }
 
         return parent::getAttribute($key);
