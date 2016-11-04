@@ -14,11 +14,11 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
      *
      * @return void
      */
-    public function log($connection, $queue, $payload)
+    public function log($connection, $queue, $payload, $exception)
     {
         $failed_at = Carbon::now()->getTimestamp();
 
-        $this->getTable()->insert(compact('connection', 'queue', 'payload', 'failed_at'));
+        $this->getTable()->insert(compact('connection', 'queue', 'payload', 'failed_at', 'exception'));
     }
 
     /**
@@ -28,7 +28,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
      */
     public function all()
     {
-        $all = $this->getTable()->orderBy('_id', 'desc')->get();
+        $all = $this->getTable()->orderBy('_id', 'desc')->get()->all();
 
         $all = array_map(function ($job) {
             $job['id'] = (string) $job['_id'];
