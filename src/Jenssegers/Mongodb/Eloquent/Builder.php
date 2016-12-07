@@ -35,7 +35,11 @@ class Builder extends EloquentBuilder
             return 1;
         }
 
-        return $this->query->update($this->addUpdatedAtColumn($values), $options);
+        if (! starts_with(key($values), '$')) {
+            $values = $this->addUpdatedAtColumn($values);
+        }
+
+        return $this->query->update($values, $options);
     }
 
     /**
