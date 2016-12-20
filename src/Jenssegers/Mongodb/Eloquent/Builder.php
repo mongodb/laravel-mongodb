@@ -221,6 +221,7 @@ class Builder extends EloquentBuilder
 
         // Convert MongoCursor results to a collection of models.
         if ($results instanceof Cursor) {
+            $results->setTypeMap(['root' => 'array', 'document' => 'array', 'array' => 'array']);
             $results = iterator_to_array($results, false);
             return $this->model->hydrate($results);
         }
