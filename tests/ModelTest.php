@@ -495,6 +495,22 @@ class ModelTest extends TestCase
         $this->assertEquals('Strasbourg', $user['address.city']);
     }
 
+    public function testMultipleLevelDotNotation()
+    {
+        $book = Book::create([
+            'title' => 'A Game of Thrones',
+            'chapters' => [
+                'one' => [
+                    'title' => 'The first chapter',
+                ],
+            ],
+        ]);
+
+        $this->assertEquals(['one' => ['title' => 'The first chapter']], $book->chapters);
+        $this->assertEquals(['title' => 'The first chapter'], $book['chapters.one']);
+        $this->assertEquals('The first chapter', $book['chapters.one.title']);
+    }
+
     public function testGetDirtyDates()
     {
         $user = new User();
