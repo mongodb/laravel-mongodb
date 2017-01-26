@@ -237,7 +237,12 @@ abstract class Model extends BaseModel
      */
     protected function getAttributeFromArray($key)
     {
-        return array_get($this->attributes, $key);
+        // Support keys in dot notation.
+        if (str_contains($key, '.')) {
+            return array_get($this->attributes, $key);
+        }
+
+        return parent::getAttributeFromArray($key);
     }
 
     /**
