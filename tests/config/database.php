@@ -5,10 +5,10 @@ return [
     'connections' => [
 
         'mongodb' => [
-            'name'       => 'mongodb',
-            'driver'     => 'mongodb',
-            'host'       => '127.0.0.1',
-            'database'   => 'unittest',
+            'name'         => 'mongodb',
+            'driver'       => 'mongodb',
+            'host'         => '127.0.0.1',
+            'database'     => 'unittest',
         ],
 
         'mysql' => [

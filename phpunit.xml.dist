@@ -36,6 +36,7 @@
         <testsuite name="relations">
             <directory>tests/RelationsTest.php</directory>
             <directory>tests/EmbeddedRelationsTest.php</directory>
+            <directory>tests/RelationsWithMongoIdTest.php</directory>
         </testsuite>
         <testsuite name="mysqlrelations">
             <directory>tests/RelationsTest.php</directory>

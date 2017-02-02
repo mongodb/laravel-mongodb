@@ -36,6 +36,13 @@ abstract class Model extends BaseModel
     protected $parentRelation;
 
     /**
+     * The attributes that should be cast to native types.
+     *
+     * @var array
+     */
+    protected $saveCasts = [];
+
+    /**
      * Custom accessor for the model's id.
      *
      * @param  mixed  $value
@@ -253,15 +260,13 @@ abstract class Model extends BaseModel
      */
     public function setAttribute($key, $value)
     {
-        // Convert _id to ObjectID.
-        if ($key == '_id' and is_string($value)) {
-            $builder = $this->newBaseQueryBuilder();
-
-            $value = $builder->convertKey($value);
-        }
+        // cast data for saving.
+        // set _id to converted into ObjectID if its possible.
+        $this->setRelationCast($key);
+        $value = $this->castAttribute($key, $value, 'set');
 
         // Support keys in dot notation.
-        elseif (str_contains($key, '.')) {
+        if (str_contains($key, '.')) {
             if (in_array($key, $this->getDates()) && $value) {
                 $value = $this->fromDateTime($value);
             }
@@ -301,16 +306,6 @@ abstract class Model extends BaseModel
         }
 
         return $attributes;
-    }
-
-    /**
-     * Get the casts array.
-     *
-     * @return array
-     */
-    public function getCasts()
-    {
-        return $this->casts;
     }
 
     /**
@@ -525,5 +520,164 @@ abstract class Model extends BaseModel
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * setter for casts
+     * @param $cast
+     * @param string $castType
+     * @return void
+     */
+    public function setCasts($cast, $castType = 'get')
+    {
+        if ($castType == 'set') {
+            $this->saveCasts = $cast;
+            return;
+        }
+        $this->casts = $cast;
+    }
+
+    /**
+     * Get the casts array.
+     *
+     * @param string $castType
+     * @return array
+     */
+    public function getCasts($castType = 'get')
+    {
+        if ($castType == 'set') {
+            return $this->saveCasts;
+        }
+        return $this->casts;
+    }
+
+    /**
+     * Get the type of save cast for a model attribute.
+     *
+     * @param  string $key
+     * @param string $castType
+     * @return string
+     */
+    protected function getCastType($key, $castType = 'get')
+    {
+        return trim(strtolower($this->getCasts($castType)[$key]));
+    }
+
+    /**
+     * Determine whether an attribute should be cast to a native type.
+     *
+     * @param  string $key
+     * @param  array|string|null $types
+     * @param string $castType
+     * @return bool
+     */
+    public function hasCast($key, $types = null, $castType = 'get')
+    {
+        if (array_key_exists($key, $this->getCasts($castType))) {
+            return $types ? in_array($this->getCastType($key, $castType), (array) $types, true) : true;
+        }
+
+        return false;
+    }
+    /**
+     * check if driver uses mongoId in relations.
+     *
+     * @return bool
+     */
+    public function useMongoId()
+    {
+        return (bool) config('database.connections.mongodb.use_mongo_id', false);
+    }
+
+    /**
+     * Cast an attribute to a mongo type.
+     *
+     * @param  string $key
+     * @param  mixed $value
+     * @param string $castType
+     * @return mixed
+     */
+    public function castAttribute($key, $value, $castType = 'get')
+    {
+        if (is_null($value)) {
+            return;
+        }
+
+        if (!$this->hasCast($key, null, $castType)) {
+            return $value;
+        }
+
+        switch ($this->getCastType($key, $castType)) {
+            case 'int':
+            case 'integer':
+                return (int) $value;
+            case 'real':
+            case 'float':
+            case 'double':
+                return (float) $value;
+            case 'string':
+                return (string) $value;
+            case 'bool':
+            case 'boolean':
+                return (bool) $value;
+            case 'date':
+            case 'utcdatetime':
+            case 'mongodate':
+                return $this->asMongoDate($value);
+            case 'mongoid':
+            case 'objectid':
+                return $this->asMongoID($value);
+            case 'timestamp':
+                return $this->asTimeStamp($value);
+            default:
+                return $value;
+        }
+    }
+
+    /**
+     * convert value into ObjectID if its possible
+     *
+     * @param $value
+     * @return UTCDatetime
+     */
+    protected function asMongoID($value)
+    {
+        if (is_string($value) and strlen($value) === 24 and ctype_xdigit($value)) {
+            return new ObjectID($value);
+        }
+        return $value;
+    }
+
+    /**
+     * convert value into UTCDatetime
+     * @param $value
+     * @return UTCDatetime
+     */
+    protected function asMongoDate($value)
+    {
+        if ($value instanceof UTCDatetime) {
+            return $value;
+        }
+
+        return new UTCDatetime($this->asTimeStamp($value) * 1000);
+    }
+
+    /**
+     * add relation that ended with _id into objectId
+     * if config allow it
+     *
+     * @param $key
+     */
+    public function setRelationCast($key)
+    {
+        if ($key == '_id') {
+            $this->saveCasts['_id'] = 'ObjectID';
+            return;
+        }
+        if ($this->useMongoId()) {
+            if (ends_with($key, '_id')) {
+                $this->saveCasts[$key] = 'ObjectID';
+            }
+        }
     }
 }
