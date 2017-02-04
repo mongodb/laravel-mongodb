@@ -13,6 +13,7 @@ class PasswordResetServiceProvider extends BasePasswordResetServiceProvider
     {
         $this->app->singleton('auth.password.tokens', function ($app) {
             $connection = $app['db']->connection();
+            $hash = $app['hash'];
 
             // The database token repository is an implementation of the token repository
             // interface, and is responsible for the actual storing of auth tokens and
@@ -23,7 +24,7 @@ class PasswordResetServiceProvider extends BasePasswordResetServiceProvider
 
             $expire = $app['config']->get('auth.password.expire', 60);
 
-            return new DatabaseTokenRepository($connection, $table, $key, $expire);
+            return new DatabaseTokenRepository($connection, $hash, $table, $key, $expire);
         });
     }
 

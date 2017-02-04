@@ -12,11 +12,26 @@ class PasswordBrokerManager extends BasePasswordBrokerManager
      */
     protected function createTokenRepository(array $config)
     {
-        return new DatabaseTokenRepository(
-            $this->app['db']->connection(),
-            $config['table'],
-            $this->app['config']['app.key'],
-            $config['expire']
-        );
+        // temp version check until new dot released for 5.4+
+        $version = explode('.', \App::version());
+
+        // Laravel 5.4+
+        if ($version[0] >= 5 && $version[1] >= 4) {
+            return new DatabaseTokenRepository(
+                $this->app['db']->connection(),
+                $this->app['hash'],
+                $config['table'],
+                $this->app['config']['app.key'],
+                $config['expire']
+            );
+        } else {
+            // Laravel < v5.4
+            return new DatabaseTokenRepository(
+                $this->app['db']->connection(),
+                $config['table'],
+                $this->app['config']['app.key'],
+                $config['expire']
+            );
+        }
     }
 }
