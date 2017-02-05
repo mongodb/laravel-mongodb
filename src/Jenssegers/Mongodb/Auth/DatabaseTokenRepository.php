@@ -16,7 +16,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
      */
     protected function getPayload($email, $token)
     {
-        return ['email' => $email, 'token' => $token, 'created_at' => new UTCDateTime(round(microtime(true) * 1000))];
+        return ['email' => $email, 'token' => $this->hasher->make($token), 'created_at' => new UTCDateTime(round(microtime(true) * 1000))];
     }
 
     /**
@@ -28,8 +28,8 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
     protected function tokenExpired($token)
     {
         // Convert UTCDateTime to a date string.
-        if ($token['created_at'] instanceof UTCDateTime) {
-            $date = $token['created_at']->toDateTime();
+        if ($token instanceof UTCDateTime) {
+            $date = $token->toDateTime();
             $date->setTimezone(new DateTimeZone(date_default_timezone_get()));
             $token['created_at'] = $date->format('Y-m-d H:i:s');
         } elseif (is_array($token['created_at']) and isset($token['created_at']['date'])) {
