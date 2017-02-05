@@ -895,7 +895,7 @@ class Builder extends BaseBuilder
             }
 
             // Convert id's.
-            if (isset($where['column']) and ($where['column'] == '_id' or ends_with($where['column'], '._id'))) {
+            if (isset($where['column']) and ($where['column'] == '_id' or ends_with($where['column'], '_id'))) {
                 // Multiple values.
                 if (isset($where['values'])) {
                     foreach ($where['values'] as &$value) {
