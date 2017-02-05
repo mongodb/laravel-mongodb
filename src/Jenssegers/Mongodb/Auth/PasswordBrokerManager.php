@@ -13,7 +13,7 @@ class PasswordBrokerManager extends BasePasswordBrokerManager
     protected function createTokenRepository(array $config)
     {
         return new DatabaseTokenRepository(
-            $this->app['db']->connection(),
+            $this->app['db']->connection($connection),
             $this->app['hash'],
             $config['table'],
             $this->app['config']['app.key'],
