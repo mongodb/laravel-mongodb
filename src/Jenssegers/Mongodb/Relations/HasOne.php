@@ -8,9 +8,9 @@ class HasOne extends EloquentHasOne
     /**
      * Add the constraints for a relationship count query.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Builder  $parent
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @param  Builder $query
+     * @param  Builder $parent
+     * @return Builder
      */
     public function getRelationCountQuery(Builder $query, Builder $parent)
     {
@@ -22,10 +22,10 @@ class HasOne extends EloquentHasOne
     /**
      * Add the constraints for a relationship query.
      *
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @param  \Illuminate\Database\Eloquent\Builder  $parent
+     * @param  Builder     $query
+     * @param  Builder     $parent
      * @param  array|mixed $columns
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @return Builder
      */
     public function getRelationQuery(Builder $query, Builder $parent, $columns = ['*'])
     {

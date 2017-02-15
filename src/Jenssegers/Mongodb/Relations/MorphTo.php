@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
 class MorphTo extends EloquentMorphTo
 {
     /**
-     * Set the base constraints on the relation query.
+     * @inheritdoc
      */
     public function addConstraints()
     {
@@ -18,10 +18,7 @@ class MorphTo extends EloquentMorphTo
     }
 
     /**
-     * Get all of the relation results for a type.
-     *
-     * @param  string  $type
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @inheritdoc
      */
     protected function getResultsByType($type)
     {

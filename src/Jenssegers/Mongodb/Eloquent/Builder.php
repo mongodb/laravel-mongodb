@@ -2,7 +2,6 @@
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Collection;
 use MongoDB\Driver\Cursor;
 use MongoDB\Model\BSONDocument;
 
@@ -14,16 +13,22 @@ class Builder extends EloquentBuilder
      * @var array
      */
     protected $passthru = [
-        'toSql', 'insert', 'insertGetId', 'pluck',
-        'count', 'min', 'max', 'avg', 'sum', 'exists', 'push', 'pull',
+        'toSql',
+        'insert',
+        'insertGetId',
+        'pluck',
+        'count',
+        'min',
+        'max',
+        'avg',
+        'sum',
+        'exists',
+        'push',
+        'pull',
     ];
 
     /**
-     * Update a record in the database.
-     *
-     * @param  array  $values
-     * @param  array  $options
-     * @return int
+     * @inheritdoc
      */
     public function update(array $values, array $options = [])
     {
@@ -39,10 +44,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * Insert a new record into the database.
-     *
-     * @param  array  $values
-     * @return bool
+     * @inheritdoc
      */
     public function insert(array $values)
     {
@@ -58,11 +60,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * Insert a new record and get the value of the primary key.
-     *
-     * @param  array   $values
-     * @param  string  $sequence
-     * @return int
+     * @inheritdoc
      */
     public function insertGetId(array $values, $sequence = null)
     {
@@ -78,9 +76,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * Delete a record from the database.
-     *
-     * @return mixed
+     * @inheritdoc
      */
     public function delete()
     {
@@ -96,12 +92,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * Increment a column's value by a given amount.
-     *
-     * @param  string  $column
-     * @param  int     $amount
-     * @param  array   $extra
-     * @return int
+     * @inheritdoc
      */
     public function increment($column, $amount = 1, array $extra = [])
     {
@@ -126,12 +117,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * Decrement a column's value by a given amount.
-     *
-     * @param  string  $column
-     * @param  int     $amount
-     * @param  array   $extra
-     * @return int
+     * @inheritdoc
      */
     public function decrement($column, $amount = 1, array $extra = [])
     {
@@ -154,14 +140,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * Add the "has" condition where clause to the query.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder  $hasQuery
-     * @param  \Illuminate\Database\Eloquent\Relations\Relation  $relation
-     * @param  string  $operator
-     * @param  int  $count
-     * @param  string  $boolean
-     * @return \Illuminate\Database\Eloquent\Builder
+     * @inheritdoc
      */
     protected function addHasWhere(EloquentBuilder $hasQuery, Relation $relation, $operator, $count, $boolean)
     {
@@ -198,7 +177,7 @@ class Builder extends EloquentBuilder
 
         // If we are comparing to 0, we need an additional $not flip.
         if ($count == 0) {
-            $not = !$not;
+            $not = ! $not;
         }
 
         // All related ids.
@@ -209,10 +188,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * Create a raw database expression.
-     *
-     * @param  closure  $expression
-     * @return mixed
+     * @inheritdoc
      */
     public function raw($expression = null)
     {
@@ -223,15 +199,11 @@ class Builder extends EloquentBuilder
         if ($results instanceof Cursor) {
             $results = iterator_to_array($results, false);
             return $this->model->hydrate($results);
-        }
-
-        // Convert Mongo BSONDocument to a single object.
+        } // Convert Mongo BSONDocument to a single object.
         elseif ($results instanceof BSONDocument) {
             $results = $results->getArrayCopy();
             return $this->model->newFromBuilder((array) $results);
-        }
-
-        // The result is a single object.
+        } // The result is a single object.
         elseif (is_array($results) and array_key_exists('_id', $results)) {
             return $this->model->newFromBuilder((array) $results);
         }
