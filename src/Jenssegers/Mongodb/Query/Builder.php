@@ -975,6 +975,18 @@ class Builder extends BaseBuilder
             $value = new Regex($regex, 'i');
         }
 
+        elseif ($operator == 'ilike')
+        {
+            $operator = '=';
+            $regex = str_replace('%', '', StringUtil::accentToRegex($value));
+
+            // Convert like to regular expression.
+            if ( ! starts_with($value, '%')) $regex = '^' . $regex;
+            if ( ! ends_with($value, '%'))   $regex = $regex . '$';
+
+            $value = new MongoRegex("/$regex/i");
+        }
+
         // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
