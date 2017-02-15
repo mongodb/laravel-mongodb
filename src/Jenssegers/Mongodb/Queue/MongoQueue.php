@@ -2,7 +2,6 @@
 
 use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
-use Illuminate\Queue\Jobs\DatabaseJob;
 use MongoDB\Operation\FindOneAndUpdate;
 
 class MongoQueue extends DatabaseQueue
