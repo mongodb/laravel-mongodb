@@ -39,7 +39,7 @@ abstract class Model extends BaseModel
      * @param  mixed $value
      * @return mixed
      */
-    public function getIdAttribute($value)
+    public function getIdAttribute($value = null)
     {
         // If we don't have a value for 'id', we will use the Mongo '_id' value.
         // This allows us to work with models in a more sql-like way.
