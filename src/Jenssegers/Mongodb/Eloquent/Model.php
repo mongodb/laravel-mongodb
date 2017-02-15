@@ -107,7 +107,7 @@ abstract class Model extends BaseModel
      */
     public function freshTimestamp()
     {
-        return new UTCDateTime(round(microtime(true) * 1000));
+        return new UTCDateTime((int) round(microtime(true) * 1000));
     }
 
     /**
