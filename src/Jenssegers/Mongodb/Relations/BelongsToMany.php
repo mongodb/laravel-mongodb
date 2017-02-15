@@ -96,7 +96,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
-        $current = $this->parent->{$this->otherKey} ?: [];
+        $current = $this->parent->{$this->getOwnerKey()} ?: [];
 
         // See issue #256.
         if ($current instanceof Collection) {
@@ -170,7 +170,7 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Attach the new ids to the parent model.
-        $this->parent->push($this->otherKey, (array) $id, true);
+        $this->parent->push($this->getOwnerKey(), (array) $id, true);
 
         if ($touch) {
             $this->touchIfTouching();
@@ -194,7 +194,7 @@ class BelongsToMany extends EloquentBelongsToMany
         $ids = (array) $ids;
 
         // Detach all ids from the parent model.
-        $this->parent->pull($this->otherKey, $ids);
+        $this->parent->pull($this->getOwnerKey(), $ids);
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
@@ -278,5 +278,15 @@ class BelongsToMany extends EloquentBelongsToMany
             $results[$id] = $attributes;
         }
         return $results;
+    }
+
+    /**
+     * get the Other/Owner Key name based on different version of Illuminate/Database
+     * see commit https://github.com/illuminate/database/commit/6a35698d72e276f435324b7e29b3cd37ef7d5d9c
+     * @return string
+     */
+    public function getOwnerKey()
+    {
+        return property_exists($this, "ownerKey") ? $this->ownerKey : $this->otherKey;
     }
 }
