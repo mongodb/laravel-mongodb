@@ -22,7 +22,7 @@ trait HybridRelations
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
 
@@ -48,15 +48,13 @@ trait HybridRelations
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
         $instance = new $related;
 
         list($type, $id) = $this->getMorphs($name, $type, $id);
-
-        $table = $instance->getTable();
 
         $localKey = $localKey ?: $this->getKeyName();
 
@@ -74,7 +72,7 @@ trait HybridRelations
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
 
@@ -100,7 +98,7 @@ trait HybridRelations
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
@@ -139,7 +137,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
         }
 
@@ -222,11 +220,11 @@ trait HybridRelations
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
         if (is_null($relation)) {
-            $relation = $this->getBelongsToManyCaller();
+            $relation = $this->guessBelongsToManyRelation();
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, 'Jenssegers\Mongodb\Eloquent\Model')) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::belongsToMany($related, $collection, $foreignKey, $otherKey, $relation);
         }
 
@@ -252,5 +250,19 @@ trait HybridRelations
         $query = $instance->newQuery();
 
         return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
+    }
+
+    /**
+     * Get the relationship name of the belongs to many.
+     *
+     * @return string
+     */
+    protected function guessBelongsToManyRelation()
+    {
+        if (method_exists($this, 'getBelongsToManyCaller')) {
+            return $this->getBelongsToManyCaller();
+        }
+
+        return parent::guessBelongsToManyRelation();
     }
 }

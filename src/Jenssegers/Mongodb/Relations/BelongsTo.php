@@ -29,12 +29,10 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     }
 
     /**
-     * get the Other/Owner Key name based on different version of Illuminate/Database
-     * see commit https://github.com/illuminate/database/commit/6a35698d72e276f435324b7e29b3cd37ef7d5d9c
-     * @return string
+     * Get the owner key with backwards compatible support.
      */
     public function getOwnerKey()
     {
-        return property_exists($this, "ownerKey") ? $this->ownerKey : $this->otherKey;
+        return property_exists($this, 'ownerKey') ? $this->ownerKey : $this->otherKey;
     }
 }
