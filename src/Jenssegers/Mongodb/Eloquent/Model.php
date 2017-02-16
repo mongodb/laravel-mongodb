@@ -4,6 +4,7 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -348,6 +349,14 @@ abstract class Model extends BaseModel
         $this->attributes[$column] = array_values($current);
 
         $this->syncOriginalAttribute($column);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getForeignKey()
+    {
+        return Str::snake(class_basename($this)).'_'.ltrim($this->primaryKey, '_');
     }
 
     /**
