@@ -295,37 +295,37 @@ Examples
 **Retrieving All Models**
 
 ```php
-$users = User::all();
+$users = App\User::all();
 ```
 
 **Retrieving A Record By Primary Key**
 
 ```php
-$user = User::find('517c43667db388101e00000f');
+$user = App\User::find('517c43667db388101e00000f');
 ```
 
 **Wheres**
 
 ```php
-$users = User::where('votes', '>', 100)->take(10)->get();
+$users = App\User::where('votes', '>', 100)->take(10)->get();
 ```
 
 **Or Statements**
 
 ```php
-$users = User::where('votes', '>', 100)->orWhere('name', 'John')->get();
+$users = App\User::where('votes', '>', 100)->orWhere('name', 'John')->get();
 ```
 
 **And Statements**
 
 ```php
-$users = User::where('votes', '>', 100)->where('name', '=', 'John')->get();
+$users = App\User::where('votes', '>', 100)->where('name', '=', 'John')->get();
 ```
 
 **Using Where In With An Array**
 
 ```php
-$users = User::whereIn('age', [16, 18, 20])->get();
+$users = App\User::whereIn('age', [16, 18, 20])->get();
 ```
 
 When using `whereNotIn` objects will be returned if the field is non existent. Combine with `whereNotNull('age')` to leave out those documents.
@@ -333,25 +333,25 @@ When using `whereNotIn` objects will be returned if the field is non existent. C
 **Using Where Between**
 
 ```php
-$users = User::whereBetween('votes', [1, 100])->get();
+$users = App\User::whereBetween('votes', [1, 100])->get();
 ```
 
 **Where null**
 
 ```php
-$users = User::whereNull('updated_at')->get();
+$users = App\User::whereNull('updated_at')->get();
 ```
 
 **Order By**
 
 ```php
-$users = User::orderBy('name', 'desc')->get();
+$users = App\User::orderBy('name', 'desc')->get();
 ```
 
 **Offset & Limit**
 
 ```php
-$users = User::skip(10)->take(5)->get();
+$users = App\User::skip(10)->take(5)->get();
 ```
 
 **Distinct**
@@ -359,21 +359,21 @@ $users = User::skip(10)->take(5)->get();
 Distinct requires a field for which to return the distinct values.
 
 ```php
-$users = User::distinct()->get(['name']);
+$users = App\User::distinct()->get(['name']);
 // or
-$users = User::distinct('name')->get();
+$users = App\User::distinct('name')->get();
 ```
 
 Distinct can be combined with **where**:
 
 ```php
-$users = User::where('active', true)->distinct('name')->get();
+$users = App\User::where('active', true)->distinct('name')->get();
 ```
 
 **Advanced Wheres**
 
 ```php
-$users = User::where('name', '=', 'John')->orWhere(function($query)
+$users = App\User::where('name', '=', 'John')->orWhere(function($query)
     {
         $query->where('votes', '>', 100)
               ->where('title', '<>', 'Admin');
@@ -386,7 +386,7 @@ $users = User::where('name', '=', 'John')->orWhere(function($query)
 Selected columns that are not grouped will be aggregated with the $last function.
 
 ```php
-$users = Users::groupBy('title')->get(['title', 'name']);
+$users = App\Users::groupBy('title')->get(['title', 'name']);
 ```
 
 **Aggregation**
@@ -551,7 +551,7 @@ User::create(['name' => 'John']);
 To update a model, you may retrieve it, change an attribute, and use the save method.
 
 ```php
-$user = User::first();
+$user = App\User::first();
 $user->email = 'john@foo.com';
 $user->save();
 ```
@@ -563,14 +563,14 @@ $user->save();
 To delete a model, simply call the delete method on the instance:
 
 ```php
-$user = User::first();
+$user = App\User::first();
 $user->delete();
 ```
 
 Or deleting a model by its key:
 
 ```php
-User::destroy('517c43667db388101e00000f');
+App\User::destroy('517c43667db388101e00000f');
 ```
 
 For more information about model manipulation, check http://laravel.com/docs/eloquent#insert-update-delete
@@ -594,7 +594,7 @@ class User extends Eloquent {
 Which allows you to execute queries like:
 
 ```php
-$users = User::where('birthday', '>', new DateTime('-18 years'))->get();
+$users = App\User::where('birthday', '>', new DateTime('-18 years'))->get();
 ```
 
 ### Relations
@@ -608,6 +608,8 @@ Supported relations are:
  - embedsOne
  - embedsMany
 
+**NOTE:** As of Laravel 5.4, class names must be referenced by adding a namespace to which they belong. By default, model classes belong to `App` namespace (e.g, `App\User` instead of previously used `User`).
+
 Example:
 
 ```php
@@ -617,7 +619,7 @@ class User extends Eloquent {
 
     public function items()
     {
-        return $this->hasMany('Item');
+        return $this->hasMany('App\Item');
     }
 
 }
@@ -632,7 +634,7 @@ class Item extends Eloquent {
 
     public function user()
     {
-        return $this->belongsTo('User');
+        return $this->belongsTo('App\User');
     }
 
 }
@@ -647,7 +649,7 @@ class User extends Eloquent {
 
     public function groups()
     {
-        return $this->belongsToMany('Group', null, 'user_ids', 'group_ids');
+        return $this->belongsToMany('App\Group', null, 'user_ids', 'group_ids');
     }
 
 }
@@ -669,7 +671,7 @@ class User extends Eloquent {
 
     public function books()
     {
-        return $this->embedsMany('Book');
+        return $this->embedsMany('App\Book');
     }
 
 }
@@ -678,7 +680,7 @@ class User extends Eloquent {
 You access the embedded models through the dynamic property:
 
 ```php
-$books = User::first()->books;
+$books = App\User::first()->books;
 ```
 
 The inverse relation is auto*magically* available, you don't need to define this reverse relation.
@@ -690,9 +692,9 @@ $user = $book->user;
 Inserting and updating embedded models works similar to the `hasMany` relation:
 
 ```php
-$book = new Book(['title' => 'A Game of Thrones']);
+$book = new App\Book(['title' => 'A Game of Thrones']);
 
-$user = User::first();
+$user = App\User::first();
 
 $book = $user->books()->save($book);
 // or
@@ -730,7 +732,7 @@ $user->save();
 Like other relations, embedsMany assumes the local key of the relationship based on the model name. You can override the default local key by passing a second argument to the embedsMany method:
 
 ```php
-return $this->embedsMany('Book', 'local_key');
+return $this->embedsMany('App\Book', 'local_key');
 ```
 
 Embedded relations will return a Collection of embedded items instead of a query builder. Check out the available operations here: https://laravel.com/docs/master/collections
@@ -746,7 +748,7 @@ class Book extends Eloquent {
 
     public function author()
     {
-        return $this->embedsOne('Author');
+        return $this->embedsOne('App\Author');
     }
 
 }
@@ -755,15 +757,15 @@ class Book extends Eloquent {
 You access the embedded models through the dynamic property:
 
 ```php
-$author = Book::first()->author;
+$author = App\Book::first()->author;
 ```
 
 Inserting and updating embedded models works similar to the `hasOne` relation:
 
 ```php
-$author = new Author(['name' => 'John Doe']);
+$author = new App\Author(['name' => 'John Doe']);
 
-$book = Books::first();
+$book = App\Books::first();
 
 $author = $book->author()->save($author);
 // or
@@ -782,7 +784,7 @@ $author->save();
 You can replace the embedded model with a new model like this:
 
 ```php
-$newAuthor = new Author(['name' => 'Jane Doe']);
+$newAuthor = new App\Author(['name' => 'Jane Doe']);
 $book->author()->save($newAuthor);
 ```
 
@@ -803,7 +805,7 @@ class User extends Eloquent {
 
     public function messages()
     {
-        return $this->hasMany('Message');
+        return $this->hasMany('App\Message');
     }
 
 }
@@ -820,7 +822,7 @@ class Message extends Eloquent {
 
     public function user()
     {
-        return $this->belongsTo('User');
+        return $this->belongsTo('App\User');
     }
 
 }
@@ -831,14 +833,19 @@ class Message extends Eloquent {
 These expressions will be injected directly into the query.
 
 ```php
-User::whereRaw(['age' => array('$gt' => 30, '$lt' => 40)])->get();
+App\User::whereRaw(['age' => array('$gt' => 30, '$lt' => 40)])->get();
 ```
 
 You can also perform raw expressions on the internal MongoCollection object. If this is executed on the model class, it will return a collection of models. If this is executed on the query builder, it will return the original response.
 
 ```php
 // Returns a collection of User models.
-$models = User::raw(function($collection)
+$models = App\
+
+
+
+
+raw(function($collection)
 {
     return $collection->find();
 });
@@ -853,7 +860,7 @@ $cursor = DB::collection('users')->raw(function($collection)
 Optional: if you don't pass a closure to the raw method, the internal MongoCollection object will be accessible:
 
 ```php
-$model = User::raw()->findOne(['age' => array('$lt' => 18]));
+$model = App\User::raw()->findOne(['age' => array('$lt' => 18]));
 ```
 
 The internal MongoClient and MongoDB objects can be accessed like this:
@@ -934,7 +941,7 @@ DB::collection('users')->where('name', 'John')->unset('note');
 You can also perform an unset on a model.
 
 ```php
-$user = User::where('name', 'John')->first();
+$user = App\User::where('name', 'John')->first();
 $user->unset('note');
 ```
 
@@ -943,7 +950,7 @@ $user->unset('note');
 You may easily cache the results of a query using the remember method:
 
 ```php
-$users = User::remember(10)->get();
+$users = App\User::remember(10)->get();
 ```
 
 *From: http://laravel.com/docs/queries#caching-queries*
