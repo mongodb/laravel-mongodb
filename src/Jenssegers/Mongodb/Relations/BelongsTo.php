@@ -40,6 +40,8 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 
     /**
      * Get the owner key with backwards compatible support.
+     *
+     * @return string
      */
     public function getOwnerKey()
     {
