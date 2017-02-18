@@ -39,7 +39,8 @@ composer require jenssegers/mongodb
  5.0.x    | 2.1.x
  5.1.x    | 2.2.x or 3.0.x
  5.2.x    | 2.3.x or 3.0.x
- 5.3.x    | 3.1.x
+ 5.3.x    | 3.1.x or 3.2.x
+ 5.4.x    | 3.2.x
 
 And add the service provider in `config/app.php`:
 

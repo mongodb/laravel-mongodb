@@ -2,10 +2,34 @@
 
 use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
+use Jenssegers\Mongodb\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
 
 class MongoQueue extends DatabaseQueue
 {
+    /**
+     * The expiration time of a job.
+     *
+     * @var int|null
+     */
+    protected $retryAfter = 60;
+
+    /**
+     * The connection name for the queue.
+     *
+     * @var string
+     */
+    protected $connectionName;
+
+    /**
+     * @inheritdoc
+     */
+    public function __construct(Connection $database, $table, $default = 'default', $retryAfter = 60)
+    {
+        parent::__construct($database, $table, $default, $retryAfter);
+        $this->retryAfter = $retryAfter;
+    }
+
     /**
      * @inheritdoc
      */
