@@ -1,5 +1,7 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use Illuminate\Database\Eloquent\Builder;
+
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
     /**
@@ -26,6 +28,14 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         $key = $this->getOwnerKey();
 
         $this->query->whereIn($key, $this->getEagerModelKeys($models));
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
+    {
+        return $query;
     }
 
     /**

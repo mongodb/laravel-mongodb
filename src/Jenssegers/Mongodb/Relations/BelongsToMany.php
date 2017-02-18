@@ -1,11 +1,30 @@
 <?php namespace Jenssegers\Mongodb\Relations;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 
 class BelongsToMany extends EloquentBelongsToMany
 {
+    /**
+     * Get the key for comparing against the parent key in "has" query.
+     *
+     * @return string
+     */
+    public function getHasCompareKey()
+    {
+        return $this->getForeignKey();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
+    {
+        return $query;
+    }
+
     /**
      * @inheritdoc
      */
@@ -21,6 +40,14 @@ class BelongsToMany extends EloquentBelongsToMany
      * @return array
      */
     protected function getSelectColumns(array $columns = ['*'])
+    {
+        return $columns;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function shouldSelect(array $columns = ['*'])
     {
         return $columns;
     }
@@ -256,6 +283,14 @@ class BelongsToMany extends EloquentBelongsToMany
      * @return string
      */
     public function getForeignKey()
+    {
+        return $this->foreignKey;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQualifiedForeignKeyName()
     {
         return $this->foreignKey;
     }

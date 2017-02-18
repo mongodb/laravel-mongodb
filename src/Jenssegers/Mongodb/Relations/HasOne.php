@@ -6,6 +6,36 @@ use Illuminate\Database\Eloquent\Relations\HasOne as EloquentHasOne;
 class HasOne extends EloquentHasOne
 {
     /**
+     * Get the key for comparing against the parent key in "has" query.
+     *
+     * @return string
+     */
+    public function getForeignKeyName()
+    {
+        return $this->foreignKey;
+    }
+
+    /**
+     * Get the key for comparing against the parent key in "has" query.
+     *
+     * @return string
+     */
+    public function getHasCompareKey()
+    {
+        return $this->getForeignKeyName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
+    {
+        $foreignKey = $this->getForeignKeyName();
+
+        return $query->select($foreignKey)->where($foreignKey, 'exists', true);
+    }
+
+    /**
      * Add the constraints for a relationship count query.
      *
      * @param  Builder $query
@@ -14,9 +44,9 @@ class HasOne extends EloquentHasOne
      */
     public function getRelationCountQuery(Builder $query, Builder $parent)
     {
-        $foreignKey = $this->getHasCompareKey();
+        $foreignKey = $this->getForeignKeyName();
 
-        return $query->select($this->getHasCompareKey())->where($this->getHasCompareKey(), 'exists', true);
+        return $query->select($foreignKey)->where($foreignKey, 'exists', true);
     }
 
     /**
@@ -33,16 +63,6 @@ class HasOne extends EloquentHasOne
 
         $key = $this->wrap($this->getQualifiedParentKeyName());
 
-        return $query->where($this->getHasCompareKey(), 'exists', true);
-    }
-
-    /**
-     * Get the plain foreign key.
-     *
-     * @return string
-     */
-    public function getPlainForeignKey()
-    {
-        return $this->getForeignKey();
+        return $query->where($this->getForeignKeyName(), 'exists', true);
     }
 }

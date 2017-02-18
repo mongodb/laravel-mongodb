@@ -6,6 +6,26 @@ use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
 class HasMany extends EloquentHasMany
 {
     /**
+     * Get the key for comparing against the parent key in "has" query.
+     *
+     * @return string
+     */
+    public function getHasCompareKey()
+    {
+        return $this->getForeignKeyName();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
+    {
+        $foreignKey = $this->getHasCompareKey();
+
+        return $query->select($foreignKey)->where($foreignKey, 'exists', true);
+    }
+
+    /**
      * Add the constraints for a relationship count query.
      *
      * @param  Builder $query
@@ -16,7 +36,7 @@ class HasMany extends EloquentHasMany
     {
         $foreignKey = $this->getHasCompareKey();
 
-        return $query->select($this->getHasCompareKey())->where($this->getHasCompareKey(), 'exists', true);
+        return $query->select($foreignKey)->where($foreignKey, 'exists', true);
     }
 
     /**
@@ -34,15 +54,5 @@ class HasMany extends EloquentHasMany
         $key = $this->wrap($this->getQualifiedParentKeyName());
 
         return $query->where($this->getHasCompareKey(), 'exists', true);
-    }
-
-    /**
-     * Get the plain foreign key.
-     *
-     * @return string
-     */
-    public function getPlainForeignKey()
-    {
-        return $this->getForeignKey();
     }
 }
