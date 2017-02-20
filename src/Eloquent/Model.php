@@ -662,7 +662,12 @@ abstract class Model extends BaseModel
      */
     public function useMongoId()
     {
-        return (bool) config('database.connections.mongodb.use_mongo_id', false);
+        if (function_exists('config')) {
+            return (bool) config('database.connections.mongodb.use_mongo_id', false);
+        }
+
+        $connection = $this->getConnection();
+        return $connection->getConfig('use_mongo_id');
     }
 
     /**
