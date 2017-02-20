@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Str;
 use Moloquent\Query\Builder as QueryBuilder;
 use Moloquent\Relations\EmbedsMany;
 use Moloquent\Relations\EmbedsOne;
@@ -523,6 +524,16 @@ abstract class Model extends BaseModel
     public function getParentRelation()
     {
         return $this->parentRelation;
+    }
+    
+    /**
+     * Get the default foreign key name for the model.
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        return Str::snake(class_basename($this)) . '_' . trim($this->primaryKey, '_');
     }
 
     /**
