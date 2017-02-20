@@ -1,8 +1,9 @@
 <?php namespace Jenssegers\Mongodb;
 
+use Illuminate\Database\Connection as BaseConnection;
 use MongoDB\Client;
 
-class Connection extends \Illuminate\Database\Connection
+class Connection extends BaseConnection
 {
     /**
      * The MongoDB database handler.
@@ -45,14 +46,6 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
-     * @inheritdoc
-     */
-    protected function getDefaultPostProcessor()
-    {
-        return new Query\Processor;
-    }
-
-    /**
      * Begin a fluent query against a database collection.
      *
      * @param  string $collection
@@ -60,9 +53,7 @@ class Connection extends \Illuminate\Database\Connection
      */
     public function collection($collection)
     {
-        $processor = $this->getPostProcessor();
-
-        $query = new Query\Builder($this, $processor);
+        $query = new Query\Builder($this, $this->getPostProcessor());
 
         return $query->from($collection);
     }
@@ -201,9 +192,25 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * @inheritdoc
      */
+    protected function getDefaultPostProcessor()
+    {
+        return new Query\Processor();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getDefaultQueryGrammar()
+    {
+        return new Query\Grammar();
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function getDefaultSchemaGrammar()
     {
-        return new Schema\Grammar;
+        return new Schema\Grammar();
     }
 
     /**
