@@ -218,7 +218,7 @@ class ModelTest extends TestCase
 
     public function testFindOrfail()
     {
-        $this->setExpectedException('Illuminate\Database\Eloquent\ModelNotFoundException');
+        $this->expectException('Illuminate\Database\Eloquent\ModelNotFoundException');
         User::findOrfail('51c33d8981fec6813e00000a');
     }
 
