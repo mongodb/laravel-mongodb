@@ -611,6 +611,10 @@ class Builder extends BaseBuilder
      */
     public function delete($id = null)
     {
+        if ($id) {
+            $this->where('_id', '=', $id);
+        }
+
         $wheres = $this->compileWheres();
         $result = $this->collection->DeleteMany($wheres);
         if (1 == (int) $result->isAcknowledged()) {
