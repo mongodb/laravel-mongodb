@@ -11,6 +11,40 @@ class QueryBuilderTest extends TestCase
         DB::collection('items')->truncate();
     }
 
+    public function testDeleteWithId()
+    {
+        $user = DB::collection('users')->insertGetId([
+            ['name' => 'Jane Doe', 'age' => 20],
+        ]);
+
+        $user_id = (string) $user;
+
+        DB::collection('items')->insert([
+            ['name' => 'one thing', 'user_id' => $user_id],
+            ['name' => 'last thing', 'user_id' => $user_id],
+            ['name' => 'another thing', 'user_id' => $user_id],
+            ['name' => 'one more thing', 'user_id' => $user_id],
+        ]);
+
+        $product = DB::collection('items')->first();
+
+        $pid = (string) ($product['_id']);
+
+        DB::collection('items')->where('user_id', $user_id)->delete($pid);
+
+        $this->assertEquals(3, DB::collection('items')->count());
+
+        $product = DB::collection('items')->first();
+
+        $pid = $product['_id'];
+
+        DB::collection('items')->where('user_id', $user_id)->delete($pid);
+
+        DB::collection('items')->where('user_id', $user_id)->delete(str_random(32));
+
+        $this->assertEquals(2, DB::collection('items')->count());
+    }
+
     public function testCollection()
     {
         $this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', DB::collection('users'));
