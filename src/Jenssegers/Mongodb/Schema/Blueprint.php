@@ -7,14 +7,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * The MongoConnection object for this blueprint.
      *
-     * @var MongoConnection
+     * @var \Jenssegers\Mongodb\Connection
      */
     protected $connection;
 
     /**
      * The MongoCollection object for this blueprint.
      *
-     * @var MongoCollection
+     * @var \Jenssegers\Mongodb\Collection|\MongoDB\Collection
      */
     protected $collection;
 
@@ -32,7 +32,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     {
         $this->connection = $connection;
 
-        $this->collection = $connection->getCollection($collection);
+        $this->collection = $this->connection->getCollection($collection);
     }
 
     /**
@@ -54,6 +54,10 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
             $columns = $transform;
         }
 
+        if ($name !== null) {
+            $options['name'] = $name;
+        }
+
         $this->collection->createIndex($columns, $options);
 
         return $this;
@@ -64,7 +68,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function primary($columns = null, $name = null, $algorithm = null, $options = [])
     {
-        return $this->unique($columns, $options);
+        return $this->unique($columns, $name, $algorithm, $options);
     }
 
     /**
@@ -102,7 +106,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
         $options['unique'] = true;
 
-        $this->index($columns, null, null, $options);
+        $this->index($columns, $name, $algorithm, $options);
 
         return $this;
     }
