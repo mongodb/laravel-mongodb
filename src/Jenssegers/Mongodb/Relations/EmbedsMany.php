@@ -290,6 +290,8 @@ class EmbedsMany extends EmbedsOneOrMany
 
         $start = ($page - 1) * $perPage;
         $sliced = array_slice($results, $start, $perPage);
+        
+        $sliced = $this->toCollection($sliced);
 
         return new LengthAwarePaginator($sliced, $total, $perPage, $page, [
             'path' => Paginator::resolveCurrentPath(),
