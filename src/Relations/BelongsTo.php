@@ -4,6 +4,7 @@ namespace Moloquent\Relations;
 
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
+
     /**
      * Set the base constraints on the relation query.
      */
@@ -13,7 +14,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
             // For belongs to relationships, which are essentially the inverse of has one
             // or has many relationships, we need to actually query on the primary key
             // of the related models matching on the foreign key that's on a parent.
-            $this->query->where($this->otherKey, '=', $this->parent->{$this->foreignKey});
+            $this->query->where($this->getOtherKey(), '=', $this->parent->{$this->foreignKey});
         }
     }
 
@@ -27,7 +28,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         // We'll grab the primary key name of the related models since it could be set to
         // a non-standard name and not "id". We will then construct the constraint for
         // our eagerly loading query so it returns the proper models from execution.
-        $key = $this->otherKey;
+        $key = $this->getOtherKey();
 
         $this->query->whereIn($key, $this->getEagerModelKeys($models));
     }
@@ -35,16 +36,17 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     /**
      * Match the eagerly loaded results to their parents.
      *
-     * @param array                                    $models
+     * @param array $models
      * @param \Illuminate\Database\Eloquent\Collection $results
-     * @param string                                   $relation
+     * @param string $relation
      *
      * @return array
      */
     public function match(array $models, \Illuminate\Database\Eloquent\Collection $results, $relation)
     {
         $foreign = $this->foreignKey;
-        $other = $this->otherKey;
+        $other = $this->getOtherKey();
+
         // First we will get to build a dictionary of the child models by their primary
         // key of the relationship, then we can easily match the children back onto
         // the parents using that dictionary and the primary key of the children.
@@ -56,11 +58,21 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         // and match back onto their children using these keys of the dictionary and
         // the primary key of the children to map them onto the correct instances.
         foreach ($models as $model) {
-            if (isset($dictionary[(string) $model->$foreign])) {
-                $model->setRelation($relation, $dictionary[(string) $model->$foreign]);
+            if (isset($dictionary[(string)$model->$foreign])) {
+                $model->setRelation($relation, $dictionary[(string)$model->$foreign]);
             }
         }
 
         return $models;
+    }
+
+    private function getOtherKey()
+    {
+        // Laravel >= 5.4
+        if (property_exists($this, 'ownerKey')) {
+            return $this->ownerKey;
+        }
+
+        return $this->otherKey;
     }
 }
