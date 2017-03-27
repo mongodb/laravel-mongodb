@@ -66,7 +66,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         return $models;
     }
 
-    private function getOtherKey()
+    public function getOtherKey()
     {
         // Laravel >= 5.4
         if (property_exists($this, 'ownerKey')) {
