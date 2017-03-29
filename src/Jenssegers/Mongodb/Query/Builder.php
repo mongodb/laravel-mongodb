@@ -705,6 +705,28 @@ class Builder extends BaseBuilder
 
         return $this->performUpdate($query);
     }
+    
+    
+     /**
+     * Append one or more values to an array IF not exist in array.
+     *
+     * @param  mixed   $column
+     * @param  mixed   $value
+     * @return int
+     */
+    public function addToSet($column, $value = null)
+    {
+        if (is_array($column))
+        {
+            $query = array('$addToSet' => $column);
+        }
+        else
+        {
+            $query = array('$addToSet' => array($column => $value));
+        }
+
+        return $this->performUpdate($query);
+    }
 
     /**
      * Remove one or more values from an array.
