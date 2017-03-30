@@ -231,7 +231,13 @@ trait HybridRelations
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
         if (is_null($relation)) {
-            $relation = $this->getBelongsToManyCaller();
+            
+            // Laravel >= 5.4
+            if (method_exists($this, 'guessBelongsToManyRelation')) {
+                $relation = $this->guessBelongsToManyRelation();
+            } else {
+                $relation = $this->getBelongsToManyCaller();
+            }
         }
 
         // Check if it is a relation with an original model.
@@ -261,23 +267,5 @@ trait HybridRelations
         $query = $instance->newQuery();
 
         return new BelongsToMany($query, $this, $collection, $foreignKey, $otherKey, $relation);
-    }
-
-    /**
-     * Get the relationship name of the belongs to many.
-     *
-     * @return string
-     */
-    protected function getBelongsToManyCaller()
-    {
-        $self = __FUNCTION__;
-
-        $caller = array_first(debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS), function ($trace) use ($self) {
-            $caller = $trace['function'];
-
-            return ! in_array($caller, Model::$manyMethods) && $caller != $self;
-        });
-
-        return ! is_null($caller) ? $caller['function'] : null;
     }
 }
