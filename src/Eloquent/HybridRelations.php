@@ -231,7 +231,13 @@ trait HybridRelations
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
         if (is_null($relation)) {
-            $relation = $this->getBelongsToManyCaller();
+            
+            // Laravel >= 5.4
+            if (method_exists($this, 'guessBelongsToManyRelation')) {
+                $relation = $this->guessBelongsToManyRelation();
+            } else {
+                $relation = $this->getBelongsToManyCaller();
+            }
         }
 
         // Check if it is a relation with an original model.
