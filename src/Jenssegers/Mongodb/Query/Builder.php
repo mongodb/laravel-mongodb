@@ -144,11 +144,7 @@ class Builder extends BaseBuilder
      */
     protected function shouldUseCollections()
     {
-        if (function_exists('app')) {
-            $version = app()->version();
-            $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
-            return version_compare($version, '5.3', '>=');
-        }
+        return !interface_exists("Illuminate\Database\Eloquent\ScopeInterface"));
     }
 
     /**
