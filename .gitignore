@@ -1,6 +1,7 @@
 .DS_Store
 phpunit.phar
 /vendor
+/.settings
 composer.phar
 composer.lock
 *.sublime-project
