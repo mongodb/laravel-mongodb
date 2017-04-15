@@ -29,6 +29,14 @@ class BelongsToMany extends EloquentBelongsToMany
     {
         return $columns;
     }
+	
+	/**
+     * @inheritdoc
+     */
+    protected function shouldSelect(array $columns = ['*'])
+    {
+        return $columns;
+    }
 
     /**
      * Set the base constraints on the relation query.
