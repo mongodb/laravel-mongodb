@@ -56,6 +56,8 @@ $app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
 $app->withEloquent();
 ```
 
+> **Warning**: be sure to add it after `Illuminate\Database\DatabaseServiceProvider` otherwise you will get `Class db does not exist` error.
+
 The service provider will register a mongodb database extension with the original database manager. There is no need to register additional facades or objects. When using mongodb connections, Laravel will automatically provide you with the corresponding mongodb objects.
 
 For usage outside Laravel, check out the [Capsule manager](https://github.com/illuminate/database/blob/master/README.md) and add:
