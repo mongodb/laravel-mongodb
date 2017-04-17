@@ -10,6 +10,13 @@ use MongoDB\Operation\FindOneAndUpdate;
 class MongoQueue extends DatabaseQueue
 {
     /**
+     * The expiration time of a job.
+     *
+     * @var int|null
+     */
+    protected $expire = 60;
+    
+    /**
      * Pop the next job off of the queue.
      *
      * @param string $queue
@@ -19,14 +26,14 @@ class MongoQueue extends DatabaseQueue
     public function pop($queue = null)
     {
         $queue = $this->getQueue($queue);
-
+        
         if (!is_null($this->expire)) {
             $this->releaseJobsThatHaveBeenReservedTooLong($queue);
         }
-
+        
         if ($job = $this->getNextAvailableJobAndReserve($queue)) {
-            return new DatabaseJob(
-                $this->container, $this, $job, $queue
+            return new MongoJob(
+                $this->container, $this, $job, $this->connectionName, $queue
             );
         }
     }
