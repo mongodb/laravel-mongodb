@@ -59,13 +59,13 @@ class MongoQueue extends DatabaseQueue
             [
                 'queue'        => $this->getQueue($queue),
                 'reserved'     => 0,
-                'available_at' => ['$lte' => $this->getTime()],
+                'available_at' => ['$lte' => $this->currentTime()],
 
             ],
             [
                 '$set' => [
                     'reserved'    => 1,
-                    'reserved_at' => $this->getTime(),
+                    'reserved_at' => $this->currentTime(),
                 ],
             ],
             [
