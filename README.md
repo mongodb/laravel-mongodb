@@ -958,3 +958,19 @@ DB::connection()->disableQueryLog();
 ```
 
 *From: http://laravel.com/docs/database#query-logging*
+
+
+### Troubleshooting
+
+If you see installation failed cause of "requested PHP extension mongodb is missing from your system" error, Then you might need to install php mongo library to your system.
+you can do it by-
+
+```
+sudo apt-get install php-pear php5-dev
+sudo pecl install mongo
+sudo touch /etc/php5/conf.d/mongo.ini
+```
+After installing it add "extension=mongo.so" to your php.ini file (/etc/php5/cli/php.ini and /etc/php5/yourserver/php.ini)
+
+
+
