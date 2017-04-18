@@ -9,12 +9,23 @@ class PasswordBrokerManager extends BasePasswordBrokerManager
      */
     protected function createTokenRepository(array $config)
     {
-        return new DatabaseTokenRepository(
-            $this->app['db']->connection(),
-            $this->app['hash'],
-            $config['table'],
-            $this->app['config']['app.key'],
-            $config['expire']
-        );
+        $laravel = app();
+
+        if (starts_with($laravel::VERSION, '5.4') {
+            return new DatabaseTokenRepository(
+                $this->app['db']->connection(),
+                $this->app['hash'],
+                $config['table'],
+                $this->app['config']['app.key'],
+                $config['expire']
+            );
+        } else {
+            return new DatabaseTokenRepository(
+                $this->app['db']->connection(),
+                $config['table'],
+                $this->app['config']['app.key'],
+                $config['expire']
+            );
+        }
     }
 }
