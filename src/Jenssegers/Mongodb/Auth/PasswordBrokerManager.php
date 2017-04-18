@@ -11,7 +11,7 @@ class PasswordBrokerManager extends BasePasswordBrokerManager
     {
         $laravel = app();
 
-        if (starts_with($laravel::VERSION, '5.4') {
+        if (starts_with($laravel::VERSION, '5.4')) {
             return new DatabaseTokenRepository(
                 $this->app['db']->connection(),
                 $this->app['hash'],
