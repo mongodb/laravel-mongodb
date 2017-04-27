@@ -1,6 +1,5 @@
 <?php namespace Jenssegers\Mongodb\Auth;
 
-use DateTime;
 use DateTimeZone;
 use Illuminate\Auth\Passwords\DatabaseTokenRepository as BaseDatabaseTokenRepository;
 use MongoDB\BSON\UTCDateTime;
