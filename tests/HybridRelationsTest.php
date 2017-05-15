@@ -1,6 +1,6 @@
 <?php
 
-class MysqlRelationsTest extends TestCase
+class HybridRelationsTest extends TestCase
 {
     public function setUp()
     {
@@ -73,5 +73,60 @@ class MysqlRelationsTest extends TestCase
         // SQL belongs to
         $role = $user->mysqlRole()->first(); // refetch
         $this->assertEquals('John Doe', $role->user->name);
+    }
+
+
+    public function testRelationConstraints()
+    {
+        $user = new MysqlUser;
+        $otherUser = new MysqlUser;
+        $this->assertInstanceOf('MysqlUser', $user);
+        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
+        $this->assertInstanceOf('MysqlUser', $otherUser);
+        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $otherUser->getConnection());
+
+        //MySql User
+        $user->name = "John Doe";
+        $user->id = 2;
+        $user->save();
+        // Other user
+        $otherUser->name = 'Other User';
+        $otherUser->id = 3;
+        $otherUser->save();
+        // Make sure they are created
+        $this->assertTrue(is_int($user->id));
+        $this->assertTrue(is_int($otherUser->id));
+        // Clear to start
+        $user->books()->truncate();
+        $otherUser->books()->truncate();
+        // Create books
+        $otherUser->books()->saveMany([
+            new Book(['title' => 'Harry Plants']),
+            new Book(['title' => 'Harveys']),
+        ]);
+        // SQL has many
+        $user->books()->saveMany([
+            new Book(['title' => 'Game of Thrones']),
+            new Book(['title' => 'Harry Potter']),
+            new Book(['title' => 'Harry Planter']),
+        ]);
+
+        $users = MysqlUser::whereHas('books', function ($query) {
+            return $query->where('title', 'LIKE', 'Har%');
+        })->get();
+
+        $this->assertEquals(2, $users->count());
+
+        $users = MysqlUser::whereHas('books', function ($query) {
+            return $query->where('title', 'LIKE', 'Harry%');
+        }, '>=', 2)->get();
+
+        $this->assertEquals(1, $users->count());
+
+        $books = Book::whereHas('mysqlAuthor', function ($query) {
+            return $query->where('name', 'LIKE', 'Other%');
+        })->get();
+
+        $this->assertEquals(2, $books->count());
     }
 }

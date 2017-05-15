@@ -5,6 +5,16 @@ use Illuminate\Database\Eloquent\Builder;
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
     /**
+     * Get the key for comparing against the parent key in "has" query.
+     *
+     * @return string
+     */
+    public function getHasCompareKey()
+    {
+        return $this->getOwnerKey();
+    }
+
+    /**
      * @inheritdoc
      */
     public function addConstraints()
