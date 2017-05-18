@@ -5,8 +5,7 @@ namespace Jenssegers\Mongodb\Helpers;
 use Closure;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Jenssegers\Mongodb\Eloquent\Model;
 
 trait QueriesRelationships
 {
@@ -28,9 +27,9 @@ trait QueriesRelationships
 
         $relation = $this->getRelationWithoutConstraints($relation);
 
-        // If this is a hybrid relation then we can not use an existence query
+        // If this is a hybrid relation then we can not use a normal whereExists() query that relies on a subquery
         // We need to use a `whereIn` query
-        if ($relation->getParent()->getConnectionName() !== $relation->getRelated()->getConnectionName()) {
+        if ($this->getModel() instanceof Model || $this->isAcrossConnections($relation)) {
             return $this->addHybridHas($relation, $operator, $count, $boolean, $callback);
         }
 
@@ -58,6 +57,15 @@ trait QueriesRelationships
     }
 
     /**
+     * @param $relation
+     * @return bool
+     */
+    protected function isAcrossConnections($relation)
+    {
+        return $relation->getParent()->getConnectionName() !== $relation->getRelated()->getConnectionName();
+    }
+
+    /**
      * Compare across databases
      * @param $relation
      * @param string $operator
@@ -65,6 +73,7 @@ trait QueriesRelationships
      * @param string $boolean
      * @param Closure|null $callback
      * @return mixed
+     * @throws \Exception
      */
     public function addHybridHas($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
     {
@@ -73,15 +82,23 @@ trait QueriesRelationships
             $hasQuery->callScope($callback);
         }
 
-        $relations = $hasQuery->pluck($this->getHasCompareKey($relation));
-        $constraintKey = $this->getRelatedConstraintKey($relation);
+        // If the operator is <, <= or !=, we will use whereNotIn.
+        $not = in_array($operator, ['<', '<=', '!=']);
+        // If we are comparing to 0, we need an additional $not flip.
+        if ($count == 0) {
+            $not = ! $not;
+        }
 
-        return $this->addRelatedCountConstraint($constraintKey, $relations, $operator, $count, $boolean);
+        $relations = $hasQuery->pluck($this->getHasCompareKey($relation));
+
+        $relatedIds = $this->getConstrainedRelatedIds($relations, $operator, $count);
+
+        return $this->whereIn($this->getRelatedConstraintKey($relation), $relatedIds, $boolean, $not);
     }
 
 
     /**
-     * Returns key we are constraining this parent model's query witth
+     * Returns key we are constraining this parent model's query with
      * @param $relation
      * @return string
      * @throws \Exception
@@ -89,7 +106,7 @@ trait QueriesRelationships
     protected function getRelatedConstraintKey($relation)
     {
         if ($relation instanceof HasOneOrMany) {
-            return $relation->getQualifiedParentKeyName();
+            return $this->model->getKeyName();
         }
 
         if ($relation instanceof BelongsTo) {
@@ -105,47 +122,20 @@ trait QueriesRelationships
      */
     protected function getHasCompareKey($relation)
     {
-        if ($relation instanceof HasOneOrMany) {
-            return $relation->getForeignKeyName();
+        if (method_exists($relation, 'getHasCompareKey')) {
+            return $relation->getHasCompareKey();
         }
 
-        $keyMethods = ['getOwnerKey', 'getHasCompareKey'];
-        foreach ($keyMethods as $method) {
-            if (method_exists($relation, $method)) {
-                return $relation->$method();
-            }
-        }
+        return $relation instanceof HasOneOrMany ? $relation->getForeignKeyName() : $relation->getOwnerKey();
     }
 
     /**
-     * Add the "has" condition where clause to the query.
-     *
-     * @param  \Illuminate\Database\Eloquent\Builder $hasQuery
-     * @param  \Illuminate\Database\Eloquent\Relations\Relation $relation
-     * @param  string $operator
-     * @param  int $count
-     * @param  string $boolean
-     * @return \Illuminate\Database\Eloquent\Builder|static
-     */
-    protected function addHasWhere(EloquentBuilder $hasQuery, Relation $relation, $operator, $count, $boolean)
-    {
-        $query = $hasQuery->getQuery();
-        // Get the number of related objects for each possible parent.
-        $relations = $query->pluck($relation->getHasCompareKey());
-
-        return $this->addRelatedCountConstraint($this->model->getKeyName(), $relations, $operator, $count, $boolean);
-    }
-
-    /**
-     * Consta
-     * @param $key
      * @param $relations
      * @param $operator
      * @param $count
-     * @param $boolean
-     * @return mixed
+     * @return array
      */
-    protected function addRelatedCountConstraint($key, $relations, $operator, $count, $boolean)
+    protected function getConstrainedRelatedIds($relations, $operator, $count)
     {
         $relationCount = array_count_values(array_map(function ($id) {
             return (string)$id; // Convert Back ObjectIds to Strings
@@ -169,16 +159,7 @@ trait QueriesRelationships
             }
         });
 
-        // If the operator is <, <= or !=, we will use whereNotIn.
-        $not = in_array($operator, ['<', '<=', '!=']);
-        // If we are comparing to 0, we need an additional $not flip.
-        if ($count == 0) {
-            $not = ! $not;
-        }
         // All related ids.
-        $relatedIds = array_keys($relationCount);
-
-        // Add whereIn to the query.
-        return $this->whereIn($key, $relatedIds, $boolean, $not);
+        return array_keys($relationCount);
     }
 }

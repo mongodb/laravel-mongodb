@@ -76,7 +76,7 @@ class HybridRelationsTest extends TestCase
     }
 
 
-    public function testRelationConstraints()
+    public function testHybridWhereHas()
     {
         $user = new MysqlUser;
         $otherUser = new MysqlUser;
@@ -128,5 +128,67 @@ class HybridRelationsTest extends TestCase
         })->get();
 
         $this->assertEquals(2, $books->count());
+    }
+
+    public function testHybridWith()
+    {
+        $user = new MysqlUser;
+        $otherUser = new MysqlUser;
+        $this->assertInstanceOf('MysqlUser', $user);
+        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
+        $this->assertInstanceOf('MysqlUser', $otherUser);
+        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $otherUser->getConnection());
+
+        //MySql User
+        $user->name = "John Doe";
+        $user->id = 2;
+        $user->save();
+        // Other user
+        $otherUser->name = 'Other User';
+        $otherUser->id = 3;
+        $otherUser->save();
+        // Make sure they are created
+        $this->assertTrue(is_int($user->id));
+        $this->assertTrue(is_int($otherUser->id));
+        // Clear to start
+        Book::truncate();
+        MysqlBook::truncate();
+        // Create books
+        // Mysql relation
+        $user->mysqlBooks()->saveMany([
+            new MysqlBook(['title' => 'Game of Thrones']),
+            new MysqlBook(['title' => 'Harry Potter']),
+        ]);
+
+        $otherUser->mysqlBooks()->saveMany([
+            new MysqlBook(['title' => 'Harry Plants']),
+            new MysqlBook(['title' => 'Harveys']),
+            new MysqlBook(['title' => 'Harry Planter']),
+        ]);
+        // SQL has many Hybrid
+        $user->books()->saveMany([
+            new Book(['title' => 'Game of Thrones']),
+            new Book(['title' => 'Harry Potter']),
+        ]);
+
+        $otherUser->books()->saveMany([
+            new Book(['title' => 'Harry Plants']),
+            new Book(['title' => 'Harveys']),
+            new Book(['title' => 'Harry Planter']),
+        ]);
+
+        MysqlUser::with('books')->get()
+            ->each(function ($user) {
+                $this->assertEquals($user->id, $user->books->count());
+            });
+
+        MysqlUser::whereHas('mysqlBooks', function ($query) {
+            return $query->where('title', 'LIKE', 'Harry%');
+        })
+            ->with('books')
+            ->get()
+            ->each(function ($user) {
+                $this->assertEquals($user->id, $user->books->count());
+            });
     }
 }
