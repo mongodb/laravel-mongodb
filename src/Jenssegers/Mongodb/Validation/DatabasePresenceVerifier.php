@@ -41,11 +41,10 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
      */
     public function getMultiCount($collection, $column, array $values, array $extra = [])
     {
-        foreach ($values as &$value) {
-            $value = new MongoRegex("/$value/i");
-        }
+        // Generates a regex like '/(a|b|c)/i' which can query multiple values
+        $regex = '/('.implode('|', $values).')/i';
         
-        $query = $this->table($collection)->whereIn($column, $values);
+        $query = $this->table($collection)->where($column, 'regex', $regex);
 
         foreach ($extra as $key => $extraValue) {
             $this->addWhere($query, $key, $extraValue);
