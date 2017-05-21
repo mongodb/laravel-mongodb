@@ -1,7 +1,5 @@
 <?php namespace Jenssegers\Mongodb\Validation;
 
-use MongoDB\BSON\Regex as MongoRegex;
-
 class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVerifier
 {
     /**
