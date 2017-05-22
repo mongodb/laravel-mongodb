@@ -14,7 +14,8 @@
         "illuminate/support": "4.2.*",
         "illuminate/container": "4.2.*",
         "illuminate/database": "4.2.*",
-        "illuminate/events": "4.2.*"
+        "illuminate/events": "4.2.*",
+        "alcaeus/mongo-php-adapter": "^1.1.0"
     },
     "require-dev": {
         "orchestra/testbench": "2.2.*",
