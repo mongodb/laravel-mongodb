@@ -167,6 +167,24 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['key']['token']);
     }
 
+    public function testGeospatial()
+    {
+        Schema::collection('newcollection', function ($collection) {
+            $collection->geospatial('point');
+            $collection->geospatial('area', '2d');
+            $collection->geospatial('continent', '2dsphere');
+        });
+
+        $index = $this->getIndex('newcollection', 'point');
+        $this->assertEquals('2d', $index['key']['point']);
+
+        $index = $this->getIndex('newcollection', 'area');
+        $this->assertEquals('2d', $index['key']['area']);
+
+        $index = $this->getIndex('newcollection', 'continent');
+        $this->assertEquals('2dsphere', $index['key']['continent']);
+    }
+
     public function testDummies()
     {
         Schema::collection('newcollection', function ($collection) {

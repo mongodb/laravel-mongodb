@@ -145,6 +145,31 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
+     * Specify a geospatial index for the collection.
+     *
+     * @param  string|array $columns
+     * @param  string       $index
+     * @param  array        $options
+     * @return Blueprint
+     */
+    public function geospatial($columns = null, $index = '2d', $options = [])
+    {
+        if ($index == '2d' or $index == '2dsphere') {
+            $columns = $this->fluent($columns);
+
+            $columns = array_flip($columns);
+
+            foreach ($columns as $column => $value) {
+                $columns[$column] = $index;
+            }
+
+            $this->index($columns, null, null, $options);
+        }
+
+        return $this;
+    }
+
+    /**
      * Specify the number of seconds after wich a document should be considered expired based,
      * on the given single-field index containing a date.
      *
