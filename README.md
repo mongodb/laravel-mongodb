@@ -234,9 +234,31 @@ Supported operations are:
  - hasCollection
  - index and dropIndex (compound indexes supported as well)
  - unique
- - background, sparse, expire (MongoDB specific)
+ - background, sparse, expire, geospatial (MongoDB specific)
 
 All other (unsupported) operations are implemented as dummy pass-through methods, because MongoDB does not use a predefined schema. Read more about the schema builder on http://laravel.com/docs/schema
+
+### Geospatial indexes
+
+Geospatial indexes are handy for querying location-based documents. They come in two forms: `2d` and `2dsphere`. Use the schema builder to add these to a collection.
+
+To add a `2d` index:
+
+```php
+Schema::create('users', function($collection)
+{
+    $collection->geospatial('name', '2d');
+});
+```
+
+To add a `2dsphere` index:
+
+```php
+Schema::create('users', function($collection)
+{
+    $collection->geospatial('name', '2dsphere');
+});
+```
 
 Extensions
 ----------
@@ -274,7 +296,7 @@ If you want to use MongoDB to handle failed jobs, change the database in `config
     ],
 ```
 
-And add the service provider in `config/app.php`: 
+And add the service provider in `config/app.php`:
 
 ```php
 Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
@@ -524,6 +546,72 @@ Performs a modulo operation on the value of a field and selects documents with a
 ```php
 User::where('age', 'mod', [10, 0])->get();
 ```
+
+**Near**
+
+**NOTE:** Specify coordinates in this order: `longitude, latitude`.
+
+```php
+$users = User::where('location', 'near', [
+	'$geometry' => [
+        'type' => 'Point',
+	    'coordinates' => [
+	        -0.1367563,
+            51.5100913,
+        ],
+    ],
+    '$maxDistance' => 50,
+]);
+```
+
+**GeoWithin**
+
+```php
+$users = User::where('location', 'geoWithin', [
+	'$geometry' => [
+        'type' => 'Polygon',
+	    'coordinates' => [[
+            [
+                -0.1450383,
+                51.5069158,
+            ],       
+            [
+                -0.1367563,
+                51.5100913,
+            ],       
+            [
+                -0.1270247,
+                51.5013233,
+            ],  
+            [
+                -0.1450383,
+                51.5069158,
+            ],
+        ]],
+    ],
+]);
+```
+
+**GeoIntersects**
+
+```php
+$locations = Location::where('location', 'geoIntersects', [
+    '$geometry' => [
+        'type' => 'LineString',
+        'coordinates' => [
+            [
+                -0.144044,
+                51.515215,
+            ],
+            [
+                -0.129545,
+                51.507864,
+            ],
+        ],
+    ],
+]);
+```
+
 
 **Where**
 
