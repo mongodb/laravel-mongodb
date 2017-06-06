@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
+use Illuminate\Support\Str;
 
 abstract class Model extends BaseModel
 {
@@ -417,4 +418,19 @@ abstract class Model extends BaseModel
 
         return parent::__call($method, $parameters);
     }
+	
+
+    /**
+     * Get the default foreign key name for the model.
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+		if( substr($this->primaryKey,0,1) === '_' )
+	        return Str::snake(class_basename($this)).''.$this->primaryKey;
+		else
+	        return Str::snake(class_basename($this)).'_'.$this->primaryKey;
+    }
+
 }
