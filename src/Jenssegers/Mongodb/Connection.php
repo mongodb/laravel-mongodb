@@ -43,6 +43,8 @@ class Connection extends BaseConnection
         $this->useDefaultPostProcessor();
 
         $this->useDefaultSchemaGrammar();
+
+        $this->useDefaultQueryGrammar();
     }
 
     /**
