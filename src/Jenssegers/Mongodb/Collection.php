@@ -1,8 +1,9 @@
 <?php namespace Jenssegers\Mongodb;
 
 use Exception;
-use MongoDB\Collection as MongoCollection;
 use MongoDB\BSON\ObjectID;
+use MongoDB\Collection as MongoCollection;
+use Illuminate\Contracts\Support\Arrayable;
 
 class Collection
 {
@@ -39,6 +40,11 @@ class Collection
     public function __call($method, $parameters)
     {
         $start = microtime(true);
+        array_walk_recursive($parameters, function (&$item, $key) {
+            if ($item instanceof Arrayable) {
+                $item = $item->toArray();
+            }
+        });
         $result = call_user_func_array([$this->collection, $method], $parameters);
 
         if ($this->connection->logging()) {

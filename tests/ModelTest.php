@@ -26,6 +26,10 @@ class ModelTest extends TestCase
         $user->name = 'John Doe';
         $user->title = 'admin';
         $user->age = 35;
+        $user->address = new Address([
+            'name' => 'John Doe',
+            'country' => 'Mar',
+        ]);
 
         $user->save();
 
@@ -43,6 +47,8 @@ class ModelTest extends TestCase
 
         $this->assertEquals('John Doe', $user->name);
         $this->assertEquals(35, $user->age);
+        $this->assertEquals('John Doe', $user['address.name']);
+        $this->assertEquals('Mar', $user['address.country']);
     }
 
     public function testUpdate()
