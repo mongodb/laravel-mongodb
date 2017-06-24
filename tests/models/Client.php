@@ -19,6 +19,6 @@ class Client extends Eloquent
 
     public function addresses()
     {
-        return $this->hasMany('Address', 'data.address_id', 'data.client_id');
+        return $this->hasMany('Address', 'data.client_id', 'data.client_id');
     }
 }

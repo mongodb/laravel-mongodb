@@ -5,10 +5,7 @@ use Illuminate\Auth\Passwords\PasswordBrokerManager as BasePasswordBrokerManager
 class PasswordBrokerManager extends BasePasswordBrokerManager
 {
     /**
-     * Create a token repository instance based on the given configuration.
-     *
-     * @param  array  $config
-     * @return \Illuminate\Auth\Passwords\TokenRepositoryInterface
+     * @inheritdoc
      */
     protected function createTokenRepository(array $config)
     {

@@ -4,15 +4,14 @@ use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
-use Jenssegers\Mongodb\Relations\EmbedsMany;
-use Jenssegers\Mongodb\Relations\EmbedsOne;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 
 abstract class Model extends BaseModel
 {
-    use HybridRelations;
+    use HybridRelations, EmbedsRelations;
 
     /**
      * The collection associated with the model.
@@ -38,10 +37,10 @@ abstract class Model extends BaseModel
     /**
      * Custom accessor for the model's id.
      *
-     * @param  mixed  $value
+     * @param  mixed $value
      * @return mixed
      */
-    public function getIdAttribute($value)
+    public function getIdAttribute($value = null)
     {
         // If we don't have a value for 'id', we will use the Mongo '_id' value.
         // This allows us to work with models in a more sql-like way.
@@ -58,9 +57,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get the table qualified key name.
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getQualifiedKeyName()
     {
@@ -68,80 +65,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Define an embedded one-to-many relationship.
-     *
-     * @param  string  $related
-     * @param  string  $localKey
-     * @param  string  $foreignKey
-     * @param  string  $relation
-     * @return \Jenssegers\Mongodb\Relations\EmbedsMany
-     */
-    protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
-    {
-        // If no relation name was given, we will use this debug backtrace to extract
-        // the calling method's name and use that as the relationship name as most
-        // of the time this will be what we desire to use for the relatinoships.
-        if (is_null($relation)) {
-            list(, $caller) = debug_backtrace(false);
-
-            $relation = $caller['function'];
-        }
-
-        if (is_null($localKey)) {
-            $localKey = $relation;
-        }
-
-        if (is_null($foreignKey)) {
-            $foreignKey = snake_case(class_basename($this));
-        }
-
-        $query = $this->newQuery();
-
-        $instance = new $related;
-
-        return new EmbedsMany($query, $this, $instance, $localKey, $foreignKey, $relation);
-    }
-
-    /**
-     * Define an embedded one-to-many relationship.
-     *
-     * @param  string  $related
-     * @param  string  $localKey
-     * @param  string  $foreignKey
-     * @param  string  $relation
-     * @return \Jenssegers\Mongodb\Relations\EmbedsOne
-     */
-    protected function embedsOne($related, $localKey = null, $foreignKey = null, $relation = null)
-    {
-        // If no relation name was given, we will use this debug backtrace to extract
-        // the calling method's name and use that as the relationship name as most
-        // of the time this will be what we desire to use for the relatinoships.
-        if (is_null($relation)) {
-            list(, $caller) = debug_backtrace(false);
-
-            $relation = $caller['function'];
-        }
-
-        if (is_null($localKey)) {
-            $localKey = $relation;
-        }
-
-        if (is_null($foreignKey)) {
-            $foreignKey = snake_case(class_basename($this));
-        }
-
-        $query = $this->newQuery();
-
-        $instance = new $related;
-
-        return new EmbedsOne($query, $this, $instance, $localKey, $foreignKey, $relation);
-    }
-
-    /**
-     * Convert a DateTime to a storable UTCDateTime object.
-     *
-     * @param  DateTime|int  $value
-     * @return UTCDateTime
+     * @inheritdoc
      */
     public function fromDateTime($value)
     {
@@ -159,10 +83,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Return a timestamp as DateTime object.
-     *
-     * @param  mixed  $value
-     * @return DateTime
+     * @inheritdoc
      */
     protected function asDateTime($value)
     {
@@ -175,9 +96,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get the format for database stored dates.
-     *
-     * @return string
+     * @inheritdoc
      */
     protected function getDateFormat()
     {
@@ -185,19 +104,15 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get a fresh timestamp for the model.
-     *
-     * @return UTCDateTime
+     * @inheritdoc
      */
     public function freshTimestamp()
     {
-        return new UTCDateTime(round(microtime(true) * 1000));
+        return new UTCDateTime(time() * 1000);
     }
 
     /**
-     * Get the table associated with the model.
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getTable()
     {
@@ -205,10 +120,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get an attribute from the model.
-     *
-     * @param  string  $key
-     * @return mixed
+     * @inheritdoc
      */
     public function getAttribute($key)
     {
@@ -230,30 +142,20 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get an attribute from the $attributes array.
-     *
-     * @param  string  $key
-     * @return mixed
+     * @inheritdoc
      */
     protected function getAttributeFromArray($key)
     {
         // Support keys in dot notation.
         if (str_contains($key, '.')) {
-            $attributes = array_dot($this->attributes);
-
-            if (array_key_exists($key, $attributes)) {
-                return $attributes[$key];
-            }
+            return array_get($this->attributes, $key);
         }
 
         return parent::getAttributeFromArray($key);
     }
 
     /**
-     * Set a given attribute on the model.
-     *
-     * @param  string  $key
-     * @param  mixed   $value
+     * @inheritdoc
      */
     public function setAttribute($key, $value)
     {
@@ -262,9 +164,7 @@ abstract class Model extends BaseModel
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
-        }
-
-        // Support keys in dot notation.
+        } // Support keys in dot notation.
         elseif (str_contains($key, '.')) {
             if (in_array($key, $this->getDates()) && $value) {
                 $value = $this->fromDateTime($value);
@@ -279,9 +179,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Convert the model's attributes to an array.
-     *
-     * @return array
+     * @inheritdoc
      */
     public function attributesToArray()
     {
@@ -308,9 +206,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get the casts array.
-     *
-     * @return array
+     * @inheritdoc
      */
     public function getCasts()
     {
@@ -318,10 +214,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Determine if the new and old values for a given key are numerically equivalent.
-     *
-     * @param  string  $key
-     * @return bool
+     * @inheritdoc
      */
     protected function originalIsNumericallyEquivalent($key)
     {
@@ -342,7 +235,7 @@ abstract class Model extends BaseModel
     /**
      * Remove one or more fields.
      *
-     * @param  mixed  $columns
+     * @param  mixed $columns
      * @return int
      */
     public function drop($columns)
@@ -361,9 +254,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Append one or more values to an array.
-     *
-     * @return mixed
+     * @inheritdoc
      */
     public function push()
     {
@@ -394,8 +285,8 @@ abstract class Model extends BaseModel
     /**
      * Remove one or more values from an array.
      *
-     * @param  string  $column
-     * @param  mixed   $values
+     * @param  string $column
+     * @param  mixed  $values
      * @return mixed
      */
     public function pull($column, $values)
@@ -415,9 +306,9 @@ abstract class Model extends BaseModel
     /**
      * Append one or more values to the underlying attribute value and sync with original.
      *
-     * @param  string  $column
-     * @param  array   $values
-     * @param  bool    $unique
+     * @param  string $column
+     * @param  array  $values
+     * @param  bool   $unique
      */
     protected function pushAttributeValues($column, array $values, $unique = false)
     {
@@ -440,8 +331,8 @@ abstract class Model extends BaseModel
     /**
      * Remove one or more values to the underlying attribute value and sync with original.
      *
-     * @param  string  $column
-     * @param  array   $values
+     * @param  string $column
+     * @param  array  $values
      */
     protected function pullAttributeValues($column, array $values)
     {
@@ -461,9 +352,17 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getForeignKey()
+    {
+        return Str::snake(class_basename($this)).'_'.ltrim($this->primaryKey, '_');
+    }
+
+    /**
      * Set the parent relation.
      *
-     * @param  \Illuminate\Database\Eloquent\Relations\Relation  $relation
+     * @param  \Illuminate\Database\Eloquent\Relations\Relation $relation
      */
     public function setParentRelation(Relation $relation)
     {
@@ -481,10 +380,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Create a new Eloquent query builder for the model.
-     *
-     * @param  \Jenssegers\Mongodb\Query\Builder $query
-     * @return \Jenssegers\Mongodb\Eloquent\Builder|static
+     * @inheritdoc
      */
     public function newEloquentBuilder($query)
     {
@@ -492,9 +388,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Get a new query builder instance for the connection.
-     *
-     * @return Builder
+     * @inheritdoc
      */
     protected function newBaseQueryBuilder()
     {
@@ -502,12 +396,9 @@ abstract class Model extends BaseModel
 
         return new QueryBuilder($connection, $connection->getPostProcessor());
     }
-    
+
     /**
-     * We just return original key here in order to support keys in dot-notation
-     *
-     * @param  string  $key
-     * @return string
+     * @inheritdoc
      */
     protected function removeTableFromKey($key)
     {
@@ -515,11 +406,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Handle dynamic method calls into the method.
-     *
-     * @param  string  $method
-     * @param  array   $parameters
-     * @return mixed
+     * @inheritdoc
      */
     public function __call($method, $parameters)
     {

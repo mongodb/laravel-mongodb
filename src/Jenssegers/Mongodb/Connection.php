@@ -1,8 +1,9 @@
 <?php namespace Jenssegers\Mongodb;
 
+use Illuminate\Database\Connection as BaseConnection;
 use MongoDB\Client;
 
-class Connection extends \Illuminate\Database\Connection
+class Connection extends BaseConnection
 {
     /**
      * The MongoDB database handler.
@@ -21,7 +22,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a new database connection instance.
      *
-     * @param  array   $config
+     * @param  array $config
      */
     public function __construct(array $config)
     {
@@ -45,26 +46,14 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
-     * Get the default post processor instance.
-     *
-     * @return Query\Processor
-     */
-    protected function getDefaultPostProcessor()
-    {
-        return new Query\Processor;
-    }
-
-    /**
      * Begin a fluent query against a database collection.
      *
-     * @param  string  $collection
+     * @param  string $collection
      * @return Query\Builder
      */
     public function collection($collection)
     {
-        $processor = $this->getPostProcessor();
-
-        $query = new Query\Builder($this, $processor);
+        $query = new Query\Builder($this, $this->getPostProcessor());
 
         return $query->from($collection);
     }
@@ -72,7 +61,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Begin a fluent query against a database collection.
      *
-     * @param  string  $table
+     * @param  string $table
      * @return Query\Builder
      */
     public function table($table)
@@ -83,7 +72,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Get a MongoDB collection.
      *
-     * @param  string   $name
+     * @param  string $name
      * @return Collection
      */
     public function getCollection($name)
@@ -92,9 +81,7 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
-     * Get a schema builder instance for the connection.
-     *
-     * @return Schema\Builder
+     * @inheritdoc
      */
     public function getSchemaBuilder()
     {
@@ -124,9 +111,9 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a new MongoDB connection.
      *
-     * @param  string  $dsn
-     * @param  array   $config
-     * @param  array   $options
+     * @param  string $dsn
+     * @param  array  $config
+     * @param  array  $options
      * @return \MongoDB\Client
      */
     protected function createConnection($dsn, array $config, array $options)
@@ -139,10 +126,10 @@ class Connection extends \Illuminate\Database\Connection
         }
 
         // Check if the credentials are not already set in the options
-        if (!isset($options['username']) && !empty($config['username'])) {
+        if (! isset($options['username']) && ! empty($config['username'])) {
             $options['username'] = $config['username'];
         }
-        if (!isset($options['password']) && !empty($config['password'])) {
+        if (! isset($options['password']) && ! empty($config['password'])) {
             $options['password'] = $config['password'];
         }
 
@@ -150,7 +137,7 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
-     * Disconnect from the underlying MongoDB connection.
+     * @inheritdoc
      */
     public function disconnect()
     {
@@ -160,7 +147,7 @@ class Connection extends \Illuminate\Database\Connection
     /**
      * Create a DSN string from a configuration.
      *
-     * @param  array   $config
+     * @param  array $config
      * @return string
      */
     protected function getDsn(array $config)
@@ -176,21 +163,18 @@ class Connection extends \Illuminate\Database\Connection
         foreach ($hosts as &$host) {
             // Check if we need to add a port to the host
             if (strpos($host, ':') === false && ! empty($config['port'])) {
-                $host = $host . ':' . $config['port'];
+                $host = $host.':'.$config['port'];
             }
         }
 
         // Check if we want to authenticate against a specific database.
         $auth_database = isset($config['options']) && ! empty($config['options']['database']) ? $config['options']['database'] : null;
 
-        return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
+        return 'mongodb://'.implode(',', $hosts).($auth_database ? '/'.$auth_database : '');
     }
 
     /**
-     * Get the elapsed time since a given starting point.
-     *
-     * @param  int    $start
-     * @return float
+     * @inheritdoc
      */
     public function getElapsedTime($start)
     {
@@ -198,9 +182,7 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
-     * Get the PDO driver name.
-     *
-     * @return string
+     * @inheritdoc
      */
     public function getDriverName()
     {
@@ -208,20 +190,34 @@ class Connection extends \Illuminate\Database\Connection
     }
 
     /**
-     * Get the default schema grammar instance.
-     *
-     * @return Schema\Grammar
+     * @inheritdoc
+     */
+    protected function getDefaultPostProcessor()
+    {
+        return new Query\Processor();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getDefaultQueryGrammar()
+    {
+        return new Query\Grammar();
+    }
+
+    /**
+     * @inheritdoc
      */
     protected function getDefaultSchemaGrammar()
     {
-        return new Schema\Grammar;
+        return new Schema\Grammar();
     }
 
     /**
      * Dynamically pass methods to the connection.
      *
-     * @param  string  $method
-     * @param  array   $parameters
+     * @param  string $method
+     * @param  array  $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
