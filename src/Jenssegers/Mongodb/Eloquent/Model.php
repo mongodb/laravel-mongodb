@@ -175,7 +175,7 @@ abstract class Model extends BaseModel
             return;
         }
 
-        parent::setAttribute($key, $value);
+        return parent::setAttribute($key, $value);
     }
 
     /**
