@@ -154,7 +154,7 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 class User extends Eloquent {}
 ```
 
-Note that we did not tell Eloquent which collection to use for the `User` model. Just like the original Eloquent, the lower-case, plural name of the class will be used as the table name unless another name is explicitly specified. You may specify a custom collection (alias for table) by defining a `collection` property on your model:
+Note that we did not tell Eloquent which collection to use for the `User` model. Just like the original Eloquent, the lower-case, plural name of the class will be used as the collection name unless another name is explicitly specified. You may specify a custom collection (alias for table) by defining a `collection` property on your model:
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
