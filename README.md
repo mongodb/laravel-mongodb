@@ -976,7 +976,8 @@ DB::collection('users')->where('name', 'John')
 You can apply projections to your queries using the `project` method.
 
 ```php
-DB::collection('items')->project(['tags' => array('$slice' => 1]))->get();
+DB::collection('items')->project(['tags' => ['$slice' => 1]])->get();
+DB::collection('items')->project(['tags' => ['$slice' => [3, 7]]])->get();
 ```
 
 **Projections with Pagination**
