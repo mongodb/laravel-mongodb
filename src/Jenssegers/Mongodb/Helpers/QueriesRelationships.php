@@ -139,7 +139,7 @@ trait QueriesRelationships
     {
         $relationCount = array_count_values(array_map(function ($id) {
 
-            return (string)$id; // Convert Back ObjectIds to Strings
+            return (string) $id; // Convert Back ObjectIds to Strings
         }, is_array($relations) ? $relations : $relations->flatten()->toArray()));
         // Remove unwanted related objects based on the operator and count.
         $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator) {
