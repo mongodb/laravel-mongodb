@@ -75,7 +75,6 @@ class HybridRelationsTest extends TestCase
         $this->assertEquals('John Doe', $role->user->name);
     }
 
-
     public function testHybridWhereHas()
     {
         $user = new MysqlUser;

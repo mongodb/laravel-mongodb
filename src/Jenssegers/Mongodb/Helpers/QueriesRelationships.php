@@ -138,6 +138,7 @@ trait QueriesRelationships
     protected function getConstrainedRelatedIds($relations, $operator, $count)
     {
         $relationCount = array_count_values(array_map(function ($id) {
+
             return (string)$id; // Convert Back ObjectIds to Strings
         }, is_array($relations) ? $relations : $relations->flatten()->toArray()));
         // Remove unwanted related objects based on the operator and count.
@@ -162,4 +163,5 @@ trait QueriesRelationships
         // All related ids.
         return array_keys($relationCount);
     }
+
 }
