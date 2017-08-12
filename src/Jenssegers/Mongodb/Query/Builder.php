@@ -7,6 +7,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Jenssegers\Mongodb\Connection;
+use MongoCollection;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -60,14 +61,47 @@ class Builder extends BaseBuilder
      *
      * @var array
      */
-    protected $operators = [
-        '=', '<', '>', '<=', '>=', '<>', '!=',
-        'like', 'not like', 'between', 'ilike',
-        '&', '|', '^', '<<', '>>',
-        'rlike', 'regexp', 'not regexp',
-        'exists', 'type', 'mod', 'where', 'all', 'size', 'regex', 'text', 'slice', 'elemmatch',
-        'geowithin', 'geointersects', 'near', 'nearsphere', 'geometry',
-        'maxdistance', 'center', 'centersphere', 'box', 'polygon', 'uniquedocs',
+    public $operators = [
+        '=',
+        '<',
+        '>',
+        '<=',
+        '>=',
+        '<>',
+        '!=',
+        'like',
+        'not like',
+        'between',
+        'ilike',
+        '&',
+        '|',
+        '^',
+        '<<',
+        '>>',
+        'rlike',
+        'regexp',
+        'not regexp',
+        'exists',
+        'type',
+        'mod',
+        'where',
+        'all',
+        'size',
+        'regex',
+        'text',
+        'slice',
+        'elemmatch',
+        'geowithin',
+        'geointersects',
+        'near',
+        'nearsphere',
+        'geometry',
+        'maxdistance',
+        'center',
+        'centersphere',
+        'box',
+        'polygon',
+        'uniquedocs',
     ];
 
     /**
@@ -76,12 +110,12 @@ class Builder extends BaseBuilder
      * @var array
      */
     protected $conversion = [
-        '='  => '=',
+        '=' => '=',
         '!=' => '$ne',
         '<>' => '$ne',
-        '<'  => '$lt',
+        '<' => '$lt',
         '<=' => '$lte',
-        '>'  => '$gt',
+        '>' => '$gt',
         '>=' => '$gte',
     ];
 
@@ -93,10 +127,7 @@ class Builder extends BaseBuilder
     protected $useCollections;
 
     /**
-     * Create a new query builder instance.
-     *
-     * @param Connection $connection
-     * @param Processor  $processor
+     * @inheritdoc
      */
     public function __construct(Connection $connection, Processor $processor)
     {
@@ -105,7 +136,7 @@ class Builder extends BaseBuilder
         $this->processor = $processor;
         $this->useCollections = $this->shouldUseCollections();
     }
-    
+
     /**
      * Returns true if Laravel or Lumen >= 5.3
      *
@@ -123,7 +154,7 @@ class Builder extends BaseBuilder
     /**
      * Set the projections.
      *
-     * @param  array  $columns
+     * @param  array $columns
      * @return $this
      */
     public function project($columns)
@@ -160,11 +191,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Execute a query for a single record by ID.
-     *
-     * @param  mixed  $id
-     * @param  array  $columns
-     * @return mixed
+     * @inheritdoc
      */
     public function find($id, $columns = [])
     {
@@ -172,10 +199,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Execute the query as a "select" statement.
-     *
-     * @param  array  $columns
-     * @return array|static[]|Collection
+     * @inheritdoc
      */
     public function get($columns = [])
     {
@@ -185,7 +209,7 @@ class Builder extends BaseBuilder
     /**
      * Execute the query as a fresh "select" statement.
      *
-     * @param  array  $columns
+     * @param  array $columns
      * @return array|static[]|Collection
      */
     public function getFresh($columns = [])
@@ -213,18 +237,18 @@ class Builder extends BaseBuilder
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                    $group['_id'][$column] = '$' . $column;
+                    $group['_id'][$column] = '$'.$column;
 
                     // When grouping, also add the $last operator to each grouped field,
                     // this mimics MySQL's behaviour a bit.
-                    $group[$column] = ['$last' => '$' . $column];
+                    $group[$column] = ['$last' => '$'.$column];
                 }
 
                 // Do the same for other columns that are selected.
                 foreach ($this->columns as $column) {
                     $key = str_replace('.', '_', $column);
 
-                    $group[$key] = ['$last' => '$' . $column];
+                    $group[$key] = ['$last' => '$'.$column];
                 }
             }
 
@@ -244,10 +268,9 @@ class Builder extends BaseBuilder
                     // Translate count into sum.
                     if ($function == 'count') {
                         $group['aggregate'] = ['$sum' => 1];
-                    }
-                    // Pass other functions directly.
+                    } // Pass other functions directly.
                     else {
-                        $group['aggregate'] = ['$' . $function => '$' . $column];
+                        $group['aggregate'] = ['$'.$function => '$'.$column];
                     }
                 }
             }
@@ -273,7 +296,7 @@ class Builder extends BaseBuilder
 
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
-                $pipeline[] = ['$unwind' => '$' . $unwind];
+                $pipeline[] = ['$unwind' => '$'.$unwind];
             }
 
             if ($group) {
@@ -308,9 +331,7 @@ class Builder extends BaseBuilder
 
             // Return results
             return $this->useCollections ? new Collection($results) : $results;
-        }
-
-        // Distinct query
+        } // Distinct query
         elseif ($this->distinct) {
             // Return distinct results directly
             $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
@@ -323,9 +344,7 @@ class Builder extends BaseBuilder
             }
 
             return $this->useCollections ? new Collection($result) : $result;
-        }
-
-        // Normal query
+        } // Normal query
         else {
             $columns = [];
 
@@ -385,48 +404,52 @@ class Builder extends BaseBuilder
         $key = [
             'connection' => $this->collection->getDatabaseName(),
             'collection' => $this->collection->getCollectionName(),
-            'wheres'     => $this->wheres,
-            'columns'    => $this->columns,
-            'groups'     => $this->groups,
-            'orders'     => $this->orders,
-            'offset'     => $this->offset,
-            'limit'      => $this->limit,
-            'aggregate'  => $this->aggregate,
+            'wheres' => $this->wheres,
+            'columns' => $this->columns,
+            'groups' => $this->groups,
+            'orders' => $this->orders,
+            'offset' => $this->offset,
+            'limit' => $this->limit,
+            'aggregate' => $this->aggregate,
         ];
 
         return md5(serialize(array_values($key)));
     }
 
     /**
-     * Execute an aggregate function on the database.
-     *
-     * @param  string  $function
-     * @param  array   $columns
-     * @return mixed
+     * @inheritdoc
      */
     public function aggregate($function, $columns = [])
     {
         $this->aggregate = compact('function', 'columns');
-
+        
+        $previousColumns = $this->columns;
+        
+        // We will also back up the select bindings since the select clause will be
+        // removed when performing the aggregate function. Once the query is run
+        // we will add the bindings back onto this query so they can get used.
+        $previousSelectBindings = $this->bindings['select'];
+        
+        $this->bindings['select'] = [];
+        
         $results = $this->get($columns);
-
+        
         // Once we have executed the query, we will reset the aggregate property so
         // that more select queries can be executed against the database without
         // the aggregate value getting in the way when the grammar builds it.
-        $this->columns = null;
         $this->aggregate = null;
-
+        $this->columns = $previousColumns;
+        $this->bindings['select'] = $previousSelectBindings;
+        
         if (isset($results[0])) {
             $result = (array) $results[0];
-
+            
             return $result['aggregate'];
         }
     }
 
     /**
-     * Determine if any rows exist for the current query.
-     *
-     * @return bool
+     * @inheritdoc
      */
     public function exists()
     {
@@ -434,9 +457,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Force the query to only return distinct results.
-     *
-     * @return Builder
+     * @inheritdoc
      */
     public function distinct($column = false)
     {
@@ -450,11 +471,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Add an "order by" clause to the query.
-     *
-     * @param  string  $column
-     * @param  string  $direction
-     * @return Builder
+     * @inheritdoc
      */
     public function orderBy($column, $direction = 'asc')
     {
@@ -472,13 +489,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Add a where between statement to the query.
-     *
-     * @param  string  $column
-     * @param  array   $values
-     * @param  string  $boolean
-     * @param  bool  $not
-     * @return Builder
+     * @inheritdoc
      */
     public function whereBetween($column, array $values, $boolean = 'and', $not = false)
     {
@@ -490,11 +501,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Set the limit and offset for a given page.
-     *
-     * @param  int  $page
-     * @param  int  $perPage
-     * @return \Illuminate\Database\Query\Builder|static
+     * @inheritdoc
      */
     public function forPage($page, $perPage = 15)
     {
@@ -504,10 +511,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Insert a new record into the database.
-     *
-     * @param  array  $values
-     * @return bool
+     * @inheritdoc
      */
     public function insert(array $values)
     {
@@ -535,11 +539,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Insert a new record and get the value of the primary key.
-     *
-     * @param  array   $values
-     * @param  string  $sequence
-     * @return int
+     * @inheritdoc
      */
     public function insertGetId(array $values, $sequence = null)
     {
@@ -556,11 +556,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Update a record in the database.
-     *
-     * @param  array  $values
-     * @param  array  $options
-     * @return int
+     * @inheritdoc
      */
     public function update(array $values, array $options = [])
     {
@@ -573,12 +569,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Increment a column's value by a given amount.
-     *
-     * @param  string  $column
-     * @param  int     $amount
-     * @param  array   $extra
-     * @return int
+     * @inheritdoc
      */
     public function increment($column, $amount = 1, array $extra = [], array $options = [])
     {
@@ -599,12 +590,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Decrement a column's value by a given amount.
-     *
-     * @param  string  $column
-     * @param  int     $amount
-     * @param  array   $extra
-     * @return int
+     * @inheritdoc
      */
     public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
@@ -612,11 +598,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Get an array with the values of a given column.
-     *
-     * @param  string  $column
-     * @param  string|null  $key
-     * @return array
+     * @inheritdoc
      */
     public function pluck($column, $key = null)
     {
@@ -635,13 +617,17 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Delete a record from the database.
-     *
-     * @param  mixed  $id
-     * @return int
+     * @inheritdoc
      */
     public function delete($id = null)
     {
+        // If an ID is passed to the method, we will set the where clause to check
+        // the ID to allow developers to simply and quickly remove a single row
+        // from their database without manually specifying the where clauses.
+        if (! is_null($id)) {
+            $this->where('_id', '=', $id);
+        }
+
         $wheres = $this->compileWheres();
         $result = $this->collection->DeleteMany($wheres);
         if (1 == (int) $result->isAcknowledged()) {
@@ -652,10 +638,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Set the collection which the query is targeting.
-     *
-     * @param  string  $collection
-     * @return Builder
+     * @inheritdoc
      */
     public function from($collection)
     {
@@ -667,7 +650,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Run a truncate statement on the table.
+     * @inheritdoc
      */
     public function truncate()
     {
@@ -680,8 +663,8 @@ class Builder extends BaseBuilder
      * Get an array with the values of a given column.
      *
      * @deprecated
-     * @param  string  $column
-     * @param  string  $key
+     * @param  string $column
+     * @param  string $key
      * @return array
      */
     public function lists($column, $key = null)
@@ -690,19 +673,14 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Create a raw database expression.
-     *
-     * @param  closure  $expression
-     * @return mixed
+     * @inheritdoc
      */
     public function raw($expression = null)
     {
         // Execute the closure on the mongodb collection
         if ($expression instanceof Closure) {
             return call_user_func($expression, $this->collection);
-        }
-
-        // Create an expression for the given value
+        } // Create an expression for the given value
         elseif (! is_null($expression)) {
             return new Expression($expression);
         }
@@ -714,8 +692,9 @@ class Builder extends BaseBuilder
     /**
      * Append one or more values to an array.
      *
-     * @param  mixed   $column
-     * @param  mixed   $value
+     * @param mixed $column
+     * @param mixed $value
+     * @param bool  $unique
      * @return int
      */
     public function push($column, $value = null, $unique = false)
@@ -740,8 +719,8 @@ class Builder extends BaseBuilder
     /**
      * Remove one or more values from an array.
      *
-     * @param  mixed   $column
-     * @param  mixed   $value
+     * @param  mixed $column
+     * @param  mixed $value
      * @return int
      */
     public function pull($column, $value = null)
@@ -785,9 +764,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Get a new instance of the query builder.
-     *
-     * @return Builder
+     * @inheritdoc
      */
     public function newQuery()
     {
@@ -797,8 +774,8 @@ class Builder extends BaseBuilder
     /**
      * Perform an update query.
      *
-     * @param  array  $query
-     * @param  array  $options
+     * @param  array $query
+     * @param  array $options
      * @return int
      */
     protected function performUpdate($query, array $options = [])
@@ -833,15 +810,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Add a basic where clause to the query.
-     *
-     * @param  string  $column
-     * @param  string  $operator
-     * @param  mixed   $value
-     * @param  string  $boolean
-     * @return \Illuminate\Database\Query\Builder|static
-     *
-     * @throws \InvalidArgumentException
+     * @inheritdoc
      */
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
@@ -879,14 +848,14 @@ class Builder extends BaseBuilder
 
                 // Operator conversions
                 $convert = [
-                    'regexp'        => 'regex',
-                    'elemmatch'     => 'elemMatch',
+                    'regexp' => 'regex',
+                    'elemmatch' => 'elemMatch',
                     'geointersects' => 'geoIntersects',
-                    'geowithin'     => 'geoWithin',
-                    'nearsphere'    => 'nearSphere',
-                    'maxdistance'   => 'maxDistance',
-                    'centersphere'  => 'centerSphere',
-                    'uniquedocs'    => 'uniqueDocs',
+                    'geowithin' => 'geoWithin',
+                    'nearsphere' => 'nearSphere',
+                    'maxdistance' => 'maxDistance',
+                    'centersphere' => 'centerSphere',
+                    'uniquedocs' => 'uniqueDocs',
                 ];
 
                 if (array_key_exists($where['operator'], $convert)) {
@@ -901,9 +870,7 @@ class Builder extends BaseBuilder
                     foreach ($where['values'] as &$value) {
                         $value = $this->convertKey($value);
                     }
-                }
-
-                // Single value.
+                } // Single value.
                 elseif (isset($where['value'])) {
                     $where['value'] = $this->convertKey($where['value']);
                 }
@@ -953,7 +920,11 @@ class Builder extends BaseBuilder
         return $compiled;
     }
 
-    protected function compileWhereBasic($where)
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereBasic(array $where)
     {
         extract($where);
 
@@ -966,16 +937,14 @@ class Builder extends BaseBuilder
 
             // Convert like to regular expression.
             if (! starts_with($value, '%')) {
-                $regex = '^' . $regex;
+                $regex = '^'.$regex;
             }
             if (! ends_with($value, '%')) {
-                $regex = $regex . '$';
+                $regex = $regex.'$';
             }
 
             $value = new Regex($regex, 'i');
-        }
-
-        // Manipulate regexp operations.
+        } // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
             if (! $value instanceof Regex) {
@@ -997,34 +966,50 @@ class Builder extends BaseBuilder
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
-            $query = [$column => ['$' . $operator => $value]];
+            $query = [$column => ['$'.$operator => $value]];
         }
 
         return $query;
     }
 
-    protected function compileWhereNested($where)
+    /**
+     * @param array $where
+     * @return mixed
+     */
+    protected function compileWhereNested(array $where)
     {
         extract($where);
 
         return $query->compileWheres();
     }
 
-    protected function compileWhereIn($where)
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereIn(array $where)
     {
         extract($where);
 
         return [$column => ['$in' => array_values($values)]];
     }
 
-    protected function compileWhereNotIn($where)
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereNotIn(array $where)
     {
         extract($where);
 
         return [$column => ['$nin' => array_values($values)]];
     }
 
-    protected function compileWhereNull($where)
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereNull(array $where)
     {
         $where['operator'] = '=';
         $where['value'] = null;
@@ -1032,7 +1017,11 @@ class Builder extends BaseBuilder
         return $this->compileWhereBasic($where);
     }
 
-    protected function compileWhereNotNull($where)
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereNotNull(array $where)
     {
         $where['operator'] = '!=';
         $where['value'] = null;
@@ -1040,7 +1029,11 @@ class Builder extends BaseBuilder
         return $this->compileWhereBasic($where);
     }
 
-    protected function compileWhereBetween($where)
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereBetween(array $where)
     {
         extract($where);
 
@@ -1069,7 +1062,11 @@ class Builder extends BaseBuilder
         }
     }
 
-    protected function compileWhereRaw($where)
+    /**
+     * @param array $where
+     * @return mixed
+     */
+    protected function compileWhereRaw(array $where)
     {
         return $where['sql'];
     }
@@ -1077,7 +1074,7 @@ class Builder extends BaseBuilder
     /**
      * Set custom options for the query.
      *
-     * @param  array  $options
+     * @param  array $options
      * @return $this
      */
     public function options(array $options)
@@ -1088,11 +1085,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Handle dynamic method calls into the method.
-     *
-     * @param  string  $method
-     * @param  array   $parameters
-     * @return mixed
+     * @inheritdoc
      */
     public function __call($method, $parameters)
     {

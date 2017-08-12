@@ -16,13 +16,12 @@
         "illuminate/database": "^5.1",
         "illuminate/events": "^5.1",
         "mongodb/mongodb": "^1.0.0"
-
     },
     "require-dev": {
-        "phpunit/phpunit": "^4.0|^5.0",
+        "phpunit/phpunit": "^5.0|^6.0",
         "orchestra/testbench": "^3.1",
         "mockery/mockery": "^0.9",
-        "satooshi/php-coveralls": "^0.6"
+        "satooshi/php-coveralls": "^1.0"
     },
     "autoload": {
         "psr-0": {
@@ -40,5 +39,13 @@
     "suggest": {
         "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB",
         "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB"
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Jenssegers\\Mongodb\\MongodbServiceProvider",
+                "Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
+            ]
+        }
     }
 }

@@ -6,9 +6,7 @@ use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
 class MongodbQueueServiceProvider extends QueueServiceProvider
 {
     /**
-     * Register the failed job services.
-     *
-     * @return void
+     * @inheritdoc
      */
     protected function registerFailedJobServices()
     {

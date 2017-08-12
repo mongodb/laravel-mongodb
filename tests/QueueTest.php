@@ -18,9 +18,15 @@ class QueueTest extends TestCase
 
         // Get and reserve the test job (next available)
         $job = Queue::pop('test');
-        $this->assertInstanceOf('Illuminate\Queue\Jobs\DatabaseJob', $job);
-        $this->assertEquals(1, $job->getDatabaseJob()->reserved);
-        $this->assertEquals(json_encode(['job' => 'test', 'data' => ['action' => 'QueueJobLifeCycle']]), $job->getRawBody());
+        $this->assertInstanceOf(Jenssegers\Mongodb\Queue\MongoJob::class, $job);
+        $this->assertEquals(1, $job->isReserved());
+        $this->assertEquals(json_encode([
+            'displayName' => 'test',
+            'job' => 'test',
+            'maxTries' => null,
+            'timeout' => null,
+            'data' => ['action' => 'QueueJobLifeCycle'],
+        ]), $job->getRawBody());
 
         // Remove reserved job
         $job->delete();
@@ -34,12 +40,15 @@ class QueueTest extends TestCase
 
         // Expire the test job
         $expiry = \Carbon\Carbon::now()->subSeconds(Config::get('queue.connections.database.expire'))->getTimestamp();
-        Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->where('_id', $id)->update(['reserved' => 1, 'reserved_at' => $expiry]);
+        Queue::getDatabase()
+            ->table(Config::get('queue.connections.database.table'))
+            ->where('_id', $id)
+            ->update(['reserved' => 1, 'reserved_at' => $expiry]);
 
         // Expect an attempted older job in the queue
         $job = Queue::pop('test');
-        $this->assertEquals(1, $job->getDatabaseJob()->attempts);
-        $this->assertGreaterThan($expiry, $job->getDatabaseJob()->reserved_at);
+        $this->assertEquals(1, $job->attempts());
+        $this->assertGreaterThan($expiry, $job->reservedAt());
 
         $job->delete();
         $this->assertEquals(0, Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->count());
