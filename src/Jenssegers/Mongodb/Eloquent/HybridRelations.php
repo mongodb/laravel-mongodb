@@ -207,14 +207,18 @@ trait HybridRelations
     /**
      * Define a many-to-many relationship.
      *
-     * @param  string $related
-     * @param  string $collection
-     * @param  string $foreignKey
-     * @param  string $otherKey
-     * @param  string $relation
+     * @param  string  $related
+     * @param  string  $table
+     * @param  string  $foreignPivotKey
+     * @param  string  $relatedPivotKey
+     * @param  string  $parentKey
+     * @param  string  $relatedKey
+     * @param  string  $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function belongsToMany($related, $collection = null, $foreignKey = null, $otherKey = null, $relation = null)
+    public function belongsToMany($related, $table = null, $foreignPivotKey = null,
+                                  $relatedPivotKey = null, $parentKey = null,
+                                  $relatedKey = null, $relation = null)
     {
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
