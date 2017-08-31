@@ -204,7 +204,7 @@ trait HybridRelations
         }
     }
 
-    **
+    /**
      * Define a many-to-many relationship.
      *
      * @param  string $related
