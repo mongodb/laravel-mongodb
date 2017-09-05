@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Relations;
+<?php
+
+namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -37,7 +39,7 @@ class EmbedsMany extends EmbedsOneOrMany
     public function performInsert(Model $model)
     {
         // Generate a new key if needed.
-        if ($model->getKeyName() == '_id' and ! $model->getKey()) {
+        if ($model->getKeyName() == '_id' and !$model->getKey()) {
             $model->setAttribute('_id', new ObjectID);
         }
 
@@ -77,10 +79,10 @@ class EmbedsMany extends EmbedsOneOrMany
         $foreignKey = $this->getForeignKeyValue($model);
 
         // Use array dot notation for better update behavior.
-        $values = array_dot($model->getDirty(), $this->localKey.'.$.');
+        $values = array_dot($model->getDirty(), $this->localKey . '.$.');
 
         // Update document in database.
-        $result = $this->getBaseQuery()->where($this->localKey.'.'.$model->getKeyName(), $foreignKey)
+        $result = $this->getBaseQuery()->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)
             ->update($values);
 
         // Attach the model to its parent.
@@ -126,7 +128,7 @@ class EmbedsMany extends EmbedsOneOrMany
      */
     public function associate(Model $model)
     {
-        if (! $this->contains($model)) {
+        if (!$this->contains($model)) {
             return $this->associateNew($model);
         } else {
             return $this->associateExisting($model);
@@ -235,7 +237,7 @@ class EmbedsMany extends EmbedsOneOrMany
     protected function associateNew($model)
     {
         // Create a new key if needed.
-        if (! $model->getAttribute('_id')) {
+        if (!$model->getAttribute('_id')) {
             $model->setAttribute('_id', new ObjectID);
         }
 
@@ -309,7 +311,7 @@ class EmbedsMany extends EmbedsOneOrMany
      */
     protected function setEmbedded($models)
     {
-        if (! is_array($models)) {
+        if (!is_array($models)) {
             $models = [$models];
         }
 

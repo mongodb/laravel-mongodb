@@ -86,7 +86,7 @@ trait QueriesRelationships
         $not = in_array($operator, ['<', '<=', '!=']);
         // If we are comparing to 0, we need an additional $not flip.
         if ($count == 0) {
-            $not = ! $not;
+            $not = !$not;
         }
 
         $relations = $hasQuery->pluck($this->getHasCompareKey($relation));
@@ -112,7 +112,7 @@ trait QueriesRelationships
             return $relation->getForeignKey();
         }
 
-        throw new \Exception(class_basename($relation).' Is Not supported for hybrid query constraints!');
+        throw new \Exception(class_basename($relation) . ' Is Not supported for hybrid query constraints!');
     }
 
     /**
@@ -137,7 +137,7 @@ trait QueriesRelationships
     protected function getConstrainedRelatedIds($relations, $operator, $count)
     {
         $relationCount = array_count_values(array_map(function ($id) {
-            return (string) $id; // Convert Back ObjectIds to Strings
+            return (string)$id; // Convert Back ObjectIds to Strings
         }, is_array($relations) ? $relations : $relations->flatten()->toArray()));
         // Remove unwanted related objects based on the operator and count.
         $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator) {

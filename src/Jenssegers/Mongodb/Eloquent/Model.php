@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Eloquent;
+<?php
+
+namespace Jenssegers\Mongodb\Eloquent;
 
 use Carbon\Carbon;
 use DateTime;
@@ -44,13 +46,13 @@ abstract class Model extends BaseModel
     {
         // If we don't have a value for 'id', we will use the Mongo '_id' value.
         // This allows us to work with models in a more sql-like way.
-        if (! $value and array_key_exists('_id', $this->attributes)) {
+        if (!$value and array_key_exists('_id', $this->attributes)) {
             $value = $this->attributes['_id'];
         }
 
         // Convert ObjectID to string.
         if ($value instanceof ObjectID) {
-            return (string) $value;
+            return (string)$value;
         }
 
         return $value;
@@ -75,7 +77,7 @@ abstract class Model extends BaseModel
         }
 
         // Let Eloquent convert the value to a DateTime instance.
-        if (! $value instanceof DateTime) {
+        if (!$value instanceof DateTime) {
             $value = parent::asDateTime($value);
         }
 
@@ -124,7 +126,7 @@ abstract class Model extends BaseModel
      */
     public function getAttribute($key)
     {
-        if (! $key) {
+        if (!$key) {
             return;
         }
 
@@ -134,7 +136,7 @@ abstract class Model extends BaseModel
         }
 
         // This checks for embedded relation support.
-        if (method_exists($this, $key) and ! method_exists(self::class, $key)) {
+        if (method_exists($this, $key) and !method_exists(self::class, $key)) {
             return $this->getRelationValue($key);
         }
 
@@ -191,14 +193,14 @@ abstract class Model extends BaseModel
         // nicely when your models are converted to JSON.
         foreach ($attributes as $key => &$value) {
             if ($value instanceof ObjectID) {
-                $value = (string) $value;
+                $value = (string)$value;
             }
         }
 
         // Convert dot-notation dates.
         foreach ($this->getDates() as $key) {
             if (str_contains($key, '.') and array_has($attributes, $key)) {
-                array_set($attributes, $key, (string) $this->asDateTime(array_get($attributes, $key)));
+                array_set($attributes, $key, (string)$this->asDateTime(array_get($attributes, $key)));
             }
         }
 
@@ -240,7 +242,7 @@ abstract class Model extends BaseModel
      */
     public function drop($columns)
     {
-        if (! is_array($columns)) {
+        if (!is_array($columns)) {
             $columns = [$columns];
         }
 
@@ -268,7 +270,7 @@ abstract class Model extends BaseModel
             }
 
             // Do batch push by default.
-            if (! is_array($values)) {
+            if (!is_array($values)) {
                 $values = [$values];
             }
 
@@ -286,13 +288,13 @@ abstract class Model extends BaseModel
      * Remove one or more values from an array.
      *
      * @param  string $column
-     * @param  mixed  $values
+     * @param  mixed $values
      * @return mixed
      */
     public function pull($column, $values)
     {
         // Do batch pull by default.
-        if (! is_array($values)) {
+        if (!is_array($values)) {
             $values = [$values];
         }
 
@@ -307,8 +309,8 @@ abstract class Model extends BaseModel
      * Append one or more values to the underlying attribute value and sync with original.
      *
      * @param  string $column
-     * @param  array  $values
-     * @param  bool   $unique
+     * @param  array $values
+     * @param  bool $unique
      */
     protected function pushAttributeValues($column, array $values, $unique = false)
     {
@@ -332,7 +334,7 @@ abstract class Model extends BaseModel
      * Remove one or more values to the underlying attribute value and sync with original.
      *
      * @param  string $column
-     * @param  array  $values
+     * @param  array $values
      */
     protected function pullAttributeValues($column, array $values)
     {
@@ -356,7 +358,7 @@ abstract class Model extends BaseModel
      */
     public function getForeignKey()
     {
-        return Str::snake(class_basename($this)).'_'.ltrim($this->primaryKey, '_');
+        return Str::snake(class_basename($this)) . '_' . ltrim($this->primaryKey, '_');
     }
 
     /**

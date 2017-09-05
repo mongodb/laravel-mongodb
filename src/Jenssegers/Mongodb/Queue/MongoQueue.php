@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Queue;
+<?php
+
+namespace Jenssegers\Mongodb\Queue;
 
 use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
@@ -37,7 +39,7 @@ class MongoQueue extends DatabaseQueue
     {
         $queue = $this->getQueue($queue);
 
-        if (! is_null($this->retryAfter)) {
+        if (!is_null($this->retryAfter)) {
             $this->releaseJobsThatHaveBeenReservedTooLong($queue);
         }
 
@@ -124,7 +126,7 @@ class MongoQueue extends DatabaseQueue
      * Release the given job ID from reservation.
      *
      * @param  string $id
-     * @param  int    $attempts
+     * @param  int $attempts
      * @return void
      */
     protected function releaseJob($id, $attempts)

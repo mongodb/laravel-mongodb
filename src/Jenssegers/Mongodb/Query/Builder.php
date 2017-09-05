@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Query;
+<?php
+
+namespace Jenssegers\Mongodb\Query;
 
 use Closure;
 use DateTime;
@@ -237,18 +239,18 @@ class Builder extends BaseBuilder
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                    $group['_id'][$column] = '$'.$column;
+                    $group['_id'][$column] = '$' . $column;
 
                     // When grouping, also add the $last operator to each grouped field,
                     // this mimics MySQL's behaviour a bit.
-                    $group[$column] = ['$last' => '$'.$column];
+                    $group[$column] = ['$last' => '$' . $column];
                 }
 
                 // Do the same for other columns that are selected.
                 foreach ($this->columns as $column) {
                     $key = str_replace('.', '_', $column);
 
-                    $group[$key] = ['$last' => '$'.$column];
+                    $group[$key] = ['$last' => '$' . $column];
                 }
             }
 
@@ -270,7 +272,7 @@ class Builder extends BaseBuilder
                         $group['aggregate'] = ['$sum' => 1];
                     } // Pass other functions directly.
                     else {
-                        $group['aggregate'] = ['$'.$function => '$'.$column];
+                        $group['aggregate'] = ['$' . $function => '$' . $column];
                     }
                 }
             }
@@ -296,7 +298,7 @@ class Builder extends BaseBuilder
 
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
-                $pipeline[] = ['$unwind' => '$'.$unwind];
+                $pipeline[] = ['$unwind' => '$' . $unwind];
             }
 
             if ($group) {
@@ -422,28 +424,28 @@ class Builder extends BaseBuilder
     public function aggregate($function, $columns = [])
     {
         $this->aggregate = compact('function', 'columns');
-        
+
         $previousColumns = $this->columns;
-        
+
         // We will also back up the select bindings since the select clause will be
         // removed when performing the aggregate function. Once the query is run
         // we will add the bindings back onto this query so they can get used.
         $previousSelectBindings = $this->bindings['select'];
-        
+
         $this->bindings['select'] = [];
-        
+
         $results = $this->get($columns);
-        
+
         // Once we have executed the query, we will reset the aggregate property so
         // that more select queries can be executed against the database without
         // the aggregate value getting in the way when the grammar builds it.
         $this->aggregate = null;
         $this->columns = $previousColumns;
         $this->bindings['select'] = $previousSelectBindings;
-        
+
         if (isset($results[0])) {
-            $result = (array) $results[0];
-            
+            $result = (array)$results[0];
+
             return $result['aggregate'];
         }
     }
@@ -453,7 +455,7 @@ class Builder extends BaseBuilder
      */
     public function exists()
     {
-        return ! is_null($this->first());
+        return !is_null($this->first());
     }
 
     /**
@@ -522,20 +524,20 @@ class Builder extends BaseBuilder
         foreach ($values as $value) {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (! is_array($value)) {
+            if (!is_array($value)) {
                 $batch = false;
                 break;
             }
         }
 
-        if (! $batch) {
+        if (!$batch) {
             $values = [$values];
         }
 
         // Batch insert
         $result = $this->collection->insertMany($values);
 
-        return (1 == (int) $result->isAcknowledged());
+        return (1 == (int)$result->isAcknowledged());
     }
 
     /**
@@ -545,7 +547,7 @@ class Builder extends BaseBuilder
     {
         $result = $this->collection->insertOne($values);
 
-        if (1 == (int) $result->isAcknowledged()) {
+        if (1 == (int)$result->isAcknowledged()) {
             if (is_null($sequence)) {
                 $sequence = '_id';
             }
@@ -561,7 +563,7 @@ class Builder extends BaseBuilder
     public function update(array $values, array $options = [])
     {
         // Use $set as default operator.
-        if (! starts_with(key($values), '$')) {
+        if (!starts_with(key($values), '$')) {
             $values = ['$set' => $values];
         }
 
@@ -575,7 +577,7 @@ class Builder extends BaseBuilder
     {
         $query = ['$inc' => [$column => $amount]];
 
-        if (! empty($extra)) {
+        if (!empty($extra)) {
             $query['$set'] = $extra;
         }
 
@@ -607,7 +609,7 @@ class Builder extends BaseBuilder
         // Convert ObjectID's to strings
         if ($key == '_id') {
             $results = $results->map(function ($item) {
-                $item['_id'] = (string) $item['_id'];
+                $item['_id'] = (string)$item['_id'];
                 return $item;
             });
         }
@@ -624,13 +626,13 @@ class Builder extends BaseBuilder
         // If an ID is passed to the method, we will set the where clause to check
         // the ID to allow developers to simply and quickly remove a single row
         // from their database without manually specifying the where clauses.
-        if (! is_null($id)) {
+        if (!is_null($id)) {
             $this->where('_id', '=', $id);
         }
 
         $wheres = $this->compileWheres();
         $result = $this->collection->DeleteMany($wheres);
-        if (1 == (int) $result->isAcknowledged()) {
+        if (1 == (int)$result->isAcknowledged()) {
             return $result->getDeletedCount();
         }
 
@@ -656,7 +658,7 @@ class Builder extends BaseBuilder
     {
         $result = $this->collection->drop();
 
-        return (1 == (int) $result->ok);
+        return (1 == (int)$result->ok);
     }
 
     /**
@@ -681,7 +683,7 @@ class Builder extends BaseBuilder
         if ($expression instanceof Closure) {
             return call_user_func($expression, $this->collection);
         } // Create an expression for the given value
-        elseif (! is_null($expression)) {
+        elseif (!is_null($expression)) {
             return new Expression($expression);
         }
 
@@ -694,7 +696,7 @@ class Builder extends BaseBuilder
      *
      * @param mixed $column
      * @param mixed $value
-     * @param bool  $unique
+     * @param bool $unique
      * @return int
      */
     public function push($column, $value = null, $unique = false)
@@ -748,7 +750,7 @@ class Builder extends BaseBuilder
      */
     public function drop($columns)
     {
-        if (! is_array($columns)) {
+        if (!is_array($columns)) {
             $columns = [$columns];
         }
 
@@ -781,13 +783,13 @@ class Builder extends BaseBuilder
     protected function performUpdate($query, array $options = [])
     {
         // Update multiple items by default.
-        if (! array_key_exists('multiple', $options)) {
+        if (!array_key_exists('multiple', $options)) {
             $options['multiple'] = true;
         }
 
         $wheres = $this->compileWheres();
         $result = $this->collection->UpdateMany($wheres, $query, $options);
-        if (1 == (int) $result->isAcknowledged()) {
+        if (1 == (int)$result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
         }
 
@@ -936,18 +938,18 @@ class Builder extends BaseBuilder
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
 
             // Convert like to regular expression.
-            if (! starts_with($value, '%')) {
-                $regex = '^'.$regex;
+            if (!starts_with($value, '%')) {
+                $regex = '^' . $regex;
             }
-            if (! ends_with($value, '%')) {
-                $regex = $regex.'$';
+            if (!ends_with($value, '%')) {
+                $regex = $regex . '$';
             }
 
             $value = new Regex($regex, 'i');
         } // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
-            if (! $value instanceof Regex) {
+            if (!$value instanceof Regex) {
                 $e = explode('/', $value);
                 $flag = end($e);
                 $regstr = substr($value, 1, -(strlen($flag) + 1));
@@ -961,12 +963,12 @@ class Builder extends BaseBuilder
             }
         }
 
-        if (! isset($operator) or $operator == '=') {
+        if (!isset($operator) or $operator == '=') {
             $query = [$column => $value];
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
-            $query = [$column => ['$'.$operator => $value]];
+            $query = [$column => ['$' . $operator => $value]];
         }
 
         return $query;

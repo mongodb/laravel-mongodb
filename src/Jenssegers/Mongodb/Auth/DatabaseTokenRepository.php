@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Auth;
+<?php
+
+namespace Jenssegers\Mongodb\Auth;
 
 use DateTime;
 use DateTimeZone;

@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Relations;
+<?php
+
+namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Model;
 use MongoDB\BSON\ObjectID;
@@ -34,7 +36,7 @@ class EmbedsOne extends EmbedsOneOrMany
     public function performInsert(Model $model)
     {
         // Generate a new key if needed.
-        if ($model->getKeyName() == '_id' and ! $model->getKey()) {
+        if ($model->getKeyName() == '_id' and !$model->getKey()) {
             $model->setAttribute('_id', new ObjectID);
         }
 
@@ -69,7 +71,7 @@ class EmbedsOne extends EmbedsOneOrMany
         }
 
         // Use array dot notation for better update behavior.
-        $values = array_dot($model->getDirty(), $this->localKey.'.');
+        $values = array_dot($model->getDirty(), $this->localKey . '.');
 
         $result = $this->getBaseQuery()->update($values);
 

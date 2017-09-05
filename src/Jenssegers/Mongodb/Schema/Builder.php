@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Schema;
+<?php
+
+namespace Jenssegers\Mongodb\Schema;
 
 use Closure;
 use Jenssegers\Mongodb\Connection;
@@ -59,7 +61,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Modify a collection on the schema.
      *
-     * @param  string  $collection
+     * @param  string $collection
      * @param  Closure $callback
      * @return bool
      */

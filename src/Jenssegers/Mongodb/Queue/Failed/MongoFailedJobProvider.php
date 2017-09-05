@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Queue\Failed;
+<?php
+
+namespace Jenssegers\Mongodb\Queue\Failed;
 
 use Carbon\Carbon;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
@@ -31,7 +33,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
         $all = $this->getTable()->orderBy('_id', 'desc')->get()->all();
 
         $all = array_map(function ($job) {
-            $job['id'] = (string) $job['_id'];
+            $job['id'] = (string)$job['_id'];
             return $job;
         }, $all);
 
@@ -41,14 +43,14 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     /**
      * Get a single failed job.
      *
-     * @param  mixed  $id
+     * @param  mixed $id
      * @return array
      */
     public function find($id)
     {
         $job = $this->getTable()->find($id);
 
-        $job['id'] = (string) $job['_id'];
+        $job['id'] = (string)$job['_id'];
 
         return $job;
     }
@@ -56,7 +58,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     /**
      * Delete a single failed job from storage.
      *
-     * @param  mixed  $id
+     * @param  mixed $id
      * @return bool
      */
     public function forget($id)
