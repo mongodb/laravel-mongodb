@@ -55,7 +55,7 @@ class Collection
             // Convert the query parameters to a json string.
             array_walk_recursive($parameters, function (&$item, $key) {
                 if ($item instanceof ObjectID) {
-                    $item = (string)$item;
+                    $item = (string) $item;
                 }
             });
 

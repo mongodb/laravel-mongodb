@@ -146,8 +146,8 @@ class BelongsToMany extends EloquentBelongsToMany
         if ($detaching and count($detach) > 0) {
             $this->detach($detach);
 
-            $changes['detached'] = (array)array_map(function ($v) {
-                return is_numeric($v) ? (int)$v : (string)$v;
+            $changes['detached'] = (array) array_map(function ($v) {
+                return is_numeric($v) ? (int) $v : (string) $v;
             }, $detach);
         }
 
@@ -192,14 +192,14 @@ class BelongsToMany extends EloquentBelongsToMany
 
             $query = $this->newRelatedQuery();
 
-            $query->whereIn($this->related->getKeyName(), (array)$id);
+            $query->whereIn($this->related->getKeyName(), (array) $id);
 
             // Attach the new parent id to the related model.
             $query->push($this->foreignKey, $this->parent->getKey(), true);
         }
 
         // Attach the new ids to the parent model.
-        $this->parent->push($this->getRelatedKey(), (array)$id, true);
+        $this->parent->push($this->getRelatedKey(), (array) $id, true);
 
         if ($touch) {
             $this->touchIfTouching();
@@ -212,7 +212,7 @@ class BelongsToMany extends EloquentBelongsToMany
     public function detach($ids = [], $touch = true)
     {
         if ($ids instanceof Model) {
-            $ids = (array)$ids->getKey();
+            $ids = (array) $ids->getKey();
         }
 
         $query = $this->newRelatedQuery();
@@ -220,7 +220,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // If associated IDs were passed to the method we will only delete those
         // associations, otherwise all of the association ties will be broken.
         // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array)$ids;
+        $ids = (array) $ids;
 
         // Detach all ids from the parent model.
         $this->parent->pull($this->getRelatedKey(), $ids);
