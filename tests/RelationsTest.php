@@ -443,6 +443,7 @@ class RelationsTest extends TestCase
         Role::create(['title' => 'Customer']);
 
         $users = User::has('role')->get();
+
         $this->assertCount(2, $users);
         $this->assertEquals('John Doe', $users[0]->name);
         $this->assertEquals('Jane Doe', $users[1]->name);

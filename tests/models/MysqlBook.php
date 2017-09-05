@@ -27,7 +27,8 @@ class MysqlBook extends Eloquent
         if (!$schema->hasTable('books')) {
             Schema::connection('mysql')->create('books', function ($table) {
                 $table->string('title');
-                $table->string('author_id');
+                $table->string('author_id')->nullable();
+                $table->integer('mysql_user_id')->unsigned()->nullable();
                 $table->timestamps();
             });
         }
