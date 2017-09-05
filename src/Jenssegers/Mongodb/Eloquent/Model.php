@@ -52,7 +52,7 @@ abstract class Model extends BaseModel
 
         // Convert ObjectID to string.
         if ($value instanceof ObjectID) {
-            return (string)$value;
+            return (string) $value;
         }
 
         return $value;
@@ -193,14 +193,14 @@ abstract class Model extends BaseModel
         // nicely when your models are converted to JSON.
         foreach ($attributes as $key => &$value) {
             if ($value instanceof ObjectID) {
-                $value = (string)$value;
+                $value = (string) $value;
             }
         }
 
         // Convert dot-notation dates.
         foreach ($this->getDates() as $key) {
             if (str_contains($key, '.') and array_has($attributes, $key)) {
-                array_set($attributes, $key, (string)$this->asDateTime(array_get($attributes, $key)));
+                array_set($attributes, $key, (string) $this->asDateTime(array_get($attributes, $key)));
             }
         }
 

@@ -444,7 +444,7 @@ class Builder extends BaseBuilder
         $this->bindings['select'] = $previousSelectBindings;
 
         if (isset($results[0])) {
-            $result = (array)$results[0];
+            $result = (array) $results[0];
 
             return $result['aggregate'];
         }
@@ -537,7 +537,7 @@ class Builder extends BaseBuilder
         // Batch insert
         $result = $this->collection->insertMany($values);
 
-        return (1 == (int)$result->isAcknowledged());
+        return (1 == (int) $result->isAcknowledged());
     }
 
     /**
@@ -547,7 +547,7 @@ class Builder extends BaseBuilder
     {
         $result = $this->collection->insertOne($values);
 
-        if (1 == (int)$result->isAcknowledged()) {
+        if (1 == (int) $result->isAcknowledged()) {
             if (is_null($sequence)) {
                 $sequence = '_id';
             }
@@ -609,7 +609,7 @@ class Builder extends BaseBuilder
         // Convert ObjectID's to strings
         if ($key == '_id') {
             $results = $results->map(function ($item) {
-                $item['_id'] = (string)$item['_id'];
+                $item['_id'] = (string) $item['_id'];
                 return $item;
             });
         }
@@ -632,7 +632,7 @@ class Builder extends BaseBuilder
 
         $wheres = $this->compileWheres();
         $result = $this->collection->DeleteMany($wheres);
-        if (1 == (int)$result->isAcknowledged()) {
+        if (1 == (int) $result->isAcknowledged()) {
             return $result->getDeletedCount();
         }
 
@@ -658,7 +658,7 @@ class Builder extends BaseBuilder
     {
         $result = $this->collection->drop();
 
-        return (1 == (int)$result->ok);
+        return (1 == (int) $result->ok);
     }
 
     /**
@@ -789,7 +789,7 @@ class Builder extends BaseBuilder
 
         $wheres = $this->compileWheres();
         $result = $this->collection->UpdateMany($wheres, $query, $options);
-        if (1 == (int)$result->isAcknowledged()) {
+        if (1 == (int) $result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
         }
 
