@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Auth;
+<?php
+
+namespace Jenssegers\Mongodb\Auth;
 
 use Illuminate\Auth\Passwords\PasswordBrokerManager as BasePasswordBrokerManager;
 
@@ -11,7 +13,7 @@ class PasswordBrokerManager extends BasePasswordBrokerManager
     {
         $laravel = app();
 
-        if (starts_with($laravel::VERSION, '5.4')) {
+        if (version_compare($laravel::VERSION, '5.4', '>=')) {
             return new DatabaseTokenRepository(
                 $this->app['db']->connection(),
                 $this->app['hash'],
