@@ -235,8 +235,7 @@ trait HybridRelations
 
         // Check if it is a relation with an original model.
         if (!is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
-            return parent::belongsToMany($related, $collection = null, $foreignPivotKey = null, $relatedPivotKey = null,
-                $parentKey = null, $relatedKey = null, $relation = null);
+            return parent::belongsToMany($related, $collection, $foreignPivotKey, $relatedPivotKey, $parentKey, $relatedKey, $relation);
         }
 
         // First, we'll need to determine the foreign key and "other key" for the
