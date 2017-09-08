@@ -96,7 +96,7 @@ abstract class EmbedsOneOrMany extends Relation
      *
      * @return Collection
      */
-    public function get()
+    public function get($columns = [])
     {
         return $this->getResults();
     }
@@ -120,7 +120,7 @@ abstract class EmbedsOneOrMany extends Relation
     public function save(Model $model)
     {
         $model->setParentRelation($this);
-
+        
         return $model->save() ? $model : false;
     }
 

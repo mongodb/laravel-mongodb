@@ -29,6 +29,7 @@ class Builder extends EloquentBuilder
         'exists',
         'push',
         'pull',
+        'getConnection',
     ];
 
     /**
