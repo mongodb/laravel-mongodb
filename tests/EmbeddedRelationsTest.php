@@ -217,6 +217,7 @@ class EmbeddedRelationsTest extends TestCase
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.deleting: ' . get_class($address), Mockery::type('Address'))->andReturn(true);
         $events->shouldReceive('fire')->once()->with('eloquent.deleted: ' . get_class($address), Mockery::type('Address'));
+        $events->shouldReceive('fire')->with('eloquent.retrieved: ' . get_class($address), anything());
 
         $user->addresses()->destroy($address->_id);
         $this->assertEquals(['Bristol', 'Bruxelles'], $user->addresses->pluck('city')->all());
@@ -255,7 +256,7 @@ class EmbeddedRelationsTest extends TestCase
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.deleting: ' . get_class($address), Mockery::type('Address'))->andReturn(true);
         $events->shouldReceive('fire')->with('eloquent.deleted: ' . get_class($address), Mockery::type('Address'));
-
+        $events->shouldReceive('fire')->with('eloquent.retrieved: ' . get_class($address), anything());
 
         $address->delete();
 
@@ -347,6 +348,7 @@ class EmbeddedRelationsTest extends TestCase
 
         $address->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->once()->with('eloquent.deleting: ' . get_class($address), Mockery::mustBe($address))->andReturn(false);
+        $events->shouldReceive('fire')->with('eloquent.retrieved: ' . get_class($address), anything());
 
         $this->assertEquals(0, $user->addresses()->destroy($address));
         $this->assertEquals(['New York'], $user->addresses->pluck('city')->all());
@@ -453,6 +455,7 @@ class EmbeddedRelationsTest extends TestCase
         $events->shouldReceive('until')->once()->with('eloquent.creating: ' . get_class($father), $father)->andReturn(true);
         $events->shouldReceive('fire')->once()->with('eloquent.created: ' . get_class($father), $father);
         $events->shouldReceive('fire')->once()->with('eloquent.saved: ' . get_class($father), $father);
+        $events->shouldReceive('fire')->once()->with('eloquent.retrieved: ' . get_class($father), anything());
 
         $father = $user->father()->save($father);
         $father->unsetEventDispatcher();
@@ -472,6 +475,7 @@ class EmbeddedRelationsTest extends TestCase
         $events->shouldReceive('until')->once()->with('eloquent.updating: ' . get_class($father), $father)->andReturn(true);
         $events->shouldReceive('fire')->once()->with('eloquent.updated: ' . get_class($father), $father);
         $events->shouldReceive('fire')->once()->with('eloquent.saved: ' . get_class($father), $father);
+        $events->shouldReceive('fire')->once()->with('eloquent.retrieved: ' . get_class($father), anything());
 
         $father->name = 'Tom Doe';
         $user->father()->save($father);
@@ -487,6 +491,7 @@ class EmbeddedRelationsTest extends TestCase
         $events->shouldReceive('until')->once()->with('eloquent.creating: ' . get_class($father), $father)->andReturn(true);
         $events->shouldReceive('fire')->once()->with('eloquent.created: ' . get_class($father), $father);
         $events->shouldReceive('fire')->once()->with('eloquent.saved: ' . get_class($father), $father);
+        $events->shouldReceive('fire')->once()->with('eloquent.retrieved: ' . get_class($father), anything());
 
         $father = $user->father()->save($father);
         $father->unsetEventDispatcher();
@@ -502,6 +507,7 @@ class EmbeddedRelationsTest extends TestCase
 
         $father->setEventDispatcher($events = Mockery::mock('Illuminate\Events\Dispatcher'));
         $events->shouldReceive('until')->times(0)->with('eloquent.saving: ' . get_class($father), $father);
+        $events->shouldReceive('fire')->with('eloquent.retrieved: ' . get_class($father), anything());
 
         $father = $user->father()->associate($father);
         $father->unsetEventDispatcher();

@@ -169,10 +169,10 @@ class RelationsTest extends TestCase
 
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $users);
         $this->assertInstanceOf('Illuminate\Database\Eloquent\Collection', $clients);
-        $this->assertInstanceOf('Client', $clients[0]);
-        $this->assertInstanceOf('User', $users[0]);
         $this->assertCount(2, $user->clients);
         $this->assertCount(1, $client->users);
+        $this->assertInstanceOf('Client', $clients[0]);
+        $this->assertInstanceOf('User', $users[0]);
 
         // Now create a new user to an existing client
         $user = $client->users()->create(['name' => 'Jane Doe']);

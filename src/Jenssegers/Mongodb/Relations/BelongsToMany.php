@@ -93,7 +93,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * @inheritdoc
      */
-    public function create(array $attributes, array $joining = [], $touch = true)
+    public function create(array $attributes = [], array $joining = [], $touch = true)
     {
         $instance = $this->related->newInstance($attributes);
 
