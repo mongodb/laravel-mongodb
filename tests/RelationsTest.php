@@ -155,7 +155,7 @@ class RelationsTest extends TestCase
         // Add 2 clients
         $user->clients()->save(new Client(['name' => 'Pork Pies Ltd.']));
         $user->clients()->create(['name' => 'Buffet Bar Inc.']);
-
+        
         // Refetch
         $user = User::with('clients')->find($user->_id);
         $client = Client::with('users')->first();

@@ -240,6 +240,11 @@ trait HybridRelations
 
         $otherKey = $otherKey ?: $instance->getForeignKey() . 's';
 
+        // We need to feed the primary key to the relationship
+        $parentKey = $this->getKeyName();
+
+        $relatedKey = $otherKey;
+
         // If no table name was provided, we can guess it by concatenating the two
         // models using underscores in alphabetical order. The two model names
         // are transformed to snake case from their default CamelCase also.

@@ -298,6 +298,14 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getQualifiedForeignPivotKeyName()
+    {
+        return $this->foreignPivotKey;
+    }
+
+    /**
      * Format the sync list so that it is keyed by ID. (Legacy Support)
      * The original function has been renamed to formatRecordsList since Laravel 5.3
      *
