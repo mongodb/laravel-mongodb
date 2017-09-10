@@ -64,4 +64,18 @@ class TestCase extends Orchestra\Testbench\TestCase
             'expire' => 60,
         ]);
     }
+
+    /**
+     * Enable query dumping for easier debbuging
+     * 
+     * @return void
+     */
+    protected function enableQueryDump()
+    {
+        $db = $this->app->make('db');
+        $db->connection('mongodb')->enableQueryLog();
+        $db->listen(function ($query) {
+            dump($query->sql);
+        });
+    }
 }
