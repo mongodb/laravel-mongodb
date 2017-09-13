@@ -4,6 +4,7 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class Client extends Eloquent
 {
+    protected $connection = 'mongodb';
     protected $collection = 'clients';
     protected static $unguarded = true;
 

@@ -11,17 +11,18 @@
     ],
     "license" : "MIT",
     "require": {
-        "illuminate/support": "^5.1",
-        "illuminate/container": "^5.1",
-        "illuminate/database": "^5.1",
-        "illuminate/events": "^5.1",
+        "illuminate/support": "^5.5",
+        "illuminate/container": "^5.5",
+        "illuminate/database": "^5.5",
+        "illuminate/events": "^5.5",
         "mongodb/mongodb": "^1.0.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^5.0|^6.0",
+        "phpunit/phpunit": "^6.0",
         "orchestra/testbench": "^3.1",
         "mockery/mockery": "^0.9",
-        "satooshi/php-coveralls": "^1.0"
+        "satooshi/php-coveralls": "^1.0",
+        "doctrine/dbal": "^2.6"
     },
     "autoload": {
         "psr-0": {

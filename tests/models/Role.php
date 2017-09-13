@@ -4,6 +4,7 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class Role extends Eloquent
 {
+    protected $connection = 'mongodb';
     protected $collection = 'roles';
     protected static $unguarded = true;
 

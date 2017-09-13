@@ -8,6 +8,7 @@ use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
 use MongoCollection;
 use MongoDB\BSON\ObjectID;
@@ -232,7 +233,7 @@ class Builder extends BaseBuilder
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups or $this->aggregate or $this->paginating) {
+        if ($this->groups || $this->aggregate || $this->paginating) {
             $group = [];
             $unwinds = [];
 
@@ -286,7 +287,7 @@ class Builder extends BaseBuilder
             }
 
             // The _id field is mandatory when using grouping.
-            if ($group and empty($group['_id'])) {
+            if ($group && empty($group['_id'])) {
                 $group['_id'] = null;
             }
 
@@ -563,7 +564,7 @@ class Builder extends BaseBuilder
     public function update(array $values, array $options = [])
     {
         // Use $set as default operator.
-        if (!starts_with(key($values), '$')) {
+        if (!Str::startsWith(key($values), '$')) {
             $values = ['$set' => $values];
         }
 
@@ -705,7 +706,7 @@ class Builder extends BaseBuilder
         $operator = $unique ? '$addToSet' : '$push';
 
         // Check if we are pushing multiple values.
-        $batch = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
+        $batch = (is_array($value) && array_keys($value) === range(0, count($value) - 1));
 
         if (is_array($column)) {
             $query = [$operator => $column];
@@ -728,7 +729,7 @@ class Builder extends BaseBuilder
     public function pull($column, $value = null)
     {
         // Check if we passed an associative array.
-        $batch = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
+        $batch = (is_array($value) && array_keys($value) === range(0, count($value) - 1));
 
         // If we are pulling multiple values, we need to use $pullAll.
         $operator = $batch ? '$pullAll' : '$pull';
@@ -804,7 +805,7 @@ class Builder extends BaseBuilder
      */
     public function convertKey($id)
     {
-        if (is_string($id) and strlen($id) === 24 and ctype_xdigit($id)) {
+        if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
         }
 
@@ -822,7 +823,7 @@ class Builder extends BaseBuilder
         if (func_num_args() == 3) {
             $operator = &$params[1];
 
-            if (starts_with($operator, '$')) {
+            if (Str::startsWith($operator, '$')) {
                 $operator = substr($operator, 1);
             }
         }
@@ -866,7 +867,7 @@ class Builder extends BaseBuilder
             }
 
             // Convert id's.
-            if (isset($where['column']) and ($where['column'] == '_id' or ends_with($where['column'], '._id'))) {
+            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '._id'))) {
                 // Multiple values.
                 if (isset($where['values'])) {
                     foreach ($where['values'] as &$value) {
@@ -896,7 +897,7 @@ class Builder extends BaseBuilder
             // The next item in a "chain" of wheres devices the boolean of the
             // first item. So if we see that there are multiple wheres, we will
             // use the operator of the next where.
-            if ($i == 0 and count($wheres) > 1 and $where['boolean'] == 'and') {
+            if ($i == 0 && count($wheres) > 1 && $where['boolean'] == 'and') {
                 $where['boolean'] = $wheres[$i + 1]['boolean'];
             }
 
@@ -938,10 +939,10 @@ class Builder extends BaseBuilder
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
 
             // Convert like to regular expression.
-            if (!starts_with($value, '%')) {
+            if (!Str::startsWith($value, '%')) {
                 $regex = '^' . $regex;
             }
-            if (!ends_with($value, '%')) {
+            if (!Str::endsWith($value, '%')) {
                 $regex = $regex . '$';
             }
 
@@ -958,12 +959,12 @@ class Builder extends BaseBuilder
 
             // For inverse regexp operations, we can just use the $not operator
             // and pass it a Regex instence.
-            if (starts_with($operator, 'not')) {
+            if (Str::startsWith($operator, 'not')) {
                 $operator = 'not';
             }
         }
 
-        if (!isset($operator) or $operator == '=') {
+        if (!isset($operator) || $operator == '=') {
             $query = [$column => $value];
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];

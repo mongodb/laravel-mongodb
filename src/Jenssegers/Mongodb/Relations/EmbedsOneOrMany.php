@@ -94,9 +94,11 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * Shorthand to get the results of the relationship.
      *
+     * @param  array $columns
+     *
      * @return Collection
      */
-    public function get()
+    public function get($columns = ['*'])
     {
         return $this->getResults();
     }
@@ -280,7 +282,12 @@ abstract class EmbedsOneOrMany extends Relation
             return;
         }
 
-        $model = $this->related->newFromBuilder((array) $attributes);
+        $connection = $this->related->getConnection();
+
+        $model = $this->related->newFromBuilder(
+            (array) $attributes,
+            $connection ? $connection->getName() : null
+        );
 
         $model->setParentRelation($this);
 

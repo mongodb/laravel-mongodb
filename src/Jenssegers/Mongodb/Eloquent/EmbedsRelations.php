@@ -2,6 +2,7 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
+use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 
@@ -32,7 +33,7 @@ trait EmbedsRelations
         }
 
         if (is_null($foreignKey)) {
-            $foreignKey = snake_case(class_basename($this));
+            $foreignKey = Str::snake(class_basename($this));
         }
 
         $query = $this->newQuery();
@@ -67,7 +68,7 @@ trait EmbedsRelations
         }
 
         if (is_null($foreignKey)) {
-            $foreignKey = snake_case(class_basename($this));
+            $foreignKey = Str::snake(class_basename($this));
         }
 
         $query = $this->newQuery();
