@@ -143,6 +143,18 @@ You can connect to multiple servers or replica sets with the following configura
 ],
 ```
 
+Alternatively, you can use MongoDB connection string:
+
+```php
+'mongodb' => [
+    'driver'   => 'mongodb',
+    'dsn' => env('DB_DSN'),
+    'database' => env('DB_DATABASE'),
+],
+```
+
+Please refer to MongoDB official docs for its URI format: https://docs.mongodb.com/manual/reference/connection-string/
+
 Eloquent
 --------
 
