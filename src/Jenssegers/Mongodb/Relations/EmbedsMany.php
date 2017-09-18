@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Arr;
 use MongoDB\BSON\ObjectID;
 
 class EmbedsMany extends EmbedsOneOrMany
@@ -39,7 +40,7 @@ class EmbedsMany extends EmbedsOneOrMany
     public function performInsert(Model $model)
     {
         // Generate a new key if needed.
-        if ($model->getKeyName() == '_id' and !$model->getKey()) {
+        if ($model->getKeyName() == '_id' && !$model->getKey()) {
             $model->setAttribute('_id', new ObjectID);
         }
 
@@ -79,7 +80,7 @@ class EmbedsMany extends EmbedsOneOrMany
         $foreignKey = $this->getForeignKeyValue($model);
 
         // Use array dot notation for better update behavior.
-        $values = array_dot($model->getDirty(), $this->localKey . '.$.');
+        $values = Arr::dot($model->getDirty(), $this->localKey . '.$.');
 
         // Update document in database.
         $result = $this->getBaseQuery()->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)

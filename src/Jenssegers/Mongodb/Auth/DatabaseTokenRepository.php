@@ -27,7 +27,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
             $date = $token['created_at']->toDateTime();
             $date->setTimezone(new DateTimeZone(date_default_timezone_get()));
             $token['created_at'] = $date->format('Y-m-d H:i:s');
-        } elseif (is_array($token['created_at']) and isset($token['created_at']['date'])) {
+        } elseif (is_array($token['created_at']) && isset($token['created_at']['date'])) {
             $date = new DateTime($token['created_at']['date'], new DateTimeZone(isset($token['created_at']['timezone']) ? $token['created_at']['timezone'] : 'UTC'));
             $date->setTimezone(new DateTimeZone(date_default_timezone_get()));
             $token['created_at'] = $date->format('Y-m-d H:i:s');

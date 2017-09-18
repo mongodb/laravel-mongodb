@@ -156,7 +156,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function geospatial($columns = null, $index = '2d', $options = [])
     {
-        if ($index == '2d' or $index == '2dsphere') {
+        if ($index == '2d' || $index == '2dsphere') {
             $columns = $this->fluent($columns);
 
             $columns = array_flip($columns);
