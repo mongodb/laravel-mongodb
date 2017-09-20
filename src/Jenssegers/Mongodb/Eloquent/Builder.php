@@ -3,6 +3,7 @@
 namespace Jenssegers\Mongodb\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Helpers\QueriesRelationships;
 use MongoDB\Driver\Cursor;
 use MongoDB\Model\BSONDocument;
