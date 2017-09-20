@@ -53,11 +53,15 @@ class Collection
             $query = [];
 
             // Convert the query parameters to a json string.
-            array_walk_recursive($parameters, function (&$item, $key) {
-                if ($item instanceof ObjectID) {
-                    $item = (string) $item;
-                }
-            });
+            try {
+                array_walk_recursive($parameters, function (&$item, $key) {
+                    if ($item instanceof ObjectID) {
+                        $item = (string) $item;
+                    }
+                });
+            } catch (Exception $e) {
+               // Ignore   
+            }
 
             // Convert the query parameters to a json string.
             foreach ($parameters as $parameter) {
