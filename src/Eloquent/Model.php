@@ -263,7 +263,7 @@ abstract class Model extends BaseModel
                     }
 
                     // Get the relation results.
-                    return $this->getRelationshipFromMethod($key, $camelKey);
+                    return $this->getRelationshipFromMethod($camelKey);
                 }
 
                 if ($relations instanceof Relation) {
@@ -275,7 +275,7 @@ abstract class Model extends BaseModel
                     }
 
                     // Get the relation results.
-                    return $this->getRelationshipFromMethod($key, $camelKey);
+                    return $this->getRelationshipFromMethod($camelKey);
                 }
             }
         }
