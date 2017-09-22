@@ -33,7 +33,7 @@ class Builder extends EloquentBuilder
     ];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function update(array $values, array $options = [])
     {
@@ -49,7 +49,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function insert(array $values)
     {
@@ -65,7 +65,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function insertGetId(array $values, $sequence = null)
     {
@@ -81,7 +81,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function delete()
     {
@@ -97,7 +97,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function increment($column, $amount = 1, array $extra = [])
     {
@@ -122,7 +122,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function decrement($column, $amount = 1, array $extra = [])
     {
@@ -145,7 +145,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function addHasWhere(EloquentBuilder $hasQuery, Relation $relation, $operator, $count, $boolean)
     {
@@ -182,7 +182,7 @@ class Builder extends EloquentBuilder
 
         // If we are comparing to 0, we need an additional $not flip.
         if ($count == 0) {
-            $not = ! $not;
+            $not = !$not;
         }
 
         // All related ids.
@@ -199,7 +199,7 @@ class Builder extends EloquentBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function chunkById($count, callable $callback, $column = '_id', $alias = null)
     {

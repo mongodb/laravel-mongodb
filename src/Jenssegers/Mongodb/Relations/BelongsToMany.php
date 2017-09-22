@@ -21,7 +21,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
@@ -29,7 +29,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function hydratePivotRelation(array $models)
     {
@@ -39,7 +39,8 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Set the select clause for the relation query.
      *
-     * @param  array $columns
+     * @param array $columns
+     *
      * @return array
      */
     protected function getSelectColumns(array $columns = ['*'])
@@ -48,7 +49,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function shouldSelect(array $columns = ['*'])
     {
@@ -56,7 +57,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function addConstraints()
     {
@@ -80,7 +81,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function save(Model $model, array $joining = [], $touch = true)
     {
@@ -92,7 +93,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function create(array $attributes = [], array $joining = [], $touch = true)
     {
@@ -109,14 +110,14 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function sync($ids, $detaching = true)
     {
         $changes = [
             'attached' => [],
             'detached' => [],
-            'updated' => [],
+            'updated'  => [],
         ];
 
         if ($ids instanceof Collection) {
@@ -169,7 +170,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
@@ -177,7 +178,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function attach($id, array $attributes = [], $touch = true)
     {
@@ -210,7 +211,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function detach($ids = [], $touch = true)
     {
@@ -244,7 +245,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function buildDictionary(Collection $results)
     {
@@ -265,7 +266,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function newPivotQuery()
     {
@@ -293,7 +294,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getQualifiedForeignPivotKeyName()
     {
@@ -301,7 +302,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getQualifiedRelatedPivotKeyName()
     {
@@ -310,10 +311,12 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Format the sync list so that it is keyed by ID. (Legacy Support)
-     * The original function has been renamed to formatRecordsList since Laravel 5.3
+     * The original function has been renamed to formatRecordsList since Laravel 5.3.
      *
      * @deprecated
-     * @param  array $records
+     *
+     * @param array $records
+     *
      * @return array
      */
     protected function formatSyncList(array $records)
@@ -325,6 +328,7 @@ class BelongsToMany extends EloquentBelongsToMany
             }
             $results[$id] = $attributes;
         }
+
         return $results;
     }
 

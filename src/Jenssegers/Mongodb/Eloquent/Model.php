@@ -40,7 +40,8 @@ abstract class Model extends BaseModel
     /**
      * Custom accessor for the model's id.
      *
-     * @param  mixed $value
+     * @param mixed $value
+     *
      * @return mixed
      */
     public function getIdAttribute($value = null)
@@ -60,7 +61,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getQualifiedKeyName()
     {
@@ -68,7 +69,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function fromDateTime($value)
     {
@@ -86,7 +87,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function asDateTime($value)
     {
@@ -99,7 +100,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getDateFormat()
     {
@@ -107,7 +108,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function freshTimestamp()
     {
@@ -115,7 +116,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTable()
     {
@@ -123,7 +124,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getAttribute($key)
     {
@@ -145,7 +146,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getAttributeFromArray($key)
     {
@@ -158,7 +159,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setAttribute($key, $value)
     {
@@ -182,7 +183,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function attributesToArray()
     {
@@ -209,7 +210,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getCasts()
     {
@@ -217,7 +218,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function originalIsEquivalent($key, $current)
     {
@@ -254,7 +255,8 @@ abstract class Model extends BaseModel
     /**
      * Remove one or more fields.
      *
-     * @param  mixed $columns
+     * @param mixed $columns
+     *
      * @return int
      */
     public function drop($columns)
@@ -271,7 +273,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function push()
     {
@@ -300,8 +302,9 @@ abstract class Model extends BaseModel
     /**
      * Remove one or more values from an array.
      *
-     * @param  string $column
-     * @param  mixed $values
+     * @param string $column
+     * @param mixed  $values
+     *
      * @return mixed
      */
     public function pull($column, $values)
@@ -319,9 +322,9 @@ abstract class Model extends BaseModel
     /**
      * Append one or more values to the underlying attribute value and sync with original.
      *
-     * @param  string $column
-     * @param  array $values
-     * @param  bool $unique
+     * @param string $column
+     * @param array  $values
+     * @param bool   $unique
      */
     protected function pushAttributeValues($column, array $values, $unique = false)
     {
@@ -344,8 +347,8 @@ abstract class Model extends BaseModel
     /**
      * Remove one or more values to the underlying attribute value and sync with original.
      *
-     * @param  string $column
-     * @param  array $values
+     * @param string $column
+     * @param array  $values
      */
     protected function pullAttributeValues($column, array $values)
     {
@@ -367,17 +370,17 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getForeignKey()
     {
-        return Str::snake(class_basename($this)) . '_' . ltrim($this->primaryKey, '_');
+        return Str::snake(class_basename($this)).'_'.ltrim($this->primaryKey, '_');
     }
 
     /**
      * Set the parent relation.
      *
-     * @param  \Illuminate\Database\Eloquent\Relations\Relation $relation
+     * @param \Illuminate\Database\Eloquent\Relations\Relation $relation
      */
     public function setParentRelation(Relation $relation)
     {
@@ -395,7 +398,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function newEloquentBuilder($query)
     {
@@ -403,7 +406,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function newBaseQueryBuilder()
     {
@@ -413,7 +416,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function removeTableFromKey($key)
     {
@@ -421,7 +424,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __call($method, $parameters)
     {

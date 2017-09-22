@@ -122,9 +122,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
         return $blueprint->drop();
     }
 
-    /**
-     * @inheritdoc
-     */
     public function dropAllTables()
     {
         foreach ($this->getAllCollections() as $collection) {

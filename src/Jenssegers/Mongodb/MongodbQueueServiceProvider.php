@@ -8,7 +8,7 @@ use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
 class MongodbQueueServiceProvider extends QueueServiceProvider
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function registerFailedJobServices()
     {

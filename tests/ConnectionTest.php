@@ -113,7 +113,7 @@ class ConnectionTest extends TestCase
         Config::set('database.connections.mongodb.port', 27000);
 
         $connection = DB::connection('mongodb');
-        $this->assertEquals("mongodb://db1:27000", (string) $connection->getMongoClient());
+        $this->assertEquals('mongodb://db1:27000', (string) $connection->getMongoClient());
     }
 
     public function testHostWithPorts()

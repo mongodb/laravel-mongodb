@@ -9,7 +9,7 @@ use MongoDB\BSON\ObjectID;
 class EmbedsOne extends EmbedsOneOrMany
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function initRelation(array $models, $relation)
     {
@@ -21,7 +21,7 @@ class EmbedsOne extends EmbedsOneOrMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getResults()
     {
@@ -31,19 +31,21 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Save a new model and attach it to the parent model.
      *
-     * @param  Model $model
+     * @param Model $model
+     *
      * @return Model|bool
      */
     public function performInsert(Model $model)
     {
         // Generate a new key if needed.
         if ($model->getKeyName() == '_id' && !$model->getKey()) {
-            $model->setAttribute('_id', new ObjectID);
+            $model->setAttribute('_id', new ObjectID());
         }
 
         // For deeply nested documents, let the parent handle the changes.
         if ($this->isNested()) {
             $this->associate($model);
+
             return $this->parent->save() ? $model : false;
         }
 
@@ -60,7 +62,8 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Save an existing model and attach it to the parent model.
      *
-     * @param  Model $model
+     * @param Model $model
+     *
      * @return Model|bool
      */
     public function performUpdate(Model $model)
@@ -72,7 +75,7 @@ class EmbedsOne extends EmbedsOneOrMany
         }
 
         // Use array dot notation for better update behavior.
-        $values = Arr::dot($model->getDirty(), $this->localKey . '.');
+        $values = Arr::dot($model->getDirty(), $this->localKey.'.');
 
         $result = $this->getBaseQuery()->update($values);
 
@@ -94,6 +97,7 @@ class EmbedsOne extends EmbedsOneOrMany
         // For deeply nested documents, let the parent handle the changes.
         if ($this->isNested()) {
             $this->dissociate();
+
             return $this->parent->save();
         }
 
@@ -111,7 +115,8 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Attach the model to its parent.
      *
-     * @param  Model $model
+     * @param Model $model
+     *
      * @return Model
      */
     public function associate(Model $model)
