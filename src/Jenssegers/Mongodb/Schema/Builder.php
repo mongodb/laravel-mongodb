@@ -101,7 +101,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function dropIfExists($collection)
     {
-        
+
         if($this->hasCollection($collection)) {
 
           return $this->drop($collection);
