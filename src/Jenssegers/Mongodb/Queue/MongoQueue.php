@@ -24,7 +24,7 @@ class MongoQueue extends DatabaseQueue
     protected $connectionName;
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __construct(Connection $database, $table, $default = 'default', $retryAfter = 60)
     {
@@ -33,7 +33,7 @@ class MongoQueue extends DatabaseQueue
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function pop($queue = null)
     {
@@ -141,7 +141,7 @@ class MongoQueue extends DatabaseQueue
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function deleteReserved($queue, $id)
     {

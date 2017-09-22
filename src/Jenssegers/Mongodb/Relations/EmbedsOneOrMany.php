@@ -58,7 +58,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function addConstraints()
     {
@@ -68,7 +68,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function addEagerConstraints(array $models)
     {
@@ -76,7 +76,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function match(array $models, Collection $results, $relation)
     {
@@ -209,7 +209,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getEmbedded()
     {
@@ -223,7 +223,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function setEmbedded($records)
     {
@@ -318,7 +318,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getQuery()
     {
@@ -328,7 +328,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getBaseQuery()
     {
@@ -364,7 +364,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getQualifiedParentKeyName()
     {

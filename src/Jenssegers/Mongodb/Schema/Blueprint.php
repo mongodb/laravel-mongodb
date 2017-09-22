@@ -28,7 +28,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     protected $columns = [];
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __construct(Connection $connection, $collection)
     {
@@ -38,7 +38,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function index($columns = null, $name = null, $algorithm = null, $options = [])
     {
@@ -66,7 +66,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function primary($columns = null, $name = null, $algorithm = null, $options = [])
     {
@@ -74,7 +74,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function dropIndex($columns = null)
     {
@@ -100,7 +100,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function unique($columns = null, $name = null, $algorithm = null, $options = [])
     {
@@ -193,7 +193,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function create()
     {
@@ -206,7 +206,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function drop()
     {
@@ -214,7 +214,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function addColumn($type, $name, array $parameters = [])
     {
