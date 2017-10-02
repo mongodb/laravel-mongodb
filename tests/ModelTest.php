@@ -534,4 +534,18 @@ class ModelTest extends TestCase
         $user->birthday = new DateTime('19 august 1989');
         $this->assertEmpty($user->getDirty());
     }
+
+    public function testChunkById()
+    {
+        User::create(['name' => 'fork',  'tags' => ['sharp', 'pointy']]);
+        User::create(['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']]);
+        User::create(['name' => 'spoon', 'tags' => ['round', 'bowl']]);
+
+        $count = 0;
+        User::chunkById(2, function ($items) use (&$count) {
+            $count += count($items);
+        });
+
+        $this->assertEquals(3, $count);
+    }
 }
