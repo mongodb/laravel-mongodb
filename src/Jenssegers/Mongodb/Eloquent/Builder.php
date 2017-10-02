@@ -146,6 +146,14 @@ class Builder extends EloquentBuilder
     /**
      * @inheritdoc
      */
+    public function chunkById($count, callable $callback, $column = '_id', $alias = null)
+    {
+        return parent::chunkById($count, $callback, $column, $alias);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function raw($expression = null)
     {
         // Get raw results from the query builder.
