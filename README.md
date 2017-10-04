@@ -954,7 +954,7 @@ $cursor = DB::collection('users')->raw(function($collection)
 Optional: if you don't pass a closure to the raw method, the internal MongoCollection object will be accessible:
 
 ```php
-$model = User::raw()->findOne(['age' => array('$lt' => 18]));
+$model = User::raw()->findOne(['age' => array('$lt' => 18)]);
 ```
 
 The internal MongoClient and MongoDB objects can be accessed like this:
