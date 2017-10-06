@@ -122,7 +122,8 @@ And add a new mongodb connection:
     'username' => env('DB_USERNAME'),
     'password' => env('DB_PASSWORD'),
     'options'  => [
-        'database' => 'admin' // sets the authentication database required by mongo 3
+        'database' => 'admin', // sets the authentication database required by mongo 3
+	'withoutLaravel' => true // If you usage out of laravel framework
     ]
 ],
 ```
