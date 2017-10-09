@@ -4,6 +4,7 @@ namespace Jenssegers\Mongodb\Helpers;
 
 use Closure;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Jenssegers\Mongodb\Eloquent\Model;
 
@@ -112,7 +113,11 @@ trait QueriesRelationships
             return $relation->getForeignKey();
         }
 
-        throw new \Exception(class_basename($relation) . ' Is Not supported for hybrid query constraints!');
+        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation)) {
+            return $this->model->getKeyName();
+        }
+
+        throw new \Exception(class_basename($relation) . ' is not supported for hybrid query constraints.');
     }
 
     /**
