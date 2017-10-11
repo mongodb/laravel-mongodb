@@ -5,6 +5,7 @@ namespace Jenssegers\Mongodb\Eloquent;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
+use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Helpers\EloquentBuilder;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
@@ -300,6 +301,10 @@ trait HybridRelations
      */
     public function newEloquentBuilder($query)
     {
-        return new EloquentBuilder($query);
+        if (is_subclass_of($this, \Jenssegers\Mongodb\Eloquent\Model::class)) {
+            return new Builder($query);
+        } else {
+            return new EloquentBuilder($query);
+        }
     }
 }
