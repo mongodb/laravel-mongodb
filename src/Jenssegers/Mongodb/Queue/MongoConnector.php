@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Queue;
+<?php
+
+namespace Jenssegers\Mongodb\Queue;
 
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Queue\Connectors\ConnectorInterface;
@@ -16,8 +18,7 @@ class MongoConnector implements ConnectorInterface
     /**
      * Create a new connector instance.
      *
-     * @param  \Illuminate\Database\ConnectionResolverInterface  $connections
-     * @return void
+     * @param  \Illuminate\Database\ConnectionResolverInterface $connections
      */
     public function __construct(ConnectionResolverInterface $connections)
     {
@@ -27,7 +28,7 @@ class MongoConnector implements ConnectorInterface
     /**
      * Establish a queue connection.
      *
-     * @param  array  $config
+     * @param  array $config
      * @return \Illuminate\Contracts\Queue\Queue
      */
     public function connect(array $config)

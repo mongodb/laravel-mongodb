@@ -1,8 +1,11 @@
-<?php namespace Jenssegers\Mongodb\Eloquent;
+<?php
+
+namespace Jenssegers\Mongodb\Eloquent;
 
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
+use Jenssegers\Mongodb\Helpers\EloquentBuilder;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\HasMany;
@@ -215,17 +218,23 @@ trait HybridRelations
      *
      * @param  string $related
      * @param  string $collection
-     * @param  string $foreignPivotKey
-     * @param  string $relatedPivotKey
+     * @param  string $foreignKey
+     * @param  string $otherKey
      * @param  string $parentKey
      * @param  string $relatedKey
      * @param  string $relation
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
-    public function belongsToMany($related, $collection = null, $foreignPivotKey = null, $relatedPivotKey = null,
-                                  $parentKey = null, $relatedKey = null, $relation = null)
-    {
+    public function belongsToMany(
+        $related,
+        $collection = null,
+        $foreignKey = null,
+        $otherKey = null,
+        $parentKey = null,
+        $relatedKey = null,
+        $relation = null
+    ) {
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
@@ -235,17 +244,25 @@ trait HybridRelations
 
         // Check if it is a relation with an original model.
         if (!is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
-            return parent::belongsToMany($related, $collection, $foreignPivotKey, $relatedPivotKey, $parentKey, $relatedKey, $relation);
+            return parent::belongsToMany(
+                $related,
+                $collection,
+                $foreignKey,
+                $otherKey,
+                $parentKey,
+                $relatedKey,
+                $relation
+            );
         }
 
         // First, we'll need to determine the foreign key and "other key" for the
         // relationship. Once we have determined the keys we'll make the query
         // instances as well as the relationship instances we need for this.
-        $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
+        $foreignKey = $foreignKey ?: $this->getForeignKey() . 's';
 
         $instance = new $related;
 
-        $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's';
+        $otherKey = $otherKey ?: $instance->getForeignKey() . 's';
 
         // If no table name was provided, we can guess it by concatenating the two
         // models using underscores in alphabetical order. The two model names
@@ -259,9 +276,16 @@ trait HybridRelations
         // appropriate query constraint and entirely manages the hydrations.
         $query = $instance->newQuery();
 
-        return new BelongsToMany($query, $this, $collection,
-            $foreignPivotKey, $relatedPivotKey,
-            $parentKey, $relatedKey, $relation);
+        return new BelongsToMany(
+            $query,
+            $this,
+            $collection,
+            $foreignKey,
+            $otherKey,
+            $parentKey ?: $this->getKeyName(),
+            $relatedKey ?: $instance->getKeyName(),
+            $relation
+        );
     }
 
     /**
@@ -276,5 +300,13 @@ trait HybridRelations
         }
 
         return parent::guessBelongsToManyRelation();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function newEloquentBuilder($query)
+    {
+        return new EloquentBuilder($query);
     }
 }

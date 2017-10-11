@@ -10,6 +10,7 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
 {
     use Authenticatable, CanResetPassword;
 
+    protected $connection = 'mongodb';
     protected $dates = ['birthday', 'entry.date'];
     protected static $unguarded = true;
 
@@ -45,7 +46,7 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
 
     public function groups()
     {
-        return $this->belongsToMany('Group', null, 'users', 'groups');
+        return $this->belongsToMany('Group', 'groups', 'users', 'groups', '_id', '_id', 'groups');
     }
 
     public function photos()

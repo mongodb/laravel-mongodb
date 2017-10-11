@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Query;
+<?php
+
+namespace Jenssegers\Mongodb\Query;
 
 use Illuminate\Database\Query\Processors\Processor as BaseProcessor;
 

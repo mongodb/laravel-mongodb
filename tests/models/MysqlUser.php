@@ -21,6 +21,11 @@ class MysqlUser extends Eloquent
         return $this->hasOne('Role');
     }
 
+    public function mysqlBooks()
+    {
+        return $this->hasMany(MysqlBook::class);
+    }
+
     /**
      * Check if we need to run the schema.
      */

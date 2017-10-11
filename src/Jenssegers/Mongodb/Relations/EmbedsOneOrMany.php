@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Relations;
+<?php
+
+namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -32,11 +34,11 @@ abstract class EmbedsOneOrMany extends Relation
      * Create a new embeds many relationship instance.
      *
      * @param  Builder $query
-     * @param  Model   $parent
-     * @param  Model   $related
-     * @param  string  $localKey
-     * @param  string  $foreignKey
-     * @param  string  $relation
+     * @param  Model $parent
+     * @param  Model $related
+     * @param  string $localKey
+     * @param  string $foreignKey
+     * @param  string $relation
      */
     public function __construct(Builder $query, Model $parent, Model $related, $localKey, $foreignKey, $relation)
     {
@@ -92,9 +94,11 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * Shorthand to get the results of the relationship.
      *
+     * @param  array $columns
+     *
      * @return Collection
      */
-    public function get()
+    public function get($columns = ['*'])
     {
         return $this->getResults();
     }
@@ -186,7 +190,7 @@ abstract class EmbedsOneOrMany extends Relation
             $ids = $ids->all();
         }
 
-        if (! is_array($ids)) {
+        if (!is_array($ids)) {
             $ids = [$ids];
         }
 
@@ -278,7 +282,12 @@ abstract class EmbedsOneOrMany extends Relation
             return;
         }
 
-        $model = $this->related->newFromBuilder((array) $attributes);
+        $connection = $this->related->getConnection();
+
+        $model = $this->related->newFromBuilder(
+            (array) $attributes,
+            $connection ? $connection->getName() : null
+        );
 
         $model->setParentRelation($this);
 
@@ -339,7 +348,7 @@ abstract class EmbedsOneOrMany extends Relation
     protected function getPathHierarchy($glue = '.')
     {
         if ($parentRelation = $this->getParentRelation()) {
-            return $parentRelation->getPathHierarchy($glue).$glue.$this->localKey;
+            return $parentRelation->getPathHierarchy($glue) . $glue . $this->localKey;
         }
 
         return $this->localKey;
@@ -351,7 +360,7 @@ abstract class EmbedsOneOrMany extends Relation
     public function getQualifiedParentKeyName()
     {
         if ($parentRelation = $this->getParentRelation()) {
-            return $parentRelation->getPathHierarchy().'.'.$this->parent->getKeyName();
+            return $parentRelation->getPathHierarchy() . '.' . $this->parent->getKeyName();
         }
 
         return $this->parent->getKeyName();

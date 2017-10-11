@@ -143,6 +143,18 @@ You can connect to multiple servers or replica sets with the following configura
 ],
 ```
 
+Alternatively, you can use MongoDB connection string:
+
+```php
+'mongodb' => [
+    'driver'   => 'mongodb',
+    'dsn' => env('DB_DSN'),
+    'database' => env('DB_DATABASE'),
+],
+```
+
+Please refer to MongoDB official docs for its URI format: https://docs.mongodb.com/manual/reference/connection-string/
+
 Eloquent
 --------
 
@@ -942,7 +954,7 @@ $cursor = DB::collection('users')->raw(function($collection)
 Optional: if you don't pass a closure to the raw method, the internal MongoCollection object will be accessible:
 
 ```php
-$model = User::raw()->findOne(['age' => array('$lt' => 18]));
+$model = User::raw()->findOne(['age' => array('$lt' => 18)]);
 ```
 
 The internal MongoClient and MongoDB objects can be accessed like this:

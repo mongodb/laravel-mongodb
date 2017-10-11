@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Queue\Failed;
+<?php
+
+namespace Jenssegers\Mongodb\Queue\Failed;
 
 use Carbon\Carbon;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
@@ -41,7 +43,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     /**
      * Get a single failed job.
      *
-     * @param  mixed  $id
+     * @param  mixed $id
      * @return array
      */
     public function find($id)
@@ -56,7 +58,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     /**
      * Delete a single failed job from storage.
      *
-     * @param  mixed  $id
+     * @param  mixed $id
      * @return bool
      */
     public function forget($id)
