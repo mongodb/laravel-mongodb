@@ -492,6 +492,24 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * Add a "where all" clause to the query.
+     *
+     * @param  string  $column
+     * @param  array   $values
+     * @param  string  $boolean
+     * @param  bool    $not
+     * @return $this
+     */
+    public function whereAll($column, array $values, $boolean = 'and', $not = false)
+    {
+        $type = 'all';
+
+        $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function whereBetween($column, array $values, $boolean = 'and', $not = false)
@@ -921,6 +939,17 @@ class Builder extends BaseBuilder
         }
 
         return $compiled;
+    }
+
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereAll(array $where)
+    {
+        extract($where);
+
+        return [$column => ['$all' => array_values($values)]];
     }
 
     /**
