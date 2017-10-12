@@ -13,7 +13,7 @@
     "require": {
         "illuminate/support": "^5.5",
         "illuminate/container": "^5.5",
-        "illuminate/database": "^5.5",
+        "illuminate/database": "^5.5.2",
         "illuminate/events": "^5.5",
         "mongodb/mongodb": "^1.0.0"
     },
