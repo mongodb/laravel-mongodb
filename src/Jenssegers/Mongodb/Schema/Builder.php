@@ -133,7 +133,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
 
         $collections = [];
-        foreach($this->connection->getMongoDB()->listCollections() as $collection) {
+        foreach ($this->connection->getMongoDB()->listCollections() as $collection) {
             $collections[] = $collection->getName();
         }
 
