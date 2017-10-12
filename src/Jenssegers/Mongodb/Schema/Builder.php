@@ -109,8 +109,35 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * @inheritdoc
      */
+    public function dropAllTables()
+    {
+        foreach ($this->getAllCollections() as $collection) {
+            $this->drop($collection);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function createBlueprint($collection, Closure $callback = null)
     {
         return new Blueprint($this->connection, $collection);
     }
+
+    /**
+     * Get all of the collections names for the database.
+     *
+     * @return array
+     */
+    protected function getAllCollections()
+    {
+
+        $collections = [];
+        foreach($this->connection->getMongoDB()->listCollections() as $collection) {
+            $collections[] = $collection->getName();
+        }
+
+        return $collections;
+    }
+
 }
