@@ -322,6 +322,14 @@ If you want to use this library with [Sentry](https://cartalyst.com/manual/sentr
 
 The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
 
+### Passport
+
+If you want to use MongoDB with [Laravel Passport](https://github.com/laravel/passport), add the service provider in `config/app.php`:
+
+```php
+Jenssegers\Mongodb\MongodbPassportServiceProvider.php::class,
+```
+
 Examples
 --------
 
