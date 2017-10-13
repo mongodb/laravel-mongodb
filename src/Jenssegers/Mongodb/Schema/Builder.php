@@ -131,7 +131,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     protected function getAllCollections()
     {
-
         $collections = [];
         foreach ($this->connection->getMongoDB()->listCollections() as $collection) {
             $collections[] = $collection->getName();
@@ -139,5 +138,4 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
         return $collections;
     }
-
 }
