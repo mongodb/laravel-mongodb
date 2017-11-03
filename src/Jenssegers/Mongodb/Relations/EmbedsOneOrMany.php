@@ -267,7 +267,7 @@ abstract class EmbedsOneOrMany extends Relation
             $models = $this->eagerLoadRelations($models);
         }
 
-        return new Collection($models);
+        return $this->related->newCollection($models);
     }
 
     /**
