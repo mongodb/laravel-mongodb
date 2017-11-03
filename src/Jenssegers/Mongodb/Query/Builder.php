@@ -621,6 +621,28 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
+    public function chunkById($count, callable $callback, $column = '_id', $alias = null)
+    {
+        return parent::chunkById($count, $callback, $column, $alias);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function forPageAfterId($perPage = 15, $lastId = 0, $column = '_id')
+    {
+        // When using ObjectIDs to paginate, we need to use a hex string as the
+        // "minimum" ID rather than the integer zero so the '$lt' query works.
+        if ($column === '_id' && $lastId === 0) {
+            $lastId = '000000000000000000000000';
+        }
+
+        return parent::forPageAfterId($perPage, $lastId, $column);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function pluck($column, $key = null)
     {
         $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
