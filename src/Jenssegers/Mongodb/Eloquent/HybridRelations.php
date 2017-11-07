@@ -5,7 +5,6 @@ namespace Jenssegers\Mongodb\Eloquent;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
-use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Helpers\EloquentBuilder;
 use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;

@@ -9,8 +9,7 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 
 class User extends Eloquent implements AuthenticatableContract, CanResetPasswordContract
 {
-    use Authenticatable, CanResetPassword;
-    use HybridRelations;
+    use Authenticatable, CanResetPassword, HybridRelations;
 
     protected $connection = 'mongodb';
     protected $dates = ['birthday', 'entry.date'];
