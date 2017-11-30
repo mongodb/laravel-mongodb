@@ -2,7 +2,7 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
