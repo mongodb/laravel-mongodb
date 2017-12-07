@@ -3,6 +3,7 @@
 namespace Jenssegers\Mongodb\Eloquent;
 
 use Illuminate\Support\Str;
+use Jenssegers\Mongodb\Relations\EmbeddedBy;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 
@@ -44,7 +45,7 @@ trait EmbedsRelations
     }
 
     /**
-     * Define an embedded one-to-many relationship.
+     * Define an embedded one-to-one relationship.
      *
      * @param  string $related
      * @param  string $localKey
@@ -76,5 +77,34 @@ trait EmbedsRelations
         $instance = new $related;
 
         return new EmbedsOne($query, $this, $instance, $localKey, $foreignKey, $relation);
+    }
+
+    /**
+     * Define an inverse embedded one-to-one relationship.
+     *
+     * @param  string $related
+     * @param  string $localKey
+     * @param  string $foreignKey
+     * @param  string $relation
+     * @return \Jenssegers\Mongodb\Relations\EmbeddedBy
+     */
+    protected function embeddedBy($related, $foreignKey = null, $ownerKey = null, $relation = null)
+    {
+        // Use debug backtrace to extract the calling method's name and use that as
+        // the relationship name
+        list(, $caller) = debug_backtrace(false);
+        $relation = $caller['function'];
+
+        $query = $this->parentRelation->getQuery();
+
+        if (is_null($foreignKey)) {
+            $foreignKey = Str::snake($relation) . '_id';
+        }
+
+        $instance = new $related;
+
+        $ownerKey = $ownerKey ?: $instance->getKeyName();
+
+        return new EmbeddedBy($query, $this, $foreignKey, $ownerKey, $relation);
     }
 }
