@@ -526,7 +526,7 @@ class Builder extends BaseBuilder
      */
     public function forPage($page, $perPage = 15)
     {
-        $this->paginating = true;
+//        $this->paginating = true;
 
         return $this->skip(($page - 1) * $perPage)->take($perPage);
     }
