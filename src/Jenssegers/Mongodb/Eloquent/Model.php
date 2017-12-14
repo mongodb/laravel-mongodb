@@ -186,6 +186,9 @@ abstract class Model extends BaseModel
      */
     public function attributesToArray()
     {
+        // Initialise relationships so we get correctly formatted values from embedded models
+        $this->initRelations();
+
         $attributes = parent::attributesToArray();
 
         // Because the original Eloquent never returns objects, we convert
@@ -206,6 +209,22 @@ abstract class Model extends BaseModel
         }
 
         return $attributes;
+    }
+
+    /**
+     * Initialise the required relationships
+     */
+    public function initRelations()
+    {
+        if (!property_exists($this, 'initRelations')) {
+            return;
+        }
+
+        foreach ($this->initRelations as $name) {
+            if (method_exists($this, $name)) {
+                $this->getRelationValue($name);
+            }
+        }
     }
 
     /**
