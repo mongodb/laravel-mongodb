@@ -21,7 +21,7 @@ class ModelTest extends TestCase
         $user = new User;
         $this->assertInstanceOf(Model::class, $user);
         $this->assertInstanceOf('Jenssegers\Mongodb\Connection', $user->getConnection());
-        $this->assertEquals(false, $user->exists);
+        $this->assertFalse($user->exists);
         $this->assertEquals('users', $user->getTable());
         $this->assertEquals('_id', $user->getKeyName());
     }
@@ -35,11 +35,11 @@ class ModelTest extends TestCase
 
         $user->save();
 
-        $this->assertEquals(true, $user->exists);
+        $this->assertTrue($user->exists);
         $this->assertEquals(1, User::count());
 
         $this->assertTrue(isset($user->_id));
-        $this->assertTrue(is_string($user->_id));
+        $this->assertInternalType('string', $user->_id);
         $this->assertNotEquals('', (string) $user->_id);
         $this->assertNotEquals(0, strlen((string) $user->_id));
         $this->assertInstanceOf(Carbon::class, $user->created_at);
@@ -67,7 +67,7 @@ class ModelTest extends TestCase
         $check->age = 36;
         $check->save();
 
-        $this->assertEquals(true, $check->exists);
+        $this->assertTrue($check->exists);
         $this->assertInstanceOf(Carbon::class, $check->created_at);
         $this->assertInstanceOf(Carbon::class, $check->updated_at);
         $this->assertEquals(1, User::count());
@@ -93,7 +93,7 @@ class ModelTest extends TestCase
         $user->age = 35;
         $user->save();
 
-        $this->assertEquals(true, $user->exists);
+        $this->assertTrue($user->exists);
         $this->assertEquals('4af9f23d8ead0e1d32000000', $user->_id);
 
         $raw = $user->getAttributes();
@@ -106,7 +106,7 @@ class ModelTest extends TestCase
         $user->age = 35;
         $user->save();
 
-        $this->assertEquals(true, $user->exists);
+        $this->assertTrue($user->exists);
         $this->assertEquals('customId', $user->_id);
 
         $raw = $user->getAttributes();
@@ -122,7 +122,7 @@ class ModelTest extends TestCase
         $user->age = 35;
         $user->save();
 
-        $this->assertEquals(true, $user->exists);
+        $this->assertTrue($user->exists);
         $this->assertEquals(1, $user->_id);
 
         $raw = $user->getAttributes();
@@ -137,7 +137,7 @@ class ModelTest extends TestCase
         $user->age = 35;
         $user->save();
 
-        $this->assertEquals(true, $user->exists);
+        $this->assertTrue($user->exists);
         $this->assertEquals(1, User::count());
 
         $user->delete();
@@ -161,7 +161,7 @@ class ModelTest extends TestCase
 
         $all = User::all();
 
-        $this->assertEquals(2, count($all));
+        $this->assertCount(2, $all);
         $this->assertContains('John Doe', $all->pluck('name'));
         $this->assertContains('Jane Doe', $all->pluck('name'));
     }
@@ -177,7 +177,7 @@ class ModelTest extends TestCase
         $check = User::find($user->_id);
 
         $this->assertInstanceOf(Model::class, $check);
-        $this->assertEquals(true, $check->exists);
+        $this->assertTrue($check->exists);
         $this->assertEquals($user->_id, $check->_id);
 
         $this->assertEquals('John Doe', $check->name);
@@ -192,7 +192,7 @@ class ModelTest extends TestCase
         ]);
 
         $users = User::get();
-        $this->assertEquals(2, count($users));
+        $this->assertCount(2, $users);
         $this->assertInstanceOf(Collection::class, $users);
         $this->assertInstanceOf(Model::class, $users[0]);
     }
@@ -216,10 +216,10 @@ class ModelTest extends TestCase
         $this->assertEquals(0, $items->count());
 
         $item = Item::where('name', 'nothing')->first();
-        $this->assertEquals(null, $item);
+        $this->assertNull($item);
 
         $item = Item::find('51c33d8981fec6813e00000a');
-        $this->assertEquals(null, $item);
+        $this->assertNull($item);
     }
 
     public function testFindOrfail()
@@ -233,7 +233,7 @@ class ModelTest extends TestCase
         $user = User::create(['name' => 'Jane Poe']);
 
         $this->assertInstanceOf(Model::class, $user);
-        $this->assertEquals(true, $user->exists);
+        $this->assertTrue($user->exists);
         $this->assertEquals('Jane Poe', $user->name);
 
         $check = User::where('name', 'Jane Poe')->first();
@@ -278,12 +278,12 @@ class ModelTest extends TestCase
         $this->assertEquals(2, Soft::count());
 
         $user = Soft::where('name', 'John Doe')->first();
-        $this->assertEquals(true, $user->exists);
-        $this->assertEquals(false, $user->trashed());
+        $this->assertTrue($user->exists);
+        $this->assertFalse($user->trashed());
         $this->assertNull($user->deleted_at);
 
         $user->delete();
-        $this->assertEquals(true, $user->trashed());
+        $this->assertTrue($user->trashed());
         $this->assertNotNull($user->deleted_at);
 
         $user = Soft::where('name', 'John Doe')->first();
@@ -295,7 +295,7 @@ class ModelTest extends TestCase
         $user = Soft::withTrashed()->where('name', 'John Doe')->first();
         $this->assertNotNull($user);
         $this->assertInstanceOf(Carbon::class, $user->deleted_at);
-        $this->assertEquals(true, $user->trashed());
+        $this->assertTrue($user->trashed());
 
         $user->restore();
         $this->assertEquals(2, Soft::count());
@@ -340,9 +340,9 @@ class ModelTest extends TestCase
         $keys = array_keys($array);
         sort($keys);
         $this->assertEquals(['_id', 'created_at', 'name', 'type', 'updated_at'], $keys);
-        $this->assertTrue(is_string($array['created_at']));
-        $this->assertTrue(is_string($array['updated_at']));
-        $this->assertTrue(is_string($array['_id']));
+        $this->assertInternalType('string', $array['created_at']);
+        $this->assertInternalType('string', $array['updated_at']);
+        $this->assertInternalType('string', $array['_id']);
     }
 
     public function testUnset()
@@ -352,7 +352,7 @@ class ModelTest extends TestCase
 
         $user1->unset('note1');
 
-        $this->assertFalse(isset($user1->note1));
+        $this->assertObjectNotHasAttribute('note1', $user1);
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
@@ -361,15 +361,15 @@ class ModelTest extends TestCase
         $user1 = User::find($user1->_id);
         $user2 = User::find($user2->_id);
 
-        $this->assertFalse(isset($user1->note1));
+        $this->assertObjectNotHasAttribute('note1', $user1);
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
 
         $user2->unset(['note1', 'note2']);
 
-        $this->assertFalse(isset($user2->note1));
-        $this->assertFalse(isset($user2->note2));
+        $this->assertObjectNotHasAttribute('note1', $user2);
+        $this->assertObjectNotHasAttribute('note2', $user2);
     }
 
     public function testDates()
@@ -396,7 +396,7 @@ class ModelTest extends TestCase
         $this->assertEquals($item->getOriginal('created_at')
             ->toDateTime()
             ->getTimestamp(), $item->created_at->getTimestamp());
-        $this->assertTrue(abs(time() - $item->created_at->getTimestamp()) < 2);
+        $this->assertLessThan(2, abs(time() - $item->created_at->getTimestamp()));
 
         // test default date format for json output
         $item = Item::create(['name' => 'sword']);

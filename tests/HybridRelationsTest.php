@@ -27,13 +27,13 @@ class HybridRelationsTest extends TestCase
         // Mysql User
         $user->name = "John Doe";
         $user->save();
-        $this->assertTrue(is_int($user->id));
+        $this->assertInternalType('int', $user->id);
 
         // SQL has many
         $book = new Book(['title' => 'Game of Thrones']);
         $user->books()->save($book);
         $user = MysqlUser::find($user->id); // refetch
-        $this->assertEquals(1, count($user->books));
+        $this->assertCount(1, $user->books);
 
         // MongoDB belongs to
         $book = $user->books()->first(); // refetch
@@ -58,7 +58,7 @@ class HybridRelationsTest extends TestCase
         $book = new MysqlBook(['title' => 'Game of Thrones']);
         $user->mysqlBooks()->save($book);
         $user = User::find($user->_id); // refetch
-        $this->assertEquals(1, count($user->mysqlBooks));
+        $this->assertCount(1, $user->mysqlBooks);
 
         // SQL belongs to
         $book = $user->mysqlBooks()->first(); // refetch
@@ -93,8 +93,8 @@ class HybridRelationsTest extends TestCase
         $otherUser->id = 3;
         $otherUser->save();
         // Make sure they are created
-        $this->assertTrue(is_int($user->id));
-        $this->assertTrue(is_int($otherUser->id));
+        $this->assertInternalType('int', $user->id);
+        $this->assertInternalType('int', $otherUser->id);
         // Clear to start
         $user->books()->truncate();
         $otherUser->books()->truncate();
@@ -147,8 +147,8 @@ class HybridRelationsTest extends TestCase
         $otherUser->id = 3;
         $otherUser->save();
         // Make sure they are created
-        $this->assertTrue(is_int($user->id));
-        $this->assertTrue(is_int($otherUser->id));
+        $this->assertInternalType('int', $user->id);
+        $this->assertInternalType('int', $otherUser->id);
         // Clear to start
         Book::truncate();
         MysqlBook::truncate();
