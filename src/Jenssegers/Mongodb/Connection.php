@@ -4,6 +4,7 @@ namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use MongoDB\Client;
 
 class Connection extends BaseConnection
@@ -168,9 +169,15 @@ class Connection extends BaseConnection
      */
     protected function getDsnString(array $config)
     {
-        $dsn = rawurlencode($config['dsn']);
-        
-        return "mongodb://{$dsn}";
+        $dsn_string = $config['dsn'];
+
+        if ( Str::contains($dsn_string, 'mongodb://') ){
+            $dsn_string = Str::replaceFirst('mongodb://', '', $dsn_string);
+        }
+
+        $dsn_string = rawurlencode($dsn_string);
+
+        return "mongodb://{$dsn_string}";
     }
 
     /**
