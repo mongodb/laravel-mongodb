@@ -150,18 +150,37 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Create a DSN string from a configuration.
+     * Determine if the given configuration array has a UNIX socket value.
      *
-     * @param  array $config
+     * @param  array  $config
+     * @return bool
+     */
+    protected function hasDsnString(array $config)
+    {
+        return isset($config['dsn']) && ! empty($config['dsn']);
+    }
+
+    /**
+     * Get the DSN string for a socket configuration.
+     *
+     * @param  array  $config
      * @return string
      */
-    protected function getDsn(array $config)
+    protected function getDsnString(array $config)
     {
-        // Check if the user passed a complete dsn to the configuration.
-        if (!empty($config['dsn'])) {
-            return $config['dsn'];
-        }
+        $dsn = rawurlencode($config['dsn']);
+        
+        return "mongodb://{$dsn}";
+    }
 
+    /**
+     * Get the DSN string for a host / port configuration.
+     *
+     * @param  array  $config
+     * @return string
+     */
+    protected function getHostDsn(array $config)
+    {
         // Treat host option as array of hosts
         $hosts = is_array($config['host']) ? $config['host'] : [$config['host']];
 
@@ -176,6 +195,19 @@ class Connection extends BaseConnection
         $auth_database = isset($config['options']) && !empty($config['options']['database']) ? $config['options']['database'] : null;
 
         return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
+    }
+
+    /**
+     * Create a DSN string from a configuration.
+     *
+     * @param  array $config
+     * @return string
+     */
+    protected function getDsn(array $config)
+    {
+        return $this->hasDsnString($config)
+            ? $this->getDsnString($config)
+            : $this->getHostDsn($config);
     }
 
     /**
