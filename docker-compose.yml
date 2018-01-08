@@ -9,7 +9,7 @@ services:
         volumes:
             - .:/code
         working_dir: /code
-        command: php ./vendor/bin/phpunit
+        command: docker/entrypoint.sh
         depends_on:
           - mysql
           - mongodb
