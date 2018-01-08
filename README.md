@@ -103,6 +103,15 @@ Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rathe
 $books = $user->books()->sortBy('title');
 ```
 
+Testing
+-------
+
+To run the test for this package, run:
+
+```
+docker-compose up
+```
+
 Configuration
 -------------
 

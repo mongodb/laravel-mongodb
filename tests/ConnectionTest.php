@@ -98,12 +98,13 @@ class ConnectionTest extends TestCase
 
     public function testAuth()
     {
+        $host = Config::get('database.connections.mongodb.host');
         Config::set('database.connections.mongodb.username', 'foo');
         Config::set('database.connections.mongodb.password', 'bar');
         Config::set('database.connections.mongodb.options.database', 'custom');
 
         $connection = DB::connection('mongodb');
-        $this->assertEquals('mongodb://127.0.0.1/custom', (string) $connection->getMongoClient());
+        $this->assertEquals('mongodb://' . $host . '/custom', (string) $connection->getMongoClient());
     }
 
     public function testCustomHostAndPort()
