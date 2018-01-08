@@ -300,6 +300,10 @@ trait HybridRelations
      */
     public function newEloquentBuilder($query)
     {
-        return new EloquentBuilder($query);
+        if (is_subclass_of($this, \Jenssegers\Mongodb\Eloquent\Model::class)) {
+            return new Builder($query);
+        } else {
+            return new EloquentBuilder($query);
+        }
     }
 }
