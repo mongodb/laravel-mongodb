@@ -171,7 +171,7 @@ class Connection extends BaseConnection
     {
         $dsn_string = $config['dsn'];
 
-        if ( Str::contains($dsn_string, 'mongodb://') ){
+        if (Str::contains($dsn_string, 'mongodb://')) {
             $dsn_string = Str::replaceFirst('mongodb://', '', $dsn_string);
         }
 
