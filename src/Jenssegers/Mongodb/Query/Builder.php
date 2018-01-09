@@ -920,6 +920,13 @@ class Builder extends BaseBuilder
             }
 
             // Convert DateTime values to UTCDateTime.
+            if (isset($where['values'])) {
+                array_walk_recursive($where['values'], function (&$item, $key) {
+                    if ($item instanceof DateTime) {
+                        $item = new UTCDateTime($item->getTimestamp() * 1000);
+                    }
+                });
+            }
             if (isset($where['value'])) {
                 if (is_array($where['value'])) {
                     array_walk_recursive($where['value'], function (&$item, $key) {
