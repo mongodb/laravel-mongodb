@@ -1,9 +1,12 @@
-<?php namespace Jenssegers\Mongodb\Eloquent;
+<?php
+
+namespace Jenssegers\Mongodb\Eloquent;
 
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\ObjectID;
@@ -44,7 +47,7 @@ abstract class Model extends BaseModel
     {
         // If we don't have a value for 'id', we will use the Mongo '_id' value.
         // This allows us to work with models in a more sql-like way.
-        if (! $value and array_key_exists('_id', $this->attributes)) {
+        if (!$value && array_key_exists('_id', $this->attributes)) {
             $value = $this->attributes['_id'];
         }
 
@@ -75,7 +78,7 @@ abstract class Model extends BaseModel
         }
 
         // Let Eloquent convert the value to a DateTime instance.
-        if (! $value instanceof DateTime) {
+        if (!$value instanceof DateTime) {
             $value = parent::asDateTime($value);
         }
 
@@ -124,17 +127,17 @@ abstract class Model extends BaseModel
      */
     public function getAttribute($key)
     {
-        if (! $key) {
+        if (!$key) {
             return;
         }
 
         // Dot notation support.
-        if (str_contains($key, '.') and array_has($this->attributes, $key)) {
+        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
             return $this->getAttributeValue($key);
         }
 
         // This checks for embedded relation support.
-        if (method_exists($this, $key) and ! method_exists(self::class, $key)) {
+        if (method_exists($this, $key) && !method_exists(self::class, $key)) {
             return $this->getRelationValue($key);
         }
 
@@ -147,8 +150,8 @@ abstract class Model extends BaseModel
     protected function getAttributeFromArray($key)
     {
         // Support keys in dot notation.
-        if (str_contains($key, '.')) {
-            return array_get($this->attributes, $key);
+        if (Str::contains($key, '.')) {
+            return Arr::get($this->attributes, $key);
         }
 
         return parent::getAttributeFromArray($key);
@@ -160,17 +163,17 @@ abstract class Model extends BaseModel
     public function setAttribute($key, $value)
     {
         // Convert _id to ObjectID.
-        if ($key == '_id' and is_string($value)) {
+        if ($key == '_id' && is_string($value)) {
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
         } // Support keys in dot notation.
-        elseif (str_contains($key, '.')) {
+        elseif (Str::contains($key, '.')) {
             if (in_array($key, $this->getDates()) && $value) {
                 $value = $this->fromDateTime($value);
             }
 
-            array_set($this->attributes, $key, $value);
+            Arr::set($this->attributes, $key, $value);
 
             return;
         }
@@ -197,8 +200,8 @@ abstract class Model extends BaseModel
 
         // Convert dot-notation dates.
         foreach ($this->getDates() as $key) {
-            if (str_contains($key, '.') and array_has($attributes, $key)) {
-                array_set($attributes, $key, (string) $this->asDateTime(array_get($attributes, $key)));
+            if (Str::contains($key, '.') && Arr::has($attributes, $key)) {
+                Arr::set($attributes, $key, (string) $this->asDateTime(Arr::get($attributes, $key)));
             }
         }
 
@@ -216,20 +219,36 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
-    protected function originalIsNumericallyEquivalent($key)
+    protected function originalIsEquivalent($key, $current)
     {
-        $current = $this->attributes[$key];
-        $original = $this->original[$key];
+        if (!array_key_exists($key, $this->original)) {
+            return false;
+        }
 
-        // Date comparison.
-        if (in_array($key, $this->getDates())) {
+        $original = $this->getOriginal($key);
+
+        if ($current === $original) {
+            return true;
+        }
+
+        if (null === $current) {
+            return false;
+        }
+
+        if ($this->isDateAttribute($key)) {
             $current = $current instanceof UTCDateTime ? $this->asDateTime($current) : $current;
             $original = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
 
             return $current == $original;
         }
 
-        return parent::originalIsNumericallyEquivalent($key);
+        if ($this->hasCast($key)) {
+            return $this->castAttribute($key, $current) ===
+                $this->castAttribute($key, $original);
+        }
+
+        return is_numeric($current) && is_numeric($original)
+            && strcmp((string) $current, (string) $original) === 0;
     }
 
     /**
@@ -240,9 +259,7 @@ abstract class Model extends BaseModel
      */
     public function drop($columns)
     {
-        if (! is_array($columns)) {
-            $columns = [$columns];
-        }
+        $columns = Arr::wrap($columns);
 
         // Unset attributes
         foreach ($columns as $column) {
@@ -261,16 +278,14 @@ abstract class Model extends BaseModel
         if ($parameters = func_get_args()) {
             $unique = false;
 
-            if (count($parameters) == 3) {
+            if (count($parameters) === 3) {
                 list($column, $values, $unique) = $parameters;
             } else {
                 list($column, $values) = $parameters;
             }
 
             // Do batch push by default.
-            if (! is_array($values)) {
-                $values = [$values];
-            }
+            $values = Arr::wrap($values);
 
             $query = $this->setKeysForSaveQuery($this->newQuery());
 
@@ -286,15 +301,13 @@ abstract class Model extends BaseModel
      * Remove one or more values from an array.
      *
      * @param  string $column
-     * @param  mixed  $values
+     * @param  mixed $values
      * @return mixed
      */
     public function pull($column, $values)
     {
         // Do batch pull by default.
-        if (! is_array($values)) {
-            $values = [$values];
-        }
+        $values = Arr::wrap($values);
 
         $query = $this->setKeysForSaveQuery($this->newQuery());
 
@@ -307,8 +320,8 @@ abstract class Model extends BaseModel
      * Append one or more values to the underlying attribute value and sync with original.
      *
      * @param  string $column
-     * @param  array  $values
-     * @param  bool   $unique
+     * @param  array $values
+     * @param  bool $unique
      */
     protected function pushAttributeValues($column, array $values, $unique = false)
     {
@@ -316,11 +329,11 @@ abstract class Model extends BaseModel
 
         foreach ($values as $value) {
             // Don't add duplicate values when we only want unique values.
-            if ($unique and in_array($value, $current)) {
+            if ($unique && (!is_array($current) || in_array($value, $current))) {
                 continue;
             }
 
-            array_push($current, $value);
+            $current[] = $value;
         }
 
         $this->attributes[$column] = $current;
@@ -332,17 +345,19 @@ abstract class Model extends BaseModel
      * Remove one or more values to the underlying attribute value and sync with original.
      *
      * @param  string $column
-     * @param  array  $values
+     * @param  array $values
      */
     protected function pullAttributeValues($column, array $values)
     {
         $current = $this->getAttributeFromArray($column) ?: [];
 
-        foreach ($values as $value) {
-            $keys = array_keys($current, $value);
+        if (is_array($current)) {
+            foreach ($values as $value) {
+                $keys = array_keys($current, $value);
 
-            foreach ($keys as $key) {
-                unset($current[$key]);
+                foreach ($keys as $key) {
+                    unset($current[$key]);
+                }
             }
         }
 
@@ -356,7 +371,7 @@ abstract class Model extends BaseModel
      */
     public function getForeignKey()
     {
-        return Str::snake(class_basename($this)).'_'.ltrim($this->primaryKey, '_');
+        return Str::snake(class_basename($this)) . '_' . ltrim($this->primaryKey, '_');
     }
 
     /**

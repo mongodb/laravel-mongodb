@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Relations;
+<?php
+
+namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
@@ -62,8 +64,8 @@ class HasMany extends EloquentHasMany
     /**
      * Add the constraints for a relationship query.
      *
-     * @param  Builder     $query
-     * @param  Builder     $parent
+     * @param  Builder $query
+     * @param  Builder $parent
      * @param  array|mixed $columns
      * @return Builder
      */

@@ -1,6 +1,10 @@
-<?php namespace Jenssegers\Mongodb;
+<?php
+
+namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Connection as BaseConnection;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 use MongoDB\Client;
 
 class Connection extends BaseConnection
@@ -32,7 +36,7 @@ class Connection extends BaseConnection
         $dsn = $this->getDsn($config);
 
         // You can pass options directly to the MongoDB constructor
-        $options = array_get($config, 'options', []);
+        $options = Arr::get($config, 'options', []);
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
@@ -114,8 +118,8 @@ class Connection extends BaseConnection
      * Create a new MongoDB connection.
      *
      * @param  string $dsn
-     * @param  array  $config
-     * @param  array  $options
+     * @param  array $config
+     * @param  array $options
      * @return \MongoDB\Client
      */
     protected function createConnection($dsn, array $config, array $options)
@@ -128,10 +132,10 @@ class Connection extends BaseConnection
         }
 
         // Check if the credentials are not already set in the options
-        if (! isset($options['username']) && ! empty($config['username'])) {
+        if (!isset($options['username']) && !empty($config['username'])) {
             $options['username'] = $config['username'];
         }
-        if (! isset($options['password']) && ! empty($config['password'])) {
+        if (!isset($options['password']) && !empty($config['password'])) {
             $options['password'] = $config['password'];
         }
 
@@ -147,6 +151,60 @@ class Connection extends BaseConnection
     }
 
     /**
+     * Determine if the given configuration array has a UNIX socket value.
+     *
+     * @param  array  $config
+     * @return bool
+     */
+    protected function hasDsnString(array $config)
+    {
+        return isset($config['dsn']) && ! empty($config['dsn']);
+    }
+
+    /**
+     * Get the DSN string for a socket configuration.
+     *
+     * @param  array  $config
+     * @return string
+     */
+    protected function getDsnString(array $config)
+    {
+        $dsn_string = $config['dsn'];
+
+        if (Str::contains($dsn_string, 'mongodb://')) {
+            $dsn_string = Str::replaceFirst('mongodb://', '', $dsn_string);
+        }
+
+        $dsn_string = rawurlencode($dsn_string);
+
+        return "mongodb://{$dsn_string}";
+    }
+
+    /**
+     * Get the DSN string for a host / port configuration.
+     *
+     * @param  array  $config
+     * @return string
+     */
+    protected function getHostDsn(array $config)
+    {
+        // Treat host option as array of hosts
+        $hosts = is_array($config['host']) ? $config['host'] : [$config['host']];
+
+        foreach ($hosts as &$host) {
+            // Check if we need to add a port to the host
+            if (strpos($host, ':') === false && !empty($config['port'])) {
+                $host = $host . ':' . $config['port'];
+            }
+        }
+
+        // Check if we want to authenticate against a specific database.
+        $auth_database = isset($config['options']) && !empty($config['options']['database']) ? $config['options']['database'] : null;
+
+        return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
+    }
+
+    /**
      * Create a DSN string from a configuration.
      *
      * @param  array $config
@@ -154,25 +212,9 @@ class Connection extends BaseConnection
      */
     protected function getDsn(array $config)
     {
-        // Check if the user passed a complete dsn to the configuration.
-        if (! empty($config['dsn'])) {
-            return $config['dsn'];
-        }
-
-        // Treat host option as array of hosts
-        $hosts = is_array($config['host']) ? $config['host'] : [$config['host']];
-
-        foreach ($hosts as &$host) {
-            // Check if we need to add a port to the host
-            if (strpos($host, ':') === false && ! empty($config['port'])) {
-                $host = $host.':'.$config['port'];
-            }
-        }
-
-        // Check if we want to authenticate against a specific database.
-        $auth_database = isset($config['options']) && ! empty($config['options']['database']) ? $config['options']['database'] : null;
-
-        return 'mongodb://'.implode(',', $hosts).($auth_database ? '/'.$auth_database : '');
+        return $this->hasDsnString($config)
+            ? $this->getDsnString($config)
+            : $this->getHostDsn($config);
     }
 
     /**
@@ -219,7 +261,7 @@ class Connection extends BaseConnection
      * Dynamically pass methods to the connection.
      *
      * @param  string $method
-     * @param  array  $parameters
+     * @param  array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

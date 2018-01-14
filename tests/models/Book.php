@@ -4,6 +4,7 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class Book extends Eloquent
 {
+    protected $connection = 'mongodb';
     protected $collection = 'books';
     protected static $unguarded = true;
     protected $primaryKey = 'title';

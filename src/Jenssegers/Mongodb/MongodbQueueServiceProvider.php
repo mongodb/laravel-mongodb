@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb;
+<?php
+
+namespace Jenssegers\Mongodb;
 
 use Illuminate\Queue\QueueServiceProvider;
 use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;

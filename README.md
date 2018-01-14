@@ -41,6 +41,7 @@ composer require jenssegers/mongodb
  5.2.x    | 2.3.x or 3.0.x
  5.3.x    | 3.1.x or 3.2.x
  5.4.x    | 3.2.x
+ 5.5.x    | 3.3.x
 
 And add the service provider in `config/app.php`:
 
@@ -102,6 +103,15 @@ Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rathe
 $books = $user->books()->sortBy('title');
 ```
 
+Testing
+-------
+
+To run the test for this package, run:
+
+```
+docker-compose up
+```
+
 Configuration
 -------------
 
@@ -142,6 +152,18 @@ You can connect to multiple servers or replica sets with the following configura
 	]
 ],
 ```
+
+Alternatively, you can use MongoDB connection string:
+
+```php
+'mongodb' => [
+    'driver'   => 'mongodb',
+    'dsn' => env('DB_DSN'),
+    'database' => env('DB_DATABASE'),
+],
+```
+
+Please refer to MongoDB official docs for its URI format: https://docs.mongodb.com/manual/reference/connection-string/
 
 Eloquent
 --------
@@ -942,7 +964,7 @@ $cursor = DB::collection('users')->raw(function($collection)
 Optional: if you don't pass a closure to the raw method, the internal MongoCollection object will be accessible:
 
 ```php
-$model = User::raw()->findOne(['age' => array('$lt' => 18]));
+$model = User::raw()->findOne(['age' => array('$lt' => 18)]);
 ```
 
 The internal MongoClient and MongoDB objects can be accessed like this:

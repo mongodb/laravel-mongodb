@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Validation;
+<?php
+
+namespace Jenssegers\Mongodb\Validation;
 
 use Illuminate\Validation\ValidationServiceProvider as BaseProvider;
 
