@@ -378,7 +378,10 @@ class Builder extends BaseBuilder
             if ($columns) {
                 $options['projection'] = $columns;
             }
-            // if ($this->hint)    $cursor->hint($this->hint);
+
+            if ($this->hint) {
+                $options['hint'] = $this->hint;
+            }
 
             // Fix for legacy support, converts the results to arrays instead of objects.
             $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
