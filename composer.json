@@ -15,7 +15,7 @@
         "illuminate/container": "^5.5",
         "illuminate/database": "^5.5",
         "illuminate/events": "^5.5",
-        "mongodb/mongodb": "^1.0.0"
+        "mongodb/mongodb": "^1.2.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^6.0",
