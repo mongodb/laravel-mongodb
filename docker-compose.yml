@@ -1,0 +1,29 @@
+version: '3'
+
+services:
+
+    php:
+        build:
+            context: .
+            dockerfile: docker/Dockerfile
+        volumes:
+            - .:/code
+        working_dir: /code
+        command: docker/entrypoint.sh
+        depends_on:
+          - mysql
+          - mongodb
+
+    mysql:
+        image: mysql
+        environment:
+            MYSQL_ROOT_PASSWORD:
+            MYSQL_DATABASE: unittest
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        logging:
+            driver: none
+
+    mongodb:
+        image: mongo
+        logging:
+            driver: none

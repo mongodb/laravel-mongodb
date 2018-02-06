@@ -7,15 +7,15 @@ return [
         'mongodb' => [
             'name'       => 'mongodb',
             'driver'     => 'mongodb',
-            'host'       => '127.0.0.1',
+            'host'       => 'mongodb',
             'database'   => 'unittest',
         ],
 
         'mysql' => [
             'driver'    => 'mysql',
-            'host'      => '127.0.0.1',
+            'host'      => 'mysql',
             'database'  => 'unittest',
-            'username'  => 'travis',
+            'username'  => 'root',
             'password'  => '',
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',

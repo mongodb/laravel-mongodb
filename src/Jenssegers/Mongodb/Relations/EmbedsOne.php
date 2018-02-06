@@ -3,6 +3,7 @@
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use MongoDB\BSON\ObjectID;
 
 class EmbedsOne extends EmbedsOneOrMany
@@ -36,7 +37,7 @@ class EmbedsOne extends EmbedsOneOrMany
     public function performInsert(Model $model)
     {
         // Generate a new key if needed.
-        if ($model->getKeyName() == '_id' and !$model->getKey()) {
+        if ($model->getKeyName() == '_id' && !$model->getKey()) {
             $model->setAttribute('_id', new ObjectID);
         }
 
@@ -71,7 +72,7 @@ class EmbedsOne extends EmbedsOneOrMany
         }
 
         // Use array dot notation for better update behavior.
-        $values = array_dot($model->getDirty(), $this->localKey . '.');
+        $values = Arr::dot($model->getDirty(), $this->localKey . '.');
 
         $result = $this->getBaseQuery()->update($values);
 

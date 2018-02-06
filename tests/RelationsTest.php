@@ -24,7 +24,7 @@ class RelationsTest extends TestCase
         Book::create(['title' => 'A Clash of Kings', 'author_id' => $author->_id]);
 
         $books = $author->books;
-        $this->assertEquals(2, count($books));
+        $this->assertCount(2, $books);
 
         $user = User::create(['name' => 'John Doe']);
         Item::create(['type' => 'knife', 'user_id' => $user->_id]);
@@ -33,7 +33,7 @@ class RelationsTest extends TestCase
         Item::create(['type' => 'bag', 'user_id' => null]);
 
         $items = $user->items;
-        $this->assertEquals(3, count($items));
+        $this->assertCount(3, $items);
     }
 
     public function testBelongsTo()
@@ -52,7 +52,7 @@ class RelationsTest extends TestCase
         $this->assertEquals('John Doe', $owner->name);
 
         $book = Book::create(['title' => 'A Clash of Kings']);
-        $this->assertEquals(null, $book->author);
+        $this->assertNull($book->author);
     }
 
     public function testHasOne()
@@ -91,8 +91,8 @@ class RelationsTest extends TestCase
         $user = $items[0]->getRelation('user');
         $this->assertInstanceOf('User', $user);
         $this->assertEquals('John Doe', $user->name);
-        $this->assertEquals(1, count($items[0]->getRelations()));
-        $this->assertEquals(null, $items[3]->getRelation('user'));
+        $this->assertCount(1, $items[0]->getRelations());
+        $this->assertNull($items[3]->getRelation('user'));
     }
 
     public function testWithHashMany()
@@ -106,7 +106,7 @@ class RelationsTest extends TestCase
         $user = User::with('items')->find($user->_id);
 
         $items = $user->getRelation('items');
-        $this->assertEquals(3, count($items));
+        $this->assertCount(3, $items);
         $this->assertInstanceOf('Item', $items[0]);
     }
 
@@ -132,7 +132,7 @@ class RelationsTest extends TestCase
 
         $user = User::find($user->_id);
         $items = $user->items;
-        $this->assertEquals(1, count($items));
+        $this->assertCount(1, $items);
         $this->assertInstanceOf('Item', $items[0]);
         $this->assertEquals($user->_id, $items[0]->user_id);
 
@@ -161,8 +161,8 @@ class RelationsTest extends TestCase
         $client = Client::with('users')->first();
 
         // Check for relation attributes
-        $this->assertTrue(array_key_exists('user_ids', $client->getAttributes()));
-        $this->assertTrue(array_key_exists('client_ids', $user->getAttributes()));
+        $this->assertArrayHasKey('user_ids', $client->getAttributes());
+        $this->assertArrayHasKey('client_ids', $user->getAttributes());
 
         $clients = $user->getRelation('clients');
         $users = $client->getRelation('users');
@@ -190,8 +190,8 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf('User', $user);
 
         // Assert they are not attached
-        $this->assertFalse(in_array($client->_id, $user->client_ids));
-        $this->assertFalse(in_array($user->_id, $client->user_ids));
+        $this->assertNotContains($client->_id, $user->client_ids);
+        $this->assertNotContains($user->_id, $client->user_ids);
         $this->assertCount(1, $user->clients);
         $this->assertCount(1, $client->users);
 
@@ -203,8 +203,8 @@ class RelationsTest extends TestCase
         $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
 
         // Assert they are attached
-        $this->assertTrue(in_array($client->_id, $user->client_ids));
-        $this->assertTrue(in_array($user->_id, $client->user_ids));
+        $this->assertContains($client->_id, $user->client_ids);
+        $this->assertContains($user->_id, $client->user_ids);
         $this->assertCount(2, $user->clients);
         $this->assertCount(2, $client->users);
 
@@ -216,8 +216,8 @@ class RelationsTest extends TestCase
         $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
 
         // Assert they are not attached
-        $this->assertFalse(in_array($client->_id, $user->client_ids));
-        $this->assertFalse(in_array($user->_id, $client->user_ids));
+        $this->assertNotContains($client->_id, $user->client_ids);
+        $this->assertNotContains($user->_id, $client->user_ids);
         $this->assertCount(0, $user->clients);
         $this->assertCount(1, $client->users);
     }
@@ -242,7 +242,7 @@ class RelationsTest extends TestCase
         $user = User::with('clients')->find($user->_id);
 
         // Assert non attached ID's are detached succesfully
-        $this->assertFalse(in_array('1234523', $user->client_ids));
+        $this->assertNotContains('1234523', $user->client_ids);
 
         // Assert there are two client objects in the relationship
         $this->assertCount(2, $user->clients);
@@ -330,12 +330,12 @@ class RelationsTest extends TestCase
         $group = Group::find($group->_id);
 
         // Check for custom relation attributes
-        $this->assertTrue(array_key_exists('users', $group->getAttributes()));
-        $this->assertTrue(array_key_exists('groups', $user->getAttributes()));
+        $this->assertArrayHasKey('users', $group->getAttributes());
+        $this->assertArrayHasKey('groups', $user->getAttributes());
 
         // Assert they are attached
-        $this->assertTrue(in_array($group->_id, $user->groups->pluck('_id')->toArray()));
-        $this->assertTrue(in_array($user->_id, $group->users->pluck('_id')->toArray()));
+        $this->assertContains($group->_id, $user->groups->pluck('_id')->toArray());
+        $this->assertContains($user->_id, $group->users->pluck('_id')->toArray());
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
         $this->assertEquals($user->_id, $group->users()->first()->_id);
     }
@@ -370,16 +370,16 @@ class RelationsTest extends TestCase
 
         $user = User::with('photos')->find($user->_id);
         $relations = $user->getRelations();
-        $this->assertTrue(array_key_exists('photos', $relations));
+        $this->assertArrayHasKey('photos', $relations);
         $this->assertEquals(1, $relations['photos']->count());
 
         $photos = Photo::with('imageable')->get();
         $relations = $photos[0]->getRelations();
-        $this->assertTrue(array_key_exists('imageable', $relations));
+        $this->assertArrayHasKey('imageable', $relations);
         $this->assertInstanceOf('User', $photos[0]->imageable);
 
         $relations = $photos[1]->getRelations();
-        $this->assertTrue(array_key_exists('imageable', $relations));
+        $this->assertArrayHasKey('imageable', $relations);
         $this->assertInstanceOf('Client', $photos[1]->imageable);
     }
 
