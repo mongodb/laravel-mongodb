@@ -47,7 +47,5 @@
                 "Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
             ]
         }
-    },
-    "minimum-stability" : "dev",
-    "prefer-stable": true
+    }
 }
