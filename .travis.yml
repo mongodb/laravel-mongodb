@@ -9,6 +9,7 @@ php:
 env:
   global:
     - DRIVER_VERSION="stable"
+    - ADAPTER_VERSION="^1.0.0"
 
 sudo: false
 
