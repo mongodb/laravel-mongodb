@@ -1,3 +1,5 @@
+dist: trusty
+
 language: php
 
 php:
@@ -13,15 +15,29 @@ services:
   - mongodb
   - mysql
 
-#addons:
-#  apt:
-#    sources:
-#    - mongodb-3.0-precise
-#    packages:
-#    - mongodb-org-server
+matrix:
+  fast_finish: true
+  include:
+    - php: 7.1
+      addons:
+        apt:
+          sources:
+            - sourceline: "deb [arch=amd64] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.4 multiverse"
+              key_url: "https://www.mongodb.org/static/pgp/server-3.4.asc"
+            - "mongodb-upstart"
+          packages: ['mongodb-org-server']
+    - php: 7.2
+      addons:
+        apt:
+          sources:
+            - sourceline: "deb [arch=amd64] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.4 multiverse"
+              key_url: "https://www.mongodb.org/static/pgp/server-3.4.asc"
+            - "mongodb-upstart"
+          packages: ['mongodb-org-server']
 
 before_script:
-# - pecl install mongodb
+  - if [[ ${TRAVIS_PHP_VERSION:0:2} == "7." ]]; then pecl install -f mongodb-${DRIVER_VERSION}; fi
+  - if [[ ${TRAVIS_PHP_VERSION:0:2} == "7." ]]; then composer config "platform.ext-mongo" "1.6.16" && composer require "alcaeus/mongo-php-adapter=${ADAPTER_VERSION}"; fi
   - mysql -e 'create database unittest;'
   - travis_retry composer self-update
   - travis_retry composer install --no-interaction
