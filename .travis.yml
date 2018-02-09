@@ -6,8 +6,9 @@ php:
   - 7.1
   - 7.2
 
-matrix:
-  fast_finish: true
+env:
+  global:
+    - DRIVER_VERSION="stable"
 
 sudo: false
 
