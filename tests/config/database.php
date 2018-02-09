@@ -9,6 +9,7 @@ return [
             'driver'     => 'mongodb',
             'host'       => 'mongodb',
             'database'   => 'unittest',
+            'port'       => 27017,
         ],
 
         'mysql' => [
