@@ -13,15 +13,15 @@ services:
   - mongodb
   - mysql
 
-addons:
-  apt:
-    sources:
-    - mongodb-3.0-precise
-    packages:
-    - mongodb-org-server
+#addons:
+#  apt:
+#    sources:
+#    - mongodb-3.0-precise
+#    packages:
+#    - mongodb-org-server
 
 before_script:
-  - pecl install mongodb
+# - pecl install mongodb
   - mysql -e 'create database unittest;'
   - travis_retry composer self-update
   - travis_retry composer install --no-interaction
