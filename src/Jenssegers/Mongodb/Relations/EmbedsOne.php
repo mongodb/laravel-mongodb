@@ -9,7 +9,7 @@ use MongoDB\BSON\ObjectID;
 class EmbedsOne extends EmbedsOneOrMany
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function initRelation(array $models, $relation)
     {
@@ -21,7 +21,7 @@ class EmbedsOne extends EmbedsOneOrMany
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getResults()
     {

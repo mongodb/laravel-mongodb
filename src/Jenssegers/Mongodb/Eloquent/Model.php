@@ -61,7 +61,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getQualifiedKeyName()
     {
@@ -69,7 +69,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function fromDateTime($value)
     {
@@ -87,7 +87,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function asDateTime($value)
     {
@@ -100,7 +100,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function getDateFormat()
     {
@@ -108,7 +108,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function freshTimestamp()
     {
@@ -116,7 +116,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getTable()
     {
@@ -124,7 +124,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getAttribute($key)
     {
@@ -146,7 +146,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function getAttributeFromArray($key)
     {
@@ -159,7 +159,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function setAttribute($key, $value)
     {
@@ -183,7 +183,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function attributesToArray()
     {
@@ -210,7 +210,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getCasts()
     {
@@ -218,7 +218,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function originalIsEquivalent($key, $current)
     {
@@ -273,7 +273,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function push()
     {
@@ -370,7 +370,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getForeignKey()
     {
@@ -398,7 +398,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function newEloquentBuilder($query)
     {
@@ -406,7 +406,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function newBaseQueryBuilder()
     {
@@ -416,7 +416,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function removeTableFromKey($key)
     {
@@ -424,7 +424,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function __call($method, $parameters)
     {
