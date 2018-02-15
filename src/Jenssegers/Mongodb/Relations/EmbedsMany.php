@@ -12,7 +12,7 @@ use MongoDB\BSON\ObjectID;
 class EmbedsMany extends EmbedsOneOrMany
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function initRelation(array $models, $relation)
     {
@@ -24,7 +24,7 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getResults()
     {
@@ -312,7 +312,7 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function getEmbedded()
     {
@@ -320,7 +320,7 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function setEmbedded($models)
     {
@@ -332,7 +332,7 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function __call($method, $parameters)
     {

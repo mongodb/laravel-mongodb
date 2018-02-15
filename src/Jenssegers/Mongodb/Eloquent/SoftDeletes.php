@@ -7,7 +7,7 @@ trait SoftDeletes
     use \Illuminate\Database\Eloquent\SoftDeletes;
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getQualifiedDeletedAtColumn()
     {

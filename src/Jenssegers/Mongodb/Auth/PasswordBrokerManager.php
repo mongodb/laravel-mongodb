@@ -7,7 +7,7 @@ use Illuminate\Auth\Passwords\PasswordBrokerManager as BasePasswordBrokerManager
 class PasswordBrokerManager extends BasePasswordBrokerManager
 {
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     protected function createTokenRepository(array $config)
     {

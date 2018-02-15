@@ -303,7 +303,7 @@ trait HybridRelations
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function newEloquentBuilder($query)
     {

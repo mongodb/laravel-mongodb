@@ -17,7 +17,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function addConstraints()
     {
@@ -30,7 +30,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function addEagerConstraints(array $models)
     {
@@ -43,7 +43,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     }
 
     /**
-     * {@inheritdoc}
+     * @inheritdoc
      */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
