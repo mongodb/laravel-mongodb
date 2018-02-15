@@ -32,7 +32,7 @@ trait HybridRelations
 
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
-        $instance = new $related();
+        $instance = new $related;
 
         $localKey = $localKey ?: $this->getKeyName();
 
@@ -57,7 +57,7 @@ trait HybridRelations
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
-        $instance = new $related();
+        $instance = new $related;
 
         list($type, $id) = $this->getMorphs($name, $type, $id);
 
@@ -84,7 +84,7 @@ trait HybridRelations
 
         $foreignKey = $foreignKey ?: $this->getForeignKey();
 
-        $instance = new $related();
+        $instance = new $related;
 
         $localKey = $localKey ?: $this->getKeyName();
 
@@ -109,7 +109,7 @@ trait HybridRelations
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
-        $instance = new $related();
+        $instance = new $related;
 
         // Here we will gather up the morph type and ID for the relationship so that we
         // can properly query the intermediate table of a relation. Finally, we will
@@ -156,7 +156,7 @@ trait HybridRelations
             $foreignKey = Str::snake($relation).'_id';
         }
 
-        $instance = new $related();
+        $instance = new $related;
 
         // Once we have the foreign key names, we'll just create a new Eloquent query
         // for the related models and returns the relationship instance which will
@@ -205,7 +205,7 @@ trait HybridRelations
         else {
             $class = $this->getActualClassNameForMorph($class);
 
-            $instance = new $class();
+            $instance = new $class;
 
             return new MorphTo(
                 $instance->newQuery(), $this, $id, $instance->getKeyName(), $type, $name
@@ -260,7 +260,7 @@ trait HybridRelations
         // instances as well as the relationship instances we need for this.
         $foreignKey = $foreignKey ?: $this->getForeignKey().'s';
 
-        $instance = new $related();
+        $instance = new $related;
 
         $otherKey = $otherKey ?: $instance->getForeignKey().'s';
 
