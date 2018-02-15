@@ -201,60 +201,6 @@ class Builder extends EloquentBuilder
     /**
      * @inheritdoc
      */
-    protected function addHasWhere(EloquentBuilder $hasQuery, Relation $relation, $operator, $count, $boolean)
-    {
-        $query = $hasQuery->getQuery();
-
-        // Get the number of related objects for each possible parent.
-        $relations = $query->pluck($relation->getHasCompareKey());
-        $relationCount = array_count_values(array_map(function ($id) {
-            return (string) $id; // Convert Back ObjectIds to Strings
-        }, is_array($relations) ? $relations : $relations->toArray()));
-
-        // Remove unwanted related objects based on the operator and count.
-        $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator) {
-            // If we are comparing to 0, we always need all results.
-            if ($count == 0) {
-                return true;
-            }
-
-            switch ($operator) {
-                case '>=':
-                case '<':
-                    return $counted >= $count;
-                case '>':
-                case '<=':
-                    return $counted > $count;
-                case '=':
-                case '!=':
-                    return $counted == $count;
-            }
-        });
-
-        // If the operator is <, <= or !=, we will use whereNotIn.
-        $not = in_array($operator, ['<', '<=', '!=']);
-
-        // If we are comparing to 0, we need an additional $not flip.
-        if ($count == 0) {
-            $not = !$not;
-        }
-
-        // All related ids.
-        $relatedIds = array_keys($relationCount);
-
-        // Add whereIn to the query.
-        if (count($relationCount) > 0) {
-            $localKey = (explode('.', $relation->getQualifiedParentKeyName()))[1] ?? $this->model->getKeyName();
-
-            return $this->whereIn($localKey, $relatedIds, $boolean, $not);
-        }
-
-        return $this->whereIn($this->model->getKeyName(), $relatedIds, $boolean, $not);
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function chunkById($count, callable $callback, $column = '_id', $alias = null)
     {
         return parent::chunkById($count, $callback, $column, $alias);
