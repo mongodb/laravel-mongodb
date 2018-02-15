@@ -39,7 +39,8 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Set the select clause for the relation query.
      *
-     * @param  array $columns
+     * @param array $columns
+     *
      * @return array
      */
     protected function getSelectColumns(array $columns = ['*'])
@@ -116,7 +117,7 @@ class BelongsToMany extends EloquentBelongsToMany
         $changes = [
             'attached' => [],
             'detached' => [],
-            'updated' => [],
+            'updated'  => [],
         ];
 
         if ($ids instanceof Collection) {
@@ -310,10 +311,12 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Format the sync list so that it is keyed by ID. (Legacy Support)
-     * The original function has been renamed to formatRecordsList since Laravel 5.3
+     * The original function has been renamed to formatRecordsList since Laravel 5.3.
      *
      * @deprecated
-     * @param  array $records
+     *
+     * @param array $records
+     *
      * @return array
      */
     protected function formatSyncList(array $records)
@@ -325,6 +328,7 @@ class BelongsToMany extends EloquentBelongsToMany
             }
             $results[$id] = $attributes;
         }
+
         return $results;
     }
 

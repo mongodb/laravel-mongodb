@@ -61,7 +61,7 @@ class MongoQueue extends DatabaseQueue
      * once. To solve this we use findOneAndUpdate to lock the next jobs
      * record while flagging it as reserved at the same time.
      *
-     * @param  string|null $queue
+     * @param string|null $queue
      *
      * @return \StdClass|null
      */
@@ -69,19 +69,19 @@ class MongoQueue extends DatabaseQueue
     {
         $job = $this->database->getCollection($this->table)->findOneAndUpdate(
             [
-                'queue' => $this->getQueue($queue),
-                'reserved' => 0,
+                'queue'        => $this->getQueue($queue),
+                'reserved'     => 0,
                 'available_at' => ['$lte' => Carbon::now()->getTimestamp()],
             ],
             [
                 '$set' => [
-                    'reserved' => 1,
+                    'reserved'    => 1,
                     'reserved_at' => Carbon::now()->getTimestamp(),
                 ],
             ],
             [
                 'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
-                'sort' => ['available_at' => 1],
+                'sort'           => ['available_at' => 1],
             ]
         );
 
@@ -95,7 +95,8 @@ class MongoQueue extends DatabaseQueue
     /**
      * Release the jobs that have been reserved for too long.
      *
-     * @param  string $queue
+     * @param string $queue
+     *
      * @return void
      */
     protected function releaseJobsThatHaveBeenReservedTooLong($queue)
@@ -125,16 +126,17 @@ class MongoQueue extends DatabaseQueue
     /**
      * Release the given job ID from reservation.
      *
-     * @param  string $id
-     * @param  int $attempts
+     * @param string $id
+     * @param int    $attempts
+     *
      * @return void
      */
     protected function releaseJob($id, $attempts)
     {
         $this->database->table($this->table)->where('_id', $id)->update([
-            'reserved' => 0,
+            'reserved'    => 0,
             'reserved_at' => null,
-            'attempts' => $attempts,
+            'attempts'    => $attempts,
         ]);
     }
 

@@ -20,12 +20,12 @@ class HybridRelationsTest extends TestCase
 
     public function testMysqlRelations()
     {
-        $user = new MysqlUser;
+        $user = new MysqlUser();
         $this->assertInstanceOf('MysqlUser', $user);
         $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
 
         // Mysql User
-        $user->name = "John Doe";
+        $user->name = 'John Doe';
         $user->save();
         $this->assertInternalType('int', $user->id);
 
@@ -50,8 +50,8 @@ class HybridRelationsTest extends TestCase
         $this->assertEquals('John Doe', $role->mysqlUser->name);
 
         // MongoDB User
-        $user = new User;
-        $user->name = "John Doe";
+        $user = new User();
+        $user->name = 'John Doe';
         $user->save();
 
         // MongoDB has many
@@ -77,15 +77,15 @@ class HybridRelationsTest extends TestCase
 
     public function testHybridWhereHas()
     {
-        $user = new MysqlUser;
-        $otherUser = new MysqlUser;
+        $user = new MysqlUser();
+        $otherUser = new MysqlUser();
         $this->assertInstanceOf('MysqlUser', $user);
         $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
         $this->assertInstanceOf('MysqlUser', $otherUser);
         $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $otherUser->getConnection());
 
         //MySql User
-        $user->name = "John Doe";
+        $user->name = 'John Doe';
         $user->id = 2;
         $user->save();
         // Other user
@@ -131,15 +131,15 @@ class HybridRelationsTest extends TestCase
 
     public function testHybridWith()
     {
-        $user = new MysqlUser;
-        $otherUser = new MysqlUser;
+        $user = new MysqlUser();
+        $otherUser = new MysqlUser();
         $this->assertInstanceOf('MysqlUser', $user);
         $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
         $this->assertInstanceOf('MysqlUser', $otherUser);
         $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $otherUser->getConnection());
 
         //MySql User
-        $user->name = "John Doe";
+        $user->name = 'John Doe';
         $user->id = 2;
         $user->save();
         // Other user

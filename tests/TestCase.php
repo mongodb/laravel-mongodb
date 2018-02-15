@@ -5,7 +5,7 @@ class TestCase extends Orchestra\Testbench\TestCase
     /**
      * Get application providers.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param \Illuminate\Foundation\Application $app
      *
      * @return array
      */
@@ -21,7 +21,8 @@ class TestCase extends Orchestra\Testbench\TestCase
     /**
      * Get package providers.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param \Illuminate\Foundation\Application $app
+     *
      * @return array
      */
     protected function getPackageProviders($app)
@@ -29,14 +30,15 @@ class TestCase extends Orchestra\Testbench\TestCase
         return [
             Jenssegers\Mongodb\MongodbServiceProvider::class,
             Jenssegers\Mongodb\Auth\PasswordResetServiceProvider::class,
-            Jenssegers\Mongodb\Validation\ValidationServiceProvider::class
+            Jenssegers\Mongodb\Validation\ValidationServiceProvider::class,
         ];
     }
 
     /**
      * Define environment setup.
      *
-     * @param  Illuminate\Foundation\Application    $app
+     * @param Illuminate\Foundation\Application $app
+     *
      * @return void
      */
     protected function getEnvironmentSetUp($app)

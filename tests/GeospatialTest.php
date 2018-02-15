@@ -11,9 +11,9 @@ class GeospatialTest extends TestCase
         });
 
         Location::create([
-            'name' => 'Picadilly',
+            'name'     => 'Picadilly',
             'location' => [
-                'type' => 'LineString',
+                'type'        => 'LineString',
                 'coordinates' => [
                     [
                         -0.1450383,
@@ -32,9 +32,9 @@ class GeospatialTest extends TestCase
         ]);
 
         Location::create([
-            'name' => 'StJamesPalace',
+            'name'     => 'StJamesPalace',
             'location' => [
-                'type' => 'Point',
+                'type'        => 'Point',
                 'coordinates' => [
                     -0.139827,
                     51.504736,
@@ -52,7 +52,7 @@ class GeospatialTest extends TestCase
     {
         $locations = Location::where('location', 'geoWithin', [
             '$geometry' => [
-                'type' => 'Polygon',
+                'type'        => 'Polygon',
                 'coordinates' => [[
                     [
                         -0.1450383,
@@ -89,7 +89,7 @@ class GeospatialTest extends TestCase
     {
         $locations = Location::where('location', 'geoIntersects', [
             '$geometry' => [
-                'type' => 'LineString',
+                'type'        => 'LineString',
                 'coordinates' => [
                     [
                         -0.144044,
@@ -104,7 +104,7 @@ class GeospatialTest extends TestCase
                         51.5078646,
                     ],
                 ],
-            ]
+            ],
         ]);
 
         $this->assertEquals(1, $locations->count());
@@ -118,7 +118,7 @@ class GeospatialTest extends TestCase
     {
         $locations = Location::where('location', 'near', [
             '$geometry' => [
-                'type' => 'Point',
+                'type'        => 'Point',
                 'coordinates' => [
                     -0.1367563,
                     51.5100913,

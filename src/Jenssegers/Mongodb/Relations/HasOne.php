@@ -50,8 +50,9 @@ class HasOne extends EloquentHasOne
     /**
      * Add the constraints for a relationship count query.
      *
-     * @param  Builder $query
-     * @param  Builder $parent
+     * @param Builder $query
+     * @param Builder $parent
+     *
      * @return Builder
      */
     public function getRelationCountQuery(Builder $query, Builder $parent)
@@ -64,9 +65,10 @@ class HasOne extends EloquentHasOne
     /**
      * Add the constraints for a relationship query.
      *
-     * @param  Builder $query
-     * @param  Builder $parent
-     * @param  array|mixed $columns
+     * @param Builder     $query
+     * @param Builder     $parent
+     * @param array|mixed $columns
+     *
      * @return Builder
      */
     public function getRelationQuery(Builder $query, Builder $parent, $columns = ['*'])

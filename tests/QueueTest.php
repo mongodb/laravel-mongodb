@@ -22,10 +22,10 @@ class QueueTest extends TestCase
         $this->assertEquals(1, $job->isReserved());
         $this->assertEquals(json_encode([
             'displayName' => 'test',
-            'job' => 'test',
-            'maxTries' => null,
-            'timeout' => null,
-            'data' => ['action' => 'QueueJobLifeCycle'],
+            'job'         => 'test',
+            'maxTries'    => null,
+            'timeout'     => null,
+            'data'        => ['action' => 'QueueJobLifeCycle'],
         ]), $job->getRawBody());
 
         // Remove reserved job

@@ -12,11 +12,12 @@ trait QueriesRelationships
     /**
      * Add a relationship count / exists condition to the query.
      *
-     * @param  string $relation
-     * @param  string $operator
-     * @param  int $count
-     * @param  string $boolean
-     * @param  \Closure|null $callback
+     * @param string        $relation
+     * @param string        $operator
+     * @param int           $count
+     * @param string        $boolean
+     * @param \Closure|null $callback
+     *
      * @return \Illuminate\Database\Eloquent\Builder|static
      */
     public function has($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
@@ -58,6 +59,7 @@ trait QueriesRelationships
 
     /**
      * @param $relation
+     *
      * @return bool
      */
     protected function isAcrossConnections($relation)
@@ -66,14 +68,17 @@ trait QueriesRelationships
     }
 
     /**
-     * Compare across databases
+     * Compare across databases.
+     *
      * @param $relation
-     * @param string $operator
-     * @param int $count
-     * @param string $boolean
+     * @param string       $operator
+     * @param int          $count
+     * @param string       $boolean
      * @param Closure|null $callback
-     * @return mixed
+     *
      * @throws \Exception
+     *
+     * @return mixed
      */
     public function addHybridHas($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
     {
@@ -97,10 +102,13 @@ trait QueriesRelationships
     }
 
     /**
-     * Returns key we are constraining this parent model's query with
+     * Returns key we are constraining this parent model's query with.
+     *
      * @param $relation
-     * @return string
+     *
      * @throws \Exception
+     *
+     * @return string
      */
     protected function getRelatedConstraintKey($relation)
     {
@@ -112,11 +120,12 @@ trait QueriesRelationships
             return $relation->getForeignKey();
         }
 
-        throw new \Exception(class_basename($relation) . ' Is Not supported for hybrid query constraints!');
+        throw new \Exception(class_basename($relation).' Is Not supported for hybrid query constraints!');
     }
 
     /**
      * @param $relation
+     *
      * @return string
      */
     protected function getHasCompareKey($relation)
@@ -132,6 +141,7 @@ trait QueriesRelationships
      * @param $relations
      * @param $operator
      * @param $count
+     *
      * @return array
      */
     protected function getConstrainedRelatedIds($relations, $operator, $count)
