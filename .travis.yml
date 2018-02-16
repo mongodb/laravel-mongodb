@@ -2,9 +2,7 @@ sudo: required
 dist: trusty
 language: php
 php:
-  - "7.2"
   - "7.1"
-  - "7.0"
 
 services:
   - docker
@@ -22,7 +20,7 @@ install:
     sudo apt-get -o Dpkg::Options::="--force-confdef" \
      -o Dpkg::Options::="--force-confold" --assume-yes install docker-engine --allow-unauthenticated
   - docker version
-  - mkdir -p build/logs
+
   # Update docker-compose via pip
   - sudo pip install docker-compose
   - docker-compose version
