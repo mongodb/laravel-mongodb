@@ -1,34 +1,32 @@
+sudo: required
+dist: trusty
 language: php
-
 php:
-  - 7
-  - 7.1
-
-matrix:
-  fast_finish: true
-
-sudo: false
-
+  - "7.1"
+  - "7.0"
 services:
-  - mongodb
-  - mysql
+  - docker
 
-addons:
-  apt:
-    sources:
-    - mongodb-3.0-precise
-    packages:
-    - mongodb-org-server
-
-before_script:
-  - pecl install mongodb
-  - mysql -e 'create database unittest;'
-  - travis_retry composer self-update
-  - travis_retry composer install --no-interaction
+install:
+  # Update docker-engine using Ubuntu 'trusty' apt repo
+  - >
+    curl -sSL "https://get.docker.com/gpg" |
+     sudo -E apt-key add -
+  - >
+    echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" |
+     sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update
+  - >
+    sudo apt-get -o Dpkg::Options::="--force-confdef" \
+     -o Dpkg::Options::="--force-confold" --assume-yes install docker-engine --allow-unauthenticated
+  - docker version
+  - mkdir -p build/logs
+  # Update docker-compose via pip
+  - sudo pip install docker-compose
+  - docker-compose version
+  - docker-compose up --build -d
+  - docker ps -a
+  - docker exec -it php_test composer install --prefer-source --no-interaction
 
 script:
-  - mkdir -p build/logs
-  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-
-after_success:
-  - sh -c 'php vendor/bin/coveralls -v'
+  - docker exec -it php_test php ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml

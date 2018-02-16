@@ -3,6 +3,7 @@ version: '3'
 services:
 
     php:
+        container_name: php_test
         build:
             context: .
             dockerfile: docker/Dockerfile
@@ -15,6 +16,7 @@ services:
           - mongodb
 
     mysql:
+        container_name: mysql_test
         image: mysql
         environment:
             MYSQL_ROOT_PASSWORD:
@@ -24,6 +26,7 @@ services:
             driver: none
 
     mongodb:
+        container_name: mongodb_test
         image: mongo
         logging:
             driver: none
