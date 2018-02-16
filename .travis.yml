@@ -26,7 +26,6 @@ install:
   - docker-compose version
   - docker-compose up --build -d
   - docker ps -a
-  - docker exec -it php_test composer install --prefer-source --no-interaction
 
 script:
   - docker-compose up
