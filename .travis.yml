@@ -29,4 +29,4 @@ install:
   - docker exec -it php_test composer install --prefer-source --no-interaction
 
 script:
-  - docker exec -it php_test php ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+  - docker-compose up
