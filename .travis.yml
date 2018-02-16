@@ -31,6 +31,3 @@ install:
 
 script:
   - docker-compose up --exit-code-from php
-
-after_script:
-  - docker-compose down
