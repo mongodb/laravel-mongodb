@@ -99,6 +99,19 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * @inheritdoc
      */
+    public function dropIfExists($collection)
+    {
+        if($this->hasCollection($collection)) {
+
+            return $this->drop($collection);
+        }
+
+        return false;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function drop($collection)
     {
         $blueprint = $this->createBlueprint($collection);
