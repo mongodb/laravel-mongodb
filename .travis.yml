@@ -28,4 +28,4 @@ install:
   - docker ps -a
 
 script:
-  - docker-compose up --exit-code-from php
+  - docker-compose up
