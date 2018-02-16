@@ -1,9 +1,9 @@
 FROM php:7.1-cli
 
 RUN apt-get update && \
-    apt-get install -y autoconf pkg-config libssl-dev && \
-    pecl install mongodb && docker-php-ext-enable mongodb && \
-    docker-php-ext-install -j$(nproc) pdo pdo_mysql
+    apt-get install -y autoconf pkg-config libssl-dev git && \
+    pecl install mongodb git zlib1g-dev && docker-php-ext-enable mongodb && \
+    docker-php-ext-install -j$(nproc) pdo pdo_mysql zip
 
 RUN curl -sS https://getcomposer.org/installer | php \
     && mv composer.phar /usr/local/bin/ \
