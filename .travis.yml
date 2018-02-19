@@ -1,51 +1,32 @@
+sudo: required
+dist: trusty
 language: php
-
 php:
-  - 7.1
-  - 7.2
-
-env:
-  global:
-    - DRIVER_VERSION="stable"
-    - ADAPTER_VERSION="^1.0.0"
-
-sudo: true
+  - "7.2"
+  - "7.1"
 
 services:
-  - mongodb
-  - mysql
+  - docker
 
-matrix:
-  fast_finish: true
-  include:
-    - php: 7.1
-      addons:
-        apt:
-          sources:
-            - sourceline: "deb [arch=amd64] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.4 multiverse"
-              key_url: "https://www.mongodb.org/static/pgp/server-3.4.asc"
-            - "mongodb-upstart"
-          packages: ['mongodb-org-server']
-    - php: 7.2
-      addons:
-        apt:
-          sources:
-            - sourceline: "deb [arch=amd64] https://repo.mongodb.org/apt/ubuntu trusty/mongodb-org/3.4 multiverse"
-              key_url: "https://www.mongodb.org/static/pgp/server-3.4.asc"
-            - "mongodb-upstart"
-          packages: ['mongodb-org-server']
+install:
+  # Update docker-engine using Ubuntu 'trusty' apt repo
+  - >
+    curl -sSL "https://get.docker.com/gpg" |
+     sudo -E apt-key add -
+  - >
+    echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" |
+     sudo tee -a /etc/apt/sources.list
+  - sudo apt-get update
+  - >
+    sudo apt-get -o Dpkg::Options::="--force-confdef" \
+     -o Dpkg::Options::="--force-confold" --assume-yes install docker-engine --allow-unauthenticated
+  - docker version
 
-before_script:
-  - if [[ ${TRAVIS_PHP_VERSION:0:2} == "7." ]]; then pecl install -f mongodb-${DRIVER_VERSION}; fi
-  - if [[ ${TRAVIS_PHP_VERSION:0:2} == "7." ]]; then composer config "platform.ext-mongo" "1.6.16" && composer require "alcaeus/mongo-php-adapter=${ADAPTER_VERSION}"; fi
-  - mysql -e 'create database unittest;'
-  - service mongod start
-  - travis_retry composer self-update
-  - travis_retry composer install --no-interaction
+  # Update docker-compose via pip
+  - sudo pip install docker-compose
+  - docker-compose version
+  - docker-compose up --build -d
+  - docker ps -a
 
 script:
-  - mkdir -p build/logs
-  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-
-after_success:
-  - sh -c 'php vendor/bin/coveralls -v'
+  - docker-compose up --exit-code-from php
