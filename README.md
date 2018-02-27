@@ -298,7 +298,7 @@ This service provider will slightly modify the internal DatabaseReminderReposito
 
 ### Passport
 
-Passport models are strictly `Illuminate\Database\Eloquent\Model` class. One way is to take ownership of the models, or simply include this service provider:
+Laravel Passport models are strictly using the `Illuminate\Database\Eloquent\Model` class. One way to make the package work is to take ownership of the models, or simply include this service provider:
 
 ```php
 'Jenssegers\Mongodb\Auth\PassportServiceProvider',
