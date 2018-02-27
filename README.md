@@ -296,6 +296,16 @@ If you want to use Laravel's native Auth functionality, register this included s
 
 This service provider will slightly modify the internal DatabaseReminderRepository to add support for MongoDB based password reminders. If you don't use password reminders, you don't have to register this service provider and everything else should work just fine.
 
+### Passport
+
+Passport models are strictly `Illuminate\Database\Eloquent\Model` class. One way is to take ownership of the models, or simply include this service provider:
+
+```php
+'Jenssegers\Mongodb\Auth\PassportServiceProvider',
+```
+
+The service provider will give instance of `Jenssegers\Mongodb\Eloquent\Model` whenever a `Model` class is invoked by any of the Passport models.
+
 ### Queues
 
 If you want to use MongoDB as your database backend, change the the driver in `config/queue.php`:
