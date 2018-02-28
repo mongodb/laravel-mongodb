@@ -337,7 +337,7 @@ class Builder extends BaseBuilder
         } // Distinct query
         elseif ($this->distinct) {
             // Return distinct results directly
-            $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
+            $column = $this->columns[0] ?? '_id';
 
             // Execute distinct
             if ($wheres) {
