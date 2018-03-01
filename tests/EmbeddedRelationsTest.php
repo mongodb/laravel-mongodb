@@ -653,6 +653,56 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertEquals('Steve Doe', $user->father->name);
     }
 
+    public function testNestedEmbedsOneDelete()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $father = $user->father()->create(['name' => 'Mark Doe']);
+        $grandfather = $father->father()->create(['name' => 'Steve Doe']);
+        $greatgrandfather = $grandfather->father()->create(['name' => 'Tom Doe']);
+
+        $grandfather->delete();
+
+        $this->assertNull($user->father->father);
+
+        $user = User::where(['name' => 'John Doe'])->first();
+        $this->assertNull($user->father->father);
+    }
+
+    public function testNestedEmbedsManyDelete()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $country = $user->addresses()->create(['country' => 'France']);
+        $city1 = $country->addresses()->create(['city' => 'Paris']);
+        $city2 = $country->addresses()->create(['city' => 'Nice']);
+        $city3 = $country->addresses()->create(['city' => 'Lyon']);
+
+        $city2->delete();
+
+        $this->assertEquals(2, $user->addresses()->first()->addresses()->count());
+        $this->assertEquals('Lyon', $country->addresses()->last()->city);
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals(2, $user->addresses()->first()->addresses()->count());
+        $this->assertEquals('Lyon', $country->addresses()->last()->city);
+    }
+
+    public function testNestedMixedEmbedsDelete()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $father = $user->father()->create(['name' => 'Mark Doe']);
+        $country1 = $father->addresses()->create(['country' => 'France']);
+        $country2 = $father->addresses()->create(['country' => 'Belgium']);
+
+        $country1->delete();
+
+        $this->assertEquals(1, $user->father->addresses()->count());
+        $this->assertEquals('Belgium', $user->father->addresses()->last()->country);
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals(1, $user->father->addresses()->count());
+        $this->assertEquals('Belgium', $user->father->addresses()->last()->country);
+    }
+
     public function testDoubleAssociate()
     {
         $user = User::create(['name' => 'John Doe']);

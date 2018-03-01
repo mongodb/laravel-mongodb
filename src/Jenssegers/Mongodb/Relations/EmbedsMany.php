@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Arr;
 use MongoDB\BSON\ObjectID;
 
 class EmbedsMany extends EmbedsOneOrMany
@@ -79,8 +78,7 @@ class EmbedsMany extends EmbedsOneOrMany
         // Get the correct foreign key value.
         $foreignKey = $this->getForeignKeyValue($model);
 
-        // Use array dot notation for better update behavior.
-        $values = Arr::dot($model->getDirty(), $this->localKey . '.$.');
+        $values = $this->getUpdateValues($model->getDirty(), $this->localKey . '.$.');
 
         // Update document in database.
         $result = $this->getBaseQuery()->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)
