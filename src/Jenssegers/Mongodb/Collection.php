@@ -52,7 +52,7 @@ class Collection
     {
         if (!is_array($parameters)) {
             if ($parameters instanceof ObjectID) {
-                return (string)$parameters;
+                return (string) $parameters;
             }
             return $parameters;
         }
