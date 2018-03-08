@@ -4,7 +4,6 @@ namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use MongoDB\Client;
 
 class Connection extends BaseConnection
@@ -151,7 +150,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Determine if the given configuration array has a UNIX socket value.
+     * Determine if the given configuration array has a dsn string.
      *
      * @param  array  $config
      * @return bool
@@ -162,22 +161,14 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Get the DSN string for a socket configuration.
+     * Get the DSN string form configuration.
      *
      * @param  array  $config
      * @return string
      */
     protected function getDsnString(array $config)
     {
-        $dsn_string = $config['dsn'];
-
-        if (Str::contains($dsn_string, 'mongodb://')) {
-            $dsn_string = Str::replaceFirst('mongodb://', '', $dsn_string);
-        }
-
-        $dsn_string = rawurlencode($dsn_string);
-
-        return "mongodb://{$dsn_string}";
+        return $config['dsn'];
     }
 
     /**
