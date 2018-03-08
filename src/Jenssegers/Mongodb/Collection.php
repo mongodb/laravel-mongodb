@@ -24,7 +24,7 @@ class Collection
     protected $collection;
 
     /**
-     * @param Connection $connection
+     * @param Connection      $connection
      * @param MongoCollection $collection
      */
     public function __construct(Connection $connection, MongoCollection $collection)
@@ -33,21 +33,48 @@ class Collection
         $this->collection = $collection;
     }
 
+    private function parametersToArray($parameters)
+    {
+        if (!is_array($parameters)) {
+            if ($parameters instanceof Arrayable) {
+                return $parameters->toArray();
+            }
+            return $parameters;
+        }
+        $result = [];
+        foreach ($parameters as $k => $v) {
+            $result[$k] = $this->parametersToArray($v);
+        }
+        return $result;
+    }
+
+    private function parametersToLogArray($parameters)
+    {
+        if (!is_array($parameters)) {
+            if ($parameters instanceof ObjectID) {
+                return (string)$parameters;
+            }
+            return $parameters;
+        }
+        $result = [];
+        foreach ($parameters as $k => $v) {
+            $result[$k] = $this->parametersToLogArray($v);
+        }
+        return $result;
+    }
+
     /**
      * Handle dynamic method calls.
      *
      * @param  string $method
-     * @param  array $parameters
+     * @param  array  $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)
     {
         $start = microtime(true);
-        array_walk_recursive($parameters, function (&$item, $key) {
-            if ($item instanceof Arrayable) {
-                $item = $item->toArray();
-            }
-        });
+        $parameters = $this->parametersToArray($parameters);
         $result = call_user_func_array([$this->collection, $method], $parameters);
 
         if ($this->connection->logging()) {
@@ -59,11 +86,7 @@ class Collection
             $query = [];
 
             // Convert the query parameters to a json string.
-            array_walk_recursive($parameters, function (&$item, $key) {
-                if ($item instanceof ObjectID) {
-                    $item = (string) $item;
-                }
-            });
+            $parameters = $this->parametersToLogArray($parameters);
 
             // Convert the query parameters to a json string.
             foreach ($parameters as $parameter) {
