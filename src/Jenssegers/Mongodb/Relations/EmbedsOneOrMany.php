@@ -375,4 +375,22 @@ abstract class EmbedsOneOrMany extends Relation
     {
         return $this->parent->getKey();
     }
+
+    /**
+     * Return update values
+     *
+     * @param $array
+     * @param string $prepend
+     * @return array
+     */
+    public static function getUpdateValues($array, $prepend = '')
+    {
+        $results = [];
+
+        foreach ($array as $key => $value) {
+            $results[$prepend.$key] = $value;
+        }
+
+        return $results;
+    }
 }
