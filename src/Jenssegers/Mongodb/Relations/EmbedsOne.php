@@ -3,7 +3,6 @@
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Arr;
 use MongoDB\BSON\ObjectID;
 
 class EmbedsOne extends EmbedsOneOrMany
@@ -71,8 +70,7 @@ class EmbedsOne extends EmbedsOneOrMany
             return $this->parent->save();
         }
 
-        // Use array dot notation for better update behavior.
-        $values = Arr::dot($model->getDirty(), $this->localKey . '.');
+        $values = $this->getUpdateValues($model->getDirty(), $this->localKey . '.');
 
         $result = $this->getBaseQuery()->update($values);
 
