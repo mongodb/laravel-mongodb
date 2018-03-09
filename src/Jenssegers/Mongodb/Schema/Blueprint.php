@@ -80,19 +80,24 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     {
         $columns = $this->fluent($columns);
 
-        // Columns are passed as a default array.
-        if (is_array($columns) && is_int(key($columns))) {
-            // Transform the columns to the required array format.
-            $transform = [];
-
-            foreach ($columns as $column) {
-                $transform[$column] = $column . '_1';
-            }
-
-            $columns = $transform;
+        $listOfCurrentIndexes = [];
+        foreach ($this->collection->listIndexes() as $currentIndexName) {
+            $listOfCurrentIndexes[] = $currentIndexName['name'];
         }
 
-        foreach ($columns as $column) {
+        //Filter columns with exists indexes
+        $existsIndexes = [];
+        foreach ($columns as $indexName) {
+            if(in_array($indexName, $listOfCurrentIndexes)) {
+                $existsIndexes[] = $indexName;
+            }
+            $postFixedIndexName = $indexName . '_1';
+            if(in_array($postFixedIndexName, $listOfCurrentIndexes)) {
+                $existsIndexes[] = $postFixedIndexName;
+            }
+        }
+
+        foreach ($existsIndexes as $column) {
             $this->collection->dropIndex($column);
         }
 

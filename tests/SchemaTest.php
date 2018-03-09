@@ -106,6 +106,17 @@ class SchemaTest extends TestCase
 
         $index = $this->getIndex('newcollection', 'uniquekey');
         $this->assertEquals(null, $index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->index(
+                'uniquekey',
+                'uniquekey'
+            );
+            $collection->dropIndex(['uniquekey']);
+        });
+
+        $index = $this->getIndex('newcollection', 'uniquekey');
+        $this->assertEquals(null, $index);
     }
 
     public function testBackground()
