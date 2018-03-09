@@ -88,11 +88,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         //Filter columns with exists indexes
         $existsIndexes = [];
         foreach ($columns as $indexName) {
-            if(in_array($indexName, $listOfCurrentIndexes)) {
+            if (in_array($indexName, $listOfCurrentIndexes)) {
                 $existsIndexes[] = $indexName;
             }
             $postFixedIndexName = $indexName . '_1';
-            if(in_array($postFixedIndexName, $listOfCurrentIndexes)) {
+            if (in_array($postFixedIndexName, $listOfCurrentIndexes)) {
                 $existsIndexes[] = $postFixedIndexName;
             }
         }
