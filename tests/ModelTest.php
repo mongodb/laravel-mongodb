@@ -352,7 +352,7 @@ class ModelTest extends TestCase
 
         $user1->unset('note1');
 
-        $this->assertObjectNotHasAttribute('note1', $user1);
+        $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
@@ -361,15 +361,15 @@ class ModelTest extends TestCase
         $user1 = User::find($user1->_id);
         $user2 = User::find($user2->_id);
 
-        $this->assertObjectNotHasAttribute('note1', $user1);
+        $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
 
         $user2->unset(['note1', 'note2']);
 
-        $this->assertObjectNotHasAttribute('note1', $user2);
-        $this->assertObjectNotHasAttribute('note2', $user2);
+        $this->assertFalse(isset($user2->note1));
+        $this->assertFalse(isset($user2->note2));
     }
 
     public function testDates()
