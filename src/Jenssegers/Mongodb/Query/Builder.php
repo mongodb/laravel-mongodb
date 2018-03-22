@@ -123,7 +123,7 @@ class Builder extends BaseBuilder
     ];
 
     /**
-     * Check if we need to return Collections instead of plain arrays (laravel >= 5.3 )
+     * Check if we need to return Collections instead of plain arrays (laravel >= 5.3 or usage outside laravel)
      *
      * @var boolean
      */
@@ -141,7 +141,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Returns true if Laravel or Lumen >= 5.3
+     * Returns true if Laravel or Lumen >= 5.3 or usage outside Laravel
      *
      * @return bool
      */
@@ -152,6 +152,7 @@ class Builder extends BaseBuilder
             $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
             return version_compare($version, '5.3', '>=');
         }
+        return true;
     }
 
     /**
