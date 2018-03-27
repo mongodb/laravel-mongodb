@@ -334,6 +334,18 @@ If you want to use this library with [Sentry](https://cartalyst.com/manual/sentr
 
 The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
 
+Database Testing
+-------
+
+#### Resetting The Database After Each Test
+```php
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+```
+And inside each test classes.
+```php
+use DatabaseMigrations;
+```
+
 Examples
 --------
 
