@@ -4,6 +4,7 @@ namespace Jenssegers\Mongodb\Queue\Failed;
 
 use Carbon\Carbon;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
+use Exception;
 
 class MongoFailedJobProvider extends DatabaseFailedJobProvider
 {
@@ -13,6 +14,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
      * @param  string $connection
      * @param  string $queue
      * @param  string $payload
+	 * @param  Exception $exception
      *
      * @return void
      */
@@ -20,7 +22,12 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     {
         $failed_at = Carbon::now()->getTimestamp();
 
-        $this->getTable()->insert(compact('connection', 'queue', 'payload', 'failed_at', 'exception'));
+		$exception = [
+			'Message: ' 	=> $exception->getMessage(),
+			'Stack Trace: ' => $exception->getTrace()
+		];
+
+		$this->getTable()->insert(compact('connection', 'queue', 'payload', 'failed_at', 'exception'));
     }
 
     /**
