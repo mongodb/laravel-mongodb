@@ -93,7 +93,7 @@ class SchemaTest extends TestCase
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->unique('uniquekey');
-            $collection->dropIndex('uniquekey');
+            $collection->dropIndex('uniquekey_1');
         });
 
         $index = $this->getIndex('newcollection', 'uniquekey');
@@ -106,6 +106,34 @@ class SchemaTest extends TestCase
 
         $index = $this->getIndex('newcollection', 'uniquekey');
         $this->assertEquals(null, $index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->index(['field_a', 'field_b']);
+        });
+
+        $index = $this->getIndex('newcollection', 'field_a_1_field_b_1');
+        $this->assertNotNull($index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->dropIndex(['field_a', 'field_b']);
+        });
+
+        $index = $this->getIndex('newcollection', 'field_a_1_field_b_1');
+        $this->assertFalse($index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->index(['field_a', 'field_b'], 'custom_index_name');
+        });
+
+        $index = $this->getIndex('newcollection', 'custom_index_name');
+        $this->assertNotNull($index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->dropIndex('custom_index_name');
+        });
+
+        $index = $this->getIndex('newcollection', 'custom_index_name');
+        $this->assertFalse($index);
     }
 
     public function testBackground()
