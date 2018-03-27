@@ -16,6 +16,7 @@ Table of contents
 * [Schema](#schema)
 * [Extensions](#extensions)
 * [Troubleshooting](#troubleshooting)
+* [Database Testing](#database-testing)
 * [Examples](#examples)
 
 Installation
