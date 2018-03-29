@@ -14,7 +14,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
      * @param  string $connection
      * @param  string $queue
      * @param  string $payload
-	 * @param  Exception $exception
+     * @param  Exception $exception
      *
      * @return void
      */
@@ -22,12 +22,12 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     {
         $failed_at = Carbon::now()->getTimestamp();
 
-		$exception = [
-			'Message: ' 	=> $exception->getMessage(),
-			'Stack Trace: ' => $exception->getTrace()
-		];
+        $exception = [
+            'Message: ' 	=> $exception->getMessage(),
+            'Stack Trace: ' => $exception->getTrace()
+        ];
 
-		$this->getTable()->insert(compact('connection', 'queue', 'payload', 'failed_at', 'exception'));
+        $this->getTable()->insert(compact('connection', 'queue', 'payload', 'failed_at', 'exception'));
     }
 
     /**
