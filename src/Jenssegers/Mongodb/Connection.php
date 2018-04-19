@@ -190,7 +190,7 @@ class Connection extends BaseConnection
         }
 
         // Check if we want to authenticate against a specific database.
-        $auth_database = isset($config['options']) && !empty($config['options']['database']) ? $config['options']['database'] : null;
+        $auth_database = isset($config['database']) && !empty($config['database']) ? $config['database'] : null;
         return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
     }
 
