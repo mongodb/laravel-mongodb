@@ -195,14 +195,15 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Get database name from DSN string.
+     * Get database name from DSN string, if there is no database in DSN path - returns back $database argument.
      * @param string $dsn
+     * @param $database
      * @return string
      */
     protected function getDatabaseDsn($dsn, $database)
     {
         $dsnDatabase = trim(parse_url($dsn, PHP_URL_PATH), '/');
-        return $dsnDatabase?:$database;
+        return trim($dsnDatabase) ? $dsnDatabase : $database;
     }
 
     /**
