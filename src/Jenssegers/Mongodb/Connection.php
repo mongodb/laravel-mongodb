@@ -41,7 +41,7 @@ class Connection extends BaseConnection
         $this->connection = $this->createConnection($dsn, $config, $options);
 
         // Select database
-        $this->db = $this->connection->selectDatabase($config['database']);
+        $this->db = $this->connection->selectDatabase($this->getDatabaseDsn($dsn));
 
         $this->useDefaultPostProcessor();
 
@@ -191,8 +191,17 @@ class Connection extends BaseConnection
 
         // Check if we want to authenticate against a specific database.
         $auth_database = isset($config['options']) && !empty($config['options']['database']) ? $config['options']['database'] : null;
-
         return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
+    }
+
+    /**
+     * Get database name from DSN string.
+     * @param string $dsn
+     * @return string
+     */
+    protected function getDatabaseDsn($dsn)
+    {
+        return trim(parse_url($dsn, PHP_URL_PATH), '/');
     }
 
     /**
