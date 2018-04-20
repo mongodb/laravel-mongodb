@@ -178,7 +178,7 @@ abstract class Model extends BaseModel
             return;
         }
 
-        if ($this->hasCast($key)) {
+        if ($this->hasCast($key) && !$this->hasSetMutator($key)) {
             $value = $this->castAttribute($key, $value);
         }
 
