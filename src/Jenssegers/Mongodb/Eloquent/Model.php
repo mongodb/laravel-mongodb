@@ -178,6 +178,10 @@ abstract class Model extends BaseModel
             return;
         }
 
+        if ($this->hasCast($key)) {
+            $value = $this->castAttribute($key, $value);
+        }
+
         return parent::setAttribute($key, $value);
     }
 
@@ -431,20 +435,5 @@ abstract class Model extends BaseModel
         }
 
         return parent::__call($method, $parameters);
-    }
-
-    /**
-     * Dynamically cast and set attributes on the model.
-     *
-     * @param  string  $key
-     * @param  mixed  $value
-     * @return void
-     */
-    public function __set($key, $value)
-    {
-        if ($this->hasCast($key)) {
-            $value = $this->castAttribute($key, $value);
-        }
-        parent::__set($key, $value);
     }
 }
