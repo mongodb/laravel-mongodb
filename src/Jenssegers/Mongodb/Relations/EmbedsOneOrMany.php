@@ -393,4 +393,14 @@ abstract class EmbedsOneOrMany extends Relation
 
         return $results;
     }
+
+    /**
+     * Get the foreign key for the relationship.
+     *
+     * @return string
+     */
+    public function getQualifiedForeignKeyName()
+    {
+        return $this->foreignKey;
+    }
 }

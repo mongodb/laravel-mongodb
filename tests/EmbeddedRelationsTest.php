@@ -765,4 +765,23 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertEquals(2, $results->count());
         $this->assertEquals(3, $results->total());
     }
+
+    public function testGetQueueableRelationsEmbedsMany()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'New York']));
+        $user->addresses()->save(new Address(['city' => 'Paris']));
+
+        $this->assertEquals(['addresses'], $user->getQueueableRelations());
+        $this->assertEquals([], $user->addresses->getQueueableRelations());
+    }
+
+    public function testGetQueueableRelationsEmbedsOne()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->father()->save(new User(['name' => 'Mark Doe']));
+
+        $this->assertEquals(['father'], $user->getQueueableRelations());
+        $this->assertEquals([], $user->father->getQueueableRelations());
+    }
 }

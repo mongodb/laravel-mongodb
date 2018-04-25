@@ -11,6 +11,8 @@ use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
+use Illuminate\Contracts\Queue\QueueableEntity;
+use Illuminate\Contracts\Queue\QueueableCollection;
 
 abstract class Model extends BaseModel
 {
@@ -418,6 +420,52 @@ abstract class Model extends BaseModel
     protected function removeTableFromKey($key)
     {
         return $key;
+    }
+
+    /**
+     * Get the queueable relationships for the entity.
+     *
+     * @return array
+     */
+    public function getQueueableRelations()
+    {
+        $relations = [];
+
+        foreach ($this->getRelationsWithoutParent() as $key => $relation) {
+            if (method_exists($this, $key)) {
+                $relations[] = $key;
+            }
+
+            if ($relation instanceof QueueableCollection) {
+                foreach ($relation->getQueueableRelations() as $collectionValue) {
+                    $relations[] = $key.'.'.$collectionValue;
+                }
+            }
+
+            if ($relation instanceof QueueableEntity) {
+                foreach ($relation->getQueueableRelations() as $entityKey => $entityValue) {
+                    $relations[] = $key.'.'.$entityValue;
+                }
+            }
+        }
+
+        return array_unique($relations);
+    }
+
+    /**
+     * Get loaded relations for the instance without parent.
+     *
+     * @return array
+     */
+    protected function getRelationsWithoutParent()
+    {
+        $relations = $this->getRelations();
+
+        if ($parentRelation = $this->getParentRelation()) {
+            unset($relations[$parentRelation->getQualifiedForeignKeyName()]);
+        }
+
+        return $relations;
     }
 
     /**
