@@ -701,4 +701,25 @@ class QueryBuilderTest extends TestCase
             $this->assertEquals(1, count($result['tags']));
         }
     }
+
+    public function testGroupCount()
+    {
+        DB::collection('items')->insert([
+            ['name' => 'knife', 'type' => 'sharp', 'amount' => 34],
+            ['name' => 'fork',  'type' => 'sharp', 'amount' => 20],
+            ['name' => 'spoon', 'type' => 'round', 'amount' => 3],
+            ['name' => 'spoon', 'type' => 'round', 'amount' => 14],
+        ]);
+        
+        $results = DB::collection('items')->where('name', 'spoon')->groupBy('name', function( $group ){
+            // set count
+            $group['count'] = ['$sum' => 1];
+
+            return $group;
+        })->get(['name']);
+
+        foreach ($results as $result) {
+            $this->assertEquals(2, $result['count']);
+        }
+    }
 }
