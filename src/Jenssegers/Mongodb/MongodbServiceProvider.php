@@ -5,7 +5,7 @@ namespace Jenssegers\Mongodb;
 use Illuminate\Support\ServiceProvider;
 use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Queue\MongoConnector;
-
+use Validator;
 class MongodbServiceProvider extends ServiceProvider
 {
     /**
@@ -16,6 +16,10 @@ class MongodbServiceProvider extends ServiceProvider
         Model::setConnectionResolver($this->app['db']);
 
         Model::setEventDispatcher($this->app['events']);
+        
+        Validator::extend('objectid', function ($attribute, $value, $parameters, $validator) {
+            return preg_match('/^[0-9A-Fa-f]{24}_.*/', $value);
+        });
     }
 
     /**
