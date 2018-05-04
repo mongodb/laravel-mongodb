@@ -241,7 +241,7 @@ abstract class Model extends BaseModel
             $current = $current instanceof UTCDateTime ? $this->asDateTime($current) : $current;
             $original = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
 
-            return $current == $original;
+            return $current === $original;
         }
 
         if ($this->hasCast($key)) {
