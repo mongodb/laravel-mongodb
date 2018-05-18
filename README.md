@@ -711,7 +711,7 @@ $users = User::where('birthday', '>', new DateTime('-18 years'))->get();
 
 ### Relations
 
-By default, relationships are not stored as Object Ids. If you need relationships to be stored as ObjectIds, you can specify that they should be by adding them to the $casts array:
+By default, relationships are not stored as ObjectIds. If you need relationships to be stored as ObjectIds, you can specify that they should be by adding them to the $casts array:
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
