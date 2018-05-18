@@ -53,6 +53,13 @@ class Builder extends BaseBuilder
     public $options = [];
 
     /**
+     * An array of properties that need to be cast to their original type
+     *
+     * @var array
+     */
+    public $casts = [];
+
+    /**
      * Indicate if we are executing a pagination query.
      *
      * @var bool
@@ -811,7 +818,7 @@ class Builder extends BaseBuilder
      */
     public function newQuery()
     {
-        return new Builder($this->connection, $this->processor);
+        return (new Builder($this->connection, $this->processor))->casts($this->casts);
     }
 
     /**
@@ -907,7 +914,14 @@ class Builder extends BaseBuilder
             }
 
             // Convert id's.
-            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '._id'))) {
+            if (
+                isset($where['column'])
+                && (
+                    $where['column'] == '_id'
+                    || Str::endsWith($where['column'], '._id')
+                    || $this->isCastableToObjectId($where['column'])
+                )
+            ) {
                 // Multiple values.
                 if (isset($where['values'])) {
                     foreach ($where['values'] as &$value) {
@@ -1145,6 +1159,19 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * Set the casts for the query
+     *
+     * @param array $casts
+     * @return $this
+     */
+    public function casts(array $casts)
+    {
+        $this->casts = $casts;
+
+        return $this;
+    }
+
+    /**
      * @inheritdoc
      */
     public function __call($method, $parameters)
@@ -1154,5 +1181,16 @@ class Builder extends BaseBuilder
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * Should the given field be casted to an ObjectId
+     *
+     * @param string $field
+     * @return boolean
+     */
+    private function isCastableToObjectId($field)
+    {
+        return isset($this->casts[$field]) && $this->casts[$field] === 'objectid';
     }
 }

@@ -165,7 +165,7 @@ abstract class Model extends BaseModel
     public function setAttribute($key, $value)
     {
         // Convert _id to ObjectID.
-        if ($key == '_id' && is_string($value)) {
+        if (is_string($value) && ($key === '_id' || $this->isObjectId($key))) {
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
@@ -411,7 +411,7 @@ abstract class Model extends BaseModel
     {
         $connection = $this->getConnection();
 
-        return new QueryBuilder($connection, $connection->getPostProcessor());
+        return (new QueryBuilder($connection, $connection->getPostProcessor()))->casts($this->casts);
     }
 
     /**
@@ -479,5 +479,32 @@ abstract class Model extends BaseModel
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function castAttribute($key, $value)
+    {
+        if (is_null($value)) {
+            return $value;
+        }
+
+        if ($this->getCastType($key) === 'objectid') {
+            return (string) $value;
+        }
+
+        return parent::castAttribute($key, $value);
+    }
+
+    /**
+     * Is the field an ObjectId
+     *
+     * @param string $key
+     * @return bool
+     */
+    protected function isObjectId($key)
+    {
+        return $this->hasCast($key, ['objectid']);
     }
 }
