@@ -165,10 +165,16 @@ abstract class Model extends BaseModel
     public function setAttribute($key, $value)
     {
         // Convert _id to ObjectID.
-        if (is_string($value) && ($key === '_id' || $this->isObjectId($key))) {
+        if ((is_string($value) && $key === '_id') || $this->isObjectId($key)) {
             $builder = $this->newBaseQueryBuilder();
 
-            $value = $builder->convertKey($value);
+            if (is_array($value)) {
+                foreach ($value as &$val) {
+                    $val = $builder->convertKey($val);
+                }
+            } else {
+                $value = $builder->convertKey($value);
+            }
         } // Support keys in dot notation.
         elseif (Str::contains($key, '.')) {
             if (in_array($key, $this->getDates()) && $value) {
@@ -491,6 +497,14 @@ abstract class Model extends BaseModel
         }
 
         if ($this->getCastType($key) === 'objectid') {
+            if (is_array($value)) {
+                foreach ($value as &$val) {
+                    $val = (string) $val;
+                }
+
+                return $value;
+            }
+
             return (string) $value;
         }
 
