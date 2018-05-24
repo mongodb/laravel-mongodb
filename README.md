@@ -719,12 +719,12 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 class User extends Eloquent {
 
     protected $casts = [
-        'item_id' => 'objectid' // 'objectid' has to be lowercase!
+        'account_id' => 'objectid' // 'objectid' has to be lowercase!
     ];
 
-    public function items()
+    public function account()
     {
-        return $this->hasMany('Item');
+        return $this->belongsTo('Account');
     }
 
 }
