@@ -43,7 +43,7 @@ class QueueTest extends TestCase
         Queue::getDatabase()
             ->table(Config::get('queue.connections.database.table'))
             ->where('_id', $id)
-            ->update(['reserved' => 1, 'reserved_at' => $expiry]);
+            ->update(['reserved_at' => $expiry]);
 
         // Expect an attempted older job in the queue
         $job = Queue::pop('test');

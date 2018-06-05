@@ -13,7 +13,7 @@ class MongoJob extends DatabaseJob
      */
     public function isReserved()
     {
-        return $this->job->reserved;
+        return $this->job->reserved_at != null;
     }
 
     /**
