@@ -299,6 +299,15 @@ abstract class Model extends BaseModel
 
             $this->pushAttributeValues($column, $values, $unique);
 
+            // Convert $casts on push()
+            if($this->isObjectId($column)) {
+                foreach ($values as &$value) {
+                    if(is_string($value)) {
+                        $value = new ObjectId($value);
+                    }
+                }
+            }
+
             return $query->push($column, $values, $unique);
         }
 
