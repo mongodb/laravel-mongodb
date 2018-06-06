@@ -875,6 +875,22 @@ class Builder extends BaseBuilder
             }
         }
 
+        // Convert $casts
+        if($this->isCastableToObjectId($column))
+        {
+            if(is_array($params[2])) {
+                foreach ($params[2] as &$value) {
+                    if(is_string($value)) {
+                        $value = new ObjectId($value);
+                    }
+                }
+            } else {
+                if(is_string($params[2])) {
+                    $params[2] = new ObjectId($params[2]);
+                }
+            }
+        }
+
         return call_user_func_array('parent::where', $params);
     }
 
