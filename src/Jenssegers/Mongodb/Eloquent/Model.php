@@ -97,6 +97,10 @@ abstract class Model extends BaseModel
             return Carbon::createFromTimestamp($value->toDateTime()->getTimestamp());
         }
 
+        if ($value instanceof Carbon) {
+            return $value;
+        }
+
         return parent::asDateTime($value);
     }
 
@@ -160,33 +164,94 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Is the given array an associative array
+     *
+     * @param array $arr
+     *
+     * @return bool
+     */
+    private function isAssoc(array $arr)
+    {
+        // if it's empty, we presume that it's sequential
+        if ([] === $arr) {
+            return false;
+        }
+
+        // if $arr[0] does not exist, it must to be a associative array
+        if (!array_key_exists(0, $arr)) {
+            return true;
+        }
+
+        // strict compare the array keys against a range of the same length
+        return array_keys($arr) !== range(0, count($arr) - 1);
+    }
+
+    /**
+     * Flatten an associative array of attributes to dot notation
+     *
+     * @param string $key
+     * @param        $value
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function flattenAttributes($key, $value)
+    {
+        $values = collect();
+
+        if (is_array($value) && $this->isAssoc($value)) {
+            foreach ($value as $k => $value) {
+                $values = $values->merge($this->flattenAttributes("$key.$k", $value));
+            }
+        } else {
+            $values->put($key, $value);
+        }
+
+        return $values;
+    }
+
+    /**
      * @inheritdoc
      */
     public function setAttribute($key, $value)
     {
-        // Convert _id to ObjectID.
-        if ((is_string($value) && $key === '_id') || $this->isObjectId($key)) {
-            $builder = $this->newBaseQueryBuilder();
+        $values = $this->flattenAttributes($key, $value);
 
-            if (is_array($value)) {
-                foreach ($value as &$val) {
+        $values->each(function ($val, $k) {
+            // Convert to ObjectID.
+            if ($this->isCastableToObjectId($k)) {
+                $builder = $this->newBaseQueryBuilder();
+
+                if (is_array($val)) {
+                    foreach ($val as &$v) {
+                        $v = $builder->convertKey($v);
+                    }
+                } else {
                     $val = $builder->convertKey($val);
                 }
-            } else {
-                $value = $builder->convertKey($value);
+            } // Convert to UTCDateTime
+            else {
+                if (in_array($k, $this->getDates()) && $val) {
+                    if (is_array($val)) {
+                        foreach ($val as &$v) {
+                            $v = $this->fromDateTime($v);
+                        }
+                    } else {
+                        $val = $this->fromDateTime($val);
+                    }
+                }
             }
-        } // Support keys in dot notation.
-        elseif (Str::contains($key, '.')) {
-            if (in_array($key, $this->getDates()) && $value) {
-                $value = $this->fromDateTime($value);
+
+            // Support keys in dot notation.
+            if (Str::contains($k, '.')) {
+                Arr::set($this->attributes, $k, $val);
+
+                return;
             }
 
-            Arr::set($this->attributes, $key, $value);
+            parent::setAttribute($k, $val);
+        });
 
-            return;
-        }
-
-        return parent::setAttribute($key, $value);
+        return $this;
     }
 
     /**
@@ -194,24 +259,48 @@ abstract class Model extends BaseModel
      */
     public function attributesToArray()
     {
+        // Convert dates before parent method call so that all dates have the same format
+        foreach ($this->getDates() as $key) {
+            if (!Arr::has($this->attributes, $key)) {
+                continue;
+            }
+
+            $val = Arr::get($this->attributes, $key);
+
+            if (is_array($val)) {
+                foreach ($val as &$v) {
+                    $v = $this->asDateTime($v)->format('Y-m-d H:i:s.v');
+                }
+            } elseif ($val) {
+                $val = $this->asDateTime($val)->format('Y-m-d H:i:s.v');
+            }
+
+            Arr::set($this->attributes, $key, $val);
+        }
+
         $attributes = parent::attributesToArray();
 
         // Because the original Eloquent never returns objects, we convert
         // MongoDB related objects to a string representation. This kind
         // of mimics the SQL behaviour so that dates are formatted
         // nicely when your models are converted to JSON.
-        foreach ($attributes as $key => &$value) {
-            if ($value instanceof ObjectID) {
-                $value = (string) $value;
+        $this->getObjectIds()->each(function ($key) use (&$attributes) {
+            if (!Arr::has($attributes, $key)) {
+                return;
             }
-        }
 
-        // Convert dot-notation dates.
-        foreach ($this->getDates() as $key) {
-            if (Str::contains($key, '.') && Arr::has($attributes, $key)) {
-                Arr::set($attributes, $key, (string) $this->asDateTime(Arr::get($attributes, $key)));
+            $value = Arr::get($attributes, $key);
+
+            if (is_array($value)) {
+                foreach ($value as &$val) {
+                    $val = (string)$val;
+                }
+            } else {
+                $value = (string)$value;
             }
-        }
+
+            Arr::set($attributes, $key, $value);
+        });
 
         return $attributes;
     }
@@ -222,6 +311,18 @@ abstract class Model extends BaseModel
     public function getCasts()
     {
         return $this->casts;
+    }
+
+    /**
+     * Get a list of the castable ObjectId fields
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    public function getObjectIds()
+    {
+        return collect($this->getCasts())->filter(function ($val) {
+            return 'objectid' === $val;
+        })->keys()->push('_id');
     }
 
     /**
@@ -300,11 +401,18 @@ abstract class Model extends BaseModel
             $this->pushAttributeValues($column, $values, $unique);
 
             // Convert $casts on push()
-            if($this->isObjectId($column)) {
+            if ($this->isCastableToObjectId($column)) {
                 foreach ($values as &$value) {
                     if(is_string($value)) {
                         $value = new ObjectId($value);
                     }
+                }
+            }
+
+            // Convert dates on push()
+            if (in_array($column, $this->getDates())) {
+                foreach ($values as &$value) {
+                    $value = $this->fromDateTime($value);
                 }
             }
 
@@ -353,9 +461,92 @@ abstract class Model extends BaseModel
             $current[] = $value;
         }
 
-        $this->attributes[$column] = $current;
+        // Support for dot notation keys
+        if (Str::contains($column, '.')) {
+            Arr::set($this->attributes, $column, $current);
+        } else {
+            $this->attributes[$column] = $current;
+        }
 
         $this->syncOriginalAttribute($column);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function syncOriginalAttribute($attribute)
+    {
+        // Support for dot notation keys
+        if (Str::contains($attribute, '.')) {
+            $value = Arr::get($this->attributes, $attribute);
+
+            Arr::set($this->original, $attribute, $value);
+        } else {
+            $this->original[$attribute] = $this->attributes[$attribute];
+        }
+
+        return $this;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function addDateAttributesToArray(array $attributes)
+    {
+        foreach ($this->getDates() as $key) {
+            if (!isset($attributes[$key])) {
+                continue;
+            }
+
+            // Support for array of dates
+            if (is_array($attributes[$key])) {
+                foreach ($attributes[$key] as &$value) {
+                    $value = $this->serializeDate($this->asDateTime($value));
+                }
+            } else {
+                $attributes[$key] = $this->serializeDate($this->asDateTime($attributes[$key]));
+            }
+        }
+
+        return $attributes;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getAttributeValue($key)
+    {
+        $value = $this->getAttributeFromArray($key);
+
+        // If the attribute is listed as a date, we will convert it to a DateTime
+        // instance on retrieval, which makes it quite convenient to work with
+        // date fields without having to create a mutator for each property.
+        if (in_array($key, $this->getDates()) && !is_null($value)) {
+            if (is_array($value)) {
+                foreach ($value as &$val) {
+                    $val = $this->asDateTime($val);
+                }
+            } else {
+                $value = $this->asDateTime($value);
+            }
+
+            return $value;
+        }
+
+        //  Also convert objectIds to strings
+        if ($this->getObjectIds()->search($key) !== false && !is_null($value)) {
+            if (is_array($value)) {
+                foreach ($value as &$val) {
+                    $val = (string) $val;
+                }
+            } else {
+                $value = (string) $value;
+            }
+
+            return $value;
+        }
+
+        return parent::getAttributeFromArray($key);
     }
 
     /**
@@ -526,8 +717,8 @@ abstract class Model extends BaseModel
      * @param string $key
      * @return bool
      */
-    protected function isObjectId($key)
+    protected function isCastableToObjectId($key)
     {
-        return $this->hasCast($key, ['objectid']);
+        return '_id' === $key || $this->hasCast($key, ['objectid']);
     }
 }
