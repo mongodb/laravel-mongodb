@@ -293,10 +293,10 @@ abstract class Model extends BaseModel
 
             if (is_array($value)) {
                 foreach ($value as &$val) {
-                    $val = (string)$val;
+                    $val = (string) $val;
                 }
             } else {
-                $value = (string)$value;
+                $value = (string) $value;
             }
 
             Arr::set($attributes, $key, $value);
@@ -403,7 +403,7 @@ abstract class Model extends BaseModel
             // Convert $casts on push()
             if ($this->isCastableToObjectId($column)) {
                 foreach ($values as &$value) {
-                    if(is_string($value)) {
+                    if (is_string($value)) {
                         $value = new ObjectId($value);
                     }
                 }
