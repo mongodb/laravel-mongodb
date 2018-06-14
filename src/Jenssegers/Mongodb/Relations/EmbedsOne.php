@@ -3,10 +3,13 @@
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Concerns\SupportsDefaultModels;
 use MongoDB\BSON\ObjectID;
 
 class EmbedsOne extends EmbedsOneOrMany
 {
+    use SupportsDefaultModels;
+
     /**
      * @inheritdoc
      */
@@ -24,7 +27,7 @@ class EmbedsOne extends EmbedsOneOrMany
      */
     public function getResults()
     {
-        return $this->toModel($this->getEmbedded());
+        return $this->toModel($this->getEmbedded()) ?: $this->getDefaultFor($this->parent);
     }
 
     /**
@@ -135,5 +138,13 @@ class EmbedsOne extends EmbedsOneOrMany
     public function delete()
     {
         return $this->performDelete();
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function newRelatedInstanceFor(Model $parent)
+    {
+        return $this->related->newInstance();
     }
 }
