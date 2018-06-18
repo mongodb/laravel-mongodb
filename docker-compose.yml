@@ -6,11 +6,11 @@ services:
         container_name: php
         build:
             context: .
-            dockerfile: docker/Dockerfile
+            dockerfile: Dockerfile
         volumes:
             - .:/code
         working_dir: /code
-        command: docker/entrypoint.sh
+        command: bash -c "composer install --prefer-source --no-interaction && php ./vendor/bin/phpunit"
         depends_on:
           - mysql
           - mongodb
