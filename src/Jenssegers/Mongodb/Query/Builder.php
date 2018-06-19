@@ -645,6 +645,19 @@ class Builder extends BaseBuilder
      */
     public function pluck($column, $key = null)
     {
+        if ($key == '_id') {
+            $results = new Collection($this->get([$column, $key]));
+
+            // Convert ObjectID's to strings so that lists can do its work.
+            $results = $results->map(function ($item) {
+                $item['_id'] = (string) $item['_id'];
+
+                return $item;
+            });
+
+            return $results->pluck($column, $key)->all();
+        }
+
         $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
 
         // Convert ObjectID's to strings
