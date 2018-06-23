@@ -4,6 +4,7 @@ namespace Jenssegers\Mongodb\Query;
 
 use Closure;
 use DateTime;
+use DateTimeImmutable;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
@@ -919,16 +920,16 @@ class Builder extends BaseBuilder
                 }
             }
 
-            // Convert DateTime values to UTCDateTime.
+            // Convert DateTime and DateTimeImmutable values to UTCDateTime.
             if (isset($where['value'])) {
                 if (is_array($where['value'])) {
                     array_walk_recursive($where['value'], function (&$item, $key) {
-                        if ($item instanceof DateTime) {
+                        if ($item instanceof DateTime || $item instanceof DateTimeImmutable) {
                             $item = new UTCDateTime($item->getTimestamp() * 1000);
                         }
                     });
                 } else {
-                    if ($where['value'] instanceof DateTime) {
+                    if ($where['value'] instanceof DateTime || $where['value'] instanceof DateTimeImmutable) {
                         $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
                     }
                 }

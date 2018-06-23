@@ -535,6 +535,9 @@ class QueryBuilderTest extends TestCase
         $user = DB::collection('users')->where('birthday', '=', new DateTime("1980-01-01 00:00:00"))->first();
         $this->assertEquals('John Doe', $user['name']);
 
+        $user = DB::collection('users')->where('birthday', '=', new DateTimeImmutable("1980-01-01 00:00:00"))->first();
+        $this->assertEquals('John Doe', $user['name']);
+
         $start = new UTCDateTime(1000 * strtotime("1981-01-01 00:00:00"));
         $stop = new UTCDateTime(1000 * strtotime("1982-01-01 00:00:00"));
 
