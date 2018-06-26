@@ -13,7 +13,7 @@ install:
   - sudo pip install docker-compose
   - docker-compose version
   - cat Dockerfile
-  - docker-compose build --build-arg PHP_VERSION="${TRAVIS_PHP_VERSION}"
+  - docker-compose build --build-arg PHP_VERSION=${TRAVIS_PHP_VERSION}
 
 script:
   - docker-compose up --exit-code-from php
