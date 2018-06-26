@@ -11,7 +11,7 @@ services:
         working_dir: /code
         environment:
           PHP_VERSION: ${PHP_VERSION}
-        command: bash -c "composer install --prefer-source --no-interaction && php ./vendor/bin/phpunit"
+        command: bash -c "php ./vendor/bin/phpunit"
         depends_on:
           - mysql
           - mongodb

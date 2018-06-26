@@ -8,6 +8,9 @@ php:
 services:
   - docker
 
+before_script:
+  - docker pull composer
+  - docker run --rm -v $(pwd):/app composer install --prefer-source --no-interaction
 install:
   - docker version
   - sudo pip install docker-compose
