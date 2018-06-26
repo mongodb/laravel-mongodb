@@ -1,4 +1,6 @@
-FROM php:cli
+ARG PHP_VERSION
+
+FROM php:${PHP_VERSION}-cli
 
 RUN pecl install xdebug
 
