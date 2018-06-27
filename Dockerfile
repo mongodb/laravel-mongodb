@@ -1,4 +1,4 @@
-FROM php:7.1-cli
+FROM php:cli
 
 RUN pecl install xdebug
 
