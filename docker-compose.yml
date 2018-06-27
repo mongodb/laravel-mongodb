@@ -10,7 +10,7 @@ services:
             - .:/code
         working_dir: /code
         environment:
-          PHP_VERSION: ${PHP_VERSION}
+          PHP_VERSION: 7.1
         command: bash -c "composer install --prefer-source --no-interaction && php ./vendor/bin/phpunit"
         depends_on:
           - mysql
