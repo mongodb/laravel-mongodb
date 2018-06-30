@@ -701,4 +701,25 @@ class QueryBuilderTest extends TestCase
             $this->assertEquals(1, count($result['tags']));
         }
     }
+
+    public function testHintOptions()
+    {
+        DB::collection('items')->insert([
+            ['name' => 'fork',  'tags' => ['sharp', 'pointy']],
+            ['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']],
+            ['name' => 'spoon', 'tags' => ['round', 'bowl']],
+        ]);
+
+        $results = DB::collection('items')->hint(['$natural' => -1])->get();
+
+        $this->assertArraySubset(['name' => 'spoon'], $results[0]);
+        $this->assertArraySubset(['name' => 'spork'], $results[1]);
+        $this->assertArraySubset(['name' => 'fork'], $results[2]);
+
+        $results = DB::collection('items')->hint(['$natural' => 1])->get();
+
+        $this->assertArraySubset(['name' => 'spoon'], $results[2]);
+        $this->assertArraySubset(['name' => 'spork'], $results[1]);
+        $this->assertArraySubset(['name' => 'fork'], $results[0]);
+    }
 }
