@@ -876,7 +876,7 @@ class Builder extends BaseBuilder
         }
 
         // Convert $casts
-        if ($this->isCastableToObjectId($column)) {
+        if (!($column instanceof \Closure) && $this->isCastableToObjectId($column)) {
             if (is_array($params[2])) {
                 foreach ($params[2] as &$value) {
                     if (is_string($value)) {
