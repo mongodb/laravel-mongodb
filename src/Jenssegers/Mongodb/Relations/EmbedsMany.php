@@ -150,7 +150,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
         // Remove the document from the parent model.
         foreach ($records as $i => $record) {
-            if (in_array($record[$primaryKey], $ids)) {
+            if (in_array($record->$primaryKey, $ids)) {
                 unset($records[$i]);
             }
         }
@@ -265,7 +265,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
         // Replace the document in the parent model.
         foreach ($records as &$record) {
-            if ($record[$primaryKey] == $key) {
+            if ($record->$primaryKey == $key) {
                 $record = $model->getAttributes();
                 break;
             }
