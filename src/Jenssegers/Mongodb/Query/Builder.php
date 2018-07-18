@@ -10,6 +10,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
+use Jenssegers\Mongodb\Helpers\Obj;
 use MongoCollection;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
@@ -330,7 +331,7 @@ class Builder extends BaseBuilder
             }
 
             // Execute aggregation
-            $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
+            $results = Obj::iterator_to_object($this->collection->aggregate($pipeline, $options));
 
             // Return results
             return $this->useCollections ? new Collection($results) : $results;
@@ -392,7 +393,7 @@ class Builder extends BaseBuilder
             $cursor = $this->collection->find($wheres, $options);
 
             // Return results as an array with numeric keys
-            $results = iterator_to_array($cursor, false);
+            $results = Obj::iterator_to_object($cursor);
             return $this->useCollections ? new Collection($results) : $results;
         }
     }
@@ -650,7 +651,7 @@ class Builder extends BaseBuilder
         // Convert ObjectID's to strings
         if ($key == '_id') {
             $results = $results->map(function ($item) {
-                $item['_id'] = (string) $item['_id'];
+                $item->{'_id'} = (string) $item->{'_id'};
                 return $item;
             });
         }
