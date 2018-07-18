@@ -475,10 +475,10 @@ class RelationsTest extends TestCase
         $this->assertEquals(1, $client->addresses->count());
 
         $address = $client->addresses->first();
-        $this->assertEquals('Paris', $address->data['city']);
+        $this->assertEquals('Paris', $address->data->city);
 
         $client = Client::with('addresses')->first();
-        $this->assertEquals('Paris', $client->addresses->first()->data['city']);
+        $this->assertEquals('Paris', $client->addresses->first()->data->city);
     }
 
     public function testDoubleSaveOneToMany()
