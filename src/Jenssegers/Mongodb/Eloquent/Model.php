@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Jenssegers\Mongodb\Helpers\Obj;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -134,7 +135,7 @@ abstract class Model extends BaseModel
         }
 
         // Dot notation support.
-        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
+        if (Str::contains($key, '.') && Obj::has($this->attributes, explode('.', $key))) {
             return $this->getAttributeValue($key);
         }
 
@@ -153,7 +154,7 @@ abstract class Model extends BaseModel
     {
         // Support keys in dot notation.
         if (Str::contains($key, '.')) {
-            return Arr::get($this->attributes, $key);
+            return Obj::get($this->attributes, explode('.', $key));
         }
 
         return parent::getAttributeFromArray($key);
