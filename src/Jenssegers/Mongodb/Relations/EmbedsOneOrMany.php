@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Eloquent\Model;
+use Jenssegers\Mongodb\Helpers\Obj;
 
 abstract class EmbedsOneOrMany extends Relation
 {
@@ -212,9 +213,28 @@ abstract class EmbedsOneOrMany extends Relation
         $attributes = $this->parent->getAttributes();
 
         // Get embedded models form parent attributes.
-        $embedded = isset($attributes[$this->localKey]) ? (array) $attributes[$this->localKey] : null;
+        if (isset($attributes[$this->localKey])) {
 
-        return $embedded;
+            $embedded = $attributes[$this->localKey];
+
+            if (is_object($embedded)) {
+
+                return $embedded;
+            }
+
+            if (empty($embedded) || array_keys($embedded) === range(0, count($embedded) - 1)) {
+
+                $embedded = Obj::iterator_to_object($embedded);
+
+            } else {
+
+                $embedded = Obj::array_to_object($embedded);
+            }
+
+            return $embedded;
+        }
+
+        return null;
     }
 
     /**
