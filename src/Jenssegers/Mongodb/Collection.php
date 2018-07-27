@@ -39,15 +39,13 @@ class Collection
     {
         $start = microtime(true);
 
-        if($method == 'aggregate')
-        {
+        if($method == 'aggregate'){
             $parameters[] = ['cursor' =>(object) []];
         }
         
         $result = call_user_func_array([$this->collection, $method], $parameters);
         
-        if($method == 'aggregate')
-        {
+        if($method == 'aggregate'){
             $result['result'] = $result['cursor']['firstBatch'];
         }
 
