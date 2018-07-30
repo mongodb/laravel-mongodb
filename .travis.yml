@@ -12,9 +12,8 @@ install:
   - docker version
   - sudo pip install docker-compose
   - docker-compose version
-  - sed -i -e "s/php:cli/php:${TRAVIS_PHP_VERSION}-cli/g" Dockerfile
   - cat Dockerfile
-  - docker-compose build
+  - docker-compose build --build-arg PHP_VERSION=${TRAVIS_PHP_VERSION}
 
 script:
   - docker-compose up --exit-code-from php
