@@ -40,6 +40,71 @@ abstract class Model extends BaseModel
     protected $parentRelation;
 
     /**
+     * Fill the model with an array of attributes.
+     *
+     * @param  array  $attributes
+     * @return $this
+     *
+     * @throws \Illuminate\Database\Eloquent\MassAssignmentException
+     */
+    public function fill(array $attributes)
+    {
+        $filter = $this->getFillable();
+        $this->filterAttributesRecursive($filter, $attributes, $this->output);
+        $this->setRawAttributes($this->output);
+        return $this;
+    }
+
+    /**
+     * Filter the Attributes given in the request with the $fillable variable from the model,
+     * and only pass on the ones provided in the model.
+     *
+     * @param  array  $filter
+     * @param  array  $attributes
+     * @param  array  &$output
+     *
+     * @throws \Illuminate\Database\Eloquent\MassAssignmentException
+     */
+    private function filterAttributesRecursive($filter, $attributes, &$output)
+    {
+        $totallyGuarded = $this->totallyGuarded();
+        foreach ($attributes as $key => $value) {
+            $key = $this->removeTableFromKey($key);
+
+            // The developers may choose to place some attributes in the "fillable" array
+            // which means only those attributes may be set through mass assignment to
+            // the model, and all others will just get ignored for security reasons.
+            if ($this->isInArray($filter, $key)) {
+                if(is_array($value)) {
+                    $this->filterAttributesRecursive($filter[$key], $value, $output[$key]);
+                } else {
+                    $output[$key] = $value;
+                }
+            } elseif ($totallyGuarded) {
+                throw new MassAssignmentException(sprintf(
+                    'Add [%s] to fillable property to allow mass assignment on [%s].',
+                    $key, get_class($this)
+                ));
+            }
+        }
+    }
+
+    private function isInArray($array, $key) {
+        foreach($array as $k=>$v) {
+            if(is_array($v)) {
+                if($key === $k) {
+                    return true;
+                }
+            } else {
+                if($key === $v) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
      * Custom accessor for the model's id.
      *
      * @param  mixed $value
