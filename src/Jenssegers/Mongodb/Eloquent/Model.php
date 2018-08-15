@@ -41,6 +41,8 @@ abstract class Model extends BaseModel
 
     /**
      * Fill the model with an array of attributes.
+     * This method overrides the `fill` method in the Laravel base class for ekoquent models.
+     * The exception gets thrown in the `filterAttributesRecursive` method.
      *
      * @param  array  $attributes
      * @return $this
@@ -89,6 +91,14 @@ abstract class Model extends BaseModel
         }
     }
 
+    /**
+    *  Check wether an element is in the array or not.
+    *  This method flips the key/value pair, if the value is an array.
+    *
+    * @param array $array
+    * @param string $key
+    *
+    */
     private function isInArray($array, $key) {
         foreach($array as $k=>$v) {
             if(is_array($v)) {
