@@ -152,6 +152,8 @@ class Builder extends BaseBuilder
             $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
             return version_compare($version, '5.3', '>=');
         }
+
+        return true;
     }
 
     /**
