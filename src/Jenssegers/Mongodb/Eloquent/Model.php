@@ -77,7 +77,7 @@ abstract class Model extends BaseModel
             // which means only those attributes may be set through mass assignment to
             // the model, and all others will just get ignored for security reasons.
             if ($this->isInArray($filter, $key)) {
-                if(is_array($value)) {
+                if (is_array($value)) {
                     $this->filterAttributesRecursive($filter[$key], $value, $output[$key]);
                 } else {
                     $output[$key] = $value;
@@ -92,21 +92,22 @@ abstract class Model extends BaseModel
     }
 
     /**
-    *  Check wether an element is in the array or not.
-    *  This method flips the key/value pair, if the value is an array.
-    *
-    * @param array $array
-    * @param string $key
-    *
-    */
-    private function isInArray($array, $key) {
-        foreach($array as $k=>$v) {
-            if(is_array($v)) {
-                if($key === $k) {
+     *  Check wether an element is in the array or not.
+     *  This method flips the key/value pair, if the value is an array.
+     *
+     * @param array $array
+     * @param string $key
+     *
+     */
+    private function isInArray($array, $key)
+    {
+        foreach ($array as $k=>$v) {
+            if (is_array($v)) {
+                if ($key === $k) {
                     return true;
                 }
             } else {
-                if($key === $v) {
+                if ($key === $v) {
                     return true;
                 }
             }
