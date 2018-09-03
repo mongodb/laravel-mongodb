@@ -995,7 +995,7 @@ class Builder extends BaseBuilder
             $operator = '=';
 
             // Convert to regular expression.
-            $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
+            $regex = preg_replace('#(^|[^\\\])%#', '$1', preg_quote($value));
 
             // Convert like to regular expression.
             if (!Str::startsWith($value, '%')) {
