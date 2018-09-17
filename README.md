@@ -480,7 +480,7 @@ User::where('name', 'Jaques')->decrement('weight', 50);
 The number of updated objects is returned:
 
 ```php
-$count = User->increment('age');
+$count = User::increment('age');
 ```
 
 You may also specify additional columns to update:
