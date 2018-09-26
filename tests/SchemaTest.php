@@ -14,6 +14,13 @@ class SchemaTest extends TestCase
         $this->assertTrue(Schema::hasTable('newcollection'));
     }
 
+    public function testCreateWithOptions()
+    {
+        Schema::create('newcollection_two', ['capped' => true]);
+        $this->assertTrue(Schema::hasCollection('newcollection_two'));
+        $this->assertTrue(Schema::hasTable('newcollection_two'));
+    }
+
     public function testCreateWithCallback()
     {
         $instance = $this;
