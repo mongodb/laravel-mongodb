@@ -12,9 +12,9 @@
     "license" : "MIT",
     "require": {
         "illuminate/support": "5.6.*",
-        "illuminate/container": "5.6",
+        "illuminate/container": "5.6.*",
         "illuminate/database": "5.6.*",
-        "illuminate/events": "5.6",
+        "illuminate/events": "5.6.*",
         "mongodb/mongodb": "^1.0.0"
     },
     "require-dev": {
