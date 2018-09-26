@@ -16,13 +16,15 @@ services:
 
     mysql:
         container_name: mysql
-        image: mysql
+        image: mysql:5.7
         environment:
             MYSQL_ROOT_PASSWORD:
             MYSQL_DATABASE: unittest
             MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        command: "--explicit_defaults_for_timestamp"
         logging:
-            driver: none
+          driver: none
+
 
     mongodb:
         container_name: mongodb
