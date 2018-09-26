@@ -85,11 +85,11 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * @inheritdoc
      */
-    public function create($collection, Closure $callback = null)
+    public function create($collection, Closure $callback = null, array $options = [])
     {
         $blueprint = $this->createBlueprint($collection);
 
-        $blueprint->create();
+        $blueprint->create($options);
 
         if ($callback) {
             $callback($blueprint);

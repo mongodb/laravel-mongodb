@@ -16,4 +16,4 @@ install:
   - docker-compose build --build-arg PHP_VERSION=${TRAVIS_PHP_VERSION}
 
 script:
-  - docker-compose up --exit-code-from php
+  - travis_wait 20 docker-compose up --exit-code-from php
