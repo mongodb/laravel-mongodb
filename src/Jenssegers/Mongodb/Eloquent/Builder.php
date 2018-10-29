@@ -232,4 +232,22 @@ class Builder extends EloquentBuilder
 
         return $results;
     }
+
+    /**
+     * Override lists method
+     *
+     * @param string $column
+     * @param string $key
+     * 
+     * @return \Illuminate\Support\Collection
+     **/
+    public function lists($column, $key = null)
+    {
+        if ($key === "_id") {
+        
+            return parent::get([$column, $key])->lists($column, $key);
+        }
+
+        return parent::lists($column, $key);
+    }
 }
