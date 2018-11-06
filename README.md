@@ -298,7 +298,7 @@ This service provider will slightly modify the internal DatabaseReminderReposito
 
 ### Queues
 
-If you want to use MongoDB as your database backend, change the the driver in `config/queue.php`:
+If you want to use MongoDB as your database backend, change the driver in `config/queue.php`:
 
 ```php
 'connections' => [
@@ -689,7 +689,7 @@ For more information about model manipulation, check http://laravel.com/docs/elo
 
 ### Dates
 
-Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields you will need to manually specify them as described here: http://laravel.com/docs/eloquent#date-mutators
+Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields, you will need to manually specify them as described here: http://laravel.com/docs/eloquent#date-mutators
 
 Example:
 
@@ -787,7 +787,7 @@ class User extends Eloquent {
 }
 ```
 
-You access the embedded models through the dynamic property:
+You can access the embedded models through the dynamic property:
 
 ```php
 $books = User::first()->books;
@@ -849,7 +849,7 @@ Embedded relations will return a Collection of embedded items instead of a query
 
 ### EmbedsOne Relations
 
-The embedsOne relation is similar to the EmbedsMany relation, but only embeds a single model.
+The embedsOne relation is similar to the embedsMany relation, but only embeds a single model.
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
@@ -864,7 +864,7 @@ class Book extends Eloquent {
 }
 ```
 
-You access the embedded models through the dynamic property:
+You can access the embedded models through the dynamic property:
 
 ```php
 $author = Book::first()->author;
@@ -1014,7 +1014,7 @@ DB::collection('items')->paginate($limit, $projections);
 
 **Push**
 
-Add an items to an array.
+Add items to an array.
 
 ```php
 DB::collection('users')->where('name', 'John')->push('items', 'boots');
