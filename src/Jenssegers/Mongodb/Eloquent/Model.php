@@ -31,6 +31,13 @@ abstract class Model extends BaseModel
      * @var string
      */
     protected $primaryKey = '_id';
+    
+    /**
+     * The primary key type.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
 
     /**
      * The parent relation instance.
