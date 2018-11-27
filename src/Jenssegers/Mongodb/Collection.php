@@ -23,7 +23,7 @@ class Collection
     protected $collection;
 
     /**
-     * @param Connection $connection
+     * @param Connection      $connection
      * @param MongoCollection $collection
      */
     public function __construct(Connection $connection, MongoCollection $collection)
@@ -36,42 +36,45 @@ class Collection
      * Handle dynamic method calls.
      *
      * @param  string $method
-     * @param  array $parameters
+     * @param  array  $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)
     {
-        $start = microtime(true);
+        $start  = microtime(true);
         $result = call_user_func_array([$this->collection, $method], $parameters);
 
-        if ($this->connection->logging()) {
-            // Once we have run the query we will calculate the time that it took to run and
-            // then log the query, bindings, and execution time so we will report them on
-            // the event that the developer needs them. We'll log time in milliseconds.
-            $time = $this->connection->getElapsedTime($start);
+        // Once we have run the query we will calculate the time that it took to run and
+        // then log the query, bindings, and execution time so we will report them on
+        // the event that the developer needs them. We'll log time in milliseconds.
+        $time = $this->connection->getElapsedTime($start);
 
-            $query = [];
+        $query = [];
 
-            // Convert the query parameters to a json string.
-            array_walk_recursive($parameters, function (&$item, $key) {
-                if ($item instanceof ObjectID) {
-                    $item = (string) $item;
-                }
-            });
-
-            // Convert the query parameters to a json string.
-            foreach ($parameters as $parameter) {
-                try {
-                    $query[] = json_encode($parameter);
-                } catch (Exception $e) {
-                    $query[] = '{...}';
-                }
+        // Convert the query parameters to a json string.
+        array_walk_recursive($parameters, function (&$item, $key) {
+            if ($item instanceof ObjectID) {
+                $item = (string)$item;
             }
+        });
 
-            $queryString = $this->collection->getCollectionName() . '.' . $method . '(' . implode(',', $query) . ')';
-
-            $this->connection->logQuery($queryString, [], $time);
+        // Convert the query parameters to a json string.
+        foreach ($parameters as $parameter) {
+            try {
+                $query[] = json_encode($parameter);
+            } catch (Exception $e) {
+                $query[] = '{...}';
+            }
         }
+
+        $implodeQuery = implode(',', $query);
+
+        $collection   = $this->collection->getCollectionName();
+
+        $queryString  = "{$collection}.{$method}({$implodeQuery})";
+
+        $this->connection->logQuery($queryString, [], $time);
 
         return $result;
     }
