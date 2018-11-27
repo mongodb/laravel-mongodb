@@ -26,6 +26,13 @@ abstract class Model extends BaseModel
     protected $collection;
 
     /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+    
+    /**
      * The primary key for the model.
      *
      * @var string
