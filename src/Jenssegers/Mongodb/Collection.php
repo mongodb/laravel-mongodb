@@ -55,7 +55,7 @@ class Collection
         // Convert the query parameters to a json string.
         array_walk_recursive($parameters, function (&$item, $key) {
             if ($item instanceof ObjectID) {
-                $item = (string)$item;
+                $item = (string) $item;
             }
         });
 
@@ -70,9 +70,9 @@ class Collection
 
         $implodeQuery = implode(',', $query);
 
-        $collection   = $this->collection->getCollectionName();
+        $collection = $this->collection->getCollectionName();
 
-        $queryString  = "{$collection}.{$method}({$implodeQuery})";
+        $queryString = "{$collection}.{$method}({$implodeQuery})";
 
         $this->connection->logQuery($queryString, [], $time);
 
