@@ -40,6 +40,13 @@ abstract class Model extends BaseModel
     protected $keyType = 'string';
 
     /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = false;
+    
+    /**
      * The parent relation instance.
      *
      * @var Relation
