@@ -4,6 +4,7 @@ namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class HasMany extends EloquentHasMany
 {
@@ -76,5 +77,17 @@ class HasMany extends EloquentHasMany
         $key = $this->wrap($this->getQualifiedParentKeyName());
 
         return $query->where($this->getHasCompareKey(), 'exists', true);
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
+     * @return string
+     */
+    protected function whereInMethod(EloquentModel $model, $key)
+    {
+        return 'whereIn';
     }
 }
