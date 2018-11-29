@@ -3,6 +3,7 @@
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class MorphTo extends EloquentMorphTo
 {
@@ -41,5 +42,17 @@ class MorphTo extends EloquentMorphTo
     public function getOwnerKey()
     {
         return property_exists($this, 'ownerKey') ? $this->ownerKey : $this->otherKey;
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
+     * @return string
+     */
+    protected function whereInMethod(EloquentModel $model, $key)
+    {
+        return 'whereIn';
     }
 }
