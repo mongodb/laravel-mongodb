@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
+use function MongoDB\BSON\fromPHP;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Queue\QueueableCollection;
+use MongoDB\Driver\Exception\UnexpectedValueException;
 
 abstract class Model extends BaseModel
 {
@@ -244,20 +246,11 @@ abstract class Model extends BaseModel
             return false;
         }
 
-        if ($this->isDateAttribute($key)) {
-            $current = $current instanceof UTCDateTime ? $this->asDateTime($current) : $current;
-            $original = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
-
-            return $current == $original;
+        try {
+            return fromPHP([$current]) === fromPHP([$original]);
+        } catch (UnexpectedValueException $e) {
+            return false;
         }
-
-        if ($this->hasCast($key)) {
-            return $this->castAttribute($key, $current) ===
-                $this->castAttribute($key, $original);
-        }
-
-        return is_numeric($current) && is_numeric($original)
-            && strcmp((string) $current, (string) $original) === 0;
     }
 
     /**

@@ -528,11 +528,50 @@ class ModelTest extends TestCase
     public function testGetDirtyDates()
     {
         $user = new User();
-        $user->setRawAttributes(['name' => 'John Doe', 'birthday' => new DateTime('19 august 1989')], true);
+        $user->name = 'John Doe';
+        $user->birthday = new DateTime('19 august 1989');
+        $user->syncOriginal();
         $this->assertEmpty($user->getDirty());
 
         $user->birthday = new DateTime('19 august 1989');
         $this->assertEmpty($user->getDirty());
+    }
+
+    public function testGetDirty()
+    {
+        $ids = [
+            new ObjectId(),
+            new ObjectId(),
+        ];
+        $item = new Item([
+            'numbers' => [1, 2, 3],
+            'number' => 4,
+            'ids' => $ids,
+            'nullable' => 'value',
+            'fix' => 'fix',
+        ]);
+        $item->date = $item->fromDateTime(new DateTime('19 august 1989'));
+        $item->dates = [$item->fromDateTime(new DateTime('19 august 1989'))];
+        $item->save();
+
+        $item = $item->fresh();
+
+        $item->numbers = [1, 2, '3'];
+        $item->nullable = null;
+        $item->new_val = 'new';
+        $item->number = '4';
+        $item->ids = [
+            new ObjectId((string) $ids[0]),
+            new ObjectId((string) $ids[1]),
+        ];
+        $item->date = $item->fromDateTime(new DateTime('19 august 1989'));
+        $item->dates = [$item->fromDateTime(new DateTime('19 august 1989'))];
+        $this->assertEquals([
+            'numbers' => [1, 2, '3'],
+            'number' => '4',
+            'nullable' => null,
+            'new_val' => 'new',
+        ], $item->getDirty());
     }
 
     public function testChunkById()
