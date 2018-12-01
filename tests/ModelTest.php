@@ -3,6 +3,7 @@
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Jenssegers\Mongodb\Eloquent\Model;
+use Jenssegers\Mongodb\Query\UnsetField;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 
@@ -345,14 +346,14 @@ class ModelTest extends TestCase
         $this->assertInternalType('string', $array['_id']);
     }
 
-    public function testUnset()
+    public function testDrop()
     {
         $user1 = User::create(['name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
         $user2 = User::create(['name' => 'Jane Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
 
-        $user1->unset('note1');
+        $user1->drop('note1');
 
-        $this->assertObjectNotHasAttribute('note1', $user1);
+        $this->assertFalse(array_key_exists('note1', $user1->getAttributes()));
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
@@ -361,15 +362,57 @@ class ModelTest extends TestCase
         $user1 = User::find($user1->_id);
         $user2 = User::find($user2->_id);
 
-        $this->assertObjectNotHasAttribute('note1', $user1);
+        $this->assertFalse(array_key_exists('note1', $user1->getAttributes()));
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
 
+        $user2->drop(['note1', 'note2']);
+
+        $this->assertFalse(array_key_exists('note1', $user2->getAttributes()));
+        $this->assertFalse(array_key_exists('note2', $user2->getAttributes()));
+    }
+
+    public function testUnset()
+    {
+        $user1 = User::create(['name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
+        $user2 = User::create(['name' => 'Jane Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
+
+        $user1->unset('note1');
+
+        $this->assertTrue(array_key_exists('note1', $user1->getOriginal()));
+        $this->assertInstanceOf(UnsetField::class, $user1->note1);
+
+        $user1->save();
+
+        $this->assertFalse(array_key_exists('note1', $user1->getOriginal()));
+        $this->assertFalse(array_key_exists('note1', $user1->getAttributes()));
+
+        // Re-fetch to be sure
+        $user1 = User::find($user1->_id);
+
+        $this->assertFalse(array_key_exists('note1', $user1->getOriginal()));
+        $this->assertFalse(array_key_exists('note1', $user1->getAttributes()));
+
         $user2->unset(['note1', 'note2']);
 
-        $this->assertObjectNotHasAttribute('note1', $user2);
-        $this->assertObjectNotHasAttribute('note2', $user2);
+        $this->assertTrue(array_key_exists('note1', $user2->getOriginal()));
+        $this->assertTrue(array_key_exists('note2', $user2->getOriginal()));
+        $this->assertFalse(array_key_exists('note3', $user2->getAttributes()));
+
+        $this->assertInstanceOf(UnsetField::class, $user2->note1);
+        $this->assertInstanceOf(UnsetField::class, $user2->note2);
+        $this->assertFalse(array_key_exists('note3', $user2->getAttributes()));
+
+        $user2->note3 = 'GHI';
+        $user2->save();
+
+        $user2 = User::find($user2->_id);
+        $this->assertFalse(array_key_exists('note1', $user2->getAttributes()));
+        $this->assertFalse(array_key_exists('note2', $user2->getAttributes()));
+        $this->assertFalse(array_key_exists('note1', $user2->getOriginal()));
+        $this->assertFalse(array_key_exists('note2', $user2->getOriginal()));
+        $this->assertEquals('GHI', $user2->note3);
     }
 
     public function testDates()

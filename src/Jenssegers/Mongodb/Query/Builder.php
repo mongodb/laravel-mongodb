@@ -585,7 +585,18 @@ class Builder extends BaseBuilder
     {
         // Use $set as default operator.
         if (!Str::startsWith(key($values), '$')) {
-            $values = ['$set' => $values];
+            $changes = [
+                '$set' => [],
+                '$unset' => [],
+            ];
+            foreach ($values as $key => $value) {
+                if ($value instanceof UnsetField) {
+                    $changes['$unset'][$key] = true;
+                } else {
+                    $changes['$set'][$key] = $value;
+                }
+            }
+            $values = array_filter($changes);
         }
 
         return $this->performUpdate($values, $options);

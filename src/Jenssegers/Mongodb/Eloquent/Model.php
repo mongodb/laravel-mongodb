@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
+use Jenssegers\Mongodb\Query\UnsetField;
 use function MongoDB\BSON\fromPHP;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -246,6 +247,10 @@ abstract class Model extends BaseModel
             return false;
         }
 
+        if ($current instanceof UnsetField) {
+            return false;
+        }
+
         try {
             return fromPHP([$current]) === fromPHP([$original]);
         } catch (UnexpectedValueException $e) {
@@ -270,6 +275,38 @@ abstract class Model extends BaseModel
 
         // Perform unset only on current document
         return $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
+    }
+
+    /**
+     * Mark columns to be unset.
+     *
+     * @param string|string[] $columns
+     *
+     * @return $this
+     */
+    public function unset($columns)
+    {
+        $columns = Arr::wrap($columns);
+
+        // Mark attribute as unset
+        foreach ($columns as $column) {
+            $this->attributes[$column] = new UnsetField();
+        }
+
+        return $this;
+    }
+
+    public function syncChanges()
+    {
+        $unset = array_filter($this->attributes, function ($value) {
+            return $value instanceof UnsetField;
+        });
+
+        foreach ($unset as $key => $value) {
+            unset($this->attributes[$key], $this->original[$key]);
+        }
+
+        parent::syncChanges();
     }
 
     /**
@@ -466,18 +503,5 @@ abstract class Model extends BaseModel
         }
 
         return $relations;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __call($method, $parameters)
-    {
-        // Unset method
-        if ($method == 'unset') {
-            return call_user_func_array([$this, 'drop'], $parameters);
-        }
-
-        return parent::__call($method, $parameters);
     }
 }
