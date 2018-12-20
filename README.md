@@ -61,8 +61,10 @@ The service provider will register a mongodb database extension with the origina
 For usage outside Laravel, check out the [Capsule manager](https://github.com/illuminate/database/blob/master/README.md) and add:
 
 ```php
-$capsule->getDatabaseManager()->extend('mongodb', function($config)
+$capsule->getDatabaseManager()->extend('mongodb', function($config, $name)
 {
+    $config['name'] = $name;
+
     return new Jenssegers\Mongodb\Connection($config);
 });
 ```
