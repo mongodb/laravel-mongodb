@@ -235,7 +235,7 @@ class Builder extends BaseBuilder
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups || $this->aggregate || $this->paginating) {
+        if ($this->groups || $this->aggregate) {
             $group = [];
             $unwinds = [];
 
@@ -279,15 +279,7 @@ class Builder extends BaseBuilder
                     }
                 }
             }
-
-            // When using pagination, we limit the number of returned columns
-            // by adding a projection.
-            if ($this->paginating) {
-                foreach ($this->columns as $column) {
-                    $this->projections[$column] = 1;
-                }
-            }
-
+            
             // The _id field is mandatory when using grouping.
             if ($group && empty($group['_id'])) {
                 $group['_id'] = null;
