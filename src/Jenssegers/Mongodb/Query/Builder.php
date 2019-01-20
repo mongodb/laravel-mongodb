@@ -270,11 +270,30 @@ class Builder extends BaseBuilder
                         $column = implode('.', $splitColumns);
                     }
 
-                    // Translate count into sum.
-                    if ($function == 'count') {
+                    // Null coalense only > 7.2
+
+                    $aggregations = blank($this->aggregate['collumns']) ? [] : $this->aggregate['collumns'];
+
+                    if (in_array('*', $aggregations) && $function == 'count') {
+                        // When ORM is paginating, count doesnt need a aggregation, just a cursor operation
+                        // elseif added to use this only in pagination
+                        // https://docs.mongodb.com/manual/reference/method/cursor.count/
+                        // count method returns int
+
+                        $totalResults = $this->collection->count($wheres);
+                        // Preserving format expected by framework
+                        $results = [
+                            [
+                                "_id"       => null,
+                                "aggregate" => $totalResults
+                            ]
+                        ];
+                        return $this->useCollections ? new Collection($results) : $results;
+                    } elseif ($function == 'count') {
+                        // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
-                    } // Pass other functions directly.
-                    else {
+
+                    } else {
                         $group['aggregate'] = ['$' . $function => '$' . $column];
                     }
                 }
