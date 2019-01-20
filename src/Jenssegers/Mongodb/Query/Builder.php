@@ -272,7 +272,7 @@ class Builder extends BaseBuilder
 
                     // Null coalense only > 7.2
 
-                    $aggregations = blank($this->aggregate['collumns']) ? [] : $this->aggregate['collumns'];
+                    $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
 
                     if (in_array('*', $aggregations) && $function == 'count') {
                         // When ORM is paginating, count doesnt need a aggregation, just a cursor operation
@@ -284,8 +284,8 @@ class Builder extends BaseBuilder
                         // Preserving format expected by framework
                         $results = [
                             [
-                                "_id"       => null,
-                                "aggregate" => $totalResults
+                                '_id'       => null,
+                                'aggregate' => $totalResults
                             ]
                         ];
                         return $this->useCollections ? new Collection($results) : $results;
