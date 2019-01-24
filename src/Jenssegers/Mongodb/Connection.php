@@ -114,6 +114,14 @@ class Connection extends BaseConnection
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getDatabaseName()
+    {
+        return $this->getMongoDB()->getDatabaseName();
+    }
+
+    /**
      * Create a new MongoDB connection.
      *
      * @param  string $dsn
