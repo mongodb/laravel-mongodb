@@ -79,7 +79,7 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * @inheritdoc
      */
-    public function match(array $models, Collection $results, $relation)
+    public function match(array $models, ?Collection $results, $relation)
     {
         foreach ($models as $model) {
             $results = $model->$relation()->getResults();
