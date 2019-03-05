@@ -261,9 +261,9 @@ class ModelTest extends TestCase
         $user->age = 35;
         $user->save();
 
-        $old = clone $user->updated_at;
-        sleep(2);
-        $res = $user->touch();
+        $old = $user->updated_at;
+        sleep(1);
+        $user->touch();
         $check = User::find($user->_id);
 
         $this->assertNotEquals($old, $check->updated_at);
