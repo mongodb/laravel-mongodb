@@ -8,7 +8,7 @@ use MongoDB\BSON\UTCDateTime;
 
 class ModelTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         User::truncate();
         Soft::truncate();
@@ -261,10 +261,9 @@ class ModelTest extends TestCase
         $user->age = 35;
         $user->save();
 
-        $old = $user->updated_at;
-
-        sleep(1);
-        $user->touch();
+        $old = clone $user->updated_at;
+        sleep(2);
+        $res = $user->touch();
         $check = User::find($user->_id);
 
         $this->assertNotEquals($old, $check->updated_at);

@@ -5,8 +5,9 @@ use Illuminate\Foundation\Application;
 
 class AuthTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
+        parent::setUp();
         User::truncate();
         DB::collection('password_reminders')->truncate();
     }
