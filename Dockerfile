@@ -1,6 +1,6 @@
 ARG COMPOSER_VERSION=1.8
 ARG PHP_VERSION=7.2
-FROM composer
+FROM composer:${COMPOSER_VERSION}
 FROM php:${PHP_VERSION}-cli-alpine
 
 RUN apk add --update --no-cache -t .php-build-deps \
