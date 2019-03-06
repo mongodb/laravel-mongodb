@@ -1,6 +1,6 @@
 ARG COMPOSER_VERSION=1.8
 ARG PHP_VERSION=7.2
-FROM composer:${COMPOSER_VERSION}
+FROM composer:${COMPOSER_VERSION} as composer-build
 FROM php:${PHP_VERSION}-cli-alpine
 
 RUN apk add --update --no-cache -t .php-build-deps \
@@ -23,5 +23,5 @@ RUN set -xe; \
 RUN docker-php-ext-enable mongodb && \
     docker-php-ext-install -j$(nproc) pdo pdo_mysql zip
 
-COPY --from=composer  /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer-build  /usr/bin/composer /usr/local/bin/composer
 RUN composer global require "hirak/prestissimo:^0.3"
