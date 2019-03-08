@@ -1146,7 +1146,7 @@ class Builder extends BaseBuilder
 
         return array_merge(
             [$column => $this->model->freshTimestampString()],
-            $values,
+            $values
         );
     }
 
