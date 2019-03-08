@@ -8,7 +8,7 @@ use MongoDB\BSON\UTCDateTime;
 
 class ModelTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         User::truncate();
         Soft::truncate();

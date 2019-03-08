@@ -2,7 +2,7 @@
 
 class SchemaTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         Schema::drop('newcollection');
     }
