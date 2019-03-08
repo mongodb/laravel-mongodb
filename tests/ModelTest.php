@@ -548,4 +548,13 @@ class ModelTest extends TestCase
 
         $this->assertEquals(3, $count);
     }
+
+    public function testUpdateWithUpdatedAt()
+    {
+        $item = Item::create(['name' => 'sword']);
+        $item->update($item->toArray());
+
+        $this->assertNull($item->items);
+        $this->assertNull(optional($item->items)->updated_at);
+    }
 }
