@@ -1134,6 +1134,23 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * @inheritdoc
+     */
+    protected function addUpdatedAtColumn(array $values)
+    {
+        if (! $this->model->usesTimestamps()) {
+            return $values;
+        }
+
+        $column = $this->qualifyColumn($this->model->getUpdatedAtColumn());
+
+        return array_merge(
+            [$column => $this->model->freshTimestampString()],
+            $values,
+        );
+    }
+
+    /**
      * Set custom options for the query.
      *
      * @param  array $options
