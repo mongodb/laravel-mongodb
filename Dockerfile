@@ -1,27 +1,17 @@
-ARG COMPOSER_VERSION=1.8
 ARG PHP_VERSION=7.2
-FROM composer:${COMPOSER_VERSION} as composer-build
-FROM php:${PHP_VERSION}-cli-alpine
 
-RUN apk add --update --no-cache -t .php-build-deps \
-    autoconf \
-    libmcrypt=2.5.8-r7 \
-    git \
-    make \
-    g++ \
-    gcc \
-    openssl-dev \
-    libzip-dev; \
-    pecl install mongodb-1.5.3
+FROM php:${PHP_VERSION}-cli
 
-RUN set -xe; \
-    if [[ "${PHP_VERSION:0:3}" != "7.3" ]]; then \
-        pecl install xdebug-2.6.1; \
-        docker-php-ext-enable xdebug; \
-    fi; 
-    
-RUN docker-php-ext-enable mongodb && \
-    docker-php-ext-install -j$(nproc) pdo pdo_mysql zip
+RUN pecl install xdebug
 
-COPY --from=composer-build  /usr/bin/composer /usr/local/bin/composer
-RUN composer global require "hirak/prestissimo:^0.3"
+RUN apt-get update && \
+    apt-get install -y autoconf pkg-config libssl-dev git zlib1g-dev
+
+RUN pecl install mongodb && docker-php-ext-enable mongodb && \
+    docker-php-ext-install -j$(nproc) pdo pdo_mysql zip && docker-php-ext-enable xdebug
+
+RUN curl -sS https://getcomposer.org/installer | php \
+    && mv composer.phar /usr/local/bin/ \
+    && ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
+
+ENV PATH="~/.composer/vendor/bin:./vendor/bin:${PATH}"
