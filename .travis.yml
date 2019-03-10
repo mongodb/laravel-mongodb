@@ -1,19 +1,37 @@
 sudo: required
 dist: trusty
 language: php
+
+env:
+  global:
+    - DRIVER_VERSION=1.5.0
+    - SERVER_VERSION=4.0.6
+
 php:
-  - "7.2"
   - "7.1"
+  - "7.2"
+  - "7.3"
 
-services:
-  - docker
+cache:
+  directories:
+    - $HOME/.composer/cache
 
-install:
-  - docker version
-  - sudo pip install docker-compose
-  - docker-compose version
-  - cat Dockerfile
-  - docker-compose build --build-arg PHP_VERSION=${TRAVIS_PHP_VERSION}
+install: 
+  - pecl install -f mongodb-${DRIVER_VERSION}
+  - php --ri mongodb
+  - wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-${SERVER_VERSION}.tgz
+  - tar xzf mongodb-linux-x86_64-${SERVER_VERSION}.tgz
+  - ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/bin/mongod --version
+  
+before_script:
+  - mkdir ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/data
+  - ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/bin/mongod --dbpath ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/data --logpath ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/mongodb.log --fork
+  - sudo bash -c "echo '127.0.0.1 mongodb' >> /etc/hosts"
+  - composer update --prefer-dist --no-interaction --prefer-lowest --prefer-stable 
+
 
 script:
-  - docker-compose up --exit-code-from php
+  - composer run-test
+
+after_script:
+  - pkill mongod
