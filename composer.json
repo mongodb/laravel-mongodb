@@ -48,5 +48,8 @@
                 "Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
             ]
         }
+    },
+    "scripts": {
+        "run-tests": "vendor/bin/phpunit"    
     }
 }
