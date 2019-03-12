@@ -4,7 +4,7 @@ language: php
 
 env:
   global:
-    - DRIVER_VERSION=1.5.0
+    - DRIVER_VERSION=1.5.3
     - SERVER_VERSION=4.0.6
 
 php:
