@@ -9,7 +9,7 @@ services:
         volumes:
             - .:/code
         working_dir: /code
-        command: sh -c "composer update --prefer-dist --no-interaction --prefer-lowest --prefer-stable && composer run-tests"
+        command: bash -c "composer install --prefer-source --no-interaction && php ./vendor/bin/phpunit"
         depends_on:
           - mysql
           - mongodb
