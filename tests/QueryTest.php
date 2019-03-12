@@ -4,7 +4,7 @@ class QueryTest extends TestCase
 {
     protected static $started = false;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         User::create(['name' => 'John Doe', 'age' => 35, 'title' => 'admin']);
@@ -18,7 +18,7 @@ class QueryTest extends TestCase
         User::create(['name' => 'Error', 'age' => null, 'title' => null]);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         User::truncate();
         parent::tearDown();
