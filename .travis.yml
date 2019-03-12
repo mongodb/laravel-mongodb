@@ -27,7 +27,7 @@ before_script:
   - mkdir ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/data
   - ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/bin/mongod --dbpath ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/data --logpath ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/mongodb.log --fork
   - sudo bash -c "echo '127.0.0.1 mongodb' >> /etc/hosts"
-  - composer update --prefer-dist --no-cache --no-interaction --prefer-lowest --prefer-stable 
+  - composer clear-cache && composer update --prefer-dist --no-interaction --prefer-lowest --prefer-stable 
 
 
 script:
