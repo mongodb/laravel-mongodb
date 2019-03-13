@@ -11,7 +11,10 @@
          verbose="true"
 >
     <testsuites>
-        <testsuite name="all">
+    <testsuite name="Laravel-Mongodb Test Suite">
+            <directory suffix="Test.php">./tests</directory>
+        </testsuite>
+        <!-- <testsuite name="all">
             <directory>tests/</directory>
             <exclude>tests/MysqlRelationsTest.php</exclude>
         </testsuite>
@@ -42,6 +45,6 @@
         </testsuite>
         <testsuite name="validation">
             <directory>tests/ValidationTest.php</directory>
-        </testsuite>
+        </testsuite> -->
     </testsuites>
 </phpunit>
