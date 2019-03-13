@@ -15,6 +15,7 @@ php:
 cache:
   directories:
     - $HOME/.composer/cache
+    - $HOME/vendor
 
 install: 
   - pecl install -f mongodb-${DRIVER_VERSION}
@@ -29,7 +30,7 @@ before_script:
   - sudo bash -c "echo '127.0.0.1 mongodb' >> /etc/hosts"
   - mysql -u root -e "create database IF NOT EXISTS unittest;"
   - sudo bash -c "echo '127.0.0.1 mysql' >> /etc/hosts"
-  - composer clear-cache && composer update --prefer-source --no-interaction
+  - composer update --prefer-source --no-interaction
 
 
 script:
