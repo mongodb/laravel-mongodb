@@ -20,6 +20,7 @@ class QueueTest extends TestCase
         $job = Queue::pop('test');
         $this->assertInstanceOf(Jenssegers\Mongodb\Queue\MongoJob::class, $job);
         $this->assertEquals(1, $job->isReserved());
+        dd($job->job);
         $this->assertEquals(json_encode([
             'displayName' => 'test',
             'job' => 'test',
