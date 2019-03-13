@@ -27,6 +27,7 @@ before_script:
   - mkdir ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/data
   - ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/bin/mongod --dbpath ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/data --logpath ${PWD}/mongodb-linux-x86_64-${SERVER_VERSION}/mongodb.log --fork
   - sudo bash -c "echo '127.0.0.1 mongodb' >> /etc/hosts"
+  - sudo bash -c "echo '127.0.0.1 mysql' >> /etc/hosts"
   - composer clear-cache && composer update --prefer-source --no-interaction
 
 
