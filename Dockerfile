@@ -1,17 +1,15 @@
 ARG PHP_VERSION=7.2
+ARG COMPOSER_VERSION=1.8
 
+FROM composer:${COMPOSER_VERSION}
 FROM php:${PHP_VERSION}-cli
 
-RUN pecl install xdebug
-
 RUN apt-get update && \
-    apt-get install -y autoconf pkg-config libssl-dev git zlib1g-dev
+    apt-get install -y autoconf pkg-config libssl-dev git libzip-dev zlib1g-dev && \
+    pecl install mongodb && docker-php-ext-enable mongodb && \
+    pecl install xdebug && docker-php-ext-enable xdebug && \
+    docker-php-ext-install -j$(nproc) pdo_mysql zip
 
-RUN pecl install mongodb && docker-php-ext-enable mongodb && \
-    docker-php-ext-install -j$(nproc) pdo pdo_mysql zip && docker-php-ext-enable xdebug
+COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
-RUN curl -sS https://getcomposer.org/installer | php \
-    && mv composer.phar /usr/local/bin/ \
-    && ln -s /usr/local/bin/composer.phar /usr/local/bin/composer
-
-ENV PATH="~/.composer/vendor/bin:./vendor/bin:${PATH}"
+WORKDIR /code
