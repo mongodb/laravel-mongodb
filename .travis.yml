@@ -17,6 +17,10 @@ cache:
     - $HOME/.composer/cache
     - $HOME/vendor
 
+cache:
+  directories:
+    - $HOME/.composer/cache
+
 install:
   - pecl install -f mongodb-${DRIVER_VERSION}
   - php --ri mongodb

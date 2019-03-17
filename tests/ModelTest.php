@@ -8,7 +8,7 @@ use MongoDB\BSON\UTCDateTime;
 
 class ModelTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         User::truncate();
         Soft::truncate();
@@ -262,7 +262,6 @@ class ModelTest extends TestCase
         $user->save();
 
         $old = $user->updated_at;
-
         sleep(1);
         $user->touch();
         $check = User::find($user->_id);
