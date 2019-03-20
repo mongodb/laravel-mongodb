@@ -5,6 +5,7 @@ class SchemaTest extends TestCase
     public function tearDown(): void
     {
         Schema::drop('newcollection');
+        Schema::drop('newcollection_two');
     }
 
     public function testCreate()
@@ -23,6 +24,13 @@ class SchemaTest extends TestCase
         });
 
         $this->assertTrue(Schema::hasCollection('newcollection'));
+    }
+
+    public function testCreateWithOptions()
+    {
+        Schema::create('newcollection_two', null, ['capped' => true, 'size' => 1024]);
+        $this->assertTrue(Schema::hasCollection('newcollection_two'));
+        $this->assertTrue(Schema::hasTable('newcollection_two'));
     }
 
     public function testDrop()
