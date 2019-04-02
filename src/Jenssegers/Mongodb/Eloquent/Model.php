@@ -31,6 +31,13 @@ abstract class Model extends BaseModel
      * @var string
      */
     protected $primaryKey = '_id';
+    
+    /**
+     * The primary key type.
+     *
+     * @var string
+     */
+    protected $keyType = 'string';
 
     /**
      * The parent relation instance.
@@ -221,7 +228,7 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
-    protected function originalIsEquivalent($key, $current)
+    public function originalIsEquivalent($key, $current)
     {
         if (!array_key_exists($key, $this->original)) {
             return false;

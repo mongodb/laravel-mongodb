@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 abstract class EmbedsOneOrMany extends Relation
 {
@@ -402,5 +403,17 @@ abstract class EmbedsOneOrMany extends Relation
     public function getQualifiedForeignKeyName()
     {
         return $this->foreignKey;
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
+     * @return string
+     */
+    protected function whereInMethod(EloquentModel $model, $key)
+    {
+        return 'whereIn';
     }
 }

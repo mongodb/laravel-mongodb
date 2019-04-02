@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use MongoDB\BSON\ObjectID;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class EmbedsMany extends EmbedsOneOrMany
 {
@@ -327,5 +328,17 @@ class EmbedsMany extends EmbedsOneOrMany
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
+     * @return string
+     */
+    protected function whereInMethod(EloquentModel $model, $key)
+    {
+        return 'whereIn';
     }
 }

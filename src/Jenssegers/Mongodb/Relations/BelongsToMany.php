@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class BelongsToMany extends EloquentBelongsToMany
 {
@@ -336,5 +337,17 @@ class BelongsToMany extends EloquentBelongsToMany
     public function getRelatedKey()
     {
         return property_exists($this, 'relatedPivotKey') ? $this->relatedPivotKey : $this->relatedKey;
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
+     * @return string
+     */
+    protected function whereInMethod(EloquentModel $model, $key)
+    {
+        return 'whereIn';
     }
 }

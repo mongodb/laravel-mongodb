@@ -4,6 +4,7 @@ namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Model;
 use MongoDB\BSON\ObjectID;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class EmbedsOne extends EmbedsOneOrMany
 {
@@ -135,5 +136,17 @@ class EmbedsOne extends EmbedsOneOrMany
     public function delete()
     {
         return $this->performDelete();
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
+     * @return string
+     */
+    protected function whereInMethod(EloquentModel $model, $key)
+    {
+        return 'whereIn';
     }
 }
