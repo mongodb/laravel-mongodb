@@ -206,6 +206,16 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
+    public function value($column)
+    {
+        $result = (array) $this->first([$column]);
+
+        return Arr::get($result, $column);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function get($columns = [])
     {
         return $this->getFresh($columns);
