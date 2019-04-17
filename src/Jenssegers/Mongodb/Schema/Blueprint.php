@@ -76,25 +76,22 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * @inheritdoc
      */
-    public function dropIndex($columns = null)
+    public function dropIndex($indexOrColumns = null)
     {
-        $columns = $this->fluent($columns);
+        if (is_array($indexOrColumns)) {
+            $indexOrColumns = $this->fluent($indexOrColumns);
 
-        // Columns are passed as a default array.
-        if (is_array($columns) && is_int(key($columns))) {
-            // Transform the columns to the required array format.
+            // Transform the columns to the index name.
             $transform = [];
 
-            foreach ($columns as $column) {
+            foreach ($indexOrColumns as $column) {
                 $transform[$column] = $column . '_1';
             }
 
-            $columns = $transform;
+            $indexOrColumns = join('_', $transform);
         }
 
-        foreach ($columns as $column) {
-            $this->collection->dropIndex($column);
-        }
+        $this->collection->dropIndex($indexOrColumns);
 
         return $this;
     }

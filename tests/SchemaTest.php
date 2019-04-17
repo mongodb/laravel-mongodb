@@ -2,9 +2,10 @@
 
 class SchemaTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
         Schema::drop('newcollection');
+        Schema::drop('newcollection_two');
     }
 
     public function testCreate()
@@ -23,6 +24,13 @@ class SchemaTest extends TestCase
         });
 
         $this->assertTrue(Schema::hasCollection('newcollection'));
+    }
+
+    public function testCreateWithOptions()
+    {
+        Schema::create('newcollection_two', null, ['capped' => true, 'size' => 1024]);
+        $this->assertTrue(Schema::hasCollection('newcollection_two'));
+        $this->assertTrue(Schema::hasTable('newcollection_two'));
     }
 
     public function testDrop()
@@ -93,7 +101,7 @@ class SchemaTest extends TestCase
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->unique('uniquekey');
-            $collection->dropIndex('uniquekey');
+            $collection->dropIndex('uniquekey_1');
         });
 
         $index = $this->getIndex('newcollection', 'uniquekey');
@@ -106,6 +114,34 @@ class SchemaTest extends TestCase
 
         $index = $this->getIndex('newcollection', 'uniquekey');
         $this->assertEquals(null, $index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->index(['field_a', 'field_b']);
+        });
+
+        $index = $this->getIndex('newcollection', 'field_a_1_field_b_1');
+        $this->assertNotNull($index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->dropIndex(['field_a', 'field_b']);
+        });
+
+        $index = $this->getIndex('newcollection', 'field_a_1_field_b_1');
+        $this->assertFalse($index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->index(['field_a', 'field_b'], 'custom_index_name');
+        });
+
+        $index = $this->getIndex('newcollection', 'custom_index_name');
+        $this->assertNotNull($index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->dropIndex('custom_index_name');
+        });
+
+        $index = $this->getIndex('newcollection', 'custom_index_name');
+        $this->assertFalse($index);
     }
 
     public function testBackground()

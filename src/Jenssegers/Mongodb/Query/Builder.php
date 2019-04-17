@@ -152,6 +152,8 @@ class Builder extends BaseBuilder
             $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
             return version_compare($version, '5.3', '>=');
         }
+
+        return true;
     }
 
     /**
@@ -631,12 +633,6 @@ class Builder extends BaseBuilder
      */
     public function forPageAfterId($perPage = 15, $lastId = 0, $column = '_id')
     {
-        // When using ObjectIDs to paginate, we need to use a hex string as the
-        // "minimum" ID rather than the integer zero so the '$lt' query works.
-        if ($column === '_id' && $lastId === 0) {
-            $lastId = '000000000000000000000000';
-        }
-
         return parent::forPageAfterId($perPage, $lastId, $column);
     }
 

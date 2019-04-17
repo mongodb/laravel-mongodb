@@ -1,32 +1,27 @@
-sudo: required
-dist: trusty
-language: php
-php:
-  - "7.2"
-  - "7.1"
+language: minimal
+
+matrix:
+  include:
+    - name: "7.1"
+      env: PHP_VERSION=7.1
+    - name: "7.2"
+      env: PHP_VERSION=7.2
+    - name: "7.3"
+      env: PHP_VERSION=7.3
 
 services:
   - docker
 
-install:
-  # Update docker-engine using Ubuntu 'trusty' apt repo
-  - >
-    curl -sSL "https://get.docker.com/gpg" |
-     sudo -E apt-key add -
-  - >
-    echo "deb https://apt.dockerproject.org/repo ubuntu-trusty main" |
-     sudo tee -a /etc/apt/sources.list
-  - sudo apt-get update
-  - >
-    sudo apt-get -o Dpkg::Options::="--force-confdef" \
-     -o Dpkg::Options::="--force-confold" --assume-yes install docker-engine --allow-unauthenticated
-  - docker version
+cache:
+  directories:
+    - $HOME/.composer/cache
 
-  # Update docker-compose via pip
+install:
+  - docker version
   - sudo pip install docker-compose
   - docker-compose version
-  - docker-compose up --build -d
-  - docker ps -a
+  - docker-compose build --build-arg PHP_VERSION=${PHP_VERSION}
+  - docker-compose run --rm tests composer install --no-interaction
 
 script:
-  - docker-compose up --exit-code-from php
+  - docker-compose run --rm tests ./vendor/bin/phpunit --coverage-clover ./clover.xml

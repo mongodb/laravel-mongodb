@@ -2,7 +2,7 @@
 
 class GeospatialTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -43,7 +43,7 @@ class GeospatialTest extends TestCase
         ]);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         Schema::drop('locations');
     }
