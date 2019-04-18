@@ -136,6 +136,10 @@ class Connection extends BaseConnection
 
         if (isset($config['driver_options']) && is_array($config['driver_options'])) {
             $driverOptions = $config['driver_options'];
+            if (array_key_exists('context', $driverOptions) && is_array($driverOptions['context'])) {
+                // TODO: Expand array translation to include stream_context_create params option if applicable
+                $driverOptions['context'] = stream_context_create($driverOptions['context']);
+            }
         }
 
         // Check if the credentials are not already set in the options
