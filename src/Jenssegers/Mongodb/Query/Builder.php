@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
 use MongoCollection;
+use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -843,6 +844,8 @@ class Builder extends BaseBuilder
     {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
+        } elseif (strlen($id) === 16 && preg_match('~[^\x20-\x7E\t\r\n]~', $id) > 0) {
+            return new Binary($id, Binary::TYPE_UUID);
         }
 
         return $id;
@@ -903,7 +906,7 @@ class Builder extends BaseBuilder
             }
 
             // Convert id's.
-            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '._id'))) {
+            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '_id'))) {
                 // Multiple values.
                 if (isset($where['values'])) {
                     foreach ($where['values'] as &$value) {

@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
+use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use Illuminate\Contracts\Queue\QueueableEntity;
@@ -63,6 +64,8 @@ abstract class Model extends BaseModel
         // Convert ObjectID to string.
         if ($value instanceof ObjectID) {
             return (string) $value;
+        } elseif ($value instanceof Binary) {
+            return (string) $value->getData();
         }
 
         return $value;
@@ -172,7 +175,7 @@ abstract class Model extends BaseModel
     public function setAttribute($key, $value)
     {
         // Convert _id to ObjectID.
-        if ($key == '_id' && is_string($value)) {
+        if (($key == '_id' || Str::endsWith($key, '_id')) && is_string($value)) {
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
@@ -204,6 +207,8 @@ abstract class Model extends BaseModel
         foreach ($attributes as $key => &$value) {
             if ($value instanceof ObjectID) {
                 $value = (string) $value;
+            } elseif ($value instanceof Binary) {
+                $value = (string) $value->getData();
             }
         }
 
