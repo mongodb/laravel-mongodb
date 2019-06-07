@@ -842,7 +842,7 @@ class Builder extends BaseBuilder
      */
     public function convertKey($id)
     {
-        if(is_array($id)) {
+        if (is_array($id)) {
             return array_map(array($this, __FUNCTION__), $id);
         }
         
