@@ -25,7 +25,15 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
             // For belongs to relationships, which are essentially the inverse of has one
             // or has many relationships, we need to actually query on the primary key
             // of the related models matching on the foreign key that's on a parent.
-            $this->query->where($this->getOwnerKey(), '=', $this->parent->{$this->foreignKey});
+            $foreign = $this->parent->{$this->foreignKey};
+            if (is_array($foreign)) {
+                // This means that it is a one-to-many relationship. Try a match using whereIn.
+                $this->query->whereIn($this->getOwnerKey(), $foreign);
+            }
+            else {
+                // It's a one-to-one relationship, just match using the classic equals operator.
+                $this->query->where($this->getOwnerKey(), '=', $foreign);
+            }
         }
     }
 
