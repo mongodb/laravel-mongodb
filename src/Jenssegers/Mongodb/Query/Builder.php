@@ -842,6 +842,10 @@ class Builder extends BaseBuilder
      */
     public function convertKey($id)
     {
+        if(is_array($id)) {
+            return array_map(array($this, __FUNCTION__), $id);
+        }
+        
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
         }
