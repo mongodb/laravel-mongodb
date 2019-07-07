@@ -1,7 +1,7 @@
 Laravel MongoDB
 ===============
 
-[![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](http://img.shields.io/travis/jenssegers/laravel-mongodb.svg)](https://travis-ci.org/jenssegers/laravel-mongodb) [![Coverage Status](http://img.shields.io/coveralls/jenssegers/laravel-mongodb.svg)](https://coveralls.io/r/jenssegers/laravel-mongodb?branch=master) [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
+[![Financial Contributors on Open Collective](https://opencollective.com/laravel-mongodb/all/badge.svg?label=financial+contributors)](https://opencollective.com/laravel-mongodb) [![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](http://img.shields.io/travis/jenssegers/laravel-mongodb.svg)](https://travis-ci.org/jenssegers/laravel-mongodb) [![Coverage Status](http://img.shields.io/coveralls/jenssegers/laravel-mongodb.svg)](https://coveralls.io/r/jenssegers/laravel-mongodb?branch=master) [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
 
 An Eloquent model and Query builder with support for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
@@ -1074,3 +1074,33 @@ DB::connection()->disableQueryLog();
 ```
 
 *From: http://laravel.com/docs/database#query-logging*
+
+## Contributors
+
+### Code Contributors
+
+This project exists thanks to all the people who contribute. [[Contribute](CONTRIBUTING.md)].
+<a href="https://github.com/jenssegers/laravel-mongodb/graphs/contributors"><img src="https://opencollective.com/laravel-mongodb/contributors.svg?width=890&button=false" /></a>
+
+### Financial Contributors
+
+Become a financial contributor and help us sustain our community. [[Contribute](https://opencollective.com/laravel-mongodb/contribute)]
+
+#### Individuals
+
+<a href="https://opencollective.com/laravel-mongodb"><img src="https://opencollective.com/laravel-mongodb/individuals.svg?width=890"></a>
+
+#### Organizations
+
+Support this project with your organization. Your logo will show up here with a link to your website. [[Contribute](https://opencollective.com/laravel-mongodb/contribute)]
+
+<a href="https://opencollective.com/laravel-mongodb/organization/0/website"><img src="https://opencollective.com/laravel-mongodb/organization/0/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/1/website"><img src="https://opencollective.com/laravel-mongodb/organization/1/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/2/website"><img src="https://opencollective.com/laravel-mongodb/organization/2/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/3/website"><img src="https://opencollective.com/laravel-mongodb/organization/3/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/4/website"><img src="https://opencollective.com/laravel-mongodb/organization/4/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/5/website"><img src="https://opencollective.com/laravel-mongodb/organization/5/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/6/website"><img src="https://opencollective.com/laravel-mongodb/organization/6/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/7/website"><img src="https://opencollective.com/laravel-mongodb/organization/7/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/8/website"><img src="https://opencollective.com/laravel-mongodb/organization/8/avatar.svg"></a>
+<a href="https://opencollective.com/laravel-mongodb/organization/9/website"><img src="https://opencollective.com/laravel-mongodb/organization/9/avatar.svg"></a>
