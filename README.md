@@ -897,3 +897,9 @@ DB::connection()->disableQueryLog();
 ```
 
 *From: http://laravel.com/docs/database#query-logging*
+
+
+
+## License
+
+Laravel MongoDB is open-source software licensed under the [MIT license](https://opensource.org/licenses/MIT).
