@@ -78,21 +78,24 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function dropIndex($indexOrColumns = null)
     {
-        if (is_array($indexOrColumns)) {
-            $indexOrColumns = $this->fluent($indexOrColumns);
-
-            // Transform the columns to the index name.
-            $transform = [];
-
-            foreach ($indexOrColumns as $column) {
-                $transform[$column] = $column . '_1';
-            }
-
-            $indexOrColumns = join('_', $transform);
-        }
+        $indexOrColumns = $this->transformColumns($indexOrColumns);
 
         $this->collection->dropIndex($indexOrColumns);
 
+        return $this;
+    }
+
+    /**
+     * Indicate that the given index should be dropped, but do not fail if it didn't exist.
+     *
+     * @param  string|array  $indexOrColumns
+     * @return Blueprint
+     */
+    public function dropIndexIfExists($indexOrColumns = null)
+    {
+        if ($this->hasIndex($indexOrColumns)) {
+            $this->dropIndex($indexOrColumns);
+        }
         return $this;
     }
 
@@ -233,6 +236,41 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         $this->index($columns, null, null, $options);
 
         return $this;
+    }
+
+    /**
+     * Check whether the given index exists.
+     *
+     * @param  string|array  $indexOrColumns
+     * @return bool
+     */
+    public function hasIndex($indexOrColumns = null)
+    {
+        $indexOrColumns = $this->transformColumns($indexOrColumns);
+        foreach ($this->collection->listIndexes() as $index) {
+            if ($index->getName() == $indexOrColumns) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param  string|array  $indexOrColumns
+     * @return string|array
+     */
+    private function transformColumns($indexOrColumns)
+    {
+        if (is_array($indexOrColumns)) {
+            $indexOrColumns = $this->fluent($indexOrColumns);
+            // Transform the columns to the index name.
+            $transform = [];
+            foreach ($indexOrColumns as $column) {
+                $transform[$column] = $column . '_1';
+            }
+            $indexOrColumns = join('_', $transform);
+        }
+        return $indexOrColumns;
     }
 
     /**
