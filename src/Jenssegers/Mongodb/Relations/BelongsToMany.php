@@ -5,9 +5,9 @@ namespace Jenssegers\Mongodb\Relations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
-use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class BelongsToMany extends EloquentBelongsToMany
 {
@@ -34,7 +34,13 @@ class BelongsToMany extends EloquentBelongsToMany
      */
     protected function hydratePivotRelation(array $models)
     {
-        // Do nothing.
+        foreach ($models as $model) {
+            $keyToUse = $this->getTable() == $model->getTable() ? $this->getForeignKey() : $this->getRelatedKey();
+            $pcontent = $model->{$keyToUse};
+            $model->setRelation($this->accessor, $this->newExistingPivot(
+                $pcontent[0]
+            ));
+        }
     }
 
     /**
@@ -74,8 +80,10 @@ class BelongsToMany extends EloquentBelongsToMany
     protected function setWhere()
     {
         $foreign = $this->getForeignKey();
-
-        $this->query->where($foreign, '=', $this->parent->getKey());
+        $key = $this->parent->getKey();
+        $this->query
+            ->where($foreign, '=', $key)
+            ->orWhereRaw([$foreign.'._id' => $key]);
 
         return $this;
     }
@@ -132,12 +140,17 @@ class BelongsToMany extends EloquentBelongsToMany
         // See issue #256.
         if ($current instanceof Collection) {
             $current = $ids->modelKeys();
+        } elseif (is_array($current)) {
+            foreach ($current as $key => $value) {
+                if ($value['_id']) {
+                    $current[$key] = $value['_id'];
+                }
+            }
         }
 
         $records = $this->formatSyncList($ids);
 
         $current = Arr::wrap($current);
-
         $detach = array_diff($current, array_keys($records));
 
         // We need to make sure we pass a clean array, so that it is not interpreted
@@ -188,7 +201,7 @@ class BelongsToMany extends EloquentBelongsToMany
             $id = $model->getKey();
 
             // Attach the new parent id to the related model.
-            $model->push($this->foreignPivotKey, $this->parent->getKey(), true);
+            $model->push($this->foreignPivotKey, array_merge($attributes, ['_id' => $this->parent->getKey()]), true);
         } else {
             if ($id instanceof Collection) {
                 $id = $id->modelKeys();
@@ -199,11 +212,17 @@ class BelongsToMany extends EloquentBelongsToMany
             $query->whereIn($this->related->getKeyName(), (array) $id);
 
             // Attach the new parent id to the related model.
-            $query->push($this->foreignPivotKey, $this->parent->getKey(), true);
+            $query->push($this->foreignPivotKey, array_merge($attributes, ['_id' => $this->parent->getKey()]), true);
+        }
+
+        //Pivot Collection
+        $pivot_x = [];
+        foreach ((array)$id as $item) {
+            $pivot_x[] = array_merge($attributes, ['_id' => $item]);
         }
 
         // Attach the new ids to the parent model.
-        $this->parent->push($this->getRelatedKey(), (array) $id, true);
+        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
 
         if ($touch) {
             $this->touchIfTouching();
@@ -227,7 +246,7 @@ class BelongsToMany extends EloquentBelongsToMany
         $ids = (array) $ids;
 
         // Detach all ids from the parent model.
-        $this->parent->pull($this->getRelatedKey(), $ids);
+        $this->parent->pull($this->getRelatedKey(), ['_id'=>$ids]);
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
@@ -235,7 +254,7 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Remove the relation to the parent.
-        $query->pull($this->foreignPivotKey, $this->parent->getKey());
+        $query->pull($this->foreignPivotKey, ['_id'=>$this->parent->getKey()]);
 
         if ($touch) {
             $this->touchIfTouching();
