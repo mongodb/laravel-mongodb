@@ -2,9 +2,12 @@
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
+use Illuminate\Support\Arr;
 
-class BelongsToMany extends EloquentBelongsToMany {
+class BelongsToMany extends EloquentBelongsToMany
+{
 
 	/**
 	 * Hydrate the pivot table relationship on the models.
@@ -14,7 +17,12 @@ class BelongsToMany extends EloquentBelongsToMany {
 	 */
 	protected function hydratePivotRelation(array $models)
 	{
-		// Do nothing
+        foreach ($models as $model) {
+            $keyToUse = $this->getTable() == $model->getTable() ? $this->getForeignKey() : $this->getRelatedKey();
+            $pcontent = $model->{$keyToUse};
+            $model->setRelation($this->accessor, $this->newExistingPivot(
+                $pcontent[0]
+            ));
 	}
 
 	/**
@@ -99,8 +107,16 @@ class BelongsToMany extends EloquentBelongsToMany {
 		// if they exist in the array of current ones, and if not we will insert.
 		$current = $this->parent->{$this->otherKey} ?: [];
 
-		// See issue #256.
-		if ($current instanceof Collection) $current = $ids->modelKeys();
+        // See issue #256.
+        if ($current instanceof Collection) {
+            $current = $ids->modelKeys();
+        } elseif (is_array($current)) {
+            foreach ($current as $key => $value) {
+                if ($value['_id']) {
+                    $current[$key] = $value['_id'];
+                }
+            }
+        }
 
 		$records = $this->formatSyncList($ids);
 
@@ -170,7 +186,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 		if (isset($model))
 		{
 			// Attach the new ids to the related model.
-			$model->push($this->foreignKey, $this->parent->getKey(), true);
+			$model->push($this->foreignKey, array_merge($attributes, ['_id' => $this->parent->getKey()]), true);
 		}
 		else
 		{
@@ -180,10 +196,21 @@ class BelongsToMany extends EloquentBelongsToMany {
 			$query->whereIn($this->related->getKeyName(), $ids);
 
 			// Attach the new parent id to the related model.
-			$query->push($this->foreignKey, $this->parent->getKey(), true);
+			$query->push($this->foreignKey, array_merge($attributes, ['_id' => $this->parent->getKey()]), true);
 		}
 
-		if ($touch) $this->touchIfTouching();
+        //Pivot Collection
+        $pivot_x = [];
+        foreach ((array)$id as $item) {
+            $pivot_x[] = array_merge($attributes, ['_id' => $item]);
+        }
+
+        // Attach the new ids to the parent model.
+        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
+
+        if ($touch) {
+            $this->touchIfTouching();
+        }
 	}
 
 	/**
@@ -205,7 +232,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 		$ids = (array) $ids;
 
 		// Detach all ids from the parent model.
-		$this->parent->pull($this->otherKey, $ids);
+		$this->parent->pull($this->otherKey, ['_id'=>$ids]);
 
 		// Prepare the query to select all related objects.
 		if (count($ids) > 0)
@@ -214,7 +241,7 @@ class BelongsToMany extends EloquentBelongsToMany {
 		}
 
 		// Remove the relation to the parent.
-		$query->pull($this->foreignKey, $this->parent->getKey());
+		$query->pull($this->foreignKey, ['_id'=>$this->parent->getKey()]);
 
 		if ($touch) $this->touchIfTouching();
 
