@@ -277,6 +277,35 @@ class RelationsTest extends TestCase {
         $this->assertCount(1, $user->clients);
     }
 
+    public function testBelongsToManySyncAttrs()
+    {
+        // create test instances
+        /** @var User $user */
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Pork Pies Ltd.'])->_id;
+        $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
+
+        // Sync multiple
+        $user->clients()->sync([$client1 => ['fresh_client' => true], $client2 => ['fresh_client' => false]]);
+
+        //Check Sync Success
+        $this->assertEquals($user->client_ids[0]['_id'], $client1);
+        $this->assertEquals($user->client_ids[1]['_id'], $client2);
+
+        //Check reverse
+        $this->assertEquals($user->_id, Client::find($client1)->user_ids[0]['_id']);
+        $this->assertEquals($user->_id, Client::find($client2)->user_ids[0]['_id']);
+
+        $clients = $user->clients;
+        $this->assertCount(2, $clients);
+
+        foreach ($user->clients()->withPivot('fresh_client')->get() as $item) {
+            $this->assertIsArray($item->pivot->toArray());
+            $this->assertEquals($item->_id == $client1, $item->pivot->fresh_client);
+        }
+        $this->assertTrue(true);
+    }
+
     public function testBelongsToManyAttachArray()
     {
         $user = User::create(['name' => 'John Doe']);
@@ -354,7 +383,7 @@ class RelationsTest extends TestCase {
         $this->assertEquals($photo->imageable->name, $user->name);
 
         $user = User::with('photos')->find($user->_id);
-        $relations = $user->getRelations();
+        $relations = $user->getRlations();
         $this->assertTrue(array_key_exists('photos', $relations));
         $this->assertEquals(1, $relations['photos']->count());
 
