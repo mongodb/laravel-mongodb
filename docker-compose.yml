@@ -7,7 +7,7 @@ services:
             context: .
             dockerfile: Dockerfile
         volumes:
-            - .:/code
+            - ./:/code
         working_dir: /code
         depends_on:
           - mongodb
