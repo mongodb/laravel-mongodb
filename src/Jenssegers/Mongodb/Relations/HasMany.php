@@ -3,8 +3,8 @@
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
 
 class HasMany extends EloquentHasMany
 {
@@ -76,7 +76,9 @@ class HasMany extends EloquentHasMany
 
         $key = $this->wrap($this->getQualifiedParentKeyName());
 
-        return $query->where($this->getHasCompareKey(), 'exists', true);
+        return $query
+            ->where($this->getHasCompareKey(), 'exists', true)
+            ->orWhere($this->getHasCompareKey().'._id', 'exists', true);
     }
 
     /**
