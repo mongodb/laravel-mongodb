@@ -23,6 +23,7 @@ class BelongsToMany extends EloquentBelongsToMany
             $model->setRelation($this->accessor, $this->newExistingPivot(
                 $pcontent[0]
             ));
+        }
 	}
 
 	/**
@@ -111,8 +112,9 @@ class BelongsToMany extends EloquentBelongsToMany
         if ($current instanceof Collection) {
             $current = $ids->modelKeys();
         } elseif (is_array($current)) {
+
             foreach ($current as $key => $value) {
-                if ($value['_id']) {
+                if (is_array($value) && $value['_id']) {
                     $current[$key] = $value['_id'];
                 }
             }
@@ -186,17 +188,18 @@ class BelongsToMany extends EloquentBelongsToMany
 		if (isset($model))
 		{
 			// Attach the new ids to the related model.
-			$model->push($this->foreignKey, array_merge($attributes, ['_id' => $this->parent->getKey()]), true);
+			$model->push($this->foreignKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
 		}
 		else
 		{
 			$query = $this->newRelatedQuery();
 
 			// Select related models.
-			$query->whereIn($this->related->getKeyName(), $ids);
+			$query->whereIn($this->related->getKeyName(), $ids)
+                ->orWhereIn($this->related->getKeyName().'._id', (array)$id);
 
 			// Attach the new parent id to the related model.
-			$query->push($this->foreignKey, array_merge($attributes, ['_id' => $this->parent->getKey()]), true);
+			$query->push($this->foreignKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
 		}
 
         //Pivot Collection
@@ -232,16 +235,20 @@ class BelongsToMany extends EloquentBelongsToMany
 		$ids = (array) $ids;
 
 		// Detach all ids from the parent model.
-		$this->parent->pull($this->otherKey, ['_id'=>$ids]);
+		// Legacy Support
+        $this->parent->pull($this->getRelatedKey(), $ids);
+        $this->parent->pull($this->otherKey, ['_id'=>['$in'=>$ids]]);
 
 		// Prepare the query to select all related objects.
 		if (count($ids) > 0)
 		{
-			$query->whereIn($this->related->getKeyName(), $ids);
-		}
+			$query->whereIn($this->related->getKeyName(), $ids)
+		->orWhereIn($this->related->getKeyName().'._id', $ids);
+        }
 
 		// Remove the relation to the parent.
-		$query->pull($this->foreignKey, ['_id'=>$this->parent->getKey()]);
+		$query->pull($this->foreignKey, $this->parent->getKey());
+        $query->pull($this->foreignPivotKey, ['_id'=>$this->parent->getKey()]);
 
 		if ($touch) $this->touchIfTouching();
 

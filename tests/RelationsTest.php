@@ -221,7 +221,7 @@ class RelationsTest extends TestCase {
 
     public function testBelongsToManyAttachesExistingModels()
     {
-        $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523']]);
+        $user = User::create(['name' => 'John Doe', 'client_ids' => [['_id'=>'1234523']]]);
 
         $clients = [
             Client::create(['name' => 'Pork Pies Ltd.'])->_id,
@@ -236,7 +236,8 @@ class RelationsTest extends TestCase {
         // Sync multiple records
         $user->clients()->sync($clients);
 
-        $user = User::with('clients')->find($user->_id);
+//        $user = User::with('clients')->find($user->_id);
+        $user = User::find($user->_id);
 
         // Assert non attached ID's are detached succesfully
         $this->assertFalse(in_array('1234523', $user->client_ids));
@@ -531,21 +532,21 @@ class RelationsTest extends TestCase {
         $user->save();
 
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([$user->_id], $client->user_ids);
-        $this->assertEquals([$client->_id], $user->client_ids);
+        $this->assertEquals([['_id' =>$user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
 
         $user = User::where('name', 'John Doe')->first();
         $client = Client::where('name', 'Admins')->first();
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([$user->_id], $client->user_ids);
-        $this->assertEquals([$client->_id], $user->client_ids);
+        $this->assertEquals([['_id' =>$user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
 
         $user->clients()->save($client);
         $user->clients()->save($client);
         $user->save();
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([$user->_id], $client->user_ids);
-        $this->assertEquals([$client->_id], $user->client_ids);
+        $this->assertEquals([['_id' =>$user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
     }
 
 }

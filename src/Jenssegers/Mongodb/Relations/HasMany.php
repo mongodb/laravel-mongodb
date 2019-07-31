@@ -2,8 +2,10 @@
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 
-class HasMany extends EloquentHasMany {
+class HasMany extends EloquentHasMany
+{
 
     /**
      * Add the constraints for a relationship count query.
@@ -16,7 +18,9 @@ class HasMany extends EloquentHasMany {
     {
         $foreignKey = $this->getHasCompareKey();
 
-        return $query->select($this->getHasCompareKey())->where($this->getHasCompareKey(), 'exists', true);
+        return $query->select($this->getHasCompareKey())
+            ->where($this->getHasCompareKey(), 'exists', true)
+            ->orWhere($this->getHasCompareKey().'._id', 'exists', true);
     }
 
     /**
