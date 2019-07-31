@@ -19,7 +19,8 @@
     "require-dev": {
         "orchestra/testbench": "3.0.*",
         "mockery/mockery": "*",
-        "satooshi/php-coveralls": "*"
+        "satooshi/php-coveralls": "*",
+        "phpunit/phpunit": "6"
     },
     "autoload": {
         "psr-0": {
