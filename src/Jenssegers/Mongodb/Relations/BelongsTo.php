@@ -67,7 +67,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     /**
      * Get the name of the "where in" method for eager loading.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  EloquentModel  $model
      * @param  string  $key
      * @return string
      */

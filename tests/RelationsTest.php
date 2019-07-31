@@ -130,6 +130,7 @@ class RelationsTest extends TestCase
         $item = Item::create(['type' => 'knife']);
         $user->items()->save($item);
 
+        /** @var User $user */
         $user = User::find($user->_id);
         $items = $user->items;
         $this->assertCount(1, $items);
@@ -224,7 +225,8 @@ class RelationsTest extends TestCase
 
     public function testBelongsToManyAttachesExistingModels()
     {
-        $user = User::create(['name' => 'John Doe', 'client_ids' => [['_id'=>'1234523']]]);
+        // Should be able to remove legacy
+        $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523', ['_id' => '1234523']]]);
 
         $clients = [
             Client::create(['name' => 'Pork Pies Ltd.'])->_id,
@@ -252,10 +254,12 @@ class RelationsTest extends TestCase
         $user->clients()->sync($moreClients);
 
         // Refetch
-        $user = User::with('clients')->find($user->_id);
+//        $user = User::with('clients')->find($user->_id);
+        $user = User::find($user->_id);
+        $user->load('clients');
 
         // Assert there are now still 2 client objects in the relationship
-        $this->assertCount(2, $user->clients);
+        $this->assertCount(2, $user->clients()->get());
 
         // Assert that the new relationships name start with synced
         $this->assertStringStartsWith('synced', $user->clients[0]->name);
