@@ -32,7 +32,7 @@ abstract class Model extends BaseModel
      * @var string
      */
     protected $primaryKey = '_id';
-    
+
     /**
      * The primary key type.
      *
@@ -175,7 +175,7 @@ abstract class Model extends BaseModel
     public function setAttribute($key, $value)
     {
         // Convert _id to ObjectID.
-        if (($key == '_id' || Str::endsWith($key, '_id')) && is_string($value)) {
+        if ($key == '_id' && is_string($value)) {
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
