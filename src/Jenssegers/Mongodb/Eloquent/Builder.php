@@ -44,7 +44,7 @@ class Builder extends EloquentBuilder
             return 1;
         }
 
-        return $this->query->update($this->addUpdatedAtColumn($values), $options);
+        return $this->toBase()->update($this->addUpdatedAtColumn($values), $options);
     }
 
     /**
