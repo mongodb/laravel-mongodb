@@ -380,7 +380,8 @@ class RelationsTest extends TestCase
 
         // Assert they are attached
         //TODO: Fix Recursion
-        $this->assertContains($group->_id, $user->groups->pluck('_id')->toArray());
+        $userGroups = $user->groups;
+        $this->assertContains($group->_id,$userGroups->pluck('_id')->toArray());
         $this->assertContains($user->_id, $group->users->pluck('_id')->toArray());
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
         $this->assertEquals($user->_id, $group->users()->first()->_id);
