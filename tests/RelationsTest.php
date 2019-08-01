@@ -211,7 +211,6 @@ class RelationsTest extends TestCase
             if (is_array($item)) {
                 return $item['_id'];
             }
-            return null;
         };
 
         $this->assertContains($client->_id, array_map($idPluck, $user->client_ids));
@@ -381,7 +380,7 @@ class RelationsTest extends TestCase
         // Assert they are attached
         //TODO: Fix Recursion
         $userGroups = $user->groups;
-        $this->assertContains($group->_id,$userGroups->pluck('_id')->toArray());
+        $this->assertContains($group->_id, $userGroups->pluck('_id')->toArray());
         $this->assertContains($user->_id, $group->users->pluck('_id')->toArray());
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
         $this->assertEquals($user->_id, $group->users()->first()->_id);

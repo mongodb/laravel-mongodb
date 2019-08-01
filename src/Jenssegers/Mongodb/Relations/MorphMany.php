@@ -16,5 +16,4 @@ class MorphMany extends EloquentMorphMany
             return [(string) $result->{$foreign} => $result];
         })->all();
     }
-
 }

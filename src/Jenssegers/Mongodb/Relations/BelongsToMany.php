@@ -223,7 +223,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
             $query
                 ->whereIn($this->related->getKeyName(), (array)$id)
-                ->orWhereIn($this->related->getKeyName().'._id', (array)$id);
+                ->orWhereIn($this->related->getKeyName().'._id', (array) $id);
 
             // Attach the new parent id to the related model.
             $query->push($this->foreignPivotKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
