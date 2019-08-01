@@ -2,8 +2,9 @@
 
 namespace Jenssegers\Mongodb\Relations;
 
-use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
 
 class MorphTo extends EloquentMorphTo
 {
@@ -17,6 +18,18 @@ class MorphTo extends EloquentMorphTo
             // or has many relationships, we need to actually query on the primary key
             // of the related models matching on the foreign key that's on a parent.
             $this->query->where($this->getOwnerKey(), '=', $this->parent->{$this->foreignKey});
+        }
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function buildDictionary(Collection $models)
+    {
+        foreach ($models as $model) {
+            if ($model->{$this->morphType}) {
+                $this->dictionary[$model->{$this->morphType}][(string) $model->{$this->foreignKey}][] = $model;
+            }
         }
     }
 

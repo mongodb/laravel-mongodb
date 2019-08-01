@@ -204,8 +204,18 @@ class RelationsTest extends TestCase
         $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
 
         // Assert they are attached
-        $this->assertContains($client->_id, $user->client_ids);
-        $this->assertContains($user->_id, $client->user_ids);
+        $idPluck = function ($item) {
+            if (is_object($item)) {
+                return $item->_id;
+            }
+            if (is_array($item)) {
+                return $item['_id'];
+            }
+            return null;
+        };
+
+        $this->assertContains($client->_id, array_map($idPluck, $user->client_ids));
+        $this->assertContains($user->_id, array_map($idPluck, $client->user_ids));
         $this->assertCount(2, $user->clients);
         $this->assertCount(2, $client->users);
 
@@ -369,6 +379,7 @@ class RelationsTest extends TestCase
         $this->assertArrayHasKey('groups', $user->getAttributes());
 
         // Assert they are attached
+        //TODO: Fix Recursion
         $this->assertContains($group->_id, $user->groups->pluck('_id')->toArray());
         $this->assertContains($user->_id, $group->users->pluck('_id')->toArray());
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
@@ -404,7 +415,7 @@ class RelationsTest extends TestCase
         $this->assertEquals($photo->imageable->name, $user->name);
 
         $user = User::with('photos')->find($user->_id);
-        $relations = $user->getRlations();
+        $relations = $user->getRelations();
         $this->assertArrayHasKey('photos', $relations);
         $this->assertEquals(1, $relations['photos']->count());
 
