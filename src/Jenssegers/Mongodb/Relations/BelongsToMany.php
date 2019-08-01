@@ -152,7 +152,6 @@ class BelongsToMany extends EloquentBelongsToMany
         if ($current instanceof Collection) {
             $current = $ids->modelKeys();
         } elseif (is_array($current)) {
-
             foreach ($current as $key => $value) {
                 if (is_array($value) && $value['_id']) {
                     $current[$key] = $value['_id'];
