@@ -73,6 +73,17 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
+     * @inheritDoc
+     */
+    public function addEagerConstraints(array $models)
+    {
+        $keys = $this->getKeys($models, $this->parentKey);
+        $this->query
+            ->whereIn($this->getQualifiedForeignPivotKeyName(), $keys)
+            ->orWhereRaw([$this->getQualifiedForeignPivotKeyName().'._id' => ['$in' => $keys]]);
+    }
+
+    /**
      * Set the where clause for the relation query.
      *
      * @return $this
@@ -285,7 +296,11 @@ class BelongsToMany extends EloquentBelongsToMany
 
         foreach ($results as $result) {
             foreach ($result->$foreign as $item) {
-                $dictionary[$item][] = $result;
+                if (is_array($item)){
+                    $dictionary[$item['_id']][]=$result;
+                }else {
+                    $dictionary[$item][] = $result;
+                }
             }
         }
 

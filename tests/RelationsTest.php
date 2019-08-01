@@ -255,6 +255,7 @@ class RelationsTest extends TestCase
 
         // Refetch
 //        $user = User::with('clients')->find($user->_id);
+        /** @var User $user */
         $user = User::find($user->_id);
         $user->load('clients');
 
