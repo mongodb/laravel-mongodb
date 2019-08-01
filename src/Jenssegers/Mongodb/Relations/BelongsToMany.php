@@ -222,7 +222,7 @@ class BelongsToMany extends EloquentBelongsToMany
             $query = $this->newRelatedQuery();
 
             $query
-                ->whereIn($this->related->getKeyName(), (array)$id)
+                ->whereIn($this->related->getKeyName(), (array) $id)
                 ->orWhereIn($this->related->getKeyName().'._id', (array) $id);
 
             // Attach the new parent id to the related model.
@@ -231,7 +231,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         //Pivot Collection
         $pivot_x = [];
-        foreach ((array)$id as $item) {
+        foreach ((array) $id as $item) {
             $pivot_x[] = array_merge($attributes, ['_id' => $item]);
         }
 
@@ -296,9 +296,9 @@ class BelongsToMany extends EloquentBelongsToMany
 
         foreach ($results as $result) {
             foreach ($result->$foreign as $item) {
-                if (is_array($item)){
+                if (is_array($item)) {
                     $dictionary[$item['_id']][]=$result;
-                }else {
+                } else {
                     $dictionary[$item][] = $result;
                 }
             }

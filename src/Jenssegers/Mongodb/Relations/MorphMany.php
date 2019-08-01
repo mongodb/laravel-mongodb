@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Collection;
