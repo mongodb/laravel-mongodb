@@ -335,8 +335,8 @@ class RelationsTest extends TestCase
             $client1 => ['fresh_client' => true],
             $client2 => ['fresh_client' => false]
         ]);
-        $user->clients()->updateExistingPivot($client1,['fresh_client'=>false]);
-        $this->assertFalse($user->clients()->where('_id',$client1)->first()->pivot->fresh_client);
+        $user->clients()->updateExistingPivot($client1, ['fresh_client' => false]);
+        $this->assertFalse($user->clients()->where('_id', $client1)->first()->pivot->fresh_client);
     }
 
     public function testBelongsToManyAttachArray()
@@ -384,8 +384,8 @@ class RelationsTest extends TestCase
         $client2 = Client::create(['name' => 'Test 2']);
         $user1 = User::create(['name' => 'John Doe', 'client_ids' => [$client1->_id, $client2]]);
         $user2 = User::create(['name' => 'John Doe', 'client_ids' => [['_id' => $client1->_id], ['_id' => $client2]]]);
-        $client1->fill(['user_ids' => [$user1->_id,$user2->_id]])->save();
-        $client2->fill(['user_ids' => [$user1->_id,$user2->_id]])->save();
+        $client1->fill(['user_ids' => [$user1->_id, $user2->_id]])->save();
+        $client2->fill(['user_ids' => [$user1->_id, $user2->_id]])->save();
 
         // Check for retrieval
         $this->assertCount(2, $user1->clients()->get(), "Get via Helper");
@@ -550,14 +550,14 @@ class RelationsTest extends TestCase
         $client = Client::create([
             'data' => [
                 'client_id' => 35298,
-                'name'      => 'John Doe',
+                'name' => 'John Doe',
             ],
         ]);
 
         $address = $client->addresses()->create([
             'data' => [
                 'address_id' => 1432,
-                'city'       => 'Paris',
+                'city' => 'Paris',
             ],
         ]);
 
@@ -604,20 +604,20 @@ class RelationsTest extends TestCase
         $user->save();
 
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([['_id' =>$user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $user->_id]], $client->user_ids);
         $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
 
         $user = User::where('name', 'John Doe')->first();
         $client = Client::where('name', 'Admins')->first();
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([['_id' =>$user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $user->_id]], $client->user_ids);
         $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
 
         $user->clients()->save($client);
         $user->clients()->save($client);
         $user->save();
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([['_id' =>$user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $user->_id]], $client->user_ids);
         $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
     }
 }

@@ -22,6 +22,16 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
+     * Get the fully qualified foreign key for the relation.
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        return $this->foreignPivotKey;
+    }
+
+    /**
      * @inheritdoc
      */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
@@ -32,55 +42,11 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * @inheritdoc
      */
-    protected function hydratePivotRelation(array $models)
-    {
-        foreach ($models as $model) {
-            $keyToUse = $this->getTable() == $model->getTable() ? $this->getForeignKey() : $this->getRelatedKey();
-            $pcontent = $model->getAttributes()[$keyToUse];
-            $model->setRelation($this->accessor, $this->newExistingPivot(
-                is_string($pcontent[0]) ? ['_id' => $pcontent] : $pcontent[0]
-            ));
-        }
-    }
-
-    /**
-     * Set the select clause for the relation query.
-     *
-     * @param  array $columns
-     * @return array
-     */
-    protected function getSelectColumns(array $columns = ['*'])
-    {
-        return $columns;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function shouldSelect(array $columns = ['*'])
-    {
-        return $columns;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function addConstraints()
     {
         if (static::$constraints) {
             $this->setWhere();
         }
-    }
-
-    /**
-     * @inheritDoc
-     */
-    public function addEagerConstraints(array $models)
-    {
-        $keys = $this->getKeys($models, $this->parentKey);
-        $this->query
-            ->whereIn($this->getQualifiedForeignPivotKeyName(), $keys)
-            ->orWhereRaw([$this->getQualifiedForeignPivotKeyName().'._id' => ['$in' => $keys]]);
     }
 
     /**
@@ -100,6 +66,25 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
+     * @inheritDoc
+     */
+    public function addEagerConstraints(array $models)
+    {
+        $keys = $this->getKeys($models, $this->parentKey);
+        $this->query
+            ->whereIn($this->getQualifiedForeignPivotKeyName(), $keys)
+            ->orWhereRaw([$this->getQualifiedForeignPivotKeyName().'._id' => ['$in' => $keys]]);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQualifiedForeignPivotKeyName()
+    {
+        return $this->foreignPivotKey;
+    }
+
+    /**
      * @inheritdoc
      */
     public function save(Model $model, array $joining = [], $touch = true)
@@ -109,6 +94,67 @@ class BelongsToMany extends EloquentBelongsToMany
         $this->attach($model, $joining, $touch);
 
         return $model;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function attach($id, array $attributes = [], $touch = true)
+    {
+        if ($id instanceof Model) {
+            $model = $id;
+
+            $id = $model->getKey();
+
+            // Attach the new parent id to the related model.
+            $model->push($this->foreignPivotKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
+        } else {
+            if ($id instanceof Collection) {
+                $id = $id->modelKeys();
+            }
+
+            $query = $this->newRelatedQuery();
+
+            $query
+                ->whereIn($this->related->getKeyName(), (array) $id)
+                ->orWhereIn($this->related->getKeyName().'._id', (array) $id);
+
+            // Attach the new parent id to the related model.
+            $query->push($this->foreignPivotKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
+        }
+
+        //Pivot Collection
+        $pivot_x = [];
+        foreach ((array) $id as $item) {
+            $pivot_x[] = array_merge($attributes, ['_id' => $item]);
+        }
+
+        // Attach the new ids to the parent model.
+        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
+
+        if ($touch) {
+            $this->touchIfTouching();
+        }
+    }
+
+    /**
+     * Create a new query builder for the related model.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function newRelatedQuery()
+    {
+        return $this->related->newQuery();
+    }
+
+    /**
+     * Get the related key with backwards compatible support.
+     *
+     * @return string
+     */
+    public function getRelatedKey()
+    {
+        return property_exists($this, 'relatedPivotKey') ? $this->relatedPivotKey : $this->relatedKey;
     }
 
     /**
@@ -194,77 +240,23 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * Format the sync list so that it is keyed by ID. (Legacy Support)
+     * The original function has been renamed to formatRecordsList since Laravel 5.3
+     *
+     * @param  array  $records
+     * @return array
+     * @deprecated
      */
-    public function updateExistingPivot($id, array $attributes, $touch = true)
+    protected function formatSyncList(array $records)
     {
-        if ($id instanceof Model) {
-            $model = $id;
-            $id = $model->getKey();
-        } else {
-            if ($id instanceof Collection) {
-                $id = $id->modelKeys();
+        $results = [];
+        foreach ($records as $id => $attributes) {
+            if (!is_array($attributes)) {
+                list($id, $attributes) = [$attributes, []];
             }
-
-            $related = $this->newRelatedQuery()->whereIn($this->related->getKeyName(), (array) $id);
-            $filter = [$this->parentKey => $this->parent->getKey()];
-            $pivot_x = [array_merge($attributes, $filter)];
-
-            //TODO: Put this in a transaction
-            $related->pull($this->getForeignKey(), $this->parent->getKey());
-            $related->pull($this->getForeignKey(), $filter);
-            $related->push($this->getForeignKey(),$pivot_x,true);
-
+            $results[$id] = $attributes;
         }
-        $filter = [$this->parentKey => $id];
-        $pivot_x = [array_merge($attributes, $filter)];
-
-        //TODO: Put this in a transaction
-        $this->parent->pull($this->getRelatedKey(), $id);
-        $this->parent->pull($this->getRelatedKey(), $filter);
-        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
-
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function attach($id, array $attributes = [], $touch = true)
-    {
-        if ($id instanceof Model) {
-            $model = $id;
-
-            $id = $model->getKey();
-
-            // Attach the new parent id to the related model.
-            $model->push($this->foreignPivotKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
-        } else {
-            if ($id instanceof Collection) {
-                $id = $id->modelKeys();
-            }
-
-            $query = $this->newRelatedQuery();
-
-            $query
-                ->whereIn($this->related->getKeyName(), (array) $id)
-                ->orWhereIn($this->related->getKeyName().'._id', (array) $id);
-
-            // Attach the new parent id to the related model.
-            $query->push($this->foreignPivotKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
-        }
-
-        //Pivot Collection
-        $pivot_x = [];
-        foreach ((array) $id as $item) {
-            $pivot_x[] = array_merge($attributes, ['_id' => $item]);
-        }
-
-        // Attach the new ids to the parent model.
-        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
-
-        if ($touch) {
-            $this->touchIfTouching();
-        }
+        return $results;
     }
 
     /**
@@ -286,7 +278,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // Detach all ids from the parent model.
         // Legacy Support
         $this->parent->pull($this->getRelatedKey(), $ids);
-        $this->parent->pull($this->getRelatedKey(), ['_id'=>['$in'=>$ids]]);
+        $this->parent->pull($this->getRelatedKey(), ['_id' => ['$in' => $ids]]);
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
@@ -295,13 +287,86 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Remove the relation to the parent.
         $query->pull($this->foreignPivotKey, $this->parent->getKey());
-        $query->pull($this->foreignPivotKey, [$this->parentKey=>$this->parent->getKey()]);
+        $query->pull($this->foreignPivotKey, [$this->parentKey => $this->parent->getKey()]);
 
         if ($touch) {
             $this->touchIfTouching();
         }
 
         return count($ids);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function updateExistingPivot($id, array $attributes, $touch = true)
+    {
+        if ($id instanceof Model) {
+            $model = $id;
+            $id = $model->getKey();
+        } else {
+            if ($id instanceof Collection) {
+                $id = $id->modelKeys();
+            }
+
+            $related = $this->newRelatedQuery()->whereIn($this->related->getKeyName(), (array) $id);
+            $filter = [$this->parentKey => $this->parent->getKey()];
+            $pivot_x = [array_merge($attributes, $filter)];
+
+            //TODO: Put this in a transaction
+            $related->pull($this->getForeignKey(), $this->parent->getKey());
+            $related->pull($this->getForeignKey(), $filter);
+            $related->push($this->getForeignKey(), $pivot_x, true);
+        }
+        $filter = [$this->parentKey => $id];
+        $pivot_x = [array_merge($attributes, $filter)];
+
+        //TODO: Put this in a transaction
+        $this->parent->pull($this->getRelatedKey(), $id);
+        $this->parent->pull($this->getRelatedKey(), $filter);
+        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
+
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getQualifiedRelatedPivotKeyName()
+    {
+        return $this->relatedPivotKey;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function hydratePivotRelation(array $models)
+    {
+        foreach ($models as $model) {
+            $keyToUse = $this->getTable() == $model->getTable() ? $this->getForeignKey() : $this->getRelatedKey();
+            $pcontent = $model->getAttributes()[$keyToUse];
+            $model->setRelation($this->accessor, $this->newExistingPivot(
+                is_string($pcontent[0]) ? ['_id' => $pcontent] : $pcontent[0]
+            ));
+        }
+    }
+
+    /**
+     * Set the select clause for the relation query.
+     *
+     * @param  array  $columns
+     * @return array
+     */
+    protected function getSelectColumns(array $columns = ['*'])
+    {
+        return $columns;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function shouldSelect(array $columns = ['*'])
+    {
+        return $columns;
     }
 
     /**
@@ -319,7 +384,7 @@ class BelongsToMany extends EloquentBelongsToMany
         foreach ($results as $result) {
             foreach ($result->$foreign as $item) {
                 if (is_array($item)) {
-                    $dictionary[$item['_id']][]=$result;
+                    $dictionary[$item['_id']][] = $result;
                 } else {
                     $dictionary[$item][] = $result;
                 }
@@ -338,75 +403,9 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * Create a new query builder for the related model.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    public function newRelatedQuery()
-    {
-        return $this->related->newQuery();
-    }
-
-    /**
-     * Get the fully qualified foreign key for the relation.
-     *
-     * @return string
-     */
-    public function getForeignKey()
-    {
-        return $this->foreignPivotKey;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQualifiedForeignPivotKeyName()
-    {
-        return $this->foreignPivotKey;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getQualifiedRelatedPivotKeyName()
-    {
-        return $this->relatedPivotKey;
-    }
-
-    /**
-     * Format the sync list so that it is keyed by ID. (Legacy Support)
-     * The original function has been renamed to formatRecordsList since Laravel 5.3
-     *
-     * @deprecated
-     * @param  array $records
-     * @return array
-     */
-    protected function formatSyncList(array $records)
-    {
-        $results = [];
-        foreach ($records as $id => $attributes) {
-            if (!is_array($attributes)) {
-                list($id, $attributes) = [$attributes, []];
-            }
-            $results[$id] = $attributes;
-        }
-        return $results;
-    }
-
-    /**
-     * Get the related key with backwards compatible support.
-     *
-     * @return string
-     */
-    public function getRelatedKey()
-    {
-        return property_exists($this, 'relatedPivotKey') ? $this->relatedPivotKey : $this->relatedKey;
-    }
-
-    /**
      * Get the name of the "where in" method for eager loading.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  EloquentModel  $model
      * @param  string  $key
      * @return string
      */
