@@ -1,7 +1,7 @@
 <?php
 
 $mongoHost = env('MONGO_HOST', 'mongodb');
-$mongoPort = env('MONGO_PORT') ? intval(env('MONGO_PORT')) : 27017;
+$mongoPort = env('MONGO_PORT') ? (int) env('MONGO_PORT') : 27017;
 
 return [
 
