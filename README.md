@@ -657,7 +657,7 @@ $user->email = 'john@foo.com';
 $user->save();
 ```
 
-_There is also support for upsert operations, check <https://github.com/jenssegers/laravel-mongodb#mongodb-specific-operations>_
+There is also support for upsert operations, check <https://github.com/jenssegers/laravel-mongodb#mongodb-specific-operations>
 
 **Deleting a model**
 
