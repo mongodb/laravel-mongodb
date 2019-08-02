@@ -325,7 +325,6 @@ class BelongsToMany extends EloquentBelongsToMany
         $this->parent->pull($this->getRelatedKey(), $id);
         $this->parent->pull($this->getRelatedKey(), $filter);
         $this->parent->push($this->getRelatedKey(), $pivot_x, true);
-
     }
 
     /**
