@@ -36,7 +36,7 @@ class BelongsToMany extends EloquentBelongsToMany
     {
         foreach ($models as $model) {
             $keyToUse = $this->getTable() == $model->getTable() ? $this->getForeignKey() : $this->getRelatedKey();
-            $pcontent = $model->{$keyToUse};
+            $pcontent = $model->getAttributes()[$keyToUse];
             $model->setRelation($this->accessor, $this->newExistingPivot(
                 $pcontent[0]
             ));
