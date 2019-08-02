@@ -330,7 +330,6 @@ class RelationsTest extends TestCase
         $client1 = Client::create(['name' => 'Test 1'])->_id;
         $client2 = Client::create(['name' => 'Test 2'])->_id;
 
-        $user = User::where('name', '=', 'John Doe')->first();
         $user->clients()->attach([$client1, $client2]);
         $this->assertCount(2, $user->clients);
     }
@@ -342,7 +341,6 @@ class RelationsTest extends TestCase
         $client2 = Client::create(['name' => 'Test 2']);
         $collection = new \Illuminate\Database\Eloquent\Collection([$client1, $client2]);
 
-        $user = User::where('name', '=', 'John Doe')->first();
         $user->clients()->attach($collection);
         $this->assertCount(2, $user->clients);
     }
@@ -364,6 +362,38 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $user['client_ids']);
     }
 
+    public function testBelongsToManyLegacy()
+    {
+        // Construct Legacy Relationship model
+        $client1 = Client::create(['name' => 'Test 1']);
+        $client2 = Client::create(['name' => 'Test 2']);
+        $user1 = User::create(['name' => 'John Doe', 'client_ids' => [$client1->_id, $client2]]);
+        $user2 = User::create(['name' => 'John Doe', 'client_ids' => [['_id' => $client1->_id], ['_id' => $client2]]]);
+        $client1->fill(['user_ids' => [$user1->_id,$user2->_id]])->save();
+        $client2->fill(['user_ids' => [$user1->_id,$user2->_id]])->save();
+
+        // Check for retrieval
+        $this->assertCount(2, $user1->clients()->get(), "Get via Helper");
+        $this->assertCount(2, $user1->clients, "Get via Attr");
+        $this->assertCount(2, $user2->clients()->get(), "Get via Helper");
+        $this->assertCount(2, $user2->clients, "Get via Attr");
+
+        // Check retrieval is correct
+        $testMatrix = [
+            [$client1, $user1->clients[0]],
+            [$client2, $user1->clients[1]],
+            [$client1, $user2->clients[0]],
+            [$client2, $user2->clients[1]]
+        ];
+        foreach ($testMatrix as $k => $test) {
+            $this->assertEquals($test[0]->_id, $test[1]->_id, "Matrix #{$k}");
+        }
+
+        // Check inverse
+        $this->assertCount(2, $client1->users()->get(), "Get Inverse via Helper");
+        $this->assertCount(2, $client1->users, "Get Inverse via Attr");
+    }
+
     public function testBelongsToManyCustom()
     {
         $user = User::create(['name' => 'John Doe']);
@@ -378,7 +408,6 @@ class RelationsTest extends TestCase
         $this->assertArrayHasKey('groups', $user->getAttributes());
 
         // Assert they are attached
-        //TODO: Fix Recursion
         $userGroups = $user->groups;
         $this->assertContains($group->_id, $userGroups->pluck('_id')->toArray());
         $this->assertContains($user->_id, $group->users->pluck('_id')->toArray());
