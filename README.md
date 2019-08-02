@@ -1,50 +1,46 @@
-Laravel MongoDB
-===============
+# Laravel MongoDB
 
 [![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](http://img.shields.io/travis/jenssegers/laravel-mongodb.svg)](https://travis-ci.org/jenssegers/laravel-mongodb) [![Coverage Status](http://img.shields.io/coveralls/jenssegers/laravel-mongodb.svg)](https://coveralls.io/r/jenssegers/laravel-mongodb?branch=master) [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
 
-An Eloquent model and Query builder with support for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
+An Eloquent model and Query builder with support for MongoDB, using the original Laravel API. _This library extends the original Laravel classes, so it uses exactly the same methods._
 
-Table of contents
------------------
-* [Installation](#installation)
-* [Upgrading](#upgrading)
-* [Configuration](#configuration)
-* [Eloquent](#eloquent)
-* [Optional: Alias](#optional-alias)
-* [Query Builder](#query-builder)
-* [Schema](#schema)
-* [Extensions](#extensions)
-* [Troubleshooting](#troubleshooting)
-* [Examples](#examples)
+## Table of contents
 
-Installation
-------------
+-   [Installation](#installation)
+-   [Upgrading](#upgrading)
+-   [Configuration](#configuration)
+-   [Eloquent](#eloquent)
+-   [Optional: Alias](#optional-alias)
+-   [Query Builder](#query-builder)
+-   [Schema](#schema)
+-   [Extensions](#extensions)
+-   [Troubleshooting](#troubleshooting)
+-   [Examples](#examples)
 
-Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongodb.installation.php
+## Installation
+
+Make sure you have the MongoDB PHP driver installed. You can find installation instructions at <http://php.net/manual/en/mongodb.installation.php>
 
 **WARNING**: The old mongo PHP driver is not supported anymore in versions >= 3.0.
 
 Installation using composer:
 
-```
-composer require jenssegers/mongodb
-```
+    composer require jenssegers/mongodb
 
 ### Laravel version Compatibility
 
- Laravel  | Package
-:---------|:----------
- 4.2.x    | 2.0.x
- 5.0.x    | 2.1.x
- 5.1.x    | 2.2.x or 3.0.x
- 5.2.x    | 2.3.x or 3.0.x
- 5.3.x    | 3.1.x or 3.2.x
- 5.4.x    | 3.2.x
- 5.5.x    | 3.3.x
- 5.6.x    | 3.4.x
- 5.7.x    | 3.4.x
- 5.8.x    | 3.5.x
+| Laravel | Package        |
+| :------ | :------------- |
+| 4.2.x   | 2.0.x          |
+| 5.0.x   | 2.1.x          |
+| 5.1.x   | 2.2.x or 3.0.x |
+| 5.2.x   | 2.3.x or 3.0.x |
+| 5.3.x   | 3.1.x or 3.2.x |
+| 5.4.x   | 3.2.x          |
+| 5.5.x   | 3.3.x          |
+| 5.6.x   | 3.4.x          |
+| 5.7.x   | 3.4.x          |
+| 5.8.x   | 3.5.x          |
 
 And add the service provider in `config/app.php`:
 
@@ -73,8 +69,7 @@ $capsule->getDatabaseManager()->extend('mongodb', function($config, $name)
 });
 ```
 
-Upgrading
----------
+## Upgrading
 
 #### Upgrading from version 2 to 3
 
@@ -108,17 +103,13 @@ Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rathe
 $books = $user->books()->sortBy('title');
 ```
 
-Testing
--------
+## Testing
 
 To run the test for this package, run:
 
-```
-docker-compose up
-```
+    docker-compose up
 
-Configuration
--------------
+## Configuration
 
 Change your default database connection name in `config/database.php`:
 
@@ -168,10 +159,9 @@ Alternatively, you can use MongoDB connection string:
 ],
 ```
 
-Please refer to MongoDB official docs for its URI format: https://docs.mongodb.com/manual/reference/connection-string/
+Please refer to MongoDB official docs for its URI format: <https://docs.mongodb.com/manual/reference/connection-string/>
 
-Eloquent
---------
+## Eloquent
 
 This package includes a MongoDB enabled Eloquent class that you can use to define models for corresponding collections.
 
@@ -205,7 +195,7 @@ class MyModel extends Eloquent {
 }
 ```
 
-Everything else (should) work just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
+Everything else (should) work just like the original Eloquent model. Read more about the Eloquent on <http://laravel.com/docs/eloquent>
 
 ### Optional: Alias
 
@@ -221,8 +211,7 @@ This will allow you to use the registered alias like:
 class MyModel extends Moloquent {}
 ```
 
-Query Builder
--------------
+## Query Builder
 
 The database driver plugs right into the original query builder. When using mongodb connections, you will be able to build fluent queries to perform database operations. For your convenience, there is a `collection` alias for `table` as well as some additional mongodb specific operators/operations.
 
@@ -238,10 +227,9 @@ If you did not change your default database connection, you will need to specify
 $user = DB::connection('mongodb')->collection('users')->get();
 ```
 
-Read more about the query builder on http://laravel.com/docs/queries
+Read more about the query builder on <http://laravel.com/docs/queries>
 
-Schema
-------
+## Schema
 
 The database driver also has (limited) schema builder support. You can easily manipulate collections and set indexes:
 
@@ -256,14 +244,14 @@ Schema::create('users', function($collection)
 
 Supported operations are:
 
- - create and drop
- - collection
- - hasCollection
- - index and dropIndex (compound indexes supported as well)
- - unique
- - background, sparse, expire, geospatial (MongoDB specific)
+-   create and drop
+-   collection
+-   hasCollection
+-   index and dropIndex (compound indexes supported as well)
+-   unique
+-   background, sparse, expire, geospatial (MongoDB specific)
 
-All other (unsupported) operations are implemented as dummy pass-through methods, because MongoDB does not use a predefined schema. Read more about the schema builder on http://laravel.com/docs/schema
+All other (unsupported) operations are implemented as dummy pass-through methods, because MongoDB does not use a predefined schema. Read more about the schema builder on <http://laravel.com/docs/schema>
 
 ### Geospatial indexes
 
@@ -287,8 +275,7 @@ Schema::create('users', function($collection)
 });
 ```
 
-Extensions
-----------
+## Extensions
 
 ### Auth
 
@@ -331,14 +318,13 @@ Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
 
 ### Sentry
 
-If you want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
+If you want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out <https://github.com/jenssegers/Laravel-MongoDB-Sentry>
 
 ### Sessions
 
-The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
+The MongoDB session driver is available in a separate package, check out <https://github.com/jenssegers/Laravel-MongoDB-Session>
 
-Examples
---------
+## Examples
 
 ### Basic Usage
 
@@ -441,7 +427,7 @@ $users = Users::groupBy('title')->get(['title', 'name']);
 
 **Aggregation**
 
-*Aggregations are only available for MongoDB versions greater than 2.2.*
+_Aggregations are only available for MongoDB versions greater than 2.2._
 
 ```php
 $total = Order::count();
@@ -510,7 +496,7 @@ class User extends Eloquent {
 }
 ```
 
-For more information check http://laravel.com/docs/eloquent#soft-deleting
+For more information check <http://laravel.com/docs/eloquent#soft-deleting>
 
 ### MongoDB specific operators
 
@@ -546,7 +532,7 @@ Selects documents where values match a specified regular expression.
 User::where('name', 'regex', new \MongoDB\BSON\Regex("/.*doe/i"))->get();
 ```
 
-**NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a MongoDB\BSON\Regex object.
+**NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a MongoDB\\BSON\\Regex object.
 
 ```php
 User::where('name', 'regexp', '/.*doe/i'))->get();
@@ -560,7 +546,7 @@ User::where('name', 'not regexp', '/.*doe/i'))->get();
 
 **Type**
 
-Selects documents if a field is of the specified type. For more information check: http://docs.mongodb.org/manual/reference/operator/query/type/#op._S_type
+Selects documents if a field is of the specified type. For more information check: <http://docs.mongodb.org/manual/reference/operator/query/type/#op._S_type>
 
 ```php
 User::where('age', 'type', 2)->get();
@@ -639,10 +625,9 @@ $locations = Location::where('location', 'geoIntersects', [
 ]);
 ```
 
-
 **Where**
 
-Matches documents that satisfy a JavaScript expression. For more information check http://docs.mongodb.org/manual/reference/operator/query/where/#op._S_where
+Matches documents that satisfy a JavaScript expression. For more information check <http://docs.mongodb.org/manual/reference/operator/query/where/#op._S_where>
 
 ### Inserts, updates and deletes
 
@@ -672,7 +657,7 @@ $user->email = 'john@foo.com';
 $user->save();
 ```
 
-*There is also support for upsert operations, check https://github.com/jenssegers/laravel-mongodb#mongodb-specific-operations*
+_There is also support for upsert operations, check <https://github.com/jenssegers/laravel-mongodb#mongodb-specific-operations>_
 
 **Deleting a model**
 
@@ -689,11 +674,11 @@ Or deleting a model by its key:
 User::destroy('517c43667db388101e00000f');
 ```
 
-For more information about model manipulation, check http://laravel.com/docs/eloquent#insert-update-delete
+For more information about model manipulation, check <http://laravel.com/docs/eloquent#insert-update-delete>
 
 ### Dates
 
-Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields, you will need to manually specify them as described here: http://laravel.com/docs/eloquent#date-mutators
+Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields, you will need to manually specify them as described here: <http://laravel.com/docs/eloquent#date-mutators>
 
 Example:
 
@@ -717,12 +702,12 @@ $users = User::where('birthday', '>', new DateTime('-18 years'))->get();
 
 Supported relations are:
 
- - hasOne
- - hasMany
- - belongsTo
- - belongsToMany
- - embedsOne
- - embedsMany
+-   hasOne
+-   hasMany
+-   belongsTo
+-   belongsToMany
+-   embedsOne
+-   embedsMany
 
 Example:
 
@@ -754,7 +739,7 @@ class Item extends Eloquent {
 }
 ```
 
-The belongsToMany relation will not use a pivot "table", but will push id's to a __related_ids__ attribute instead. This makes the second parameter for the belongsToMany method useless. If you want to define custom keys for your relation, set it to `null`:
+The belongsToMany relation will not use a pivot "table", but will push id's to a **related_ids** attribute instead. This makes the second parameter for the belongsToMany method useless. If you want to define custom keys for your relation, set it to `null`:
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
@@ -769,8 +754,7 @@ class User extends Eloquent {
 }
 ```
 
-
-Other relations are not yet supported, but may be added in the future. Read more about these relations on http://laravel.com/docs/eloquent#relationships
+Other relations are not yet supported, but may be added in the future. Read more about these relations on <http://laravel.com/docs/eloquent#relationships>
 
 ### EmbedsMany Relations
 
@@ -797,7 +781,7 @@ You can access the embedded models through the dynamic property:
 $books = User::first()->books;
 ```
 
-The inverse relation is auto*magically* available, you don't need to define this reverse relation.
+The inverse relation is auto_magically_ available, you don't need to define this reverse relation.
 
 ```php
 $user = $book->user;
@@ -849,7 +833,7 @@ Like other relations, embedsMany assumes the local key of the relationship based
 return $this->embedsMany('Book', 'local_key');
 ```
 
-Embedded relations will return a Collection of embedded items instead of a query builder. Check out the available operations here: https://laravel.com/docs/master/collections
+Embedded relations will return a Collection of embedded items instead of a query builder. Check out the available operations here: <https://laravel.com/docs/master/collections>
 
 ### EmbedsOne Relations
 
@@ -1015,7 +999,6 @@ $projections = ['id', 'name'];
 DB::collection('items')->paginate($limit, $projections);
 ```
 
-
 **Push**
 
 Add items to an array.
@@ -1063,7 +1046,7 @@ You may easily cache the results of a query using the remember method:
 $users = User::remember(10)->get();
 ```
 
-*From: http://laravel.com/docs/queries#caching-queries*
+_From: <http://laravel.com/docs/queries#caching-queries>_
 
 ### Query Logging
 
@@ -1073,4 +1056,4 @@ By default, Laravel keeps a log in memory of all queries that have been run for 
 DB::connection()->disableQueryLog();
 ```
 
-*From: http://laravel.com/docs/database#query-logging*
+_From: <http://laravel.com/docs/database#query-logging>_
