@@ -1,11 +1,11 @@
 ARG PHP_VERSION=7.2
 ARG COMPOSER_VERSION=1.8
 
-FROM composer:${COMPOSER_VERSION}
+FROM composer:${COMPOSER_VERSION} as composer
 FROM php:${PHP_VERSION}-cli
 
 RUN apt-get update && \
-    apt-get install -y autoconf pkg-config libssl-dev git libzip-dev zlib1g-dev unzip && \
+    apt-get install -y autoconf pkg-config libssl-dev git libzip-dev zlib1g-dev unzip --no-install-recommends && \
     pecl install mongodb && docker-php-ext-enable mongodb && \
     pecl install xdebug && docker-php-ext-enable xdebug && \
     docker-php-ext-install -j$(nproc) pdo_mysql zip
