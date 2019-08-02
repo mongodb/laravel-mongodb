@@ -263,10 +263,7 @@ class RelationsTest extends TestCase
         $user->clients()->sync($moreClients);
 
         // Refetch
-//        $user = User::with('clients')->find($user->_id);
-        /** @var User $user */
-        $user = User::find($user->_id);
-        $user->load('clients');
+        $user = User::with('clients')->find($user->_id);
 
         // Assert there are now still 2 client objects in the relationship
         $this->assertCount(2, $user->clients()->get());
@@ -304,7 +301,10 @@ class RelationsTest extends TestCase
         $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
 
         // Sync multiple
-        $user->clients()->sync([$client1 => ['fresh_client' => true], $client2 => ['fresh_client' => false]]);
+        $user->clients()->sync([
+            $client1 => ['fresh_client' => true],
+            $client2 => ['fresh_client' => false]
+        ]);
 
         //Check Sync Success
         $this->assertEquals($user->client_ids[0]['_id'], $client1);
@@ -317,11 +317,26 @@ class RelationsTest extends TestCase
         $clients = $user->clients;
         $this->assertCount(2, $clients);
 
-        foreach ($user->clients()->withPivot('fresh_client')->get() as $item) {
+        foreach ($user->clients()->get() as $item) {
             $this->assertIsArray($item->pivot->toArray());
             $this->assertEquals($item->_id == $client1, $item->pivot->fresh_client);
         }
-        $this->assertTrue(true);
+    }
+
+    public function testBelongsToManyUpdatePivot()
+    {
+        /** @var User $user */
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Pork Pies Ltd.'])->_id;
+        $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
+
+        // Sync multiple
+        $user->clients()->sync([
+            $client1 => ['fresh_client' => true],
+            $client2 => ['fresh_client' => false]
+        ]);
+        $user->clients()->updateExistingPivot($client1,['fresh_client'=>false]);
+        $this->assertFalse($user->clients()->where('_id',$client1)->first()->pivot->fresh_client);
     }
 
     public function testBelongsToManyAttachArray()

@@ -198,7 +198,32 @@ class BelongsToMany extends EloquentBelongsToMany
      */
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
-        // Do nothing, we have no pivot table.
+        if ($id instanceof Model) {
+            $model = $id;
+            $id = $model->getKey();
+        } else {
+            if ($id instanceof Collection) {
+                $id = $id->modelKeys();
+            }
+
+            $related = $this->newRelatedQuery()->whereIn($this->related->getKeyName(), (array) $id);
+            $filter = [$this->parentKey => $this->parent->getKey()];
+            $pivot_x = [array_merge($attributes, $filter)];
+
+            //TODO: Put this in a transaction
+            $related->pull($this->getForeignKey(), $this->parent->getKey());
+            $related->pull($this->getForeignKey(), $filter);
+            $related->push($this->getForeignKey(),$pivot_x,true);
+
+        }
+        $filter = [$this->parentKey => $id];
+        $pivot_x = [array_merge($attributes, $filter)];
+
+        //TODO: Put this in a transaction
+        $this->parent->pull($this->getRelatedKey(), $id);
+        $this->parent->pull($this->getRelatedKey(), $filter);
+        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
+
     }
 
     /**
@@ -265,14 +290,12 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
-            $query
-                ->whereIn($this->related->getKeyName(), $ids)
-                ->orWhereIn($this->related->getKeyName().'._id', $ids);
+            $query->whereIn($this->related->getKeyName(), $ids);
         }
 
         // Remove the relation to the parent.
         $query->pull($this->foreignPivotKey, $this->parent->getKey());
-        $query->pull($this->foreignPivotKey, ['_id'=>$this->parent->getKey()]);
+        $query->pull($this->foreignPivotKey, [$this->parentKey=>$this->parent->getKey()]);
 
         if ($touch) {
             $this->touchIfTouching();
