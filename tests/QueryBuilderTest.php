@@ -701,4 +701,16 @@ class QueryBuilderTest extends TestCase
             $this->assertEquals(1, count($result['tags']));
         }
     }
+
+    public function testValue()
+    {
+        DB::collection('books')->insert([
+            ['title' => 'Moby-Dick', 'author' => ['first_name' => 'Herman', 'last_name' => 'Melville']]
+        ]);
+
+        $this->assertEquals('Moby-Dick', DB::collection('books')->value('title'));
+        $this->assertEquals(['first_name' => 'Herman', 'last_name' => 'Melville'], DB::collection('books')->value('author'));
+        $this->assertEquals('Herman', DB::collection('books')->value('author.first_name'));
+        $this->assertEquals('Melville', DB::collection('books')->value('author.last_name'));
+    }
 }
