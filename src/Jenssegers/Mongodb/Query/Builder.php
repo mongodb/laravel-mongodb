@@ -318,7 +318,9 @@ class Builder extends BaseBuilder
             if ($group) {
                 $pipeline[] = ['$group' => $group];
             }
-
+            if ($this->projections) {
+                $pipeline[] = ['$project' => $this->projections];
+            }
             // Apply order and limit
             if ($this->orders) {
                 $pipeline[] = ['$sort' => $this->orders];
@@ -329,9 +331,7 @@ class Builder extends BaseBuilder
             if ($this->limit) {
                 $pipeline[] = ['$limit' => $this->limit];
             }
-            if ($this->projections) {
-                $pipeline[] = ['$project' => $this->projections];
-            }
+
 
             $options = [
                 'typeMap' => ['root' => 'array', 'document' => 'array'],
