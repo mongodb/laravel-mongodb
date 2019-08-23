@@ -243,7 +243,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     protected function fluent($columns = null)
     {
-        if (is_null($columns)) {
+        if ($columns === null) {
             return $this->columns;
         } elseif (is_string($columns)) {
             return $this->columns = [$columns];

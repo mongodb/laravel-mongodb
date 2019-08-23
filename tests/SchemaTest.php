@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 class SchemaTest extends TestCase
 {
@@ -8,14 +9,14 @@ class SchemaTest extends TestCase
         Schema::drop('newcollection_two');
     }
 
-    public function testCreate()
+    public function testCreate(): void
     {
         Schema::create('newcollection');
         $this->assertTrue(Schema::hasCollection('newcollection'));
         $this->assertTrue(Schema::hasTable('newcollection'));
     }
 
-    public function testCreateWithCallback()
+    public function testCreateWithCallback(): void
     {
         $instance = $this;
 
@@ -26,21 +27,21 @@ class SchemaTest extends TestCase
         $this->assertTrue(Schema::hasCollection('newcollection'));
     }
 
-    public function testCreateWithOptions()
+    public function testCreateWithOptions(): void
     {
         Schema::create('newcollection_two', null, ['capped' => true, 'size' => 1024]);
         $this->assertTrue(Schema::hasCollection('newcollection_two'));
         $this->assertTrue(Schema::hasTable('newcollection_two'));
     }
 
-    public function testDrop()
+    public function testDrop(): void
     {
         Schema::create('newcollection');
         Schema::drop('newcollection');
         $this->assertFalse(Schema::hasCollection('newcollection'));
     }
 
-    public function testBluePrint()
+    public function testBluePrint(): void
     {
         $instance = $this;
 
@@ -53,7 +54,7 @@ class SchemaTest extends TestCase
         });
     }
 
-    public function testIndex()
+    public function testIndex(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->index('mykey1');
@@ -77,7 +78,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['key']['mykey3']);
     }
 
-    public function testPrimary()
+    public function testPrimary(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->string('mykey', 100)->primary();
@@ -87,7 +88,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['unique']);
     }
 
-    public function testUnique()
+    public function testUnique(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->unique('uniquekey');
@@ -97,7 +98,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['unique']);
     }
 
-    public function testDropIndex()
+    public function testDropIndex(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->unique('uniquekey');
@@ -144,7 +145,7 @@ class SchemaTest extends TestCase
         $this->assertFalse($index);
     }
 
-    public function testBackground()
+    public function testBackground(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->background('backgroundkey');
@@ -154,7 +155,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['background']);
     }
 
-    public function testSparse()
+    public function testSparse(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->sparse('sparsekey');
@@ -164,7 +165,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['sparse']);
     }
 
-    public function testExpire()
+    public function testExpire(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->expire('expirekey', 60);
@@ -174,7 +175,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(60, $index['expireAfterSeconds']);
     }
 
-    public function testSoftDeletes()
+    public function testSoftDeletes(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->softDeletes();
@@ -188,7 +189,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['key']['email']);
     }
 
-    public function testFluent()
+    public function testFluent(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->string('email')->index();
@@ -203,7 +204,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['key']['token']);
     }
 
-    public function testGeospatial()
+    public function testGeospatial(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->geospatial('point');
@@ -221,7 +222,7 @@ class SchemaTest extends TestCase
         $this->assertEquals('2dsphere', $index['key']['continent']);
     }
 
-    public function testDummies()
+    public function testDummies(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->boolean('activated')->default(0);
@@ -229,7 +230,7 @@ class SchemaTest extends TestCase
         });
     }
 
-    public function testSparseUnique()
+    public function testSparseUnique(): void
     {
         Schema::collection('newcollection', function ($collection) {
             $collection->sparse_and_unique('sparseuniquekey');
@@ -240,7 +241,7 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['unique']);
     }
 
-    protected function getIndex($collection, $name)
+    protected function getIndex(string $collection, string $name)
     {
         $collection = DB::getCollection($collection);
 

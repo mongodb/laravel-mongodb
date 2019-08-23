@@ -39,7 +39,7 @@ class MongoQueue extends DatabaseQueue
     {
         $queue = $this->getQueue($queue);
 
-        if (!is_null($this->retryAfter)) {
+        if ($this->retryAfter !== null) {
             $this->releaseJobsThatHaveBeenReservedTooLong($queue);
         }
 

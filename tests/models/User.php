@@ -1,5 +1,7 @@
 <?php
+declare(strict_types=1);
 
+use Illuminate\Notifications\Notifiable;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 use Illuminate\Auth\Authenticatable;
@@ -7,9 +9,20 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 
+/**
+ * Class User
+ *
+ * @property string $_id
+ * @property string $name
+ * @property string $title
+ * @property int $age
+ * @property \Carbon\Carbon $birthday
+ * @property \Carbon\Carbon $created_at
+ * @property \Carbon\Carbon $updated_at
+ */
 class User extends Eloquent implements AuthenticatableContract, CanResetPasswordContract
 {
-    use Authenticatable, CanResetPassword, HybridRelations;
+    use Authenticatable, CanResetPassword, HybridRelations, Notifiable;
 
     protected $connection = 'mongodb';
     protected $dates = ['birthday', 'entry.date'];
