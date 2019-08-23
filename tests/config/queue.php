@@ -2,7 +2,7 @@
 
 return [
 
-    'default' => 'database',
+    'default' => env('QUEUE_CONNECTION'),
 
     'connections' => [
 
@@ -16,7 +16,7 @@ return [
     ],
 
     'failed' => [
-        'database' => 'mongodb',
+        'database' => env('MONGO_DATABASE'),
         'table'    => 'failed_jobs',
     ],
 

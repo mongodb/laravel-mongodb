@@ -1,5 +1,8 @@
 <?php
 
+$mongoHost = env('MONGO_HOST', 'mongodb');
+$mongoPort = env('MONGO_PORT') ? (int) env('MONGO_PORT') : 27017;
+
 return [
 
     'connections' => [
@@ -7,21 +10,21 @@ return [
         'mongodb' => [
             'name'       => 'mongodb',
             'driver'     => 'mongodb',
-            'host'       => 'mongodb',
-            'database'   => 'unittest',
+            'host'       => $mongoHost,
+            'database'   => env('MONGO_DATABASE', 'unittest'),
         ],
 
         'dsn_mongodb' => [
             'driver'    => 'mongodb',
-            'dsn'       => 'mongodb://mongodb:27017',
-            'database'  => 'unittest',
+            'dsn'       => "mongodb://$mongoHost:$mongoPort",
+            'database'  => env('MONGO_DATABASE', 'unittest'),
         ],
 
         'mysql' => [
             'driver'    => 'mysql',
-            'host'      => 'mysql',
-            'database'  => 'unittest',
-            'username'  => 'root',
+            'host'      => env('MYSQL_HOST', 'mysql'),
+            'database'  => env('MYSQL_DATABASE', 'unittest'),
+            'username'  => env('MYSQL_USERNAME', 'root'),
             'password'  => '',
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
