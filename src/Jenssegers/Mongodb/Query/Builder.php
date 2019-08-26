@@ -207,6 +207,16 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
+    public function value($column)
+    {
+        $result = (array) $this->first([$column]);
+
+        return Arr::get($result, $column);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function get($columns = [])
     {
         return $this->getFresh($columns);
@@ -844,7 +854,7 @@ class Builder extends BaseBuilder
     {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
-        } elseif (strlen($id) === 16 && preg_match('~[^\x20-\x7E\t\r\n]~', $id) > 0) {
+        } elseif (is_string($id) && strlen($id) === 16 && preg_match('~[^\x20-\x7E\t\r\n]~', $id) > 0) {
             return new Binary($id, Binary::TYPE_UUID);
         }
 
@@ -906,7 +916,7 @@ class Builder extends BaseBuilder
             }
 
             // Convert id's.
-            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '_id'))) {
+            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '._id'))) {
                 // Multiple values.
                 if (isset($where['values'])) {
                     foreach ($where['values'] as &$value) {
