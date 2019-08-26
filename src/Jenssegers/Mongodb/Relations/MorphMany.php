@@ -15,7 +15,7 @@ class MorphMany extends EloquentMorphMany
      *
      * @return string
      */
-    protected function whereInMethod( EloquentModel $model, $key )
+    protected function whereInMethod(EloquentModel $model, string $key )
     {
         return 'whereIn';
     }
