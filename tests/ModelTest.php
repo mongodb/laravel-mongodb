@@ -39,7 +39,7 @@ class ModelTest extends TestCase
         $this->assertEquals(1, User::count());
 
         $this->assertTrue(isset($user->_id));
-        $this->assertInternalType('string', $user->_id);
+        $this->assertIsString($user->_id);
         $this->assertNotEquals('', (string) $user->_id);
         $this->assertNotEquals(0, strlen((string) $user->_id));
         $this->assertInstanceOf(Carbon::class, $user->created_at);
@@ -110,7 +110,7 @@ class ModelTest extends TestCase
         $this->assertEquals('customId', $user->_id);
 
         $raw = $user->getAttributes();
-        $this->assertInternalType('string', $raw['_id']);
+        $this->assertIsString($raw['_id']);
     }
 
     public function testManualIntId()
@@ -126,7 +126,7 @@ class ModelTest extends TestCase
         $this->assertEquals(1, $user->_id);
 
         $raw = $user->getAttributes();
-        $this->assertInternalType('integer', $raw['_id']);
+        $this->assertIsInt($raw['_id']);
     }
 
     public function testDelete()
@@ -339,9 +339,9 @@ class ModelTest extends TestCase
         $keys = array_keys($array);
         sort($keys);
         $this->assertEquals(['_id', 'created_at', 'name', 'type', 'updated_at'], $keys);
-        $this->assertInternalType('string', $array['created_at']);
-        $this->assertInternalType('string', $array['updated_at']);
-        $this->assertInternalType('string', $array['_id']);
+        $this->assertIsString($array['created_at']);
+        $this->assertIsString( $array['updated_at']);
+        $this->assertIsString($array['_id']);
     }
 
     public function testUnset()

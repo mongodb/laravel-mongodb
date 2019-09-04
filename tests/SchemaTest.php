@@ -227,6 +227,7 @@ class SchemaTest extends TestCase
             $collection->boolean('activated')->default(0);
             $collection->integer('user_id')->unsigned();
         });
+        $this->assertEquals('newcollection', DB::getCollection('newcollection')->getCollectionName());
     }
 
     public function testSparseUnique()

@@ -36,7 +36,7 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertInstanceOf('DateTime', $address->created_at);
         $this->assertInstanceOf('DateTime', $address->updated_at);
         $this->assertNotNull($address->_id);
-        $this->assertInternalType('string', $address->_id);
+        $this->assertIsString($address->_id);
 
         $raw = $address->getAttributes();
         $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
@@ -176,7 +176,7 @@ class EmbeddedRelationsTest extends TestCase
         $user = User::create([]);
         $address = $user->addresses()->create(['city' => 'Bruxelles']);
         $this->assertInstanceOf('Address', $address);
-        $this->assertInternalType('string', $address->_id);
+        $this->assertIsString($address->_id);
         $this->assertEquals(['Bruxelles'], $user->addresses->pluck('city')->all());
 
         $raw = $address->getAttributes();
@@ -187,7 +187,7 @@ class EmbeddedRelationsTest extends TestCase
 
         $user = User::create([]);
         $address = $user->addresses()->create(['_id' => '', 'city' => 'Bruxelles']);
-        $this->assertInternalType('string', $address->_id);
+        $this->assertIsString($address->_id);
 
         $raw = $address->getAttributes();
         $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
@@ -387,14 +387,14 @@ class EmbeddedRelationsTest extends TestCase
         $relations = $user->getRelations();
         $this->assertArrayNotHasKey('addresses', $relations);
         $this->assertArrayHasKey('addresses', $user->toArray());
-        $this->assertInternalType('array', $user->toArray()['addresses']);
+        $this->assertIsArray($user->toArray()['addresses']);
 
         $user = User::with('addresses')->get()->first();
         $relations = $user->getRelations();
         $this->assertArrayHasKey('addresses', $relations);
         $this->assertEquals(2, $relations['addresses']->count());
         $this->assertArrayHasKey('addresses', $user->toArray());
-        $this->assertInternalType('array', $user->toArray()['addresses']);
+        $this->assertIsArray($user->toArray()['addresses']);
     }
 
     public function testEmbedsManyDeleteAll()
@@ -466,7 +466,7 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertInstanceOf('DateTime', $father->created_at);
         $this->assertInstanceOf('DateTime', $father->updated_at);
         $this->assertNotNull($father->_id);
-        $this->assertInternalType('string', $father->_id);
+        $this->assertIsString($father->_id);
 
         $raw = $father->getAttributes();
         $this->assertInstanceOf('MongoDB\BSON\ObjectID', $raw['_id']);
@@ -541,7 +541,7 @@ class EmbeddedRelationsTest extends TestCase
 
         $array = $user->toArray();
         $this->assertArrayHasKey('addresses', $array);
-        $this->assertInternalType('array', $array['addresses']);
+        $this->assertIsArray($array['addresses']);
     }
 
     public function testEmbeddedSave()
