@@ -100,6 +100,48 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
+     * Check whether the given index exists.
+     *
+     * @param  string|array  $indexOrColumns
+     * @return bool
+     */
+    public function hasIndex($indexOrColumns = null)
+    {
+        $indexOrColumns = $this->transformColumns($indexOrColumns);
+        foreach ($this->collection->listIndexes() as $index) {
+            if (is_array($indexOrColumns) && in_array($index->getName(), $indexOrColumns)) {
+                return true;
+            }
+
+            if (is_string($indexOrColumns) && $index->getName() == $indexOrColumns) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param  string|array  $indexOrColumns
+     * @return string
+     */
+    protected function transformColumns($indexOrColumns)
+    {
+        if (is_array($indexOrColumns)) {
+            $indexOrColumns = $this->fluent($indexOrColumns);
+
+            // Transform the columns to the index name.
+            $transform = [];
+
+            foreach ($indexOrColumns as $column) {
+                $transform[$column] = $column . '_1';
+            }
+
+            $indexOrColumns = implode('_', $transform);
+        }
+        return $indexOrColumns;
+    }
+
+    /**
      * @inheritdoc
      */
     public function unique($columns = null, $name = null, $algorithm = null, $options = [])
@@ -236,41 +278,6 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         $this->index($columns, null, null, $options);
 
         return $this;
-    }
-
-    /**
-     * Check whether the given index exists.
-     *
-     * @param  string|array  $indexOrColumns
-     * @return bool
-     */
-    public function hasIndex($indexOrColumns = null)
-    {
-        $indexOrColumns = $this->transformColumns($indexOrColumns);
-        foreach ($this->collection->listIndexes() as $index) {
-            if ($index->getName() == $indexOrColumns) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    /**
-     * @param  string|array  $indexOrColumns
-     * @return string|array
-     */
-    private function transformColumns($indexOrColumns)
-    {
-        if (is_array($indexOrColumns)) {
-            $indexOrColumns = $this->fluent($indexOrColumns);
-            // Transform the columns to the index name.
-            $transform = [];
-            foreach ($indexOrColumns as $column) {
-                $transform[$column] = $column . '_1';
-            }
-            $indexOrColumns = join('_', $transform);
-        }
-        return $indexOrColumns;
     }
 
     /**
