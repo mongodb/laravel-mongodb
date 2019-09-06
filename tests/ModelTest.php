@@ -1,7 +1,9 @@
 <?php
+declare(strict_types=1);
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Jenssegers\Mongodb\Eloquent\Model;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -16,17 +18,17 @@ class ModelTest extends TestCase
         Item::truncate();
     }
 
-    public function testNewModel()
+    public function testNewModel(): void
     {
         $user = new User;
         $this->assertInstanceOf(Model::class, $user);
-        $this->assertInstanceOf('Jenssegers\Mongodb\Connection', $user->getConnection());
+        $this->assertInstanceOf(\Jenssegers\Mongodb\Connection::class, $user->getConnection());
         $this->assertFalse($user->exists);
         $this->assertEquals('users', $user->getTable());
         $this->assertEquals('_id', $user->getKeyName());
     }
 
-    public function testInsert()
+    public function testInsert(): void
     {
         $user = new User;
         $user->name = 'John Doe';
@@ -51,7 +53,7 @@ class ModelTest extends TestCase
         $this->assertEquals(35, $user->age);
     }
 
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $user = new User;
         $user->name = 'John Doe';
@@ -62,8 +64,8 @@ class ModelTest extends TestCase
         $raw = $user->getAttributes();
         $this->assertInstanceOf(ObjectID::class, $raw['_id']);
 
+        /** @var User $check */
         $check = User::find($user->_id);
-
         $check->age = 36;
         $check->save();
 
@@ -84,7 +86,7 @@ class ModelTest extends TestCase
         $this->assertEquals(20, $check->age);
     }
 
-    public function testManualStringId()
+    public function testManualStringId(): void
     {
         $user = new User;
         $user->_id = '4af9f23d8ead0e1d32000000';
@@ -113,7 +115,7 @@ class ModelTest extends TestCase
         $this->assertInternalType('string', $raw['_id']);
     }
 
-    public function testManualIntId()
+    public function testManualIntId(): void
     {
         $user = new User;
         $user->_id = 1;
@@ -129,7 +131,7 @@ class ModelTest extends TestCase
         $this->assertInternalType('integer', $raw['_id']);
     }
 
-    public function testDelete()
+    public function testDelete(): void
     {
         $user = new User;
         $user->name = 'John Doe';
@@ -145,7 +147,7 @@ class ModelTest extends TestCase
         $this->assertEquals(0, User::count());
     }
 
-    public function testAll()
+    public function testAll(): void
     {
         $user = new User;
         $user->name = 'John Doe';
@@ -166,7 +168,7 @@ class ModelTest extends TestCase
         $this->assertContains('Jane Doe', $all->pluck('name'));
     }
 
-    public function testFind()
+    public function testFind(): void
     {
         $user = new User;
         $user->name = 'John Doe';
@@ -174,6 +176,7 @@ class ModelTest extends TestCase
         $user->age = 35;
         $user->save();
 
+        /** @var User $check */
         $check = User::find($user->_id);
 
         $this->assertInstanceOf(Model::class, $check);
@@ -184,7 +187,7 @@ class ModelTest extends TestCase
         $this->assertEquals(35, $check->age);
     }
 
-    public function testGet()
+    public function testGet(): void
     {
         User::insert([
             ['name' => 'John Doe'],
@@ -197,19 +200,20 @@ class ModelTest extends TestCase
         $this->assertInstanceOf(Model::class, $users[0]);
     }
 
-    public function testFirst()
+    public function testFirst(): void
     {
         User::insert([
             ['name' => 'John Doe'],
             ['name' => 'Jane Doe'],
         ]);
 
+        /** @var User $user */
         $user = User::first();
         $this->assertInstanceOf(Model::class, $user);
         $this->assertEquals('John Doe', $user->name);
     }
 
-    public function testNoDocument()
+    public function testNoDocument(): void
     {
         $items = Item::where('name', 'nothing')->get();
         $this->assertInstanceOf(Collection::class, $items);
@@ -222,25 +226,27 @@ class ModelTest extends TestCase
         $this->assertNull($item);
     }
 
-    public function testFindOrfail()
+    public function testFindOrFail(): void
     {
-        $this->expectException(Illuminate\Database\Eloquent\ModelNotFoundException::class);
-        User::findOrfail('51c33d8981fec6813e00000a');
+        $this->expectException(ModelNotFoundException::class);
+        User::findOrFail('51c33d8981fec6813e00000a');
     }
 
-    public function testCreate()
+    public function testCreate(): void
     {
+        /** @var User $user */
         $user = User::create(['name' => 'Jane Poe']);
 
         $this->assertInstanceOf(Model::class, $user);
         $this->assertTrue($user->exists);
         $this->assertEquals('Jane Poe', $user->name);
 
+        /** @var User $check */
         $check = User::where('name', 'Jane Poe')->first();
         $this->assertEquals($user->_id, $check->_id);
     }
 
-    public function testDestroy()
+    public function testDestroy(): void
     {
         $user = new User;
         $user->name = 'John Doe';
@@ -253,7 +259,7 @@ class ModelTest extends TestCase
         $this->assertEquals(0, User::count());
     }
 
-    public function testTouch()
+    public function testTouch(): void
     {
         $user = new User;
         $user->name = 'John Doe';
@@ -264,18 +270,21 @@ class ModelTest extends TestCase
         $old = $user->updated_at;
         sleep(1);
         $user->touch();
+
+        /** @var User $check */
         $check = User::find($user->_id);
 
         $this->assertNotEquals($old, $check->updated_at);
     }
 
-    public function testSoftDelete()
+    public function testSoftDelete(): void
     {
         Soft::create(['name' => 'John Doe']);
         Soft::create(['name' => 'Jane Doe']);
 
         $this->assertEquals(2, Soft::count());
 
+        /** @var Soft $user */
         $user = Soft::where('name', 'John Doe')->first();
         $this->assertTrue($user->exists);
         $this->assertFalse($user->trashed());
@@ -300,7 +309,7 @@ class ModelTest extends TestCase
         $this->assertEquals(2, Soft::count());
     }
 
-    public function testPrimaryKey()
+    public function testPrimaryKey(): void
     {
         $user = new User;
         $this->assertEquals('_id', $user->getKeyName());
@@ -314,13 +323,14 @@ class ModelTest extends TestCase
 
         $this->assertEquals('A Game of Thrones', $book->getKey());
 
+        /** @var Book $check */
         $check = Book::find('A Game of Thrones');
         $this->assertEquals('title', $check->getKeyName());
         $this->assertEquals('A Game of Thrones', $check->getKey());
         $this->assertEquals('A Game of Thrones', $check->title);
     }
 
-    public function testScope()
+    public function testScope(): void
     {
         Item::insert([
             ['name' => 'knife', 'type' => 'sharp'],
@@ -331,7 +341,7 @@ class ModelTest extends TestCase
         $this->assertEquals(1, $sharp->count());
     }
 
-    public function testToArray()
+    public function testToArray(): void
     {
         $item = Item::create(['name' => 'fork', 'type' => 'sharp']);
 
@@ -344,7 +354,7 @@ class ModelTest extends TestCase
         $this->assertInternalType('string', $array['_id']);
     }
 
-    public function testUnset()
+    public function testUnset(): void
     {
         $user1 = User::create(['name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
         $user2 = User::create(['name' => 'Jane Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
@@ -371,7 +381,7 @@ class ModelTest extends TestCase
         $this->assertObjectNotHasAttribute('note2', $user2);
     }
 
-    public function testDates()
+    public function testDates(): void
     {
         $birthday = new DateTime('1980/1/1');
         $user = User::create(['name' => 'John Doe', 'birthday' => $birthday]);
@@ -398,10 +408,12 @@ class ModelTest extends TestCase
         $this->assertLessThan(2, abs(time() - $item->created_at->getTimestamp()));
 
         // test default date format for json output
+        /** @var Item $item */
         $item = Item::create(['name' => 'sword']);
         $json = $item->toArray();
         $this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
 
+        /** @var User $user */
         $user = User::create(['name' => 'Jane Doe', 'birthday' => time()]);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
@@ -422,8 +434,9 @@ class ModelTest extends TestCase
         $this->assertEquals((string) $user->getAttribute('entry.date')->format('Y-m-d H:i:s'), $data['entry']['date']);
     }
 
-    public function testIdAttribute()
+    public function testIdAttribute(): void
     {
+        /** @var User $user */
         $user = User::create(['name' => 'John Doe']);
         $this->assertEquals($user->id, $user->_id);
 
@@ -431,8 +444,9 @@ class ModelTest extends TestCase
         $this->assertNotEquals($user->id, $user->_id);
     }
 
-    public function testPushPull()
+    public function testPushPull(): void
     {
+        /** @var User $user */
         $user = User::create(['name' => 'John Doe']);
 
         $user->push('tags', 'tag1');
@@ -457,36 +471,36 @@ class ModelTest extends TestCase
         $this->assertEquals([], $user->tags);
     }
 
-    public function testRaw()
+    public function testRaw(): void
     {
         User::create(['name' => 'John Doe', 'age' => 35]);
         User::create(['name' => 'Jane Doe', 'age' => 35]);
         User::create(['name' => 'Harry Hoe', 'age' => 15]);
 
-        $users = User::raw(function ($collection) {
+        $users = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
             return $collection->find(['age' => 35]);
         });
         $this->assertInstanceOf(Collection::class, $users);
         $this->assertInstanceOf(Model::class, $users[0]);
 
-        $user = User::raw(function ($collection) {
+        $user = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
             return $collection->findOne(['age' => 35]);
         });
 
         $this->assertInstanceOf(Model::class, $user);
 
-        $count = User::raw(function ($collection) {
+        $count = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
             return $collection->count();
         });
         $this->assertEquals(3, $count);
 
-        $result = User::raw(function ($collection) {
+        $result = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
             return $collection->insertOne(['name' => 'Yvonne Yoe', 'age' => 35]);
         });
         $this->assertNotNull($result);
     }
 
-    public function testDotNotation()
+    public function testDotNotation(): void
     {
         $user = User::create([
             'name' => 'John Doe',
@@ -508,8 +522,9 @@ class ModelTest extends TestCase
         $this->assertEquals('Strasbourg', $user['address.city']);
     }
 
-    public function testMultipleLevelDotNotation()
+    public function testMultipleLevelDotNotation(): void
     {
+        /** @var Book $book */
         $book = Book::create([
             'title' => 'A Game of Thrones',
             'chapters' => [
@@ -524,7 +539,7 @@ class ModelTest extends TestCase
         $this->assertEquals('The first chapter', $book['chapters.one.title']);
     }
 
-    public function testGetDirtyDates()
+    public function testGetDirtyDates(): void
     {
         $user = new User();
         $user->setRawAttributes(['name' => 'John Doe', 'birthday' => new DateTime('19 august 1989')], true);
@@ -534,14 +549,14 @@ class ModelTest extends TestCase
         $this->assertEmpty($user->getDirty());
     }
 
-    public function testChunkById()
+    public function testChunkById(): void
     {
         User::create(['name' => 'fork',  'tags' => ['sharp', 'pointy']]);
         User::create(['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']]);
         User::create(['name' => 'spoon', 'tags' => ['round', 'bowl']]);
 
         $count = 0;
-        User::chunkById(2, function ($items) use (&$count) {
+        User::chunkById(2, function (\Illuminate\Database\Eloquent\Collection $items) use (&$count) {
             $count += count($items);
         });
 

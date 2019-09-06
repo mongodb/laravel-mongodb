@@ -25,7 +25,7 @@ return [
             'host'      => env('MYSQL_HOST', 'mysql'),
             'database'  => env('MYSQL_DATABASE', 'unittest'),
             'username'  => env('MYSQL_USERNAME', 'root'),
-            'password'  => '',
+            'password'  => env('MYSQL_PASSWORD', ''),
             'charset'   => 'utf8',
             'collation' => 'utf8_unicode_ci',
             'prefix'    => '',

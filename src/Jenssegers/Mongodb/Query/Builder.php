@@ -233,7 +233,7 @@ class Builder extends BaseBuilder
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
         // all of the columns on the table using the "wildcard" column character.
-        if (is_null($this->columns)) {
+        if ($this->columns === null) {
             $this->columns = $columns;
         }
 
@@ -469,7 +469,7 @@ class Builder extends BaseBuilder
      */
     public function exists()
     {
-        return !is_null($this->first());
+        return $this->first() !== null;
     }
 
     /**
@@ -580,7 +580,7 @@ class Builder extends BaseBuilder
         $result = $this->collection->insertOne($values);
 
         if (1 == (int) $result->isAcknowledged()) {
-            if (is_null($sequence)) {
+            if ($sequence === null) {
                 $sequence = '_id';
             }
 
@@ -652,7 +652,7 @@ class Builder extends BaseBuilder
      */
     public function pluck($column, $key = null)
     {
-        $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
+        $results = $this->get($key === null ? [$column] : [$column, $key]);
 
         // Convert ObjectID's to strings
         if ($key == '_id') {
@@ -674,7 +674,7 @@ class Builder extends BaseBuilder
         // If an ID is passed to the method, we will set the where clause to check
         // the ID to allow developers to simply and quickly remove a single row
         // from their database without manually specifying the where clauses.
-        if (!is_null($id)) {
+        if ($id !== null) {
             $this->where('_id', '=', $id);
         }
 
@@ -730,8 +730,10 @@ class Builder extends BaseBuilder
         // Execute the closure on the mongodb collection
         if ($expression instanceof Closure) {
             return call_user_func($expression, $this->collection);
-        } // Create an expression for the given value
-        elseif (!is_null($expression)) {
+        }
+
+        // Create an expression for the given value
+        if ($expression !== null) {
             return new Expression($expression);
         }
 
@@ -854,7 +856,9 @@ class Builder extends BaseBuilder
     {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
-        } elseif (is_string($id) && strlen($id) === 16 && preg_match('~[^\x20-\x7E\t\r\n]~', $id) > 0) {
+        }
+
+        if (is_string($id) && strlen($id) === 16 && preg_match('~[^\x20-\x7E\t\r\n]~', $id) > 0) {
             return new Binary($id, Binary::TYPE_UUID);
         }
 
@@ -1009,7 +1013,7 @@ class Builder extends BaseBuilder
                 $regex = '^' . $regex;
             }
             if (!Str::endsWith($value, '%')) {
-                $regex = $regex . '$';
+                $regex .= '$';
             }
 
             $value = new Regex($regex, 'i');
@@ -1121,14 +1125,14 @@ class Builder extends BaseBuilder
                     ],
                 ],
             ];
-        } else {
-            return [
-                $column => [
-                    '$gte' => $values[0],
-                    '$lte' => $values[1],
-                ],
-            ];
         }
+
+        return [
+            $column => [
+                '$gte' => $values[0],
+                '$lte' => $values[1],
+            ],
+        ];
     }
 
     /**

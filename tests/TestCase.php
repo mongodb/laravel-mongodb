@@ -1,4 +1,7 @@
 <?php
+declare(strict_types=1);
+
+use Illuminate\Auth\Passwords\PasswordResetServiceProvider;
 
 class TestCase extends Orchestra\Testbench\TestCase
 {
@@ -13,7 +16,7 @@ class TestCase extends Orchestra\Testbench\TestCase
     {
         $providers = parent::getApplicationProviders($app);
 
-        unset($providers[array_search('Illuminate\Auth\Passwords\PasswordResetServiceProvider', $providers)]);
+        unset($providers[array_search(PasswordResetServiceProvider::class, $providers)]);
 
         return $providers;
     }

@@ -130,9 +130,9 @@ class EmbedsMany extends EmbedsOneOrMany
     {
         if (!$this->contains($model)) {
             return $this->associateNew($model);
-        } else {
-            return $this->associateExisting($model);
         }
+
+        return $this->associateExisting($model);
     }
 
     /**

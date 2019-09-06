@@ -22,17 +22,17 @@ trait EmbedsRelations
         // If no relation name was given, we will use this debug backtrace to extract
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relationships.
-        if (is_null($relation)) {
+        if ($relation === null) {
             list(, $caller) = debug_backtrace(false);
 
             $relation = $caller['function'];
         }
 
-        if (is_null($localKey)) {
+        if ($localKey === null) {
             $localKey = $relation;
         }
 
-        if (is_null($foreignKey)) {
+        if ($foreignKey === null) {
             $foreignKey = Str::snake(class_basename($this));
         }
 
@@ -57,17 +57,17 @@ trait EmbedsRelations
         // If no relation name was given, we will use this debug backtrace to extract
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relationships.
-        if (is_null($relation)) {
+        if ($relation === null) {
             list(, $caller) = debug_backtrace(false);
 
             $relation = $caller['function'];
         }
 
-        if (is_null($localKey)) {
+        if ($localKey === null) {
             $localKey = $relation;
         }
 
-        if (is_null($foreignKey)) {
+        if ($foreignKey === null) {
             $foreignKey = Str::snake(class_basename($this));
         }
 
