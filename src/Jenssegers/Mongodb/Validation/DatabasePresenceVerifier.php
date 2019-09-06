@@ -19,7 +19,7 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
     {
         $query = $this->table($collection)->where($column, 'regex', "/$value/i");
 
-        if (!is_null($excludeId) && $excludeId != 'NULL') {
+        if ($excludeId !== null && $excludeId != 'NULL') {
             $query->where($idColumn ?: 'id', '<>', $excludeId);
         }
 

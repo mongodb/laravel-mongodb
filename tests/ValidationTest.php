@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 class ValidationTest extends TestCase
 {
@@ -7,7 +8,7 @@ class ValidationTest extends TestCase
         User::truncate();
     }
 
-    public function testUnique()
+    public function testUnique(): void
     {
         $validator = Validator::make(
             ['name' => 'John Doe'],
@@ -42,7 +43,7 @@ class ValidationTest extends TestCase
         $this->assertFalse($validator->fails());
     }
 
-    public function testExists()
+    public function testExists(): void
     {
         $validator = Validator::make(
             ['name' => 'John Doe'],

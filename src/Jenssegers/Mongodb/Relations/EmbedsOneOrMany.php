@@ -279,7 +279,7 @@ abstract class EmbedsOneOrMany extends Relation
      */
     protected function toModel($attributes = [])
     {
-        if (is_null($attributes)) {
+        if ($attributes === null) {
             return;
         }
 

@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 class QueueTest extends TestCase
 {
@@ -11,7 +12,7 @@ class QueueTest extends TestCase
         Queue::getDatabase()->table(Config::get('queue.failed.table'))->truncate();
     }
 
-    public function testQueueJobLifeCycle()
+    public function testQueueJobLifeCycle(): void
     {
         $id = Queue::push('test', ['action' => 'QueueJobLifeCycle'], 'test');
         $this->assertNotNull($id);
@@ -34,7 +35,7 @@ class QueueTest extends TestCase
         $this->assertEquals(0, Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->count());
     }
 
-    public function testQueueJobExpired()
+    public function testQueueJobExpired(): void
     {
         $id = Queue::push('test', ['action' => 'QueueJobExpired'], 'test');
         $this->assertNotNull($id);

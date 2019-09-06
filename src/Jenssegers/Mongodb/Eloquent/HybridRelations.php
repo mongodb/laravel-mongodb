@@ -133,7 +133,7 @@ trait HybridRelations
         // If no relation name was given, we will use this debug backtrace to extract
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relationships.
-        if (is_null($relation)) {
+        if ($relation === null) {
             list($current, $caller) = debug_backtrace(false, 2);
 
             $relation = $caller['function'];
@@ -147,7 +147,7 @@ trait HybridRelations
         // If no foreign key was supplied, we can use a backtrace to guess the proper
         // foreign key name by using the name of the relationship function, which
         // when combined with an "_id" should conventionally match the columns.
-        if (is_null($foreignKey)) {
+        if ($foreignKey === null) {
             $foreignKey = Str::snake($relation) . '_id';
         }
 
@@ -177,7 +177,7 @@ trait HybridRelations
         // If no name is provided, we will use the backtrace to get the function name
         // since that is most likely the name of the polymorphic interface. We can
         // use that to get both the class and foreign key that will be utilized.
-        if (is_null($name)) {
+        if ($name === null) {
             list($current, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
             $name = Str::snake($caller['function']);
@@ -188,7 +188,7 @@ trait HybridRelations
         // If the type value is null it is probably safe to assume we're eager loading
         // the relationship. When that is the case we will pass in a dummy query as
         // there are multiple types in the morph and we can't use single queries.
-        if (is_null($class = $this->$type)) {
+        if (($class = $this->$type) === null) {
             return new MorphTo(
                 $this->newQuery(), $this, $id, null, $type, $name
             );
@@ -197,15 +197,13 @@ trait HybridRelations
         // If we are not eager loading the relationship we will essentially treat this
         // as a belongs-to style relationship since morph-to extends that class and
         // we will pass in the appropriate values so that it behaves as expected.
-        else {
-            $class = $this->getActualClassNameForMorph($class);
+        $class = $this->getActualClassNameForMorph($class);
 
-            $instance = new $class;
+        $instance = new $class;
 
-            return new MorphTo(
-                $instance->newQuery(), $this, $id, $instance->getKeyName(), $type, $name
-            );
-        }
+        return new MorphTo(
+            $instance->newQuery(), $this, $id, $instance->getKeyName(), $type, $name
+        );
     }
 
     /**
@@ -232,7 +230,7 @@ trait HybridRelations
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
         // title of this relation since that is a great convention to apply.
-        if (is_null($relation)) {
+        if ($relation === null) {
             $relation = $this->guessBelongsToManyRelation();
         }
 
@@ -261,7 +259,7 @@ trait HybridRelations
         // If no table name was provided, we can guess it by concatenating the two
         // models using underscores in alphabetical order. The two model names
         // are transformed to snake case from their default CamelCase also.
-        if (is_null($collection)) {
+        if ($collection === null) {
             $collection = $instance->getTable();
         }
 
@@ -303,8 +301,8 @@ trait HybridRelations
     {
         if (is_subclass_of($this, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return new Builder($query);
-        } else {
-            return new EloquentBuilder($query);
         }
+
+        return new EloquentBuilder($query);
     }
 }
