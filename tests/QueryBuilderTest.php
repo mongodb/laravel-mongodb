@@ -46,7 +46,7 @@ class QueryBuilderTest extends TestCase
 
         DB::collection('items')->where('user_id', $user_id)->delete($pid);
 
-        DB::collection('items')->where('user_id', $user_id)->delete(str_random(32));
+        DB::collection('items')->where('user_id', $user_id)->delete(md5('random-id'));
 
         $this->assertEquals(2, DB::collection('items')->count());
     }
