@@ -8,7 +8,6 @@ class MongoJob extends DatabaseJob
 {
     /**
      * Indicates if the job has been reserved.
-     *
      * @return bool
      */
     public function isReserved()

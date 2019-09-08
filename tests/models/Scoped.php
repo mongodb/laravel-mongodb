@@ -1,8 +1,8 @@
 <?php
 declare(strict_types=1);
 
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 use Jenssegers\Mongodb\Eloquent\Builder;
+use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class Scoped extends Eloquent
 {

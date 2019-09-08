@@ -20,49 +20,42 @@ class Builder extends BaseBuilder
 {
     /**
      * The database collection.
-     *
      * @var MongoCollection
      */
     protected $collection;
 
     /**
      * The column projections.
-     *
      * @var array
      */
     public $projections;
 
     /**
      * The cursor timeout value.
-     *
      * @var int
      */
     public $timeout;
 
     /**
      * The cursor hint value.
-     *
      * @var int
      */
     public $hint;
 
     /**
      * Custom options to add to the query.
-     *
      * @var array
      */
     public $options = [];
 
     /**
      * Indicate if we are executing a pagination query.
-     *
      * @var bool
      */
     public $paginating = false;
 
     /**
      * All of the available clause operators.
-     *
      * @var array
      */
     public $operators = [
@@ -110,7 +103,6 @@ class Builder extends BaseBuilder
 
     /**
      * Operator conversion.
-     *
      * @var array
      */
     protected $conversion = [
@@ -125,7 +117,6 @@ class Builder extends BaseBuilder
 
     /**
      * Check if we need to return Collections instead of plain arrays (laravel >= 5.3 )
-     *
      * @var boolean
      */
     protected $useCollections;
@@ -143,7 +134,6 @@ class Builder extends BaseBuilder
 
     /**
      * Returns true if Laravel or Lumen >= 5.3
-     *
      * @return bool
      */
     protected function shouldUseCollections()
@@ -159,8 +149,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the projections.
-     *
-     * @param  array $columns
+     * @param array $columns
      * @return $this
      */
     public function project($columns)
@@ -172,8 +161,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor timeout in seconds.
-     *
-     * @param  int $seconds
+     * @param int $seconds
      * @return $this
      */
     public function timeout($seconds)
@@ -185,8 +173,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor hint.
-     *
-     * @param  mixed $index
+     * @param mixed $index
      * @return $this
      */
     public function hint($index)
@@ -224,8 +211,7 @@ class Builder extends BaseBuilder
 
     /**
      * Execute the query as a fresh "select" statement.
-     *
-     * @param  array $columns
+     * @param array $columns
      * @return array|static[]|Collection
      */
     public function getFresh($columns = [])
@@ -412,7 +398,6 @@ class Builder extends BaseBuilder
 
     /**
      * Generate the unique cache key for the current query.
-     *
      * @return string
      */
     public function generateCacheKey()
@@ -506,11 +491,10 @@ class Builder extends BaseBuilder
 
     /**
      * Add a "where all" clause to the query.
-     *
-     * @param  string  $column
-     * @param  array   $values
-     * @param  string  $boolean
-     * @param  bool    $not
+     * @param string $column
+     * @param array $values
+     * @param string $boolean
+     * @param bool $not
      * @return $this
      */
     public function whereAll($column, array $values, $boolean = 'and', $not = false)
@@ -711,11 +695,10 @@ class Builder extends BaseBuilder
 
     /**
      * Get an array with the values of a given column.
-     *
-     * @deprecated
-     * @param  string $column
-     * @param  string $key
+     * @param string $column
+     * @param string $key
      * @return array
+     * @deprecated
      */
     public function lists($column, $key = null)
     {
@@ -743,7 +726,6 @@ class Builder extends BaseBuilder
 
     /**
      * Append one or more values to an array.
-     *
      * @param mixed $column
      * @param mixed $value
      * @param bool $unique
@@ -770,9 +752,8 @@ class Builder extends BaseBuilder
 
     /**
      * Remove one or more values from an array.
-     *
-     * @param  mixed $column
-     * @param  mixed $value
+     * @param mixed $column
+     * @param mixed $value
      * @return int
      */
     public function pull($column, $value = null)
@@ -794,8 +775,7 @@ class Builder extends BaseBuilder
 
     /**
      * Remove one or more fields.
-     *
-     * @param  mixed $columns
+     * @param mixed $columns
      * @return int
      */
     public function drop($columns)
@@ -825,9 +805,8 @@ class Builder extends BaseBuilder
 
     /**
      * Perform an update query.
-     *
-     * @param  array $query
-     * @param  array $options
+     * @param array $query
+     * @param array $options
      * @return int
      */
     protected function performUpdate($query, array $options = [])
@@ -848,8 +827,7 @@ class Builder extends BaseBuilder
 
     /**
      * Convert a key to ObjectID if needed.
-     *
-     * @param  mixed $id
+     * @param mixed $id
      * @return mixed
      */
     public function convertKey($id)
@@ -886,7 +864,6 @@ class Builder extends BaseBuilder
 
     /**
      * Compile the where array.
-     *
      * @return array
      */
     protected function compileWheres()
@@ -1146,8 +1123,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set custom options for the query.
-     *
-     * @param  array $options
+     * @param array $options
      * @return $this
      */
     public function options(array $options)

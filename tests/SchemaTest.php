@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+use Jenssegers\Mongodb\Schema\Blueprint;
+
 class SchemaTest extends TestCase
 {
     public function tearDown(): void
@@ -21,7 +23,7 @@ class SchemaTest extends TestCase
         $instance = $this;
 
         Schema::create('newcollection', function ($collection) use ($instance) {
-            $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+            $instance->assertInstanceOf(Blueprint::class, $collection);
         });
 
         $this->assertTrue(Schema::hasCollection('newcollection'));
@@ -46,11 +48,11 @@ class SchemaTest extends TestCase
         $instance = $this;
 
         Schema::collection('newcollection', function ($collection) use ($instance) {
-            $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+            $instance->assertInstanceOf(Blueprint::class, $collection);
         });
 
         Schema::table('newcollection', function ($collection) use ($instance) {
-            $instance->assertInstanceOf('Jenssegers\Mongodb\Schema\Blueprint', $collection);
+            $instance->assertInstanceOf(Blueprint::class, $collection);
         });
     }
 

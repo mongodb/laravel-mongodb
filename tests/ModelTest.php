@@ -551,7 +551,7 @@ class ModelTest extends TestCase
 
     public function testChunkById(): void
     {
-        User::create(['name' => 'fork',  'tags' => ['sharp', 'pointy']]);
+        User::create(['name' => 'fork', 'tags' => ['sharp', 'pointy']]);
         User::create(['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']]);
         User::create(['name' => 'spoon', 'tags' => ['round', 'bowl']]);
 

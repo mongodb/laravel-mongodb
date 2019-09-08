@@ -5,15 +5,14 @@ namespace Jenssegers\Mongodb\Relations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
-use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 class BelongsToMany extends EloquentBelongsToMany
 {
     /**
      * Get the key for comparing against the parent key in "has" query.
-     *
      * @return string
      */
     public function getHasCompareKey()
@@ -39,8 +38,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Set the select clause for the relation query.
-     *
-     * @param  array $columns
+     * @param array $columns
      * @return array
      */
     protected function getSelectColumns(array $columns = ['*'])
@@ -68,7 +66,6 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Set the where clause for the relation query.
-     *
      * @return $this
      */
     protected function setWhere()
@@ -275,7 +272,6 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Create a new query builder for the related model.
-     *
      * @return \Illuminate\Database\Query\Builder
      */
     public function newRelatedQuery()
@@ -285,7 +281,6 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Get the fully qualified foreign key for the relation.
-     *
      * @return string
      */
     public function getForeignKey()
@@ -312,10 +307,9 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Format the sync list so that it is keyed by ID. (Legacy Support)
      * The original function has been renamed to formatRecordsList since Laravel 5.3
-     *
-     * @deprecated
-     * @param  array $records
+     * @param array $records
      * @return array
+     * @deprecated
      */
     protected function formatSyncList(array $records)
     {
@@ -331,7 +325,6 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Get the related key with backwards compatible support.
-     *
      * @return string
      */
     public function getRelatedKey()
@@ -341,9 +334,8 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Get the name of the "where in" method for eager loading.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  string  $key
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param string $key
      * @return string
      */
     protected function whereInMethod(EloquentModel $model, $key)

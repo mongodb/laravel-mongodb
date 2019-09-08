@@ -4,6 +4,8 @@ namespace Jenssegers\Mongodb\Eloquent;
 
 use Carbon\Carbon;
 use DateTime;
+use Illuminate\Contracts\Queue\QueueableCollection;
+use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -12,8 +14,6 @@ use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
-use Illuminate\Contracts\Queue\QueueableEntity;
-use Illuminate\Contracts\Queue\QueueableCollection;
 
 abstract class Model extends BaseModel
 {
@@ -21,36 +21,31 @@ abstract class Model extends BaseModel
 
     /**
      * The collection associated with the model.
-     *
      * @var string
      */
     protected $collection;
 
     /**
      * The primary key for the model.
-     *
      * @var string
      */
     protected $primaryKey = '_id';
 
     /**
      * The primary key type.
-     *
      * @var string
      */
     protected $keyType = 'string';
 
     /**
      * The parent relation instance.
-     *
      * @var Relation
      */
     protected $parentRelation;
 
     /**
      * Custom accessor for the model's id.
-     *
-     * @param  mixed $value
+     * @param mixed $value
      * @return mixed
      */
     public function getIdAttribute($value = null)
@@ -267,8 +262,7 @@ abstract class Model extends BaseModel
 
     /**
      * Remove one or more fields.
-     *
-     * @param  mixed $columns
+     * @param mixed $columns
      * @return int
      */
     public function drop($columns)
@@ -313,9 +307,8 @@ abstract class Model extends BaseModel
 
     /**
      * Remove one or more values from an array.
-     *
-     * @param  string $column
-     * @param  mixed $values
+     * @param string $column
+     * @param mixed $values
      * @return mixed
      */
     public function pull($column, $values)
@@ -332,10 +325,9 @@ abstract class Model extends BaseModel
 
     /**
      * Append one or more values to the underlying attribute value and sync with original.
-     *
-     * @param  string $column
-     * @param  array $values
-     * @param  bool $unique
+     * @param string $column
+     * @param array $values
+     * @param bool $unique
      */
     protected function pushAttributeValues($column, array $values, $unique = false)
     {
@@ -357,9 +349,8 @@ abstract class Model extends BaseModel
 
     /**
      * Remove one or more values to the underlying attribute value and sync with original.
-     *
-     * @param  string $column
-     * @param  array $values
+     * @param string $column
+     * @param array $values
      */
     protected function pullAttributeValues($column, array $values)
     {
@@ -390,8 +381,7 @@ abstract class Model extends BaseModel
 
     /**
      * Set the parent relation.
-     *
-     * @param  \Illuminate\Database\Eloquent\Relations\Relation $relation
+     * @param \Illuminate\Database\Eloquent\Relations\Relation $relation
      */
     public function setParentRelation(Relation $relation)
     {
@@ -400,7 +390,6 @@ abstract class Model extends BaseModel
 
     /**
      * Get the parent relation.
-     *
      * @return \Illuminate\Database\Eloquent\Relations\Relation
      */
     public function getParentRelation()
@@ -436,7 +425,6 @@ abstract class Model extends BaseModel
 
     /**
      * Get the queueable relationships for the entity.
-     *
      * @return array
      */
     public function getQueueableRelations()
@@ -450,13 +438,13 @@ abstract class Model extends BaseModel
 
             if ($relation instanceof QueueableCollection) {
                 foreach ($relation->getQueueableRelations() as $collectionValue) {
-                    $relations[] = $key.'.'.$collectionValue;
+                    $relations[] = $key . '.' . $collectionValue;
                 }
             }
 
             if ($relation instanceof QueueableEntity) {
                 foreach ($relation->getQueueableRelations() as $entityKey => $entityValue) {
-                    $relations[] = $key.'.'.$entityValue;
+                    $relations[] = $key . '.' . $entityValue;
                 }
             }
         }
@@ -466,7 +454,6 @@ abstract class Model extends BaseModel
 
     /**
      * Get loaded relations for the instance without parent.
-     *
      * @return array
      */
     protected function getRelationsWithoutParent()

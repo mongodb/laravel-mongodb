@@ -14,7 +14,11 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
      */
     protected function getPayload($email, $token)
     {
-        return ['email' => $email, 'token' => $this->hasher->make($token), 'created_at' => new UTCDateTime(time() * 1000)];
+        return [
+            'email' => $email,
+            'token' => $this->hasher->make($token),
+            'created_at' => new UTCDateTime(time() * 1000),
+        ];
     }
 
     /**

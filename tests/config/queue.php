@@ -8,8 +8,8 @@ return [
 
         'database' => [
             'driver' => 'mongodb',
-            'table'  => 'jobs',
-            'queue'  => 'default',
+            'table' => 'jobs',
+            'queue' => 'default',
             'expire' => 60,
         ],
 
@@ -17,7 +17,7 @@ return [
 
     'failed' => [
         'database' => env('MONGO_DATABASE'),
-        'table'    => 'failed_jobs',
+        'table' => 'failed_jobs',
     ],
 
 ];

@@ -6,7 +6,6 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 /**
  * Class Book
- *
  * @property string $title
  * @property string $author
  * @property array $chapters

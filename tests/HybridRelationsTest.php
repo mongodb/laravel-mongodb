@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+use Illuminate\Database\MySqlConnection;
+
 class HybridRelationsTest extends TestCase
 {
     public function setUp(): void
@@ -22,8 +24,8 @@ class HybridRelationsTest extends TestCase
     public function testMysqlRelations()
     {
         $user = new MysqlUser;
-        $this->assertInstanceOf('MysqlUser', $user);
-        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
+        $this->assertInstanceOf(MysqlUser::class, $user);
+        $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
 
         // Mysql User
         $user->name = "John Doe";
@@ -80,10 +82,10 @@ class HybridRelationsTest extends TestCase
     {
         $user = new MysqlUser;
         $otherUser = new MysqlUser;
-        $this->assertInstanceOf('MysqlUser', $user);
-        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
-        $this->assertInstanceOf('MysqlUser', $otherUser);
-        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $otherUser->getConnection());
+        $this->assertInstanceOf(MysqlUser::class, $user);
+        $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
+        $this->assertInstanceOf(MysqlUser::class, $otherUser);
+        $this->assertInstanceOf(MySqlConnection::class, $otherUser->getConnection());
 
         //MySql User
         $user->name = "John Doe";
@@ -134,10 +136,10 @@ class HybridRelationsTest extends TestCase
     {
         $user = new MysqlUser;
         $otherUser = new MysqlUser;
-        $this->assertInstanceOf('MysqlUser', $user);
-        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $user->getConnection());
-        $this->assertInstanceOf('MysqlUser', $otherUser);
-        $this->assertInstanceOf('Illuminate\Database\MySqlConnection', $otherUser->getConnection());
+        $this->assertInstanceOf(MysqlUser::class, $user);
+        $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
+        $this->assertInstanceOf(MysqlUser::class, $otherUser);
+        $this->assertInstanceOf(MySqlConnection::class, $otherUser->getConnection());
 
         //MySql User
         $user->name = "John Doe";
