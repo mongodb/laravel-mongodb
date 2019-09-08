@@ -47,7 +47,7 @@ class ConnectionTest extends TestCase
     // public function testDynamic()
     // {
     //     $dbs = DB::connection('mongodb')->listCollections();
-    //     $this->assertInternalType('array', $dbs);
+    //     $this->assertIsArray($dbs);
     // }
 
     // public function testMultipleConnections()

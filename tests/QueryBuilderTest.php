@@ -87,7 +87,7 @@ class QueryBuilderTest extends TestCase
 
         $user = $users[0];
         $this->assertEquals('John Doe', $user['name']);
-        $this->assertInternalType('array', $user['tags']);
+        $this->assertIsArray($user['tags']);
     }
 
     public function testInsertGetId()
@@ -111,7 +111,7 @@ class QueryBuilderTest extends TestCase
 
         $users = DB::collection('users')->get();
         $this->assertCount(2, $users);
-        $this->assertInternalType('array', $users[0]['tags']);
+        $this->assertIsArray($users[0]['tags']);
     }
 
     public function testFind()
@@ -247,7 +247,7 @@ class QueryBuilderTest extends TestCase
         DB::collection('users')->where('_id', $id)->push('tags', 'tag1');
 
         $user = DB::collection('users')->find($id);
-        $this->assertInternalType('array', $user['tags']);
+        $this->assertIsArray($user['tags']);
         $this->assertCount(1, $user['tags']);
         $this->assertEquals('tag1', $user['tags'][0]);
 
@@ -269,7 +269,7 @@ class QueryBuilderTest extends TestCase
         $message = ['from' => 'Jane', 'body' => 'Hi John'];
         DB::collection('users')->where('_id', $id)->push('messages', $message);
         $user = DB::collection('users')->find($id);
-        $this->assertInternalType('array', $user['messages']);
+        $this->assertIsArray($user['messages']);
         $this->assertCount(1, $user['messages']);
         $this->assertEquals($message, $user['messages'][0]);
 
@@ -298,14 +298,14 @@ class QueryBuilderTest extends TestCase
         DB::collection('users')->where('_id', $id)->pull('tags', 'tag3');
 
         $user = DB::collection('users')->find($id);
-        $this->assertInternalType('array', $user['tags']);
+        $this->assertIsArray($user['tags']);
         $this->assertCount(3, $user['tags']);
         $this->assertEquals('tag4', $user['tags'][2]);
 
         DB::collection('users')->where('_id', $id)->pull('messages', $message1);
 
         $user = DB::collection('users')->find($id);
-        $this->assertInternalType('array', $user['messages']);
+        $this->assertIsArray($user['messages']);
         $this->assertCount(1, $user['messages']);
 
         // Raw

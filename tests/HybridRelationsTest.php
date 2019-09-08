@@ -28,7 +28,7 @@ class HybridRelationsTest extends TestCase
         // Mysql User
         $user->name = "John Doe";
         $user->save();
-        $this->assertInternalType('int', $user->id);
+        $this->assertIsInt($user->id);
 
         // SQL has many
         $book = new Book(['title' => 'Game of Thrones']);
@@ -94,8 +94,8 @@ class HybridRelationsTest extends TestCase
         $otherUser->id = 3;
         $otherUser->save();
         // Make sure they are created
-        $this->assertInternalType('int', $user->id);
-        $this->assertInternalType('int', $otherUser->id);
+        $this->assertIsInt($user->id);
+        $this->assertIsInt($otherUser->id);
         // Clear to start
         $user->books()->truncate();
         $otherUser->books()->truncate();
@@ -148,8 +148,8 @@ class HybridRelationsTest extends TestCase
         $otherUser->id = 3;
         $otherUser->save();
         // Make sure they are created
-        $this->assertInternalType('int', $user->id);
-        $this->assertInternalType('int', $otherUser->id);
+        $this->assertIsInt($user->id);
+        $this->assertIsInt($otherUser->id);
         // Clear to start
         Book::truncate();
         MysqlBook::truncate();
