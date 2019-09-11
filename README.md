@@ -15,7 +15,6 @@ Table of contents
 * [Query Builder](#query-builder)
 * [Schema](#schema)
 * [Extensions](#extensions)
-* [Troubleshooting](#troubleshooting)
 * [Examples](#examples)
 
 Installation
