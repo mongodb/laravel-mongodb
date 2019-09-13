@@ -71,6 +71,21 @@ class QueryTest extends TestCase
         $this->assertCount(1, $users);
     }
 
+    public function testNotLike(): void
+    {
+        $users = User::where('name', 'not like', '%doe')->get();
+        $this->assertCount(7, $users);
+
+        $users = User::where('name', 'not like', '%y%')->get();
+        $this->assertCount(6, $users);
+
+        $users = User::where('name', 'not LIKE', '%y%')->get();
+        $this->assertCount(6, $users);
+
+        $users = User::where('name', 'not like', 't%')->get();
+        $this->assertCount(8, $users);
+    }
+
     public function testSelect(): void
     {
         $user = User::where('name', 'John Doe')->select('name')->first();

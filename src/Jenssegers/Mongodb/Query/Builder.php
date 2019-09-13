@@ -978,9 +978,13 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        // Replace like with a Regex instance.
-        if ($operator == 'like') {
-            $operator = '=';
+        // Replace like or not like with a Regex instance.
+        if (in_array($operator, ['like', 'not like'])) {
+            if ($operator === 'not like') {
+                $operator = 'not';
+            } else {
+                $operator = '=';
+            }
 
             // Convert to regular expression.
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
