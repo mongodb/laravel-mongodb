@@ -318,7 +318,7 @@ If you want to use MongoDB to handle failed jobs, change the database in `config
 
 ```php
 'failed' => [
-    'database' => 'mongodb',
+    'database' => env('DB_CONNECTION', 'mongodb'),
     'table'    => 'failed_jobs',
     ],
 ```
@@ -601,15 +601,15 @@ $users = User::where('location', 'geoWithin', [
             [
                 -0.1450383,
                 51.5069158,
-            ],       
+            ],
             [
                 -0.1367563,
                 51.5100913,
-            ],       
+            ],
             [
                 -0.1270247,
                 51.5013233,
-            ],  
+            ],
             [
                 -0.1450383,
                 51.5069158,
