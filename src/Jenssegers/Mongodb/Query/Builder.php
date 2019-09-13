@@ -980,7 +980,7 @@ class Builder extends BaseBuilder
 
         // Replace like or not like with a Regex instance.
         if (in_array($operator, ['like', 'not like'])) {
-            if (Str::startsWith($operator, 'not')) {
+            if ($operator === 'not like') {
                 $operator = 'not';
             } else {
                 $operator = '=';
