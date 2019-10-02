@@ -101,7 +101,7 @@ class MongoQueue extends DatabaseQueue
             ->where(function ($query) use ($expiration, $now) {
                 // Check for available jobs
                 $query->where(function ($query) use ($now) {
-                    $query->whereNull('reserved_at');
+                    $query->whereNotNull('reserved_at');
                     $query->where('available_at', '<=', $now);
                 });
 
