@@ -61,15 +61,15 @@ class MongoQueue extends DatabaseQueue
      */
     protected function getNextAvailableJobAndReserve($queue)
     {
+        
         $job = $this->database->getCollection($this->table)->findOneAndUpdate(
             [
                 'queue' => $this->getQueue($queue),
-                'reserved' => 0,
+                'reserved_at' => null,
                 'available_at' => ['$lte' => Carbon::now()->getTimestamp()],
             ],
             [
                 '$set' => [
-                    'reserved' => 1,
                     'reserved_at' => Carbon::now()->getTimestamp(),
                 ],
             ],
@@ -124,7 +124,6 @@ class MongoQueue extends DatabaseQueue
     protected function releaseJob($id, $attempts)
     {
         $this->database->table($this->table)->where('_id', $id)->update([
-            'reserved' => 0,
             'reserved_at' => null,
             'attempts' => $attempts,
         ]);
