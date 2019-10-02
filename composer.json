@@ -1,5 +1,5 @@
 {
-    "name": "jenssegers/mongodb",
+    "name": "ridown/mongodb",
     "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
     "keywords": [
         "laravel",
@@ -34,7 +34,7 @@
     },
     "autoload": {
         "psr-0": {
-            "Jenssegers\\Mongodb": "src/"
+            "Ridown\\Mongodb": "src/"
         }
     },
     "autoload-dev": {
@@ -51,8 +51,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Jenssegers\\Mongodb\\MongodbServiceProvider",
-                "Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
+                "Ridown\\Mongodb\\MongodbServiceProvider",
+                "Ridown\\Mongodb\\MongodbQueueServiceProvider"
             ]
         }
     }
