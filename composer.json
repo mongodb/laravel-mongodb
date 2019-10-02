@@ -51,8 +51,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Jenssegers\\Mongodb\\MongodbServiceProvider",
-                "Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
+                "Ridown\\Jenssegers\\Mongodb\\MongodbServiceProvider",
+                "Ridown\\Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
             ]
         }
     }
