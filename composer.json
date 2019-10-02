@@ -34,7 +34,7 @@
     },
     "autoload": {
         "psr-0": {
-            "Ridown\\Mongodb": "src/"
+            "Jenssegers\\Mongodb": "src/"
         }
     },
     "autoload-dev": {
@@ -51,8 +51,8 @@
     "extra": {
         "laravel": {
             "providers": [
-                "Ridown\\Jenssegers\\Mongodb\\MongodbServiceProvider",
-                "Ridown\\Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
+                "Jenssegers\\Mongodb\\MongodbServiceProvider",
+                "Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
             ]
         }
     }
