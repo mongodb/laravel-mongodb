@@ -155,18 +155,15 @@ trait QueriesRelationships
     {
         $prefix = $this->model instanceof Model ? '' : $this->model->getTable().'.';
 
-        if ($relation instanceof HasOneOrMany)
-        {
+        if ($relation instanceof HasOneOrMany) {
             return $prefix.$this->model->getKeyName();
         }
 
-        if ($relation instanceof BelongsTo)
-        {
+        if ($relation instanceof BelongsTo) {
             return $prefix.$relation->getForeignKeyName();
         }
 
-        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation))
-        {
+        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation)) {
             return $prefix.$this->model->getKeyName();
         }
 
