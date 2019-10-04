@@ -153,16 +153,21 @@ trait QueriesRelationships
      */
     protected function getRelatedConstraintKey($relation)
     {
-        if ($relation instanceof HasOneOrMany) {
-            return $this->model->getKeyName();
+        $prefix = ! $this->model instanceof Model ? $this->model->getTable().'.' : '';
+
+        if ($relation instanceof HasOneOrMany)
+        {
+            return $prefix.$this->model->getKeyName();
         }
 
-        if ($relation instanceof BelongsTo) {
-            return $relation->getForeignKeyName();
+        if ($relation instanceof BelongsTo)
+        {
+            return $prefix.$relation->getForeignKeyName();
         }
 
-        if ($relation instanceof BelongsToMany && !$this->isAcrossConnections($relation)) {
-            return $this->model->getKeyName();
+        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation))
+        {
+            return $prefix.$this->model->getKeyName();
         }
 
         throw new Exception(class_basename($relation) . ' is not supported for hybrid query constraints.');
