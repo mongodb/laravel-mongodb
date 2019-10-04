@@ -153,7 +153,7 @@ trait QueriesRelationships
      */
     protected function getRelatedConstraintKey($relation)
     {
-        $prefix = ! $this->model instanceof Model ? $this->model->getTable().'.' : '';
+        $prefix = $this->model instanceof Model ? '' : $this->model->getTable().'.';
 
         if ($relation instanceof HasOneOrMany)
         {
