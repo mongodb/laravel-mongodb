@@ -163,7 +163,7 @@ trait QueriesRelationships
             return $prefix.$relation->getForeignKeyName();
         }
 
-        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation)) {
+        if ($relation instanceof BelongsToMany && !$this->isAcrossConnections($relation)) {
             return $prefix.$this->model->getKeyName();
         }
 
