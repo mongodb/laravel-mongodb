@@ -188,8 +188,6 @@ class QueryTest extends TestCase
         // Check for size limit
         $firstUsers = User::sample(2)->pluck('id');
         $this->assertEquals(2, $firstUsers->count());
-
-        $success = false;
     }
 
     public function testGroupBy(): void
