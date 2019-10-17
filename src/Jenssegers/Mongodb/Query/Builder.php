@@ -210,6 +210,15 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * @inheritdoc
+     */
+    public function sample($size = 1)
+    {
+        $this->sample['size'] = abs($size);
+        return $this;
+    }
+
+    /**
      * Execute the query as a fresh "select" statement.
      * @param array $columns
      * @return array|static[]|Collection
@@ -232,7 +241,7 @@ class Builder extends BaseBuilder
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups || $this->aggregate || $this->paginating) {
+        if ($this->groups || $this->aggregate || $this->paginating || isset($this->sample)) {
             $group = [];
             $unwinds = [];
 
@@ -317,6 +326,9 @@ class Builder extends BaseBuilder
             }
             if ($this->projections) {
                 $pipeline[] = ['$project' => $this->projections];
+            }
+            if (isset($this->sample)) {
+                $pipeline[] = ['$sample' => $this->sample];
             }
 
             $options = [
@@ -412,6 +424,7 @@ class Builder extends BaseBuilder
             'offset' => $this->offset,
             'limit' => $this->limit,
             'aggregate' => $this->aggregate,
+            'sample' => $this->sample,
         ];
 
         return md5(serialize(array_values($key)));

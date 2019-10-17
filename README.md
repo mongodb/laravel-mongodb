@@ -450,6 +450,7 @@ $price = Order::max('price');
 $price = Order::min('price');
 $price = Order::avg('price');
 $total = Order::sum('price');
+$random = Order::sample(5);
 ```
 
 Aggregations can be combined with **where**:
