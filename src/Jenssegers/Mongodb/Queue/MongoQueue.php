@@ -101,8 +101,8 @@ class MongoQueue extends DatabaseQueue
 
         $reserved = $this->database->collection($this->table)
             ->where('queue', $this->getQueue($queue))
-            ->whereNotNull('reserved_at');
-            ->where('reserved_at', '<=', $expiration);
+            ->whereNotNull('reserved_at')
+            ->where('reserved_at', '<=', $expiration)
             ->get();
 
         foreach ($reserved as $job) {
