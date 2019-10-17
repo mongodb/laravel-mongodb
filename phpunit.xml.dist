@@ -40,6 +40,11 @@
             <file>tests/ValidationTest.php</file>
         </testsuite>
     </testsuites>
+    <filter>
+        <whitelist processUncoveredFilesFromWhitelist="true">
+            <directory suffix=".php">./src</directory>
+        </whitelist>
+    </filter>
     <php>
         <env name="MONGO_HOST" value="mongodb"/>
         <env name="MONGO_DATABASE" value="unittest"/>
