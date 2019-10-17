@@ -69,7 +69,7 @@ class QueueTest extends TestCase
         Queue::push('test1', ['action' => 'QueueJobExpired'], 'test');
         Queue::push('test2', ['action' => 'QueueJobExpired'], 'test');
 
-        $job = Queue::pop('test');
+        Queue::pop('test');
 
         $jobs = Queue::getDatabase()
             ->table(Config::get('queue.connections.database.table'))
