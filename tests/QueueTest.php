@@ -60,8 +60,8 @@ class QueueTest extends TestCase
 
     public function testFailQueueJob(): void
     {
-        $p = app('queue.failer');
+        $provider = app('queue.failer');
 
-        $this->assertInstanceOf(MongoFailedJobProvider::class, $p);
+        $this->assertInstanceOf(MongoFailedJobProvider::class, $provider);
     }
 }
