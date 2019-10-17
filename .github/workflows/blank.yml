@@ -23,5 +23,14 @@ jobs:
     - name: Build docker images
       run: |
         docker-compose build --build-arg PHP_VERSION=${{ matrix.php }}
+    - name: Install dependencies
+      run: |
         docker-compose run --rm tests composer install --no-interaction
+    - name: Generating code coverage
+      run: |
         docker-compose run --rm tests ./vendor/bin/phpunit --coverage-clover ./clover.xml
+    - name: Coveralls Parallel
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        path-to-lcov: ./clover.xml
