@@ -64,13 +64,16 @@ class MongoQueue extends DatabaseQueue
         $job = $this->database->getCollection($this->table)->findOneAndUpdate(
             [
                 'queue' => $this->getQueue($queue),
-                'reserved' => 0,
+                'reserved' => ['$ne' => 1],
                 'available_at' => ['$lte' => Carbon::now()->getTimestamp()],
             ],
             [
                 '$set' => [
                     'reserved' => 1,
                     'reserved_at' => Carbon::now()->getTimestamp(),
+                ],
+                '$inc' => [
+                    'attempts' => 1,
                 ],
             ],
             [
@@ -98,20 +101,12 @@ class MongoQueue extends DatabaseQueue
 
         $reserved = $this->database->collection($this->table)
             ->where('queue', $this->getQueue($queue))
-            ->where(function ($query) use ($expiration, $now) {
-                // Check for available jobs
-                $query->where(function ($query) use ($now) {
-                    $query->whereNull('reserved_at');
-                    $query->where('available_at', '<=', $now);
-                });
-
-                // Check for jobs that are reserved but have expired
-                $query->orWhere('reserved_at', '<=', $expiration);
-            })->get();
+            ->whereNotNull('reserved_at');
+            ->where('reserved_at', '<=', $expiration);
+            ->get();
 
         foreach ($reserved as $job) {
-            $attempts = $job['attempts'] + 1;
-            $this->releaseJob($job['_id'], $attempts);
+            $this->releaseJob($job['_id'], $job['attempts']);
         }
     }
 
