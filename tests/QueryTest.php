@@ -190,18 +190,6 @@ class QueryTest extends TestCase
         $this->assertEquals(2, $firstUsers->count());
 
         $success = false;
-
-        // Check for randomness
-        foreach(range(1,10) as $iteration) {
-            $secondUsers = User::sample(2)->pluck('id');
-            $diff = $firstUsers->diff($secondUsers);
-            if(count($diff) > 0) {
-                $success = true;
-                break;
-            }
-        }
-        
-        $this->assertEquals(true, $success);
     }
 
     public function testGroupBy(): void
