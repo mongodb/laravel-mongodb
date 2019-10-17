@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches:
+    tags:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        php: [7.1, 7.2, 7.3]
+    steps:
+    - uses: actions/checkout@v1
+    - name: Show php version
+      run: php${{ matrix.php }} -v && composer -V
+    - name: Show docker and docker-compose versions
+      run: |
+        docker version
+        docker-compose version
+    - name: Build docker images
+      run: |
+        docker-compose build --build-arg PHP_VERSION=${{ matrix.php }}
+        docker-compose run --rm tests composer install --no-interaction
+        docker-compose run --rm tests ./vendor/bin/phpunit --coverage-clover ./clover.xml
