@@ -55,4 +55,12 @@ class QueueTest extends TestCase
         $job->delete();
         $this->assertEquals(0, Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->count());
     }
+
+    public function testFindFailJobNull(): void
+    {
+        Config::set('queue.failed.database', 'mongodb');
+        $provider = app('queue.failer');
+
+        $this->assertNull($provider->find(1));
+    }
 }
