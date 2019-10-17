@@ -64,4 +64,12 @@ class QueueTest extends TestCase
 
         $this->assertInstanceOf(MongoFailedJobProvider::class, $provider);
     }
+
+    public function testFindFailJobNull(): void
+    {
+        Config::set('queue.failed.database', 'mongodb');
+        $provider = app('queue.failer');
+
+        $this->assertNull($provider->find(1));
+    }
 }
