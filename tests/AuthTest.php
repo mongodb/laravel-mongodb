@@ -28,6 +28,7 @@ class AuthTest extends TestCase
     public function testRemindOld()
     {
         if (Application::VERSION >= '5.2') {
+            $this->expectNotToPerformAssertions();
             return;
         }
 
