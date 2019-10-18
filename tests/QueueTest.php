@@ -69,7 +69,7 @@ class QueueTest extends TestCase
         $job_id = Queue::push('test1', ['action' => 'QueueJobExpired'], 'test');
         $this->assertNotNull($job_id);
         $job_id = Queue::push('test2', ['action' => 'QueueJobExpired'], 'test');
-        $this->assertNotNull($id);
+        $this->assertNotNull($job_id);
 
         $job = Queue::pop('test');
         $this->assertEquals(1, $job->attempts());
