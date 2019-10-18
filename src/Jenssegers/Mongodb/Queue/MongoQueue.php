@@ -97,7 +97,6 @@ class MongoQueue extends DatabaseQueue
     protected function releaseJobsThatHaveBeenReservedTooLong($queue)
     {
         $expiration = Carbon::now()->subSeconds($this->retryAfter)->getTimestamp();
-        $now = time();
 
         $reserved = $this->database->collection($this->table)
             ->where('queue', $this->getQueue($queue))
