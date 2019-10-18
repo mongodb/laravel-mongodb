@@ -66,7 +66,7 @@ class QueueTest extends TestCase
 
     public function testIncrementAttempts(): void
     {
-        $id = Queue::push('test1', ['action' => 'QueueJobExpired'], 'test');
+        $job_id = Queue::push('test1', ['action' => 'QueueJobExpired'], 'test');
         $this->assertNotNull($id);
         $id = Queue::push('test2', ['action' => 'QueueJobExpired'], 'test');
         $this->assertNotNull($id);
