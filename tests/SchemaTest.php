@@ -300,6 +300,7 @@ class SchemaTest extends TestCase
             $collection->boolean('activated')->default(0);
             $collection->integer('user_id')->unsigned();
         });
+        $this->expectNotToPerformAssertions();
     }
 
     public function testSparseUnique(): void
