@@ -66,17 +66,20 @@ class QueueTest extends TestCase
 
     public function testIncrementAttempts(): void
     {
-        Queue::push('test1', ['action' => 'QueueJobExpired'], 'test');
-        Queue::push('test2', ['action' => 'QueueJobExpired'], 'test');
+        $id = Queue::push('test1', ['action' => 'QueueJobExpired'], 'test');
+        $this->assertNotNull($id);
+        $id = Queue::push('test2', ['action' => 'QueueJobExpired'], 'test');
+        $this->assertNotNull($id);
 
-        Queue::pop('test');
+        $job = Queue::pop('test');
+        $this->assertEquals(1, $job->attempts());
+        $job->delete();
 
-        $jobs = Queue::getDatabase()
+        $others_jobs = Queue::getDatabase()
             ->table(Config::get('queue.connections.database.table'))
             ->get();
 
-        $this->assertEquals(1, $jobs[0]['attempts']);
-        $this->assertEquals(1, $jobs[0]['reserved']);
-        $this->assertEquals(0, $jobs[1]['attempts']);
+        $this->assertCount(1, $others_jobs);
+        $this->assertEquals(0, $others_jobs[0]['attempts']);
     }
 }
