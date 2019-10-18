@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
+
 class QueueTest extends TestCase
 {
     public function setUp(): void
@@ -54,6 +56,13 @@ class QueueTest extends TestCase
 
         $job->delete();
         $this->assertEquals(0, Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->count());
+    }
+
+    public function testFailQueueJob(): void
+    {
+        $provider = app('queue.failer');
+
+        $this->assertInstanceOf(MongoFailedJobProvider::class, $provider);
     }
 
     public function testFindFailJobNull(): void
