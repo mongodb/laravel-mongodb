@@ -28,9 +28,9 @@ jobs:
         docker-compose run --rm tests composer install --no-interaction
     - name: Generating code coverage
       run: |
-        docker-compose run --rm tests ./vendor/bin/phpunit --coverage-clover ./clover.xml
+        docker-compose run --rm tests ./vendor/bin/phpunit --coverage-php ./coverage.cov
     - name: Coveralls Parallel
-      run: php${{matrix.php}} vendor/bin/php-coveralls -v
-      env:
-        COVERALLS_RUN_LOCALLY: ${{secrets.COVERALLS_RUN_LOCALLY}}
-        COVERALLS_REPO_TOKEN: ${{secrets.COVERALLS_REPO_TOKEN}}
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.github_token }}
+        path-to-lcov: ./coverage.cov
