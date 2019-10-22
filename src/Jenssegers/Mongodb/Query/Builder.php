@@ -210,7 +210,9 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * Get a randomize result
+     * @param int $size
+     * @return $this
      */
     public function sample($size = 1)
     {
