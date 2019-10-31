@@ -2,11 +2,13 @@
 
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Foundation\Application;
+use MongoDB\BSON\UTCDateTime;
 
 class AuthTest extends TestCase
 {
-    public function tearDown()
+    public function tearDown(): void
     {
+        parent::setUp();
         User::truncate();
         DB::collection('password_reminders')->truncate();
     }
@@ -14,8 +16,8 @@ class AuthTest extends TestCase
     public function testAuthAttempt()
     {
         $user = User::create([
-            'name'     => 'John Doe',
-            'email'    => 'john@doe.com',
+            'name' => 'John Doe',
+            'email' => 'john@doe.com',
             'password' => Hash::make('foobar'),
         ]);
 
@@ -26,6 +28,7 @@ class AuthTest extends TestCase
     public function testRemindOld()
     {
         if (Application::VERSION >= '5.2') {
+            $this->expectNotToPerformAssertions();
             return;
         }
 
@@ -36,8 +39,8 @@ class AuthTest extends TestCase
         $broker = new PasswordBroker($tokens, $users, $mailer, '');
 
         $user = User::create([
-            'name'     => 'John Doe',
-            'email'    => 'john@doe.com',
+            'name' => 'John Doe',
+            'email' => 'john@doe.com',
             'password' => Hash::make('foobar'),
         ]);
 
@@ -48,13 +51,13 @@ class AuthTest extends TestCase
         $reminder = DB::collection('password_resets')->first();
         $this->assertEquals('john@doe.com', $reminder['email']);
         $this->assertNotNull($reminder['token']);
-        $this->assertInstanceOf('MongoDB\BSON\UTCDateTime', $reminder['created_at']);
+        $this->assertInstanceOf(UTCDateTime::class, $reminder['created_at']);
 
         $credentials = [
-            'email'                 => 'john@doe.com',
-            'password'              => 'foobar',
+            'email' => 'john@doe.com',
+            'password' => 'foobar',
             'password_confirmation' => 'foobar',
-            'token'                 => $reminder['token'],
+            'token' => $reminder['token'],
         ];
 
         $response = $broker->reset($credentials, function ($user, $password) {

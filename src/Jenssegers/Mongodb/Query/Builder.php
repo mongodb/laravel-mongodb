@@ -11,6 +11,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
 use MongoCollection;
+use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -19,49 +20,42 @@ class Builder extends BaseBuilder
 {
     /**
      * The database collection.
-     *
      * @var MongoCollection
      */
     protected $collection;
 
     /**
      * The column projections.
-     *
      * @var array
      */
     public $projections;
 
     /**
      * The cursor timeout value.
-     *
      * @var int
      */
     public $timeout;
 
     /**
      * The cursor hint value.
-     *
      * @var int
      */
     public $hint;
 
     /**
      * Custom options to add to the query.
-     *
      * @var array
      */
     public $options = [];
 
     /**
      * Indicate if we are executing a pagination query.
-     *
      * @var bool
      */
     public $paginating = false;
 
     /**
      * All of the available clause operators.
-     *
      * @var array
      */
     public $operators = [
@@ -109,7 +103,6 @@ class Builder extends BaseBuilder
 
     /**
      * Operator conversion.
-     *
      * @var array
      */
     protected $conversion = [
@@ -124,7 +117,6 @@ class Builder extends BaseBuilder
 
     /**
      * Check if we need to return Collections instead of plain arrays (laravel >= 5.3 )
-     *
      * @var boolean
      */
     protected $useCollections;
@@ -142,7 +134,6 @@ class Builder extends BaseBuilder
 
     /**
      * Returns true if Laravel or Lumen >= 5.3
-     *
      * @return bool
      */
     protected function shouldUseCollections()
@@ -158,8 +149,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the projections.
-     *
-     * @param  array $columns
+     * @param array $columns
      * @return $this
      */
     public function project($columns)
@@ -171,8 +161,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor timeout in seconds.
-     *
-     * @param  int $seconds
+     * @param int $seconds
      * @return $this
      */
     public function timeout($seconds)
@@ -184,8 +173,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor hint.
-     *
-     * @param  mixed $index
+     * @param mixed $index
      * @return $this
      */
     public function hint($index)
@@ -206,6 +194,16 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
+    public function value($column)
+    {
+        $result = (array) $this->first([$column]);
+
+        return Arr::get($result, $column);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function get($columns = [])
     {
         return $this->getFresh($columns);
@@ -213,8 +211,7 @@ class Builder extends BaseBuilder
 
     /**
      * Execute the query as a fresh "select" statement.
-     *
-     * @param  array $columns
+     * @param array $columns
      * @return array|static[]|Collection
      */
     public function getFresh($columns = [])
@@ -222,7 +219,7 @@ class Builder extends BaseBuilder
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
         // all of the columns on the table using the "wildcard" column character.
-        if (is_null($this->columns)) {
+        if ($this->columns === null) {
             $this->columns = $columns;
         }
 
@@ -412,7 +409,6 @@ class Builder extends BaseBuilder
 
     /**
      * Generate the unique cache key for the current query.
-     *
      * @return string
      */
     public function generateCacheKey()
@@ -469,7 +465,7 @@ class Builder extends BaseBuilder
      */
     public function exists()
     {
-        return !is_null($this->first());
+        return $this->first() !== null;
     }
 
     /**
@@ -506,11 +502,10 @@ class Builder extends BaseBuilder
 
     /**
      * Add a "where all" clause to the query.
-     *
-     * @param  string  $column
-     * @param  array   $values
-     * @param  string  $boolean
-     * @param  bool    $not
+     * @param string $column
+     * @param array $values
+     * @param string $boolean
+     * @param bool $not
      * @return $this
      */
     public function whereAll($column, array $values, $boolean = 'and', $not = false)
@@ -580,7 +575,7 @@ class Builder extends BaseBuilder
         $result = $this->collection->insertOne($values);
 
         if (1 == (int) $result->isAcknowledged()) {
-            if (is_null($sequence)) {
+            if ($sequence === null) {
                 $sequence = '_id';
             }
 
@@ -644,12 +639,6 @@ class Builder extends BaseBuilder
      */
     public function forPageAfterId($perPage = 15, $lastId = 0, $column = '_id')
     {
-        // When using ObjectIDs to paginate, we need to use a hex string as the
-        // "minimum" ID rather than the integer zero so the '$lt' query works.
-        if ($column === '_id' && $lastId === 0) {
-            $lastId = '000000000000000000000000';
-        }
-
         return parent::forPageAfterId($perPage, $lastId, $column);
     }
 
@@ -658,7 +647,7 @@ class Builder extends BaseBuilder
      */
     public function pluck($column, $key = null)
     {
-        $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
+        $results = $this->get($key === null ? [$column] : [$column, $key]);
 
         // Convert ObjectID's to strings
         if ($key == '_id') {
@@ -680,7 +669,7 @@ class Builder extends BaseBuilder
         // If an ID is passed to the method, we will set the where clause to check
         // the ID to allow developers to simply and quickly remove a single row
         // from their database without manually specifying the where clauses.
-        if (!is_null($id)) {
+        if ($id !== null) {
             $this->where('_id', '=', $id);
         }
 
@@ -696,7 +685,7 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
-    public function from($collection)
+    public function from($collection, $as = null)
     {
         if ($collection) {
             $this->collection = $this->connection->getCollection($collection);
@@ -717,11 +706,10 @@ class Builder extends BaseBuilder
 
     /**
      * Get an array with the values of a given column.
-     *
-     * @deprecated
-     * @param  string $column
-     * @param  string $key
+     * @param string $column
+     * @param string $key
      * @return array
+     * @deprecated
      */
     public function lists($column, $key = null)
     {
@@ -736,8 +724,10 @@ class Builder extends BaseBuilder
         // Execute the closure on the mongodb collection
         if ($expression instanceof Closure) {
             return call_user_func($expression, $this->collection);
-        } // Create an expression for the given value
-        elseif (!is_null($expression)) {
+        }
+
+        // Create an expression for the given value
+        if ($expression !== null) {
             return new Expression($expression);
         }
 
@@ -747,7 +737,6 @@ class Builder extends BaseBuilder
 
     /**
      * Append one or more values to an array.
-     *
      * @param mixed $column
      * @param mixed $value
      * @param bool $unique
@@ -774,9 +763,8 @@ class Builder extends BaseBuilder
 
     /**
      * Remove one or more values from an array.
-     *
-     * @param  mixed $column
-     * @param  mixed $value
+     * @param mixed $column
+     * @param mixed $value
      * @return int
      */
     public function pull($column, $value = null)
@@ -798,8 +786,7 @@ class Builder extends BaseBuilder
 
     /**
      * Remove one or more fields.
-     *
-     * @param  mixed $columns
+     * @param mixed $columns
      * @return int
      */
     public function drop($columns)
@@ -829,9 +816,8 @@ class Builder extends BaseBuilder
 
     /**
      * Perform an update query.
-     *
-     * @param  array $query
-     * @param  array $options
+     * @param array $query
+     * @param array $options
      * @return int
      */
     protected function performUpdate($query, array $options = [])
@@ -852,14 +838,17 @@ class Builder extends BaseBuilder
 
     /**
      * Convert a key to ObjectID if needed.
-     *
-     * @param  mixed $id
+     * @param mixed $id
      * @return mixed
      */
     public function convertKey($id)
     {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
+        }
+
+        if (is_string($id) && strlen($id) === 16 && preg_match('~[^\x20-\x7E\t\r\n]~', $id) > 0) {
+            return new Binary($id, Binary::TYPE_UUID);
         }
 
         return $id;
@@ -886,7 +875,6 @@ class Builder extends BaseBuilder
 
     /**
      * Compile the where array.
-     *
      * @return array
      */
     protected function compileWheres()
@@ -1001,9 +989,13 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        // Replace like with a Regex instance.
-        if ($operator == 'like') {
-            $operator = '=';
+        // Replace like or not like with a Regex instance.
+        if (in_array($operator, ['like', 'not like'])) {
+            if ($operator === 'not like') {
+                $operator = 'not';
+            } else {
+                $operator = '=';
+            }
 
             // Convert to regular expression.
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
@@ -1013,7 +1005,7 @@ class Builder extends BaseBuilder
                 $regex = '^' . $regex;
             }
             if (!Str::endsWith($value, '%')) {
-                $regex = $regex . '$';
+                $regex .= '$';
             }
 
             $value = new Regex($regex, 'i');
@@ -1125,14 +1117,14 @@ class Builder extends BaseBuilder
                     ],
                 ],
             ];
-        } else {
-            return [
-                $column => [
-                    '$gte' => $values[0],
-                    '$lte' => $values[1],
-                ],
-            ];
         }
+
+        return [
+            $column => [
+                '$gte' => $values[0],
+                '$lte' => $values[1],
+            ],
+        ];
     }
 
     /**
@@ -1146,8 +1138,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set custom options for the query.
-     *
-     * @param  array $options
+     * @param array $options
      * @return $this
      */
     public function options(array $options)

@@ -7,42 +7,46 @@
          convertNoticesToExceptions="true"
          convertWarningsToExceptions="true"
          processIsolation="false"
-         stopOnFailure="false"
-         syntaxCheck="false"
-         verbose="true"
->
+         stopOnFailure="false">
     <testsuites>
         <testsuite name="all">
             <directory>tests/</directory>
-            <exclude>tests/MysqlRelationsTest.php</exclude>
         </testsuite>
         <testsuite name="schema">
-            <directory>tests/SchemaTest.php</directory>
+            <file>tests/SchemaTest.php</file>
         </testsuite>
         <testsuite name="seeder">
-            <directory>tests/SeederTest.php</directory>
+            <file>tests/SeederTest.php</file>
         </testsuite>
         <testsuite name="cache">
-            <directory>tests/CacheTest.php</directory>
+            <file>tests/CacheTest.php</file>
         </testsuite>
         <testsuite name="builder">
-            <directory>tests/QueryBuilderTest.php</directory>
-            <directory>tests/QueryTest.php</directory>
+            <file>tests/QueryBuilderTest.php</file>
+            <file>tests/QueryTest.php</file>
         </testsuite>
         <testsuite name="model">
-            <directory>tests/ModelTest.php</directory>
-            <directory>tests/RelationsTest.php</directory>
+            <file>tests/ModelTest.php</file>
+            <file>tests/RelationsTest.php</file>
         </testsuite>
         <testsuite name="relations">
-            <directory>tests/RelationsTest.php</directory>
-            <directory>tests/EmbeddedRelationsTest.php</directory>
+            <file>tests/RelationsTest.php</file>
+            <file>tests/EmbeddedRelationsTest.php</file>
         </testsuite>
         <testsuite name="mysqlrelations">
-            <directory>tests/RelationsTest.php</directory>
-            <directory>tests/MysqlRelationsTest.php</directory>
+            <file>tests/RelationsTest.php</file>
         </testsuite>
         <testsuite name="validation">
-            <directory>tests/ValidationTest.php</directory>
+            <file>tests/ValidationTest.php</file>
         </testsuite>
     </testsuites>
+    <php>
+        <env name="MONGO_HOST" value="mongodb"/>
+        <env name="MONGO_DATABASE" value="unittest"/>
+        <env name="MONGO_PORT" value="27017"/>
+        <env name="MYSQL_HOST" value="mysql"/>
+        <env name="MYSQL_DATABASE" value="unittest"/>
+        <env name="MYSQL_USERNAME" value="root"/>
+        <env name="QUEUE_CONNECTION" value="database"/>
+    </php>
 </phpunit>

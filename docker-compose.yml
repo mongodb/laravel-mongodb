@@ -1,22 +1,21 @@
 version: '3'
 
 services:
-    php:
-        container_name: php
+    tests:
+        container_name: tests
         build:
             context: .
             dockerfile: Dockerfile
         volumes:
             - .:/code
         working_dir: /code
-        command: bash -c "composer install --prefer-source --no-interaction && php ./vendor/bin/phpunit"
         depends_on:
-          - mysql
           - mongodb
+          - mysql
 
     mysql:
         container_name: mysql
-        image: mysql
+        image: mysql:5.7
         environment:
             MYSQL_ROOT_PASSWORD:
             MYSQL_DATABASE: unittest
@@ -27,5 +26,7 @@ services:
     mongodb:
         container_name: mongodb
         image: mongo
+        ports:
+            - 27017:27017
         logging:
             driver: none
