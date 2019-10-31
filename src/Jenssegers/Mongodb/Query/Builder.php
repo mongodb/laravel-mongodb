@@ -289,7 +289,6 @@ class Builder extends BaseBuilder
                     } elseif ($function == 'count') {
                         // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
-
                     } else {
                         $group['aggregate'] = ['$' . $function => '$' . $column];
                     }
