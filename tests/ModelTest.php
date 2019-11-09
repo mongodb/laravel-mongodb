@@ -434,6 +434,16 @@ class ModelTest extends TestCase
         $this->assertEquals((string) $user->getAttribute('entry.date')->format('Y-m-d H:i:s'), $data['entry']['date']);
     }
 
+    public function testCarbonDateMockingWorks()
+    {
+        $fakeDate = \Carbon\Carbon::createFromDate(2000, 01, 01);
+
+        Carbon::setTestNow($fakeDate);
+        $item = Item::create(['name' => 'sword']);
+        
+        $this->assertEquals($item->created_at, $fakeDate);
+    }
+
     public function testIdAttribute(): void
     {
         /** @var User $user */
