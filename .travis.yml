@@ -1,20 +1,27 @@
-sudo: required
-dist: trusty
-language: php
-php:
-  - "7.2"
-  - "7.1"
+language: minimal
+
+matrix:
+  include:
+    - name: "7.1"
+      env: PHP_VERSION=7.1
+    - name: "7.2"
+      env: PHP_VERSION=7.2
+    - name: "7.3"
+      env: PHP_VERSION=7.3
 
 services:
   - docker
+
+cache:
+  directories:
+    - $HOME/.composer/cache
 
 install:
   - docker version
   - sudo pip install docker-compose
   - docker-compose version
-  - sed -i -e "s/php:cli/php:${TRAVIS_PHP_VERSION}-cli/g" Dockerfile
-  - cat Dockerfile
-  - docker-compose build
+  - docker-compose build --build-arg PHP_VERSION=${PHP_VERSION}
+  - docker-compose run --rm tests composer install --no-interaction
 
 script:
-  - docker-compose up --exit-code-from php
+  - docker-compose run --rm tests ./vendor/bin/phpunit --coverage-clover ./clover.xml
