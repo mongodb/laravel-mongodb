@@ -441,7 +441,7 @@ class ModelTest extends TestCase
         Carbon::setTestNow($fakeDate);
         $item = Item::create(['name' => 'sword']);
         
-        $this->assertLessThan($fakeDate->diffInSeconds($item->created_at), 1);
+        $this->assertLessThan(1, $fakeDate->diffInSeconds($item->created_at));
     }
 
     public function testIdAttribute(): void
