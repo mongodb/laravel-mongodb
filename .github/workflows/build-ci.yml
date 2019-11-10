@@ -33,7 +33,6 @@ jobs:
     - name: Show docker and docker-compose versions
       run: |
         docker version
-        docker-compose version
     - name: Debug if needed
       run: |
         export DEBUG=${DEBUG:-false}
@@ -55,7 +54,6 @@ jobs:
         MYSQL_PORT: 3307
     - name: Send coveralls
       run: |
-        ls -alt
         composer global require cedx/coveralls
         export PATH="$PATH:~/.composer/vendor/bin/"
         coveralls build/logs/clover.xml
