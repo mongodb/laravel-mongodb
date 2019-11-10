@@ -36,13 +36,14 @@ jobs:
         docker-compose run --rm tests composer install --no-interaction
     - name: Generating code coverage
       run: |
-        mkdir -p build/logs
         docker-compose run --rm tests mkdir -p build/logs
         docker-compose run --rm \
           tests ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
         ls -alt build/logs
     - name: Send coveralls
-      run: php vendor/bin/php-coveralls -v
+      run: |
+        ls -alt
+        php vendor/bin/php-coveralls -v
       env:
         COVERALLS_RUN_LOCALLY: 1
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
