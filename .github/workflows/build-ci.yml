@@ -20,7 +20,7 @@ jobs:
       mysql:
         image: mysql:5.7
         ports:
-          - 3306:3306
+          - 3307:3306
         env:
           MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
           MYSQL_DATABASE: 'unittest'
@@ -52,6 +52,7 @@ jobs:
       env:
         MONGO_HOST: 0.0.0.0
         MYSQL_HOST: 0.0.0.0
+        MYSQL_PORT: 3307
     - name: Send coveralls
       run: |
         ls -alt

@@ -50,6 +50,7 @@
         <env name="MONGO_DATABASE" value="unittest"/>
         <env name="MONGO_PORT" value="27017"/>
         <env name="MYSQL_HOST" value="mysql"/>
+        <env name="MYSQL_PORT" value="3306"/>
         <env name="MYSQL_DATABASE" value="unittest"/>
         <env name="MYSQL_USERNAME" value="root"/>
         <env name="QUEUE_CONNECTION" value="database"/>
