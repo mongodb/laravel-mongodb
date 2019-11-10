@@ -39,9 +39,8 @@ jobs:
     - name: Send coveralls
       run: |
         ls -alt
-        echo $COVERALLS_REPO_TOKEN
-        export CI_BRANCH=$GITHUB_REF
-        php vendor/bin/php-coveralls -v
+        composer global require cedx/coveralls
+        coveralls build/logs/clover.xml
       env:
         COVERALLS_RUN_LOCALLY: 1
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
