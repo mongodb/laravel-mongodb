@@ -12,6 +12,20 @@ jobs:
     strategy:
       matrix:
         php: [7.1, 7.2, 7.3]
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: 'unittest'
+          MYSQL_ROOT_PASSWORD:
+
     steps:
     - uses: actions/checkout@v1
     - name: Show php version
@@ -30,16 +44,19 @@ jobs:
         DEBUG: ${{secrets.DEBUG}}
     - name: Install dependencies
       run: |
-        docker-compose run --rm tests composer install --no-interaction
+        composer install --no-interaction
     - name: Generating code coverage
       run: |
         mkdir -p build/logs
-        docker-compose run --rm tests ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
-        chmod -R 0777 build/logs
+        ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+      env:
+        MONGO_HOST: 0.0.0.0
+        MYSQL_HOST: 0.0.0.0
     - name: Send coveralls
       run: |
         ls -alt
         composer global require cedx/coveralls
+        export PATH="$PATH:~/.composer/vendor/bin/"
         coveralls build/logs/clover.xml
       env:
         COVERALLS_RUN_LOCALLY: 1
