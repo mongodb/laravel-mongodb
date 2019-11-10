@@ -43,6 +43,7 @@ jobs:
     - name: Send coveralls
       run: |
         ls -alt
+        export CI_BRANCH=$GITHUB_REF
         php vendor/bin/php-coveralls -v
       env:
         COVERALLS_RUN_LOCALLY: 1
