@@ -33,11 +33,13 @@ jobs:
         docker-compose build --build-arg PHP_VERSION=${{ matrix.php }}
     - name: Install dependencies
       run: |
+        mkdir vendor
         docker-compose run --rm tests composer install --no-interaction
     - name: Generating code coverage
       run: |
         mkdir -p build/logs
-        php ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+        docker-compose run --rm \
+          tests ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
     - name: Send coveralls
       run: |
         ls -alt
