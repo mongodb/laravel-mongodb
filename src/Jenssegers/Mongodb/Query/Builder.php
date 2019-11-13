@@ -122,6 +122,12 @@ class Builder extends BaseBuilder
     protected $useCollections;
 
     /**
+     * Custom expression's to add to the query.
+     * @var array|null
+     */
+    protected $pipeline = [];
+
+    /**
      * @inheritdoc
      */
     public function __construct(Connection $connection, Processor $processor)
@@ -294,7 +300,7 @@ class Builder extends BaseBuilder
                     }
                 }
             }
-            
+
             // The _id field is mandatory when using grouping.
             if ($group && empty($group['_id'])) {
                 $group['_id'] = null;
@@ -327,6 +333,12 @@ class Builder extends BaseBuilder
             }
             if ($this->projections) {
                 $pipeline[] = ['$project' => $this->projections];
+            }
+
+            if ($this->pipeline) {
+                foreach ($this->pipeline as $expression) {
+                    $pipeline[] = $expression;
+                }
             }
 
             $options = [
@@ -422,6 +434,7 @@ class Builder extends BaseBuilder
             'offset' => $this->offset,
             'limit' => $this->limit,
             'aggregate' => $this->aggregate,
+            'pipeline' => $this->pipeline,
         ];
 
         return md5(serialize(array_values($key)));
@@ -758,6 +771,18 @@ class Builder extends BaseBuilder
         }
 
         return $this->performUpdate($query);
+    }
+
+    /**
+     * Add raw mongodb expression's to the query.
+     * @param  array $expression
+     * @return this
+     */
+    public function pipeline($expression)
+    {
+        $this->pipeline[] = $expression;
+
+        return $this;
     }
 
     /**
