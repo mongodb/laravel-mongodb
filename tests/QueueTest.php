@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 
+use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
+
 class QueueTest extends TestCase
 {
     public function setUp(): void
@@ -54,5 +56,39 @@ class QueueTest extends TestCase
 
         $job->delete();
         $this->assertEquals(0, Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->count());
+    }
+
+    public function testFailQueueJob(): void
+    {
+        $provider = app('queue.failer');
+
+        $this->assertInstanceOf(MongoFailedJobProvider::class, $provider);
+    }
+
+    public function testFindFailJobNull(): void
+    {
+        Config::set('queue.failed.database', 'mongodb');
+        $provider = app('queue.failer');
+
+        $this->assertNull($provider->find(1));
+    }
+
+    public function testIncrementAttempts(): void
+    {
+        $job_id = Queue::push('test1', ['action' => 'QueueJobExpired'], 'test');
+        $this->assertNotNull($job_id);
+        $job_id = Queue::push('test2', ['action' => 'QueueJobExpired'], 'test');
+        $this->assertNotNull($job_id);
+
+        $job = Queue::pop('test');
+        $this->assertEquals(1, $job->attempts());
+        $job->delete();
+
+        $others_jobs = Queue::getDatabase()
+            ->table(Config::get('queue.connections.database.table'))
+            ->get();
+
+        $this->assertCount(1, $others_jobs);
+        $this->assertEquals(0, $others_jobs[0]['attempts']);
     }
 }

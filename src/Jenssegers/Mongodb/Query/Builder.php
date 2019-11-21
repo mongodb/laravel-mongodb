@@ -232,7 +232,7 @@ class Builder extends BaseBuilder
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups || $this->aggregate || $this->paginating) {
+        if ($this->groups || $this->aggregate) {
             $group = [];
             $unwinds = [];
 
@@ -267,24 +267,34 @@ class Builder extends BaseBuilder
                         $column = implode('.', $splitColumns);
                     }
 
-                    // Translate count into sum.
-                    if ($function == 'count') {
+                    // Null coalense only > 7.2
+
+                    $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
+
+                    if (in_array('*', $aggregations) && $function == 'count') {
+                        // When ORM is paginating, count doesnt need a aggregation, just a cursor operation
+                        // elseif added to use this only in pagination
+                        // https://docs.mongodb.com/manual/reference/method/cursor.count/
+                        // count method returns int
+
+                        $totalResults = $this->collection->count($wheres);
+                        // Preserving format expected by framework
+                        $results = [
+                            [
+                                '_id'       => null,
+                                'aggregate' => $totalResults
+                            ]
+                        ];
+                        return $this->useCollections ? new Collection($results) : $results;
+                    } elseif ($function == 'count') {
+                        // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
-                    } // Pass other functions directly.
-                    else {
+                    } else {
                         $group['aggregate'] = ['$' . $function => '$' . $column];
                     }
                 }
             }
-
-            // When using pagination, we limit the number of returned columns
-            // by adding a projection.
-            if ($this->paginating) {
-                foreach ($this->columns as $column) {
-                    $this->projections[$column] = 1;
-                }
-            }
-
+            
             // The _id field is mandatory when using grouping.
             if ($group && empty($group['_id'])) {
                 $group['_id'] = null;
