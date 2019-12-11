@@ -133,6 +133,20 @@ class SchemaTest extends TestCase
         $this->assertFalse($index);
 
         Schema::collection('newcollection', function ($collection) {
+            $collection->index(['field_a' => -1, 'field_b' => 1]);
+        });
+
+        $index = $this->getIndex('newcollection', 'field_a_-1_field_b_1');
+        $this->assertNotNull($index);
+
+        Schema::collection('newcollection', function ($collection) {
+            $collection->dropIndex(['field_a' => -1, 'field_b' => 1]);
+        });
+
+        $index = $this->getIndex('newcollection', 'field_a_-1_field_b_1');
+        $this->assertFalse($index);
+
+        Schema::collection('newcollection', function ($collection) {
             $collection->index(['field_a', 'field_b'], 'custom_index_name');
         });
 
