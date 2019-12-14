@@ -1069,11 +1069,6 @@ $user = User::where('name', 'John')->first();
 $user->unset('note');
 ```
 
-### Query Caching
-
-The MongoDB driver comes integrated with [rennokki/laravel-eloquent-query-cache](https://github.com/rennokki/laravel-eloquent-query-cache). Check the documentation
-to find out how to cache your MongoDB queries.
-
 ### Query Logging
 
 By default, Laravel keeps a log in memory of all queries that have been run for the current request. However, in some cases, such as when inserting a large number of rows, this can cause the application to use excess memory. To disable the log, you may use the `disableQueryLog` method:
