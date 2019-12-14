@@ -13,6 +13,7 @@ Table of contents
 * [Eloquent](#eloquent)
 * [Optional: Alias](#optional-alias)
 * [Query Builder](#query-builder)
+* [`toSql()`](#to-sql)
 * [Schema](#schema)
 * [Extensions](#extensions)
 * [Troubleshooting](#troubleshooting)
@@ -240,6 +241,18 @@ $user = DB::connection('mongodb')->collection('users')->get();
 ```
 
 Read more about the query builder on http://laravel.com/docs/queries
+
+`->toSql()`
+-------------
+Hence we are in a NoSQL driver, it is counter-intuitive to use `toSql()` to output the string that will be executed.
+
+However, if you still need the string that looks like the sql for some inspection, you can use the `toSql()` method:
+```php
+User::where('some_field', '>', 300)->whereRaw(['age' => ['$gt' => 30, '$lt' => 40]])->toSql();
+
+// output
+"select * from "users" where "some_field" > ? and {"age":{"$gt":30,"$lt":40}}"
+```
 
 Schema
 ------
@@ -602,15 +615,15 @@ $users = User::where('location', 'geoWithin', [
             [
                 -0.1450383,
                 51.5069158,
-            ],       
+            ],
             [
                 -0.1367563,
                 51.5100913,
-            ],       
+            ],
             [
                 -0.1270247,
                 51.5013233,
-            ],  
+            ],
             [
                 -0.1450383,
                 51.5069158,
@@ -1058,13 +1071,8 @@ $user->unset('note');
 
 ### Query Caching
 
-You may easily cache the results of a query using the remember method:
-
-```php
-$users = User::remember(10)->get();
-```
-
-*From: http://laravel.com/docs/queries#caching-queries*
+The MongoDB driver comes integrated with [rennokki/laravel-eloquent-query-cache](https://github.com/rennokki/laravel-eloquent-query-cache). Check the documentation
+to find out how to cache your MongoDB queries.
 
 ### Query Logging
 
