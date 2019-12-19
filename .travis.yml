@@ -18,7 +18,6 @@ cache:
 
 install:
   - docker version
-  #- sudo pip install docker-compose
   - sudo curl -L "https://github.com/docker/compose/releases/download/1.25.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
   - docker-compose version
   - docker-compose build --build-arg PHP_VERSION=${PHP_VERSION}
