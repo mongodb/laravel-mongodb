@@ -61,7 +61,7 @@ class TransactionBuilderTest extends TestCase
     public function testUpdate()
     {
         /** rollback test */
-        $new_age = $this->originData['age']+1;
+        $new_age = $this->originData['age'] + 1;
         DB::beginTransaction();
         DB::collection('users')->where('name', $this->originData['name'])->update(['age' => $new_age]);
         DB::rollBack();
@@ -107,7 +107,7 @@ class TransactionBuilderTest extends TestCase
         DB::collection('users')->where('name', $this->originData['name'])->increment('age');
         DB::commit();
         $user = DB::collection('users')->where('name', $this->originData['name'])->first();
-        $this->assertEquals($this->originData['age']+1, $user['age']);
+        $this->assertEquals($this->originData['age'] + 1, $user['age']);
     }
 
     public function testDecrement()
@@ -124,7 +124,7 @@ class TransactionBuilderTest extends TestCase
         DB::collection('users')->where('name', $this->originData['name'])->decrement('age');
         DB::commit();
         $user = DB::collection('users')->where('name', $this->originData['name'])->first();
-        $this->assertEquals($this->originData['age']-1, $user['age']);
+        $this->assertEquals($this->originData['age'] - 1, $user['age']);
     }
 
     public function testQuery()
