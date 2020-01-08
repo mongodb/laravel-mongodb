@@ -5,6 +5,9 @@ namespace Jenssegers\Mongodb;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Support\Arr;
 use MongoDB\Client;
+use MongoDB\Driver\ReadConcern;
+use MongoDB\Driver\ReadPreference;
+use MongoDB\Driver\WriteConcern;
 
 class Connection extends BaseConnection
 {
@@ -19,6 +22,9 @@ class Connection extends BaseConnection
      * @var \MongoDB\Client
      */
     protected $connection;
+
+    protected $session_key; // sessions会话列表当前会话数组key 随机生成
+    protected $sessions = []; // 会话列表
 
     /**
      * Create a new database connection instance.
@@ -253,5 +259,82 @@ class Connection extends BaseConnection
     public function __call($method, $parameters)
     {
         return call_user_func_array([$this->db, $method], $parameters);
+    }
+
+    /**
+     * create a session and start a transaction in session
+     *
+     * In version 4.0, MongoDB supports multi-document transactions on replica sets.
+     * In version 4.2, MongoDB introduces distributed transactions, which adds support for multi-document transactions on sharded clusters and incorporates the existing support for multi-document transactions on replica sets.
+     * To use transactions on MongoDB 4.2 deployments(replica sets and sharded clusters), clients must use MongoDB drivers updated for MongoDB 4.2.
+     *
+     * @see https://docs.mongodb.com/manual/core/transactions/
+     * @author klinson <klinson@163.com>
+     */
+    public function beginTransaction()
+    {
+        $this->session_key = uniqid();
+        $this->sessions[$this->session_key] = $this->connection->startSession();
+
+        $this->sessions[$this->session_key]->startTransaction([
+            'readPreference' => new ReadPreference(ReadPreference::RP_PRIMARY),
+            'writeConcern' => new WriteConcern(1),
+            'readConcern' => new ReadConcern(ReadConcern::LOCAL)
+        ]);
+    }
+
+    /**
+     * commit transaction in this session and close this session
+     * @author klinson <klinson@163.com>
+     */
+    public function commit()
+    {
+        if ($session = $this->getSession()) {
+            $session->commitTransaction();
+            $this->setLastSession();
+        }
+    }
+
+    /**
+     * rollback transaction in this session and close this session
+     * @author klinson <klinson@163.com>
+     */
+    public function rollBack()
+    {
+        if ($session = $this->getSession()) {
+            $session->abortTransaction();
+            $this->setLastSession();
+        }
+    }
+
+    /**
+     * close this session and get last session key to session_key
+     * Why do it ? Because nested transactions
+     * @author klinson <klinson@163.com>
+     */
+    protected function setLastSession()
+    {
+        if ($session = $this->getSession()) {
+            $session->endSession();
+            unset($this->sessions[$this->session_key]);
+            if (empty($this->sessions)) {
+                $this->session_key = null;
+            } else {
+                end($this->sessions);
+                $this->session_key = key($this->sessions);
+            }
+        }
+    }
+
+    /**
+     * get now session if it has session
+     * @return \MongoDB\Driver\Session|null
+     * @author klinson <klinson@163.com>
+     */
+    public function getSession()
+    {
+        return ($this->session_key && isset($this->sessions[$this->session_key]))
+            ? $this->sessions[$this->session_key]
+            : null;
     }
 }

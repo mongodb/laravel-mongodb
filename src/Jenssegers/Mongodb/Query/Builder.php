@@ -294,7 +294,7 @@ class Builder extends BaseBuilder
                     }
                 }
             }
-            
+
             // The _id field is mandatory when using grouping.
             if ($group && empty($group['_id'])) {
                 $group['_id'] = null;
@@ -338,6 +338,11 @@ class Builder extends BaseBuilder
                 $options = array_merge($options, $this->options);
             }
 
+            // if transaction in session
+            if ($session = $this->connection->getSession()) {
+                $options['session']  =  $session;
+            }
+
             // Execute aggregation
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
@@ -348,12 +353,14 @@ class Builder extends BaseBuilder
             // Return distinct results directly
             $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
 
-            // Execute distinct
-            if ($wheres) {
-                $result = $this->collection->distinct($column, $wheres);
-            } else {
-                $result = $this->collection->distinct($column);
+            $options = [];
+            // if transaction in session
+            if ($session = $this->connection->getSession()) {
+                $options['session']  =  $session;
             }
+
+            // Execute distinct
+            $result = $this->collection->distinct($column, $wheres ?: [], $options);
 
             return $this->useCollections ? new Collection($result) : $result;
         } // Normal query
@@ -395,6 +402,11 @@ class Builder extends BaseBuilder
             // Add custom query options
             if (count($this->options)) {
                 $options = array_merge($options, $this->options);
+            }
+
+            // if transaction in session
+            if ($session = $this->connection->getSession()) {
+                $options['session']  =  $session;
             }
 
             // Execute query and get MongoCursor
@@ -561,7 +573,12 @@ class Builder extends BaseBuilder
         }
 
         // Batch insert
-        $result = $this->collection->insertMany($values);
+        $options = [];
+        // if transaction in session
+        if ($session = $this->connection->getSession()) {
+            $options['session']  =  $session;
+        }
+        $result = $this->collection->insertMany($values, $options);
 
         return (1 == (int) $result->isAcknowledged());
     }
@@ -571,7 +588,12 @@ class Builder extends BaseBuilder
      */
     public function insertGetId(array $values, $sequence = null)
     {
-        $result = $this->collection->insertOne($values);
+        $options = [];
+        // if transaction in session
+        if ($session = $this->connection->getSession()) {
+            $options['session']  =  $session;
+        }
+        $result = $this->collection->insertOne($values, $options);
 
         if (1 == (int) $result->isAcknowledged()) {
             if ($sequence === null) {
@@ -591,6 +613,10 @@ class Builder extends BaseBuilder
         // Use $set as default operator.
         if (!Str::startsWith(key($values), '$')) {
             $values = ['$set' => $values];
+        }
+        // if transaction in session
+        if ($session = $this->connection->getSession()) {
+            $options['session']  =  $session;
         }
 
         return $this->performUpdate($values, $options);
@@ -613,6 +639,11 @@ class Builder extends BaseBuilder
 
             $query->orWhereNotNull($column);
         });
+
+        // if transaction in session
+        if ($session = $this->connection->getSession()) {
+            $options['session']  =  $session;
+        }
 
         return $this->performUpdate($query, $options);
     }
@@ -673,7 +704,14 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
-        $result = $this->collection->DeleteMany($wheres);
+
+        $options = [];
+        // if transaction in session
+        if ($session = $this->connection->getSession()) {
+            $options['session']  =  $session;
+        }
+
+        $result = $this->collection->DeleteMany($wheres, $options);
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getDeletedCount();
         }
@@ -698,7 +736,12 @@ class Builder extends BaseBuilder
      */
     public function truncate()
     {
-        $result = $this->collection->drop();
+        $options = [];
+        // if transaction in session
+        if ($session = $this->connection->getSession()) {
+            $options['session']  =  $session;
+        }
+        $result = $this->collection->drop($options);
 
         return (1 == (int) $result->ok);
     }
@@ -824,6 +867,11 @@ class Builder extends BaseBuilder
         // Update multiple items by default.
         if (!array_key_exists('multiple', $options)) {
             $options['multiple'] = true;
+        }
+
+        // if transaction in session
+        if ($session = $this->connection->getSession()) {
+            $options['session']  =  $session;
         }
 
         $wheres = $this->compileWheres();
