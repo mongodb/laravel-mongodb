@@ -13,6 +13,7 @@ Table of contents
 * [Eloquent](#eloquent)
 * [Optional: Alias](#optional-alias)
 * [Query Builder](#query-builder)
+* [Transaction](#transaction)
 * [Schema](#schema)
 * [Extensions](#extensions)
 * [Troubleshooting](#troubleshooting)
@@ -240,6 +241,26 @@ $user = DB::connection('mongodb')->collection('users')->get();
 ```
 
 Read more about the query builder on http://laravel.com/docs/queries
+
+Transaction
+-------------
+Transaction requires mongodb version V4.0 or more and deployment replica sets or sharded clusters.
+
+Transaction supports create/insert,update,delete,etc operation.
+
+Transaction supports infinite-level nested transactions, but outside transaction rollbacks do not affect the commit of inside transactions.
+```php
+DB::beginTransaction();
+
+User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+
+DB::transaction(function () {
+    DB::collection('users')->where('name', 'klinson')->update(['age' => 20]);
+});
+
+DB::rollBack();
+//DB::commit();
+```
 
 Schema
 ------
