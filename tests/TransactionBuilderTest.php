@@ -7,10 +7,16 @@ class TransactionBuilderTest extends TestCase
 {
     protected $insertData = ['name' => 'klinson', 'age' => 20, 'title' => 'admin'];
     protected $originData = ['name' => 'users', 'age' => 20, 'title' => 'user'];
+    protected $connection = 'mongodb_replset';
+    protected $originConnection = 'mongodb';
 
     public function setUp(): void
     {
         parent::setUp();
+
+        /** change connection to seplset? because the transaction needs  */
+        $this->originConnection = DB::getDefaultConnection();
+        DB::setDefaultConnection($this->connection);
 
         DB::collection('users')->truncate();
         DB::collection('users')->insert($this->originData);
@@ -19,6 +25,7 @@ class TransactionBuilderTest extends TestCase
     public function tearDown(): void
     {
         DB::collection('users')->truncate();
+        DB::setDefaultConnection($this->originConnection);
         parent::tearDown();
     }
 

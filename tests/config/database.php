@@ -14,6 +14,19 @@ return [
             'database' => env('MONGO_DATABASE', 'unittest'),
         ],
 
+        'mongodb_replset' => [
+            'driver' => 'mongodb',
+            'host' => [
+                'mongo1:27017',
+                'mongo2:27017',
+                'mongo3:27017',
+            ],
+            'database' => env('MONGO_DATABASE', 'unittest'),
+            'options'  => [
+                'replicaSet' => 'rs0'
+            ]
+        ],
+
         'dsn_mongodb' => [
             'driver' => 'mongodb',
             'dsn' => "mongodb://$mongoHost:$mongoPort",

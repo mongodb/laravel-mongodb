@@ -7,10 +7,17 @@ class TransactionTest extends TestCase
 {
     protected $insertData = ['name' => 'klinson', 'age' => 20, 'title' => 'admin'];
     protected $originData = ['name' => 'users', 'age' => 20, 'title' => 'user'];
+    protected $connection = 'mongodb_replset';
+    protected $originConnection = 'mongodb';
 
     public function setUp(): void
     {
         parent::setUp();
+
+        /** change connection to seplset? because the transaction needs  */
+        $this->originConnection = DB::getDefaultConnection();
+        DB::setDefaultConnection($this->connection);
+
         User::truncate();
         User::create($this->originData);
     }
@@ -18,6 +25,8 @@ class TransactionTest extends TestCase
     public function tearDown(): void
     {
         User::truncate();
+        DB::setDefaultConnection($this->originConnection);
+
         parent::tearDown();
     }
 

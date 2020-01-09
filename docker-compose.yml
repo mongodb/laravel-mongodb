@@ -12,6 +12,9 @@ services:
         depends_on:
           - mongodb
           - mysql
+          - mongo1
+          - mongo2
+          - mongo3
 
     mysql:
         container_name: mysql
@@ -30,3 +33,46 @@ services:
             - 27017:27017
         logging:
             driver: none
+
+    mongo1:
+        hostname: mongo1
+        container_name: mongo1
+        image: mongo
+        restart: always
+        expose:
+            - 27017
+        ports:
+            - 27018:27017
+        command: '--quiet --bind_ip_all --replSet rs0'
+
+    mongo2:
+        hostname: mongo2
+        container_name: mongo2
+        image: mongo
+        restart: always
+        expose:
+            - 27017
+        ports:
+            - 27019:27017
+        command: '--quiet --bind_ip_all --replSet rs0'
+
+    mongo3:
+        hostname: mongo3
+        container_name: mongo3
+        image: mongo
+        restart: always
+        expose:
+            - 27017
+        ports:
+            - 27020:27017
+        command: '--quiet --bind_ip_all --replSet rs0'
+
+    mongoreplret:
+        build:
+            context: .
+            dockerfile: MongoReplsetDockerFile
+        depends_on:
+            - mongo1
+            - mongo2
+            - mongo3
+        entrypoint: ["sh", "-c", "mongo-replset-init.sh"]
