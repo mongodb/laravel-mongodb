@@ -15,6 +15,8 @@ services:
           - mongo1
           - mongo2
           - mongo3
+        stdin_open: true
+        tty: true
 
     mysql:
         container_name: mysql
