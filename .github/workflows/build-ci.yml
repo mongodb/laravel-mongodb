@@ -49,9 +49,6 @@ jobs:
         MYSQL_HOST: 0.0.0.0
         MYSQL_PORT: 3307
     - name: Send coveralls
-      run: |
-        export PATH="$PATH:~/.composer/vendor/bin/"
-        php-coveralls build/logs/clover.xml -v
+      run: vendor/bin/php-coveralls -v
       env:
-        # COVERALLS_RUN_LOCALLY: 1
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
