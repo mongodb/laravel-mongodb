@@ -51,7 +51,7 @@ jobs:
     - name: Send coveralls
       run: |
         export PATH="$PATH:~/.composer/vendor/bin/"
-        coveralls build/logs/clover.xml -v
+        php-coveralls build/logs/clover.xml -v
       env:
         # COVERALLS_RUN_LOCALLY: 1
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
