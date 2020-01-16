@@ -34,7 +34,7 @@ jobs:
       run: |
         docker version
     - name: Debug if needed
-      run: if [[ "$DEBUG" == "true" ]]; then env fi;
+      run: if [[ "$DEBUG" == "true" ]]; then env; fi
       env:
         DEBUG: ${{secrets.DEBUG}}
     - name: Install dependencies
