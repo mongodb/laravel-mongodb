@@ -254,7 +254,7 @@ Schema::create('users', function($collection)
     $collection->unique('email');
 });
 ```
-You can also pass all the parameter specified in the MongoDB docs [here](https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/#options-for-all-index-types) in the `$options` parameter. For example:
+You can also pass all the parameters specified in the MongoDB docs [here](https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/#options-for-all-index-types) in the `$options` parameter. For example:
 
 ```
 Schema::create('users', function($collection)
