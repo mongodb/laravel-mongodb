@@ -34,11 +34,7 @@ jobs:
       run: |
         docker version
     - name: Debug if needed
-      run: |
-        export DEBUG=${DEBUG:-false}
-        if [[ "$DEBUG" == "true" ]]; then
-          env
-        fi
+      run: if [[ "$DEBUG" == "true" ]]; then env fi;
       env:
         DEBUG: ${{secrets.DEBUG}}
     - name: Install dependencies
@@ -54,9 +50,8 @@ jobs:
         MYSQL_PORT: 3307
     - name: Send coveralls
       run: |
-        composer global require cedx/coveralls
         export PATH="$PATH:~/.composer/vendor/bin/"
-        coveralls build/logs/clover.xml
+        coveralls build/logs/clover.xml -v
       env:
-        COVERALLS_RUN_LOCALLY: 1
+        # COVERALLS_RUN_LOCALLY: 1
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
