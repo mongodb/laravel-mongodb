@@ -2,6 +2,7 @@
 
 $mongoHost = env('MONGO_HOST', 'mongodb');
 $mongoPort = env('MONGO_PORT') ? (int) env('MONGO_PORT') : 27017;
+$mysqlPort = env('MYSQL_PORT') ? (int) env('MYSQL_PORT') : 3306;
 
 return [
 
@@ -23,6 +24,7 @@ return [
         'mysql' => [
             'driver' => 'mysql',
             'host' => env('MYSQL_HOST', 'mysql'),
+            'port' => $mysqlPort,
             'database' => env('MYSQL_DATABASE', 'unittest'),
             'username' => env('MYSQL_USERNAME', 'root'),
             'password' => env('MYSQL_PASSWORD', ''),
