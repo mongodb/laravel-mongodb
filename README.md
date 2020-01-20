@@ -42,8 +42,6 @@ Table of contents
     - [Cross-Database Relations](#cross-database-relations)
     - [Authentication](#authentication)
     - [Queues](#queues)
-    - [Sentry](#sentry)
-    - [Sessions](#sessions)
 
 Laravel Installation
 ------------
@@ -1109,9 +1107,3 @@ Last, add the service provider in `config/app.php`:
 ```php
 Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
 ```
-
-### Sentry
-If you want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
-
-### Sessions
-The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
