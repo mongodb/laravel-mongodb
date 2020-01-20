@@ -5,10 +5,8 @@ Laravel MongoDB
 
 Laravel Eloquent adds support for ODM (Object Document Mapper) to Laravel. It's the same as Eloquent ORM, but with Documents, since MongoDB is a NoSQL database.
 
-Table of contents
------------------
+
 - [Laravel MongoDB](#laravel-mongodb)
-  - [Table of contents](#table-of-contents)
   - [Laravel Installation](#laravel-installation)
     - [Laravel version Compatibility](#laravel-version-compatibility)
     - [Laravel](#laravel)
