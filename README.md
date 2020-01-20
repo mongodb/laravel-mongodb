@@ -3,7 +3,7 @@ Laravel MongoDB
 
 [![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](https://img.shields.io/github/workflow/status/jenssegers/laravel-mongodb/CI)](https://github.com/jenssegers/laravel-mongodb/actions) [![Coverage Status](https://coveralls.io/repos/github/jenssegers/laravel-mongodb/badge.svg?branch=master)](https://coveralls.io/github/jenssegers/laravel-mongodb?branch=master) [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
 
-Laravel Eloquent add support for ODM (Object Document Mapper) to Laravel. It's the same as Eloquent ORM, but with Documents, since MongoDB is a NoSQL database.
+Laravel Eloquent adds support for ODM (Object Document Mapper) to Laravel. It's the same as Eloquent ORM, but with Documents, since MongoDB is a NoSQL database.
 
 Table of contents
 -----------------
@@ -110,7 +110,7 @@ Upgrading
 
 In this new major release which supports the new MongoDB PHP extension, we also moved the location of the Model class and replaced the MySQL model class with a trait.
 
-Please change all `Jenssegers\Mongodb\Model` references to `Jenssegers\Mongodb\Eloquent\Model` either at the top of your model files, or your registered alias.
+Please change all `Jenssegers\Mongodb\Model` references to `Jenssegers\Mongodb\Eloquent\Model` either at the top of your model files or your registered alias.
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model;
@@ -154,7 +154,7 @@ docker-compose up
 
 Configuration
 -------------
-You can use MongoDB either as a main database, either as a side database. To do so, add a new `mongodb` connection to `config/database.php`:
+You can use MongoDB either as the main database, either as a side database. To do so, add a new `mongodb` connection to `config/database.php`:
 
 ```php
 'mongodb' => [
@@ -173,7 +173,7 @@ You can use MongoDB either as a main database, either as a side database. To do 
 ],
 ```
 
-For multiple servers or replica set configurations, set the host to array and specify each server host:
+For multiple servers or replica set configurations, set the host to an array and specify each server host:
 
 ```php
 'mongodb' => [
@@ -186,7 +186,7 @@ For multiple servers or replica set configurations, set the host to array and sp
 ],
 ```
 
-If you wish to use a connection string instead of a full key-value params, you can set it so. Check the documentation on MongoDB's URI format: https://docs.mongodb.com/manual/reference/connection-string/
+If you wish to use a connection string instead of full key-value params, you can set it so. Check the documentation on MongoDB's URI format: https://docs.mongodb.com/manual/reference/connection-string/
 
 ```php
 'mongodb' => [
@@ -224,7 +224,7 @@ class Book extends Model
 }
 ```
 
-**NOTE:** MongoDb documents are automatically stored with an unique ID that is stored in the `_id` property. If you wish to use your own ID, substitude the `$primaryKey` property and set it to your own primary key attribute name.
+**NOTE:** MongoDB documents are automatically stored with a unique ID that is stored in the `_id` property. If you wish to use your own ID, substitute the `$primaryKey` property and set it to your own primary key attribute name.
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model;
@@ -337,7 +337,7 @@ $users =
 $users = User::whereIn('age', [16, 18, 20])->get();
 ```
 
-When using `whereNotIn` objects will be returned if the field is non existent. Combine with `whereNotNull('age')` to leave out those documents.
+When using `whereNotIn` objects will be returned if the field is non-existent. Combine with `whereNotNull('age')` to leave out those documents.
 
 **whereBetween**
 
@@ -536,10 +536,10 @@ User::where('age', 'mod', [10, 0])->get();
 
 ```php
 $bars = Bar::where('location', 'near', [
-	'$geometry' => [
+    '$geometry' => [
         'type' => 'Point',
-	    'coordinates' => [
-	        -0.1367563, // longitude
+        'coordinates' => [
+            -0.1367563, // longitude
             51.5100913, // latitude
         ],
     ],
@@ -551,9 +551,9 @@ $bars = Bar::where('location', 'near', [
 
 ```php
 $bars = Bar::where('location', 'geoWithin', [
-	'$geometry' => [
+    '$geometry' => [
         'type' => 'Polygon',
-	    'coordinates' => [
+        'coordinates' => [
             [
                 [-0.1450383, 51.5069158],
                 [-0.1367563, 51.5100913],
@@ -765,7 +765,7 @@ class Item extends Model
 
 ### belongsToMany and pivots
 
-The belongsToMany relation will not use a pivot "table", but will push id's to a __related_ids__ attribute instead. This makes the second parameter for the belongsToMany method useless.
+The belongsToMany relation will not use a pivot "table" but will push id's to a __related_ids__ attribute instead. This makes the second parameter for the belongsToMany method useless.
 
 If you want to define custom keys for your relation, set it to `null`:
 
@@ -785,7 +785,7 @@ class User extends Model
 
 ### EmbedsMany Relationship
 
-If you want to embed models, rather than referencing them, you can use the `embedsMany` relation. This relation is similar to the `hasMany` relation, but embeds the models inside the parent object.
+If you want to embed models, rather than referencing them, you can use the `embedsMany` relation. This relation is similar to the `hasMany` relation but embeds the models inside the parent object.
 
 **REMEMBER**: These relations return Eloquent collections, they don't return query builder objects!
 
@@ -998,7 +998,7 @@ MongoDB specific operations:
 - expire
 - geospatial
 
-All other (unsupported) operations are implemented as dummy pass-through methods, because MongoDB does not use a predefined schema.
+All other (unsupported) operations are implemented as dummy pass-through methods because MongoDB does not use a predefined schema.
 
 Read more about the schema builder on [Laravel Docs](https://laravel.com/docs/6.0/migrations#tables)
 
@@ -1031,11 +1031,11 @@ If you're using a hybrid MongoDB and SQL setup, you can define relationships acr
 
 The model will automatically return a MongoDB-related or SQL-related relation based on the type of the related model.
 
-If you want this functionality to work both ways, your SQL-models will need use the `Jenssegers\Mongodb\Eloquent\HybridRelations` trait.
+If you want this functionality to work both ways, your SQL-models will need to use the `Jenssegers\Mongodb\Eloquent\HybridRelations` trait.
 
 **This functionality only works for `hasOne`, `hasMany` and `belongsTo`.**
 
-The MySQL model shoul use the `HybridRelations` trait:
+The MySQL model should use the `HybridRelations` trait:
 
 ```php
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
