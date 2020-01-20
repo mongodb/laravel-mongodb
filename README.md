@@ -170,7 +170,7 @@ You can use MongoDB either as a main database, either as a side database. To do 
         'database' => 'admin', // required with Mongo 3+
 
         // here you can pass more settings
-        // see https://www.php.net/manual/en/mongoclient.construct.php under "Parameters" for a list of complete parameters you can use
+        // see https://www.php.net/manual/en/mongodb-driver-manager.construct.php under "Uri Options" for a list of complete parameters you can use
     ],
 ],
 ```
