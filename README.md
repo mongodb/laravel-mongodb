@@ -13,6 +13,7 @@ Table of contents
 * [Eloquent](#eloquent)
 * [Optional: Alias](#optional-alias)
 * [Query Builder](#query-builder)
+* [`toSql()`](#to-sql)
 * [Schema](#schema)
 * [Extensions](#extensions)
 * [Examples](#examples)
@@ -239,6 +240,20 @@ $user = DB::connection('mongodb')->collection('users')->get();
 ```
 
 Read more about the query builder on http://laravel.com/docs/queries
+
+->toSql()
+-------------
+Hence we are in a NoSQL driver, it is counter-intuitive to use `toSql()` to output the string that will be executed.
+
+However, if you still need the string that looks like the sql for some inspection, you can use the `toSql()` method:
+```php
+User::where('some_field', '>', 300)
+    ->whereRaw(['age' => ['$gt' => 30, '$lt' => 40]])
+    ->toSql();
+
+// output
+"select * from "users" where "some_field" > ? and {"age":{"$gt":30,"$lt":40}}"
+```
 
 Schema
 ------
