@@ -7,11 +7,40 @@ Laravel Eloquent add support for ODM (Object Document Mapper) to Laravel. It's t
 
 Table of contents
 -----------------
-* [Installation](#installation)
-* [Upgrading](#upgrading)
-* [Configuration](#configuration)
-* [Eloquent](#eloquent)
-* [Query Builder](#query-builder)
+- [Laravel MongoDB](#laravel-mongodb)
+  - [Table of contents](#table-of-contents)
+  - [Laravel Installation](#laravel-installation)
+    - [Laravel version Compatibility](#laravel-version-compatibility)
+    - [Laravel](#laravel)
+    - [Lumen](#lumen)
+    - [Non-Laravel projects](#non-laravel-projects)
+  - [Upgrading](#upgrading)
+      - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
+  - [Testing](#testing)
+  - [Configuration](#configuration)
+  - [Eloquent](#eloquent)
+    - [Extending the base model](#extending-the-base-model)
+    - [Soft Deletes](#soft-deletes)
+    - [Dates](#dates)
+    - [Basic Usage](#basic-usage)
+    - [MongoDB-specific operators](#mongodb-specific-operators)
+    - [MongoDB-specific Geo operations](#mongodb-specific-geo-operations)
+    - [Inserts, updates and deletes](#inserts-updates-and-deletes)
+    - [MongoDB specific operations](#mongodb-specific-operations)
+    - [Relationships](#relationships)
+    - [belongsToMany and pivots](#belongstomany-and-pivots)
+    - [EmbedsMany Relationship](#embedsmany-relationship)
+    - [EmbedsOne Relations](#embedsone-relations)
+  - [Query Builder](#query-builder)
+    - [Available operations](#available-operations)
+  - [Schema](#schema)
+    - [Geospatial indexes](#geospatial-indexes)
+  - [Extending](#extending)
+    - [Cross-Database Relations](#cross-database-relations)
+    - [Authentication](#authentication)
+    - [Queues](#queues)
+    - [Sentry](#sentry)
+    - [Sessions](#sessions)
 
 Laravel Installation
 ------------
@@ -83,9 +112,9 @@ In this new major release which supports the new MongoDB PHP extension, we also 
 Please change all `Jenssegers\Mongodb\Model` references to `Jenssegers\Mongodb\Eloquent\Model` either at the top of your model files, or your registered alias.
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use Jenssegers\Mongodb\Eloquent\Model;
 
-class User extends Eloquent
+class User extends Model
 {
     //
 }
@@ -98,7 +127,7 @@ Instead use the new `Jenssegers\Mongodb\Eloquent\HybridRelations` trait. This sh
 ```php
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
-class User extends Eloquent
+class User extends Model
 {
 
     use HybridRelations;
@@ -128,7 +157,7 @@ You can use MongoDB either as a main database, either as a side database. To do 
 
 ```php
 'mongodb' => [
-    'driver'   => 'mongodb',
+    'driver' => 'mongodb',
     'host' => env('DB_HOST', '127.0.0.1'),
     'port' => env('DB_PORT', 27017),
     'database' => env('DB_DATABASE', 'homestead'),
@@ -147,7 +176,7 @@ For multiple servers or replica set configurations, set the host to array and sp
 
 ```php
 'mongodb' => [
-    'driver'   => 'mongodb',
+    'driver' => 'mongodb',
     'host' => ['server1', 'server2', ...],
     ...
     'options' => [
@@ -160,7 +189,7 @@ If you wish to use a connection string instead of a full key-value params, you c
 
 ```php
 'mongodb' => [
-    'driver'   => 'mongodb',
+    'driver' => 'mongodb',
     'dsn' => env('DB_DSN'),
     'database' => env('DB_DATABASE', 'homestead'),
 ],
@@ -169,7 +198,7 @@ If you wish to use a connection string instead of a full key-value params, you c
 Eloquent
 --------
 
-### Basic Usage
+### Extending the base model
 This package includes a MongoDB enabled Eloquent class that you can use to define models for corresponding collections.
 
 ```php
@@ -218,3 +247,860 @@ class Book extends Model
     protected $connection = 'mongodb';
 }
 ```
+
+### Soft Deletes
+
+When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record.
+
+To enable soft deletes for a model, apply the `Jenssegers\Mongodb\Eloquent\SoftDeletes` Trait to the model:
+
+```php
+use Jenssegers\Mongodb\Eloquent\SoftDeletes;
+
+class User extends Model
+{
+    use SoftDeletes;
+
+    protected $dates = ['deleted_at'];
+}
+```
+
+For more information check [Laravel Docs about Soft Deleting](http://laravel.com/docs/eloquent#soft-deleting).
+
+### Dates
+
+Eloquent allows you to work with Carbon or DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database.
+
+```php
+use Jenssegers\Mongodb\Eloquent\Model;
+
+class User extends Model
+{
+    protected $dates = ['birthday'];
+}
+```
+
+This allows you to execute queries like this:
+
+```php
+$users = User::where(
+    'birthday', '>',
+    new DateTime('-18 years')
+)->get();
+```
+
+### Basic Usage
+
+**Retrieving all models**
+
+```php
+$users = User::all();
+```
+
+**Retrieving a record by primary key**
+
+```php
+$user = User::find('517c43667db388101e00000f');
+```
+
+**Where**
+
+```php
+$users =
+    User::where('age', '>', 18)
+        ->take(10)
+        ->get();
+```
+
+**OR Statements**
+
+```php
+$posts =
+    Post::where('votes', '>', 0)
+        ->orWhere('is_approved', true)
+        ->get();
+```
+
+**AND statements**
+
+```php
+$users =
+    User::where('age', '>', 18)
+        ->where('name', '!=', 'John')
+        ->get();
+```
+
+**whereIn**
+
+```php
+$users = User::whereIn('age', [16, 18, 20])->get();
+```
+
+When using `whereNotIn` objects will be returned if the field is non existent. Combine with `whereNotNull('age')` to leave out those documents.
+
+**whereBetween**
+
+```php
+$posts = Post::whereBetween('votes', [1, 100])->get();
+```
+
+**whereNull**
+
+```php
+$users = User::whereNull('age')->get();
+```
+
+**Advanced wheres**
+
+```php
+$users =
+    User::where('name', 'John')
+        ->orWhere(function ($query) {
+            return $query
+                ->where('votes', '>', 100)
+                ->where('title', '<>', 'Admin');
+        })->get();
+```
+
+**orderBy**
+
+```php
+$users = User::orderBy('age', 'desc')->get();
+```
+
+**Offset & Limit (skip & take)**
+
+```php
+$users =
+    User::skip(10)
+        ->take(5)
+        ->get();
+```
+
+**groupBy**
+
+Selected columns that are not grouped will be aggregated with the `$last` function.
+
+```php
+$users =
+    Users::groupBy('title')
+        ->get(['title', 'name']);
+```
+
+**Distinct**
+
+Distinct requires a field for which to return the distinct values.
+
+```php
+$users = User::distinct()->get(['name']);
+
+// Equivalent to:
+$users = User::distinct('name')->get();
+```
+
+Distinct can be combined with **where**:
+
+```php
+$users =
+    User::where('active', true)
+        ->distinct('name')
+        ->get();
+```
+
+**Like**
+
+```php
+$spamComments = Comment::where('body', 'like', '%spam%')->get();
+```
+
+**Aggregation**
+
+**Aggregations are only available for MongoDB versions greater than 2.2.x**
+
+```php
+$total = Product::count();
+$price = Product::max('price');
+$price = Product::min('price');
+$price = Product::avg('price');
+$total = Product::sum('price');
+```
+
+Aggregations can be combined with **where**:
+
+```php
+$sold = Orders::where('sold', true)->sum('price');
+```
+
+Aggregations can be also used on sub-documents:
+
+```php
+$total = Order::max('suborder.price');
+```
+
+**NOTE**: This aggregation only works with single sub-documents (like `EmbedsOne`) not subdocument arrays (like `EmbedsMany`).
+
+**Incrementing/Decrementing the value of a column**
+
+Perform increments or decrements (default 1) on specified attributes:
+
+```php
+Cat::where('name', 'Kitty')->increment('age');
+
+Car::where('name', 'Toyota')->decrement('weight', 50);
+```
+
+The number of updated objects is returned:
+
+```php
+$count = User::increment('age');
+```
+
+You may also specify additional columns to update:
+
+```php
+Cat::where('age', 3)
+    ->increment('age', 1, ['group' => 'Kitty Club']);
+
+Car::where('weight', 300)
+    ->decrement('weight', 100, ['latest_change' => 'carbon fiber']);
+```
+
+### MongoDB-specific operators
+
+**Exists**
+
+Matches documents that have the specified field.
+
+```php
+User::where('age', 'exists', true)->get();
+```
+
+**All**
+
+Matches arrays that contain all elements specified in the query.
+
+```php
+User::where('roles', 'all', ['moderator', 'author'])->get();
+```
+
+**Size**
+
+Selects documents if the array field is a specified size.
+
+```php
+Post::where('tags', 'size', 3)->get();
+```
+
+**Regex**
+
+Selects documents where values match a specified regular expression.
+
+```php
+use MongoDB\BSON\Regex;
+
+User::where('name', 'regex', new Regex("/.*doe/i"))->get();
+```
+
+**NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a `MongoDB\BSON\Regex` object.
+
+```php
+User::where('name', 'regexp', '/.*doe/i')->get();
+```
+
+The inverse of regexp:
+
+```php
+User::where('name', 'not regexp', '/.*doe/i')->get();
+```
+
+**Type**
+
+Selects documents if a field is of the specified type. For more information check: http://docs.mongodb.org/manual/reference/operator/query/type/#op._S_type
+
+```php
+User::where('age', 'type', 2)->get();
+```
+
+**Mod**
+
+Performs a modulo operation on the value of a field and selects documents with a specified result.
+
+```php
+User::where('age', 'mod', [10, 0])->get();
+```
+
+### MongoDB-specific Geo operations
+
+**Near**
+
+```php
+$bars = Bar::where('location', 'near', [
+	'$geometry' => [
+        'type' => 'Point',
+	    'coordinates' => [
+	        -0.1367563, // longitude
+            51.5100913, // latitude
+        ],
+    ],
+    '$maxDistance' => 50,
+])->get();
+```
+
+**GeoWithin**
+
+```php
+$bars = Bar::where('location', 'geoWithin', [
+	'$geometry' => [
+        'type' => 'Polygon',
+	    'coordinates' => [
+            [
+                [-0.1450383, 51.5069158],
+                [-0.1367563, 51.5100913],
+                [-0.1270247, 51.5013233],
+                [-0.1450383, 51.5069158],
+            ],
+        ],
+    ],
+])->get();
+```
+
+**GeoIntersects**
+
+```php
+$bars = Bar::where('location', 'geoIntersects', [
+    '$geometry' => [
+        'type' => 'LineString',
+        'coordinates' => [
+            [-0.144044, 51.515215],
+            [-0.129545, 51.507864],
+        ],
+    ],
+])->get();
+```
+### Inserts, updates and deletes
+
+Inserting, updating and deleting records works just like the original Eloquent. Please check [Laravel Docs' Eloquent section](https://laravel.com/docs/6.x/eloquent).
+
+Here, only the MongoDB-specific operations are specified.
+
+### MongoDB specific operations
+
+**Raw Expressions**
+
+These expressions will be injected directly into the query.
+
+```php
+User::whereRaw([
+    'age' => ['$gt' => 30, '$lt' => 40],
+])->get();
+```
+
+You can also perform raw expressions on the internal MongoCollection object. If this is executed on the model class, it will return a collection of models.
+
+If this is executed on the query builder, it will return the original response.
+
+**Cursor timeout**
+
+To prevent `MongoCursorTimeout` exceptions, you can manually set a timeout value that will be applied to the cursor:
+
+```php
+DB::collection('users')->timeout(-1)->get();
+```
+
+**Upsert**
+
+Update or insert a document. Additional options for the update method are passed directly to the native update method.
+
+```php
+// Query Builder
+DB::collection('users')
+    ->where('name', 'John')
+    ->update($data, ['upsert' => true]);
+
+// Eloquent
+$user->update($data, ['upsert' => true]);
+```
+
+**Projections**
+
+You can apply projections to your queries using the `project` method.
+
+```php
+DB::collection('items')
+    ->project(['tags' => ['$slice' => 1]])
+    ->get();
+
+DB::collection('items')
+    ->project(['tags' => ['$slice' => [3, 7]]])
+    ->get();
+```
+
+**Projections with Pagination**
+
+```php
+$limit = 25;
+$projections = ['id', 'name'];
+
+DB::collection('items')
+    ->paginate($limit, $projections);
+```
+
+**Push**
+
+Add items to an array.
+
+```php
+DB::collection('users')
+    ->where('name', 'John')
+    ->push('items', 'boots');
+
+$user->push('items', 'boots');
+```
+
+```php
+DB::collection('users')
+    ->where('name', 'John')
+    ->push('messages', [
+        'from' => 'Jane Doe',
+        'message' => 'Hi John',
+    ]);
+
+$user->push('messages', [
+    'from' => 'Jane Doe',
+    'message' => 'Hi John',
+]);
+```
+
+If you **DON'T** want duplicate items, set the third parameter to `true`:
+
+```php
+DB::collection('users')
+    ->where('name', 'John')
+    ->push('items', 'boots', true);
+
+$user->push('items', 'boots', true);
+```
+
+**Pull**
+
+Remove an item from an array.
+
+```php
+DB::collection('users')
+    ->where('name', 'John')
+    ->pull('items', 'boots');
+
+$user->pull('items', 'boots');
+```
+
+```php
+DB::collection('users')
+    ->where('name', 'John')
+    ->pull('messages', [
+        'from' => 'Jane Doe',
+        'message' => 'Hi John',
+    ]);
+
+$user->pull('messages', [
+    'from' => 'Jane Doe',
+    'message' => 'Hi John',
+]);
+```
+
+**Unset**
+
+Remove one or more fields from a document.
+
+```php
+DB::collection('users')
+    ->where('name', 'John')
+    ->unset('note');
+
+$user->unset('note');
+```
+
+### Relationships
+
+The only available relationships are:
+ - hasOne
+ - hasMany
+ - belongsTo
+ - belongsToMany
+
+The MongoDB-specific relationships are:
+ - embedsOne
+ - embedsMany
+
+Here is a small example:
+
+```php
+use Jenssegers\Mongodb\Eloquent\Model;
+
+class User extends Model
+{
+    public function items()
+    {
+        return $this->hasMany(Item::class);
+    }
+}
+```
+
+The inverse relation of `hasMany` is `belongsTo`:
+
+```php
+use Jenssegers\Mongodb\Eloquent\Model;
+
+class Item extends Model
+{
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+```
+
+### belongsToMany and pivots
+
+The belongsToMany relation will not use a pivot "table", but will push id's to a __related_ids__ attribute instead. This makes the second parameter for the belongsToMany method useless.
+
+If you want to define custom keys for your relation, set it to `null`:
+
+```php
+use Jenssegers\Mongodb\Eloquent\Mode;
+
+class User extends Model
+{
+    public function groups()
+    {
+        return $this->belongsToMany(
+            Group::class, null, 'user_ids', 'group_ids'
+        );
+    }
+}
+```
+
+### EmbedsMany Relationship
+
+If you want to embed models, rather than referencing them, you can use the `embedsMany` relation. This relation is similar to the `hasMany` relation, but embeds the models inside the parent object.
+
+**REMEMBER**: These relations return Eloquent collections, they don't return query builder objects!
+
+```php
+use Jenssegers\Mongodb\Eloquent\Model;
+
+class User extends Model
+{
+    public function books()
+    {
+        return $this->embedsMany(Book::class);
+    }
+}
+```
+
+You can access the embedded models through the dynamic property:
+
+```php
+$user = User::first();
+
+foreach ($user->books as $book) {
+    //
+}
+```
+
+The inverse relation is auto*magically* available. You don't need to define this reverse relation.
+
+```php
+$book = Book::first();
+
+$user = $book->user;
+```
+
+Inserting and updating embedded models works similar to the `hasMany` relation:
+
+```php
+$book = $user->books()->save(
+    new Book(['title' => 'A Game of Thrones'])
+);
+
+// or
+$book =
+    $user->books()
+         ->create(['title' => 'A Game of Thrones']);
+```
+
+You can update embedded models using their `save` method (available since release 2.0.0):
+
+```php
+$book = $user->books()->first();
+
+$book->title = 'A Game of Thrones';
+$book->save();
+```
+
+You can remove an embedded model by using the `destroy` method on the relation, or the `delete` method on the model (available since release 2.0.0):
+
+```php
+$book->delete();
+
+// Similar operation
+$user->books()->destroy($book);
+```
+
+If you want to add or remove an embedded model, without touching the database, you can use the `associate` and `dissociate` methods.
+
+To eventually write the changes to the database, save the parent object:
+
+```php
+$user->books()->associate($book);
+$user->save();
+```
+
+Like other relations, embedsMany assumes the local key of the relationship based on the model name. You can override the default local key by passing a second argument to the embedsMany method:
+
+```php
+use Jenssegers\Mongodb\Eloquent\Model;
+
+class User extends Model
+{
+    public function books()
+    {
+        return $this->embedsMany(Book::class, 'local_key');
+    }
+}
+```
+
+Embedded relations will return a Collection of embedded items instead of a query builder. Check out the available operations here: https://laravel.com/docs/master/collections
+
+
+### EmbedsOne Relations
+
+The embedsOne relation is similar to the embedsMany relation, but only embeds a single model.
+
+```php
+use Jenssegers\Mongodb\Eloquent\Model;
+
+class Book extends Model
+{
+    public function author()
+    {
+        return $this->embedsOne(Author::class);
+    }
+}
+```
+
+You can access the embedded models through the dynamic property:
+
+```php
+$book = Book::first();
+$author = $book->author;
+```
+
+Inserting and updating embedded models works similar to the `hasOne` relation:
+
+```php
+$author = $book->author()->save(
+    new Author(['name' => 'John Doe'])
+);
+
+// Similar
+$author =
+    $book->author()
+         ->create(['name' => 'John Doe']);
+```
+
+You can update the embedded model using the `save` method (available since release 2.0.0):
+
+```php
+$author = $book->author;
+
+$author->name = 'Jane Doe';
+$author->save();
+```
+
+You can replace the embedded model with a new model like this:
+
+```php
+$newAuthor = new Author(['name' => 'Jane Doe']);
+
+$book->author()->save($newAuthor);
+```
+
+Query Builder
+-------------
+The database driver plugs right into the original query builder.
+
+When using MongoDB connections, you will be able to build fluent queries to perform database operations.
+
+For your convenience, there is a `collection` alias for `table` as well as some additional MongoDB specific operators/operations.
+
+
+```php
+$books = DB::collection('books')->get();
+
+$hungerGames =
+    DB::collection('books')
+        ->where('name', 'Hunger Games')
+        ->first();
+```
+
+If you are familiar with [Eloquent Queries](http://laravel.com/docs/queries), there is the same functionality.
+
+### Available operations
+To see the available operations, check the [Eloquent](#eloquent) section.
+
+Schema
+------
+The database driver also has (limited) schema builder support. You can easily manipulate collections and set indexes.
+
+```php
+Schema::create('users', function ($collection) {
+    $collection->index('name');
+    $collection->unique('email');
+});
+```
+
+You can also pass all the parameters specified [in the MongoDB docs](https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/#options-for-all-index-types) to the `$options` parameter:
+
+```php
+Schema::create('users', function ($collection) {
+    $collection->index(
+        'username',
+        null,
+        null,
+        [
+            'sparse' => true,
+            'unique' => true,
+            'background' => true,
+        ]
+    );
+});
+```
+
+Inherited operations:
+- create and drop
+- collection
+- hasCollection
+- index and dropIndex (compound indexes supported as well)
+- unique
+
+MongoDB specific operations:
+- background
+- sparse
+- expire
+- geospatial
+
+All other (unsupported) operations are implemented as dummy pass-through methods, because MongoDB does not use a predefined schema.
+
+Read more about the schema builder on [Laravel Docs](https://laravel.com/docs/6.0/migrations#tables)
+
+### Geospatial indexes
+
+Geospatial indexes are handy for querying location-based documents.
+
+They come in two forms: `2d` and `2dsphere`. Use the schema builder to add these to a collection.
+
+```php
+Schema::create('bars', function ($collection) {
+    $collection->geospatial('location', '2d');
+});
+```
+
+To add a `2dsphere` index:
+
+```php
+Schema::create('bars', function ($collection) {
+    $collection->geospatial('location', '2dsphere');
+});
+```
+
+Extending
+---------
+
+### Cross-Database Relations
+
+If you're using a hybrid MongoDB and SQL setup, you can define relationships across them.
+
+The model will automatically return a MongoDB-related or SQL-related relation based on the type of the related model.
+
+If you want this functionality to work both ways, your SQL-models will need use the `Jenssegers\Mongodb\Eloquent\HybridRelations` trait.
+
+**This functionality only works for `hasOne`, `hasMany` and `belongsTo`.**
+
+The MySQL model shoul use the `HybridRelations` trait:
+
+```php
+use Jenssegers\Mongodb\Eloquent\HybridRelations;
+
+class User extends Model
+{
+    use HybridRelations;
+
+    protected $connection = 'mysql';
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class);
+    }
+}
+```
+Within your MongoDB model, you should define the relationship:
+
+```php
+use Jenssegers\Mongodb\Eloquent\Model;
+
+class Message extends Model
+{
+    protected $connection = 'mongodb';
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+```
+
+### Authentication
+If you want to use Laravel's native Auth functionality, register this included service provider:
+
+```php
+Jenssegers\Mongodb\Auth\PasswordResetServiceProvider::class,
+```
+
+This service provider will slightly modify the internal DatabaseReminderRepository to add support for MongoDB based password reminders.
+
+If you don't use password reminders, you don't have to register this service provider and everything else should work just fine.
+
+### Queues
+If you want to use MongoDB as your database backend, change the driver in `config/queue.php`:
+
+```php
+'connections' => [
+    'database' => [
+        'driver' => 'mongodb',
+        'table' => 'jobs',
+        'queue' => 'default',
+        'expire' => 60,
+    ],
+],
+```
+
+If you want to use MongoDB to handle failed jobs, change the database in `config/queue.php`:
+
+```php
+'failed' => [
+    'database' => 'mongodb',
+    'table' => 'failed_jobs',
+],
+```
+
+Last, add the service provider in `config/app.php`:
+
+```php
+Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
+```
+
+### Sentry
+If you want to use this library with [Sentry](https://cartalyst.com/manual/sentry), then check out https://github.com/jenssegers/Laravel-MongoDB-Sentry
+
+### Sessions
+The MongoDB session driver is available in a separate package, check out https://github.com/jenssegers/Laravel-MongoDB-Session
