@@ -29,9 +29,16 @@
         "phpunit/phpunit": "^6.0|^7.0|^8.0",
         "orchestra/testbench": "^3.1|^4.0",
         "mockery/mockery": "^1.0",
-        "satooshi/php-coveralls": "^2.0",
-        "doctrine/dbal": "^2.5"
+        "php-coveralls/php-coveralls": "dev-add-support-for-github-actions",
+        "doctrine/dbal": "^2.5",
+        "phpunit/phpcov": "5.0.0"
     },
+    "repositories": [
+        {
+          "type": "vcs",
+          "url": "https://github.com/Smolevich/php-coveralls"
+        }
+    ],
     "autoload": {
         "psr-0": {
             "Jenssegers\\Mongodb": "src/"
