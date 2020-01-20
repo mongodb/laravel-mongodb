@@ -236,7 +236,7 @@ class Book extends Model
     protected $primaryKey = 'id';
 }
 
-// Mongo will also createa _id, but the 'id' property will be used for primary key actions like find().
+// Mongo will also create _id, but the 'id' property will be used for primary key actions like find().
 Book::create(['id' => 1, 'title' => 'The Fault in Our Stars']);
 ```
 
