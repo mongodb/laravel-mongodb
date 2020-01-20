@@ -27,13 +27,16 @@ Table of contents
     - [MongoDB-specific Geo operations](#mongodb-specific-geo-operations)
     - [Inserts, updates and deletes](#inserts-updates-and-deletes)
     - [MongoDB specific operations](#mongodb-specific-operations)
-    - [Relationships](#relationships)
+  - [Relationships](#relationships)
+    - [Basic Usage](#basic-usage-1)
     - [belongsToMany and pivots](#belongstomany-and-pivots)
     - [EmbedsMany Relationship](#embedsmany-relationship)
     - [EmbedsOne Relations](#embedsone-relations)
   - [Query Builder](#query-builder)
+    - [Basic Usage](#basic-usage-2)
     - [Available operations](#available-operations)
   - [Schema](#schema)
+    - [Basic Usage](#basic-usage-3)
     - [Geospatial indexes](#geospatial-indexes)
   - [Extending](#extending)
     - [Cross-Database Relations](#cross-database-relations)
@@ -719,7 +722,10 @@ DB::collection('users')
 $user->unset('note');
 ```
 
-### Relationships
+Relationships
+-------------
+
+### Basic Usage
 
 The only available relationships are:
  - hasOne
@@ -927,6 +933,9 @@ $book->author()->save($newAuthor);
 
 Query Builder
 -------------
+
+### Basic Usage
+
 The database driver plugs right into the original query builder.
 
 When using MongoDB connections, you will be able to build fluent queries to perform database operations.
@@ -951,6 +960,8 @@ To see the available operations, check the [Eloquent](#eloquent) section.
 Schema
 ------
 The database driver also has (limited) schema builder support. You can easily manipulate collections and set indexes.
+
+### Basic Usage
 
 ```php
 Schema::create('users', function ($collection) {
