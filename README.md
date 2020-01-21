@@ -1,7 +1,7 @@
 Laravel MongoDB
 ===============
 
-[![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](http://img.shields.io/travis/jenssegers/laravel-mongodb.svg)](https://travis-ci.org/jenssegers/laravel-mongodb) [![Coverage Status](http://img.shields.io/coveralls/jenssegers/laravel-mongodb.svg)](https://coveralls.io/r/jenssegers/laravel-mongodb?branch=master) [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
+[![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](https://img.shields.io/github/workflow/status/jenssegers/laravel-mongodb/CI)](https://github.com/jenssegers/laravel-mongodb/actions) [![Coverage Status](https://coveralls.io/repos/github/jenssegers/laravel-mongodb/badge.svg?branch=master)](https://coveralls.io/github/jenssegers/laravel-mongodb?branch=master) [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
 
 An Eloquent model and Query builder with support for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
@@ -15,7 +15,6 @@ Table of contents
 * [Query Builder](#query-builder)
 * [Schema](#schema)
 * [Extensions](#extensions)
-* [Troubleshooting](#troubleshooting)
 * [Examples](#examples)
 
 Installation
@@ -45,6 +44,7 @@ composer require jenssegers/mongodb
  5.6.x    | 3.4.x
  5.7.x    | 3.4.x
  5.8.x    | 3.5.x
+ 6.0.x    | 3.6.x
 
 And add the service provider in `config/app.php`:
 
@@ -153,8 +153,8 @@ You can connect to multiple servers or replica sets with the following configura
     'username' => env('DB_USERNAME'),
     'password' => env('DB_PASSWORD'),
     'options'  => [
-		'replicaSet' => 'replicaSetName'
-	]
+        'replicaSet' => 'replicaSetName'
+    ]
 ],
 ```
 
@@ -253,7 +253,18 @@ Schema::create('users', function($collection)
     $collection->unique('email');
 });
 ```
+You can also pass all the parameters specified in the MongoDB docs [here](https://docs.mongodb.com/manual/reference/method/db.collection.createIndex/#options-for-all-index-types) in the `$options` parameter. For example:
 
+```
+Schema::create('users', function($collection)
+{
+    $collection->index('username',null,null,[
+                    'sparse' => true,
+                    'unique' => true,
+                    'background' => true
+    ]);
+});
+```
 Supported operations are:
 
  - create and drop
@@ -263,7 +274,7 @@ Supported operations are:
  - unique
  - background, sparse, expire, geospatial (MongoDB specific)
 
-All other (unsupported) operations are implemented as dummy pass-through methods, because MongoDB does not use a predefined schema. Read more about the schema builder on http://laravel.com/docs/schema
+All other (unsupported) operations are implemented as dummy pass-through methods, because MongoDB does not use a predefined schema. Read more about the schema builder on https://laravel.com/docs/6.0/migrations#tables
 
 ### Geospatial indexes
 
@@ -312,6 +323,7 @@ If you want to use MongoDB as your database backend, change the driver in `confi
         'queue'  => 'default',
         'expire' => 60,
     ],
+]
 ```
 
 If you want to use MongoDB to handle failed jobs, change the database in `config/queue.php`:
@@ -320,7 +332,7 @@ If you want to use MongoDB to handle failed jobs, change the database in `config
 'failed' => [
     'database' => 'mongodb',
     'table'    => 'failed_jobs',
-    ],
+],
 ```
 
 And add the service provider in `config/app.php`:
@@ -549,13 +561,13 @@ User::where('name', 'regex', new \MongoDB\BSON\Regex("/.*doe/i"))->get();
 **NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a MongoDB\BSON\Regex object.
 
 ```php
-User::where('name', 'regexp', '/.*doe/i'))->get();
+User::where('name', 'regexp', '/.*doe/i')->get();
 ```
 
 And the inverse:
 
 ```php
-User::where('name', 'not regexp', '/.*doe/i'))->get();
+User::where('name', 'not regexp', '/.*doe/i')->get();
 ```
 
 **Type**
@@ -601,15 +613,15 @@ $users = User::where('location', 'geoWithin', [
             [
                 -0.1450383,
                 51.5069158,
-            ],       
+            ],
             [
                 -0.1367563,
                 51.5100913,
-            ],       
+            ],
             [
                 -0.1270247,
                 51.5013233,
-            ],  
+            ],
             [
                 -0.1450383,
                 51.5069158,
@@ -693,7 +705,7 @@ For more information about model manipulation, check http://laravel.com/docs/elo
 
 ### Dates
 
-Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields, you will need to manually specify them as described here: http://laravel.com/docs/eloquent#date-mutators
+Eloquent allows you to work with Carbon/DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database. If you wish to use this functionality on non-default date fields, you will need to manually specify them as described here: https://laravel.com/docs/5.0/eloquent#date-mutators
 
 Example:
 
@@ -770,7 +782,7 @@ class User extends Eloquent {
 ```
 
 
-Other relations are not yet supported, but may be added in the future. Read more about these relations on http://laravel.com/docs/eloquent#relationships
+Other relations are not yet supported, but may be added in the future. Read more about these relations on https://laravel.com/docs/master/eloquent-relationships
 
 ### EmbedsMany Relations
 
@@ -969,7 +981,7 @@ $cursor = DB::collection('users')->raw(function($collection)
 Optional: if you don't pass a closure to the raw method, the internal MongoCollection object will be accessible:
 
 ```php
-$model = User::raw()->findOne(['age' => array('$lt' => 18)]);
+$model = User::raw()->findOne(['age' => ['$lt' => 18]]);
 ```
 
 The internal MongoClient and MongoDB objects can be accessed like this:
@@ -1063,7 +1075,7 @@ You may easily cache the results of a query using the remember method:
 $users = User::remember(10)->get();
 ```
 
-*From: http://laravel.com/docs/queries#caching-queries*
+*From: https://laravel.com/docs/4.2/queries#caching-queries*
 
 ### Query Logging
 
@@ -1073,4 +1085,4 @@ By default, Laravel keeps a log in memory of all queries that have been run for 
 DB::connection()->disableQueryLog();
 ```
 
-*From: http://laravel.com/docs/database#query-logging*
+*From: https://laravel.com/docs/4.2/database#query-logging*
