@@ -7,3 +7,4 @@ composer.lock
 *.sublime-workspace
 *.project
 .idea/
+.phpunit.result.cache

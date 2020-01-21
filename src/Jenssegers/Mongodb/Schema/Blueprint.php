@@ -8,21 +8,18 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 {
     /**
      * The MongoConnection object for this blueprint.
-     *
      * @var \Jenssegers\Mongodb\Connection
      */
     protected $connection;
 
     /**
      * The MongoCollection object for this blueprint.
-     *
      * @var \Jenssegers\Mongodb\Collection|\MongoDB\Collection
      */
     protected $collection;
 
     /**
      * Fluent columns.
-     *
      * @var array
      */
     protected $columns = [];
@@ -78,6 +75,54 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function dropIndex($indexOrColumns = null)
     {
+        $indexOrColumns = $this->transformColumns($indexOrColumns);
+
+        $this->collection->dropIndex($indexOrColumns);
+
+        return $this;
+    }
+
+    /**
+     * Indicate that the given index should be dropped, but do not fail if it didn't exist.
+     *
+     * @param  string|array  $indexOrColumns
+     * @return Blueprint
+     */
+    public function dropIndexIfExists($indexOrColumns = null)
+    {
+        if ($this->hasIndex($indexOrColumns)) {
+            $this->dropIndex($indexOrColumns);
+        }
+        return $this;
+    }
+
+    /**
+     * Check whether the given index exists.
+     *
+     * @param  string|array  $indexOrColumns
+     * @return bool
+     */
+    public function hasIndex($indexOrColumns = null)
+    {
+        $indexOrColumns = $this->transformColumns($indexOrColumns);
+        foreach ($this->collection->listIndexes() as $index) {
+            if (is_array($indexOrColumns) && in_array($index->getName(), $indexOrColumns)) {
+                return true;
+            }
+
+            if (is_string($indexOrColumns) && $index->getName() == $indexOrColumns) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * @param  string|array  $indexOrColumns
+     * @return string
+     */
+    protected function transformColumns($indexOrColumns)
+    {
         if (is_array($indexOrColumns)) {
             $indexOrColumns = $this->fluent($indexOrColumns);
 
@@ -88,12 +133,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
                 $transform[$column] = $column . '_1';
             }
 
-            $indexOrColumns = join('_', $transform);
+            $indexOrColumns = implode('_', $transform);
         }
-
-        $this->collection->dropIndex($indexOrColumns);
-
-        return $this;
+        return $indexOrColumns;
     }
 
     /**
@@ -112,8 +154,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Specify a non blocking index for the collection.
-     *
-     * @param  string|array $columns
+     * @param string|array $columns
      * @return Blueprint
      */
     public function background($columns = null)
@@ -127,9 +168,8 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Specify a sparse index for the collection.
-     *
-     * @param  string|array $columns
-     * @param  array $options
+     * @param string|array $columns
+     * @param array $options
      * @return Blueprint
      */
     public function sparse($columns = null, $options = [])
@@ -145,10 +185,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Specify a geospatial index for the collection.
-     *
-     * @param  string|array $columns
-     * @param  string $index
-     * @param  array $options
+     * @param string|array $columns
+     * @param string $index
+     * @param array $options
      * @return Blueprint
      */
     public function geospatial($columns = null, $index = '2d', $options = [])
@@ -171,9 +210,8 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * Specify the number of seconds after wich a document should be considered expired based,
      * on the given single-field index containing a date.
-     *
-     * @param  string|array $columns
-     * @param  int $seconds
+     * @param string|array $columns
+     * @param int $seconds
      * @return Blueprint
      */
     public function expire($columns, $seconds)
@@ -218,9 +256,8 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Specify a sparse and unique index for the collection.
-     *
-     * @param  string|array $columns
-     * @param  array $options
+     * @param string|array $columns
+     * @param array $options
      * @return Blueprint
      */
     public function sparse_and_unique($columns = null, $options = [])
@@ -237,13 +274,12 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Allow fluent columns.
-     *
-     * @param  string|array $columns
+     * @param string|array $columns
      * @return string|array
      */
     protected function fluent($columns = null)
     {
-        if (is_null($columns)) {
+        if ($columns === null) {
             return $this->columns;
         } elseif (is_string($columns)) {
             return $this->columns = [$columns];
@@ -254,7 +290,6 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Allows the use of unsupported schema methods.
-     *
      * @param $method
      * @param $args
      * @return Blueprint
