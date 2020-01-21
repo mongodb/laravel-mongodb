@@ -33,8 +33,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Determine if the given collection exists.
-     *
-     * @param  string $collection
+     * @param string $collection
      * @return bool
      */
     public function hasCollection($collection)
@@ -60,9 +59,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Modify a collection on the schema.
-     *
-     * @param  string $collection
-     * @param  Closure $callback
+     * @param string $collection
+     * @param Closure $callback
      * @return bool
      */
     public function collection($collection, Closure $callback)
@@ -138,7 +136,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Get all of the collections names for the database.
-     *
      * @return array
      */
     protected function getAllCollections()

@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  push:
+    branches:
+    tags:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ${{matrix.os}}
+    strategy:
+      matrix:
+        php: [7.1, 7.2, 7.3, 7.4]
+        os: ['ubuntu-latest']
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+      mysql:
+        image: mysql:5.7
+        ports:
+          - 3307:3306
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+          MYSQL_DATABASE: 'unittest'
+          MYSQL_ROOT_PASSWORD:
+    name: PHP ${{ matrix.php }} Test ${{ matrix.env }}
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Show php version
+      run: php${{ matrix.php }} -v && composer -V
+    - name: Debug if needed
+      run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
+      env:
+        DEBUG: ${{secrets.DEBUG}}
+    - name: Get Composer Cache Directory
+      id: composer-cache
+      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+    - name: Cache dependencies
+      uses: actions/cache@v1
+      with:
+        path: ${{ steps.composer-cache.outputs.dir }}
+        key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
+        restore-keys: ${{ matrix.os }}-composer-
+    - name: Install dependencies
+      run: |
+        composer install --no-interaction
+    - name: Generating code coverage
+      run: |
+        mkdir -p build/logs
+        ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+      env:
+        MONGO_HOST: 0.0.0.0
+        MYSQL_HOST: 0.0.0.0
+        MYSQL_PORT: 3307
+    - name: Send coveralls
+      run: vendor/bin/php-coveralls -v
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
