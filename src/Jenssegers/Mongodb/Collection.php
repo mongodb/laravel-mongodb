@@ -10,14 +10,12 @@ class Collection
 {
     /**
      * The connection instance.
-     *
      * @var Connection
      */
     protected $connection;
 
     /**
      * The MongoCollection instance..
-     *
      * @var MongoCollection
      */
     protected $collection;
@@ -34,9 +32,8 @@ class Collection
 
     /**
      * Handle dynamic method calls.
-     *
-     * @param  string $method
-     * @param  array $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)

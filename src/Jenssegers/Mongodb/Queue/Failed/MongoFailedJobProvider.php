@@ -32,8 +32,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
 
     /**
      * Get a list of all of the failed jobs.
-     *
-     * @return array
+     * @return object[]
      */
     public function all()
     {
@@ -41,7 +40,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
 
         $all = array_map(function ($job) {
             $job['id'] = (string) $job['_id'];
-            return $job;
+            return (object) $job;
         }, $all);
 
         return $all;
@@ -49,23 +48,25 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
 
     /**
      * Get a single failed job.
-     *
-     * @param  mixed $id
-     * @return array
+     * @param mixed $id
+     * @return object
      */
     public function find($id)
     {
         $job = $this->getTable()->find($id);
 
+        if (!$job) {
+            return;
+        }
+
         $job['id'] = (string) $job['_id'];
 
-        return $job;
+        return (object) $job;
     }
 
     /**
      * Delete a single failed job from storage.
-     *
-     * @param  mixed $id
+     * @param mixed $id
      * @return bool
      */
     public function forget($id)
