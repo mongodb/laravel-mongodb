@@ -440,7 +440,7 @@ class ModelTest extends TestCase
 
         Carbon::setTestNow($fakeDate);
         $item = Item::create(['name' => 'sword']);
-        
+
         $this->assertLessThan(1, $fakeDate->diffInSeconds($item->created_at));
     }
 
@@ -571,5 +571,16 @@ class ModelTest extends TestCase
         });
 
         $this->assertEquals(3, $count);
+    }
+
+    public function toSqlTest(): void
+    {
+        $this->assertTrue(
+            is_string(User::where('age', 30)->toSql())
+        );
+
+        $this->assertTrue(
+            is_string(User::whereRaw(['age' => ['$gt' => 30, '$lt' => 40]])->toSql())
+        );
     }
 }
