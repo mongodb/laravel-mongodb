@@ -37,7 +37,7 @@ jobs:
       run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
       env:
         DEBUG: ${{secrets.DEBUG}}
-    - name: Download Composer cache
+    - name: Download Composer cache dependencies from cache
       id: composer-cache
       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
     - name: Cache Composer dependencies
