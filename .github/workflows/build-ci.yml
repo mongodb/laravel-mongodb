@@ -13,9 +13,10 @@ jobs:
       matrix:
         php: [7.1, 7.2, 7.3, 7.4]
         os: ['ubuntu-latest']
+        mongodb: [3.6, 4.0, 4.2]
     services:
       mongo:
-        image: mongo
+        image: mongo:${{ matrix.mongodb }}
         ports:
           - 27017:27017
       mysql:
@@ -26,7 +27,7 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
           MYSQL_DATABASE: 'unittest'
           MYSQL_ROOT_PASSWORD:
-    name: PHP ${{ matrix.php }} Test ${{ matrix.env }}
+    name: PHP ${{ matrix.php }} with mongo ${{ matrix.mongodb }}
 
     steps:
     - uses: actions/checkout@v1
@@ -60,3 +61,4 @@ jobs:
       run: vendor/bin/php-coveralls -v
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
