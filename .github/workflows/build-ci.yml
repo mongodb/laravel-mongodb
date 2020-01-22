@@ -58,7 +58,7 @@ jobs:
         MYSQL_HOST: 0.0.0.0
         MYSQL_PORT: 3307
     - name: Send coveralls
-      run: vendor/bin/php-coveralls -v
+      run: vendor/bin/coveralls build/logs/clover.xml
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       continue-on-error: true
