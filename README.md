@@ -3,11 +3,10 @@ Laravel MongoDB
 
 [![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb) [![Build Status](https://img.shields.io/github/workflow/status/jenssegers/laravel-mongodb/CI)](https://github.com/jenssegers/laravel-mongodb/actions) [![Coverage Status](https://coveralls.io/repos/github/jenssegers/laravel-mongodb/badge.svg?branch=master)](https://coveralls.io/github/jenssegers/laravel-mongodb?branch=master) [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
 
-Laravel Eloquent adds support for ODM (Object Document Mapper) to Laravel. It's the same as Eloquent ORM, but with Documents, since MongoDB is a NoSQL database.
-
+This package adds functionalities to the Eloquent model and Query builder for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
 - [Laravel MongoDB](#laravel-mongodb)
-  - [Laravel Installation](#laravel-installation)
+  - [Installation](#installation)
     - [Laravel version Compatibility](#laravel-version-compatibility)
     - [Laravel](#laravel)
     - [Lumen](#lumen)
@@ -29,7 +28,7 @@ Laravel Eloquent adds support for ODM (Object Document Mapper) to Laravel. It's 
     - [Basic Usage](#basic-usage-1)
     - [belongsToMany and pivots](#belongstomany-and-pivots)
     - [EmbedsMany Relationship](#embedsmany-relationship)
-    - [EmbedsOne Relations](#embedsone-relations)
+    - [EmbedsOne Relationship](#embedsone-relationship)
   - [Query Builder](#query-builder)
     - [Basic Usage](#basic-usage-2)
     - [Available operations](#available-operations)
@@ -37,11 +36,11 @@ Laravel Eloquent adds support for ODM (Object Document Mapper) to Laravel. It's 
     - [Basic Usage](#basic-usage-3)
     - [Geospatial indexes](#geospatial-indexes)
   - [Extending](#extending)
-    - [Cross-Database Relations](#cross-database-relations)
+    - [Cross-Database Relationships](#cross-database-relationships)
     - [Authentication](#authentication)
     - [Queues](#queues)
 
-Laravel Installation
+Installation
 ------------
 Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongodb.installation.php
 
@@ -874,7 +873,7 @@ class User extends Model
 Embedded relations will return a Collection of embedded items instead of a query builder. Check out the available operations here: https://laravel.com/docs/master/collections
 
 
-### EmbedsOne Relations
+### EmbedsOne Relationship
 
 The embedsOne relation is similar to the embedsMany relation, but only embeds a single model.
 
@@ -1023,7 +1022,7 @@ Schema::create('bars', function ($collection) {
 Extending
 ---------
 
-### Cross-Database Relations
+### Cross-Database Relationships
 
 If you're using a hybrid MongoDB and SQL setup, you can define relationships across them.
 
