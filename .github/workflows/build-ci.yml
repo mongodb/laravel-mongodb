@@ -51,14 +51,12 @@ jobs:
         composer install --no-interaction
     - name: Run tests
       run: |
-        mkdir -p build/logs
-        ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+        ./vendor/bin/phpunit --coverage-clover coverage.xml
       env:
         MONGO_HOST: 0.0.0.0
         MYSQL_HOST: 0.0.0.0
         MYSQL_PORT: 3307
-    - name: Send coveralls
-      run: vendor/bin/php-coveralls -v
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
+    - uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
