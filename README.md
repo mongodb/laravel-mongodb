@@ -1054,9 +1054,15 @@ If you want to use MongoDB to handle failed jobs, change the database in `config
 
 ```php
 'failed' => [
-    'database' => 'mongodb',
+    'driver' => env('QUEUE_FAILED_DRIVER', 'database'),
+    'database' => env('DB_CONNECTION', 'mongodb'),
     'table' => 'failed_jobs',
 ],
+```
+
+Or simply set your own `QUEUE_FAILED_DRIVER` environment variable to `mongodb`
+```env
+QUEUE_FAILED_DRIVER=mongodb
 ```
 
 Last, add the service provider in `config/app.php`:
