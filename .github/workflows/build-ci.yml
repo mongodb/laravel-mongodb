@@ -61,3 +61,4 @@ jobs:
       run: vendor/bin/php-coveralls -v
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      continue-on-error: true
