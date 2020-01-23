@@ -3,6 +3,8 @@
 namespace Jenssegers\Mongodb\Helpers;
 
 use Closure;
+use Exception;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
@@ -12,13 +14,12 @@ trait QueriesRelationships
 {
     /**
      * Add a relationship count / exists condition to the query.
-     *
-     * @param  string $relation
-     * @param  string $operator
-     * @param  int $count
-     * @param  string $boolean
-     * @param  \Closure|null $callback
-     * @return \Illuminate\Database\Eloquent\Builder|static
+     * @param string $relation
+     * @param string $operator
+     * @param int $count
+     * @param string $boolean
+     * @param Closure|null $callback
+     * @return Builder|static
      */
     public function has($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
     {
@@ -74,7 +75,7 @@ trait QueriesRelationships
      * @param string $boolean
      * @param Closure|null $callback
      * @return mixed
-     * @throws \Exception
+     * @throws Exception
      */
     public function addHybridHas($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
     {
@@ -98,29 +99,6 @@ trait QueriesRelationships
     }
 
     /**
-     * Returns key we are constraining this parent model's query with
-     * @param $relation
-     * @return string
-     * @throws \Exception
-     */
-    protected function getRelatedConstraintKey($relation)
-    {
-        if ($relation instanceof HasOneOrMany) {
-            return $this->model->getKeyName();
-        }
-
-        if ($relation instanceof BelongsTo) {
-            return $relation->getForeignKey();
-        }
-
-        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation)) {
-            return $this->model->getKeyName();
-        }
-
-        throw new \Exception(class_basename($relation) . ' is not supported for hybrid query constraints.');
-    }
-
-    /**
      * @param $relation
      * @return string
      */
@@ -130,7 +108,7 @@ trait QueriesRelationships
             return $relation->getHasCompareKey();
         }
 
-        return $relation instanceof HasOneOrMany ? $relation->getForeignKeyName() : $relation->getOwnerKey();
+        return $relation instanceof HasOneOrMany ? $relation->getForeignKeyName() : $relation->getOwnerKeyName();
     }
 
     /**
@@ -165,5 +143,28 @@ trait QueriesRelationships
 
         // All related ids.
         return array_keys($relationCount);
+    }
+
+    /**
+     * Returns key we are constraining this parent model's query with
+     * @param $relation
+     * @return string
+     * @throws Exception
+     */
+    protected function getRelatedConstraintKey($relation)
+    {
+        if ($relation instanceof HasOneOrMany) {
+            return $this->model->getKeyName();
+        }
+
+        if ($relation instanceof BelongsTo) {
+            return $relation->getForeignKeyName();
+        }
+
+        if ($relation instanceof BelongsToMany && !$this->isAcrossConnections($relation)) {
+            return $this->model->getKeyName();
+        }
+
+        throw new Exception(class_basename($relation) . ' is not supported for hybrid query constraints.');
     }
 }

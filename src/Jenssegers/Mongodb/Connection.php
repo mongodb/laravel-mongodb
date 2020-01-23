@@ -4,29 +4,25 @@ namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Str;
 use MongoDB\Client;
 
 class Connection extends BaseConnection
 {
     /**
      * The MongoDB database handler.
-     *
      * @var \MongoDB\Database
      */
     protected $db;
 
     /**
      * The MongoDB connection handler.
-     *
      * @var \MongoDB\Client
      */
     protected $connection;
 
     /**
      * Create a new database connection instance.
-     *
-     * @param  array $config
+     * @param array $config
      */
     public function __construct(array $config)
     {
@@ -53,8 +49,7 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
-     *
-     * @param  string $collection
+     * @param string $collection
      * @return Query\Builder
      */
     public function collection($collection)
@@ -66,19 +61,18 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
-     *
-     * @param  string $table
+     * @param string $table
+     * @param string|null $as
      * @return Query\Builder
      */
-    public function table($table)
+    public function table($table, $as = null)
     {
         return $this->collection($table);
     }
 
     /**
      * Get a MongoDB collection.
-     *
-     * @param  string $name
+     * @param string $name
      * @return Collection
      */
     public function getCollection($name)
@@ -96,7 +90,6 @@ class Connection extends BaseConnection
 
     /**
      * Get the MongoDB database object.
-     *
      * @return \MongoDB\Database
      */
     public function getMongoDB()
@@ -106,7 +99,6 @@ class Connection extends BaseConnection
 
     /**
      * return MongoDB object.
-     *
      * @return \MongoDB\Client
      */
     public function getMongoClient()
@@ -115,11 +107,18 @@ class Connection extends BaseConnection
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getDatabaseName()
+    {
+        return $this->getMongoDB()->getDatabaseName();
+    }
+
+    /**
      * Create a new MongoDB connection.
-     *
-     * @param  string $dsn
-     * @param  array $config
-     * @param  array $options
+     * @param string $dsn
+     * @param array $config
+     * @param array $options
      * @return \MongoDB\Client
      */
     protected function createConnection($dsn, array $config, array $options)
@@ -151,39 +150,28 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Determine if the given configuration array has a UNIX socket value.
-     *
-     * @param  array  $config
+     * Determine if the given configuration array has a dsn string.
+     * @param array $config
      * @return bool
      */
     protected function hasDsnString(array $config)
     {
-        return isset($config['dsn']) && ! empty($config['dsn']);
+        return isset($config['dsn']) && !empty($config['dsn']);
     }
 
     /**
-     * Get the DSN string for a socket configuration.
-     *
-     * @param  array  $config
+     * Get the DSN string form configuration.
+     * @param array $config
      * @return string
      */
     protected function getDsnString(array $config)
     {
-        $dsn_string = $config['dsn'];
-
-        if (Str::contains($dsn_string, 'mongodb://')) {
-            $dsn_string = Str::replaceFirst('mongodb://', '', $dsn_string);
-        }
-
-        $dsn_string = rawurlencode($dsn_string);
-
-        return "mongodb://{$dsn_string}";
+        return $config['dsn'];
     }
 
     /**
      * Get the DSN string for a host / port configuration.
-     *
-     * @param  array  $config
+     * @param array $config
      * @return string
      */
     protected function getHostDsn(array $config)
@@ -206,8 +194,7 @@ class Connection extends BaseConnection
 
     /**
      * Create a DSN string from a configuration.
-     *
-     * @param  array $config
+     * @param array $config
      * @return string
      */
     protected function getDsn(array $config)
@@ -259,9 +246,8 @@ class Connection extends BaseConnection
 
     /**
      * Dynamically pass methods to the connection.
-     *
-     * @param  string $method
-     * @param  array $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
