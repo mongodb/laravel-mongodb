@@ -268,8 +268,8 @@ $user = User::find('517c43667db388101e00000f');
 **Where**
 
 ```php
-$users =
-    User::where('age', '>', 18)
+$posts =
+    Post::where('author.name', 'John')
         ->take(10)
         ->get();
 ```
