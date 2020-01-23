@@ -27,20 +27,20 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
           MYSQL_DATABASE: 'unittest'
           MYSQL_ROOT_PASSWORD:
-    name: PHP ${{ matrix.php }} with mongo ${{ matrix.mongodb }}
+    name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
 
     steps:
     - uses: actions/checkout@v1
-    - name: Show php version
+    - name: Show PHP version
       run: php${{ matrix.php }} -v && composer -V
-    - name: Debug if needed
+    - name: Show Docker version
       run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
       env:
         DEBUG: ${{secrets.DEBUG}}
-    - name: Get Composer Cache Directory
+    - name: Download Composer cache dependencies from cache
       id: composer-cache
       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-    - name: Cache dependencies
+    - name: Cache Composer dependencies
       uses: actions/cache@v1
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
@@ -49,10 +49,9 @@ jobs:
     - name: Install dependencies
       run: |
         composer install --no-interaction
-    - name: Generating code coverage
+    - name: Run tests
       run: |
-        mkdir -p build/logs
-        ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+        ./vendor/bin/phpunit --coverage-clover coverage.xml
       env:
         MONGO_HOST: 0.0.0.0
         MYSQL_HOST: 0.0.0.0
@@ -61,4 +60,7 @@ jobs:
       run: vendor/bin/coveralls build/logs/clover.xml
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      continue-on-error: true
+    - uses: codecov/codecov-action@v1
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        fail_ci_if_error: false
