@@ -21,20 +21,21 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function addConstraints()
     {
-        if (static::$constraints) {
-            // For belongs to relationships, which are essentially the inverse of has one
-            // or has many relationships, we need to actually query on the primary key
-            // of the related models matching on the foreign key that's on a parent.
-            $foreign = $this->parent->{$this->foreignKey};
-            if (is_array($foreign)) {
-                // This means that it is a one-to-many relationship. Try a match using whereIn.
-                $this->query->whereIn($this->getOwnerKey(), $foreign);
-            }
-            else {
-                // It's a one-to-one relationship, just match using the classic equals operator.
-                $this->query->where($this->getOwnerKey(), '=', $foreign);
-            }
+        if (!static::$constraints) {
+            return;
         }
+        // For belongs to relationships, which are essentially the inverse of has one
+        // or has many relationships, we need to actually query on the primary key
+        // of the related models matching on the foreign key that's on a parent.
+        $foreign = $this->parent->{$this->foreignKey};
+        // Check if the foreign key is an array, so we can infer the cardinality of the relationship.
+        if (is_array($foreign)) {
+            // This means that it is a one-to-many relationship. Try a match using whereIn.
+            $this->query->whereIn($this->getOwnerKey(), $foreign);
+            return;
+        }
+        // It's a one-to-one relationship, just match using the classic equals operator.
+        $this->query->where($this->getOwnerKey(), '=', $foreign);
     }
 
     /**
