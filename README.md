@@ -896,6 +896,7 @@ Query Builder
 -------------
 
 ### Basic Usage
+
 The database driver plugs right into the original query builder.
 
 When using MongoDB connections, you will be able to build fluent queries to perform database operations.
