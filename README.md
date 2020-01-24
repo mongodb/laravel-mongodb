@@ -733,7 +733,7 @@ The belongsToMany relation will not use a pivot "table" but will push id's to a 
 If you want to define custom keys for your relation, set it to `null`:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Mode;
+use Jenssegers\Mongodb\Eloquent\Model;
 
 class User extends Model
 {
@@ -896,7 +896,6 @@ Query Builder
 -------------
 
 ### Basic Usage
-
 The database driver plugs right into the original query builder.
 
 When using MongoDB connections, you will be able to build fluent queries to perform database operations.
