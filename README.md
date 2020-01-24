@@ -128,8 +128,8 @@ You can use MongoDB either as the main database, either as a side database. To d
     'options' => [
         // here you can pass more settings to the Mongo Driver Manager
         // see https://www.php.net/manual/en/mongodb-driver-manager.construct.php under "Uri Options" for a list of complete parameters that you can use
-        
-        'authSource' => env('DB_AUTHENTICATION_DATABASE', 'admin'), // required with Mongo 3+
+
+        'database' => env('DB_AUTHENTICATION_DATABASE', 'admin'), // required with Mongo 3+
     ],
 ],
 ```
