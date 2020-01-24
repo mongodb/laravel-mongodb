@@ -56,6 +56,10 @@ jobs:
         MONGO_HOST: 0.0.0.0
         MYSQL_HOST: 0.0.0.0
         MYSQL_PORT: 3307
+    - name: Send coveralls
+      run: vendor/bin/coveralls coverage.xml
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     - uses: codecov/codecov-action@v1
       with:
         token: ${{ secrets.CODECOV_TOKEN }}
