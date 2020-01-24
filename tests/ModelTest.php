@@ -573,7 +573,7 @@ class ModelTest extends TestCase
         $this->assertEquals(3, $count);
     }
 
-    public function toSqlTest(): void
+    public function testToSql(): void
     {
         $this->assertTrue(
             is_string(User::where('age', 30)->toSql())
@@ -581,6 +581,16 @@ class ModelTest extends TestCase
 
         $this->assertTrue(
             is_string(User::whereRaw(['age' => ['$gt' => 30, '$lt' => 40]])->toSql())
+        );
+
+        $this->assertEquals(
+            'select * from "users" where "some_field" > ?',
+            User::where('some_field', '>', 300)->toSql()
+        );
+
+        $this->assertEquals(
+            'select * from "users" where "some_field" > ? and {"age":{"$gt":30,"$lt":40}}',
+            User::where('some_field', '>', 300)->whereRaw(['age' => ['$gt' => 30, '$lt' => 40]])->toSql()
         );
     }
 }
