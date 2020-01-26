@@ -1,11 +1,14 @@
 <?php
+declare(strict_types=1);
+
+use Illuminate\Support\Facades\DB;
 
 class ConnectionTest extends TestCase
 {
     public function testConnection()
     {
         $connection = DB::connection('mongodb');
-        $this->assertInstanceOf('Jenssegers\Mongodb\Connection', $connection);
+        $this->assertInstanceOf(\Jenssegers\Mongodb\Connection::class, $connection);
     }
 
     public function testReconnect()
@@ -23,28 +26,28 @@ class ConnectionTest extends TestCase
     public function testDb()
     {
         $connection = DB::connection('mongodb');
-        $this->assertInstanceOf('MongoDB\Database', $connection->getMongoDB());
+        $this->assertInstanceOf(\MongoDB\Database::class, $connection->getMongoDB());
 
         $connection = DB::connection('mongodb');
-        $this->assertInstanceOf('MongoDB\Client', $connection->getMongoClient());
+        $this->assertInstanceOf(\MongoDB\Client::class, $connection->getMongoClient());
     }
 
     public function testCollection()
     {
         $collection = DB::connection('mongodb')->getCollection('unittest');
-        $this->assertInstanceOf('Jenssegers\Mongodb\Collection', $collection);
+        $this->assertInstanceOf(Jenssegers\Mongodb\Collection::class, $collection);
 
         $collection = DB::connection('mongodb')->collection('unittests');
-        $this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', $collection);
+        $this->assertInstanceOf(Jenssegers\Mongodb\Query\Builder::class, $collection);
 
         $collection = DB::connection('mongodb')->table('unittests');
-        $this->assertInstanceOf('Jenssegers\Mongodb\Query\Builder', $collection);
+        $this->assertInstanceOf(Jenssegers\Mongodb\Query\Builder::class, $collection);
     }
 
     // public function testDynamic()
     // {
     //     $dbs = DB::connection('mongodb')->listCollections();
-    //     $this->assertTrue(is_array($dbs));
+    //     $this->assertIsArray($dbs);
     // }
 
     // public function testMultipleConnections()
@@ -59,35 +62,35 @@ class ConnectionTest extends TestCase
     //     $mongoclient = $connection->getMongoClient();
 
     //     $hosts = $mongoclient->getHosts();
-    //     $this->assertEquals(1, count($hosts));
+    //     $this->assertCount(1, $hosts);
     // }
 
     public function testQueryLog()
     {
         DB::enableQueryLog();
 
-        $this->assertEquals(0, count(DB::getQueryLog()));
+        $this->assertCount(0, DB::getQueryLog());
 
         DB::collection('items')->get();
-        $this->assertEquals(1, count(DB::getQueryLog()));
+        $this->assertCount(1, DB::getQueryLog());
 
         DB::collection('items')->insert(['name' => 'test']);
-        $this->assertEquals(2, count(DB::getQueryLog()));
+        $this->assertCount(2, DB::getQueryLog());
 
         DB::collection('items')->count();
-        $this->assertEquals(3, count(DB::getQueryLog()));
+        $this->assertCount(3, DB::getQueryLog());
 
         DB::collection('items')->where('name', 'test')->update(['name' => 'test']);
-        $this->assertEquals(4, count(DB::getQueryLog()));
+        $this->assertCount(4, DB::getQueryLog());
 
         DB::collection('items')->where('name', 'test')->delete();
-        $this->assertEquals(5, count(DB::getQueryLog()));
+        $this->assertCount(5, DB::getQueryLog());
     }
 
     public function testSchemaBuilder()
     {
         $schema = DB::connection('mongodb')->getSchemaBuilder();
-        $this->assertInstanceOf('Jenssegers\Mongodb\Schema\Builder', $schema);
+        $this->assertInstanceOf(\Jenssegers\Mongodb\Schema\Builder::class, $schema);
     }
 
     public function testDriverName()
@@ -98,12 +101,13 @@ class ConnectionTest extends TestCase
 
     public function testAuth()
     {
+        $host = Config::get('database.connections.mongodb.host');
         Config::set('database.connections.mongodb.username', 'foo');
         Config::set('database.connections.mongodb.password', 'bar');
         Config::set('database.connections.mongodb.options.database', 'custom');
 
         $connection = DB::connection('mongodb');
-        $this->assertEquals('mongodb://127.0.0.1/custom', (string) $connection->getMongoClient());
+        $this->assertEquals('mongodb://' . $host . '/custom', (string) $connection->getMongoClient());
     }
 
     public function testCustomHostAndPort()

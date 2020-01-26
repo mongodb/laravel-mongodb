@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Queue\Failed;
+<?php
+
+namespace Jenssegers\Mongodb\Queue\Failed;
 
 use Carbon\Carbon;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
@@ -7,11 +9,9 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
 {
     /**
      * Log a failed job into storage.
-     *
-     * @param  string $connection
-     * @param  string $queue
-     * @param  string $payload
-     *
+     * @param string $connection
+     * @param string $queue
+     * @param string $payload
      * @return void
      */
     public function log($connection, $queue, $payload, $exception)
@@ -23,8 +23,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
 
     /**
      * Get a list of all of the failed jobs.
-     *
-     * @return array
+     * @return object[]
      */
     public function all()
     {
@@ -32,7 +31,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
 
         $all = array_map(function ($job) {
             $job['id'] = (string) $job['_id'];
-            return $job;
+            return (object) $job;
         }, $all);
 
         return $all;
@@ -40,23 +39,25 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
 
     /**
      * Get a single failed job.
-     *
-     * @param  mixed  $id
-     * @return array
+     * @param mixed $id
+     * @return object
      */
     public function find($id)
     {
         $job = $this->getTable()->find($id);
 
+        if (!$job) {
+            return;
+        }
+
         $job['id'] = (string) $job['_id'];
 
-        return $job;
+        return (object) $job;
     }
 
     /**
      * Delete a single failed job from storage.
-     *
-     * @param  mixed  $id
+     * @param mixed $id
      * @return bool
      */
     public function forget($id)

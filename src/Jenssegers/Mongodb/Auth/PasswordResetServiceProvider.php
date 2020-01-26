@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Auth;
+<?php
+
+namespace Jenssegers\Mongodb\Auth;
 
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider as BasePasswordResetServiceProvider;
 
@@ -6,7 +8,6 @@ class PasswordResetServiceProvider extends BasePasswordResetServiceProvider
 {
     /**
      * Register the token repository implementation.
-     *
      * @return void
      */
     protected function registerTokenRepository()

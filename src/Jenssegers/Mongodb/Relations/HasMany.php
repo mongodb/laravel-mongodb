@@ -1,13 +1,15 @@
-<?php namespace Jenssegers\Mongodb\Relations;
+<?php
+
+namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
 
 class HasMany extends EloquentHasMany
 {
     /**
      * Get the plain foreign key.
-     *
      * @return string
      */
     public function getForeignKeyName()
@@ -17,7 +19,6 @@ class HasMany extends EloquentHasMany
 
     /**
      * Get the plain foreign key.
-     *
      * @return string
      */
     public function getPlainForeignKey()
@@ -27,7 +28,6 @@ class HasMany extends EloquentHasMany
 
     /**
      * Get the key for comparing against the parent key in "has" query.
-     *
      * @return string
      */
     public function getHasCompareKey()
@@ -47,9 +47,8 @@ class HasMany extends EloquentHasMany
 
     /**
      * Add the constraints for a relationship count query.
-     *
-     * @param  Builder $query
-     * @param  Builder $parent
+     * @param Builder $query
+     * @param Builder $parent
      * @return Builder
      */
     public function getRelationCountQuery(Builder $query, Builder $parent)
@@ -61,10 +60,9 @@ class HasMany extends EloquentHasMany
 
     /**
      * Add the constraints for a relationship query.
-     *
-     * @param  Builder     $query
-     * @param  Builder     $parent
-     * @param  array|mixed $columns
+     * @param Builder $query
+     * @param Builder $parent
+     * @param array|mixed $columns
      * @return Builder
      */
     public function getRelationQuery(Builder $query, Builder $parent, $columns = ['*'])
@@ -74,5 +72,16 @@ class HasMany extends EloquentHasMany
         $key = $this->wrap($this->getQualifiedParentKeyName());
 
         return $query->where($this->getHasCompareKey(), 'exists', true);
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param string $key
+     * @return string
+     */
+    protected function whereInMethod(EloquentModel $model, $key)
+    {
+        return 'whereIn';
     }
 }

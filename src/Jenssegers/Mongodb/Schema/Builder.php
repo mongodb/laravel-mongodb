@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Schema;
+<?php
+
+namespace Jenssegers\Mongodb\Schema;
 
 use Closure;
 use Jenssegers\Mongodb\Connection;
@@ -31,8 +33,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Determine if the given collection exists.
-     *
-     * @param  string $collection
+     * @param string $collection
      * @return bool
      */
     public function hasCollection($collection)
@@ -58,9 +59,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Modify a collection on the schema.
-     *
-     * @param  string  $collection
-     * @param  Closure $callback
+     * @param string $collection
+     * @param Closure $callback
      * @return bool
      */
     public function collection($collection, Closure $callback)
@@ -83,15 +83,27 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * @inheritdoc
      */
-    public function create($collection, Closure $callback = null)
+    public function create($collection, Closure $callback = null, array $options = [])
     {
         $blueprint = $this->createBlueprint($collection);
 
-        $blueprint->create();
+        $blueprint->create($options);
 
         if ($callback) {
             $callback($blueprint);
         }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function dropIfExists($collection)
+    {
+        if ($this->hasCollection($collection)) {
+            return $this->drop($collection);
+        }
+
+        return false;
     }
 
     /**
@@ -107,8 +119,32 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * @inheritdoc
      */
+    public function dropAllTables()
+    {
+        foreach ($this->getAllCollections() as $collection) {
+            $this->drop($collection);
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function createBlueprint($collection, Closure $callback = null)
     {
         return new Blueprint($this->connection, $collection);
+    }
+
+    /**
+     * Get all of the collections names for the database.
+     * @return array
+     */
+    protected function getAllCollections()
+    {
+        $collections = [];
+        foreach ($this->connection->getMongoDB()->listCollections() as $collection) {
+            $collections[] = $collection->getName();
+        }
+
+        return $collections;
     }
 }

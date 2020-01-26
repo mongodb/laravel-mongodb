@@ -1,0 +1,32 @@
+version: '3'
+
+services:
+    tests:
+        container_name: tests
+        build:
+            context: .
+            dockerfile: Dockerfile
+        volumes:
+            - .:/code
+        working_dir: /code
+        depends_on:
+          - mongodb
+          - mysql
+
+    mysql:
+        container_name: mysql
+        image: mysql:5.7
+        environment:
+            MYSQL_ROOT_PASSWORD:
+            MYSQL_DATABASE: unittest
+            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+        logging:
+            driver: none
+
+    mongodb:
+        container_name: mongodb
+        image: mongo
+        ports:
+            - 27017:27017
+        logging:
+            driver: none

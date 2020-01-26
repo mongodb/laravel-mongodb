@@ -1,4 +1,6 @@
-<?php namespace Jenssegers\Mongodb\Query;
+<?php
+
+namespace Jenssegers\Mongodb\Query;
 
 use Closure;
 use DateTime;
@@ -6,8 +8,10 @@ use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
 use MongoCollection;
+use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -16,49 +20,42 @@ class Builder extends BaseBuilder
 {
     /**
      * The database collection.
-     *
      * @var MongoCollection
      */
     protected $collection;
 
     /**
      * The column projections.
-     *
      * @var array
      */
     public $projections;
 
     /**
      * The cursor timeout value.
-     *
      * @var int
      */
     public $timeout;
 
     /**
      * The cursor hint value.
-     *
      * @var int
      */
     public $hint;
 
     /**
      * Custom options to add to the query.
-     *
      * @var array
      */
     public $options = [];
 
     /**
      * Indicate if we are executing a pagination query.
-     *
      * @var bool
      */
     public $paginating = false;
 
     /**
      * All of the available clause operators.
-     *
      * @var array
      */
     public $operators = [
@@ -106,7 +103,6 @@ class Builder extends BaseBuilder
 
     /**
      * Operator conversion.
-     *
      * @var array
      */
     protected $conversion = [
@@ -121,7 +117,6 @@ class Builder extends BaseBuilder
 
     /**
      * Check if we need to return Collections instead of plain arrays (laravel >= 5.3 )
-     *
      * @var boolean
      */
     protected $useCollections;
@@ -139,7 +134,6 @@ class Builder extends BaseBuilder
 
     /**
      * Returns true if Laravel or Lumen >= 5.3
-     *
      * @return bool
      */
     protected function shouldUseCollections()
@@ -149,12 +143,13 @@ class Builder extends BaseBuilder
             $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
             return version_compare($version, '5.3', '>=');
         }
+
+        return true;
     }
 
     /**
      * Set the projections.
-     *
-     * @param  array $columns
+     * @param array $columns
      * @return $this
      */
     public function project($columns)
@@ -166,8 +161,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor timeout in seconds.
-     *
-     * @param  int $seconds
+     * @param int $seconds
      * @return $this
      */
     public function timeout($seconds)
@@ -179,8 +173,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor hint.
-     *
-     * @param  mixed $index
+     * @param mixed $index
      * @return $this
      */
     public function hint($index)
@@ -201,6 +194,16 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
+    public function value($column)
+    {
+        $result = (array) $this->first([$column]);
+
+        return Arr::get($result, $column);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function get($columns = [])
     {
         return $this->getFresh($columns);
@@ -208,8 +211,7 @@ class Builder extends BaseBuilder
 
     /**
      * Execute the query as a fresh "select" statement.
-     *
-     * @param  array $columns
+     * @param array $columns
      * @return array|static[]|Collection
      */
     public function getFresh($columns = [])
@@ -217,7 +219,7 @@ class Builder extends BaseBuilder
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
         // all of the columns on the table using the "wildcard" column character.
-        if (is_null($this->columns)) {
+        if ($this->columns === null) {
             $this->columns = $columns;
         }
 
@@ -230,25 +232,25 @@ class Builder extends BaseBuilder
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups or $this->aggregate or $this->paginating) {
+        if ($this->groups || $this->aggregate) {
             $group = [];
             $unwinds = [];
 
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                    $group['_id'][$column] = '$'.$column;
+                    $group['_id'][$column] = '$' . $column;
 
                     // When grouping, also add the $last operator to each grouped field,
                     // this mimics MySQL's behaviour a bit.
-                    $group[$column] = ['$last' => '$'.$column];
+                    $group[$column] = ['$last' => '$' . $column];
                 }
 
                 // Do the same for other columns that are selected.
                 foreach ($this->columns as $column) {
                     $key = str_replace('.', '_', $column);
 
-                    $group[$key] = ['$last' => '$'.$column];
+                    $group[$key] = ['$last' => '$' . $column];
                 }
             }
 
@@ -265,26 +267,36 @@ class Builder extends BaseBuilder
                         $column = implode('.', $splitColumns);
                     }
 
-                    // Translate count into sum.
-                    if ($function == 'count') {
+                    // Null coalense only > 7.2
+
+                    $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
+
+                    if (in_array('*', $aggregations) && $function == 'count') {
+                        // When ORM is paginating, count doesnt need a aggregation, just a cursor operation
+                        // elseif added to use this only in pagination
+                        // https://docs.mongodb.com/manual/reference/method/cursor.count/
+                        // count method returns int
+
+                        $totalResults = $this->collection->count($wheres);
+                        // Preserving format expected by framework
+                        $results = [
+                            [
+                                '_id'       => null,
+                                'aggregate' => $totalResults
+                            ]
+                        ];
+                        return $this->useCollections ? new Collection($results) : $results;
+                    } elseif ($function == 'count') {
+                        // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
-                    } // Pass other functions directly.
-                    else {
-                        $group['aggregate'] = ['$'.$function => '$'.$column];
+                    } else {
+                        $group['aggregate'] = ['$' . $function => '$' . $column];
                     }
                 }
             }
-
-            // When using pagination, we limit the number of returned columns
-            // by adding a projection.
-            if ($this->paginating) {
-                foreach ($this->columns as $column) {
-                    $this->projections[$column] = 1;
-                }
-            }
-
+            
             // The _id field is mandatory when using grouping.
-            if ($group and empty($group['_id'])) {
+            if ($group && empty($group['_id'])) {
                 $group['_id'] = null;
             }
 
@@ -296,7 +308,7 @@ class Builder extends BaseBuilder
 
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
-                $pipeline[] = ['$unwind' => '$'.$unwind];
+                $pipeline[] = ['$unwind' => '$' . $unwind];
             }
 
             if ($group) {
@@ -396,7 +408,6 @@ class Builder extends BaseBuilder
 
     /**
      * Generate the unique cache key for the current query.
-     *
      * @return string
      */
     public function generateCacheKey()
@@ -423,13 +434,23 @@ class Builder extends BaseBuilder
     {
         $this->aggregate = compact('function', 'columns');
 
+        $previousColumns = $this->columns;
+
+        // We will also back up the select bindings since the select clause will be
+        // removed when performing the aggregate function. Once the query is run
+        // we will add the bindings back onto this query so they can get used.
+        $previousSelectBindings = $this->bindings['select'];
+
+        $this->bindings['select'] = [];
+
         $results = $this->get($columns);
 
         // Once we have executed the query, we will reset the aggregate property so
         // that more select queries can be executed against the database without
         // the aggregate value getting in the way when the grammar builds it.
-        $this->columns = null;
         $this->aggregate = null;
+        $this->columns = $previousColumns;
+        $this->bindings['select'] = $previousSelectBindings;
 
         if (isset($results[0])) {
             $result = (array) $results[0];
@@ -443,7 +464,7 @@ class Builder extends BaseBuilder
      */
     public function exists()
     {
-        return ! is_null($this->first());
+        return $this->first() !== null;
     }
 
     /**
@@ -474,6 +495,23 @@ class Builder extends BaseBuilder
         } else {
             $this->orders[$column] = $direction;
         }
+
+        return $this;
+    }
+
+    /**
+     * Add a "where all" clause to the query.
+     * @param string $column
+     * @param array $values
+     * @param string $boolean
+     * @param bool $not
+     * @return $this
+     */
+    public function whereAll($column, array $values, $boolean = 'and', $not = false)
+    {
+        $type = 'all';
+
+        $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
 
         return $this;
     }
@@ -512,13 +550,13 @@ class Builder extends BaseBuilder
         foreach ($values as $value) {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (! is_array($value)) {
+            if (!is_array($value)) {
                 $batch = false;
                 break;
             }
         }
 
-        if (! $batch) {
+        if (!$batch) {
             $values = [$values];
         }
 
@@ -536,7 +574,7 @@ class Builder extends BaseBuilder
         $result = $this->collection->insertOne($values);
 
         if (1 == (int) $result->isAcknowledged()) {
-            if (is_null($sequence)) {
+            if ($sequence === null) {
                 $sequence = '_id';
             }
 
@@ -551,7 +589,7 @@ class Builder extends BaseBuilder
     public function update(array $values, array $options = [])
     {
         // Use $set as default operator.
-        if (! starts_with(key($values), '$')) {
+        if (!Str::startsWith(key($values), '$')) {
             $values = ['$set' => $values];
         }
 
@@ -565,7 +603,7 @@ class Builder extends BaseBuilder
     {
         $query = ['$inc' => [$column => $amount]];
 
-        if (! empty($extra)) {
+        if (!empty($extra)) {
             $query['$set'] = $extra;
         }
 
@@ -590,9 +628,25 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
+    public function chunkById($count, callable $callback, $column = '_id', $alias = null)
+    {
+        return parent::chunkById($count, $callback, $column, $alias);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function forPageAfterId($perPage = 15, $lastId = 0, $column = '_id')
+    {
+        return parent::forPageAfterId($perPage, $lastId, $column);
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function pluck($column, $key = null)
     {
-        $results = $this->get(is_null($key) ? [$column] : [$column, $key]);
+        $results = $this->get($key === null ? [$column] : [$column, $key]);
 
         // Convert ObjectID's to strings
         if ($key == '_id') {
@@ -614,7 +668,7 @@ class Builder extends BaseBuilder
         // If an ID is passed to the method, we will set the where clause to check
         // the ID to allow developers to simply and quickly remove a single row
         // from their database without manually specifying the where clauses.
-        if (! is_null($id)) {
+        if ($id !== null) {
             $this->where('_id', '=', $id);
         }
 
@@ -630,7 +684,7 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
-    public function from($collection)
+    public function from($collection, $as = null)
     {
         if ($collection) {
             $this->collection = $this->connection->getCollection($collection);
@@ -651,11 +705,10 @@ class Builder extends BaseBuilder
 
     /**
      * Get an array with the values of a given column.
-     *
-     * @deprecated
-     * @param  string $column
-     * @param  string $key
+     * @param string $column
+     * @param string $key
      * @return array
+     * @deprecated
      */
     public function lists($column, $key = null)
     {
@@ -670,8 +723,10 @@ class Builder extends BaseBuilder
         // Execute the closure on the mongodb collection
         if ($expression instanceof Closure) {
             return call_user_func($expression, $this->collection);
-        } // Create an expression for the given value
-        elseif (! is_null($expression)) {
+        }
+
+        // Create an expression for the given value
+        if ($expression !== null) {
             return new Expression($expression);
         }
 
@@ -681,10 +736,9 @@ class Builder extends BaseBuilder
 
     /**
      * Append one or more values to an array.
-     *
      * @param mixed $column
      * @param mixed $value
-     * @param bool  $unique
+     * @param bool $unique
      * @return int
      */
     public function push($column, $value = null, $unique = false)
@@ -693,7 +747,7 @@ class Builder extends BaseBuilder
         $operator = $unique ? '$addToSet' : '$push';
 
         // Check if we are pushing multiple values.
-        $batch = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
+        $batch = (is_array($value) && array_keys($value) === range(0, count($value) - 1));
 
         if (is_array($column)) {
             $query = [$operator => $column];
@@ -708,15 +762,14 @@ class Builder extends BaseBuilder
 
     /**
      * Remove one or more values from an array.
-     *
-     * @param  mixed $column
-     * @param  mixed $value
+     * @param mixed $column
+     * @param mixed $value
      * @return int
      */
     public function pull($column, $value = null)
     {
         // Check if we passed an associative array.
-        $batch = (is_array($value) and array_keys($value) === range(0, count($value) - 1));
+        $batch = (is_array($value) && array_keys($value) === range(0, count($value) - 1));
 
         // If we are pulling multiple values, we need to use $pullAll.
         $operator = $batch ? '$pullAll' : '$pull';
@@ -732,13 +785,12 @@ class Builder extends BaseBuilder
 
     /**
      * Remove one or more fields.
-     *
-     * @param  mixed $columns
+     * @param mixed $columns
      * @return int
      */
     public function drop($columns)
     {
-        if (! is_array($columns)) {
+        if (!is_array($columns)) {
             $columns = [$columns];
         }
 
@@ -763,15 +815,14 @@ class Builder extends BaseBuilder
 
     /**
      * Perform an update query.
-     *
-     * @param  array $query
-     * @param  array $options
+     * @param array $query
+     * @param array $options
      * @return int
      */
     protected function performUpdate($query, array $options = [])
     {
         // Update multiple items by default.
-        if (! array_key_exists('multiple', $options)) {
+        if (!array_key_exists('multiple', $options)) {
             $options['multiple'] = true;
         }
 
@@ -786,14 +837,17 @@ class Builder extends BaseBuilder
 
     /**
      * Convert a key to ObjectID if needed.
-     *
-     * @param  mixed $id
+     * @param mixed $id
      * @return mixed
      */
     public function convertKey($id)
     {
-        if (is_string($id) and strlen($id) === 24 and ctype_xdigit($id)) {
+        if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
+        }
+
+        if (is_string($id) && strlen($id) === 16 && preg_match('~[^\x20-\x7E\t\r\n]~', $id) > 0) {
+            return new Binary($id, Binary::TYPE_UUID);
         }
 
         return $id;
@@ -810,7 +864,7 @@ class Builder extends BaseBuilder
         if (func_num_args() == 3) {
             $operator = &$params[1];
 
-            if (starts_with($operator, '$')) {
+            if (Str::startsWith($operator, '$')) {
                 $operator = substr($operator, 1);
             }
         }
@@ -820,7 +874,6 @@ class Builder extends BaseBuilder
 
     /**
      * Compile the where array.
-     *
      * @return array
      */
     protected function compileWheres()
@@ -854,7 +907,7 @@ class Builder extends BaseBuilder
             }
 
             // Convert id's.
-            if (isset($where['column']) and ($where['column'] == '_id' or ends_with($where['column'], '._id'))) {
+            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '._id'))) {
                 // Multiple values.
                 if (isset($where['values'])) {
                     foreach ($where['values'] as &$value) {
@@ -879,12 +932,18 @@ class Builder extends BaseBuilder
                         $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
                     }
                 }
+            } elseif (isset($where['values'])) {
+                array_walk_recursive($where['values'], function (&$item, $key) {
+                    if ($item instanceof DateTime) {
+                        $item = new UTCDateTime($item->getTimestamp() * 1000);
+                    }
+                });
             }
 
             // The next item in a "chain" of wheres devices the boolean of the
             // first item. So if we see that there are multiple wheres, we will
             // use the operator of the next where.
-            if ($i == 0 and count($wheres) > 1 and $where['boolean'] == 'and') {
+            if ($i == 0 && count($wheres) > 1 && $where['boolean'] == 'and') {
                 $where['boolean'] = $wheres[$i + 1]['boolean'];
             }
 
@@ -914,30 +973,45 @@ class Builder extends BaseBuilder
      * @param array $where
      * @return array
      */
+    protected function compileWhereAll(array $where)
+    {
+        extract($where);
+
+        return [$column => ['$all' => array_values($values)]];
+    }
+
+    /**
+     * @param array $where
+     * @return array
+     */
     protected function compileWhereBasic(array $where)
     {
         extract($where);
 
-        // Replace like with a Regex instance.
-        if ($operator == 'like') {
-            $operator = '=';
+        // Replace like or not like with a Regex instance.
+        if (in_array($operator, ['like', 'not like'])) {
+            if ($operator === 'not like') {
+                $operator = 'not';
+            } else {
+                $operator = '=';
+            }
 
             // Convert to regular expression.
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
 
             // Convert like to regular expression.
-            if (! starts_with($value, '%')) {
-                $regex = '^'.$regex;
+            if (!Str::startsWith($value, '%')) {
+                $regex = '^' . $regex;
             }
-            if (! ends_with($value, '%')) {
-                $regex = $regex.'$';
+            if (!Str::endsWith($value, '%')) {
+                $regex .= '$';
             }
 
             $value = new Regex($regex, 'i');
         } // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
-            if (! $value instanceof Regex) {
+            if (!$value instanceof Regex) {
                 $e = explode('/', $value);
                 $flag = end($e);
                 $regstr = substr($value, 1, -(strlen($flag) + 1));
@@ -946,17 +1020,17 @@ class Builder extends BaseBuilder
 
             // For inverse regexp operations, we can just use the $not operator
             // and pass it a Regex instence.
-            if (starts_with($operator, 'not')) {
+            if (Str::startsWith($operator, 'not')) {
                 $operator = 'not';
             }
         }
 
-        if (! isset($operator) or $operator == '=') {
+        if (!isset($operator) || $operator == '=') {
             $query = [$column => $value];
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
-            $query = [$column => ['$'.$operator => $value]];
+            $query = [$column => ['$' . $operator => $value]];
         }
 
         return $query;
@@ -1042,14 +1116,14 @@ class Builder extends BaseBuilder
                     ],
                 ],
             ];
-        } else {
-            return [
-                $column => [
-                    '$gte' => $values[0],
-                    '$lte' => $values[1],
-                ],
-            ];
         }
+
+        return [
+            $column => [
+                '$gte' => $values[0],
+                '$lte' => $values[1],
+            ],
+        ];
     }
 
     /**
@@ -1063,8 +1137,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set custom options for the query.
-     *
-     * @param  array $options
+     * @param array $options
      * @return $this
      */
     public function options(array $options)

@@ -1,8 +1,11 @@
 <?php
+declare(strict_types=1);
+
+use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
 
 class QueueTest extends TestCase
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -11,7 +14,7 @@ class QueueTest extends TestCase
         Queue::getDatabase()->table(Config::get('queue.failed.table'))->truncate();
     }
 
-    public function testQueueJobLifeCycle()
+    public function testQueueJobLifeCycle(): void
     {
         $id = Queue::push('test', ['action' => 'QueueJobLifeCycle'], 'test');
         $this->assertNotNull($id);
@@ -24,6 +27,7 @@ class QueueTest extends TestCase
             'displayName' => 'test',
             'job' => 'test',
             'maxTries' => null,
+            'delay' => null,
             'timeout' => null,
             'data' => ['action' => 'QueueJobLifeCycle'],
         ]), $job->getRawBody());
@@ -33,7 +37,7 @@ class QueueTest extends TestCase
         $this->assertEquals(0, Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->count());
     }
 
-    public function testQueueJobExpired()
+    public function testQueueJobExpired(): void
     {
         $id = Queue::push('test', ['action' => 'QueueJobExpired'], 'test');
         $this->assertNotNull($id);
@@ -52,5 +56,39 @@ class QueueTest extends TestCase
 
         $job->delete();
         $this->assertEquals(0, Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->count());
+    }
+
+    public function testFailQueueJob(): void
+    {
+        $provider = app('queue.failer');
+
+        $this->assertInstanceOf(MongoFailedJobProvider::class, $provider);
+    }
+
+    public function testFindFailJobNull(): void
+    {
+        Config::set('queue.failed.database', 'mongodb');
+        $provider = app('queue.failer');
+
+        $this->assertNull($provider->find(1));
+    }
+
+    public function testIncrementAttempts(): void
+    {
+        $job_id = Queue::push('test1', ['action' => 'QueueJobExpired'], 'test');
+        $this->assertNotNull($job_id);
+        $job_id = Queue::push('test2', ['action' => 'QueueJobExpired'], 'test');
+        $this->assertNotNull($job_id);
+
+        $job = Queue::pop('test');
+        $this->assertEquals(1, $job->attempts());
+        $job->delete();
+
+        $others_jobs = Queue::getDatabase()
+            ->table(Config::get('queue.connections.database.table'))
+            ->get();
+
+        $this->assertCount(1, $others_jobs);
+        $this->assertEquals(0, $others_jobs[0]['attempts']);
     }
 }

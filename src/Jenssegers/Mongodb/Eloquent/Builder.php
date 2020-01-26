@@ -1,15 +1,18 @@
-<?php namespace Jenssegers\Mongodb\Eloquent;
+<?php
+
+namespace Jenssegers\Mongodb\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use Jenssegers\Mongodb\Helpers\QueriesRelationships;
 use MongoDB\Driver\Cursor;
 use MongoDB\Model\BSONDocument;
 
 class Builder extends EloquentBuilder
 {
+    use QueriesRelationships;
+
     /**
      * The methods that should be returned from query builder.
-     *
      * @var array
      */
     protected $passthru = [
@@ -40,7 +43,7 @@ class Builder extends EloquentBuilder
             return 1;
         }
 
-        return $this->query->update($this->addUpdatedAtColumn($values), $options);
+        return $this->toBase()->update($this->addUpdatedAtColumn($values), $options);
     }
 
     /**
@@ -142,49 +145,9 @@ class Builder extends EloquentBuilder
     /**
      * @inheritdoc
      */
-    protected function addHasWhere(EloquentBuilder $hasQuery, Relation $relation, $operator, $count, $boolean)
+    public function chunkById($count, callable $callback, $column = '_id', $alias = null)
     {
-        $query = $hasQuery->getQuery();
-
-        // Get the number of related objects for each possible parent.
-        $relations = $query->pluck($relation->getHasCompareKey());
-        $relationCount = array_count_values(array_map(function ($id) {
-            return (string) $id; // Convert Back ObjectIds to Strings
-        }, is_array($relations) ? $relations : $relations->toArray()));
-
-        // Remove unwanted related objects based on the operator and count.
-        $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator) {
-            // If we are comparing to 0, we always need all results.
-            if ($count == 0) {
-                return true;
-            }
-
-            switch ($operator) {
-                case '>=':
-                case '<':
-                    return $counted >= $count;
-                case '>':
-                case '<=':
-                    return $counted > $count;
-                case '=':
-                case '!=':
-                    return $counted == $count;
-            }
-        });
-
-        // If the operator is <, <= or !=, we will use whereNotIn.
-        $not = in_array($operator, ['<', '<=', '!=']);
-
-        // If we are comparing to 0, we need an additional $not flip.
-        if ($count == 0) {
-            $not = ! $not;
-        }
-
-        // All related ids.
-        $relatedIds = array_keys($relationCount);
-
-        // Add whereIn to the query.
-        return $this->whereIn($this->model->getKeyName(), $relatedIds, $boolean, $not);
+        return parent::chunkById($count, $callback, $column, $alias);
     }
 
     /**
@@ -198,16 +161,49 @@ class Builder extends EloquentBuilder
         // Convert MongoCursor results to a collection of models.
         if ($results instanceof Cursor) {
             $results = iterator_to_array($results, false);
+
             return $this->model->hydrate($results);
         } // Convert Mongo BSONDocument to a single object.
         elseif ($results instanceof BSONDocument) {
             $results = $results->getArrayCopy();
+
             return $this->model->newFromBuilder((array) $results);
         } // The result is a single object.
-        elseif (is_array($results) and array_key_exists('_id', $results)) {
+        elseif (is_array($results) && array_key_exists('_id', $results)) {
             return $this->model->newFromBuilder((array) $results);
         }
 
         return $results;
+    }
+
+    /**
+     * Add the "updated at" column to an array of values.
+     * TODO Remove if https://github.com/laravel/framework/commit/6484744326531829341e1ff886cc9b628b20d73e
+     * wiil be reverted
+     * Issue in laravel frawework https://github.com/laravel/framework/issues/27791
+     * @param array $values
+     * @return array
+     */
+    protected function addUpdatedAtColumn(array $values)
+    {
+        if (!$this->model->usesTimestamps() || $this->model->getUpdatedAtColumn() === null) {
+            return $values;
+        }
+
+        $column = $this->model->getUpdatedAtColumn();
+        $values = array_merge(
+            [$column => $this->model->freshTimestampString()],
+            $values
+        );
+
+        return $values;
+    }
+
+    /**
+     * @return \Illuminate\Database\ConnectionInterface
+     */
+    public function getConnection()
+    {
+        return $this->query->getConnection();
     }
 }

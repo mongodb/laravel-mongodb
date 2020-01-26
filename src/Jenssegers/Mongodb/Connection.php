@@ -1,28 +1,28 @@
-<?php namespace Jenssegers\Mongodb;
+<?php
+
+namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Connection as BaseConnection;
+use Illuminate\Support\Arr;
 use MongoDB\Client;
 
 class Connection extends BaseConnection
 {
     /**
      * The MongoDB database handler.
-     *
      * @var \MongoDB\Database
      */
     protected $db;
 
     /**
      * The MongoDB connection handler.
-     *
      * @var \MongoDB\Client
      */
     protected $connection;
 
     /**
      * Create a new database connection instance.
-     *
-     * @param  array $config
+     * @param array $config
      */
     public function __construct(array $config)
     {
@@ -32,7 +32,7 @@ class Connection extends BaseConnection
         $dsn = $this->getDsn($config);
 
         // You can pass options directly to the MongoDB constructor
-        $options = array_get($config, 'options', []);
+        $options = Arr::get($config, 'options', []);
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
@@ -43,12 +43,13 @@ class Connection extends BaseConnection
         $this->useDefaultPostProcessor();
 
         $this->useDefaultSchemaGrammar();
+
+        $this->useDefaultQueryGrammar();
     }
 
     /**
      * Begin a fluent query against a database collection.
-     *
-     * @param  string $collection
+     * @param string $collection
      * @return Query\Builder
      */
     public function collection($collection)
@@ -60,19 +61,18 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
-     *
-     * @param  string $table
+     * @param string $table
+     * @param string|null $as
      * @return Query\Builder
      */
-    public function table($table)
+    public function table($table, $as = null)
     {
         return $this->collection($table);
     }
 
     /**
      * Get a MongoDB collection.
-     *
-     * @param  string $name
+     * @param string $name
      * @return Collection
      */
     public function getCollection($name)
@@ -90,7 +90,6 @@ class Connection extends BaseConnection
 
     /**
      * Get the MongoDB database object.
-     *
      * @return \MongoDB\Database
      */
     public function getMongoDB()
@@ -100,7 +99,6 @@ class Connection extends BaseConnection
 
     /**
      * return MongoDB object.
-     *
      * @return \MongoDB\Client
      */
     public function getMongoClient()
@@ -109,11 +107,18 @@ class Connection extends BaseConnection
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getDatabaseName()
+    {
+        return $this->getMongoDB()->getDatabaseName();
+    }
+
+    /**
      * Create a new MongoDB connection.
-     *
-     * @param  string $dsn
-     * @param  array  $config
-     * @param  array  $options
+     * @param string $dsn
+     * @param array $config
+     * @param array $options
      * @return \MongoDB\Client
      */
     protected function createConnection($dsn, array $config, array $options)
@@ -126,10 +131,10 @@ class Connection extends BaseConnection
         }
 
         // Check if the credentials are not already set in the options
-        if (! isset($options['username']) && ! empty($config['username'])) {
+        if (!isset($options['username']) && !empty($config['username'])) {
             $options['username'] = $config['username'];
         }
-        if (! isset($options['password']) && ! empty($config['password'])) {
+        if (!isset($options['password']) && !empty($config['password'])) {
             $options['password'] = $config['password'];
         }
 
@@ -145,32 +150,58 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Create a DSN string from a configuration.
-     *
-     * @param  array $config
+     * Determine if the given configuration array has a dsn string.
+     * @param array $config
+     * @return bool
+     */
+    protected function hasDsnString(array $config)
+    {
+        return isset($config['dsn']) && !empty($config['dsn']);
+    }
+
+    /**
+     * Get the DSN string form configuration.
+     * @param array $config
      * @return string
      */
-    protected function getDsn(array $config)
+    protected function getDsnString(array $config)
     {
-        // Check if the user passed a complete dsn to the configuration.
-        if (! empty($config['dsn'])) {
-            return $config['dsn'];
-        }
+        return $config['dsn'];
+    }
 
+    /**
+     * Get the DSN string for a host / port configuration.
+     * @param array $config
+     * @return string
+     */
+    protected function getHostDsn(array $config)
+    {
         // Treat host option as array of hosts
         $hosts = is_array($config['host']) ? $config['host'] : [$config['host']];
 
         foreach ($hosts as &$host) {
             // Check if we need to add a port to the host
-            if (strpos($host, ':') === false && ! empty($config['port'])) {
-                $host = $host.':'.$config['port'];
+            if (strpos($host, ':') === false && !empty($config['port'])) {
+                $host = $host . ':' . $config['port'];
             }
         }
 
         // Check if we want to authenticate against a specific database.
-        $auth_database = isset($config['options']) && ! empty($config['options']['database']) ? $config['options']['database'] : null;
+        $auth_database = isset($config['options']) && !empty($config['options']['database']) ? $config['options']['database'] : null;
 
-        return 'mongodb://'.implode(',', $hosts).($auth_database ? '/'.$auth_database : '');
+        return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
+    }
+
+    /**
+     * Create a DSN string from a configuration.
+     * @param array $config
+     * @return string
+     */
+    protected function getDsn(array $config)
+    {
+        return $this->hasDsnString($config)
+            ? $this->getDsnString($config)
+            : $this->getHostDsn($config);
     }
 
     /**
@@ -215,9 +246,8 @@ class Connection extends BaseConnection
 
     /**
      * Dynamically pass methods to the connection.
-     *
-     * @param  string $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
