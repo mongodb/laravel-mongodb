@@ -2,7 +2,6 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Helpers\EloquentBuilder;
@@ -11,6 +10,7 @@ use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\HasMany;
 use Jenssegers\Mongodb\Relations\HasOne;
 use Jenssegers\Mongodb\Relations\MorphTo;
+use Jenssegers\Mongodb\Relations\MorphMany;
 
 trait HybridRelations
 {
