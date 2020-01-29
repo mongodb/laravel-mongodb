@@ -147,6 +147,76 @@ class SchemaTest extends TestCase
         $this->assertFalse($index);
     }
 
+    public function testDropIndexIfExists(): void
+    {
+        Schema::collection('newcollection', function (Blueprint $collection) {
+            $collection->unique('uniquekey');
+            $collection->dropIndexIfExists('uniquekey_1');
+        });
+
+        $index = $this->getIndex('newcollection', 'uniquekey');
+        $this->assertEquals(null, $index);
+
+        Schema::collection('newcollection', function (Blueprint $collection) {
+            $collection->unique('uniquekey');
+            $collection->dropIndexIfExists(['uniquekey']);
+        });
+
+        $index = $this->getIndex('newcollection', 'uniquekey');
+        $this->assertEquals(null, $index);
+
+        Schema::collection('newcollection', function (Blueprint $collection) {
+            $collection->index(['field_a', 'field_b']);
+        });
+
+        $index = $this->getIndex('newcollection', 'field_a_1_field_b_1');
+        $this->assertNotNull($index);
+
+        Schema::collection('newcollection', function (Blueprint $collection) {
+            $collection->dropIndexIfExists(['field_a', 'field_b']);
+        });
+
+        $index = $this->getIndex('newcollection', 'field_a_1_field_b_1');
+        $this->assertFalse($index);
+
+        Schema::collection('newcollection', function (Blueprint $collection) {
+            $collection->index(['field_a', 'field_b'], 'custom_index_name');
+        });
+
+        $index = $this->getIndex('newcollection', 'custom_index_name');
+        $this->assertNotNull($index);
+
+        Schema::collection('newcollection', function (Blueprint $collection) {
+            $collection->dropIndexIfExists('custom_index_name');
+        });
+
+        $index = $this->getIndex('newcollection', 'custom_index_name');
+        $this->assertFalse($index);
+    }
+
+    public function testHasIndex(): void
+    {
+        $instance = $this;
+
+        Schema::collection('newcollection', function (Blueprint $collection) use ($instance) {
+            $collection->index('myhaskey1');
+            $instance->assertTrue($collection->hasIndex('myhaskey1_1'));
+            $instance->assertFalse($collection->hasIndex('myhaskey1'));
+        });
+
+        Schema::collection('newcollection', function (Blueprint $collection) use ($instance) {
+            $collection->index('myhaskey2');
+            $instance->assertTrue($collection->hasIndex(['myhaskey2']));
+            $instance->assertFalse($collection->hasIndex(['myhaskey2_1']));
+        });
+
+        Schema::collection('newcollection', function (Blueprint $collection) use ($instance) {
+            $collection->index(['field_a', 'field_b']);
+            $instance->assertTrue($collection->hasIndex(['field_a_1_field_b']));
+            $instance->assertFalse($collection->hasIndex(['field_a_1_field_b_1']));
+        });
+    }
+
     public function testBackground(): void
     {
         Schema::collection('newcollection', function ($collection) {
@@ -230,6 +300,7 @@ class SchemaTest extends TestCase
             $collection->boolean('activated')->default(0);
             $collection->integer('user_id')->unsigned();
         });
+        $this->expectNotToPerformAssertions();
     }
 
     public function testSparseUnique(): void
