@@ -460,7 +460,7 @@ Selects documents where values match a specified regular expression.
 ```php
 use MongoDB\BSON\Regex;
 
-User::where('name', 'regex', new Regex("/.*doe/i"))->get();
+User::where('name', 'regex', new Regex('.*doe', 'i'))->get();
 ```
 
 **NOTE:** you can also use the Laravel regexp operations. These are a bit more flexible and will automatically convert your regular expression string to a `MongoDB\BSON\Regex` object.
