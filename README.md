@@ -16,6 +16,7 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
     - [Lumen](#lumen)
     - [Non-Laravel projects](#non-laravel-projects)
   - [Testing](#testing)
+  - [Database Testing](#database-testing)
   - [Configuration](#configuration)
   - [Eloquent](#eloquent)
     - [Extending the base model](#extending-the-base-model)
@@ -111,6 +112,21 @@ To run the test for this package, run:
 
 ```
 docker-compose up
+```
+
+Database Testing
+-------
+
+Resetting The Database After Each Test
+
+```php
+use Illuminate\Foundation\Testing\DatabaseMigrations;
+```
+
+And inside each test classes.
+
+```php
+use DatabaseMigrations;
 ```
 
 Configuration
