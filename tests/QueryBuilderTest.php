@@ -748,14 +748,14 @@ class QueryBuilderTest extends TestCase
 
         $results = DB::collection('items')->hint(['$natural' => -1])->get();
 
-        $this->assertArraySubset(['name' => 'spoon'], $results[0]);
-        $this->assertArraySubset(['name' => 'spork'], $results[1]);
-        $this->assertArraySubset(['name' => 'fork'], $results[2]);
+        $this->assertEquals('spoon', $results[0]['name']);
+        $this->assertEquals('spork', $results[1]['name']);
+        $this->assertEquals('fork', $results[2]['name']);
 
         $results = DB::collection('items')->hint(['$natural' => 1])->get();
 
-        $this->assertArraySubset(['name' => 'spoon'], $results[2]);
-        $this->assertArraySubset(['name' => 'spork'], $results[1]);
-        $this->assertArraySubset(['name' => 'fork'], $results[0]);
+        $this->assertEquals('spoon', $results[2]['name']);
+        $this->assertEquals('spork', $results[1]['name']);
+        $this->assertEquals('fork', $results[0]['name']);
     }
 }
