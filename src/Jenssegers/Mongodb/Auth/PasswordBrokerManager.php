@@ -11,14 +11,6 @@ class PasswordBrokerManager extends BasePasswordBrokerManager
      */
     protected function createTokenRepository(array $config)
     {
-        $key = $this->app['config']['app.key'];
-
-        if (\Illuminate\Support\Str::startsWith($key, 'base64:')) {
-            $key = base64_decode(substr($key, 7));
-        }
-
-        $connection = isset($config['connection']) ? $config['connection'] : null;
-
         return new DatabaseTokenRepository(
             $this->app['db']->connection(),
             $this->app['hash'],

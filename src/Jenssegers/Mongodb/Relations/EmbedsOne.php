@@ -3,6 +3,7 @@
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use MongoDB\BSON\ObjectID;
 
 class EmbedsOne extends EmbedsOneOrMany
@@ -29,8 +30,7 @@ class EmbedsOne extends EmbedsOneOrMany
 
     /**
      * Save a new model and attach it to the parent model.
-     *
-     * @param  Model $model
+     * @param Model $model
      * @return Model|bool
      */
     public function performInsert(Model $model)
@@ -58,8 +58,7 @@ class EmbedsOne extends EmbedsOneOrMany
 
     /**
      * Save an existing model and attach it to the parent model.
-     *
-     * @param  Model $model
+     * @param Model $model
      * @return Model|bool
      */
     public function performUpdate(Model $model)
@@ -84,7 +83,6 @@ class EmbedsOne extends EmbedsOneOrMany
 
     /**
      * Delete an existing model and detach it from the parent model.
-     *
      * @return int
      */
     public function performDelete()
@@ -108,8 +106,7 @@ class EmbedsOne extends EmbedsOneOrMany
 
     /**
      * Attach the model to its parent.
-     *
-     * @param  Model $model
+     * @param Model $model
      * @return Model
      */
     public function associate(Model $model)
@@ -119,7 +116,6 @@ class EmbedsOne extends EmbedsOneOrMany
 
     /**
      * Detach the model from its parent.
-     *
      * @return Model
      */
     public function dissociate()
@@ -129,11 +125,21 @@ class EmbedsOne extends EmbedsOneOrMany
 
     /**
      * Delete all embedded models.
-     *
      * @return int
      */
     public function delete()
     {
         return $this->performDelete();
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     * @param \Illuminate\Database\Eloquent\Model $model
+     * @param string $key
+     * @return string
+     */
+    protected function whereInMethod(EloquentModel $model, $key)
+    {
+        return 'whereIn';
     }
 }
