@@ -737,4 +737,25 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals('Herman', DB::collection('books')->value('author.first_name'));
         $this->assertEquals('Melville', DB::collection('books')->value('author.last_name'));
     }
+
+    public function testHintOptions()
+    {
+        DB::collection('items')->insert([
+            ['name' => 'fork',  'tags' => ['sharp', 'pointy']],
+            ['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']],
+            ['name' => 'spoon', 'tags' => ['round', 'bowl']],
+        ]);
+
+        $results = DB::collection('items')->hint(['$natural' => -1])->get();
+
+        $this->assertEquals('spoon', $results[0]['name']);
+        $this->assertEquals('spork', $results[1]['name']);
+        $this->assertEquals('fork', $results[2]['name']);
+
+        $results = DB::collection('items')->hint(['$natural' => 1])->get();
+
+        $this->assertEquals('spoon', $results[2]['name']);
+        $this->assertEquals('spork', $results[1]['name']);
+        $this->assertEquals('fork', $results[0]['name']);
+    }
 }
