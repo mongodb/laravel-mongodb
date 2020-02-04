@@ -129,16 +129,9 @@ Also inside each test classes, add:
 use DatabaseMigrations;
 ```
 
-Keep in mind that currently this isn't supported and should be removed:
-
-```php
-use DatabaseTransactions;
-```
-and
-
-```php
-use RefreshDatabase;
-```
+Keep in mind that these traits are not yet supported:
+- `use Database Transactions;`
+- `use RefreshDatabase;`
 
 Configuration
 -------------
