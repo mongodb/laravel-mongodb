@@ -117,16 +117,27 @@ docker-compose up
 Database Testing
 -------
 
-Resetting The Database After Each Test
+To reset the database after each test, add:
 
 ```php
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 ```
 
-And inside each test classes.
+Also inside each test classes, add:
 
 ```php
 use DatabaseMigrations;
+```
+
+Keep in mind that currently this isn't supported and should be removed:
+
+```php
+use DatabaseTransactions;
+```
+and
+
+```php
+use RefreshDatabase;
 ```
 
 Configuration
