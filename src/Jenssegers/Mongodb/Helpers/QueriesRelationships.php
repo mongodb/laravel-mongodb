@@ -8,13 +8,14 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Jenssegers\Mongodb\Eloquent\Model;
 
 trait QueriesRelationships
 {
     /**
      * Add a relationship count / exists condition to the query.
-     * @param string $relation
+     * @param Relation|string $relation
      * @param string $operator
      * @param int $count
      * @param string $boolean
@@ -23,11 +24,13 @@ trait QueriesRelationships
      */
     public function has($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
     {
-        if (strpos($relation, '.') !== false) {
-            return $this->hasNested($relation, $operator, $count, $boolean, $callback);
-        }
+        if (is_string($relation)) {
+            if (strpos($relation, '.') !== false) {
+                return $this->hasNested($relation, $operator, $count, $boolean, $callback);
+            }
 
-        $relation = $this->getRelationWithoutConstraints($relation);
+            $relation = $this->getRelationWithoutConstraints($relation);
+        }
 
         // If this is a hybrid relation then we can not use a normal whereExists() query that relies on a subquery
         // We need to use a `whereIn` query
@@ -59,17 +62,17 @@ trait QueriesRelationships
     }
 
     /**
-     * @param $relation
+     * @param Relation $relation
      * @return bool
      */
-    protected function isAcrossConnections($relation)
+    protected function isAcrossConnections(Relation $relation)
     {
         return $relation->getParent()->getConnectionName() !== $relation->getRelated()->getConnectionName();
     }
 
     /**
      * Compare across databases
-     * @param $relation
+     * @param Relation $relation
      * @param string $operator
      * @param int $count
      * @param string $boolean
@@ -77,7 +80,7 @@ trait QueriesRelationships
      * @return mixed
      * @throws Exception
      */
-    public function addHybridHas($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
+    public function addHybridHas(Relation $relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
     {
         $hasQuery = $relation->getQuery();
         if ($callback) {
@@ -99,10 +102,10 @@ trait QueriesRelationships
     }
 
     /**
-     * @param $relation
+     * @param Relation $relation
      * @return string
      */
-    protected function getHasCompareKey($relation)
+    protected function getHasCompareKey(Relation $relation)
     {
         if (method_exists($relation, 'getHasCompareKey')) {
             return $relation->getHasCompareKey();
@@ -147,14 +150,14 @@ trait QueriesRelationships
 
     /**
      * Returns key we are constraining this parent model's query with
-     * @param $relation
+     * @param Relation $relation
      * @return string
      * @throws Exception
      */
-    protected function getRelatedConstraintKey($relation)
+    protected function getRelatedConstraintKey(Relation $relation)
     {
         if ($relation instanceof HasOneOrMany) {
-            return $this->model->getKeyName();
+            return $relation->getLocalKeyName();
         }
 
         if ($relation instanceof BelongsTo) {
