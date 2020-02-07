@@ -2,7 +2,6 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
-use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Helpers\EloquentBuilder;
@@ -11,6 +10,7 @@ use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\HasMany;
 use Jenssegers\Mongodb\Relations\HasOne;
 use Jenssegers\Mongodb\Relations\MorphTo;
+use Jenssegers\Mongodb\Relations\MorphMany;
 
 trait HybridRelations
 {
@@ -184,7 +184,7 @@ trait HybridRelations
         // there are multiple types in the morph and we can't use single queries.
         if (($class = $this->$type) === null) {
             return new MorphTo(
-                $this->newQuery(), $this, $id, null, $type, $name
+                $this->newQuery(), $this, $id, $ownerKey, $type, $name
             );
         }
 
@@ -195,8 +195,10 @@ trait HybridRelations
 
         $instance = new $class;
 
+        $ownerKey = $ownerKey ?? $instance->getKeyName();
+
         return new MorphTo(
-            $instance->newQuery(), $this, $id, $instance->getKeyName(), $type, $name
+            $instance->newQuery(), $this, $id, $ownerKey, $type, $name
         );
     }
 

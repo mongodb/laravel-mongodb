@@ -361,7 +361,7 @@ class ModelTest extends TestCase
 
         $user1->unset('note1');
 
-        $this->assertObjectNotHasAttribute('note1', $user1);
+        $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
@@ -370,15 +370,15 @@ class ModelTest extends TestCase
         $user1 = User::find($user1->_id);
         $user2 = User::find($user2->_id);
 
-        $this->assertObjectNotHasAttribute('note1', $user1);
+        $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
 
         $user2->unset(['note1', 'note2']);
 
-        $this->assertObjectNotHasAttribute('note1', $user2);
-        $this->assertObjectNotHasAttribute('note2', $user2);
+        $this->assertFalse(isset($user2->note1));
+        $this->assertFalse(isset($user2->note2));
     }
 
     public function testDates(): void
@@ -432,6 +432,16 @@ class ModelTest extends TestCase
         $data = $user->toArray();
         $this->assertNotInstanceOf(UTCDateTime::class, $data['entry']['date']);
         $this->assertEquals((string) $user->getAttribute('entry.date')->format('Y-m-d H:i:s'), $data['entry']['date']);
+    }
+
+    public function testCarbonDateMockingWorks()
+    {
+        $fakeDate = \Carbon\Carbon::createFromDate(2000, 01, 01);
+
+        Carbon::setTestNow($fakeDate);
+        $item = Item::create(['name' => 'sword']);
+        
+        $this->assertLessThan(1, $fakeDate->diffInSeconds($item->created_at));
     }
 
     public function testIdAttribute(): void
