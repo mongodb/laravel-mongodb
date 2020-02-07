@@ -35,6 +35,7 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
   - [Query Builder](#query-builder)
     - [Basic Usage](#basic-usage-2)
     - [Available operations](#available-operations)
+  - [Transaction](#transaction)
   - [Schema](#schema)
     - [Basic Usage](#basic-usage-3)
     - [Geospatial indexes](#geospatial-indexes)
@@ -935,6 +936,23 @@ If you are familiar with [Eloquent Queries](http://laravel.com/docs/queries), th
 
 ### Available operations
 To see the available operations, check the [Eloquent](#eloquent) section.
+
+Transaction
+-------------
+Transaction requires mongodb version V4.0 or more and deployment replica sets or sharded clusters.
+
+Transaction supports create/insert,update,delete,etc operation.
+
+Transaction supports infinite-level nested transactions, but outside transaction rollbacks do not affect the commit of inside transactions.
+```php
+DB::beginTransaction();
+User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+DB::transaction(function () {
+    DB::collection('users')->where('name', 'klinson')->update(['age' => 20]);
+});
+DB::rollBack();
+//DB::commit();
+```
 
 Schema
 ------
