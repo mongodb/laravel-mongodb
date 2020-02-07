@@ -334,7 +334,5 @@ class Connection extends BaseConnection
     public function getSession()
     {
         return $this->sessions[$this->session_key] ?? null;
-            ? $this->sessions[$this->session_key]
-            : null;
     }
 }
