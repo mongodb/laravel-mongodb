@@ -1,4 +1,4 @@
-FROM mongo
+FROM mongo:4.2
 
 ADD mongo-replset-init.sh /usr/local/bin/
 
