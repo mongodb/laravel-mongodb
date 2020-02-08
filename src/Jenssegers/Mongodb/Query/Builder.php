@@ -700,7 +700,11 @@ class Builder extends BaseBuilder
      */
     public function truncate()
     {
-        $result = $this->collection->drop();
+        $options = [
+            'typeMap' => ['root' => 'object', 'document' => 'object'],
+        ];
+
+        $result = $this->collection->drop($options);
 
         return (1 == (int) $result->ok);
     }

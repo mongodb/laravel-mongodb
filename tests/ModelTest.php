@@ -572,4 +572,13 @@ class ModelTest extends TestCase
 
         $this->assertEquals(3, $count);
     }
+
+    public function testTruncateModel()
+    {
+        User::create(['name' => 'John Doe']);
+
+        User::truncate();
+
+        $this->assertEquals(0, User::count());
+    }
 }
