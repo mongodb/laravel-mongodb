@@ -33,7 +33,13 @@ class BelongsToMany extends EloquentBelongsToMany
      */
     protected function hydratePivotRelation(array $models)
     {
-        // Do nothing.
+        foreach ($models as $model) {
+            $keyToUse = $this->getTable() == $model->getTable() ? $this->getForeignKey() : $this->getRelatedKey();
+            $pcontent = $model->getAttributes()[$keyToUse];
+            $model->setRelation($this->accessor, $this->newExistingPivot(
+                is_string($pcontent[0]) ? ['_id' => $pcontent] : $pcontent[0]
+            ));
+        }
     }
 
     /**
@@ -71,8 +77,10 @@ class BelongsToMany extends EloquentBelongsToMany
     protected function setWhere()
     {
         $foreign = $this->getForeignKey();
-
-        $this->query->where($foreign, '=', $this->parent->getKey());
+        $key = $this->parent->getKey();
+        $this->query
+            ->where($foreign, '=', $key)
+            ->orWhereRaw([$foreign.'._id' => $key]);
 
         return $this;
     }
@@ -129,6 +137,12 @@ class BelongsToMany extends EloquentBelongsToMany
         // See issue #256.
         if ($current instanceof Collection) {
             $current = $ids->modelKeys();
+        } elseif (is_array($current)) {
+            foreach ($current as $key => $value) {
+                if (is_array($value) && $value['_id']) {
+                    $current[$key] = $value['_id'];
+                }
+            }
         }
 
         $records = $this->formatSyncList($ids);
@@ -171,7 +185,30 @@ class BelongsToMany extends EloquentBelongsToMany
      */
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
-        // Do nothing, we have no pivot table.
+        if ($id instanceof Model) {
+            $model = $id;
+            $id = $model->getKey();
+        } else {
+            if ($id instanceof Collection) {
+                $id = $id->modelKeys();
+            }
+
+            $related = $this->newRelatedQuery()->whereIn($this->related->getKeyName(), (array) $id);
+            $filter = [$this->parentKey => $this->parent->getKey()];
+            $pivot_x = [array_merge($attributes, $filter)];
+
+            //TODO: Put this in a transaction
+            $related->pull($this->getForeignKey(), $this->parent->getKey());
+            $related->pull($this->getForeignKey(), $filter);
+            $related->push($this->getForeignKey(), $pivot_x, true);
+        }
+        $filter = [$this->parentKey => $id];
+        $pivot_x = [array_merge($attributes, $filter)];
+
+        //TODO: Put this in a transaction
+        $this->parent->pull($this->getRelatedKey(), $id);
+        $this->parent->pull($this->getRelatedKey(), $filter);
+        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
     }
 
     /**
@@ -185,7 +222,7 @@ class BelongsToMany extends EloquentBelongsToMany
             $id = $model->getKey();
 
             // Attach the new parent id to the related model.
-            $model->push($this->foreignPivotKey, $this->parent->getKey(), true);
+            $model->push($this->foreignPivotKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
         } else {
             if ($id instanceof Collection) {
                 $id = $id->modelKeys();
@@ -193,14 +230,22 @@ class BelongsToMany extends EloquentBelongsToMany
 
             $query = $this->newRelatedQuery();
 
-            $query->whereIn($this->related->getKeyName(), (array) $id);
+            $query
+                ->whereIn($this->related->getKeyName(), (array) $id)
+                ->orWhereIn($this->related->getKeyName().'._id', (array) $id);
 
             // Attach the new parent id to the related model.
-            $query->push($this->foreignPivotKey, $this->parent->getKey(), true);
+            $query->push($this->foreignPivotKey, [array_merge($attributes, ['_id' => $this->parent->getKey()])], true);
+        }
+
+        //Pivot Collection
+        $pivot_x = [];
+        foreach ((array) $id as $item) {
+            $pivot_x[] = array_merge($attributes, ['_id' => $item]);
         }
 
         // Attach the new ids to the parent model.
-        $this->parent->push($this->getRelatedKey(), (array) $id, true);
+        $this->parent->push($this->getRelatedKey(), $pivot_x, true);
 
         if ($touch) {
             $this->touchIfTouching();
@@ -224,7 +269,9 @@ class BelongsToMany extends EloquentBelongsToMany
         $ids = (array) $ids;
 
         // Detach all ids from the parent model.
+        // Legacy Support
         $this->parent->pull($this->getRelatedKey(), $ids);
+        $this->parent->pull($this->getRelatedKey(), ['_id' => ['$in' => $ids]]);
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
@@ -233,6 +280,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Remove the relation to the parent.
         $query->pull($this->foreignPivotKey, $this->parent->getKey());
+        $query->pull($this->foreignPivotKey, [$this->parentKey => $this->parent->getKey()]);
 
         if ($touch) {
             $this->touchIfTouching();
@@ -253,10 +301,14 @@ class BelongsToMany extends EloquentBelongsToMany
         // parents without having a possibly slow inner loops for every models.
         $dictionary = [];
 
-        foreach ($results as $result) {
-            foreach ($result->$foreign as $item) {
-                $dictionary[$item][] = $result;
-            }
+        foreach ($results as $result) {    
+            foreach ($result->$foreign as $item) {  
+                if (is_array($item)) {  
+                    $dictionary[$item['_id']][] = $result;  
+                } else {    
+                    $dictionary[$item][] = $result; 
+                }   
+            }   
         }
 
         return $dictionary;
@@ -341,5 +393,16 @@ class BelongsToMany extends EloquentBelongsToMany
     protected function whereInMethod(EloquentModel $model, $key)
     {
         return 'whereIn';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function addEagerConstraints(array $models)
+    {
+        $keys = $this->getKeys($models, $this->parentKey);
+        $this->query
+            ->whereIn($this->getQualifiedForeignPivotKeyName(), $keys)
+            ->orWhereRaw([$this->getQualifiedForeignPivotKeyName().'._id' => ['$in' => $keys]]);
     }
 }

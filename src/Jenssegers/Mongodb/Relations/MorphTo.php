@@ -2,6 +2,7 @@
 
 namespace Jenssegers\Mongodb\Relations;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
 
@@ -52,5 +53,17 @@ class MorphTo extends EloquentMorphTo
     protected function whereInMethod(EloquentModel $model, $key)
     {
         return 'whereIn';
+    }
+
+    /**
+     * @inheritDoc
+     */
+    protected function buildDictionary(Collection $models)
+    {
+        foreach ($models as $model) {
+            if ($model->{$this->morphType}) {
+                $this->dictionary[$model->{$this->morphType}][(string) $model->{$this->foreignKey}][] = $model;
+            }
+        }
     }
 }

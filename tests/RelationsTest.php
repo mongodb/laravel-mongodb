@@ -133,6 +133,7 @@ class RelationsTest extends TestCase
         $item = Item::create(['type' => 'knife']);
         $user->items()->save($item);
 
+        /** @var User $user */
         $user = User::find($user->_id);
         $items = $user->items;
         $this->assertCount(1, $items);
@@ -206,8 +207,17 @@ class RelationsTest extends TestCase
         $client = Client::Where('name', '=', 'Buffet Bar Inc.')->first();
 
         // Assert they are attached
-        $this->assertContains($client->_id, $user->client_ids);
-        $this->assertContains($user->_id, $client->user_ids);
+        $idPluck = function ($item) {
+            if (is_object($item)) {
+                return $item->_id;
+            }
+            if (is_array($item)) {
+                return $item['_id'];
+            }
+        };
+
+        $this->assertContains($client->_id, array_map($idPluck, $user->client_ids));
+        $this->assertContains($user->_id, array_map($idPluck, $client->user_ids));
         $this->assertCount(2, $user->clients);
         $this->assertCount(2, $client->users);
 
@@ -227,7 +237,8 @@ class RelationsTest extends TestCase
 
     public function testBelongsToManyAttachesExistingModels(): void
     {
-        $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523']]);
+        // Should be able to remove legacy
+        $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523', ['_id' => '1234523']]]);
 
         $clients = [
             Client::create(['name' => 'Pork Pies Ltd.'])->_id,
@@ -242,7 +253,7 @@ class RelationsTest extends TestCase
         // Sync multiple records
         $user->clients()->sync($clients);
 
-        $user = User::with('clients')->find($user->_id);
+        $user = User::find($user->_id);
 
         // Assert non attached ID's are detached succesfully
         $this->assertNotContains('1234523', $user->client_ids);
@@ -257,7 +268,7 @@ class RelationsTest extends TestCase
         $user = User::with('clients')->find($user->_id);
 
         // Assert there are now still 2 client objects in the relationship
-        $this->assertCount(2, $user->clients);
+        $this->assertCount(2, $user->clients()->get());
 
         // Assert that the new relationships name start with synced
         $this->assertStringStartsWith('synced', $user->clients[0]->name);
@@ -283,13 +294,59 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $user->clients);
     }
 
+    public function testBelongsToManySyncAttrs(): void
+    {
+        // create test instances
+        /** @var User $user */
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Pork Pies Ltd.'])->_id;
+        $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
+
+        // Sync multiple
+        $user->clients()->sync([
+            $client1 => ['fresh_client' => true],
+            $client2 => ['fresh_client' => false]
+        ]);
+
+        //Check Sync Success
+        $this->assertEquals($user->client_ids[0]['_id'], $client1);
+        $this->assertEquals($user->client_ids[1]['_id'], $client2);
+
+        //Check reverse
+        $this->assertEquals($user->_id, Client::find($client1)->user_ids[0]['_id']);
+        $this->assertEquals($user->_id, Client::find($client2)->user_ids[0]['_id']);
+
+        $clients = $user->clients;
+        $this->assertCount(2, $clients);
+
+        foreach ($user->clients()->get() as $item) {
+            $this->assertIsArray($item->pivot->toArray());
+            $this->assertEquals($item->_id == $client1, $item->pivot->fresh_client);
+        }
+    }
+
+    public function testBelongsToManyUpdatePivot(): void
+    {
+        /** @var User $user */
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Pork Pies Ltd.'])->_id;
+        $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
+
+        // Sync multiple
+        $user->clients()->sync([
+            $client1 => ['fresh_client' => true],
+            $client2 => ['fresh_client' => false]
+        ]);
+        $user->clients()->updateExistingPivot($client1, ['fresh_client' => false]);
+        $this->assertFalse($user->clients()->where('_id', $client1)->first()->pivot->fresh_client);
+    }
+
     public function testBelongsToManyAttachArray(): void
     {
         $user = User::create(['name' => 'John Doe']);
         $client1 = Client::create(['name' => 'Test 1'])->_id;
         $client2 = Client::create(['name' => 'Test 2'])->_id;
 
-        $user = User::where('name', '=', 'John Doe')->first();
         $user->clients()->attach([$client1, $client2]);
         $this->assertCount(2, $user->clients);
     }
@@ -301,7 +358,6 @@ class RelationsTest extends TestCase
         $client2 = Client::create(['name' => 'Test 2']);
         $collection = new \Illuminate\Database\Eloquent\Collection([$client1, $client2]);
 
-        $user = User::where('name', '=', 'John Doe')->first();
         $user->clients()->attach($collection);
         $this->assertCount(2, $user->clients);
     }
@@ -323,6 +379,38 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $user['client_ids']);
     }
 
+    public function testBelongsToManyLegacy(): void
+    {
+        // Construct Legacy Relationship model
+        $client1 = Client::create(['name' => 'Test 1']);
+        $client2 = Client::create(['name' => 'Test 2']);
+        $user1 = User::create(['name' => 'John Doe', 'client_ids' => [$client1->_id, $client2]]);
+        $user2 = User::create(['name' => 'John Doe', 'client_ids' => [['_id' => $client1->_id], ['_id' => $client2]]]);
+        $client1->fill(['user_ids' => [$user1->_id, $user2->_id]])->save();
+        $client2->fill(['user_ids' => [$user1->_id, $user2->_id]])->save();
+
+        // Check for retrieval
+        $this->assertCount(2, $user1->clients()->get(), "Get via Helper");
+        $this->assertCount(2, $user1->clients, "Get via Attr");
+        $this->assertCount(2, $user2->clients()->get(), "Get via Helper");
+        $this->assertCount(2, $user2->clients, "Get via Attr");
+
+        // Check retrieval is correct
+        $testMatrix = [
+            [$client1, $user1->clients[0]],
+            [$client2, $user1->clients[1]],
+            [$client1, $user2->clients[0]],
+            [$client2, $user2->clients[1]]
+        ];
+        foreach ($testMatrix as $k => $test) {
+            $this->assertEquals($test[0]->_id, $test[1]->_id, "Matrix #{$k}");
+        }
+
+        // Check inverse
+        $this->assertCount(2, $client1->users()->get(), "Get Inverse via Helper");
+        $this->assertCount(2, $client1->users, "Get Inverse via Attr");
+    }
+
     public function testBelongsToManyCustom(): void
     {
         $user = User::create(['name' => 'John Doe']);
@@ -337,7 +425,8 @@ class RelationsTest extends TestCase
         $this->assertArrayHasKey('groups', $user->getAttributes());
 
         // Assert they are attached
-        $this->assertContains($group->_id, $user->groups->pluck('_id')->toArray());
+        $userGroups = $user->groups;
+        $this->assertContains($group->_id, $userGroups->pluck('_id')->toArray());
         $this->assertContains($user->_id, $group->users->pluck('_id')->toArray());
         $this->assertEquals($group->_id, $user->groups()->first()->_id);
         $this->assertEquals($user->_id, $group->users()->first()->_id);
@@ -517,20 +606,20 @@ class RelationsTest extends TestCase
         $user->save();
 
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([$user->_id], $client->user_ids);
-        $this->assertEquals([$client->_id], $user->client_ids);
+        $this->assertEquals([['_id' => $user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
 
         $user = User::where('name', 'John Doe')->first();
         $client = Client::where('name', 'Admins')->first();
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([$user->_id], $client->user_ids);
-        $this->assertEquals([$client->_id], $user->client_ids);
+        $this->assertEquals([['_id' => $user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
 
         $user->clients()->save($client);
         $user->clients()->save($client);
         $user->save();
         $this->assertEquals(1, $user->clients()->count());
-        $this->assertEquals([$user->_id], $client->user_ids);
-        $this->assertEquals([$client->_id], $user->client_ids);
+        $this->assertEquals([['_id' => $user->_id]], $client->user_ids);
+        $this->assertEquals([['_id' => $client->_id]], $user->client_ids);
     }
 }

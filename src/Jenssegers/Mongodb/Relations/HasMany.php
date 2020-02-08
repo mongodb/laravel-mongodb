@@ -3,6 +3,7 @@
 namespace Jenssegers\Mongodb\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\HasMany as EloquentHasMany;
 
@@ -71,7 +72,9 @@ class HasMany extends EloquentHasMany
 
         $key = $this->wrap($this->getQualifiedParentKeyName());
 
-        return $query->where($this->getHasCompareKey(), 'exists', true);
+        return $query
+            ->where($this->getHasCompareKey(), 'exists', true)
+            ->orWhere($this->getHasCompareKey().'._id', 'exists', true);
     }
 
     /**
@@ -83,5 +86,14 @@ class HasMany extends EloquentHasMany
     protected function whereInMethod(EloquentModel $model, $key)
     {
         return 'whereIn';
+    }
+
+    protected function buildDictionary(Collection $results)
+    {
+        $foreign = $this->getForeignKeyName();
+
+        return $results->mapToDictionary(function ($result) use ($foreign) {
+            return [(string) $result->{$foreign} => $result];
+        })->all();
     }
 }
