@@ -31,6 +31,5 @@ class MorphMany extends EloquentMorphMany
         return $results->mapToDictionary(function ($result) use ($foreign) {
             return [(string) $result->{$foreign} => $result];
         })->all();
-
     }
 }

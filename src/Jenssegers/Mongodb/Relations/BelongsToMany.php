@@ -301,14 +301,14 @@ class BelongsToMany extends EloquentBelongsToMany
         // parents without having a possibly slow inner loops for every models.
         $dictionary = [];
 
-        foreach ($results as $result) {    
-            foreach ($result->$foreign as $item) {  
-                if (is_array($item)) {  
-                    $dictionary[$item['_id']][] = $result;  
-                } else {    
-                    $dictionary[$item][] = $result; 
-                }   
-            }   
+        foreach ($results as $result) {
+            foreach ($result->$foreign as $item) {
+                if (is_array($item)) {
+                    $dictionary[$item['_id']][] = $result;
+                } else {
+                    $dictionary[$item][] = $result;
+                }
+            }
         }
 
         return $dictionary;
