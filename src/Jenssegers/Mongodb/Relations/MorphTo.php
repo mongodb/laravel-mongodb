@@ -56,7 +56,7 @@ class MorphTo extends EloquentMorphTo
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     protected function buildDictionary(Collection $models)
     {

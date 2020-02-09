@@ -74,7 +74,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function match(array $models, Collection $results, $relation)
     {

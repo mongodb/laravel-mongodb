@@ -396,7 +396,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritDoc
+     * @inheritdoc
      */
     public function addEagerConstraints(array $models)
     {
