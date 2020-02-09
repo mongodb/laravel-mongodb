@@ -234,7 +234,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * Indicate that the collection needs to be created.
+     * @param array $options
+     * @return void
      */
     public function create($options = [])
     {
