@@ -56,7 +56,9 @@ class MorphTo extends EloquentMorphTo
     }
 
     /**
-     * @inheritdoc
+     * Build a dictionary with the models.
+     * @param  \Illuminate\Database\Eloquent\Collection  $models
+     * @return void
      */
     protected function buildDictionary(Collection $models)
     {

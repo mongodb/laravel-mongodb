@@ -22,7 +22,10 @@ class MorphMany extends EloquentMorphMany
     }
 
     /**
-     * @inheritdoc
+     * Build model dictionary keyed by the relation's foreign key.
+     *
+     * @param  \Illuminate\Database\Eloquent\Collection  $results
+     * @return array
      */
     protected function buildDictionary(Collection $results)
     {
