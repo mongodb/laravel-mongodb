@@ -212,7 +212,12 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * Attach a model to the parent.
+     *
+     * @param  mixed  $id
+     * @param  array  $attributes
+     * @param  bool  $touch
+     * @return void
      */
     public function attach($id, array $attributes = [], $touch = true)
     {
