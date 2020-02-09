@@ -34,15 +34,16 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Determine if the given collection exists.
      * @param string $collection
-     * @return bool
+     * @param bool $collection_info
+     * @return bool|\MongoDB\Model\CollectionInfo
      */
-    public function hasCollection($collection)
+    public function hasCollection($collection, $collection_info = false)
     {
         $db = $this->connection->getMongoDB();
 
         foreach ($db->listCollections() as $collectionFromMongo) {
             if ($collectionFromMongo->getName() == $collection) {
-                return true;
+                return $collection_info ? $collectionFromMongo : true;
             }
         }
 
