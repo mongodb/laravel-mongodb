@@ -237,30 +237,27 @@ class Builder extends BaseBuilder
             $unwinds = [];
 
             // Add grouping columns to the $group part of the aggregation pipeline.
-            if ($this->groups) {
+             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                      // in this condition we check if user wants to select with another operator
-                      // if $colunm is array it means user wants diffrent operator
-                      if (is_array($column)) {
-                        $value = array_values($column);
-                        $key = str_replace('.', '_', $value[0]);
+                    $group['_id'][$column] = '$' . $column;
 
-                        // When grouping, we can add custom operators like MySQL
-                        $group[$key] = ['$' . array_keys($column)[0] => '$' . $value[0]];
-                    } else {
-                        $key = str_replace('.', '_', $column);
-
-                        // When grouping, also add the $last operator to each grouped field,
-                        // this mimics MySQL's behaviour a bit.
-                        $group[$key] = ['$last' => '$' . $column];
-                    }
+                    // When grouping, also add the $last operator to each grouped field,
+                    // this mimics MySQL's behaviour a bit.
+                    $group[$column] = ['$last' => '$' . $column];
                 }
 
                 // Do the same for other columns that are selected.
                 foreach ($this->columns as $column) {
-                    $key = str_replace('.', '_', $column);
+                    if (is_array($column)) {
+                        $value = array_values($column);
+                        $key = str_replace('.', '_', $value[0]);
 
-                    $group[$key] = ['$last' => '$' . $column];
+                        $group[$key] = ['$' . array_keys($column)[0] => '$' . $value[0]];
+                    } else {
+                        $key = str_replace('.', '_', $column);
+
+                        $group[$key] = ['$last' => '$' . $column];
+                    }
                 }
             }
 
