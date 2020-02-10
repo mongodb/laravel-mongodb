@@ -246,7 +246,7 @@ class Builder extends BaseBuilder
                     $group[$column] = ['$last' => '$' . $column];
                 }
 
-                // Do the same for other columns that are selected.
+                // Do the same for other columns that are selected. 
                 foreach ($this->columns as $column) {
                     if (is_array($column)) {
                         $value = array_values($column);
