@@ -239,11 +239,21 @@ class Builder extends BaseBuilder
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                    $group['_id'][$column] = '$' . $column;
+                      // in this condition we check if user wants to select with another operator
+                      // if $colunm is array it means user wants diffrent operator
+                      if (is_array($column)) {
+                        $value = array_values($column);
+                        $key = str_replace('.', '_', $value[0]);
 
-                    // When grouping, also add the $last operator to each grouped field,
-                    // this mimics MySQL's behaviour a bit.
-                    $group[$column] = ['$last' => '$' . $column];
+                        // When grouping, we can add custom operators like MySQL
+                        $group[$key] = ['$' . array_keys($column)[0] => '$' . $value[0]];
+                    } else {
+                        $key = str_replace('.', '_', $column);
+
+                        // When grouping, also add the $last operator to each grouped field,
+                        // this mimics MySQL's behaviour a bit.
+                        $group[$key] = ['$last' => '$' . $column];
+                    }
                 }
 
                 // Do the same for other columns that are selected.
