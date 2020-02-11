@@ -5,7 +5,6 @@ namespace Jenssegers\Mongodb\Relations;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
-use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use MongoDB\BSON\ObjectID;
@@ -264,7 +263,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
         return $this->setEmbedded($records);
     }
-    
+
     /**
      * @param null $perPage
      * @param array $columns
