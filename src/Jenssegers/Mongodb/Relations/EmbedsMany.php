@@ -5,6 +5,7 @@ namespace Jenssegers\Mongodb\Relations;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use MongoDB\BSON\ObjectID;
@@ -264,26 +265,38 @@ class EmbedsMany extends EmbedsOneOrMany
         return $this->setEmbedded($records);
     }
 
+
     /**
-     * Get a paginator for the "select" statement.
-     * @param int $perPage
-     * @return \Illuminate\Pagination\AbstractPaginator
+     * @param null $perPage
+     * @param array $columns
+     * @param string $pageName
+     * @param null $page
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function paginate($perPage = null)
+    public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
     {
         $page = Paginator::resolveCurrentPage();
         $perPage = $perPage ?: $this->related->getPerPage();
 
         $results = $this->getEmbedded();
-
-        $total = count($results);
-
+        $results = $this->toCollection($results);
+        $total = $results->count();
         $start = ($page - 1) * $perPage;
-        $sliced = array_slice($results, $start, $perPage);
 
-        return new LengthAwarePaginator($sliced, $total, $perPage, $page, [
-            'path' => Paginator::resolveCurrentPath(),
-        ]);
+        $sliced = $results->slice(
+            $start,
+            $perPage
+        );
+
+        return new LengthAwarePaginator(
+            $sliced,
+            $total,
+            $perPage,
+            $page,
+            [
+                'path' => Paginator::resolveCurrentPath()
+            ]
+        );
     }
 
     /**
