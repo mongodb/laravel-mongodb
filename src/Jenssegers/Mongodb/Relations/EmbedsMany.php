@@ -264,8 +264,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
         return $this->setEmbedded($records);
     }
-
-
+    
     /**
      * @param null $perPage
      * @param array $columns
