@@ -273,7 +273,7 @@ class EmbedsMany extends EmbedsOneOrMany
      */
     public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
     {
-        $page = Paginator::resolveCurrentPage();
+        $page = $page ?: Paginator::resolveCurrentPage($pageName);
         $perPage = $perPage ?: $this->related->getPerPage();
 
         $results = $this->getEmbedded();
