@@ -938,10 +938,34 @@ If you are familiar with [Eloquent Queries](http://laravel.com/docs/queries), th
 To see the available operations, check the [Eloquent](#eloquent) section.
 
 Transaction
--------------
-Transaction requires mongodb version V4.0 or more and deployment replica sets or sharded clusters.
+-------
+Transaction requires mongodb version V4.0 or more and deployment replica sets or sharded clusters.You can look at its speciality [in the MongoDB docs](https://docs.mongodb.com/manual/core/transactions/)
+
+### Basic Usage
 
 Transaction supports create/insert,update,delete,etc operation.
+
+```php
+DB::transaction(function () {
+    User::create(['name' => 'klinson', 'age' => 19, 'title' => 'admin', 'email' => 'klinsonup@gmail.com']);
+    DB::collection('users')->where('name', 'klinson')->update(['age' => 20]);
+    DB::collection('users')->where('name', 'klinson')->delete();
+});
+```
+
+```php
+// begin a transaction
+DB::beginTransaction();
+User::create(['name' => 'klinson', 'age' => 19, 'title' => 'admin', 'email' => 'klinsonup@gmail.com']);
+DB::collection('users')->where('name', 'klinson')->update(['age' => 20]);
+DB::collection('users')->where('name', 'klinson')->delete();
+
+// you can commit your changes
+DB::commit();
+
+// you can also rollback them
+//DB::rollBack();
+```
 
 Transaction supports infinite-level nested transactions, but outside transaction rollbacks do not affect the commit of inside transactions.
 ```php
@@ -951,7 +975,6 @@ DB::transaction(function () {
     DB::collection('users')->where('name', 'klinson')->update(['age' => 20]);
 });
 DB::rollBack();
-//DB::commit();
 ```
 
 Schema
