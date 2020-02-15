@@ -738,11 +738,14 @@ class Builder extends BaseBuilder
      */
     public function truncate()
     {
-        $options = [];
+        $options = [
+            'typeMap' => ['root' => 'object', 'document' => 'object'],
+        ];
         // if transaction in session
         if ($session = $this->connection->getSession()) {
             $options['session']  =  $session;
         }
+
         $result = $this->collection->drop($options);
 
         return (1 == (int) $result->ok);
