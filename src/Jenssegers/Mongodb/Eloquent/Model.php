@@ -2,7 +2,7 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
-use Carbon\Carbon;
+use Illuminate\Support\Carbon;
 use DateTime;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
