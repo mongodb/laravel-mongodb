@@ -384,10 +384,12 @@ class Builder extends BaseBuilder
             if ($this->limit) {
                 $options['limit'] = $this->limit;
             }
+            if ($this->hint) {
+                $options['hint'] = $this->hint;
+            }
             if ($columns) {
                 $options['projection'] = $columns;
             }
-            // if ($this->hint)    $cursor->hint($this->hint);
 
             // Fix for legacy support, converts the results to arrays instead of objects.
             $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
@@ -698,7 +700,11 @@ class Builder extends BaseBuilder
      */
     public function truncate()
     {
-        $result = $this->collection->drop();
+        $options = [
+            'typeMap' => ['root' => 'object', 'document' => 'object'],
+        ];
+
+        $result = $this->collection->drop($options);
 
         return (1 == (int) $result->ok);
     }

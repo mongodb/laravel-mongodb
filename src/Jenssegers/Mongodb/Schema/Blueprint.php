@@ -129,8 +129,18 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
             // Transform the columns to the index name.
             $transform = [];
 
-            foreach ($indexOrColumns as $column) {
-                $transform[$column] = $column . '_1';
+            foreach ($indexOrColumns as $key => $value) {
+                if (is_int($key)) {
+                    // There is no sorting order, use the default.
+                    $column = $value;
+                    $sorting = '1';
+                } else {
+                    // This is a column with sorting order e.g 'my_column' => -1.
+                    $column = $key;
+                    $sorting = $value;
+                }
+
+                $transform[$column] = $column . "_" . $sorting;
             }
 
             $indexOrColumns = implode('_', $transform);
