@@ -234,16 +234,18 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * @inheritdoc
+     * Indicate that the collection needs to be created.
+     * @param array $options
+     * @return void
      */
-    public function create()
+    public function create($options = [])
     {
         $collection = $this->collection->getCollectionName();
 
         $db = $this->connection->getMongoDB();
 
         // Ensure the collection is created.
-        $db->createCollection($collection);
+        $db->createCollection($collection, $options);
     }
 
     /**
