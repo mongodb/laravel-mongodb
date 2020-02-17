@@ -99,7 +99,7 @@ abstract class Model extends BaseModel
     {
         // Convert UTCDateTime instances.
         if ($value instanceof UTCDateTime) {
-            return Carbon::createFromTimestampMs($value->toDateTime()->format('Uv'));
+            return Date::createFromTimestampMs($value->toDateTime()->format('Uv'));
         }
 
         return parent::asDateTime($value);
