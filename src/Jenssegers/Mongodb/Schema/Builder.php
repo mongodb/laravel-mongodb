@@ -33,21 +33,20 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Determine if the given collection exists.
-     * @param string $collection
-     * @param bool $collection_info
-     * @return bool|\MongoDB\Model\CollectionInfo
+     * @param string $name
+     * @return bool
      */
-    public function hasCollection($collection, $collection_info = false)
+    public function hasCollection($name)
     {
         $db = $this->connection->getMongoDB();
 
-        foreach ($db->listCollections() as $collectionFromMongo) {
-            if ($collectionFromMongo->getName() == $collection) {
-                return $collection_info ? $collectionFromMongo : true;
-            }
-        }
+        $collections = $db->listCollections([
+            'filter' => [
+                'name' => $name,
+            ],
+        ]);
 
-        return false;
+        return $collections->count() ? true : false;
     }
 
     /**
@@ -133,6 +132,24 @@ class Builder extends \Illuminate\Database\Schema\Builder
     protected function createBlueprint($collection, Closure $callback = null)
     {
         return new Blueprint($this->connection, $collection);
+    }
+
+    /**
+     * Get collection.
+     * @param string $name
+     * @return bool|\MongoDB\Model\CollectionInfo
+     */
+    public function getCollection($name)
+    {
+        $db = $this->connection->getMongoDB();
+
+        $collections = $db->listCollections([
+            'filter' => [
+                'name' => $name,
+            ],
+        ]);
+
+        return $collections->count() ? (($collections = iterator_to_array($collections) ) ? current($collections) : false) : false;
     }
 
     /**

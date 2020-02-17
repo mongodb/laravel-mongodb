@@ -35,7 +35,7 @@ class SchemaTest extends TestCase
         $this->assertTrue(Schema::hasCollection('newcollection_two'));
         $this->assertTrue(Schema::hasTable('newcollection_two'));
 
-        $collection = Schema::hasCollection('newcollection_two', true);
+        $collection = Schema::getCollection('newcollection_two');
         $this->assertTrue($collection['options']['capped']);
         $this->assertEquals(1024, $collection['options']['size']);
     }
