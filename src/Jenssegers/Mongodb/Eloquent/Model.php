@@ -118,7 +118,7 @@ abstract class Model extends BaseModel
      */
     public function freshTimestamp()
     {
-        return new UTCDateTime(now()->format('Uv'));
+        return new UTCDateTime(Date::now()->format('Uv'));
     }
 
     /**
