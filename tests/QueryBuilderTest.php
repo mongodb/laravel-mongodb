@@ -547,13 +547,13 @@ class QueryBuilderTest extends TestCase
     {
         DB::collection('users')->insert([
             ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv'))],
-            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(Carbon::parse("1981-01-01 00:00:00")->format('Uv'))],
-            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Carbon::parse("1982-01-01 00:00:00")->format('Uv'))],
-            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Carbon::parse("1983-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(Date::parse("1981-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse("1982-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse("1983-01-01 00:00:00")->format('Uv'))],
         ]);
 
         $user = DB::collection('users')
-            ->where('birthday', new UTCDateTime(Carbon::parse("1980-01-01 00:00:00")->format('Uv')))
+            ->where('birthday', new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv')))
             ->first();
         $this->assertEquals('John Doe', $user['name']);
 
