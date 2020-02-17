@@ -40,13 +40,13 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $db = $this->connection->getMongoDB();
 
-        $collections = $db->listCollections([
+        $collections = iterator_to_array($db->listCollections([
             'filter' => [
                 'name' => $name,
             ],
-        ]);
+        ]), false);
 
-        return $collections->count() ? true : false;
+        return count($collections) ? true : false;
     }
 
     /**
@@ -143,13 +143,13 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $db = $this->connection->getMongoDB();
 
-        $collections = $db->listCollections([
+        $collections = iterator_to_array($db->listCollections([
             'filter' => [
                 'name' => $name,
             ],
-        ]);
+        ]), false);
 
-        return $collections->count() ? (($collections = iterator_to_array($collections) ) ? current($collections) : false) : false;
+        return count($collections) ? current($collections) : false;
     }
 
     /**
