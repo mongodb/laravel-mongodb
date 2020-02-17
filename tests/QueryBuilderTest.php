@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Query\Builder;
