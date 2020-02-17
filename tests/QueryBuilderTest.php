@@ -546,7 +546,7 @@ class QueryBuilderTest extends TestCase
     public function testDates()
     {
         DB::collection('users')->insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Carbon::parse("1980-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv'))],
             ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(Carbon::parse("1981-01-01 00:00:00")->format('Uv'))],
             ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Carbon::parse("1982-01-01 00:00:00")->format('Uv'))],
             ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Carbon::parse("1983-01-01 00:00:00")->format('Uv'))],
