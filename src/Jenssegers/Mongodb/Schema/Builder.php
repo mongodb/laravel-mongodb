@@ -33,21 +33,20 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Determine if the given collection exists.
-     *
-     * @param  string $collection
+     * @param string $name
      * @return bool
      */
-    public function hasCollection($collection)
+    public function hasCollection($name)
     {
         $db = $this->connection->getMongoDB();
 
-        foreach ($db->listCollections() as $collectionFromMongo) {
-            if ($collectionFromMongo->getName() == $collection) {
-                return true;
-            }
-        }
+        $collections = iterator_to_array($db->listCollections([
+            'filter' => [
+                'name' => $name,
+            ],
+        ]), false);
 
-        return false;
+        return count($collections) ? true : false;
     }
 
     /**
@@ -60,9 +59,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Modify a collection on the schema.
-     *
-     * @param  string $collection
-     * @param  Closure $callback
+     * @param string $collection
+     * @param Closure $callback
      * @return bool
      */
     public function collection($collection, Closure $callback)
@@ -85,11 +83,11 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * @inheritdoc
      */
-    public function create($collection, Closure $callback = null)
+    public function create($collection, Closure $callback = null, array $options = [])
     {
         $blueprint = $this->createBlueprint($collection);
 
-        $blueprint->create();
+        $blueprint->create($options);
 
         if ($callback) {
             $callback($blueprint);
@@ -137,8 +135,25 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
+     * Get collection.
+     * @param string $name
+     * @return bool|\MongoDB\Model\CollectionInfo
+     */
+    public function getCollection($name)
+    {
+        $db = $this->connection->getMongoDB();
+
+        $collections = iterator_to_array($db->listCollections([
+            'filter' => [
+                'name' => $name,
+            ],
+        ]), false);
+
+        return count($collections) ? current($collections) : false;
+    }
+
+    /**
      * Get all of the collections names for the database.
-     *
      * @return array
      */
     protected function getAllCollections()

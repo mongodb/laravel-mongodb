@@ -10,22 +10,19 @@ class Connection extends BaseConnection
 {
     /**
      * The MongoDB database handler.
-     *
      * @var \MongoDB\Database
      */
     protected $db;
 
     /**
      * The MongoDB connection handler.
-     *
      * @var \MongoDB\Client
      */
     protected $connection;
 
     /**
      * Create a new database connection instance.
-     *
-     * @param  array $config
+     * @param array $config
      */
     public function __construct(array $config)
     {
@@ -41,7 +38,7 @@ class Connection extends BaseConnection
         $this->connection = $this->createConnection($dsn, $config, $options);
 
         // Select database
-        $this->db = $this->connection->selectDatabase($config['database']);
+        $this->db = $this->connection->selectDatabase($this->getDatabaseDsn($dsn, $config['database']));
 
         $this->useDefaultPostProcessor();
 
@@ -52,8 +49,7 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
-     *
-     * @param  string $collection
+     * @param string $collection
      * @return Query\Builder
      */
     public function collection($collection)
@@ -65,19 +61,18 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
-     *
-     * @param  string $table
+     * @param string $table
+     * @param string|null $as
      * @return Query\Builder
      */
-    public function table($table)
+    public function table($table, $as = null)
     {
         return $this->collection($table);
     }
 
     /**
      * Get a MongoDB collection.
-     *
-     * @param  string $name
+     * @param string $name
      * @return Collection
      */
     public function getCollection($name)
@@ -95,7 +90,6 @@ class Connection extends BaseConnection
 
     /**
      * Get the MongoDB database object.
-     *
      * @return \MongoDB\Database
      */
     public function getMongoDB()
@@ -105,7 +99,6 @@ class Connection extends BaseConnection
 
     /**
      * return MongoDB object.
-     *
      * @return \MongoDB\Client
      */
     public function getMongoClient()
@@ -114,11 +107,18 @@ class Connection extends BaseConnection
     }
 
     /**
+     * {@inheritdoc}
+     */
+    public function getDatabaseName()
+    {
+        return $this->getMongoDB()->getDatabaseName();
+    }
+
+    /**
      * Create a new MongoDB connection.
-     *
-     * @param  string $dsn
-     * @param  array $config
-     * @param  array $options
+     * @param string $dsn
+     * @param array $config
+     * @param array $options
      * @return \MongoDB\Client
      */
     protected function createConnection($dsn, array $config, array $options)
@@ -151,19 +151,17 @@ class Connection extends BaseConnection
 
     /**
      * Determine if the given configuration array has a dsn string.
-     *
-     * @param  array  $config
+     * @param array $config
      * @return bool
      */
     protected function hasDsnString(array $config)
     {
-        return isset($config['dsn']) && ! empty($config['dsn']);
+        return isset($config['dsn']) && !empty($config['dsn']);
     }
 
     /**
      * Get the DSN string form configuration.
-     *
-     * @param  array  $config
+     * @param array $config
      * @return string
      */
     protected function getDsnString(array $config)
@@ -173,8 +171,7 @@ class Connection extends BaseConnection
 
     /**
      * Get the DSN string for a host / port configuration.
-     *
-     * @param  array  $config
+     * @param array $config
      * @return string
      */
     protected function getHostDsn(array $config)
@@ -191,14 +188,24 @@ class Connection extends BaseConnection
 
         // Check if we want to authenticate against a specific database.
         $auth_database = isset($config['options']) && !empty($config['options']['database']) ? $config['options']['database'] : null;
-
         return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
     }
 
     /**
+     * Get database name from DSN string, if there is no database in DSN path - returns back $database argument.
+     * @param string $dsn
+     * @param $database
+     * @return string
+     */
+    protected function getDatabaseDsn($dsn, $database)
+    {
+        $dsnDatabase = trim(parse_url($dsn, PHP_URL_PATH), '/');
+        return trim($dsnDatabase) ? $dsnDatabase : $database;
+    }
+
+    /**
      * Create a DSN string from a configuration.
-     *
-     * @param  array $config
+     * @param array $config
      * @return string
      */
     protected function getDsn(array $config)
@@ -250,9 +257,8 @@ class Connection extends BaseConnection
 
     /**
      * Dynamically pass methods to the connection.
-     *
-     * @param  string $method
-     * @param  array $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
