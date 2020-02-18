@@ -2,13 +2,13 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
-use Carbon\Carbon;
 use DateTime;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\Binary;
@@ -89,7 +89,7 @@ abstract class Model extends BaseModel
             $value = parent::asDateTime($value);
         }
 
-        return new UTCDateTime($value->getTimestamp() * 1000);
+        return new UTCDateTime($value->format('Uv'));
     }
 
     /**
@@ -99,7 +99,7 @@ abstract class Model extends BaseModel
     {
         // Convert UTCDateTime instances.
         if ($value instanceof UTCDateTime) {
-            return Carbon::createFromTimestamp($value->toDateTime()->getTimestamp());
+            return Date::createFromTimestampMs($value->toDateTime()->format('Uv'));
         }
 
         return parent::asDateTime($value);
@@ -118,7 +118,7 @@ abstract class Model extends BaseModel
      */
     public function freshTimestamp()
     {
-        return new UTCDateTime(Carbon::now());
+        return new UTCDateTime(Date::now()->format('Uv'));
     }
 
     /**

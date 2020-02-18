@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Query\Builder;
@@ -545,14 +546,14 @@ class QueryBuilderTest extends TestCase
     public function testDates()
     {
         DB::collection('users')->insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(1000 * strtotime("1980-01-01 00:00:00"))],
-            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(1000 * strtotime("1981-01-01 00:00:00"))],
-            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(1000 * strtotime("1982-01-01 00:00:00"))],
-            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(1000 * strtotime("1983-01-01 00:00:00"))],
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(Date::parse("1981-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse("1982-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse("1983-01-01 00:00:00")->format('Uv'))],
         ]);
 
         $user = DB::collection('users')
-            ->where('birthday', new UTCDateTime(1000 * strtotime("1980-01-01 00:00:00")))
+            ->where('birthday', new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv')))
             ->first();
         $this->assertEquals('John Doe', $user['name']);
 
