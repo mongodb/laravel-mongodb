@@ -349,11 +349,11 @@ class QueryTest extends TestCase
         // Check for sample method
         $randomUsers = User::sample(2)->get();
 
-        //Check that has been returned the same number of user that has been requested
+        //Check that has been returned the same number of users that has been requested
         $this->assertEquals(2, $randomUsers->count());
 
-        //Check the user existence
-        foreach ($randomUsers as $randomUser){
+        //Check for the users existence
+        foreach ($randomUsers as $randomUser) {
             $user = User::find($randomUser->id);
             $this->assertNotNull($user);
         }
