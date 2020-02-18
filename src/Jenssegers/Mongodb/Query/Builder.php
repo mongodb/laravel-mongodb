@@ -55,6 +55,12 @@ class Builder extends BaseBuilder
     public $paginating = false;
 
     /**
+     * Indicate the number of random row requested
+     * @var int
+     */
+    public $sample;
+
+    /**
      * All of the available clause operators.
      * @var array
      */
@@ -210,6 +216,17 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * Get a randomize result
+     * @param int $size
+     * @return $this
+     */
+    public function sample($size = 1)
+    {
+        $this->sample['size'] = abs($size);
+        return $this;
+    }
+
+    /**
      * Execute the query as a fresh "select" statement.
      * @param array $columns
      * @return array|static[]|Collection
@@ -232,7 +249,7 @@ class Builder extends BaseBuilder
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
-        if ($this->groups || $this->aggregate) {
+        if ($this->groups || $this->aggregate || isset($this->sample)) {
             $group = [];
             $unwinds = [];
 
@@ -294,7 +311,7 @@ class Builder extends BaseBuilder
                     }
                 }
             }
-            
+
             // The _id field is mandatory when using grouping.
             if ($group && empty($group['_id'])) {
                 $group['_id'] = null;
@@ -327,6 +344,9 @@ class Builder extends BaseBuilder
             }
             if ($this->projections) {
                 $pipeline[] = ['$project' => $this->projections];
+            }
+            if (isset($this->sample)) {
+                $pipeline[] = ['$sample' => $this->sample];
             }
 
             $options = [
@@ -424,6 +444,7 @@ class Builder extends BaseBuilder
             'offset' => $this->offset,
             'limit' => $this->limit,
             'aggregate' => $this->aggregate,
+            'sample' => $this->sample
         ];
 
         return md5(serialize(array_values($key)));

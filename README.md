@@ -405,6 +405,7 @@ $price = Product::max('price');
 $price = Product::min('price');
 $price = Product::avg('price');
 $total = Product::sum('price');
+$random = Product::sample(5);
 ```
 
 Aggregations can be combined with **where**:

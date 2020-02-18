@@ -343,4 +343,19 @@ class QueryTest extends TestCase
         $this->assertEquals(2, Scoped::withoutGlobalScopes()->update(['name' => 'Jimmy']));
         $this->assertCount(2, Scoped::withoutGlobalScopes()->where(['name' => 'Jimmy'])->get());
     }
+
+    public function testSample(): void
+    {
+        // Check for sample method
+        $randomUsers = User::sample(2)->get();
+
+        //Check that has been returned the same number of user that has been requested
+        $this->assertEquals(2, $randomUsers->count());
+
+        //Check the user existence
+        foreach ($randomUsers as $randomUser){
+            $user = User::find($randomUser->id);
+            $this->assertNotNull($user);
+        }
+    }
 }
