@@ -294,7 +294,7 @@ class Builder extends BaseBuilder
                     }
                 }
             }
-            
+
             // The _id field is mandatory when using grouping.
             if ($group && empty($group['_id'])) {
                 $group['_id'] = null;
@@ -930,18 +930,18 @@ class Builder extends BaseBuilder
                 if (is_array($where['value'])) {
                     array_walk_recursive($where['value'], function (&$item, $key) {
                         if ($item instanceof DateTime) {
-                            $item = new UTCDateTime($item->getTimestamp() * 1000);
+                            $item = new UTCDateTime($item->format('Uv'));
                         }
                     });
                 } else {
                     if ($where['value'] instanceof DateTime) {
-                        $where['value'] = new UTCDateTime($where['value']->getTimestamp() * 1000);
+                        $where['value'] = new UTCDateTime($where['value']->format('Uv'));
                     }
                 }
             } elseif (isset($where['values'])) {
                 array_walk_recursive($where['values'], function (&$item, $key) {
                     if ($item instanceof DateTime) {
-                        $item = new UTCDateTime($item->getTimestamp() * 1000);
+                        $item = new UTCDateTime($item->format('Uv'));
                     }
                 });
             }
