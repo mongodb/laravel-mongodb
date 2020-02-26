@@ -21,6 +21,11 @@ return [
             'database' => env('MONGO_DATABASE', 'unittest'),
         ],
 
+        'dsn_mongodb_db' => [
+            'driver' => 'mongodb',
+            'dsn' => "mongodb://$mongoHost:$mongoPort/" . env('MONGO_DATABASE', 'unittest'),
+        ],
+
         'mysql' => [
             'driver' => 'mysql',
             'host' => env('MYSQL_HOST', 'mysql'),
