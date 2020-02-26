@@ -32,6 +32,15 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(\MongoDB\Client::class, $connection->getMongoClient());
     }
 
+    public function testDsnDb()
+    {
+        $connection = DB::connection('dsn_mongodb_db');
+        $this->assertInstanceOf(\MongoDB\Database::class, $connection->getMongoDB());
+
+        $connection = DB::connection('dsn_mongodb_db');
+        $this->assertInstanceOf(\MongoDB\Client::class, $connection->getMongoClient());
+    }
+
     public function testCollection()
     {
         $collection = DB::connection('mongodb')->getCollection('unittest');
