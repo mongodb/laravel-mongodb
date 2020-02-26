@@ -42,7 +42,7 @@ class EmbeddedRelationsTest extends TestCase
         $address->unsetEventDispatcher();
 
         $this->assertNotNull($user->addresses);
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $user->addresses);
+        $this->assertInstanceOf(Collection::class, $user->addresses);
         $this->assertEquals(['London'], $user->addresses->pluck('city')->all());
         $this->assertInstanceOf(DateTime::class, $address->created_at);
         $this->assertInstanceOf(DateTime::class, $address->updated_at);
