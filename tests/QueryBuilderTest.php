@@ -151,7 +151,6 @@ class QueryBuilderTest extends TestCase
         ]);
 
         DB::collection('users')->where('name', 'John Doe')->update(['age' => 100]);
-        $users = DB::collection('users')->get();
 
         $john = DB::collection('users')->where('name', 'John Doe')->first();
         $jane = DB::collection('users')->where('name', 'Jane Doe')->first();

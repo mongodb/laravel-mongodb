@@ -2,8 +2,10 @@
 declare(strict_types=1);
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Jenssegers\Mongodb\Collection;
+use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Eloquent\Model;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -22,7 +24,7 @@ class ModelTest extends TestCase
     {
         $user = new User;
         $this->assertInstanceOf(Model::class, $user);
-        $this->assertInstanceOf(\Jenssegers\Mongodb\Connection::class, $user->getConnection());
+        $this->assertInstanceOf(Connection::class, $user->getConnection());
         $this->assertFalse($user->exists);
         $this->assertEquals('users', $user->getTable());
         $this->assertEquals('_id', $user->getKeyName());
@@ -196,7 +198,7 @@ class ModelTest extends TestCase
 
         $users = User::get();
         $this->assertCount(2, $users);
-        $this->assertInstanceOf(Collection::class, $users);
+        $this->assertInstanceOf(EloquentCollection::class, $users);
         $this->assertInstanceOf(Model::class, $users[0]);
     }
 
@@ -216,7 +218,7 @@ class ModelTest extends TestCase
     public function testNoDocument(): void
     {
         $items = Item::where('name', 'nothing')->get();
-        $this->assertInstanceOf(Collection::class, $items);
+        $this->assertInstanceOf(EloquentCollection::class, $items);
         $this->assertEquals(0, $items->count());
 
         $item = Item::where('name', 'nothing')->first();
@@ -436,11 +438,11 @@ class ModelTest extends TestCase
 
     public function testCarbonDateMockingWorks()
     {
-        $fakeDate = \Carbon\Carbon::createFromDate(2000, 01, 01);
+        $fakeDate = Carbon::createFromDate(2000, 01, 01);
 
         Carbon::setTestNow($fakeDate);
         $item = Item::create(['name' => 'sword']);
-        
+
         $this->assertLessThan(1, $fakeDate->diffInSeconds($item->created_at));
     }
 
@@ -487,24 +489,24 @@ class ModelTest extends TestCase
         User::create(['name' => 'Jane Doe', 'age' => 35]);
         User::create(['name' => 'Harry Hoe', 'age' => 15]);
 
-        $users = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
+        $users = User::raw(function (Collection $collection) {
             return $collection->find(['age' => 35]);
         });
         $this->assertInstanceOf(Collection::class, $users);
         $this->assertInstanceOf(Model::class, $users[0]);
 
-        $user = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
+        $user = User::raw(function (Collection $collection) {
             return $collection->findOne(['age' => 35]);
         });
 
         $this->assertInstanceOf(Model::class, $user);
 
-        $count = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
+        $count = User::raw(function (Collection $collection) {
             return $collection->count();
         });
         $this->assertEquals(3, $count);
 
-        $result = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
+        $result = User::raw(function (Collection $collection) {
             return $collection->insertOne(['name' => 'Yvonne Yoe', 'age' => 35]);
         });
         $this->assertNotNull($result);
@@ -566,7 +568,7 @@ class ModelTest extends TestCase
         User::create(['name' => 'spoon', 'tags' => ['round', 'bowl']]);
 
         $count = 0;
-        User::chunkById(2, function (\Illuminate\Database\Eloquent\Collection $items) use (&$count) {
+        User::chunkById(2, function (EloquentCollection $items) use (&$count) {
             $count += count($items);
         });
 

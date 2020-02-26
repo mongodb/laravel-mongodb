@@ -1,6 +1,7 @@
 <?php
 declare(strict_types=1);
 
+use Carbon\Carbon;
 use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
 
 class QueueTest extends TestCase
@@ -43,7 +44,7 @@ class QueueTest extends TestCase
         $this->assertNotNull($id);
 
         // Expire the test job
-        $expiry = \Carbon\Carbon::now()->subSeconds(Config::get('queue.connections.database.expire'))->getTimestamp();
+        $expiry = Carbon::now()->subSeconds(Config::get('queue.connections.database.expire'))->getTimestamp();
         Queue::getDatabase()
             ->table(Config::get('queue.connections.database.table'))
             ->where('_id', $id)
