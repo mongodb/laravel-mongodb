@@ -33,8 +33,6 @@ class ConnectionTest extends TestCase
     {
         $connection = DB::connection('mongodb');
         $this->assertInstanceOf(Database::class, $connection->getMongoDB());
-
-        $connection = DB::connection('mongodb');
         $this->assertInstanceOf(Client::class, $connection->getMongoClient());
     }
 
