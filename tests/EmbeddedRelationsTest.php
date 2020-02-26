@@ -42,7 +42,7 @@ class EmbeddedRelationsTest extends TestCase
         $address->unsetEventDispatcher();
 
         $this->assertNotNull($user->addresses);
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $user->addresses);
+        $this->assertInstanceOf(Collection::class, $user->addresses);
         $this->assertEquals(['London'], $user->addresses->pluck('city')->all());
         $this->assertInstanceOf(DateTime::class, $address->created_at);
         $this->assertInstanceOf(DateTime::class, $address->updated_at);
@@ -102,29 +102,6 @@ class EmbeddedRelationsTest extends TestCase
         $freshUser = User::find($user->_id);
         $this->assertEquals(['London', 'Manhattan', 'Bruxelles'], $freshUser->addresses->pluck('city')->all());
     }
-
-    // public function testEmbedsManySaveModel()
-    // {
-    //     $user = User::create(['name' => 'John Doe']);
-    //     $address = new Address(['city' => 'London']);
-
-    //     $address->setEventDispatcher($events = Mockery::mock(\Illuminate\Events\Dispatcher::class));
-    //     $events->shouldReceive('until')->once()->with('eloquent.saving: ' . get_class($address), $address)->andReturn(true);
-    //     $events->shouldReceive('until')->once()->with('eloquent.creating: ' . get_class($address), $address)->andReturn(true);
-    //     $events->shouldReceive('dispatch')->once()->with('eloquent.created: ' . get_class($address), $address);
-    //     $events->shouldReceive('dispatch')->once()->with('eloquent.saved: ' . get_class($address), $address);
-
-    //     $address->save();
-
-    //     $address->setEventDispatcher($events = Mockery::mock(\Illuminate\Events\Dispatcher::class));
-    //     $events->shouldReceive('until')->once()->with('eloquent.saving: ' . get_class($address), $address)->andReturn(true);
-    //     $events->shouldReceive('until')->once()->with('eloquent.updating: ' . get_class($address), $address)->andReturn(true);
-    //     $events->shouldReceive('dispatch')->once()->with('eloquent.updated: ' . get_class($address), $address);
-    //     $events->shouldReceive('dispatch')->once()->with('eloquent.saved: ' . get_class($address), $address);
-
-    //     $address->city = 'Paris';
-    //     $address->save();
-    // }
 
     public function testEmbedsToArray()
     {

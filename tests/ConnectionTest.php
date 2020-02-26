@@ -2,13 +2,19 @@
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\DB;
+use Jenssegers\Mongodb\Collection;
+use Jenssegers\Mongodb\Connection;
+use Jenssegers\Mongodb\Query\Builder;
+use Jenssegers\Mongodb\Schema\Builder as SchemaBuilder;
+use MongoDB\Client;
+use MongoDB\Database;
 
 class ConnectionTest extends TestCase
 {
     public function testConnection()
     {
         $connection = DB::connection('mongodb');
-        $this->assertInstanceOf(\Jenssegers\Mongodb\Connection::class, $connection);
+        $this->assertInstanceOf(Connection::class, $connection);
     }
 
     public function testReconnect()
@@ -26,53 +32,28 @@ class ConnectionTest extends TestCase
     public function testDb()
     {
         $connection = DB::connection('mongodb');
-        $this->assertInstanceOf(\MongoDB\Database::class, $connection->getMongoDB());
-
-        $connection = DB::connection('mongodb');
-        $this->assertInstanceOf(\MongoDB\Client::class, $connection->getMongoClient());
+        $this->assertInstanceOf(Database::class, $connection->getMongoDB());
+        $this->assertInstanceOf(Client::class, $connection->getMongoClient());
     }
 
     public function testDsnDb()
     {
         $connection = DB::connection('dsn_mongodb_db');
-        $this->assertInstanceOf(\MongoDB\Database::class, $connection->getMongoDB());
-
-        $connection = DB::connection('dsn_mongodb_db');
-        $this->assertInstanceOf(\MongoDB\Client::class, $connection->getMongoClient());
+        $this->assertInstanceOf(Database::class, $connection->getMongoDB());
+        $this->assertInstanceOf(Client::class, $connection->getMongoClient());
     }
 
     public function testCollection()
     {
         $collection = DB::connection('mongodb')->getCollection('unittest');
-        $this->assertInstanceOf(Jenssegers\Mongodb\Collection::class, $collection);
+        $this->assertInstanceOf(Collection::class, $collection);
 
         $collection = DB::connection('mongodb')->collection('unittests');
-        $this->assertInstanceOf(Jenssegers\Mongodb\Query\Builder::class, $collection);
+        $this->assertInstanceOf(Builder::class, $collection);
 
         $collection = DB::connection('mongodb')->table('unittests');
-        $this->assertInstanceOf(Jenssegers\Mongodb\Query\Builder::class, $collection);
+        $this->assertInstanceOf(Builder::class, $collection);
     }
-
-    // public function testDynamic()
-    // {
-    //     $dbs = DB::connection('mongodb')->listCollections();
-    //     $this->assertIsArray($dbs);
-    // }
-
-    // public function testMultipleConnections()
-    // {
-    //     global $app;
-
-    //     # Add fake host
-    //     $db = $app['config']['database.connections']['mongodb'];
-    //     $db['host'] = array($db['host'], '1.2.3.4');
-
-    //     $connection = new Connection($db);
-    //     $mongoclient = $connection->getMongoClient();
-
-    //     $hosts = $mongoclient->getHosts();
-    //     $this->assertCount(1, $hosts);
-    // }
 
     public function testQueryLog()
     {
@@ -99,7 +80,7 @@ class ConnectionTest extends TestCase
     public function testSchemaBuilder()
     {
         $schema = DB::connection('mongodb')->getSchemaBuilder();
-        $this->assertInstanceOf(\Jenssegers\Mongodb\Schema\Builder::class, $schema);
+        $this->assertInstanceOf(SchemaBuilder::class, $schema);
     }
 
     public function testDriverName()
