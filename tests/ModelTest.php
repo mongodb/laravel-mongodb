@@ -492,7 +492,7 @@ class ModelTest extends TestCase
         $users = User::raw(function (Collection $collection) {
             return $collection->find(['age' => 35]);
         });
-        $this->assertInstanceOf(Collection::class, $users);
+        $this->assertInstanceOf(EloquentCollection::class, $users);
         $this->assertInstanceOf(Model::class, $users[0]);
 
         $user = User::raw(function (Collection $collection) {
