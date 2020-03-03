@@ -128,7 +128,7 @@ class Connection extends BaseConnection
     protected function getDefaultDatabaseName($dsn, $config)
     {
         if (empty($config['database'])) {
-            if (preg_match('/^mongodb:\\/\\/.+\\/([^?&]+)/s', $dsn, $matches)) {
+            if (preg_match('/^mongodb(?:[+]srv)?:\\/\\/.+\\/([^?&]+)/s', $dsn, $matches)) {
                 $config['database'] = $matches[1];
             } else {
                 throw new InvalidArgumentException("Database is not properly configured.");
