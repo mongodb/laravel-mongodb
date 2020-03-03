@@ -265,7 +265,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * @inheritdoc
      */
-    protected function newPivotQuery()
+    public function newPivotQuery()
     {
         return $this->newRelatedQuery();
     }
