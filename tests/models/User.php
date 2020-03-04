@@ -67,16 +67,6 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->morphMany('Photo', 'imageable');
     }
 
-    public function addresses()
-    {
-        return $this->embedsMany('Address');
-    }
-
-    public function father()
-    {
-        return $this->embedsOne('User');
-    }
-
     public function getDateFormat()
     {
         return 'l jS \of F Y h:i:s A';

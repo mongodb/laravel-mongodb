@@ -639,27 +639,6 @@ class QueryBuilderTest extends TestCase
 
         $results = DB::collection('users')->where('name', 'not regexp', '/.*doe/i')->get();
         $this->assertCount(1, $results);
-
-        DB::collection('users')->insert([
-            [
-                'name' => 'John Doe',
-                'addresses' => [
-                    ['city' => 'Ghent'],
-                    ['city' => 'Paris'],
-                ],
-            ],
-            [
-                'name' => 'Jane Doe',
-                'addresses' => [
-                    ['city' => 'Brussels'],
-                    ['city' => 'Paris'],
-                ],
-            ],
-        ]);
-
-        $users = DB::collection('users')->where('addresses', 'elemMatch', ['city' => 'Brussels'])->get();
-        $this->assertCount(1, $users);
-        $this->assertEquals('Jane Doe', $users[0]['name']);
     }
 
     public function testIncrement()

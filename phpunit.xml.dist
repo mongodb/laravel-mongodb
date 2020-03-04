@@ -31,7 +31,6 @@
         </testsuite>
         <testsuite name="relations">
             <file>tests/RelationsTest.php</file>
-            <file>tests/EmbeddedRelationsTest.php</file>
         </testsuite>
         <testsuite name="mysqlrelations">
             <file>tests/RelationsTest.php</file>
