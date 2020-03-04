@@ -7,5 +7,4 @@ class Address extends Eloquent
 {
     protected $connection = 'mongodb';
     protected static $unguarded = true;
-
 }

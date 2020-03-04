@@ -639,7 +639,6 @@ class QueryBuilderTest extends TestCase
 
         $results = DB::collection('users')->where('name', 'not regexp', '/.*doe/i')->get();
         $this->assertCount(1, $results);
-
     }
 
     public function testIncrement()
