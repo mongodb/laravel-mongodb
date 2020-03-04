@@ -30,8 +30,6 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
   - [Relationships](#relationships)
     - [Basic Usage](#basic-usage-1)
     - [belongsToMany and pivots](#belongstomany-and-pivots)
-    - [EmbedsMany Relationship](#embedsmany-relationship)
-    - [EmbedsOne Relationship](#embedsone-relationship)
   - [Query Builder](#query-builder)
     - [Basic Usage](#basic-usage-2)
     - [Available operations](#available-operations)
@@ -419,7 +417,7 @@ Aggregations can be also used on sub-documents:
 $total = Order::max('suborder.price');
 ```
 
-**NOTE**: This aggregation only works with single sub-documents (like `EmbedsOne`) not subdocument arrays (like `EmbedsMany`).
+**NOTE**: This aggregation only works with single sub-documents not arrays.
 
 **Incrementing/Decrementing the value of a column**
 
@@ -712,10 +710,6 @@ The only available relationships are:
  - belongsTo
  - belongsToMany
 
-The MongoDB-specific relationships are:
- - embedsOne
- - embedsMany
-
 Here is a small example:
 
 ```php
@@ -762,152 +756,6 @@ class User extends Model
         );
     }
 }
-```
-
-### EmbedsMany Relationship
-
-If you want to embed models, rather than referencing them, you can use the `embedsMany` relation. This relation is similar to the `hasMany` relation but embeds the models inside the parent object.
-
-**REMEMBER**: These relations return Eloquent collections, they don't return query builder objects!
-
-```php
-use Jenssegers\Mongodb\Eloquent\Model;
-
-class User extends Model
-{
-    public function books()
-    {
-        return $this->embedsMany(Book::class);
-    }
-}
-```
-
-You can access the embedded models through the dynamic property:
-
-```php
-$user = User::first();
-
-foreach ($user->books as $book) {
-    //
-}
-```
-
-The inverse relation is auto*magically* available. You don't need to define this reverse relation.
-
-```php
-$book = Book::first();
-
-$user = $book->user;
-```
-
-Inserting and updating embedded models works similar to the `hasMany` relation:
-
-```php
-$book = $user->books()->save(
-    new Book(['title' => 'A Game of Thrones'])
-);
-
-// or
-$book =
-    $user->books()
-         ->create(['title' => 'A Game of Thrones']);
-```
-
-You can update embedded models using their `save` method (available since release 2.0.0):
-
-```php
-$book = $user->books()->first();
-
-$book->title = 'A Game of Thrones';
-$book->save();
-```
-
-You can remove an embedded model by using the `destroy` method on the relation, or the `delete` method on the model (available since release 2.0.0):
-
-```php
-$book->delete();
-
-// Similar operation
-$user->books()->destroy($book);
-```
-
-If you want to add or remove an embedded model, without touching the database, you can use the `associate` and `dissociate` methods.
-
-To eventually write the changes to the database, save the parent object:
-
-```php
-$user->books()->associate($book);
-$user->save();
-```
-
-Like other relations, embedsMany assumes the local key of the relationship based on the model name. You can override the default local key by passing a second argument to the embedsMany method:
-
-```php
-use Jenssegers\Mongodb\Eloquent\Model;
-
-class User extends Model
-{
-    public function books()
-    {
-        return $this->embedsMany(Book::class, 'local_key');
-    }
-}
-```
-
-Embedded relations will return a Collection of embedded items instead of a query builder. Check out the available operations here: https://laravel.com/docs/master/collections
-
-
-### EmbedsOne Relationship
-
-The embedsOne relation is similar to the embedsMany relation, but only embeds a single model.
-
-```php
-use Jenssegers\Mongodb\Eloquent\Model;
-
-class Book extends Model
-{
-    public function author()
-    {
-        return $this->embedsOne(Author::class);
-    }
-}
-```
-
-You can access the embedded models through the dynamic property:
-
-```php
-$book = Book::first();
-$author = $book->author;
-```
-
-Inserting and updating embedded models works similar to the `hasOne` relation:
-
-```php
-$author = $book->author()->save(
-    new Author(['name' => 'John Doe'])
-);
-
-// Similar
-$author =
-    $book->author()
-         ->create(['name' => 'John Doe']);
-```
-
-You can update the embedded model using the `save` method (available since release 2.0.0):
-
-```php
-$author = $book->author;
-
-$author->name = 'Jane Doe';
-$author->save();
-```
-
-You can replace the embedded model with a new model like this:
-
-```php
-$newAuthor = new Author(['name' => 'Jane Doe']);
-
-$book->author()->save($newAuthor);
 ```
 
 Query Builder
@@ -1098,39 +946,10 @@ Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
 Upgrading
 ---------
 
-#### Upgrading from version 2 to 3
+#### Upgrading from version 3 to 4
 
-In this new major release which supports the new MongoDB PHP extension, we also moved the location of the Model class and replaced the MySQL model class with a trait.
+This new major release contains breaking changes which is listed below:
 
-Please change all `Jenssegers\Mongodb\Model` references to `Jenssegers\Mongodb\Eloquent\Model` either at the top of your model files or your registered alias.
+- EmbedsOne and EmbedsMany relations has been removed completely. See explanation [here](https://github.com/jenssegers/laravel-mongodb/issues/1974#issuecomment-592859508)
 
-```php
-use Jenssegers\Mongodb\Eloquent\Model;
-
-class User extends Model
-{
-    //
-}
-```
-
-If you are using hybrid relations, your MySQL classes should now extend the original Eloquent model class `Illuminate\Database\Eloquent\Model` instead of the removed `Jenssegers\Eloquent\Model`.
-
-Instead use the new `Jenssegers\Mongodb\Eloquent\HybridRelations` trait. This should make things more clear as there is only one single model class in this package.
-
-```php
-use Jenssegers\Mongodb\Eloquent\HybridRelations;
-
-class User extends Model
-{
-
-    use HybridRelations;
-
-    protected $connection = 'mysql';
-}
-```
-
-Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rather than a custom Collection class. If you were using one of the special methods that were available, convert them to Collection operations.
-
-```php
-$books = $user->books()->sortBy('title')->get();
-```
+For any other minor changes, please take a look at our [changelog](CHANGELOG.md)

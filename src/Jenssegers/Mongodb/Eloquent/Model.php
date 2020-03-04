@@ -17,7 +17,7 @@ use MongoDB\BSON\UTCDateTime;
 
 abstract class Model extends BaseModel
 {
-    use HybridRelations, EmbedsRelations;
+    use HybridRelations;
 
     /**
      * The collection associated with the model.
@@ -141,11 +141,6 @@ abstract class Model extends BaseModel
         // Dot notation support.
         if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
             return $this->getAttributeValue($key);
-        }
-
-        // This checks for embedded relation support.
-        if (method_exists($this, $key) && !method_exists(self::class, $key)) {
-            return $this->getRelationValue($key);
         }
 
         return parent::getAttribute($key);
