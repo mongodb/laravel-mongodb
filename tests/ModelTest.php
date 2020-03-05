@@ -397,24 +397,13 @@ class ModelTest extends TestCase
         $user = User::where('birthday', '>', new DateTime('1975/1/1'))->first();
         $this->assertEquals('John Doe', $user->name);
 
-        // test custom date format for json output
-        $json = $user->toArray();
-        $this->assertEquals($user->birthday->format('l jS \of F Y h:i:s A'), $json['birthday']);
-        $this->assertEquals($user->created_at->format('l jS \of F Y h:i:s A'), $json['created_at']);
-
         // test created_at
         $item = Item::create(['name' => 'sword']);
-        $this->assertInstanceOf(UTCDateTime::class, $item->getOriginal('created_at'));
-        $this->assertEquals($item->getOriginal('created_at')
+        $this->assertInstanceOf(UTCDateTime::class, $item->getRawOriginal('created_at'));
+        $this->assertEquals($item->getRawOriginal('created_at')
             ->toDateTime()
             ->getTimestamp(), $item->created_at->getTimestamp());
         $this->assertLessThan(2, abs(time() - $item->created_at->getTimestamp()));
-
-        // test default date format for json output
-        /** @var Item $item */
-        $item = Item::create(['name' => 'sword']);
-        $json = $item->toArray();
-        $this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
 
         /** @var User $user */
         $user = User::create(['name' => 'Jane Doe', 'birthday' => time()]);
