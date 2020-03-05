@@ -30,7 +30,6 @@
         "orchestra/testbench": "^3.1|^4.0",
         "mockery/mockery": "^1.0",
         "doctrine/dbal": "^2.5",
-        "phpunit/phpcov": "^6.0",
         "cedx/coveralls": "^11.2"
     },
     "autoload": {
