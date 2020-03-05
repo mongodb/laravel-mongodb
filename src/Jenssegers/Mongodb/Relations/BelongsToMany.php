@@ -21,7 +21,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
@@ -29,7 +29,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function hydratePivotRelation(array $models)
     {
@@ -47,7 +47,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function shouldSelect(array $columns = ['*'])
     {
@@ -55,7 +55,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function addConstraints()
     {
@@ -78,7 +78,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function save(Model $model, array $joining = [], $touch = true)
     {
@@ -90,7 +90,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function create(array $attributes = [], array $joining = [], $touch = true)
     {
@@ -107,7 +107,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function sync($ids, $detaching = true)
     {
@@ -167,7 +167,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
@@ -175,7 +175,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function attach($id, array $attributes = [], $touch = true)
     {
@@ -208,7 +208,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function detach($ids = [], $touch = true)
     {
@@ -242,7 +242,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function buildDictionary(Collection $results)
     {
@@ -263,7 +263,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function newPivotQuery()
     {
@@ -289,7 +289,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getQualifiedForeignPivotKeyName()
     {
@@ -297,7 +297,7 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getQualifiedRelatedPivotKeyName()
     {
@@ -306,7 +306,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /**
      * Format the sync list so that it is keyed by ID. (Legacy Support)
-     * The original function has been renamed to formatRecordsList since Laravel 5.3
+     * The original function has been renamed to formatRecordsList since Laravel 5.3.
      * @param array $records
      * @return array
      * @deprecated
@@ -315,11 +315,12 @@ class BelongsToMany extends EloquentBelongsToMany
     {
         $results = [];
         foreach ($records as $id => $attributes) {
-            if (!is_array($attributes)) {
-                list($id, $attributes) = [$attributes, []];
+            if (! is_array($attributes)) {
+                [$id, $attributes] = [$attributes, []];
             }
             $results[$id] = $attributes;
         }
+
         return $results;
     }
 

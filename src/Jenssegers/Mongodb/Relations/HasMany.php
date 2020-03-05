@@ -36,7 +36,7 @@ class HasMany extends EloquentHasMany
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {

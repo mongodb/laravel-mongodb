@@ -52,7 +52,7 @@ abstract class Model extends BaseModel
     {
         // If we don't have a value for 'id', we will use the Mongo '_id' value.
         // This allows us to work with models in a more sql-like way.
-        if (!$value && array_key_exists('_id', $this->attributes)) {
+        if (! $value && array_key_exists('_id', $this->attributes)) {
             $value = $this->attributes['_id'];
         }
 
@@ -67,7 +67,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getQualifiedKeyName()
     {
@@ -75,7 +75,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function fromDateTime($value)
     {
@@ -85,7 +85,7 @@ abstract class Model extends BaseModel
         }
 
         // Let Eloquent convert the value to a DateTime instance.
-        if (!$value instanceof DateTime) {
+        if (! $value instanceof DateTime) {
             $value = parent::asDateTime($value);
         }
 
@@ -93,7 +93,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function asDateTime($value)
     {
@@ -106,7 +106,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDateFormat()
     {
@@ -114,7 +114,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function freshTimestamp()
     {
@@ -122,7 +122,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getTable()
     {
@@ -130,11 +130,11 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getAttribute($key)
     {
-        if (!$key) {
+        if (! $key) {
             return;
         }
 
@@ -147,7 +147,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getAttributeFromArray($key)
     {
@@ -160,7 +160,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function setAttribute($key, $value)
     {
@@ -184,7 +184,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function attributesToArray()
     {
@@ -213,7 +213,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getCasts()
     {
@@ -221,11 +221,11 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function originalIsEquivalent($key, $current)
     {
-        if (!array_key_exists($key, $this->original)) {
+        if (! array_key_exists($key, $this->original)) {
             return false;
         }
 
@@ -274,7 +274,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function push()
     {
@@ -282,9 +282,9 @@ abstract class Model extends BaseModel
             $unique = false;
 
             if (count($parameters) === 3) {
-                list($column, $values, $unique) = $parameters;
+                [$column, $values, $unique] = $parameters;
             } else {
-                list($column, $values) = $parameters;
+                [$column, $values] = $parameters;
             }
 
             // Do batch push by default.
@@ -330,7 +330,7 @@ abstract class Model extends BaseModel
 
         foreach ($values as $value) {
             // Don't add duplicate values when we only want unique values.
-            if ($unique && (!is_array($current) || in_array($value, $current))) {
+            if ($unique && (! is_array($current) || in_array($value, $current))) {
                 continue;
             }
 
@@ -367,11 +367,11 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getForeignKey()
     {
-        return Str::snake(class_basename($this)) . '_' . ltrim($this->primaryKey, '_');
+        return Str::snake(class_basename($this)).'_'.ltrim($this->primaryKey, '_');
     }
 
     /**
@@ -393,7 +393,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function newEloquentBuilder($query)
     {
@@ -401,7 +401,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function newBaseQueryBuilder()
     {
@@ -411,7 +411,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function removeTableFromKey($key)
     {
@@ -433,13 +433,13 @@ abstract class Model extends BaseModel
 
             if ($relation instanceof QueueableCollection) {
                 foreach ($relation->getQueueableRelations() as $collectionValue) {
-                    $relations[] = $key . '.' . $collectionValue;
+                    $relations[] = $key.'.'.$collectionValue;
                 }
             }
 
             if ($relation instanceof QueueableEntity) {
                 foreach ($relation->getQueueableRelations() as $entityKey => $entityValue) {
-                    $relations[] = $key . '.' . $entityValue;
+                    $relations[] = $key.'.'.$entityValue;
                 }
             }
         }
@@ -463,7 +463,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __call($method, $parameters)
     {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Illuminate\Support\Facades\Date;
@@ -545,22 +546,22 @@ class QueryBuilderTest extends TestCase
     public function testDates()
     {
         DB::collection('users')->insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv'))],
-            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(Date::parse("1981-01-01 00:00:00")->format('Uv'))],
-            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse("1982-01-01 00:00:00")->format('Uv'))],
-            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse("1983-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse('1980-01-01 00:00:00')->format('Uv'))],
+            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(Date::parse('1981-01-01 00:00:00')->format('Uv'))],
+            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse('1982-01-01 00:00:00')->format('Uv'))],
+            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse('1983-01-01 00:00:00')->format('Uv'))],
         ]);
 
         $user = DB::collection('users')
-            ->where('birthday', new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv')))
+            ->where('birthday', new UTCDateTime(Date::parse('1980-01-01 00:00:00')->format('Uv')))
             ->first();
         $this->assertEquals('John Doe', $user['name']);
 
-        $user = DB::collection('users')->where('birthday', '=', new DateTime("1980-01-01 00:00:00"))->first();
+        $user = DB::collection('users')->where('birthday', '=', new DateTime('1980-01-01 00:00:00'))->first();
         $this->assertEquals('John Doe', $user['name']);
 
-        $start = new UTCDateTime(1000 * strtotime("1981-01-01 00:00:00"));
-        $stop = new UTCDateTime(1000 * strtotime("1982-01-01 00:00:00"));
+        $start = new UTCDateTime(1000 * strtotime('1981-01-01 00:00:00'));
+        $stop = new UTCDateTime(1000 * strtotime('1982-01-01 00:00:00'));
 
         $users = DB::collection('users')->whereBetween('birthday', [$start, $stop])->get();
         $this->assertCount(2, $users);
@@ -623,11 +624,11 @@ class QueryBuilderTest extends TestCase
         $results = DB::collection('items')->where('tags', 'size', 4)->get();
         $this->assertCount(1, $results);
 
-        $regex = new Regex(".*doe", "i");
+        $regex = new Regex('.*doe', 'i');
         $results = DB::collection('users')->where('name', 'regex', $regex)->get();
         $this->assertCount(2, $results);
 
-        $regex = new Regex(".*doe", "i");
+        $regex = new Regex('.*doe', 'i');
         $results = DB::collection('users')->where('name', 'regexp', $regex)->get();
         $this->assertCount(2, $results);
 

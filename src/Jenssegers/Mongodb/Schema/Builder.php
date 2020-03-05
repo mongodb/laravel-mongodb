@@ -8,7 +8,7 @@ use Jenssegers\Mongodb\Connection;
 class Builder extends \Illuminate\Database\Schema\Builder
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __construct(Connection $connection)
     {
@@ -16,7 +16,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function hasColumn($table, $column)
     {
@@ -24,7 +24,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function hasColumns($table, array $columns)
     {
@@ -50,7 +50,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function hasTable($collection)
     {
@@ -73,7 +73,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function table($collection, Closure $callback)
     {
@@ -81,7 +81,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function create($collection, Closure $callback = null, array $options = [])
     {
@@ -95,7 +95,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function dropIfExists($collection)
     {
@@ -107,7 +107,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function drop($collection)
     {
@@ -117,7 +117,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function dropAllTables()
     {
@@ -127,7 +127,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function createBlueprint($collection, Closure $callback = null)
     {

@@ -40,7 +40,7 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
     public function getMultiCount($collection, $column, array $values, array $extra = [])
     {
         // Generates a regex like '/(a|b|c)/i' which can query multiple values
-        $regex = '/(' . implode('|', $values) . ')/i';
+        $regex = '/('.implode('|', $values).')/i';
 
         $query = $this->table($collection)->where($column, 'regex', $regex);
 

@@ -36,7 +36,7 @@ class HasOne extends EloquentHasOne
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {

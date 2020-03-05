@@ -23,7 +23,7 @@ return [
 
         'dsn_mongodb_db' => [
             'driver' => 'mongodb',
-            'dsn' => "mongodb://$mongoHost:$mongoPort/" . env('MONGO_DATABASE', 'unittest'),
+            'dsn' => "mongodb://$mongoHost:$mongoPort/".env('MONGO_DATABASE', 'unittest'),
         ],
 
         'mysql' => [

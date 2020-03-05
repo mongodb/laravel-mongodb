@@ -11,7 +11,7 @@ use MongoDB\BSON\UTCDateTime;
 class DatabaseTokenRepository extends BaseDatabaseTokenRepository
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getPayload($email, $token)
     {
@@ -23,7 +23,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function tokenExpired($createdAt)
     {
@@ -33,7 +33,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function tokenRecentlyCreated($createdAt)
     {

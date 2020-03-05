@@ -85,7 +85,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getSchemaBuilder()
     {
@@ -119,7 +119,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Get the name of the default database based on db config or try to detect it from dsn
+     * Get the name of the default database based on db config or try to detect it from dsn.
      * @param string $dsn
      * @param array $config
      * @return string
@@ -131,7 +131,7 @@ class Connection extends BaseConnection
             if (preg_match('/^mongodb(?:[+]srv)?:\\/\\/.+\\/([^?&]+)/s', $dsn, $matches)) {
                 $config['database'] = $matches[1];
             } else {
-                throw new InvalidArgumentException("Database is not properly configured.");
+                throw new InvalidArgumentException('Database is not properly configured.');
             }
         }
 
@@ -155,10 +155,10 @@ class Connection extends BaseConnection
         }
 
         // Check if the credentials are not already set in the options
-        if (!isset($options['username']) && !empty($config['username'])) {
+        if (! isset($options['username']) && ! empty($config['username'])) {
             $options['username'] = $config['username'];
         }
-        if (!isset($options['password']) && !empty($config['password'])) {
+        if (! isset($options['password']) && ! empty($config['password'])) {
             $options['password'] = $config['password'];
         }
 
@@ -166,7 +166,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function disconnect()
     {
@@ -180,7 +180,7 @@ class Connection extends BaseConnection
      */
     protected function hasDsnString(array $config)
     {
-        return isset($config['dsn']) && !empty($config['dsn']);
+        return isset($config['dsn']) && ! empty($config['dsn']);
     }
 
     /**
@@ -205,14 +205,15 @@ class Connection extends BaseConnection
 
         foreach ($hosts as &$host) {
             // Check if we need to add a port to the host
-            if (strpos($host, ':') === false && !empty($config['port'])) {
-                $host = $host . ':' . $config['port'];
+            if (strpos($host, ':') === false && ! empty($config['port'])) {
+                $host = $host.':'.$config['port'];
             }
         }
 
         // Check if we want to authenticate against a specific database.
-        $auth_database = isset($config['options']) && !empty($config['options']['database']) ? $config['options']['database'] : null;
-        return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
+        $auth_database = isset($config['options']) && ! empty($config['options']['database']) ? $config['options']['database'] : null;
+
+        return 'mongodb://'.implode(',', $hosts).($auth_database ? '/'.$auth_database : '');
     }
 
     /**
@@ -228,7 +229,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getElapsedTime($start)
     {
@@ -236,7 +237,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function getDriverName()
     {
@@ -244,7 +245,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getDefaultPostProcessor()
     {
@@ -252,7 +253,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getDefaultQueryGrammar()
     {
@@ -260,7 +261,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function getDefaultSchemaGrammar()
     {
