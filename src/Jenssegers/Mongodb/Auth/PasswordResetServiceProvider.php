@@ -29,7 +29,7 @@ class PasswordResetServiceProvider extends BasePasswordResetServiceProvider
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function registerPasswordBroker()
     {

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,7 +29,7 @@ class MysqlBook extends Eloquent
         /** @var \Illuminate\Database\Schema\MySqlBuilder $schema */
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('books')) {
+        if (! $schema->hasTable('books')) {
             Schema::connection('mysql')->create('books', function (Blueprint $table) {
                 $table->string('title');
                 $table->string('author_id')->nullable();

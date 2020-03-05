@@ -2,14 +2,14 @@
 
 namespace Jenssegers\Mongodb;
 
-use Illuminate\Support\Facades\DB;
 use Illuminate\Queue\QueueServiceProvider;
+use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
 
 class MongodbQueueServiceProvider extends QueueServiceProvider
 {
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     protected function registerFailedJobServices()
     {
