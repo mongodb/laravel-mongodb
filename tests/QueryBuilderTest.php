@@ -175,8 +175,10 @@ class QueryBuilderTest extends TestCase
     public function testTruncate()
     {
         DB::collection('users')->insert(['name' => 'John Doe']);
+        DB::collection('users')->insert(['name' => 'John Doe']);
+        $this->assertEquals(2, DB::collection('users')->count());
         $result = DB::collection('users')->truncate();
-        $this->assertEquals(1, $result);
+        $this->assertTrue($result);
         $this->assertEquals(0, DB::collection('users')->count());
     }
 

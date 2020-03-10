@@ -20,7 +20,7 @@ class Builder extends BaseBuilder
 {
     /**
      * The database collection.
-     * @var MongoCollection
+     * @var \MongoDB\Collection
      */
     protected $collection;
 
@@ -697,16 +697,13 @@ class Builder extends BaseBuilder
 
     /**
      * @inheritdoc
+     * @return boolean
      */
-    public function truncate()
+    public function truncate(): bool
     {
-        $options = [
-            'typeMap' => ['root' => 'object', 'document' => 'object'],
-        ];
+        $result = $this->collection->deleteMany([]);
 
-        $result = $this->collection->drop($options);
-
-        return (1 == (int) $result->ok);
+        return (1 === (int)$result->isAcknowledged());
     }
 
     /**
