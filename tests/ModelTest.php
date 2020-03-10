@@ -405,6 +405,12 @@ class ModelTest extends TestCase
             ->getTimestamp(), $item->created_at->getTimestamp());
         $this->assertLessThan(2, abs(time() - $item->created_at->getTimestamp()));
 
+        // test default date format for json output
+        /** @var Item $item */
+        $item = Item::create(['name' => 'sword']);
+        $json = $item->toArray();
+        $this->assertEquals($item->created_at->format('Y-m-d\TH:i:s.u\Z'), $json['created_at']);
+
         /** @var User $user */
         $user = User::create(['name' => 'Jane Doe', 'birthday' => time()]);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
