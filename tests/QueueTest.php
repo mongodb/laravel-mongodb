@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
 
 class QueueTest extends TestCase
@@ -18,6 +19,12 @@ class QueueTest extends TestCase
 
     public function testQueueJobLifeCycle(): void
     {
+        $uuid = Str::uuid();
+
+        Str::createUuidsUsing(function () use ($uuid) {
+            return $uuid;
+        });
+
         $id = Queue::push('test', ['action' => 'QueueJobLifeCycle'], 'test');
         $this->assertNotNull($id);
 
@@ -26,9 +33,11 @@ class QueueTest extends TestCase
         $this->assertInstanceOf(Jenssegers\Mongodb\Queue\MongoJob::class, $job);
         $this->assertEquals(1, $job->isReserved());
         $this->assertEquals(json_encode([
+            'uuid' => $uuid,
             'displayName' => 'test',
             'job' => 'test',
             'maxTries' => null,
+            'maxExceptions' => null,
             'delay' => null,
             'timeout' => null,
             'data' => ['action' => 'QueueJobLifeCycle'],
@@ -37,6 +46,8 @@ class QueueTest extends TestCase
         // Remove reserved job
         $job->delete();
         $this->assertEquals(0, Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->count());
+
+        Str::createUuidsNormally();
     }
 
     public function testQueueJobExpired(): void
