@@ -138,11 +138,6 @@ abstract class Model extends BaseModel
             return;
         }
 
-        // Dot notation support.
-        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
-            return $this->getAttributeValue($key);
-        }
-
         return parent::getAttribute($key);
     }
 
@@ -151,11 +146,6 @@ abstract class Model extends BaseModel
      */
     protected function getAttributeFromArray($key)
     {
-        // Support keys in dot notation.
-        if (Str::contains($key, '.')) {
-            return Arr::get($this->attributes, $key);
-        }
-
         return parent::getAttributeFromArray($key);
     }
 
@@ -169,15 +159,6 @@ abstract class Model extends BaseModel
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
-        } // Support keys in dot notation.
-        elseif (Str::contains($key, '.')) {
-            if (in_array($key, $this->getDates()) && $value) {
-                $value = $this->fromDateTime($value);
-            }
-
-            Arr::set($this->attributes, $key, $value);
-
-            return;
         }
 
         return parent::setAttribute($key, $value);
@@ -199,13 +180,6 @@ abstract class Model extends BaseModel
                 $value = (string) $value;
             } elseif ($value instanceof Binary) {
                 $value = (string) $value->getData();
-            }
-        }
-
-        // Convert dot-notation dates.
-        foreach ($this->getDates() as $key) {
-            if (Str::contains($key, '.') && Arr::has($attributes, $key)) {
-                Arr::set($attributes, $key, (string) $this->asDateTime(Arr::get($attributes, $key)));
             }
         }
 

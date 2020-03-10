@@ -457,32 +457,6 @@ class RelationsTest extends TestCase
         $this->assertCount(2, $users);
     }
 
-    public function testNestedKeys(): void
-    {
-        $client = Client::create([
-            'data' => [
-                'client_id' => 35298,
-                'name' => 'John Doe',
-            ],
-        ]);
-
-        $client->addresses()->create([
-            'data' => [
-                'address_id' => 1432,
-                'city' => 'Paris',
-            ],
-        ]);
-
-        $client = Client::where('data.client_id', 35298)->first();
-        $this->assertEquals(1, $client->addresses->count());
-
-        $address = $client->addresses->first();
-        $this->assertEquals('Paris', $address->data['city']);
-
-        $client = Client::with('addresses')->first();
-        $this->assertEquals('Paris', $client->addresses->first()->data['city']);
-    }
-
     public function testDoubleSaveOneToMany(): void
     {
         $author = User::create(['name' => 'George R. R. Martin']);

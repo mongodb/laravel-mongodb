@@ -22,9 +22,4 @@ class Client extends Eloquent
     {
         return $this->morphOne('Photo', 'imageable');
     }
-
-    public function addresses(): HasMany
-    {
-        return $this->hasMany('Address', 'data.client_id', 'data.client_id');
-    }
 }

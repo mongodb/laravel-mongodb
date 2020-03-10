@@ -420,16 +420,6 @@ class ModelTest extends TestCase
 
         $user = User::create(['name' => 'Jane Doe', 'birthday' => '2005-08-08']);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
-
-        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => '2005-08-08']]);
-        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
-
-        $user->setAttribute('entry.date', new DateTime);
-        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
-
-        $data = $user->toArray();
-        $this->assertNotInstanceOf(UTCDateTime::class, $data['entry']['date']);
-        $this->assertEquals((string) $user->getAttribute('entry.date')->format('Y-m-d H:i:s'), $data['entry']['date']);
     }
 
     public function testCarbonDateMockingWorks()
@@ -506,45 +496,6 @@ class ModelTest extends TestCase
             return $collection->insertOne(['name' => 'Yvonne Yoe', 'age' => 35]);
         });
         $this->assertNotNull($result);
-    }
-
-    public function testDotNotation(): void
-    {
-        $user = User::create([
-            'name' => 'John Doe',
-            'address' => [
-                'city' => 'Paris',
-                'country' => 'France',
-            ],
-        ]);
-
-        $this->assertEquals('Paris', $user->getAttribute('address.city'));
-        $this->assertEquals('Paris', $user['address.city']);
-        $this->assertEquals('Paris', $user->{'address.city'});
-
-        // Fill
-        $user->fill([
-            'address.city' => 'Strasbourg',
-        ]);
-
-        $this->assertEquals('Strasbourg', $user['address.city']);
-    }
-
-    public function testMultipleLevelDotNotation(): void
-    {
-        /** @var Book $book */
-        $book = Book::create([
-            'title' => 'A Game of Thrones',
-            'chapters' => [
-                'one' => [
-                    'title' => 'The first chapter',
-                ],
-            ],
-        ]);
-
-        $this->assertEquals(['one' => ['title' => 'The first chapter']], $book->chapters);
-        $this->assertEquals(['title' => 'The first chapter'], $book['chapters.one']);
-        $this->assertEquals('The first chapter', $book['chapters.one.title']);
     }
 
     public function testGetDirtyDates(): void

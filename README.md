@@ -952,5 +952,6 @@ Upgrading
 This new major release contains breaking changes which is listed below:
 
 - EmbedsOne and EmbedsMany relations has been removed completely. See explanation [here](https://github.com/jenssegers/laravel-mongodb/issues/1974#issuecomment-592859508)
+- Dot notation support for keys has been removed completely. See explanation [here](https://github.com/jenssegers/laravel-mongodb/issues/1974#issuecomment-593113728)
 
 For any other minor changes, please take a look at our [changelog](CHANGELOG.md)

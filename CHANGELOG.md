@@ -12,3 +12,4 @@ All notable changes to this project will be documented in this file.
 ### Removed
 - EmbedsOne and EmbedsMany relations by [@divine](https://github.com/divine).
 - shouldUseCollections function by [@divine](https://github.com/divine).
+- Dot notation support in keys by [@divine](https://github.com/divine).
