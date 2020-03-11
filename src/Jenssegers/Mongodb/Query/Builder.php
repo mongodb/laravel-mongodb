@@ -382,7 +382,7 @@ class Builder extends BaseBuilder
                 $options['skip'] = $this->offset;
             }
             if ($this->limit) {
-                $options['limit'] = $this->limit;
+                $options['limit'] = (int) $this->limit;
             }
             if ($this->hint) {
                 $options['hint'] = $this->hint;

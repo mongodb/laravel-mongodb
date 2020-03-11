@@ -327,6 +327,20 @@ class QueryTest extends TestCase
         $this->assertEquals(1, $results->currentPage());
     }
 
+    public function testThatPaginateCastsPerPageParameter()
+    {
+        $results = User::paginate('2');
+        $this->assertEquals(2, $results->count());
+        $this->assertNotNull($results->first()->title);
+        $this->assertEquals(9, $results->total());
+
+        $results = User::paginate('2', ['name', 'age']);
+        $this->assertEquals(2, $results->count());
+        $this->assertNull($results->first()->title);
+        $this->assertEquals(9, $results->total());
+        $this->assertEquals(1, $results->currentPage());
+    }
+
     public function testUpdate(): void
     {
         $this->assertEquals(1, User::where(['name' => 'John Doe'])->update(['name' => 'Jim Morrison']));
