@@ -697,13 +697,12 @@ class Builder extends BaseBuilder
 
     /**
      * @inheritdoc
-     * @return boolean
      */
     public function truncate(): bool
     {
         $result = $this->collection->deleteMany([]);
 
-        return (1 === (int)$result->isAcknowledged());
+        return (1 === (int) $result->isAcknowledged());
     }
 
     /**
