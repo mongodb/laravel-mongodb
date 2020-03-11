@@ -29,6 +29,17 @@ class EmbedsOne extends EmbedsOneOrMany
     }
 
     /**
+     * @inheritdoc
+     */
+    public function getEager()
+    {
+        $eager = $this->get();
+
+        // EmbedsOne only brings one result, Eager needs a collection!
+        return $this->toCollection([$eager]);
+    }
+
+    /**
      * Save a new model and attach it to the parent model.
      * @param Model $model
      * @return Model|bool
