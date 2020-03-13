@@ -614,6 +614,36 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertNull($user->father);
     }
 
+    public function testEmbedsOneRefresh()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $father = new User(['name' => 'Mark Doe']);
+
+        $user->father()->associate($father);
+        $user->save();
+
+        $user->refresh();
+
+        $this->assertNotNull($user->father);
+        $this->assertEquals('Mark Doe', $user->father->name);
+    }
+
+    public function testEmbedsOneEmptyRefresh()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $father = new User(['name' => 'Mark Doe']);
+
+        $user->father()->associate($father);
+        $user->save();
+
+        $user->father()->dissociate();
+        $user->save();
+
+        $user->refresh();
+
+        $this->assertNull($user->father);
+    }
+
     public function testEmbedsManyToArray()
     {
         /** @var User $user */
@@ -623,6 +653,22 @@ class EmbeddedRelationsTest extends TestCase
         $user->addresses()->save(new Address(['city' => 'Brussels']));
 
         $array = $user->toArray();
+        $this->assertArrayHasKey('addresses', $array);
+        $this->assertIsArray($array['addresses']);
+    }
+
+    public function testEmbedsManyRefresh()
+    {
+        /** @var User $user */
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'New York']));
+        $user->addresses()->save(new Address(['city' => 'Paris']));
+        $user->addresses()->save(new Address(['city' => 'Brussels']));
+
+        $user->refresh();
+
+        $array = $user->toArray();
+
         $this->assertArrayHasKey('addresses', $array);
         $this->assertIsArray($array['addresses']);
     }
