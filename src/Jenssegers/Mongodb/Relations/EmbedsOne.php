@@ -8,9 +8,7 @@ use MongoDB\BSON\ObjectID;
 
 class EmbedsOne extends EmbedsOneOrMany
 {
-    /**
-     * @inheritdoc
-     */
+
     public function initRelation(array $models, $relation)
     {
         foreach ($models as $model) {
@@ -20,12 +18,17 @@ class EmbedsOne extends EmbedsOneOrMany
         return $models;
     }
 
-    /**
-     * @inheritdoc
-     */
     public function getResults()
     {
         return $this->toModel($this->getEmbedded());
+    }
+
+    public function getEager()
+    {
+        $eager = $this->get();
+
+        // EmbedsOne only brings one result, Eager needs a collection!
+        return $this->toCollection([$eager]);
     }
 
     /**
