@@ -8,7 +8,6 @@ use MongoDB\BSON\ObjectID;
 
 class EmbedsOne extends EmbedsOneOrMany
 {
-
     public function initRelation(array $models, $relation)
     {
         foreach ($models as $model) {
