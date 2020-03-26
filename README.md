@@ -1134,3 +1134,7 @@ Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rathe
 ```php
 $books = $user->books()->sortBy('title')->get();
 ```
+
+## Security contact information
+
+To report a security vulnerability, follow [these steps](https://tidelift.com/security).
