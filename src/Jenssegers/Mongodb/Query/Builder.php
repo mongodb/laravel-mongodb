@@ -116,35 +116,13 @@ class Builder extends BaseBuilder
     ];
 
     /**
-     * Check if we need to return Collections instead of plain arrays (laravel >= 5.3 )
-     * @var boolean
-     */
-    protected $useCollections;
-
-    /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __construct(Connection $connection, Processor $processor)
     {
         $this->grammar = new Grammar;
         $this->connection = $connection;
         $this->processor = $processor;
-        $this->useCollections = $this->shouldUseCollections();
-    }
-
-    /**
-     * Returns true if Laravel or Lumen >= 5.3
-     * @return bool
-     */
-    protected function shouldUseCollections()
-    {
-        if (function_exists('app')) {
-            $version = app()->version();
-            $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
-            return version_compare($version, '5.3', '>=');
-        }
-
-        return true;
     }
 
     /**
@@ -184,7 +162,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function find($id, $columns = [])
     {
@@ -192,7 +170,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function value($column)
     {
@@ -202,7 +180,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function get($columns = [])
     {
@@ -239,18 +217,18 @@ class Builder extends BaseBuilder
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                    $group['_id'][$column] = '$' . $column;
+                    $group['_id'][$column] = '$'.$column;
 
                     // When grouping, also add the $last operator to each grouped field,
                     // this mimics MySQL's behaviour a bit.
-                    $group[$column] = ['$last' => '$' . $column];
+                    $group[$column] = ['$last' => '$'.$column];
                 }
 
                 // Do the same for other columns that are selected.
                 foreach ($this->columns as $column) {
                     $key = str_replace('.', '_', $column);
 
-                    $group[$key] = ['$last' => '$' . $column];
+                    $group[$key] = ['$last' => '$'.$column];
                 }
             }
 
@@ -282,15 +260,16 @@ class Builder extends BaseBuilder
                         $results = [
                             [
                                 '_id'       => null,
-                                'aggregate' => $totalResults
-                            ]
+                                'aggregate' => $totalResults,
+                            ],
                         ];
-                        return $this->useCollections ? new Collection($results) : $results;
+
+                        return new Collection($results);
                     } elseif ($function == 'count') {
                         // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
                     } else {
-                        $group['aggregate'] = ['$' . $function => '$' . $column];
+                        $group['aggregate'] = ['$'.$function => '$'.$column];
                     }
                 }
             }
@@ -308,7 +287,7 @@ class Builder extends BaseBuilder
 
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
-                $pipeline[] = ['$unwind' => '$' . $unwind];
+                $pipeline[] = ['$unwind' => '$'.$unwind];
             }
 
             if ($group) {
@@ -342,7 +321,7 @@ class Builder extends BaseBuilder
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
             // Return results
-            return $this->useCollections ? new Collection($results) : $results;
+            return new Collection($results);
         } // Distinct query
         elseif ($this->distinct) {
             // Return distinct results directly
@@ -355,7 +334,7 @@ class Builder extends BaseBuilder
                 $result = $this->collection->distinct($column);
             }
 
-            return $this->useCollections ? new Collection($result) : $result;
+            return new Collection($result);
         } // Normal query
         else {
             $columns = [];
@@ -404,7 +383,8 @@ class Builder extends BaseBuilder
 
             // Return results as an array with numeric keys
             $results = iterator_to_array($cursor, false);
-            return $this->useCollections ? new Collection($results) : $results;
+
+            return new Collection($results);
         }
     }
 
@@ -430,7 +410,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function aggregate($function, $columns = [])
     {
@@ -462,7 +442,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function exists()
     {
@@ -470,7 +450,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function distinct($column = false)
     {
@@ -484,7 +464,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function orderBy($column, $direction = 'asc')
     {
@@ -519,7 +499,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function whereBetween($column, array $values, $boolean = 'and', $not = false)
     {
@@ -531,7 +511,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function forPage($page, $perPage = 15)
     {
@@ -541,7 +521,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function insert(array $values)
     {
@@ -552,28 +532,31 @@ class Builder extends BaseBuilder
         foreach ($values as $value) {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (!is_array($value)) {
+            if (! is_array($value)) {
                 $batch = false;
                 break;
             }
         }
 
-        if (!$batch) {
+        if (! $batch) {
             $values = [$values];
         }
 
         // Batch insert
-        $result = $this->collection->insertMany($values);
+        $options = $this->session();
+        $result = $this->collection->insertMany($values, $options);
 
-        return (1 == (int) $result->isAcknowledged());
+        return 1 == (int) $result->isAcknowledged();
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function insertGetId(array $values, $sequence = null)
     {
-        $result = $this->collection->insertOne($values);
+
+        $options = $this->session();
+        $result = $this->collection->insertOne($values, $options);
 
         if (1 == (int) $result->isAcknowledged()) {
             if ($sequence === null) {
@@ -586,12 +569,12 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function update(array $values, array $options = [])
     {
         // Use $set as default operator.
-        if (!Str::startsWith(key($values), '$')) {
+        if (! Str::startsWith(key($values), '$')) {
             $values = ['$set' => $values];
         }
 
@@ -599,13 +582,13 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function increment($column, $amount = 1, array $extra = [], array $options = [])
     {
         $query = ['$inc' => [$column => $amount]];
 
-        if (!empty($extra)) {
+        if (! empty($extra)) {
             $query['$set'] = $extra;
         }
 
@@ -616,19 +599,22 @@ class Builder extends BaseBuilder
             $query->orWhereNotNull($column);
         });
 
+        $options[] = $this->session();
+
         return $this->performUpdate($query, $options);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
+        $options[] = $this->session();
         return $this->increment($column, -1 * $amount, $extra, $options);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function chunkById($count, callable $callback, $column = '_id', $alias = null)
     {
@@ -636,7 +622,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function forPageAfterId($perPage = 15, $lastId = 0, $column = '_id')
     {
@@ -644,7 +630,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function pluck($column, $key = null)
     {
@@ -654,16 +640,18 @@ class Builder extends BaseBuilder
         if ($key == '_id') {
             $results = $results->map(function ($item) {
                 $item['_id'] = (string) $item['_id'];
+
                 return $item;
             });
         }
 
         $p = Arr::pluck($results, $column, $key);
-        return $this->useCollections ? new Collection($p) : $p;
+
+        return new Collection($p);
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function delete($id = null)
     {
@@ -674,8 +662,9 @@ class Builder extends BaseBuilder
             $this->where('_id', '=', $id);
         }
 
+        $options = $this->session();
         $wheres = $this->compileWheres();
-        $result = $this->collection->DeleteMany($wheres);
+        $result = $this->collection->DeleteMany($wheres, $options);
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getDeletedCount();
         }
@@ -684,7 +673,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function from($collection, $as = null)
     {
@@ -696,7 +685,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function truncate()
     {
@@ -704,9 +693,11 @@ class Builder extends BaseBuilder
             'typeMap' => ['root' => 'object', 'document' => 'object'],
         ];
 
+        $options[] = $this->session($options);
+
         $result = $this->collection->drop($options);
 
-        return (1 == (int) $result->ok);
+        return 1 == (int) $result->ok;
     }
 
     /**
@@ -722,7 +713,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function raw($expression = null)
     {
@@ -796,7 +787,7 @@ class Builder extends BaseBuilder
      */
     public function drop($columns)
     {
-        if (!is_array($columns)) {
+        if (! is_array($columns)) {
             $columns = [$columns];
         }
 
@@ -812,11 +803,11 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function newQuery()
     {
-        return new Builder($this->connection, $this->processor);
+        return new self($this->connection, $this->processor);
     }
 
     /**
@@ -828,9 +819,10 @@ class Builder extends BaseBuilder
     protected function performUpdate($query, array $options = [])
     {
         // Update multiple items by default.
-        if (!array_key_exists('multiple', $options)) {
+        if (! array_key_exists('multiple', $options)) {
             $options['multiple'] = true;
         }
+        $options[] = $this->session($options);
 
         $wheres = $this->compileWheres();
         $result = $this->collection->UpdateMany($wheres, $query, $options);
@@ -860,7 +852,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
@@ -1006,10 +998,10 @@ class Builder extends BaseBuilder
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
 
             // Convert like to regular expression.
-            if (!Str::startsWith($value, '%')) {
-                $regex = '^' . $regex;
+            if (! Str::startsWith($value, '%')) {
+                $regex = '^'.$regex;
             }
-            if (!Str::endsWith($value, '%')) {
+            if (! Str::endsWith($value, '%')) {
                 $regex .= '$';
             }
 
@@ -1017,7 +1009,7 @@ class Builder extends BaseBuilder
         } // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
-            if (!$value instanceof Regex) {
+            if (! $value instanceof Regex) {
                 $e = explode('/', $value);
                 $flag = end($e);
                 $regstr = substr($value, 1, -(strlen($flag) + 1));
@@ -1031,12 +1023,12 @@ class Builder extends BaseBuilder
             }
         }
 
-        if (!isset($operator) || $operator == '=') {
+        if (! isset($operator) || $operator == '=') {
             $query = [$column => $value];
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
-            $query = [$column => ['$' . $operator => $value]];
+            $query = [$column => ['$'.$operator => $value]];
         }
 
         return $query;
@@ -1154,7 +1146,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @inheritdoc
+     * {@inheritdoc}
      */
     public function __call($method, $parameters)
     {
@@ -1163,5 +1155,14 @@ class Builder extends BaseBuilder
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    protected function session(array $options = [])
+    {
+        if ($session = $this->connection->getSession()) {
+            $options['session'] = $this->connection->getSession();
+        }
+
+        return $options;
     }
 }
