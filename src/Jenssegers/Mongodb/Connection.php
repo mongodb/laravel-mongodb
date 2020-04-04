@@ -9,6 +9,9 @@ use MongoDB\Client;
 
 class Connection extends BaseConnection
 {
+    /**
+     * The MongoDB session handler.
+     */
     protected $session;
     
     /**
