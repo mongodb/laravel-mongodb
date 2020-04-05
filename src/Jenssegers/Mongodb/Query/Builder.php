@@ -593,7 +593,7 @@ class Builder extends BaseBuilder
      * @inheritdoc
      */
     public function update(array $values, array $options = [])
-    {        
+    {
         // Use $set as default operator.
         if (!Str::startsWith(key($values), '$')) {
             $values = ['$set' => $values];
