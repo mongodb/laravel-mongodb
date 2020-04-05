@@ -593,15 +593,13 @@ class Builder extends BaseBuilder
      * @inheritdoc
      */
     public function update(array $values, array $options = [])
-    {
-        $options[] = $this->session();
-        
+    {        
         // Use $set as default operator.
         if (!Str::startsWith(key($values), '$')) {
             $values = ['$set' => $values];
         }
 
-        return $this->performUpdate($values, $options);
+        return $this->performUpdate($values, array_merge($options, $this->session()));
     }
 
     /**
@@ -622,9 +620,7 @@ class Builder extends BaseBuilder
             $query->orWhereNotNull($column);
         });
 
-        $options[] = $this->session();
-        
-        return $this->performUpdate($query, $options);
+        return $this->performUpdate($query, array_merge($options, $this->session()));
     }
 
     /**
@@ -632,9 +628,7 @@ class Builder extends BaseBuilder
      */
     public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
-        $options[] = $this->session();
-        
-        return $this->increment($column, -1 * $amount, $extra, $options);
+        return $this->increment($column, -1 * $amount, $extra, array_merge($options, $this->session()));
     }
 
     /**
@@ -715,9 +709,7 @@ class Builder extends BaseBuilder
             'typeMap' => ['root' => 'object', 'document' => 'object'],
         ];
 
-        $options[] = $this->session();
-        
-        $result = $this->collection->drop($options);
+        $result = $this->collection->drop(array_merge($options, $this->session()));
 
         return (1 == (int) $result->ok);
     }
@@ -845,10 +837,8 @@ class Builder extends BaseBuilder
             $options['multiple'] = true;
         }
 
-        $options[] = $this->session();
-        
         $wheres = $this->compileWheres();
-        $result = $this->collection->UpdateMany($wheres, $query, $options);
+        $result = $this->collection->UpdateMany($wheres, $query, array_merge($options, $this->session()));
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
         }
