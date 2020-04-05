@@ -44,7 +44,6 @@ class TransactionTest extends TestCase
          * Insert Commit
          */
         try {
-
             DB::beginTransaction();
 
             User::insert([
@@ -64,7 +63,6 @@ class TransactionTest extends TestCase
          * Update Commit
          */
         try {
-
             DB::beginTransaction();
 
             User::where('name', 'John Doe')->update([
@@ -84,7 +82,6 @@ class TransactionTest extends TestCase
          * Delete Commit
          */
         try {
-
             DB::beginTransaction();
 
             User::where('name', 'Jane Doe')->delete();
@@ -97,7 +94,6 @@ class TransactionTest extends TestCase
         }
 
         $this->assertFalse(User::where('name', 'Jane Doe')->exists());
-
     }
 
     public function testRollbackWithTransaction(): void
@@ -106,7 +102,6 @@ class TransactionTest extends TestCase
         Schema::create('users');
 
         try {
-
             DB::beginTransaction();
 
             User::insert([
@@ -123,7 +118,6 @@ class TransactionTest extends TestCase
         $this->assertFalse(User::where('name', 'John Doe')->exists());
 
         try {
-
             DB::beginTransaction();
 
             User::insert([
@@ -140,7 +134,6 @@ class TransactionTest extends TestCase
         $this->assertTrue(User::where('name', 'John Doe')->exists());
 
         try {
-
             DB::beginTransaction();
 
             User::where('name', 'John Doe')->update([
@@ -157,7 +150,6 @@ class TransactionTest extends TestCase
         $this->assertTrue(User::where('name', 'John Doe')->exists());
 
         try {
-
             DB::beginTransaction();
 
             User::where('name', 'John Doe')->delete();
