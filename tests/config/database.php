@@ -13,17 +13,20 @@ return [
             'driver' => 'mongodb',
             'host' => $mongoHost,
             'database' => env('MONGO_DATABASE', 'unittest'),
+            'options' => [
+                'replicaSet' => 'rs',
+            ],
         ],
 
         'dsn_mongodb' => [
             'driver' => 'mongodb',
-            'dsn' => "mongodb://$mongoHost:$mongoPort",
+            'dsn' => "mongodb://$mongoHost:$mongoPort/?replicaSet=rs",
             'database' => env('MONGO_DATABASE', 'unittest'),
         ],
 
         'dsn_mongodb_db' => [
             'driver' => 'mongodb',
-            'dsn' => "mongodb://$mongoHost:$mongoPort/" . env('MONGO_DATABASE', 'unittest'),
+            'dsn' => "mongodb://$mongoHost:$mongoPort/".env('MONGO_DATABASE', 'unittest')."&replicaSet=rs",
         ],
 
         'mysql' => [
