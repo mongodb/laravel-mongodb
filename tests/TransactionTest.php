@@ -52,13 +52,10 @@ class TransactionTest extends TestCase
             ]);
 
             DB::commit();
-
-        } catch(Exception $e) {
-
+        } catch (Exception $e) {
             DB::rollBack();
 
             $this->assertTrue(false);
-
         }
 
         $this->assertTrue(User::where('name', 'John Doe')->exists());
@@ -75,13 +72,10 @@ class TransactionTest extends TestCase
             ]);
 
             DB::commit();
-
-        } catch(Exception $e) {
-
+        } catch (Exception $e) {
             DB::rollBack();
 
             $this->assertTrue(false);
-
         }
 
         $this->assertTrue(User::where('name', 'Jane Doe')->exists());
@@ -96,13 +90,10 @@ class TransactionTest extends TestCase
             User::where('name', 'Jane Doe')->delete();
 
             DB::commit();
-
-        } catch(Exception $e) {
-
+        } catch (Exception $e) {
             DB::rollBack();
 
             $this->assertTrue(false);
-
         }
 
         $this->assertFalse(User::where('name', 'Jane Doe')->exists());
@@ -123,13 +114,10 @@ class TransactionTest extends TestCase
             ]);
 
             DB::rollBack();
-
-        } catch(Exception $e) {
-
+        } catch (Exception $e) {
             DB::rollBack();
 
             $this->assertTrue(false);
-
         }
 
         $this->assertFalse(User::where('name', 'John Doe')->exists());
@@ -143,13 +131,10 @@ class TransactionTest extends TestCase
             ]);
 
             DB::commit();
-
-        } catch(Exception $e) {
-
+        } catch (Exception $e) {
             DB::rollBack();
 
             $this->assertTrue(false);
-
         }
 
         $this->assertTrue(User::where('name', 'John Doe')->exists());
@@ -163,13 +148,10 @@ class TransactionTest extends TestCase
             ]);
 
             DB::rollBack();
-
-        } catch(Exception $e) {
-
+        } catch (Exception $e) {
             DB::rollBack();
 
             $this->assertTrue(false);
-
         }
 
         $this->assertTrue(User::where('name', 'John Doe')->exists());
@@ -181,18 +163,12 @@ class TransactionTest extends TestCase
             User::where('name', 'John Doe')->delete();
 
             DB::rollBack();
-
-        } catch(Exception $e) {
-
+        } catch (Exception $e) {
             DB::rollBack();
 
             $this->assertTrue(false);
-
         }
 
         $this->assertTrue(User::where('name', 'John Doe')->exists());
-
     }
-
-
 }
