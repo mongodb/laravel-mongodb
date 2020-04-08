@@ -13,12 +13,8 @@ jobs:
       matrix:
         php: ['7.1', '7.2', '7.3', '7.4']
         os: ['ubuntu-latest']
-        mongodb: ['3.6', '4.0', '4.2']
+        mongodb: ['4.0', '4.2']
     services:
-      mongo:
-        image: mongo:${{ matrix.mongodb }}
-        ports:
-          - 27017:27017
       mysql:
         image: mysql:5.7
         ports:
@@ -46,6 +42,25 @@ jobs:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
         restore-keys: ${{ matrix.os }}-composer-
+    
+    - name: Create mongodb replica set and wait to accept connections
+      run: |
+        docker run --name mongodb --publish 27017:27017 --detach mongo:${{ matrix.mongodb }} mongod --replSet rs
+
+        COUNTER=0
+        until docker exec --tty mongodb mongo --eval "db.serverStatus()"
+        do
+          sleep 1
+          echo "."
+          COUNTER=$((COUNTER+1))
+
+          if [[ ${COUNTER} -eq 20 ]]; then
+            echo "MongoDB did not initialize within 20 seconds. Exiting."
+            exit 2
+          fi
+        done
+        
+        sudo docker exec --tty mongodb mongo --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1\" }] })"
     - name: Install dependencies
       run: |
         composer install --no-interaction
