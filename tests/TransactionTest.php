@@ -6,47 +6,44 @@ use Jenssegers\Mongodb\Schema\Blueprint;
 
 class TransactionTest extends TestCase
 {
-    /**
-     * Creating collection before data process is important in transaction of replica set.
-     * Collection should have been created already or it will fail.
-     * @see https://github.com/ilyasokay/docker-mongo-installation
-     */
+    public $connection = 'mongodb_repl';
+
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::create('users');
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+        if (version_compare(env('MONGO_VERSION'), '4', '<'))
+            $this->markTestSkipped('MongoDB with version below 4 is not supported for transactions');
+
+        $config = require 'config/database.php';
+
+        $app['config']->set('database.connections.'.$this->connection, $config['connections'][$this->connection]);
+        $app['config']->set('database.default', $this->connection);
+    }
 
     public function tearDown(): void
     {
+        parent::setUp();
+
+        User::on($this->connection)->truncate();
+        DB::collection('users')->truncate();
         Schema::drop('users');
     }
 
-    public function testCreate(): void
+    public function testCommitTransaction(): void
     {
-        Schema::create('users');
-        $this->assertTrue(Schema::hasCollection('users'));
-        $this->assertTrue(Schema::hasTable('users'));
-    }
-
-    public function testCreateWithCallback(): void
-    {
-        $instance = $this;
-
-        Schema::create('users', function ($collection) use ($instance) {
-            $instance->assertInstanceOf(Blueprint::class, $collection);
-        });
-
-        $this->assertTrue(Schema::hasCollection('users'));
-    }
-
-    public function testCommitWithTransaction(): void
-    {
-        Schema::drop('users');
-        Schema::create('users');
-
         /**
          * Insert Commit
          */
         try {
             DB::beginTransaction();
 
-            User::insert([
+            User::on($this->connection)->insert([
                 'name' => 'John Doe'
             ]);
 
@@ -54,10 +51,12 @@ class TransactionTest extends TestCase
         } catch (Exception $e) {
             DB::rollBack();
 
+            dd($e);
+
             $this->assertTrue(false);
         }
 
-        $this->assertTrue(User::where('name', 'John Doe')->exists());
+        $this->assertTrue(User::on($this->connection)->where('name', 'John Doe')->exists());
 
         /**
          * Update Commit
@@ -65,7 +64,7 @@ class TransactionTest extends TestCase
         try {
             DB::beginTransaction();
 
-            User::where('name', 'John Doe')->update([
+            User::on($this->connection)->where('name', 'John Doe')->update([
                 'name' => 'Jane Doe'
             ]);
 
@@ -76,7 +75,7 @@ class TransactionTest extends TestCase
             $this->assertTrue(false);
         }
 
-        $this->assertTrue(User::where('name', 'Jane Doe')->exists());
+        $this->assertTrue(User::on($this->connection)->where('name', 'Jane Doe')->exists());
 
         /**
          * Delete Commit
@@ -84,7 +83,7 @@ class TransactionTest extends TestCase
         try {
             DB::beginTransaction();
 
-            User::where('name', 'Jane Doe')->delete();
+            User::on($this->connection)->where('name', 'Jane Doe')->delete();
 
             DB::commit();
         } catch (Exception $e) {
@@ -93,18 +92,15 @@ class TransactionTest extends TestCase
             $this->assertTrue(false);
         }
 
-        $this->assertFalse(User::where('name', 'Jane Doe')->exists());
+        $this->assertFalse(User::on($this->connection)->where('name', 'Jane Doe')->exists());
     }
 
-    public function testRollbackWithTransaction(): void
+    public function testRollbackTransaction(): void
     {
-        Schema::drop('users');
-        Schema::create('users');
-
         try {
             DB::beginTransaction();
 
-            User::insert([
+            User::on($this->connection)->insert([
                 'name' => 'John Doe'
             ]);
 
@@ -115,12 +111,12 @@ class TransactionTest extends TestCase
             $this->assertTrue(false);
         }
 
-        $this->assertFalse(User::where('name', 'John Doe')->exists());
+        $this->assertFalse(User::on($this->connection)->where('name', 'John Doe')->exists());
 
         try {
             DB::beginTransaction();
 
-            User::insert([
+            User::on($this->connection)->insert([
                 'name' => 'John Doe'
             ]);
 
@@ -131,12 +127,12 @@ class TransactionTest extends TestCase
             $this->assertTrue(false);
         }
 
-        $this->assertTrue(User::where('name', 'John Doe')->exists());
+        $this->assertTrue(User::on($this->connection)->where('name', 'John Doe')->exists());
 
         try {
             DB::beginTransaction();
 
-            User::where('name', 'John Doe')->update([
+            User::on($this->connection)->where('name', 'John Doe')->update([
                 'name' => 'Jane Doe'
             ]);
 
@@ -147,12 +143,12 @@ class TransactionTest extends TestCase
             $this->assertTrue(false);
         }
 
-        $this->assertTrue(User::where('name', 'John Doe')->exists());
+        $this->assertTrue(User::on($this->connection)->where('name', 'John Doe')->exists());
 
         try {
             DB::beginTransaction();
 
-            User::where('name', 'John Doe')->delete();
+            User::on($this->connection)->where('name', 'John Doe')->delete();
 
             DB::rollBack();
         } catch (Exception $e) {
@@ -161,6 +157,6 @@ class TransactionTest extends TestCase
             $this->assertTrue(false);
         }
 
-        $this->assertTrue(User::where('name', 'John Doe')->exists());
+        $this->assertTrue(User::on($this->connection)->where('name', 'John Doe')->exists());
     }
 }
