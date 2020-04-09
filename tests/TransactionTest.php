@@ -2,7 +2,6 @@
 
 declare(strict_types=1);
 
-use Jenssegers\Mongodb\Schema\Blueprint;
 class TransactionTest extends TestCase
 {
     public $connection = 'mongodb_repl';
