@@ -3,7 +3,6 @@
 declare(strict_types=1);
 
 use Jenssegers\Mongodb\Schema\Blueprint;
-
 class TransactionTest extends TestCase
 {
     public $connection = 'mongodb_repl';
@@ -17,8 +16,9 @@ class TransactionTest extends TestCase
 
     protected function getEnvironmentSetUp($app)
     {
-        if (version_compare(env('MONGO_VERSION'), '4', '<'))
+        if (version_compare(env('MONGO_VERSION'), '4', '<')) {
             $this->markTestSkipped('MongoDB with version below 4 is not supported for transactions');
+        }
 
         $config = require 'config/database.php';
 
