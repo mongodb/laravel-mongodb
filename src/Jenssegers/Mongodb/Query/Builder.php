@@ -1048,10 +1048,11 @@ class Builder extends BaseBuilder
 
         if (!isset($operator) || $operator == '=') {
 
-            if ($is_numeric)
+            if ($is_numeric) {
                 $query = ['$where' => '/^'.$value->getPattern().'/.test(this.'.$column.')'];
-            else
+            } else {
                 $query = [$column => $value];
+            }
 
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
