@@ -563,7 +563,7 @@ class Builder extends BaseBuilder
         }
 
         $options = $this->session();
-        
+
         // Batch insert
         $result = $this->collection->insertMany($values, $options);
 
@@ -576,7 +576,7 @@ class Builder extends BaseBuilder
     public function insertGetId(array $values, $sequence = null)
     {
         $options = $this->session();
-        
+
         $result = $this->collection->insertOne($values, $options);
 
         if (1 == (int) $result->isAcknowledged()) {
@@ -998,6 +998,7 @@ class Builder extends BaseBuilder
     protected function compileWhereBasic(array $where)
     {
         extract($where);
+        $is_numeric = false;
 
         // Replace like or not like with a Regex instance.
         if (in_array($operator, ['like', 'not like'])) {
@@ -1010,13 +1011,22 @@ class Builder extends BaseBuilder
             // Convert to regular expression.
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
 
+            $plain_value = $value;
+
             // Convert like to regular expression.
             if (!Str::startsWith($value, '%')) {
                 $regex = '^' . $regex;
+            } else {
+                $plain_value = Str::replaceFirst('%', null, $plain_value);
             }
+
             if (!Str::endsWith($value, '%')) {
                 $regex .= '$';
+            } else {
+                $plain_value = Str::replaceLast('%', null, $plain_value);
             }
+
+            $is_numeric = is_numeric($plain_value);
 
             $value = new Regex($regex, 'i');
         } // Manipulate regexp operations.
@@ -1037,7 +1047,12 @@ class Builder extends BaseBuilder
         }
 
         if (!isset($operator) || $operator == '=') {
-            $query = [$column => $value];
+
+            if ($is_numeric)
+                $query = ['$where' => '/^'.$value->getPattern().'/.test(this.'.$column.')'];
+            else
+                $query = [$column => $value];
+
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
@@ -1166,7 +1181,7 @@ class Builder extends BaseBuilder
 
         return $options;
     }
-    
+
     /**
      * @inheritdoc
      */
