@@ -63,7 +63,9 @@ jobs:
       run: |
         ./vendor/bin/phpunit --coverage-clover coverage.xml
       env:
+        MONGO_VERSION: ${{ matrix.mongodb }})
         MONGO_HOST: 0.0.0.0
+          MONGO_REPL_HOST: 0.0.0.0
         MYSQL_HOST: 0.0.0.0
         MYSQL_PORT: 3307
     - name: Send coveralls
