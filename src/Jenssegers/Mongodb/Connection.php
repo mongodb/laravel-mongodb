@@ -10,6 +10,11 @@ use MongoDB\Client;
 class Connection extends BaseConnection
 {
     /**
+     * The MongoDB session handler.
+     */
+    protected $session;
+
+    /**
      * The MongoDB database handler.
      * @var \MongoDB\Database
      */
@@ -265,6 +270,40 @@ class Connection extends BaseConnection
     protected function getDefaultSchemaGrammar()
     {
         return new Schema\Grammar();
+    }
+
+    public function beginTransaction(array $options = [])
+    {
+        if (!$this->getSession()) {
+            $this->session = $this->getMongoClient()->startSession();
+            $this->session->startTransaction($options);
+        }
+    }
+
+    public function commit()
+    {
+        if ($this->getSession()) {
+            $this->session->commitTransaction();
+            $this->clearSession();
+        }
+    }
+
+    public function rollBack($toLevel = null)
+    {
+        if ($this->getSession()) {
+            $this->session->abortTransaction();
+            $this->clearSession();
+        }
+    }
+
+    protected function clearSession()
+    {
+        $this->session = null;
+    }
+
+    public function getSession()
+    {
+        return $this->session;
     }
 
     /**

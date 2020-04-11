@@ -36,6 +36,9 @@
         <testsuite name="mysqlrelations">
             <file>tests/RelationsTest.php</file>
         </testsuite>
+        <testsuite name="transaction">
+            <file>tests/TransactionTest.php</file>
+        </testsuite>
         <testsuite name="validation">
             <file>tests/ValidationTest.php</file>
         </testsuite>
@@ -47,6 +50,8 @@
     </filter>
     <php>
         <env name="MONGO_HOST" value="mongodb"/>
+        <env name="MONGO_REPL_HOST" value="mongodb_repl"/>
+        <env name="MONGO_VERSION" value="4"/>
         <env name="MONGO_DATABASE" value="unittest"/>
         <env name="MONGO_PORT" value="27017"/>
         <env name="MYSQL_HOST" value="mysql"/>
