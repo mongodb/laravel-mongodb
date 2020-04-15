@@ -10,8 +10,12 @@ services:
             - .:/code
         working_dir: /code
         depends_on:
-          - mongodb
-          - mysql
+            - mongodb
+            - mongodb_repl
+            - mongodb_repl_2
+            - mongodb_repl_3
+            - mongo_repl_init
+            - mysql
 
     mysql:
         container_name: mysql
@@ -28,5 +32,64 @@ services:
         image: mongo
         ports:
             - 27017:27017
+        logging:
+            driver: none
+
+    mongodb_repl:
+        container_name: mongodb_repl
+        image: mongo:4.2.5
+        restart: always
+        ports:
+            - "27018:27018"
+        entrypoint: [ "/usr/bin/mongod", "--quiet", "--bind_ip_all",  "--port",  "27018", "--replSet", "rs" ]
+        depends_on:
+            - mongodb_repl_2
+            - mongodb_repl_3
+        links:
+            - mongodb_repl_2:mongodb_repl_2
+            - mongodb_repl_3:mongodb_repl_3
+        logging:
+            driver: none
+
+    mongodb_repl_2:
+        container_name: mongodb_repl_2
+        image: mongo:4.2.5
+        restart: always
+        ports:
+            - "27019:27018"
+        entrypoint: [ "/usr/bin/mongod", "--quiet", "--bind_ip_all", "--port",  "27018", "--replSet", "rs" ]
+        depends_on:
+            - mongodb_repl_3
+        logging:
+            driver: none
+
+    mongodb_repl_3:
+        container_name: mongodb_repl_3
+        image: mongo:4.2.5
+        restart: always
+        ports:
+            - "27020:27018"
+        entrypoint: [ "/usr/bin/mongod", "--quiet", "--bind_ip_all",  "--port",  "27018", "--replSet", "rs" ]
+        logging:
+            driver: none
+
+    mongo_repl_init:
+        image: mongo:4.2.5
+        depends_on:
+            - mongodb_repl
+            - mongodb_repl_2
+            - mongodb_repl_3
+        links:
+            - mongodb_repl:mongodb_repl
+            - mongodb_repl_2:mongodb_repl_2
+            - mongodb_repl_3:mongodb_repl_3
+        environment:
+            - MONGO1=mongodb_repl
+            - MONGO2=mongodb_repl_2
+            - MONGO3=mongodb_repl_3
+            - RS=rs
+        volumes:
+            - ./:/scripts
+        entrypoint: [ "sh", "-c", "/scripts/mongo-repl-init.sh" ]
         logging:
             driver: none
