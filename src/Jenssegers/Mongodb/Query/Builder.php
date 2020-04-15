@@ -564,6 +564,16 @@ class Builder extends BaseBuilder
 
         $options = $this->session();
 
+        // Check if table exists for multi-document transaction, otherwise create table.
+        if (!empty($options)) {
+            $schemaBuilder = $this->connection->getSchemaBuilder();
+            $tableName = $this->collection->getCollectionName();
+
+            if (!$schemaBuilder->hasTable($tableName)) {
+                $schemaBuilder->create($tableName);
+            }
+        }
+
         // Batch insert
         $result = $this->collection->insertMany($values, $options);
 
