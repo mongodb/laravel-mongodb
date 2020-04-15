@@ -1004,8 +1004,8 @@ class Builder extends BaseBuilder
             }
 
             // Convert to regular expression.
-            $regex          = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
-            $plain_value    = $value;
+            $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
+            $plain_value = $value;
 
             // Convert like to regular expression.
             if (!Str::startsWith($value, '%')) {
@@ -1020,7 +1020,7 @@ class Builder extends BaseBuilder
             }
 
             $is_numeric = is_numeric($plain_value);
-            $value      = new Regex($regex, 'i');
+            $value = new Regex($regex, 'i');
         } // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
