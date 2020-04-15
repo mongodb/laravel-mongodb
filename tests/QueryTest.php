@@ -69,6 +69,15 @@ class QueryTest extends TestCase
 
         $users = User::where('name', 'like', 't%')->get();
         $this->assertCount(1, $users);
+
+        $users = User::where('age', 'like', '%35%')->get();
+        $this->assertCount(3, $users);
+
+        $users = User::where('age', 'like', '3%')->get();
+        $this->assertCount(6, $users);
+
+        $users = User::where('age', 'like', '%3')->get();
+        $this->assertCount(4, $users);
     }
 
     public function testNotLike(): void
