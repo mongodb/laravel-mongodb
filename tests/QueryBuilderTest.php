@@ -773,10 +773,8 @@ class QueryBuilderTest extends TestCase
         $results = DB::collection('items')->orderBy('_id', 'asc')->cursor();
 
         $this->assertInstanceOf(LazyCollection::class, $results);
-        $i = 0;
-        foreach ($results as $result) {
+        foreach ($results as $i => $result) {
             $this->assertEquals($data[$i]['name'], $result['name']);
-            $i++;
         }
     }
 }
