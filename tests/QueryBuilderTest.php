@@ -778,6 +778,5 @@ class QueryBuilderTest extends TestCase
             $this->assertEquals($data[$i]['name'], $result['name']);
             $i++;
         }
-
     }
 }
