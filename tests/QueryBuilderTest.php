@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Query\Builder;
 use MongoDB\BSON\ObjectId;
@@ -760,5 +761,22 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals('spoon', $results[2]['name']);
         $this->assertEquals('spork', $results[1]['name']);
         $this->assertEquals('fork', $results[0]['name']);
+    }
+
+    public function testCursor()
+    {
+        $data = [
+            ['name' => 'fork', 'tags' => ['sharp', 'pointy']],
+            ['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']],
+            ['name' => 'spoon', 'tags' => ['round', 'bowl']],
+        ];
+        DB::collection('items')->insert($data);
+
+        $results = DB::collection('items')->orderBy('_id', 'asc')->cursor();
+
+        $this->assertInstanceOf(LazyCollection::class, $results);
+        foreach ($results as $i => $result) {
+            $this->assertEquals($data[$i]['name'], $result['name']);
+        }
     }
 }

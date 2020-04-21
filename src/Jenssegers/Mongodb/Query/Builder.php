@@ -8,13 +8,19 @@ use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use RuntimeException;
 
+/**
+ * Class Builder
+ * @package Jenssegers\Mongodb\Query
+ */
 class Builder extends BaseBuilder
 {
     /**
@@ -209,11 +215,24 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * @inheritdoc
+     */
+    public function cursor($columns = [])
+    {
+        $result =  $this->getFresh($columns, true);
+        if ($result instanceof LazyCollection) {
+            return $result;
+        }
+        throw new RuntimeException("Query not compatible with cursor");
+    }
+
+    /**
      * Execute the query as a fresh "select" statement.
      * @param array $columns
-     * @return array|static[]|Collection
+     * @param bool $returnLazy
+     * @return array|static[]|Collection|LazyCollection
      */
-    public function getFresh($columns = [])
+    public function getFresh($columns = [], $returnLazy = false)
     {
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
@@ -400,6 +419,14 @@ class Builder extends BaseBuilder
 
             // Execute query and get MongoCursor
             $cursor = $this->collection->find($wheres, $options);
+
+            if ($returnLazy) {
+                return LazyCollection::make(function () use ($cursor) {
+                    foreach ($cursor as $item) {
+                        yield $item;
+                    }
+                });
+            }
 
             // Return results as an array with numeric keys
             $results = iterator_to_array($cursor, false);
@@ -988,6 +1015,7 @@ class Builder extends BaseBuilder
     protected function compileWhereBasic(array $where)
     {
         extract($where);
+        $is_numeric = false;
 
         // Replace like or not like with a Regex instance.
         if (in_array($operator, ['like', 'not like'])) {
@@ -999,15 +1027,21 @@ class Builder extends BaseBuilder
 
             // Convert to regular expression.
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
+            $plain_value = $value;
 
             // Convert like to regular expression.
             if (!Str::startsWith($value, '%')) {
                 $regex = '^' . $regex;
+            } else {
+                $plain_value = Str::replaceFirst('%', null, $plain_value);
             }
             if (!Str::endsWith($value, '%')) {
                 $regex .= '$';
+            } else {
+                $plain_value = Str::replaceLast('%', null, $plain_value);
             }
 
+            $is_numeric = is_numeric($plain_value);
             $value = new Regex($regex, 'i');
         } // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
@@ -1027,7 +1061,11 @@ class Builder extends BaseBuilder
         }
 
         if (!isset($operator) || $operator == '=') {
-            $query = [$column => $value];
+            if ($is_numeric) {
+                $query = ['$where' => '/^'.$value->getPattern().'/.test(this.'.$column.')'];
+            } else {
+                $query = [$column => $value];
+            }
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
