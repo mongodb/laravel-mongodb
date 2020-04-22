@@ -15,7 +15,7 @@ class AuthTest extends TestCase
 
     public function testAuthAttempt()
     {
-        $user = User::create([
+        User::create([
             'name' => 'John Doe',
             'email' => 'john@doe.com',
             'password' => Hash::make('foobar'),

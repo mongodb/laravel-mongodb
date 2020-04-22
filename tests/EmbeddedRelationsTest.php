@@ -42,7 +42,7 @@ class EmbeddedRelationsTest extends TestCase
         $address->unsetEventDispatcher();
 
         $this->assertNotNull($user->addresses);
-        $this->assertInstanceOf(\Illuminate\Database\Eloquent\Collection::class, $user->addresses);
+        $this->assertInstanceOf(Collection::class, $user->addresses);
         $this->assertEquals(['London'], $user->addresses->pluck('city')->all());
         $this->assertInstanceOf(DateTime::class, $address->created_at);
         $this->assertInstanceOf(DateTime::class, $address->updated_at);
@@ -102,29 +102,6 @@ class EmbeddedRelationsTest extends TestCase
         $freshUser = User::find($user->_id);
         $this->assertEquals(['London', 'Manhattan', 'Bruxelles'], $freshUser->addresses->pluck('city')->all());
     }
-
-    // public function testEmbedsManySaveModel()
-    // {
-    //     $user = User::create(['name' => 'John Doe']);
-    //     $address = new Address(['city' => 'London']);
-
-    //     $address->setEventDispatcher($events = Mockery::mock(\Illuminate\Events\Dispatcher::class));
-    //     $events->shouldReceive('until')->once()->with('eloquent.saving: ' . get_class($address), $address)->andReturn(true);
-    //     $events->shouldReceive('until')->once()->with('eloquent.creating: ' . get_class($address), $address)->andReturn(true);
-    //     $events->shouldReceive('dispatch')->once()->with('eloquent.created: ' . get_class($address), $address);
-    //     $events->shouldReceive('dispatch')->once()->with('eloquent.saved: ' . get_class($address), $address);
-
-    //     $address->save();
-
-    //     $address->setEventDispatcher($events = Mockery::mock(\Illuminate\Events\Dispatcher::class));
-    //     $events->shouldReceive('until')->once()->with('eloquent.saving: ' . get_class($address), $address)->andReturn(true);
-    //     $events->shouldReceive('until')->once()->with('eloquent.updating: ' . get_class($address), $address)->andReturn(true);
-    //     $events->shouldReceive('dispatch')->once()->with('eloquent.updated: ' . get_class($address), $address);
-    //     $events->shouldReceive('dispatch')->once()->with('eloquent.saved: ' . get_class($address), $address);
-
-    //     $address->city = 'Paris';
-    //     $address->save();
-    // }
 
     public function testEmbedsToArray()
     {
@@ -637,6 +614,36 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertNull($user->father);
     }
 
+    public function testEmbedsOneRefresh()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $father = new User(['name' => 'Mark Doe']);
+
+        $user->father()->associate($father);
+        $user->save();
+
+        $user->refresh();
+
+        $this->assertNotNull($user->father);
+        $this->assertEquals('Mark Doe', $user->father->name);
+    }
+
+    public function testEmbedsOneEmptyRefresh()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $father = new User(['name' => 'Mark Doe']);
+
+        $user->father()->associate($father);
+        $user->save();
+
+        $user->father()->dissociate();
+        $user->save();
+
+        $user->refresh();
+
+        $this->assertNull($user->father);
+    }
+
     public function testEmbedsManyToArray()
     {
         /** @var User $user */
@@ -646,6 +653,22 @@ class EmbeddedRelationsTest extends TestCase
         $user->addresses()->save(new Address(['city' => 'Brussels']));
 
         $array = $user->toArray();
+        $this->assertArrayHasKey('addresses', $array);
+        $this->assertIsArray($array['addresses']);
+    }
+
+    public function testEmbedsManyRefresh()
+    {
+        /** @var User $user */
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'New York']));
+        $user->addresses()->save(new Address(['city' => 'Paris']));
+        $user->addresses()->save(new Address(['city' => 'Brussels']));
+
+        $user->refresh();
+
+        $array = $user->toArray();
+
         $this->assertArrayHasKey('addresses', $array);
         $this->assertIsArray($array['addresses']);
     }

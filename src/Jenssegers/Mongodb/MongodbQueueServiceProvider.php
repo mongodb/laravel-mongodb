@@ -2,7 +2,7 @@
 
 namespace Jenssegers\Mongodb;
 
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Queue\QueueServiceProvider;
 use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
 

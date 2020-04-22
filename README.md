@@ -63,7 +63,7 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
  5.6.x    | 3.4.x
  5.7.x    | 3.4.x
  5.8.x    | 3.5.x
- 6.0.x    | 3.6.x
+ 6.x      | 3.6.x
 
 Install the package via Composer:
 
@@ -751,7 +751,7 @@ The belongsToMany relation will not use a pivot "table" but will push id's to a 
 If you want to define custom keys for your relation, set it to `null`:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Mode;
+use Jenssegers\Mongodb\Eloquent\Model;
 
 class User extends Model
 {
@@ -1134,3 +1134,7 @@ Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rathe
 ```php
 $books = $user->books()->sortBy('title')->get();
 ```
+
+## Security contact information
+
+To report a security vulnerability, follow [these steps](https://tidelift.com/security).
