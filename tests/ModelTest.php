@@ -423,6 +423,10 @@ class ModelTest extends TestCase
         $user = User::create(['name' => 'Jane Doe', 'birthday' => '2005-08-08']);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
+        // test negative dates
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => '1965-08-08']);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
         $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => '2005-08-08']]);
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
