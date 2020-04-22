@@ -425,6 +425,10 @@ class ModelTest extends TestCase
         $user = User::create(['name' => 'Jane Doe', 'birthday' => '2005-08-08']);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
+        // test millisecond-precision dates after 1970:
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => new DateTime('2010-08-08 04.08.37.324')]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
         $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => '2005-08-08']]);
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
