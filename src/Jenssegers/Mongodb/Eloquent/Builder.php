@@ -206,4 +206,14 @@ class Builder extends EloquentBuilder
     {
         return $this->query->getConnection();
     }
+    
+     /**
+     * Get the model instance being queried.
+     *
+     * @return Jenssegers\Mongodb\Eloquent\Model|static
+     */
+    public function getModel()
+    {
+        return $this->model;
+    }
 }
