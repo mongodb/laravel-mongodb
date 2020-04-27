@@ -783,4 +783,3 @@ class QueryBuilderTest extends TestCase
         }
     }
 }
-
