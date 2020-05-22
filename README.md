@@ -106,6 +106,12 @@ $capsule->getDatabaseManager()->extend('mongodb', function($config, $name) {
     return new Jenssegers\Mongodb\Connection($config);
 });
 ```
+Add a param `use_collections` in config array.
+```php
+$mongoConfig = [
+    'use_collections' => true,
+];
+```
 
 Testing
 -------
