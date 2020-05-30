@@ -137,7 +137,7 @@ class Builder extends BaseBuilder
         $this->processor = $processor;
         $this->useCollections = $this->shouldUseCollections();
         if (!$this->useCollections) {
-            $this->useCollections = (bool)$connection->getConfig('use_collections') ?: false;
+            $this->useCollections = (bool) $connection->getConfig('use_collections') ?: false;
         }
     }
 
