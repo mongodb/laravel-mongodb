@@ -30,9 +30,9 @@ jobs:
     name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
     - name: Show PHP version
-      run: php${{ matrix.php }} -v && composer -V
+      run: php -v && composer -V
     - name: Show Docker version
       run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
       env:
