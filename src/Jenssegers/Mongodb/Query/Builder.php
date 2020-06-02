@@ -136,9 +136,6 @@ class Builder extends BaseBuilder
         $this->connection = $connection;
         $this->processor = $processor;
         $this->useCollections = $this->shouldUseCollections();
-        if (!$this->useCollections) {
-            $this->useCollections = (bool) $connection->getConfig('use_collections') ?: false;
-        }
     }
 
     /**
@@ -152,8 +149,7 @@ class Builder extends BaseBuilder
             $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
             return version_compare($version, '5.3', '>=');
         }
-
-        return true;
+        return (bool) $this->connection->getConfig('use_collections') ?: false;
     }
 
     /**
