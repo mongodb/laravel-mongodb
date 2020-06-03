@@ -32,10 +32,11 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - uses: shivammathur/setup-php@v2
-      php-version: ${{ matrix.php }}
-      extensions: curl,mbstring,xdebug
-      coverage: xdebug
-      tools: composer
+      with:
+        php-version: ${{ matrix.php }}
+        extensions: curl,mbstring,xdebug
+        coverage: xdebug
+        tools: composer
     - name: Show PHP version
       run: php -v && composer -V
     - name: Show Docker version
