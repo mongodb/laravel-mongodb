@@ -31,7 +31,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - uses: shivammathur/setup-php@v2
+    - name: "Installing php"
+      uses: shivammathur/setup-php@v2
       with:
         php-version: ${{ matrix.php }}
         extensions: curl,mbstring,xdebug
