@@ -41,7 +41,7 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
     - [Authentication](#authentication)
     - [Queues](#queues)
   - [Upgrading](#upgrading)
-      - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
+      - [Upgrading from version 3 to 4](#upgrading-from-version-3-to-4)
 
 Installation
 ------------
