@@ -4,6 +4,7 @@ namespace Jenssegers\Mongodb;
 
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Support\Arr;
+use InvalidArgumentException;
 use MongoDB\Client;
 use MongoDB\Driver\ReadConcern;
 use MongoDB\Driver\ReadPreference;
@@ -43,8 +44,11 @@ class Connection extends BaseConnection
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
 
+        // Get default database name
+        $default_db = $this->getDefaultDatabaseName($dsn, $config);
+
         // Select database
-        $this->db = $this->connection->selectDatabase($this->getDatabaseDsn($dsn, $config['database']));
+        $this->db = $this->connection->selectDatabase($default_db);
 
         $this->useDefaultPostProcessor();
 
@@ -118,6 +122,26 @@ class Connection extends BaseConnection
     public function getDatabaseName()
     {
         return $this->getMongoDB()->getDatabaseName();
+    }
+
+    /**
+     * Get the name of the default database based on db config or try to detect it from dsn
+     * @param string $dsn
+     * @param array $config
+     * @return string
+     * @throws InvalidArgumentException
+     */
+    protected function getDefaultDatabaseName($dsn, $config)
+    {
+        if (empty($config['database'])) {
+            if (preg_match('/^mongodb(?:[+]srv)?:\\/\\/.+\\/([^?&]+)/s', $dsn, $matches)) {
+                $config['database'] = $matches[1];
+            } else {
+                throw new InvalidArgumentException("Database is not properly configured.");
+            }
+        }
+
+        return $config['database'];
     }
 
     /**
@@ -195,18 +219,6 @@ class Connection extends BaseConnection
         // Check if we want to authenticate against a specific database.
         $auth_database = isset($config['options']) && !empty($config['options']['database']) ? $config['options']['database'] : null;
         return 'mongodb://' . implode(',', $hosts) . ($auth_database ? '/' . $auth_database : '');
-    }
-
-    /**
-     * Get database name from DSN string, if there is no database in DSN path - returns back $database argument.
-     * @param string $dsn
-     * @param $database
-     * @return string
-     */
-    protected function getDatabaseDsn($dsn, $database)
-    {
-        $dsnDatabase = trim(parse_url($dsn, PHP_URL_PATH), '/');
-        return trim($dsnDatabase) ? $dsnDatabase : $database;
     }
 
     /**

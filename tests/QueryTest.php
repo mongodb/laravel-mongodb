@@ -69,6 +69,15 @@ class QueryTest extends TestCase
 
         $users = User::where('name', 'like', 't%')->get();
         $this->assertCount(1, $users);
+
+        $users = User::where('age', 'like', '%35%')->get();
+        $this->assertCount(3, $users);
+
+        $users = User::where('age', 'like', '3%')->get();
+        $this->assertCount(6, $users);
+
+        $users = User::where('age', 'like', '%3')->get();
+        $this->assertCount(4, $users);
     }
 
     public function testNotLike(): void
@@ -342,5 +351,52 @@ class QueryTest extends TestCase
         $this->assertCount(2, Scoped::withoutGlobalScopes()->get());
         $this->assertEquals(2, Scoped::withoutGlobalScopes()->update(['name' => 'Jimmy']));
         $this->assertCount(2, Scoped::withoutGlobalScopes()->where(['name' => 'Jimmy'])->get());
+    }
+
+    public function testUnsorted(): void
+    {
+        $unsortedResults = User::get();
+
+        $unsortedSubset = $unsortedResults->where('age', 35)->values();
+
+        $this->assertEquals('John Doe', $unsortedSubset[0]->name);
+        $this->assertEquals('Brett Boe', $unsortedSubset[1]->name);
+        $this->assertEquals('Yvonne Yoe', $unsortedSubset[2]->name);
+    }
+
+    public function testSort(): void
+    {
+        $results = User::orderBy('age')->get();
+
+        $this->assertEquals($results->sortBy('age')->pluck('age')->all(), $results->pluck('age')->all());
+    }
+
+    public function testSortOrder(): void
+    {
+        $results = User::orderBy('age', 'desc')->get();
+
+        $this->assertEquals($results->sortByDesc('age')->pluck('age')->all(), $results->pluck('age')->all());
+    }
+
+    public function testMultipleSort(): void
+    {
+        $results = User::orderBy('age')->orderBy('name')->get();
+
+        $subset = $results->where('age', 35)->values();
+
+        $this->assertEquals('Brett Boe', $subset[0]->name);
+        $this->assertEquals('John Doe', $subset[1]->name);
+        $this->assertEquals('Yvonne Yoe', $subset[2]->name);
+    }
+
+    public function testMultipleSortOrder(): void
+    {
+        $results = User::orderBy('age')->orderBy('name', 'desc')->get();
+
+        $subset = $results->where('age', 35)->values();
+
+        $this->assertEquals('Yvonne Yoe', $subset[0]->name);
+        $this->assertEquals('John Doe', $subset[1]->name);
+        $this->assertEquals('Brett Boe', $subset[2]->name);
     }
 }

@@ -2,8 +2,11 @@
 declare(strict_types=1);
 
 use Carbon\Carbon;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Date;
+use Jenssegers\Mongodb\Collection;
+use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Eloquent\Model;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -22,7 +25,7 @@ class ModelTest extends TestCase
     {
         $user = new User;
         $this->assertInstanceOf(Model::class, $user);
-        $this->assertInstanceOf(\Jenssegers\Mongodb\Connection::class, $user->getConnection());
+        $this->assertInstanceOf(Connection::class, $user->getConnection());
         $this->assertFalse($user->exists);
         $this->assertEquals('users', $user->getTable());
         $this->assertEquals('_id', $user->getKeyName());
@@ -196,7 +199,7 @@ class ModelTest extends TestCase
 
         $users = User::get();
         $this->assertCount(2, $users);
-        $this->assertInstanceOf(Collection::class, $users);
+        $this->assertInstanceOf(EloquentCollection::class, $users);
         $this->assertInstanceOf(Model::class, $users[0]);
     }
 
@@ -216,7 +219,7 @@ class ModelTest extends TestCase
     public function testNoDocument(): void
     {
         $items = Item::where('name', 'nothing')->get();
-        $this->assertInstanceOf(Collection::class, $items);
+        $this->assertInstanceOf(EloquentCollection::class, $items);
         $this->assertEquals(0, $items->count());
 
         $item = Item::where('name', 'nothing')->first();
@@ -383,8 +386,13 @@ class ModelTest extends TestCase
 
     public function testDates(): void
     {
-        $birthday = new DateTime('1980/1/1');
-        $user = User::create(['name' => 'John Doe', 'birthday' => $birthday]);
+        $user = User::create(['name' => 'John Doe', 'birthday' => new DateTime('1965/1/1')]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::where('birthday', '<', new DateTime('1968/1/1'))->first();
+        $this->assertEquals('John Doe', $user->name);
+
+        $user = User::create(['name' => 'John Doe', 'birthday' => new DateTime('1980/1/1')]);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
         $check = User::find($user->_id);
@@ -414,19 +422,152 @@ class ModelTest extends TestCase
         $this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
 
         /** @var User $user */
+        //Test with create and standard property
         $user = User::create(['name' => 'Jane Doe', 'birthday' => time()]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => Date::now()]);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
         $user = User::create(['name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 2005 03:12:46 PM']);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 1960 03:12:46 PM']);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
         $user = User::create(['name' => 'Jane Doe', 'birthday' => '2005-08-08']);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => '1965-08-08']);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => new DateTime('2010-08-08')]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => new DateTime('1965-08-08')]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => new DateTime('2010-08-08 04.08.37')]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => new DateTime('1965-08-08 04.08.37')]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => new DateTime('2010-08-08 04.08.37.324')]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => new DateTime('1965-08-08 04.08.37.324')]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        //Test with setAttribute and standard property
+        $user->setAttribute('birthday', time());
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', Date::now());
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', 'Monday 8th of August 2005 03:12:46 PM');
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', 'Monday 8th of August 1960 03:12:46 PM');
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', '2005-08-08');
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', '1965-08-08');
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', new DateTime('2010-08-08'));
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', new DateTime('1965-08-08'));
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', new DateTime('2010-08-08 04.08.37'));
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', new DateTime('1965-08-08 04.08.37'));
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', new DateTime('2010-08-08 04.08.37.324'));
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', new DateTime('1965-08-08 04.08.37.324'));
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        //Test with create and array property
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => time()]]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => Date::now()]]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => 'Monday 8th of August 2005 03:12:46 PM']]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => 'Monday 8th of August 1960 03:12:46 PM']]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
         $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => '2005-08-08']]);
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
-        $user->setAttribute('entry.date', new DateTime);
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => '1965-08-08']]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => new DateTime('2010-08-08')]]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => new DateTime('1965-08-08')]]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => new DateTime('2010-08-08 04.08.37')]]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => new DateTime('1965-08-08 04.08.37')]]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => new DateTime('2010-08-08 04.08.37.324')]]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => new DateTime('1965-08-08 04.08.37.324')]]);
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        //Test with setAttribute and array property
+        $user->setAttribute('entry.date', time());
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', Date::now());
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', 'Monday 8th of August 2005 03:12:46 PM');
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', 'Monday 8th of August 1960 03:12:46 PM');
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', '2005-08-08');
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', '1965-08-08');
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', new DateTime('2010-08-08'));
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', new DateTime('1965-08-08'));
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', new DateTime('2010-08-08 04.08.37'));
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', new DateTime('1965-08-08 04.08.37'));
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', new DateTime('2010-08-08 04.08.37.324'));
+        $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
+
+        $user->setAttribute('entry.date', new DateTime('1965-08-08 04.08.37.324'));
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
         $data = $user->toArray();
@@ -436,11 +577,11 @@ class ModelTest extends TestCase
 
     public function testCarbonDateMockingWorks()
     {
-        $fakeDate = \Carbon\Carbon::createFromDate(2000, 01, 01);
+        $fakeDate = Carbon::createFromDate(2000, 01, 01);
 
         Carbon::setTestNow($fakeDate);
         $item = Item::create(['name' => 'sword']);
-        
+
         $this->assertLessThan(1, $fakeDate->diffInSeconds($item->created_at));
     }
 
@@ -487,24 +628,24 @@ class ModelTest extends TestCase
         User::create(['name' => 'Jane Doe', 'age' => 35]);
         User::create(['name' => 'Harry Hoe', 'age' => 15]);
 
-        $users = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
+        $users = User::raw(function (Collection $collection) {
             return $collection->find(['age' => 35]);
         });
-        $this->assertInstanceOf(Collection::class, $users);
+        $this->assertInstanceOf(EloquentCollection::class, $users);
         $this->assertInstanceOf(Model::class, $users[0]);
 
-        $user = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
+        $user = User::raw(function (Collection $collection) {
             return $collection->findOne(['age' => 35]);
         });
 
         $this->assertInstanceOf(Model::class, $user);
 
-        $count = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
+        $count = User::raw(function (Collection $collection) {
             return $collection->count();
         });
         $this->assertEquals(3, $count);
 
-        $result = User::raw(function (\Jenssegers\Mongodb\Collection $collection) {
+        $result = User::raw(function (Collection $collection) {
             return $collection->insertOne(['name' => 'Yvonne Yoe', 'age' => 35]);
         });
         $this->assertNotNull($result);
@@ -566,7 +707,7 @@ class ModelTest extends TestCase
         User::create(['name' => 'spoon', 'tags' => ['round', 'bowl']]);
 
         $count = 0;
-        User::chunkById(2, function (\Illuminate\Database\Eloquent\Collection $items) use (&$count) {
+        User::chunkById(2, function (EloquentCollection $items) use (&$count) {
             $count += count($items);
         });
 

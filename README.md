@@ -43,6 +43,8 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
     - [Cross-Database Relationships](#cross-database-relationships)
     - [Authentication](#authentication)
     - [Queues](#queues)
+      - [Laravel specific](#laravel-specific)
+      - [Lumen specific](#Lumen-specific)
   - [Upgrading](#upgrading)
       - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
 
@@ -64,7 +66,7 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
  5.6.x    | 3.4.x
  5.7.x    | 3.4.x
  5.8.x    | 3.5.x
- 6.0.x    | 3.6.x
+ 6.x      | 3.6.x
 
 Install the package via Composer:
 
@@ -752,7 +754,7 @@ The belongsToMany relation will not use a pivot "table" but will push id's to a 
 If you want to define custom keys for your relation, set it to `null`:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Mode;
+use Jenssegers\Mongodb\Eloquent\Model;
 
 class User extends Model
 {
@@ -1108,6 +1110,8 @@ If you want to use MongoDB as your database backend, change the driver in `confi
 'connections' => [
     'database' => [
         'driver' => 'mongodb',
+        // You can also specify your jobs specific database created on config/database.php
+        'connection' => 'mongodb-job',
         'table' => 'jobs',
         'queue' => 'default',
         'expire' => 60,
@@ -1119,21 +1123,29 @@ If you want to use MongoDB to handle failed jobs, change the database in `config
 
 ```php
 'failed' => [
-    'driver' => env('QUEUE_FAILED_DRIVER', 'database'),
-    'database' => env('DB_CONNECTION', 'mongodb'),
+    'driver' => 'mongodb',
+    // You can also specify your jobs specific database created on config/database.php
+    'database' => 'mongodb-job',
     'table' => 'failed_jobs',
 ],
 ```
 
-Or simply set your own `QUEUE_FAILED_DRIVER` environment variable to `mongodb`
-```env
-QUEUE_FAILED_DRIVER=mongodb
-```
+#### Laravel specific
 
-Last, add the service provider in `config/app.php`:
+Add the service provider in `config/app.php`:
 
 ```php
 Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
+```
+
+#### Lumen specific
+
+With [Lumen](http://lumen.laravel.com), add the service provider in `bootstrap/app.php`. You must however ensure that you add the following **after** the `MongodbServiceProvider` registration.
+
+```php
+$app->make('queue');
+
+$app->register(Jenssegers\Mongodb\MongodbQueueServiceProvider::class);
 ```
 
 Upgrading
@@ -1175,3 +1187,7 @@ Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rathe
 ```php
 $books = $user->books()->sortBy('title')->get();
 ```
+
+## Security contact information
+
+To report a security vulnerability, follow [these steps](https://tidelift.com/security).
