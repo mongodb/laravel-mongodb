@@ -25,6 +25,10 @@
             <file>tests/QueryBuilderTest.php</file>
             <file>tests/QueryTest.php</file>
         </testsuite>
+        <testsuite name="transaction">
+            <file>tests/TransactionBuilderTest.php</file>
+            <file>tests/TransactionTest.php</file>
+        </testsuite>
         <testsuite name="model">
             <file>tests/ModelTest.php</file>
             <file>tests/RelationsTest.php</file>
