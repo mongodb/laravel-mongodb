@@ -358,9 +358,7 @@ class Builder extends BaseBuilder
             }
 
             // if transaction in session
-            if ($session = $this->connection->getSession()) {
-                $options['session']  =  $session;
-            }
+            $options = $this->setSession($options);
 
             // Execute aggregation
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
@@ -374,9 +372,7 @@ class Builder extends BaseBuilder
 
             $options = [];
             // if transaction in session
-            if ($session = $this->connection->getSession()) {
-                $options['session']  =  $session;
-            }
+            $options = $this->setSession($options);
 
             // Execute distinct
             $result = $this->collection->distinct($column, $wheres ?: [], $options);
@@ -426,9 +422,7 @@ class Builder extends BaseBuilder
             }
 
             // if transaction in session
-            if ($session = $this->connection->getSession()) {
-                $options['session']  =  $session;
-            }
+            $options = $this->setSession($options);
 
             // Execute query and get MongoCursor
             $cursor = $this->collection->find($wheres, $options);
@@ -604,9 +598,8 @@ class Builder extends BaseBuilder
         // Batch insert
         $options = [];
         // if transaction in session
-        if ($session = $this->connection->getSession()) {
-            $options['session']  =  $session;
-        }
+        $options = $this->setSession($options);
+
         $result = $this->collection->insertMany($values, $options);
 
         return (1 == (int) $result->isAcknowledged());
@@ -619,9 +612,8 @@ class Builder extends BaseBuilder
     {
         $options = [];
         // if transaction in session
-        if ($session = $this->connection->getSession()) {
-            $options['session']  =  $session;
-        }
+        $options = $this->setSession($options);
+
         $result = $this->collection->insertOne($values, $options);
 
         if (1 == (int) $result->isAcknowledged()) {
@@ -644,9 +636,7 @@ class Builder extends BaseBuilder
             $values = ['$set' => $values];
         }
         // if transaction in session
-        if ($session = $this->connection->getSession()) {
-            $options['session']  =  $session;
-        }
+        $options = $this->setSession($options);
 
         return $this->performUpdate($values, $options);
     }
@@ -670,9 +660,7 @@ class Builder extends BaseBuilder
         });
 
         // if transaction in session
-        if ($session = $this->connection->getSession()) {
-            $options['session']  =  $session;
-        }
+        $options = $this->setSession($options);
 
         return $this->performUpdate($query, $options);
     }
@@ -736,9 +724,7 @@ class Builder extends BaseBuilder
 
         $options = [];
         // if transaction in session
-        if ($session = $this->connection->getSession()) {
-            $options['session']  =  $session;
-        }
+        $options = $this->setSession($options);
 
         $result = $this->collection->DeleteMany($wheres, $options);
         if (1 == (int) $result->isAcknowledged()) {
@@ -769,9 +755,7 @@ class Builder extends BaseBuilder
             'typeMap' => ['root' => 'object', 'document' => 'object'],
         ];
         // if transaction in session
-        if ($session = $this->connection->getSession()) {
-            $options['session']  =  $session;
-        }
+        $options = $this->setSession($options);
 
         $result = $this->collection->drop($options);
 
@@ -902,9 +886,7 @@ class Builder extends BaseBuilder
         }
 
         // if transaction in session
-        if ($session = $this->connection->getSession()) {
-            $options['session']  =  $session;
-        }
+        $options = $this->setSession($options);
 
         $wheres = $this->compileWheres();
         $result = $this->collection->UpdateMany($wheres, $query, $options);
@@ -1236,6 +1218,19 @@ class Builder extends BaseBuilder
         $this->options = $options;
 
         return $this;
+    }
+
+    /**
+     * set session for the transaction
+     * @param $session
+     * @return mixed
+     */
+    protected function setSession($options)
+    {
+        if ($session = $this->connection->getSession()) {
+            $options['session']  =  $session;
+        }
+        return $options;
     }
 
     /**
