@@ -232,7 +232,7 @@ class Book extends Model
 }
 ```
 
-MongoDB Authenticatable### Extending the Authenticable base model
+### Extending the Authenticable base model
 This package includes a MongoDB Authenticatable Eloquent class `Jenssegers\Mongodb\Auth\User` that you can use to replace the default Authenticatable class `Illuminate\Foundation\Auth\User` for your `User` model.
 
 ```php
