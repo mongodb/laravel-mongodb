@@ -232,6 +232,18 @@ class Book extends Model
 }
 ```
 
+MongoDB Authenticatable### Extending the Authenticable base model
+This package includes a MongoDB Authenticatable Eloquent class `Jenssegers\Mongodb\Auth\User` that you can use to replace the default Authenticatable class `Illuminate\Foundation\Auth\User` for your `User` model.
+
+```php
+use Jenssegers\Mongodb\Auth\User as Authenticatable;
+
+class User extends Authenticatable
+{
+    use Notifiable;
+}
+```
+
 ### Soft Deletes
 
 When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record.
