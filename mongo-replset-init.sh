@@ -1,23 +1,39 @@
 #!/bin/bash
+mongodb1=`getent hosts ${MONGO1} | awk '{ print $1 }'`
 
-echo "prepare rs initiating"
+port=${PORT:-27018}
 
-check_db_status() {
-  mongo1=$(mongo --host mongo1 --port 27017 --eval "db.stats().ok" | tail -n1 | grep -E '(^|\s)1($|\s)')
-  mongo2=$(mongo --host mongo2 --port 27017 --eval "db.stats().ok" | tail -n1 | grep -E '(^|\s)1($|\s)')
-  mongo3=$(mongo --host mongo3 --port 27017 --eval "db.stats().ok" | tail -n1 | grep -E '(^|\s)1($|\s)')
-  if [[ $mongo1 == 1 ]] && [[ $mongo2 == 1 ]] && [[ $mongo3 == 1 ]]; then
-    init_rs
-  else
-    check_db_status
-  fi
-}
+echo "Waiting for startup.."
+until mongo --host ${mongodb1}:${port} --eval 'quit(db.runCommand({ ping: 1 }).ok ? 0 : 2)' &>/dev/null; do
+  printf '.'
+  sleep 1
+done
 
-init_rs() {
-  ret=$(mongo --host mongo1 --port 27017 --eval "rs.initiate({ _id: 'rs0', members: [{ _id: 0, host: 'mongo1:27017' }, { _id: 1, host: 'mongo2:27017' }, { _id: 2, host: 'mongo3:27017' } ] })" > /dev/null 2>&1)
-}
+echo "Started.."
 
-check_db_status > /dev/null 2>&1
-
-echo "rs initiating finished"
-exit 0
+echo setup.sh time now: `date +"%T" `
+mongo --host ${mongodb1}:${port} <<EOF
+   var cfg = {
+        "_id": "${RS}",
+        "protocolVersion": 1,
+        "members": [
+            {
+                "_id": 0,
+                "host": "${MONGO1}:${port}",
+                "priority": 2
+            },
+            {
+                "_id": 1,
+                "host": "${MONGO2}:${port}",
+                "priority": 0
+            },
+            {
+                "_id": 2,
+                "host": "${MONGO3}:${port}",
+                "priority": 0
+            }
+        ]
+    };
+    rs.initiate(cfg, { force: true });
+    rs.reconfig(cfg, { force: true });
+EOF

@@ -7,7 +7,7 @@ class TransactionBuilderTest extends TestCase
 {
     protected $insertData = ['name' => 'klinson', 'age' => 20, 'title' => 'admin'];
     protected $originData = ['name' => 'users', 'age' => 20, 'title' => 'user'];
-    protected $connection = 'mongodb_replset';
+    protected $connection = 'mongodb_repl';
     protected $originConnection = 'mongodb';
 
     public function setUp(): void
@@ -20,6 +20,18 @@ class TransactionBuilderTest extends TestCase
 
         DB::collection('users')->truncate();
         DB::collection('users')->insert($this->originData);
+    }
+
+    protected function getEnvironmentSetUp($app)
+    {
+//        if (version_compare(env('MONGO_VERSION'), '4', '<')) {
+//            $this->markTestSkipped('MongoDB with version below 4 is not supported for transactions');
+//        }
+
+        $config = require 'config/database.php';
+
+        $app['config']->set('database.connections.'.$this->connection, $config['connections'][$this->connection]);
+        $app['config']->set('database.default', $this->connection);
     }
 
     public function tearDown(): void

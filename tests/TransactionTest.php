@@ -7,25 +7,32 @@ class TransactionTest extends TestCase
 {
     protected $insertData = ['name' => 'klinson', 'age' => 20, 'title' => 'admin'];
     protected $originData = ['name' => 'users', 'age' => 20, 'title' => 'user'];
-    protected $connection = 'mongodb_replset';
+    protected $connection = 'mongodb_repl';
     protected $originConnection = 'mongodb';
 
     public function setUp(): void
     {
         parent::setUp();
 
-        /** change connection to seplset? because the transaction needs  */
-        $this->originConnection = DB::getDefaultConnection();
-        DB::setDefaultConnection($this->connection);
+        User::on($this->connection)->truncate();
+        User::on($this->connection)->create($this->originData);
+    }
 
-        User::truncate();
-        User::create($this->originData);
+    protected function getEnvironmentSetUp($app)
+    {
+//        if (version_compare(env('MONGO_VERSION'), '4', '<')) {
+//            $this->markTestSkipped('MongoDB with version below 4 is not supported for transactions');
+//        }
+
+        $config = require 'config/database.php';
+
+        $app['config']->set('database.connections.'.$this->connection, $config['connections'][$this->connection]);
+        $app['config']->set('database.default', $this->connection);
     }
 
     public function tearDown(): void
     {
-        User::truncate();
-        DB::setDefaultConnection($this->originConnection);
+        User::on($this->connection)->truncate();
 
         parent::tearDown();
     }
@@ -34,24 +41,24 @@ class TransactionTest extends TestCase
     {
         /** rollback test */
         DB::beginTransaction();
-        $user = User::create($this->insertData);
+        $user = User::on($this->connection)->create($this->insertData);
         DB::rollBack();
         $this->assertInstanceOf(\Jenssegers\Mongodb\Eloquent\Model::class, $user);
         $this->assertTrue($user->exists);
         $this->assertEquals($this->insertData['name'], $user->name);
 
-        $check = User::find($user->_id);
+        $check = User::on($this->connection)->find($user->_id);
         $this->assertNull($check);
 
         /** commit test */
         DB::beginTransaction();
-        $user = User::create($this->insertData);
+        $user = User::on($this->connection)->create($this->insertData);
         DB::commit();
         $this->assertInstanceOf(\Jenssegers\Mongodb\Eloquent\Model::class, $user);
         $this->assertTrue($user->exists);
         $this->assertEquals($this->insertData['name'], $user->name);
 
-        $check = User::find($user->_id);
+        $check = User::on($this->connection)->find($user->_id);
         $this->assertNotNull($check);
         $this->assertEquals($user->name, $check->name);
     }
@@ -61,6 +68,7 @@ class TransactionTest extends TestCase
         /** rollback test */
         DB::beginTransaction();
         $user = new User;
+        $user->on($this->connection);
         $user->name = $this->insertData['name'];
         $user->title = $this->insertData['title'];
         $user->age = $this->insertData['age'];
@@ -71,12 +79,13 @@ class TransactionTest extends TestCase
         $this->assertTrue(isset($user->_id));
         $this->assertIsString($user->_id);
 
-        $check = User::find($user->_id);
+        $check = User::on($this->connection)->find($user->_id);
         $this->assertNull($check);
 
         /** commit test */
         DB::beginTransaction();
         $user = new User;
+        $user->on($this->connection);
         $user->name = $this->insertData['name'];
         $user->title = $this->insertData['title'];
         $user->age = $this->insertData['age'];
@@ -87,7 +96,7 @@ class TransactionTest extends TestCase
         $this->assertTrue(isset($user->_id));
         $this->assertIsString($user->_id);
 
-        $check = User::find($user->_id);
+        $check = User::on($this->connection)->find($user->_id);
         $this->assertNotNull($check);
         $this->assertEquals($check->name, $user->name);
         $this->assertEquals($check->age, $user->age);
@@ -97,12 +106,13 @@ class TransactionTest extends TestCase
     public function testInsertWithId(): void
     {
         $id = 1;
-        $check = User::find($id);
+        $check = User::on($this->connection)->find($id);
         $this->assertNull($check);
 
         /** rollback test */
         DB::beginTransaction();
         $user = new User;
+        $user->on($this->connection);
         $user->_id = $id;
         $user->name = $this->insertData['name'];
         $user->title = $this->insertData['title'];
@@ -112,12 +122,13 @@ class TransactionTest extends TestCase
 
         $this->assertTrue($user->exists);
         $this->assertEquals($id, $user->_id);
-        $check = User::find($id);
+        $check = User::on($this->connection)->find($id);
         $this->assertNull($check);
 
         /** commit test */
         DB::beginTransaction();
         $user = new User;
+        $user->on($this->connection);
         $user->_id = $id;
         $user->name = $this->insertData['name'];
         $user->title = $this->insertData['title'];
@@ -127,7 +138,7 @@ class TransactionTest extends TestCase
 
         $this->assertTrue($user->exists);
         $this->assertEquals($id, $user->_id);
-        $check = User::find($id);
+        $check = User::on($this->connection)->find($id);
         $this->assertNotNull($check);
         $this->assertEquals($check->name, $user->name);
         $this->assertEquals($check->age, $user->age);
@@ -138,8 +149,8 @@ class TransactionTest extends TestCase
     {
         /** rollback test */
         $new_age = $this->insertData['age'] + 1;
-        $user1 = User::create($this->insertData);
-        $user2 = User::create($this->insertData);
+        $user1 = User::on($this->connection)->create($this->insertData);
+        $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
         $user1->age = $new_age;
         $user1->save();
@@ -148,15 +159,15 @@ class TransactionTest extends TestCase
         $this->assertEquals($new_age, $user1->age);
         $this->assertEquals($new_age, $user2->age);
 
-        $check1 = User::find($user1->_id);
-        $check2 = User::find($user2->_id);
+        $check1 = User::on($this->connection)->find($user1->_id);
+        $check2 = User::on($this->connection)->find($user2->_id);
         $this->assertEquals($this->insertData['age'], $check1->age);
         $this->assertEquals($this->insertData['age'], $check2->age);
 
         /** commit test */
         User::truncate();
-        $user1 = User::create($this->insertData);
-        $user2 = User::create($this->insertData);
+        $user1 = User::on($this->connection)->create($this->insertData);
+        $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
         $user1->age = $new_age;
         $user1->save();
@@ -165,8 +176,8 @@ class TransactionTest extends TestCase
         $this->assertEquals($new_age, $user1->age);
         $this->assertEquals($new_age, $user2->age);
 
-        $check1 = User::find($user1->_id);
-        $check2 = User::find($user2->_id);
+        $check1 = User::on($this->connection)->find($user1->_id);
+        $check2 = User::on($this->connection)->find($user2->_id);
         $this->assertEquals($new_age, $check1->age);
         $this->assertEquals($new_age, $check2->age);
     }
@@ -174,47 +185,47 @@ class TransactionTest extends TestCase
     public function testDelete()
     {
         /** rollback test */
-        $user1 = User::create($this->insertData);
-        $user2 = User::create($this->insertData);
+        $user1 = User::on($this->connection)->create($this->insertData);
+        $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
         $user1->delete();
-        User::destroy((string) $user2->_id);
+        User::on($this->connection)->destroy((string) $user2->_id);
         DB::rollBack();
-        $check1 = User::find($user1->_id);
-        $check2 = User::find($user2->_id);
+        $check1 = User::on($this->connection)->find($user1->_id);
+        $check2 = User::on($this->connection)->find($user2->_id);
         $this->assertNotNull($check1);
         $this->assertNotNull($check2);
 
         /** commit test */
         User::truncate();
-        $user1 = User::create($this->insertData);
-        $user2 = User::create($this->insertData);
+        $user1 = User::on($this->connection)->create($this->insertData);
+        $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
         $user1->delete();
-        User::destroy((string) $user2->_id);
+        User::on($this->connection)->destroy((string) $user2->_id);
         DB::commit();
-        $check1 = User::find($user1->_id);
-        $check2 = User::find($user2->_id);
+        $check1 = User::on($this->connection)->find($user1->_id);
+        $check2 = User::on($this->connection)->find($user2->_id);
         $this->assertNull($check1);
         $this->assertNull($check2);
     }
 
     public function testTransaction()
     {
-        $count = User::count();
+        $count = User::on($this->connection)->count();
         $this->assertEquals(1, $count);
         $new_age = $this->originData['age'] + 1;
         DB::transaction(function () use ($new_age) {
-            User::create($this->insertData);
-            User::where($this->originData['name'])->update(['age' => $new_age]);
+            User::on($this->connection)->create($this->insertData);
+            User::on($this->connection)->where($this->originData['name'])->update(['age' => $new_age]);
         });
-        $count = User::count();
+        $count = User::on($this->connection)->count();
         $this->assertEquals(2, $count);
 
-        $checkInsert = User::where($this->insertData['name'])->first();
+        $checkInsert = User::on($this->connection)->where($this->insertData['name'])->first();
         $this->assertNotNull($checkInsert);
 
-        $checkUpdate = User::where($this->originData['name'])->first();
+        $checkUpdate = User::on($this->connection)->where($this->originData['name'])->first();
         $this->assertEquals($new_age, $checkUpdate->age);
     }
 }
