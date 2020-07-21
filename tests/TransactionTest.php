@@ -177,28 +177,20 @@ class TransactionTest extends TestCase
     {
         /** rollback test */
         $user1 = User::on($this->connection)->create($this->insertData);
-        $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
         $user1->delete();
-        User::on($this->connection)->destroy((string) $user2->_id);
         DB::rollBack();
         $check1 = User::on($this->connection)->find($user1->_id);
-        $check2 = User::on($this->connection)->find($user2->_id);
         $this->assertNotNull($check1);
-        $this->assertNotNull($check2);
 
         /** commit test */
         User::on($this->connection)->truncate();
         $user1 = User::on($this->connection)->create($this->insertData);
-        $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
         $user1->delete();
-        User::on($this->connection)->destroy((string) $user2->_id);
         DB::commit();
         $check1 = User::on($this->connection)->find($user1->_id);
-        $check2 = User::on($this->connection)->find($user2->_id);
         $this->assertNull($check1);
-        $this->assertNull($check2);
     }
 
     public function testTransaction()
