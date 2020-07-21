@@ -8,7 +8,6 @@ class TransactionTest extends TestCase
     protected $insertData = ['name' => 'klinson', 'age' => 20, 'title' => 'admin'];
     protected $originData = ['name' => 'users', 'age' => 20, 'title' => 'user'];
     protected $connection = 'mongodb_repl';
-    protected $originConnection = 'mongodb';
 
     public function setUp(): void
     {
@@ -63,8 +62,7 @@ class TransactionTest extends TestCase
     {
         /** rollback test */
         DB::beginTransaction();
-        $user = new User;
-        $user->on($this->connection);
+        $user = User::on($this->connection)->getModel();
         $user->name = $this->insertData['name'];
         $user->title = $this->insertData['title'];
         $user->age = $this->insertData['age'];
@@ -80,8 +78,7 @@ class TransactionTest extends TestCase
 
         /** commit test */
         DB::beginTransaction();
-        $user = new User;
-        $user->on($this->connection);
+        $user = User::on($this->connection)->getModel();
         $user->name = $this->insertData['name'];
         $user->title = $this->insertData['title'];
         $user->age = $this->insertData['age'];
@@ -107,8 +104,7 @@ class TransactionTest extends TestCase
 
         /** rollback test */
         DB::beginTransaction();
-        $user = new User;
-        $user->on($this->connection);
+        $user = User::on($this->connection)->getModel();
         $user->_id = $id;
         $user->name = $this->insertData['name'];
         $user->title = $this->insertData['title'];
@@ -123,8 +119,7 @@ class TransactionTest extends TestCase
 
         /** commit test */
         DB::beginTransaction();
-        $user = new User;
-        $user->on($this->connection);
+        $user = User::on($this->connection)->getModel();
         $user->_id = $id;
         $user->name = $this->insertData['name'];
         $user->title = $this->insertData['title'];
