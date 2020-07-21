@@ -20,9 +20,9 @@ class TransactionTest extends TestCase
 
     protected function getEnvironmentSetUp($app)
     {
-//        if (version_compare(env('MONGO_VERSION'), '4', '<')) {
-//            $this->markTestSkipped('MongoDB with version below 4 is not supported for transactions');
-//        }
+        if (version_compare(env('MONGO_VERSION'), '4', '<')) {
+            $this->markTestSkipped('MongoDB with version below 4 is not supported for transactions');
+        }
 
         $config = require 'config/database.php';
 
