@@ -156,7 +156,7 @@ class TransactionTest extends TestCase
         $this->assertEquals($this->insertData['age'], $check2->age);
 
         /** commit test */
-        User::truncate();
+        User::on($this->connection)->truncate();
         $user1 = User::on($this->connection)->create($this->insertData);
         $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
@@ -188,7 +188,7 @@ class TransactionTest extends TestCase
         $this->assertNotNull($check2);
 
         /** commit test */
-        User::truncate();
+        User::on($this->connection)->truncate();
         $user1 = User::on($this->connection)->create($this->insertData);
         $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
