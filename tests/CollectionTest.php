@@ -23,7 +23,6 @@ class CollectionTest extends TestCase
         $mongoCollection->expects($this->once())->method('getCollectionName')->willReturn('name-collection');
 
         $connection = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
-        $connection->expects($this->once())->method('logging')->willReturn(true);
         $connection->expects($this->once())->method('getElapsedTime')->willReturn($time);
         $connection->expects($this->once())->method('logQuery')->with($queryString, [], $time);
 
