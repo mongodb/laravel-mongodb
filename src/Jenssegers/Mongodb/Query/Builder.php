@@ -11,7 +11,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
-use MongoCollection;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
@@ -26,7 +25,7 @@ class Builder extends BaseBuilder
 {
     /**
      * The database collection.
-     * @var MongoCollection
+     * @var \MongoDB\Collection
      */
     protected $collection;
 
@@ -749,17 +748,15 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
-    public function truncate()
+    public function truncate(): bool
     {
-        $options = [
-            'typeMap' => ['root' => 'object', 'document' => 'object'],
-        ];
+        $options = [];
         // if transaction in session
         $options = $this->setSession($options);
 
-        $result = $this->collection->drop($options);
+        $result = $this->collection->deleteMany($options);
 
-        return (1 == (int) $result->ok);
+        return (1 === (int) $result->isAcknowledged());
     }
 
     /**
