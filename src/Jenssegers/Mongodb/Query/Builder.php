@@ -1227,7 +1227,7 @@ class Builder extends BaseBuilder
      */
     protected function setSession($options)
     {
-        if ($session = $this->connection->getSession()) {
+        if (!isset($options['session']) && ($session = $this->connection->getSession())) {
             $options['session']  =  $session;
         }
         return $options;
