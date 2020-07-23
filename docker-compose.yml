@@ -47,9 +47,6 @@ services:
         depends_on:
             - mongodb_repl_2
             - mongodb_repl_3
-        links:
-            - mongodb_repl_2:mongodb_repl_2
-            - mongodb_repl_3:mongodb_repl_3
         logging:
             driver: none
 
@@ -81,10 +78,6 @@ services:
             - mongodb_repl
             - mongodb_repl_2
             - mongodb_repl_3
-        links:
-            - mongodb_repl:mongodb_repl
-            - mongodb_repl_2:mongodb_repl_2
-            - mongodb_repl_3:mongodb_repl_3
         environment:
             - MONGO1=mongodb_repl
             - MONGO2=mongodb_repl_2
