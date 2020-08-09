@@ -99,7 +99,13 @@ abstract class Model extends BaseModel
     {
         // Convert UTCDateTime instances.
         if ($value instanceof UTCDateTime) {
-            return Date::createFromTimestampMs($value->toDateTime()->format('Uv'));
+            $date = $value->toDateTime();
+
+            $seconds = $date->format('U');
+            $milliseconds = abs($date->format('v'));
+            $timestampMs = sprintf('%d%03d', $seconds, $milliseconds);
+
+            return Date::createFromTimestampMs($timestampMs);
         }
 
         return parent::asDateTime($value);

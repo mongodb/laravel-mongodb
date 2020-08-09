@@ -3,6 +3,7 @@ declare(strict_types=1);
 
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\LazyCollection;
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Query\Builder;
 use MongoDB\BSON\ObjectId;
@@ -175,8 +176,10 @@ class QueryBuilderTest extends TestCase
     public function testTruncate()
     {
         DB::collection('users')->insert(['name' => 'John Doe']);
+        DB::collection('users')->insert(['name' => 'John Doe']);
+        $this->assertEquals(2, DB::collection('users')->count());
         $result = DB::collection('users')->truncate();
-        $this->assertEquals(1, $result);
+        $this->assertTrue($result);
         $this->assertEquals(0, DB::collection('users')->count());
     }
 
@@ -546,9 +549,9 @@ class QueryBuilderTest extends TestCase
     {
         DB::collection('users')->insert([
             ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv'))],
-            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(Date::parse("1981-01-01 00:00:00")->format('Uv'))],
             ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse("1982-01-01 00:00:00")->format('Uv'))],
-            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse("1983-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse("1983-01-01 00:00:00.1")->format('Uv'))],
+            ['name' => 'Frank White', 'birthday' => new UTCDateTime(Date::parse("1960-01-01 12:12:12.1")->format('Uv'))]
         ]);
 
         $user = DB::collection('users')
@@ -556,11 +559,16 @@ class QueryBuilderTest extends TestCase
             ->first();
         $this->assertEquals('John Doe', $user['name']);
 
+        $user = DB::collection('users')
+            ->where('birthday', new UTCDateTime(Date::parse("1960-01-01 12:12:12.1")->format('Uv')))
+            ->first();
+        $this->assertEquals('Frank White', $user['name']);
+
         $user = DB::collection('users')->where('birthday', '=', new DateTime("1980-01-01 00:00:00"))->first();
         $this->assertEquals('John Doe', $user['name']);
 
-        $start = new UTCDateTime(1000 * strtotime("1981-01-01 00:00:00"));
-        $stop = new UTCDateTime(1000 * strtotime("1982-01-01 00:00:00"));
+        $start = new UTCDateTime(1000 * strtotime("1950-01-01 00:00:00"));
+        $stop = new UTCDateTime(1000 * strtotime("1981-01-01 00:00:00"));
 
         $users = DB::collection('users')->whereBetween('birthday', [$start, $stop])->get();
         $this->assertCount(2, $users);
@@ -758,5 +766,22 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals('spoon', $results[2]['name']);
         $this->assertEquals('spork', $results[1]['name']);
         $this->assertEquals('fork', $results[0]['name']);
+    }
+
+    public function testCursor()
+    {
+        $data = [
+            ['name' => 'fork', 'tags' => ['sharp', 'pointy']],
+            ['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']],
+            ['name' => 'spoon', 'tags' => ['round', 'bowl']],
+        ];
+        DB::collection('items')->insert($data);
+
+        $results = DB::collection('items')->orderBy('_id', 'asc')->cursor();
+
+        $this->assertInstanceOf(LazyCollection::class, $results);
+        foreach ($results as $i => $result) {
+            $this->assertEquals($data[$i]['name'], $result['name']);
+        }
     }
 }

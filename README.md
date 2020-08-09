@@ -42,6 +42,8 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
     - [Cross-Database Relationships](#cross-database-relationships)
     - [Authentication](#authentication)
     - [Queues](#queues)
+      - [Laravel specific](#laravel-specific)
+      - [Lumen specific](#Lumen-specific)
   - [Upgrading](#upgrading)
       - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
 
@@ -227,6 +229,18 @@ use Jenssegers\Mongodb\Eloquent\Model;
 class Book extends Model
 {
     protected $connection = 'mongodb';
+}
+```
+
+### Extending the Authenticable base model
+This package includes a MongoDB Authenticatable Eloquent class `Jenssegers\Mongodb\Auth\User` that you can use to replace the default Authenticatable class `Illuminate\Foundation\Auth\User` for your `User` model.
+
+```php
+use Jenssegers\Mongodb\Auth\User as Authenticatable;
+
+class User extends Authenticatable
+{
+    
 }
 ```
 
@@ -1067,6 +1081,8 @@ If you want to use MongoDB as your database backend, change the driver in `confi
 'connections' => [
     'database' => [
         'driver' => 'mongodb',
+        // You can also specify your jobs specific database created on config/database.php
+        'connection' => 'mongodb-job',
         'table' => 'jobs',
         'queue' => 'default',
         'expire' => 60,
@@ -1078,21 +1094,29 @@ If you want to use MongoDB to handle failed jobs, change the database in `config
 
 ```php
 'failed' => [
-    'driver' => env('QUEUE_FAILED_DRIVER', 'database'),
-    'database' => env('DB_CONNECTION', 'mongodb'),
+    'driver' => 'mongodb',
+    // You can also specify your jobs specific database created on config/database.php
+    'database' => 'mongodb-job',
     'table' => 'failed_jobs',
 ],
 ```
 
-Or simply set your own `QUEUE_FAILED_DRIVER` environment variable to `mongodb`
-```env
-QUEUE_FAILED_DRIVER=mongodb
-```
+#### Laravel specific
 
-Last, add the service provider in `config/app.php`:
+Add the service provider in `config/app.php`:
 
 ```php
 Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
+```
+
+#### Lumen specific
+
+With [Lumen](http://lumen.laravel.com), add the service provider in `bootstrap/app.php`. You must however ensure that you add the following **after** the `MongodbServiceProvider` registration.
+
+```php
+$app->make('queue');
+
+$app->register(Jenssegers\Mongodb\MongodbQueueServiceProvider::class);
 ```
 
 Upgrading

@@ -11,7 +11,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        php: ['7.1', '7.2', '7.3', '7.4']
+        php: ['7.2', '7.3', '7.4']
         os: ['ubuntu-latest']
         mongodb: ['3.6', '4.0', '4.2']
     services:
@@ -30,9 +30,16 @@ jobs:
     name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
 
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2
+    - name: "Installing php"
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+        extensions: curl,mbstring,xdebug
+        coverage: xdebug
+        tools: composer
     - name: Show PHP version
-      run: php${{ matrix.php }} -v && composer -V
+      run: php -v && composer -V
     - name: Show Docker version
       run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
       env:
