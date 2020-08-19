@@ -19,6 +19,7 @@ class ModelTest extends TestCase
         Soft::truncate();
         Book::truncate();
         Item::truncate();
+        Guarded::truncate();
     }
 
     public function testNewModel(): void
