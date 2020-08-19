@@ -722,4 +722,11 @@ class ModelTest extends TestCase
 
         $this->assertEquals(0, User::count());
     }
+
+    public function testGuardedModel()
+    {
+        Guarded::create(['var' => 'val']);
+
+        $this->assertEquals(1, Guarded::count());
+    }
 }
