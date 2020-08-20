@@ -474,6 +474,17 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * Checks if column exists on a table.  As this is a document model, just return true.  This also
+     * prevents calls to non-existent function Grammar::compileColumnListing()
+     * @param string $key
+     * @return bool
+     */
+    protected function isGuardableColumn($key)
+    {
+        return true;
+    }
+
+    /**
      * @inheritdoc
      */
     public function __call($method, $parameters)
