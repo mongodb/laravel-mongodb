@@ -22,6 +22,7 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
     - [Extending the base model](#extending-the-base-model)
     - [Soft Deletes](#soft-deletes)
     - [Dates](#dates)
+    - [Guarding attributes](#guarding-attributes)
     - [Basic Usage](#basic-usage)
     - [MongoDB-specific operators](#mongodb-specific-operators)
     - [MongoDB-specific Geo operations](#mongodb-specific-geo-operations)
@@ -240,7 +241,7 @@ use Jenssegers\Mongodb\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    
+
 }
 ```
 
@@ -262,6 +263,13 @@ class User extends Model
 ```
 
 For more information check [Laravel Docs about Soft Deleting](http://laravel.com/docs/eloquent#soft-deleting).
+
+### Guarding attributes
+
+When choosing between guarding attributes or marking some as fillable, Taylor Otwell prefers the fillable route.
+This is in light of [recent security issues described here](https://blog.laravel.com/security-release-laravel-61835-7240).
+
+Keep in mind guarding still works, but you may experience unexpected behavior.
 
 ### Dates
 
