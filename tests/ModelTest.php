@@ -726,8 +726,24 @@ class ModelTest extends TestCase
 
     public function testGuardedModel()
     {
-        Guarded::create(['var' => 'val']);
+        $model = new Guarded();
 
-        $this->assertEquals(1, Guarded::count());
+        // foobar is properly guarded
+        $model->fill(['foobar' => 'ignored', 'name' => 'John Doe']);
+        $this->assertFalse(isset($model->foobar));
+        $this->assertSame('John Doe', $model->name);
+
+        // foobar is guarded to any level
+        $model->fill(['foobar->level2' => 'v2']);
+        $this->assertNull($model->getAttribute('foobar->level2'));
+
+        // multi level statement also guarded
+        $model->fill(['level1->level2' => 'v1']);
+        $this->assertNull($model->getAttribute('level1->level2'));
+
+        // level1 is still writable
+        $dataValues = ['array', 'of', 'values'];
+        $model->fill(['level1' => $dataValues]);
+        $this->assertEquals($dataValues, $model->getAttribute('level1'));
     }
 }

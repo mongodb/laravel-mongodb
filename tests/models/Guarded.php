@@ -7,5 +7,5 @@ class Guarded extends Eloquent
 {
     protected $connection = 'mongodb';
     protected $collection = 'guarded';
-    protected $guarded = ['foobar'];
+    protected $guarded = ['foobar', 'level1->level2'];
 }
