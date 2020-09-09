@@ -225,9 +225,10 @@ class Builder extends BaseBuilder
             foreach ($cursor as $item){
                 yield $item;
             }
+        } else {
+            throw new RuntimeException("Query not compatible with cursor");
         }
 
-        throw new RuntimeException("Query not compatible with cursor");
     }
 
     /**
