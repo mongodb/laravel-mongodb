@@ -1,4 +1,5 @@
 <?php
+declare(strict_types=1);
 
 class QueryTest extends TestCase
 {
@@ -25,7 +26,7 @@ class QueryTest extends TestCase
         parent::tearDown();
     }
 
-    public function testWhere()
+    public function testWhere(): void
     {
         $users = User::where('age', 35)->get();
         $this->assertCount(3, $users);
@@ -46,7 +47,7 @@ class QueryTest extends TestCase
         $this->assertCount(6, $users);
     }
 
-    public function testAndWhere()
+    public function testAndWhere(): void
     {
         $users = User::where('age', 35)->where('title', 'admin')->get();
         $this->assertCount(2, $users);
@@ -55,7 +56,7 @@ class QueryTest extends TestCase
         $this->assertCount(2, $users);
     }
 
-    public function testLike()
+    public function testLike(): void
     {
         $users = User::where('name', 'like', '%doe')->get();
         $this->assertCount(2, $users);
@@ -68,9 +69,33 @@ class QueryTest extends TestCase
 
         $users = User::where('name', 'like', 't%')->get();
         $this->assertCount(1, $users);
+
+        $users = User::where('age', 'like', '%35%')->get();
+        $this->assertCount(3, $users);
+
+        $users = User::where('age', 'like', '3%')->get();
+        $this->assertCount(6, $users);
+
+        $users = User::where('age', 'like', '%3')->get();
+        $this->assertCount(4, $users);
     }
 
-    public function testSelect()
+    public function testNotLike(): void
+    {
+        $users = User::where('name', 'not like', '%doe')->get();
+        $this->assertCount(7, $users);
+
+        $users = User::where('name', 'not like', '%y%')->get();
+        $this->assertCount(6, $users);
+
+        $users = User::where('name', 'not LIKE', '%y%')->get();
+        $this->assertCount(6, $users);
+
+        $users = User::where('name', 'not like', 't%')->get();
+        $this->assertCount(8, $users);
+    }
+
+    public function testSelect(): void
     {
         $user = User::where('name', 'John Doe')->select('name')->first();
 
@@ -96,7 +121,7 @@ class QueryTest extends TestCase
         $this->assertNull($user->age);
     }
 
-    public function testOrWhere()
+    public function testOrWhere(): void
     {
         $users = User::where('age', 13)->orWhere('title', 'admin')->get();
         $this->assertCount(4, $users);
@@ -105,7 +130,7 @@ class QueryTest extends TestCase
         $this->assertCount(2, $users);
     }
 
-    public function testBetween()
+    public function testBetween(): void
     {
         $users = User::whereBetween('age', [0, 25])->get();
         $this->assertCount(2, $users);
@@ -118,7 +143,7 @@ class QueryTest extends TestCase
         $this->assertCount(6, $users);
     }
 
-    public function testIn()
+    public function testIn(): void
     {
         $users = User::whereIn('age', [13, 23])->get();
         $this->assertCount(2, $users);
@@ -130,23 +155,23 @@ class QueryTest extends TestCase
         $this->assertCount(4, $users);
 
         $users = User::whereNotNull('age')
-                     ->whereNotIn('age', [33, 35])->get();
+            ->whereNotIn('age', [33, 35])->get();
         $this->assertCount(3, $users);
     }
 
-    public function testWhereNull()
+    public function testWhereNull(): void
     {
         $users = User::whereNull('age')->get();
         $this->assertCount(1, $users);
     }
 
-    public function testWhereNotNull()
+    public function testWhereNotNull(): void
     {
         $users = User::whereNotNull('age')->get();
         $this->assertCount(8, $users);
     }
 
-    public function testOrder()
+    public function testOrder(): void
     {
         $user = User::whereNotNull('age')->orderBy('age', 'asc')->first();
         $this->assertEquals(13, $user->age);
@@ -167,7 +192,7 @@ class QueryTest extends TestCase
         $this->assertEquals(35, $user->age);
     }
 
-    public function testGroupBy()
+    public function testGroupBy(): void
     {
         $users = User::groupBy('title')->get();
         $this->assertCount(3, $users);
@@ -197,7 +222,7 @@ class QueryTest extends TestCase
         $this->assertNotNull($users[0]->name);
     }
 
-    public function testCount()
+    public function testCount(): void
     {
         $count = User::where('age', '<>', 35)->count();
         $this->assertEquals(6, $count);
@@ -207,17 +232,17 @@ class QueryTest extends TestCase
         $this->assertEquals(6, $count);
     }
 
-    public function testExists()
+    public function testExists(): void
     {
         $this->assertFalse(User::where('age', '>', 37)->exists());
         $this->assertTrue(User::where('age', '<', 37)->exists());
     }
 
-    public function testSubquery()
+    public function testSubQuery(): void
     {
         $users = User::where('title', 'admin')->orWhere(function ($query) {
             $query->where('name', 'Tommy Toe')
-                      ->orWhere('name', 'Error');
+                ->orWhere('name', 'Error');
         })
             ->get();
 
@@ -225,7 +250,7 @@ class QueryTest extends TestCase
 
         $users = User::where('title', 'user')->where(function ($query) {
             $query->where('age', 35)
-                      ->orWhere('name', 'like', '%harry%');
+                ->orWhere('name', 'like', '%harry%');
         })
             ->get();
 
@@ -233,36 +258,36 @@ class QueryTest extends TestCase
 
         $users = User::where('age', 35)->orWhere(function ($query) {
             $query->where('title', 'admin')
-                      ->orWhere('name', 'Error');
+                ->orWhere('name', 'Error');
         })
             ->get();
 
         $this->assertCount(5, $users);
 
         $users = User::whereNull('deleted_at')
-                ->where('title', 'admin')
-                ->where(function ($query) {
-                    $query->where('age', '>', 15)
-                          ->orWhere('name', 'Harry Hoe');
-                })
-                ->get();
+            ->where('title', 'admin')
+            ->where(function ($query) {
+                $query->where('age', '>', 15)
+                    ->orWhere('name', 'Harry Hoe');
+            })
+            ->get();
 
         $this->assertEquals(3, $users->count());
 
         $users = User::whereNull('deleted_at')
-                ->where(function ($query) {
-                    $query->where('name', 'Harry Hoe')
-                          ->orWhere(function ($query) {
-                              $query->where('age', '>', 15)
-                                    ->where('title', '<>', 'admin');
-                          });
-                })
-                ->get();
+            ->where(function ($query) {
+                $query->where('name', 'Harry Hoe')
+                    ->orWhere(function ($query) {
+                        $query->where('age', '>', 15)
+                            ->where('title', '<>', 'admin');
+                    });
+            })
+            ->get();
 
         $this->assertEquals(5, $users->count());
     }
 
-    public function testWhereRaw()
+    public function testWhereRaw(): void
     {
         $where = ['age' => ['$gt' => 30, '$lt' => 40]];
         $users = User::whereRaw($where)->get();
@@ -270,34 +295,34 @@ class QueryTest extends TestCase
         $this->assertCount(6, $users);
 
         $where1 = ['age' => ['$gt' => 30, '$lte' => 35]];
-        $where2 = ['age'           => ['$gt' => 35, '$lt' => 40]];
+        $where2 = ['age' => ['$gt' => 35, '$lt' => 40]];
         $users = User::whereRaw($where1)->orWhereRaw($where2)->get();
 
         $this->assertCount(6, $users);
     }
 
-    public function testMultipleOr()
+    public function testMultipleOr(): void
     {
         $users = User::where(function ($query) {
             $query->where('age', 35)->orWhere('age', 33);
         })
-        ->where(function ($query) {
-            $query->where('name', 'John Doe')->orWhere('name', 'Jane Doe');
-        })->get();
+            ->where(function ($query) {
+                $query->where('name', 'John Doe')->orWhere('name', 'Jane Doe');
+            })->get();
 
         $this->assertCount(2, $users);
 
         $users = User::where(function ($query) {
             $query->orWhere('age', 35)->orWhere('age', 33);
         })
-        ->where(function ($query) {
-            $query->orWhere('name', 'John Doe')->orWhere('name', 'Jane Doe');
-        })->get();
+            ->where(function ($query) {
+                $query->orWhere('name', 'John Doe')->orWhere('name', 'Jane Doe');
+            })->get();
 
         $this->assertCount(2, $users);
     }
 
-    public function testPaginate()
+    public function testPaginate(): void
     {
         $results = User::paginate(2);
         $this->assertEquals(2, $results->count());
@@ -311,7 +336,7 @@ class QueryTest extends TestCase
         $this->assertEquals(1, $results->currentPage());
     }
 
-    public function testUpdate()
+    public function testUpdate(): void
     {
         $this->assertEquals(1, User::where(['name' => 'John Doe'])->update(['name' => 'Jim Morrison']));
         $this->assertEquals(1, User::where(['name' => 'Jim Morrison'])->count());
@@ -326,5 +351,52 @@ class QueryTest extends TestCase
         $this->assertCount(2, Scoped::withoutGlobalScopes()->get());
         $this->assertEquals(2, Scoped::withoutGlobalScopes()->update(['name' => 'Jimmy']));
         $this->assertCount(2, Scoped::withoutGlobalScopes()->where(['name' => 'Jimmy'])->get());
+    }
+
+    public function testUnsorted(): void
+    {
+        $unsortedResults = User::get();
+
+        $unsortedSubset = $unsortedResults->where('age', 35)->values();
+
+        $this->assertEquals('John Doe', $unsortedSubset[0]->name);
+        $this->assertEquals('Brett Boe', $unsortedSubset[1]->name);
+        $this->assertEquals('Yvonne Yoe', $unsortedSubset[2]->name);
+    }
+
+    public function testSort(): void
+    {
+        $results = User::orderBy('age')->get();
+
+        $this->assertEquals($results->sortBy('age')->pluck('age')->all(), $results->pluck('age')->all());
+    }
+
+    public function testSortOrder(): void
+    {
+        $results = User::orderBy('age', 'desc')->get();
+
+        $this->assertEquals($results->sortByDesc('age')->pluck('age')->all(), $results->pluck('age')->all());
+    }
+
+    public function testMultipleSort(): void
+    {
+        $results = User::orderBy('age')->orderBy('name')->get();
+
+        $subset = $results->where('age', 35)->values();
+
+        $this->assertEquals('Brett Boe', $subset[0]->name);
+        $this->assertEquals('John Doe', $subset[1]->name);
+        $this->assertEquals('Yvonne Yoe', $subset[2]->name);
+    }
+
+    public function testMultipleSortOrder(): void
+    {
+        $results = User::orderBy('age')->orderBy('name', 'desc')->get();
+
+        $subset = $results->where('age', 35)->values();
+
+        $this->assertEquals('Yvonne Yoe', $subset[0]->name);
+        $this->assertEquals('John Doe', $subset[1]->name);
+        $this->assertEquals('Brett Boe', $subset[2]->name);
     }
 }

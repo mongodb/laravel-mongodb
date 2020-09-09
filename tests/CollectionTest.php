@@ -1,9 +1,10 @@
 <?php
+declare(strict_types=1);
 
-use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Collection;
-use MongoDB\Collection as MongoCollection;
+use Jenssegers\Mongodb\Connection;
 use MongoDB\BSON\ObjectID;
+use MongoDB\Collection as MongoCollection;
 
 class CollectionTest extends TestCase
 {
@@ -22,7 +23,6 @@ class CollectionTest extends TestCase
         $mongoCollection->expects($this->once())->method('getCollectionName')->willReturn('name-collection');
 
         $connection = $this->getMockBuilder(Connection::class)->disableOriginalConstructor()->getMock();
-        $connection->expects($this->once())->method('logging')->willReturn(true);
         $connection->expects($this->once())->method('getElapsedTime')->willReturn($time);
         $connection->expects($this->once())->method('logQuery')->with($queryString, [], $time);
 
