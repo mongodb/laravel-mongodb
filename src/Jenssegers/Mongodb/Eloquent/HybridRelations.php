@@ -9,7 +9,6 @@ use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\HasMany;
 use Jenssegers\Mongodb\Relations\HasOne;
-use Jenssegers\Mongodb\Relations\MorphMany;
 use Jenssegers\Mongodb\Relations\MorphTo;
 use Jenssegers\Mongodb\Relations\MorphMany;
 
