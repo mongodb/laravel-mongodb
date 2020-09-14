@@ -18,9 +18,6 @@
         <testsuite name="seeder">
             <file>tests/SeederTest.php</file>
         </testsuite>
-        <testsuite name="cache">
-            <file>tests/CacheTest.php</file>
-        </testsuite>
         <testsuite name="builder">
             <file>tests/QueryBuilderTest.php</file>
             <file>tests/QueryTest.php</file>

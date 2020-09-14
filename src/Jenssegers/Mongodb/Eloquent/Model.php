@@ -234,36 +234,37 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
-    public function originalIsEquivalent($key, $current)
+    public function originalIsEquivalent($key)
     {
         if (!array_key_exists($key, $this->original)) {
             return false;
         }
 
-        $original = $this->getOriginal($key);
+        $attribute = Arr::get($this->attributes, $key);
+        $original = Arr::get($this->original, $key);
 
-        if ($current === $original) {
+        if ($attribute === $original) {
             return true;
         }
 
-        if (null === $current) {
+        if (null === $attribute) {
             return false;
         }
 
         if ($this->isDateAttribute($key)) {
-            $current = $current instanceof UTCDateTime ? $this->asDateTime($current) : $current;
+            $attribute = $attribute instanceof UTCDateTime ? $this->asDateTime($attribute) : $attribute;
             $original = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
 
-            return $current == $original;
+            return $attribute == $original;
         }
 
-        if ($this->hasCast($key)) {
-            return $this->castAttribute($key, $current) ===
+        if ($this->hasCast($key, static::$primitiveCastTypes)) {
+            return $this->castAttribute($key, $attribute) ===
                 $this->castAttribute($key, $original);
         }
 
-        return is_numeric($current) && is_numeric($original)
-            && strcmp((string) $current, (string) $original) === 0;
+        return is_numeric($attribute) && is_numeric($original)
+            && strcmp((string) $attribute, (string) $original) === 0;
     }
 
     /**
