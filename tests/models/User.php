@@ -78,8 +78,8 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->embedsOne('User');
     }
 
-    public function getDateFormat()
+    protected function serializeDate(DateTimeInterface $date)
     {
-        return 'l jS \of F Y h:i:s A';
+        return $date->format('l jS \of F Y h:i:s A');
     }
 }
