@@ -338,7 +338,7 @@ class Builder extends BaseBuilder
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
             // Return results
-            return Collection($results);
+            return new Collection($results);
         } // Distinct query
         elseif ($this->distinct) {
             // Return distinct results directly
