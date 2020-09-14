@@ -121,12 +121,6 @@ class Builder extends BaseBuilder
     ];
 
     /**
-     * Check if we need to return Collections instead of plain arrays (laravel >= 5.3 )
-     * @var boolean
-     */
-    protected $useCollections;
-
-    /**
      * @inheritdoc
      */
     public function __construct(Connection $connection, Processor $processor)
@@ -134,22 +128,6 @@ class Builder extends BaseBuilder
         $this->grammar = new Grammar;
         $this->connection = $connection;
         $this->processor = $processor;
-        $this->useCollections = $this->shouldUseCollections();
-    }
-
-    /**
-     * Returns true if Laravel or Lumen >= 5.3
-     * @return bool
-     */
-    protected function shouldUseCollections()
-    {
-        if (function_exists('app')) {
-            $version = app()->version();
-            $version = filter_var(explode(')', $version)[0], FILTER_SANITIZE_NUMBER_FLOAT, FILTER_FLAG_ALLOW_FRACTION); // lumen
-            return version_compare($version, '5.3', '>=');
-        }
-
-        return true;
     }
 
     /**
@@ -303,7 +281,7 @@ class Builder extends BaseBuilder
                                 'aggregate' => $totalResults
                             ]
                         ];
-                        return $this->useCollections ? new Collection($results) : $results;
+                        return new Collection($results);
                     } elseif ($function == 'count') {
                         // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
@@ -360,7 +338,7 @@ class Builder extends BaseBuilder
             $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
 
             // Return results
-            return $this->useCollections ? new Collection($results) : $results;
+            return Collection($results);
         } // Distinct query
         elseif ($this->distinct) {
             // Return distinct results directly
@@ -373,7 +351,7 @@ class Builder extends BaseBuilder
                 $result = $this->collection->distinct($column);
             }
 
-            return $this->useCollections ? new Collection($result) : $result;
+            return new Collection($result);
         } // Normal query
         else {
             $columns = [];
@@ -430,7 +408,7 @@ class Builder extends BaseBuilder
 
             // Return results as an array with numeric keys
             $results = iterator_to_array($cursor, false);
-            return $this->useCollections ? new Collection($results) : $results;
+            return new Collection($results);
         }
     }
 
@@ -685,7 +663,7 @@ class Builder extends BaseBuilder
         }
 
         $p = Arr::pluck($results, $column, $key);
-        return $this->useCollections ? new Collection($p) : $p;
+        return new Collection($p);
     }
 
     /**
