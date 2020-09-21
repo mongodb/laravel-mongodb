@@ -68,6 +68,7 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
  5.8.x    | 3.5.x
  6.x      | 3.6.x
  7.x      | 3.7.x
+ 8.x      | 3.8.x
 
 Install the package via Composer:
 
