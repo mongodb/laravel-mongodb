@@ -3,6 +3,8 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.7.0] - 2020-09-18
+
 ### Added
 - Laravel 7 support by [@divine](https://github.com/divine).
 
