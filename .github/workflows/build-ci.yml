@@ -8,8 +8,8 @@ on:
 
 jobs:
   build:
-    runs-on: ${{matrix.os}}
-    name: PHP v${{ matrix.php }}, Mongo v${{ matrix.mongodb}}
+    runs-on: ${{ matrix.os }}
+    name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
     continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
@@ -39,7 +39,6 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
           MYSQL_DATABASE: 'unittest'
           MYSQL_ROOT_PASSWORD:
-    name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
 
     steps:
     - uses: actions/checkout@v2
