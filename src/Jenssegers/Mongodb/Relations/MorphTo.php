@@ -31,7 +31,7 @@ class MorphTo extends EloquentMorphTo
 
         $query = $instance->newQuery();
 
-        return $query->whereIn($key, $this->gatherKeysByType($type))->get();
+        return $query->whereIn($key, $this->gatherKeysByType($type, $instance->getKeyType()))->get();
     }
 
     /**
