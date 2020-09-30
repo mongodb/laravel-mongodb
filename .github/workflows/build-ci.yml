@@ -14,6 +14,10 @@ jobs:
     strategy:
       matrix:
         include:
+        - { os: ubuntu-latest, php: 7.2, mongodb: 3.6, experimental: true}	
+        - { os: ubuntu-latest, php: 7.2, mongodb: '4.0', experimental: true}	
+        - { os: ubuntu-latest, php: 7.2, mongodb: 4.2, experimental: true}	
+        - { os: ubuntu-latest, php: 7.2, mongodb: 4.4, experimental: true}
         - { os: ubuntu-latest, php: 7.3, mongodb: 3.6, experimental: false}
         - { os: ubuntu-latest, php: 7.3, mongodb: '4.0', experimental: false}
         - { os: ubuntu-latest, php: 7.3, mongodb: 4.2, experimental: false}
