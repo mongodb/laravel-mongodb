@@ -10,14 +10,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * @inheritdoc
      */
-    public function __construct(Connection $connection)
-    {
-        $this->connection = $connection;
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function hasColumn($table, $column)
     {
         return true;

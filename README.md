@@ -11,6 +11,7 @@ Table of contents
 * [Upgrading](#upgrading)
 * [Configuration](#configuration)
 * [Eloquent](#eloquent)
+* [Guarding attributes](#guarding-attributes)
 * [Optional: Alias](#optional-alias)
 * [Query Builder](#query-builder)
 * [Schema](#schema)
@@ -41,6 +42,7 @@ composer require jenssegers/mongodb
  5.2.x    | 2.3.x or 3.0.x
  5.3.x    | 3.1.x or 3.2.x
  5.4.x    | 3.2.x
+ 5.5.x    | 3.3.x
 
 And add the service provider in `config/app.php`:
 
@@ -191,6 +193,13 @@ class MyModel extends Eloquent {
 ```
 
 Everything else (should) work just like the original Eloquent model. Read more about the Eloquent on http://laravel.com/docs/eloquent
+
+### Guarding attributes
+
+When choosing between guarding attributes or marking some as fillable, Taylor Otwell prefers the fillable route.
+This is in light of [recent security issues described here](https://blog.laravel.com/security-release-laravel-61835-7240).
+
+Keep in mind guarding still works, but you may experience unexpected behavior.
 
 ### Optional: Alias
 
