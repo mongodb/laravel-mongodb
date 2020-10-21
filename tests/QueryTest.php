@@ -16,6 +16,7 @@ class QueryTest extends TestCase
         User::create(['name' => 'Brett Boe', 'age' => 35, 'title' => 'user']);
         User::create(['name' => 'Tommy Toe', 'age' => 33, 'title' => 'user']);
         User::create(['name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin']);
+        User::create(['name' => 'Hazem Nassr', 'user-age' => 28, 'title' => 'member']);
         User::create(['name' => 'Error', 'age' => null, 'title' => null]);
     }
 
@@ -78,6 +79,9 @@ class QueryTest extends TestCase
 
         $users = User::where('age', 'like', '%3')->get();
         $this->assertCount(4, $users);
+
+        $users = User::where('user-age', 'like', '%28')->get();
+        $this->assertCount(1, $users);
     }
 
     public function testNotLike(): void
