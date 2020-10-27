@@ -16,6 +16,7 @@ class QueryTest extends TestCase
         User::create(['name' => 'Brett Boe', 'age' => 35, 'title' => 'user']);
         User::create(['name' => 'Tommy Toe', 'age' => 33, 'title' => 'user']);
         User::create(['name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin']);
+        User::create(['name' => 'John Smith', 'user-age' => 28, 'title' => 'member']);
         User::create(['name' => 'Error', 'age' => null, 'title' => null]);
     }
 
@@ -41,10 +42,10 @@ class QueryTest extends TestCase
         $this->assertCount(1, $users);
 
         $users = User::where('age', '!=', 35)->get();
-        $this->assertCount(6, $users);
+        $this->assertCount(7, $users);
 
         $users = User::where('age', '<>', 35)->get();
-        $this->assertCount(6, $users);
+        $this->assertCount(7, $users);
     }
 
     public function testAndWhere(): void
@@ -78,21 +79,24 @@ class QueryTest extends TestCase
 
         $users = User::where('age', 'like', '%3')->get();
         $this->assertCount(4, $users);
+
+        $users = User::where('user-age', 'like', '%28')->get();
+        $this->assertCount(1, $users);
     }
 
     public function testNotLike(): void
     {
         $users = User::where('name', 'not like', '%doe')->get();
-        $this->assertCount(7, $users);
+        $this->assertCount(8, $users);
 
         $users = User::where('name', 'not like', '%y%')->get();
-        $this->assertCount(6, $users);
+        $this->assertCount(7, $users);
 
         $users = User::where('name', 'not LIKE', '%y%')->get();
-        $this->assertCount(6, $users);
+        $this->assertCount(7, $users);
 
         $users = User::where('name', 'not like', 't%')->get();
-        $this->assertCount(8, $users);
+        $this->assertCount(9, $users);
     }
 
     public function testSelect(): void
@@ -152,7 +156,7 @@ class QueryTest extends TestCase
         $this->assertCount(6, $users);
 
         $users = User::whereNotIn('age', [33, 35])->get();
-        $this->assertCount(4, $users);
+        $this->assertCount(5, $users);
 
         $users = User::whereNotNull('age')
             ->whereNotIn('age', [33, 35])->get();
@@ -162,7 +166,7 @@ class QueryTest extends TestCase
     public function testWhereNull(): void
     {
         $users = User::whereNull('age')->get();
-        $this->assertCount(1, $users);
+        $this->assertCount(2, $users);
     }
 
     public function testWhereNotNull(): void
@@ -195,7 +199,7 @@ class QueryTest extends TestCase
     public function testGroupBy(): void
     {
         $users = User::groupBy('title')->get();
-        $this->assertCount(3, $users);
+        $this->assertCount(4, $users);
 
         $users = User::groupBy('age')->get();
         $this->assertCount(6, $users);
@@ -225,11 +229,11 @@ class QueryTest extends TestCase
     public function testCount(): void
     {
         $count = User::where('age', '<>', 35)->count();
-        $this->assertEquals(6, $count);
+        $this->assertEquals(7, $count);
 
         // Test for issue #165
         $count = User::select('_id', 'age', 'title')->where('age', '<>', 35)->count();
-        $this->assertEquals(6, $count);
+        $this->assertEquals(7, $count);
     }
 
     public function testExists(): void
@@ -327,12 +331,12 @@ class QueryTest extends TestCase
         $results = User::paginate(2);
         $this->assertEquals(2, $results->count());
         $this->assertNotNull($results->first()->title);
-        $this->assertEquals(9, $results->total());
+        $this->assertEquals(10, $results->total());
 
         $results = User::paginate(2, ['name', 'age']);
         $this->assertEquals(2, $results->count());
         $this->assertNull($results->first()->title);
-        $this->assertEquals(9, $results->total());
+        $this->assertEquals(10, $results->total());
         $this->assertEquals(1, $results->currentPage());
     }
 
