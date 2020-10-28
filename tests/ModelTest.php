@@ -410,8 +410,8 @@ class ModelTest extends TestCase
 
         // test created_at
         $item = Item::create(['name' => 'sword']);
-        $this->assertInstanceOf(UTCDateTime::class, $item->getOriginal('created_at'));
-        $this->assertEquals($item->getOriginal('created_at')
+        $this->assertInstanceOf(UTCDateTime::class, $item->getRawOriginal('created_at'));
+        $this->assertEquals($item->getRawOriginal('created_at')
             ->toDateTime()
             ->getTimestamp(), $item->created_at->getTimestamp());
         $this->assertLessThan(2, abs(time() - $item->created_at->getTimestamp()));
@@ -420,7 +420,7 @@ class ModelTest extends TestCase
         /** @var Item $item */
         $item = Item::create(['name' => 'sword']);
         $json = $item->toArray();
-        $this->assertEquals($item->created_at->format('Y-m-d H:i:s'), $json['created_at']);
+        $this->assertEquals($item->created_at->toISOString(), $json['created_at']);
 
         /** @var User $user */
         //Test with create and standard property
@@ -430,10 +430,10 @@ class ModelTest extends TestCase
         $user = User::create(['name' => 'Jane Doe', 'birthday' => Date::now()]);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
-        $user = User::create(['name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 2005 03:12:46 PM']);
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => 'Monday 8th August 2005 03:12:46 PM']);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
-        $user = User::create(['name' => 'Jane Doe', 'birthday' => 'Monday 8th of August 1960 03:12:46 PM']);
+        $user = User::create(['name' => 'Jane Doe', 'birthday' => 'Monday 8th August 1960 03:12:46 PM']);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
         $user = User::create(['name' => 'Jane Doe', 'birthday' => '2005-08-08']);
@@ -467,10 +467,10 @@ class ModelTest extends TestCase
         $user->setAttribute('birthday', Date::now());
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
-        $user->setAttribute('birthday', 'Monday 8th of August 2005 03:12:46 PM');
+        $user->setAttribute('birthday', 'Monday 8th August 2005 03:12:46 PM');
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
-        $user->setAttribute('birthday', 'Monday 8th of August 1960 03:12:46 PM');
+        $user->setAttribute('birthday', 'Monday 8th August 1960 03:12:46 PM');
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
         $user->setAttribute('birthday', '2005-08-08');
@@ -504,10 +504,10 @@ class ModelTest extends TestCase
         $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => Date::now()]]);
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
-        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => 'Monday 8th of August 2005 03:12:46 PM']]);
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => 'Monday 8th August 2005 03:12:46 PM']]);
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
-        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => 'Monday 8th of August 1960 03:12:46 PM']]);
+        $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => 'Monday 8th August 1960 03:12:46 PM']]);
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
         $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => '2005-08-08']]);
@@ -541,10 +541,10 @@ class ModelTest extends TestCase
         $user->setAttribute('entry.date', Date::now());
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
-        $user->setAttribute('entry.date', 'Monday 8th of August 2005 03:12:46 PM');
+        $user->setAttribute('entry.date', 'Monday 8th August 2005 03:12:46 PM');
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
-        $user->setAttribute('entry.date', 'Monday 8th of August 1960 03:12:46 PM');
+        $user->setAttribute('entry.date', 'Monday 8th August 1960 03:12:46 PM');
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
         $user->setAttribute('entry.date', '2005-08-08');
