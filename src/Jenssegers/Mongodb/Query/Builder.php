@@ -1071,7 +1071,7 @@ class Builder extends BaseBuilder
 
         if (!isset($operator) || $operator == '=') {
             if ($is_numeric) {
-                $query = ['$where' => '/^'.$value->getPattern().'/.test(this.'.$column.')'];
+                $query = ['$where' => '/^'.$value->getPattern().'/.test(this["'.$column.'"])'];
             } else {
                 $query = [$column => $value];
             }
