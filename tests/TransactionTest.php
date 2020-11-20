@@ -100,46 +100,6 @@ class TransactionTest extends TestCase
         $this->assertEquals($check->title, $user->title);
     }
 
-    public function testInsertWithId(): void
-    {
-        $id = 1;
-        $check = User::on($this->connection)->find($id);
-        $this->assertNull($check);
-
-        /** rollback test */
-        DB::beginTransaction();
-        $user = User::on($this->connection)->getModel();
-        $user->_id = $id;
-        $user->name = $this->insertData['name'];
-        $user->title = $this->insertData['title'];
-        $user->age = $this->insertData['age'];
-        $user->save();
-        DB::rollBack();
-
-        $this->assertTrue($user->exists);
-        $this->assertEquals($id, $user->_id);
-        $check = User::on($this->connection)->find($id);
-        $this->assertNull($check);
-
-        /** commit test */
-        DB::beginTransaction();
-        $user = User::on($this->connection)->getModel();
-        $user->_id = $id;
-        $user->name = $this->insertData['name'];
-        $user->title = $this->insertData['title'];
-        $user->age = $this->insertData['age'];
-        $user->save();
-        DB::commit();
-
-        $this->assertTrue($user->exists);
-        $this->assertEquals($id, $user->_id);
-        $check = User::on($this->connection)->find($id);
-        $this->assertNotNull($check);
-        $this->assertEquals($check->name, $user->name);
-        $this->assertEquals($check->age, $user->age);
-        $this->assertEquals($check->title, $user->title);
-    }
-
     public function testUpdate()
     {
         /** rollback test */
