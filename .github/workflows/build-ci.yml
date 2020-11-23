@@ -42,7 +42,7 @@ jobs:
     steps:
     - uses: actions/checkout@v1
     - name: Creating MongoDB replica
-      if: matrix.mongodb == '4.0' || matrix.mongodb == '4.2'
+      if: matrix.mongodb == '4.0' || matrix.mongodb == '4.2' || matrix.mongodb == '4.4'
       run: |
         docker run --name mongodb_repl -e MONGO_INITDB_DATABASE=unittest --publish 27018:27018 --detach mongo:${{ matrix.mongodb }} mongod --port 27018 --replSet rs
         until docker exec --tty mongodb_repl mongo 127.0.0.1:27018 --eval "db.serverStatus()"; do
