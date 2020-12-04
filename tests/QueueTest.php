@@ -37,7 +37,7 @@ class QueueTest extends TestCase
             'job' => 'test',
             'maxTries' => null,
             'maxExceptions' => null,
-            'delay' => null,
+            'backoff' => null,
             'timeout' => null,
             'data' => ['action' => 'QueueJobLifeCycle'],
         ]), $job->getRawBody());

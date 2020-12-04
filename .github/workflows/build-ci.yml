@@ -8,12 +8,24 @@ on:
 
 jobs:
   build:
-    runs-on: ${{matrix.os}}
+    runs-on: ${{ matrix.os }}
+    name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       matrix:
-        php: ['7.2', '7.3', '7.4']
-        os: ['ubuntu-latest']
-        mongodb: ['3.6', '4.0', '4.2', '4.4']
+        include:
+        - { os: ubuntu-latest, php: 7.2, mongodb: 3.6, experimental: true}
+        - { os: ubuntu-latest, php: 7.2, mongodb: '4.0', experimental: true}
+        - { os: ubuntu-latest, php: 7.2, mongodb: 4.2, experimental: true}
+        - { os: ubuntu-latest, php: 7.2, mongodb: 4.4, experimental: true}
+        - { os: ubuntu-latest, php: 7.3, mongodb: 3.6, experimental: false}
+        - { os: ubuntu-latest, php: 7.3, mongodb: '4.0', experimental: false}
+        - { os: ubuntu-latest, php: 7.3, mongodb: 4.2, experimental: false}
+        - { os: ubuntu-latest, php: 7.3, mongodb: 4.4, experimental: false}
+        - { os: ubuntu-latest, php: 7.4, mongodb: 3.6, experimental: false}
+        - { os: ubuntu-latest, php: 7.4, mongodb: '4.0', experimental: false}
+        - { os: ubuntu-latest, php: 7.4, mongodb: 4.2, experimental: false}
+        - { os: ubuntu-latest, php: 7.4, mongodb: 4.4, experimental: false}
     services:
       mongo:
         image: mongo:${{ matrix.mongodb }}
@@ -27,7 +39,6 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
           MYSQL_DATABASE: 'unittest'
           MYSQL_ROOT_PASSWORD:
-    name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
 
     steps:
     - uses: actions/checkout@v2
@@ -45,18 +56,22 @@ jobs:
       env:
         DEBUG: ${{secrets.DEBUG}}
     - name: Download Composer cache dependencies from cache
+      if: (!startsWith(matrix.php, '7.2'))
       id: composer-cache
       run: echo "::set-output name=dir::$(composer config cache-files-dir)"
     - name: Cache Composer dependencies
+      if: (!startsWith(matrix.php, '7.2'))
       uses: actions/cache@v1
       with:
         path: ${{ steps.composer-cache.outputs.dir }}
         key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
         restore-keys: ${{ matrix.os }}-composer-
     - name: Install dependencies
+      if: (!startsWith(matrix.php, '7.2'))
       run: |
         composer install --no-interaction
     - name: Run tests
+      if: (!startsWith(matrix.php, '7.2'))
       run: |
         ./vendor/bin/phpunit --coverage-clover coverage.xml
       env:
