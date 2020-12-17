@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.7.2] - 2020-12-18
+
+### Changed
+- (Backport) MongodbQueueServiceProvider does not use the DB Facade anymore [#2149](https://github.com/jenssegers/laravel-mongodb/pull/2149) by [@curosmj](https://github.com/curosmj)
+
 ## [3.7.1] - 2020-10-29
 
 ### Changed
