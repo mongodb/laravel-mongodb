@@ -7,6 +7,8 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - MongodbQueueServiceProvider does not use the DB Facade anymore [#2149](https://github.com/jenssegers/laravel-mongodb/pull/2149) by [@curosmj](https://github.com/curosmj)
+- Add escape regex chars to DB Presence Verifier [#1992](https://github.com/jenssegers/laravel-mongodb/pull/1992) by [@andrei-gafton-rtgt](https://github.com/andrei-gafton-rtgt).
+
 
 ## [3.6.6] - 2020-10-29
 
