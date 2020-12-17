@@ -52,18 +52,15 @@ All notable changes to this project will be documented in this file.
 - Fix default database detection from dsn [#1971](https://github.com/jenssegers/laravel-mongodb/pull/1971) by [@divine](https://github.com/divine).
 - Fix create collection with options [#1953](https://github.com/jenssegers/laravel-mongodb/pull/1953) by [@deviouspk](https://github.com/deviouspk) & [@divine](https://github.com/divine).
 
-
 ## [3.6.1] - 2019-10-31
 
 ### Added
-Added hasIndex and dropIndexIfExists
+- Added hasIndex and dropIndexIfExists
 
 ### Changed
-Improved pagination performance
-Fix for not like filters
-Correctly increment job attempts
-
-
+- Improved pagination performance
+- Fix for not like filters
+- Correctly increment job attempts
 
 ## [3.6.0] - 2019-09-08
 
