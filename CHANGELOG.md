@@ -3,19 +3,12 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
-### Added
-- Laravel 8 support by [@divine](https://github.com/divine).
+## [3.8.1] - 2020-10-23
 
 ### Changed
-- Updated versions of all dependencies by [@divine](https://github.com/divine).
+- Fix like with numeric values [#2127](https://github.com/jenssegers/laravel-mongodb/pull/2127) by [@hnassr](https://github.com/hnassr).
 
-## [3.7.0] - 2020-09-18
+## [3.8.0] - 2020-09-03
 
 ### Added
-- Laravel 7 support by [@divine](https://github.com/divine).
-
-### Changed
-- Updated versions of all dependencies by [@divine](https://github.com/divine).
-
-### Removed
-- shouldUseCollections function by [@divine](https://github.com/divine).
+- Laravel 8 support & updated versions of all dependencies [#2108](https://github.com/jenssegers/laravel-mongodb/pull/2108) by [@divine](https://github.com/divine).
