@@ -26,6 +26,7 @@ jobs:
         - { os: ubuntu-latest, php: 7.4, mongodb: '4.0', experimental: false}
         - { os: ubuntu-latest, php: 7.4, mongodb: 4.2, experimental: false}
         - { os: ubuntu-latest, php: 7.4, mongodb: 4.4, experimental: false}
+        - { os: ubuntu-latest, php: 8.0, mongodb: 4.4, experimental: false}
     services:
       mongo:
         image: mongo:${{ matrix.mongodb }}
