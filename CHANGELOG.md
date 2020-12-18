@@ -7,12 +7,12 @@ All notable changes to this project will be documented in this file.
 
 ### Changed
 - (Backport) MongodbQueueServiceProvider does not use the DB Facade anymore [#2149](https://github.com/jenssegers/laravel-mongodb/pull/2149) by [@curosmj](https://github.com/curosmj)
-- Add escape regex chars to DB Presence Verifier [#1992](https://github.com/jenssegers/laravel-mongodb/pull/1992) by [@andrei-gafton-rtgt](https://github.com/andrei-gafton-rtgt).
+- (Backport) Add escape regex chars to DB Presence Verifier [#1992](https://github.com/jenssegers/laravel-mongodb/pull/1992) by [@andrei-gafton-rtgt](https://github.com/andrei-gafton-rtgt).
 
 ## [3.7.1] - 2020-10-29
 
 ### Changed
-- Backport of fix like with numeric values [#2131](https://github.com/jenssegers/laravel-mongodb/pull/2131) by [@pendexgabo](https://github.com/pendexgabo).
+- (Backport) Fix like with numeric values [#2131](https://github.com/jenssegers/laravel-mongodb/pull/2131) by [@pendexgabo](https://github.com/pendexgabo).
 
 ## [3.7.0] - 2020-09-18
 
