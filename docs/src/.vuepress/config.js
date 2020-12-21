@@ -49,14 +49,14 @@ module.exports = {
           collapsable: false,
           children: [
             '',
-            'Installation',
-            'Testing',
-            'Configuration',
-            'Eloquent',
-            'Relationship',
-            'QueryBuilder',
-            'Schema',
-            'Extending'
+            'installation',
+            'testing',
+            'configuration',
+            'eloquent',
+            'relationship',
+            'queryBuilder',
+            'schema',
+            'extending'
           ]
         }
       ],
