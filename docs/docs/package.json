@@ -1,0 +1,19 @@
+{
+  "name": "docs-laravel-lumen-mongodb",
+  "version": "0.0.1",
+  "description": "this is a docs for lumen and mongodb",
+  "main": "index.js",
+  "authors": {
+    "name": "Jenuel Ganawed",
+    "email": "jenuelganawed936@gmail.com"
+  },
+  "repository": "laravel-mongodb/docs-laravel-lumen-mongodb",
+  "scripts": {
+    "dev": "vuepress dev src",
+    "build": "vuepress build src"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vuepress": "^1.5.3"
+  }
+}
