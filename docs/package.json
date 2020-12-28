@@ -1,0 +1,19 @@
+{
+  "name": "laravel-mongodb",
+  "version": "0.0.1",
+  "description": "This is a documentation of the laravel lumen mongodb. using some of the best practices, contributers are highly accepted to make this docs more readable and useful for laravel devs who uses mongodb.",
+  "main": "index.js",
+  "authors": {
+    "name": "BroJenuel",
+    "email": "jenuelganawed936@gmail.com"
+  },
+  "repository": "https://github.com/BroJenuel-Youtube/laravel-mongodb/laravel-mongodb",
+  "scripts": {
+    "dev": "vuepress dev src",
+    "build": "vuepress build src"
+  },
+  "license": "MIT",
+  "devDependencies": {
+    "vuepress": "^1.5.3"
+  }
+}
