@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Test | Lumen Laravel MongoDB</title>
+    <meta name="generator" content="VuePress 1.7.1">
+    
+    <meta name="description" content="This is a documentation of the laravel lumen mongodb. using some of the best practices, contributers are highly accepted to make this docs more readable and useful for laravel devs who uses mongodb.">
+    <meta name="theme-color" content="#3eaf7c">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    
+    <link rel="preload" href="/assets/css/0.styles.de0818e0.css" as="style"><link rel="preload" href="/assets/js/app.73a42117.js" as="script"><link rel="preload" href="/assets/js/2.cda44a63.js" as="script"><link rel="preload" href="/assets/js/21.5fdbae99.js" as="script"><link rel="preload" href="/assets/js/7.146e8129.js" as="script"><link rel="prefetch" href="/assets/js/10.1ec208eb.js"><link rel="prefetch" href="/assets/js/11.a7cd7688.js"><link rel="prefetch" href="/assets/js/12.a247e185.js"><link rel="prefetch" href="/assets/js/13.933ec259.js"><link rel="prefetch" href="/assets/js/14.b51f6ff4.js"><link rel="prefetch" href="/assets/js/15.a90f0f56.js"><link rel="prefetch" href="/assets/js/16.0c11981b.js"><link rel="prefetch" href="/assets/js/17.feea4052.js"><link rel="prefetch" href="/assets/js/18.d115e5cd.js"><link rel="prefetch" href="/assets/js/19.1dd66089.js"><link rel="prefetch" href="/assets/js/20.88ee6009.js"><link rel="prefetch" href="/assets/js/22.23ea2db3.js"><link rel="prefetch" href="/assets/js/23.00540aba.js"><link rel="prefetch" href="/assets/js/3.90b36ea0.js"><link rel="prefetch" href="/assets/js/4.7258a879.js"><link rel="prefetch" href="/assets/js/5.05336d81.js"><link rel="prefetch" href="/assets/js/6.00f39488.js"><link rel="prefetch" href="/assets/js/8.6fe87604.js"><link rel="prefetch" href="/assets/js/9.89832c2b.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.de0818e0.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><!----> <span class="site-name">Lumen Laravel MongoDB</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/guide/" class="nav-link router-link-active">
+  Guide
+</a></div><div class="nav-item"><a href="https://v1.vuepress.vuejs.org" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Github
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <div class="nav-item"><a role="button" aria-label="Switch to light mode" class="nav-link"><span>Switch theme</span></a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/guide/" class="nav-link router-link-active">
+  Guide
+</a></div><div class="nav-item"><a href="https://v1.vuepress.vuejs.org" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  Github
+  <span><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg> <span class="sr-only">(opens new window)</span></span></a></div> <div class="nav-item"><a role="button" aria-label="Switch to light mode" class="nav-link"><span>Switch theme</span></a></div> <!----></nav>  <ul class="sidebar-links"><li><a href="/guide/" aria-current="page" class="sidebar-link">Introduction</a></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading open"><span>Setup</span> <span class="arrow down"></span></p> <ul class="sidebar-links sidebar-group-items"><li><a href="/guide/installation.html" class="sidebar-link">Installation</a></li><li><a href="/guide/test.html" aria-current="page" class="active sidebar-link">Test</a></li><li><a href="/guide/configuration.html" class="sidebar-link">Configuration</a></li></ul></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>Guide</span> <span class="arrow right"></span></p> <!----></section></li><li><section class="sidebar-group collapsable depth-0"><p class="sidebar-heading"><span>Association</span> <span class="arrow right"></span></p> <!----></section></li><li><a href="/guide/schema.html" class="sidebar-link">Schema</a></li><li><a href="/guide/extending.html" class="sidebar-link">Extending</a></li></ul> </aside> <main class="page"> <div class="theme-succinct-content content__default"><h1 id="testing"><a href="#testing" class="header-anchor">#</a> Testing</h1> <p>To run the test for this package, run:</p> <div class="language-bash extra-class"><pre class="language-bash"><code>docker-compose up
+</code></pre></div><h1 id="database-testing"><a href="#database-testing" class="header-anchor">#</a> Database Testing</h1> <p>To reset the database after each test, add:</p> <div class="language-php extra-class"><pre class="language-php"><code><span class="token keyword">use</span> <span class="token package">Illuminate<span class="token punctuation">\</span>Foundation<span class="token punctuation">\</span>Testing<span class="token punctuation">\</span>DatabaseMigrations</span><span class="token punctuation">;</span>
+</code></pre></div><p>Also inside each test classes, add:</p> <div class="language-php extra-class"><pre class="language-php"><code><span class="token keyword">use</span> <span class="token package">DatabaseMigrations</span><span class="token punctuation">;</span>
+</code></pre></div><p>Keep in mind that these traits are not yet supported:</p> <ul><li><code>use Database Transactions;</code></li> <li><code>use RefreshDatabase;</code></li></ul></div> <footer class="page-edit"><!----> <!----></footer> <div class="page-nav"><p class="inner"><span class="prev">
+      ⟵
+      <a href="/guide/installation.html" class="prev">
+        Installation
+      </a></span> <span class="next"><a href="/guide/configuration.html">
+        Configuration
+      </a>
+      ⟶
+    </span></p></div> </main></div><div class="global-ui"><div style="visibility:hidden;display:none;"></div></div></div>
+    <script src="/assets/js/app.73a42117.js" defer></script><script src="/assets/js/2.cda44a63.js" defer></script><script src="/assets/js/21.5fdbae99.js" defer></script><script src="/assets/js/7.146e8129.js" defer></script>
+  </body>
+</html>
