@@ -1,3 +1,6 @@
+const { NAV } = require('../../constants/nav/nav')
+const { versionTwo } = require('../../constants/sidebar/2xx')
+const { three } = require('../../constants/sidebar/3xx')
 const { description } = require('../../package')
 
 module.exports = {
@@ -21,7 +24,9 @@ module.exports = {
   head: [
     ['meta', { name: 'theme-color', content: '#3eaf7c' }],
     ['meta', { name: 'apple-mobile-web-app-capable', content: 'yes' }],
-    ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }]
+    ['meta', { name: 'apple-mobile-web-app-status-bar-style', content: 'black' }],
+    ['link', { rel: "icon", type: "image/png", sizes: "32x32", href: "/assets/favicons/llm.png"}],
+    ['link', { rel: "icon", type: "image/png", sizes: "16x16", href: "/assets/favicons/llm.png"}],
   ],
 
   /**
@@ -35,67 +40,10 @@ module.exports = {
     docsDir: '',
     editLinkText: '',
     lastUpdated: false,
-    nav: [
-      {
-        text: 'Guide',
-        link: '/guide/',
-      },
-      // {
-      //   text: 'Config',
-      //   link: '/config/'
-      // },
-      {
-        text: 'Github',
-        link: 'https://v1.vuepress.vuejs.org'
-      }
-    ],
+    nav: NAV,
     sidebar: {
-      '/guide/': [
-        '',
-        {
-          title: 'Setup',
-          collapsable: true,
-          children: [
-            'installation',
-            'test',
-            'configuration'
-          ]
-        },
-        {
-          title: 'Guide',
-          collapsable: true,
-          children: [
-            {
-              title: 'CRUD Functionalities',
-              collapsable: true,
-              children: [
-                'create-function',
-                'read-function',
-                'update-function',
-                'delete-function'
-              ]
-            },
-            {
-              title: 'DATES',
-              collapsable: true,
-              children: [
-                'in-between',
-              ]
-            },
-          ]
-        },
-        {
-          title: 'Association',
-          collapsable: true,
-          children: [
-            'hasMany',
-            'embeds-one',
-            'embeds-many'
-          ]
-        },
-        'schema',
-        'extending'
-      ],
+      '/3xx/': three,
+      '/2xx/': versionTwo
     }
   },
 
