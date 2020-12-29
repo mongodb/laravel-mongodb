@@ -13,6 +13,12 @@ class Book extends Model
         return $this->embedsOne(Author::class);
     }
 }
+
+// can be used like this
+
+$book = Book::find('asdfahkauhsf8798');
+$data = $book->author()->get();
+
 ```
 You can access the embedded models through the dynamic property:
 ```php

@@ -15,6 +15,10 @@ class User extends Model
         return $this->embedsMany(Book::class);
     }
 }
+// can be used like this
+
+$book = User::find('dfasdfahkauhsf8798');
+$data = $book->books()->get();
 ```
 
 You can access the embedded models through the dynamic property:

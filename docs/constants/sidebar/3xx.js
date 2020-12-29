@@ -28,7 +28,7 @@ module.exports = {
           title: 'DATES',
           collapsable: true,
           children: [
-            'in-between',
+            'dates',
           ]
         },
       ]

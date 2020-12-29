@@ -16,6 +16,15 @@ class User extends Model
         return $this->hasMany(Item::class);
     }
 }
+
+// can be used like this
+$user = User::find('asdf979a8fahsdkjfalsdf');
+$data = $user->items()->get();
+
+// can also be used to create more items
+$user = User::find('asdf979a8fahsdkjfalsdf');
+$user->items()->create(['item_name' => 'table']);
+
 ```
 The inverse relation of `hasMany` is `belongsTo`:
 ```php

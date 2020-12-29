@@ -1,5 +1,5 @@
 ---
-title: IN BETWEEN
+title: Dates
 sidebarDepth: 2
 ---
 Note: We need to use this library to work on dates.
