@@ -4,6 +4,7 @@ namespace Jenssegers\Mongodb\Queue;
 
 use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
+use Illuminate\Queue\Jobs\DatabaseJob;
 use Jenssegers\Mongodb\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
 
@@ -130,5 +131,42 @@ class MongoQueue extends DatabaseQueue
     public function deleteReserved($queue, $id)
     {
         $this->database->collection($this->table)->where('_id', $id)->delete();
+    }
+
+    /**
+     * @param string $queue
+     * @param DatabaseJob $job
+     * @param int $delay
+     *
+     * @return object|null
+     */
+    public function release($queue, $job, $delay)
+    {
+        $result = $this->database->getCollection($this->table)->findOneAndUpdate(
+            [
+                '_id' => $job->getJobId(),
+            ],
+            [
+                '$set' => [
+                    'queue' => $queue,
+                    'reserved' => 0,
+                    'reserved_at' => null,
+                    'available_at' => Carbon::now()->addRealSeconds($delay)->getTimestamp(),
+                ],
+            ],
+            [
+                'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER
+            ]
+        );
+
+        return $result->_id ?? null;
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function deleteAndRelease($queue, $job, $delay)
+    {
+        $this->release($queue, $job, $delay);
     }
 }

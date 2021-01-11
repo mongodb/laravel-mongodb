@@ -4,6 +4,7 @@ declare(strict_types=1);
 use Carbon\Carbon;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
+use Jenssegers\Mongodb\Queue\MongoQueue;
 
 class QueueTest extends TestCase
 {
@@ -102,5 +103,47 @@ class QueueTest extends TestCase
 
         $this->assertCount(1, $others_jobs);
         $this->assertEquals(0, $others_jobs[0]['attempts']);
+    }
+
+    public function testQueueJobRelease(): void
+    {
+        $queue = 'test_queue';
+        $released_to_queue = 'test_queue';
+        $delay = 1234;
+
+        $id = Queue::push('test', [], $queue);
+        $job = Queue::pop($queue);
+
+        $released_job_id = Queue::release($released_to_queue, $job, $delay);
+        $this->assertEquals($id, $released_job_id);
+
+        $result = Queue::getDatabase()
+            ->table(Config::get('queue.connections.database.table'))
+            ->where('_id', $released_job_id)
+            ->first();
+
+        $this->assertEquals($released_to_queue, $result['queue']);
+        $this->assertEquals(1, $result['attempts']);
+        $this->assertEquals(0, $result['reserved']);
+        $this->assertNull($result['reserved_at']);
+        $this->assertEquals(
+            Carbon::now()->addRealSeconds($delay)->getTimestamp(),
+            $result['available_at']
+        );
+        $this->assertEquals(Carbon::now()->getTimestamp(), $result['created_at']);
+        $this->assertEquals($job->getRawBody(), $result['payload']);
+    }
+
+    public function testQueueJobDeleteAndRelease(): void
+    {
+        $mock = Mockery::mock(MongoQueue::class)->makePartial();
+
+        $queue = 'queue_name';
+        $job = '';
+        $delay = 1234;
+
+        //Skip parent method (uses transactions) - call release() method
+        $mock->shouldReceive('release')->once()->with($queue, $job, $delay);
+        $mock->deleteAndRelease($queue, $job, $delay);
     }
 }
