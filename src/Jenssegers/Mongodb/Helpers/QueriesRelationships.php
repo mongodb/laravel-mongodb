@@ -145,7 +145,9 @@ trait QueriesRelationships
         });
 
         // All related ids.
-        return array_keys($relationCount);
+        return array_map(static function ($id) {
+            return (string) $id;
+        }, array_keys($relationCount));
     }
 
     /**

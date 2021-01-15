@@ -436,6 +436,16 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $authors);
     }
 
+    public function testHasNumeric(): void
+    {
+        $author1 = User::create(['_id' => '1', 'name' => 'George R. R. Martin']);
+        $author1->books()->create(['_id' => '1', 'title' => 'A Game of Thrones', 'rating' => 5]);
+        $author1->books()->create(['_id' => '2', 'title' => 'A Clash of Kings', 'rating' => 5]);
+
+        $authors = User::has('books', '>', 1)->get();
+        $this->assertCount(1, $authors);
+    }
+
     public function testHasOneHas(): void
     {
         $user1 = User::create(['name' => 'John Doe']);
