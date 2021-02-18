@@ -224,8 +224,9 @@ class BelongsToMany extends EloquentBelongsToMany
         $ids = (array) $ids;
 
         // Detach all ids from the parent model.
-        $this->parent->pull($this->getRelatedKey(), $ids);
-
+        if ($this->parent instanceof MongodbEloquentModel){
+            $this->parent->pull($this->getRelatedKey(), $ids);
+        }
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
             $query->whereIn($this->related->getKeyName(), $ids);
