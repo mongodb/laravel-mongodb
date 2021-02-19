@@ -728,9 +728,8 @@ class Builder extends BaseBuilder
      */
     public function truncate(): bool
     {
-        $options = [];
-        // if transaction in session
-        $options = $this->setSession($options);
+        // Check if transaction exist in session
+        $options = $this->setSession();
 
         $result = $this->collection->deleteMany($options);
 
@@ -860,7 +859,7 @@ class Builder extends BaseBuilder
             $options['multiple'] = true;
         }
 
-        // if transaction in session
+        // Check if transaction exist in session
         $options = $this->setSession($options);
 
         $wheres = $this->compileWheres();
@@ -1196,14 +1195,14 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * set session for the transaction
+     * Set session for the transaction
      * @param $session
      * @return mixed
      */
-    protected function setSession($options)
+    protected function setSession($options = [])
     {
         if (!isset($options['session']) && ($session = $this->connection->getSession())) {
-            $options['session']  =  $session;
+            $options['session'] = $session;
         }
         return $options;
     }

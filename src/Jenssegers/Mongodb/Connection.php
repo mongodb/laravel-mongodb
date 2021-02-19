@@ -24,7 +24,15 @@ class Connection extends BaseConnection
      */
     protected $connection;
 
+    /**
+     * A random unique id for identification of transaction.
+     * @var string
+     */
     protected $session_key;
+    /**
+     * A list of transaction sessions.
+     * @var array
+     */
     protected $sessions = [];
 
     /**
