@@ -3,6 +3,11 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.8.3] - 2021-02-21
+
+### Changed
+- Fix query builder regression [#2204](https://github.com/jenssegers/laravel-mongodb/pull/2204) by [@divine](https://github.com/divine)
+
 ## [3.8.2] - 2020-12-18
 
 ### Changed
