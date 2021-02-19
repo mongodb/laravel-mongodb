@@ -963,26 +963,26 @@ To see the available operations, check the [Eloquent](#eloquent) section.
 
 Transaction
 -------
-Transaction requires mongodb version V4.0 or more and deployment replica sets or sharded clusters.You can look at its speciality [in the MongoDB docs](https://docs.mongodb.com/manual/core/transactions/)
+Transaction requires MongoDB version ^4.0 as well as deployment of replica set or sharded clusters. You can find more information [in the MongoDB docs](https://docs.mongodb.com/manual/core/transactions/)
 
 ### Basic Usage
 
-Transaction supports create/insert,update,delete,etc operation.
+Transaction supports CREATE/INSERT/UPDATE/DELETE operations.
 
 ```php
 DB::transaction(function () {
-    User::create(['name' => 'klinson', 'age' => 19, 'title' => 'admin', 'email' => 'klinsonup@gmail.com']);
-    DB::collection('users')->where('name', 'klinson')->update(['age' => 20]);
-    DB::collection('users')->where('name', 'klinson')->delete();
+    User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'klinsonup@gmail.com']);
+    DB::collection('users')->where('name', 'john')->update(['age' => 20]);
+    DB::collection('users')->where('name', 'john')->delete();
 });
 ```
 
 ```php
 // begin a transaction
 DB::beginTransaction();
-User::create(['name' => 'klinson', 'age' => 19, 'title' => 'admin', 'email' => 'klinsonup@gmail.com']);
-DB::collection('users')->where('name', 'klinson')->update(['age' => 20]);
-DB::collection('users')->where('name', 'klinson')->delete();
+User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'klinsonup@gmail.com']);
+DB::collection('users')->where('name', 'john')->update(['age' => 20]);
+DB::collection('users')->where('name', 'john')->delete();
 
 // you can commit your changes
 DB::commit();
@@ -991,12 +991,12 @@ DB::commit();
 //DB::rollBack();
 ```
 
-Transaction supports infinite-level nested transactions, but outside transaction rollbacks do not affect the commit of inside transactions.
+**NOTE:** Transaction supports infinite-level of nested transactions, but outside transaction rollbacks do not affect the commits of inside transactions.
 ```php
 DB::beginTransaction();
-User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+User::create(['name' => 'john', 'age' => 20, 'title' => 'admin']);
 DB::transaction(function () {
-    DB::collection('users')->where('name', 'klinson')->update(['age' => 20]);
+    DB::collection('users')->where('name', 'john')->update(['age' => 20]);
 });
 DB::rollBack();
 ```
