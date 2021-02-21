@@ -599,6 +599,14 @@ These expressions will be injected directly into the query.
 User::whereRaw([
     'age' => ['$gt' => 30, '$lt' => 40],
 ])->get();
+
+User::whereRaw([
+    '$where' => '/.*123.*/.test(this.field)',
+])->get();
+
+User::whereRaw([
+    '$where' => '/.*123.*/.test(this["hyphenated-field"])',
+])->get();
 ```
 
 You can also perform raw expressions on the internal MongoCollection object. If this is executed on the model class, it will return a collection of models.
