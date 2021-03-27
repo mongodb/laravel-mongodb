@@ -14,19 +14,19 @@ jobs:
     strategy:
       matrix:
         include:
-        - { os: ubuntu-latest, php: 7.2, mongodb: 3.6, experimental: true}
-        - { os: ubuntu-latest, php: 7.2, mongodb: '4.0', experimental: true}
-        - { os: ubuntu-latest, php: 7.2, mongodb: 4.2, experimental: true}
-        - { os: ubuntu-latest, php: 7.2, mongodb: 4.4, experimental: true}
-        - { os: ubuntu-latest, php: 7.3, mongodb: 3.6, experimental: false}
-        - { os: ubuntu-latest, php: 7.3, mongodb: '4.0', experimental: false}
-        - { os: ubuntu-latest, php: 7.3, mongodb: 4.2, experimental: false}
-        - { os: ubuntu-latest, php: 7.3, mongodb: 4.4, experimental: false}
-        - { os: ubuntu-latest, php: 7.4, mongodb: 3.6, experimental: false}
-        - { os: ubuntu-latest, php: 7.4, mongodb: '4.0', experimental: false}
-        - { os: ubuntu-latest, php: 7.4, mongodb: 4.2, experimental: false}
-        - { os: ubuntu-latest, php: 7.4, mongodb: 4.4, experimental: false}
-        - { os: ubuntu-latest, php: 8.0, mongodb: 4.4, experimental: false}
+          - { os: ubuntu-latest, php: 7.2, mongodb: 3.6, experimental: true}
+          - { os: ubuntu-latest, php: 7.2, mongodb: '4.0', experimental: true}
+          - { os: ubuntu-latest, php: 7.2, mongodb: 4.2, experimental: true}
+          - { os: ubuntu-latest, php: 7.2, mongodb: 4.4, experimental: true}
+          - { os: ubuntu-latest, php: 7.3, mongodb: 3.6, experimental: false}
+          - { os: ubuntu-latest, php: 7.3, mongodb: '4.0', experimental: false}
+          - { os: ubuntu-latest, php: 7.3, mongodb: 4.2, experimental: false}
+          - { os: ubuntu-latest, php: 7.3, mongodb: 4.4, experimental: false}
+          - { os: ubuntu-latest, php: 7.4, mongodb: 3.6, experimental: false}
+          - { os: ubuntu-latest, php: 7.4, mongodb: '4.0', experimental: false}
+          - { os: ubuntu-latest, php: 7.4, mongodb: 4.2, experimental: false}
+          - { os: ubuntu-latest, php: 7.4, mongodb: 4.4, experimental: false}
+          - { os: ubuntu-latest, php: 8.0, mongodb: 4.4, experimental: false}
     services:
       mongo:
         image: mongo:${{ matrix.mongodb }}
@@ -40,51 +40,57 @@ jobs:
           MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
           MYSQL_DATABASE: 'unittest'
           MYSQL_ROOT_PASSWORD:
+
     steps:
-    - uses: actions/checkout@v1
-    - name: Creating MongoDB replica
-      if: matrix.mongodb == '4.0' || matrix.mongodb == '4.2' || matrix.mongodb == '4.4'
-      run: |
-        docker run --name mongodb_repl -e MONGO_INITDB_DATABASE=unittest --publish 27018:27018 --detach mongo:${{ matrix.mongodb }} mongod --port 27018 --replSet rs
-        until docker exec --tty mongodb_repl mongo 127.0.0.1:27018 --eval "db.serverStatus()"; do
-        sleep 1
-        done
-        sudo docker exec --tty mongodb_repl mongo 127.0.0.1:27018 --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1:27018\" }]})"
-      env:
-        MONGO_HOST: 0.0.0.0
-        MONGO_REPL_HOST: 0.0.0.0
-    - name: Show PHP version
-      run: php${{ matrix.php }} -v && composer -V
-    - name: Show Docker version
-      run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
-      env:
-        DEBUG: ${{secrets.DEBUG}}
-    - name: Download Composer cache dependencies from cache
-      if: (!startsWith(matrix.php, '7.2'))
-      id: composer-cache
-      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-    - name: Cache Composer dependencies
-      if: (!startsWith(matrix.php, '7.2'))
-      uses: actions/cache@v1
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
-        restore-keys: ${{ matrix.os }}-composer-
-    - name: Install dependencies
-      if: (!startsWith(matrix.php, '7.2'))
-      run: |
-        composer install --no-interaction
-    - name: Run tests
-      if: (!startsWith(matrix.php, '7.2'))
-      run: |
-        ./vendor/bin/phpunit --coverage-clover coverage.xml
-      env:
-        MONGO_VERSION: ${{ matrix.mongodb }})
-        MONGO_HOST: 0.0.0.0
-        MONGO_REPL_HOST: 0.0.0.0
-        MYSQL_HOST: 0.0.0.0
-        MYSQL_PORT: 3307
-    - uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        fail_ci_if_error: false
+      - uses: actions/checkout@v2
+      - name: Creating MongoDB replica
+        if: matrix.mongodb == '4.0' || matrix.mongodb == '4.2' || matrix.mongodb == '4.4'
+        run: |
+          docker run --name mongodb_repl -e MONGO_INITDB_DATABASE=unittest --publish 27018:27018 --detach mongo:${{ matrix.mongodb }} mongod --port 27018 --replSet rs
+          until docker exec --tty mongodb_repl mongo 127.0.0.1:27018 --eval "db.serverStatus()"; do
+          sleep 1
+          done
+          sudo docker exec --tty mongodb_repl mongo 127.0.0.1:27018 --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1:27018\" }]})"
+        env:
+          MONGO_HOST: 0.0.0.0
+          MONGO_REPL_HOST: 0.0.0.0
+      - name: "Installing php"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl,mbstring,xdebug
+          coverage: xdebug
+          tools: composer
+      - name: Show PHP version
+        run: php -v && composer -V
+      - name: Show Docker version
+        run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
+        env:
+          DEBUG: ${{secrets.DEBUG}}
+      - name: Download Composer cache dependencies from cache
+        if: (!startsWith(matrix.php, '7.2'))
+        id: composer-cache
+        run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+      - name: Cache Composer dependencies
+        if: (!startsWith(matrix.php, '7.2'))
+        uses: actions/cache@v1
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
+          restore-keys: ${{ matrix.os }}-composer-
+      - name: Install dependencies
+        if: (!startsWith(matrix.php, '7.2'))
+        run: |
+          composer install --no-interaction
+      - name: Run tests
+        if: (!startsWith(matrix.php, '7.2'))
+        run: |
+          ./vendor/bin/phpunit --coverage-clover coverage.xml
+        env:
+          MONGO_HOST: 0.0.0.0
+          MYSQL_HOST: 0.0.0.0
+          MYSQL_PORT: 3307
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: false
