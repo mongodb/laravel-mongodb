@@ -100,7 +100,7 @@ class TransactionTest extends TestCase
         $this->assertEquals($check->title, $user->title);
     }
 
-    public function testUpdate()
+    public function testUpdateWithRollback ()
     {
         /** rollback test */
         $new_age = $this->insertData['age'] + 1;
@@ -108,7 +108,7 @@ class TransactionTest extends TestCase
         $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
         $user1->age = $new_age;
-        $user1->save();
+        $user1->update();
         $user2->update(['age' => $new_age]);
         DB::rollBack();
         $this->assertEquals($new_age, $user1->age);
@@ -118,6 +118,11 @@ class TransactionTest extends TestCase
         $check2 = User::on($this->connection)->find($user2->_id);
         $this->assertEquals($this->insertData['age'], $check1->age);
         $this->assertEquals($this->insertData['age'], $check2->age);
+    }
+
+    public function testUpdateWithCommit()
+    {
+        $new_age = $this->insertData['age'] + 1;
 
         /** commit test */
         User::on($this->connection)->truncate();
@@ -125,7 +130,7 @@ class TransactionTest extends TestCase
         $user2 = User::on($this->connection)->create($this->insertData);
         DB::beginTransaction();
         $user1->age = $new_age;
-        $user1->save();
+        $user1->update();
         $user2->update(['age' => $new_age]);
         DB::commit();
         $this->assertEquals($new_age, $user1->age);
