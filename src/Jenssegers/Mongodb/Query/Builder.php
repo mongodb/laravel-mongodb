@@ -572,10 +572,8 @@ class Builder extends BaseBuilder
             $values = [$values];
         }
 
-        // Batch insert
-        $options = [];
         // if transaction in session
-        $options = $this->setSession($options);
+        $options = $this->setSession();
 
         $result = $this->collection->insertMany($values, $options);
 
@@ -587,9 +585,8 @@ class Builder extends BaseBuilder
      */
     public function insertGetId(array $values, $sequence = null)
     {
-        $options = [];
         // if transaction in session
-        $options = $this->setSession($options);
+        $options = $this->setSession();
 
         $result = $this->collection->insertOne($values, $options);
 
@@ -699,9 +696,8 @@ class Builder extends BaseBuilder
 
         $wheres = $this->compileWheres();
 
-        $options = [];
         // if transaction in session
-        $options = $this->setSession($options);
+        $options = $this->setSession();
 
         $result = $this->collection->DeleteMany($wheres, $options);
         if (1 == (int) $result->isAcknowledged()) {
