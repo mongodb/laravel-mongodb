@@ -103,4 +103,20 @@ class QueueTest extends TestCase
         $this->assertCount(1, $others_jobs);
         $this->assertEquals(0, $others_jobs[0]['attempts']);
     }
+
+    public function testReleaseJob(): void
+    {
+        $job_id = Queue::push('test', ['action' => 'QueueJobExpired'], 'test');
+        $this->assertNotNull($job_id);
+
+        $job = Queue::pop('test');
+        $job->release();
+
+        $jobs = Queue::getDatabase()
+            ->table(Config::get('queue.connections.database.table'))
+            ->get();
+
+        $this->assertCount(1, $jobs);
+        $this->assertEquals(1, $jobs[0]['attempts']);
+    }
 }
