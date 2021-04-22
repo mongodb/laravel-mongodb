@@ -266,6 +266,16 @@ class Connection extends BaseConnection
     {
         return new Schema\Grammar();
     }
+    
+    /**
+     * Set database.
+     * @param \MongoDB\Database $db
+     */
+    public function setDatabase(\MongoDB\Database $db)
+	{
+		$this->db = $db;
+	}
+
 
     /**
      * Dynamically pass methods to the connection.
