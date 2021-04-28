@@ -2,7 +2,7 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Database\Eloquent\Model as BaseModel;
@@ -85,7 +85,7 @@ abstract class Model extends BaseModel
         }
 
         // Let Eloquent convert the value to a DateTime instance.
-        if (!$value instanceof DateTime) {
+        if (!$value instanceof DateTimeInterface) {
             $value = parent::asDateTime($value);
         }
 
