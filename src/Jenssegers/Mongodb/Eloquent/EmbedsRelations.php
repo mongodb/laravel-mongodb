@@ -22,7 +22,7 @@ trait EmbedsRelations
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relationships.
         if ($relation === null) {
-            list(, $caller) = debug_backtrace(false);
+            [, $caller] = debug_backtrace(false);
 
             $relation = $caller['function'];
         }
@@ -56,7 +56,7 @@ trait EmbedsRelations
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relationships.
         if ($relation === null) {
-            list(, $caller) = debug_backtrace(false);
+            [, $caller] = debug_backtrace(false);
 
             $relation = $caller['function'];
         }

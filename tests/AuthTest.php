@@ -29,6 +29,7 @@ class AuthTest extends TestCase
     {
         if (Application::VERSION >= '5.2') {
             $this->expectNotToPerformAssertions();
+
             return;
         }
 

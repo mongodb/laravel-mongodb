@@ -93,6 +93,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
         if ($this->hasIndex($indexOrColumns)) {
             $this->dropIndex($indexOrColumns);
         }
+
         return $this;
     }
 
@@ -114,6 +115,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
                 return true;
             }
         }
+
         return false;
     }
 
@@ -140,11 +142,12 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
                     $sorting = $value;
                 }
 
-                $transform[$column] = $column . "_" . $sorting;
+                $transform[$column] = $column.'_'.$sorting;
             }
 
             $indexOrColumns = implode('_', $transform);
         }
+
         return $indexOrColumns;
     }
 

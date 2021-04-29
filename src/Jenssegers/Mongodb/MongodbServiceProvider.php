@@ -27,6 +27,7 @@ class MongodbServiceProvider extends ServiceProvider
         $this->app->resolving('db', function ($db) {
             $db->extend('mongodb', function ($config, $name) {
                 $config['name'] = $name;
+
                 return new Connection($config);
             });
         });
