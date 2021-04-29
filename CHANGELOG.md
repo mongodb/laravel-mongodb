@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Fixed
+- Sync passthru methods [#2194](https://github.com/jenssegers/laravel-mongodb/pull/2194) by [@simonschaufi](https://github.com/simonschaufi)
+
 ## [3.8.3] - 2021-02-21
 
 ### Changed
