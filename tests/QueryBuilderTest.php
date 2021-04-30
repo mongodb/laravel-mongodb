@@ -574,6 +574,33 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(2, $users);
     }
 
+    public function testImmutableDates()
+    {
+        DB::collection('users')->insert([
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse("1980-01-01 00:00:00")->format('Uv'))],
+            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse("1982-01-01 00:00:00")->format('Uv'))],
+        ]);
+
+        $users = DB::collection('users')->where('birthday', '=', new DateTimeImmutable("1980-01-01 00:00:00"))->get();
+        $this->assertCount(1, $users);
+
+        $users = DB::collection('users')->where('birthday', new DateTimeImmutable("1980-01-01 00:00:00"))->get();
+        $this->assertCount(1, $users);
+
+        $users = DB::collection('users')->whereIn('birthday', [
+            new DateTimeImmutable("1980-01-01 00:00:00"),
+            new DateTimeImmutable("1982-01-01 00:00:00")
+        ])->get();
+        $this->assertCount(2, $users);
+
+        $users = DB::collection('users')->whereBetween('birthday', [
+            new DateTimeImmutable("1979-01-01 00:00:00"),
+            new DateTimeImmutable("1983-01-01 00:00:00")
+        ])->get();
+
+        $this->assertCount(2, $users);
+    }
+
     public function testOperators()
     {
         DB::collection('users')->insert([
