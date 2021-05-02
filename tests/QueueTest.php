@@ -104,7 +104,7 @@ class QueueTest extends TestCase
         $this->assertEquals(0, $others_jobs[0]['attempts']);
     }
 
-    public function testReleaseJob(): void
+    public function testJobRelease(): void
     {
         $job_id = Queue::push('test', ['action' => 'QueueJobExpired'], 'test');
         $this->assertNotNull($job_id);
@@ -118,5 +118,23 @@ class QueueTest extends TestCase
 
         $this->assertCount(1, $jobs);
         $this->assertEquals(1, $jobs[0]['attempts']);
+        $this->assertNotEquals($job_id, $jobs[0]['_id']);
+    }
+
+    public function testQueueDeleteAndRelease(): void
+    {
+        $queue = 'test';
+        $job_id = Queue::push($queue, ['action' => 'QueueJobExpired'], 'test');
+        
+        $job = Queue::pop('test');
+        Queue::deleteAndRelease($queue, $job, 0);
+
+        $jobs = Queue::getDatabase()
+            ->table(Config::get('queue.connections.database.table'))
+            ->get();
+
+        $this->assertCount(1, $jobs);
+        $this->assertEquals(1, $jobs[0]['attempts']);
+        $this->assertNotEquals($job_id, $jobs[0]['_id']);
     }
 }
