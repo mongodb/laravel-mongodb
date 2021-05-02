@@ -3,7 +3,7 @@
 namespace Jenssegers\Mongodb\Query;
 
 use Closure;
-use DateTime;
+use DateTimeInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
@@ -929,18 +929,18 @@ class Builder extends BaseBuilder
             if (isset($where['value'])) {
                 if (is_array($where['value'])) {
                     array_walk_recursive($where['value'], function (&$item, $key) {
-                        if ($item instanceof DateTime) {
+                        if ($item instanceof DateTimeInterface) {
                             $item = new UTCDateTime($item->format('Uv'));
                         }
                     });
                 } else {
-                    if ($where['value'] instanceof DateTime) {
+                    if ($where['value'] instanceof DateTimeInterface) {
                         $where['value'] = new UTCDateTime($where['value']->format('Uv'));
                     }
                 }
             } elseif (isset($where['values'])) {
                 array_walk_recursive($where['values'], function (&$item, $key) {
-                    if ($item instanceof DateTime) {
+                    if ($item instanceof DateTimeInterface) {
                         $item = new UTCDateTime($item->format('Uv'));
                     }
                 });

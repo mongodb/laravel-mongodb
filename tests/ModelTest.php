@@ -497,6 +497,9 @@ class ModelTest extends TestCase
         $user->setAttribute('birthday', new DateTime('1965-08-08 04.08.37.324'));
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
+        $user->setAttribute('birthday', new DateTimeImmutable('1965-08-08 04.08.37.324'));
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
         //Test with create and array property
         $user = User::create(['name' => 'Jane Doe', 'entry' => ['date' => time()]]);
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
