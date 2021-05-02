@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Illuminate\Database\MySqlConnection;
@@ -28,7 +29,7 @@ class HybridRelationsTest extends TestCase
         $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
 
         // Mysql User
-        $user->name = "John Doe";
+        $user->name = 'John Doe';
         $user->save();
         $this->assertIsInt($user->id);
 
@@ -54,7 +55,7 @@ class HybridRelationsTest extends TestCase
 
         // MongoDB User
         $user = new User;
-        $user->name = "John Doe";
+        $user->name = 'John Doe';
         $user->save();
 
         // MongoDB has many
@@ -88,7 +89,7 @@ class HybridRelationsTest extends TestCase
         $this->assertInstanceOf(MySqlConnection::class, $otherUser->getConnection());
 
         //MySql User
-        $user->name = "John Doe";
+        $user->name = 'John Doe';
         $user->id = 2;
         $user->save();
         // Other user
@@ -142,7 +143,7 @@ class HybridRelationsTest extends TestCase
         $this->assertInstanceOf(MySqlConnection::class, $otherUser->getConnection());
 
         //MySql User
-        $user->name = "John Doe";
+        $user->name = 'John Doe';
         $user->id = 2;
         $user->save();
         // Other user

@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,7 +33,7 @@ class MysqlRole extends Eloquent
         /** @var \Illuminate\Database\Schema\MySqlBuilder $schema */
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('roles')) {
+        if (! $schema->hasTable('roles')) {
             Schema::connection('mysql')->create('roles', function (Blueprint $table) {
                 $table->string('type');
                 $table->string('user_id');
