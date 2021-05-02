@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Carbon\Carbon;
@@ -125,7 +126,7 @@ class QueueTest extends TestCase
     {
         $queue = 'test';
         $job_id = Queue::push($queue, ['action' => 'QueueJobExpired'], 'test');
-        
+
         $job = Queue::pop('test');
         Queue::deleteAndRelease($queue, $job, 0);
 
