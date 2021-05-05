@@ -1,85 +1,104 @@
 name: CI
 
 on:
-  push:
-    branches:
-    tags:
-  pull_request:
+    push:
+        branches:
+        tags:
+    pull_request:
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-    name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
-    continue-on-error: ${{ matrix.experimental }}
-    strategy:
-      matrix:
-        include:
-        - { os: ubuntu-latest, php: 7.2, mongodb: 3.6, experimental: true}
-        - { os: ubuntu-latest, php: 7.2, mongodb: '4.0', experimental: true}
-        - { os: ubuntu-latest, php: 7.2, mongodb: 4.2, experimental: true}
-        - { os: ubuntu-latest, php: 7.2, mongodb: 4.4, experimental: true}
-        - { os: ubuntu-latest, php: 7.3, mongodb: 3.6, experimental: false}
-        - { os: ubuntu-latest, php: 7.3, mongodb: '4.0', experimental: false}
-        - { os: ubuntu-latest, php: 7.3, mongodb: 4.2, experimental: false}
-        - { os: ubuntu-latest, php: 7.3, mongodb: 4.4, experimental: false}
-        - { os: ubuntu-latest, php: 7.4, mongodb: 3.6, experimental: false}
-        - { os: ubuntu-latest, php: 7.4, mongodb: '4.0', experimental: false}
-        - { os: ubuntu-latest, php: 7.4, mongodb: 4.2, experimental: false}
-        - { os: ubuntu-latest, php: 7.4, mongodb: 4.4, experimental: false}
-        - { os: ubuntu-latest, php: 8.0, mongodb: 4.4, experimental: false}
-    services:
-      mongo:
-        image: mongo:${{ matrix.mongodb }}
-        ports:
-          - 27017:27017
-      mysql:
-        image: mysql:5.7
-        ports:
-          - 3307:3306
-        env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-          MYSQL_DATABASE: 'unittest'
-          MYSQL_ROOT_PASSWORD:
+    php-cs-fixer:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                php:
+                    - '7.4'
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    extensions: curl,mbstring
+                    tools: php-cs-fixer
+                    coverage: none
+            -   name: Run PHP-CS-Fixer Fix
+                run: php-cs-fixer fix --dry-run --diff --ansi
 
-    steps:
-    - uses: actions/checkout@v2
-    - name: "Installing php"
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php }}
-        extensions: curl,mbstring,xdebug
-        coverage: xdebug
-        tools: composer
-    - name: Show PHP version
-      run: php -v && composer -V
-    - name: Show Docker version
-      run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
-      env:
-        DEBUG: ${{secrets.DEBUG}}
-    - name: Download Composer cache dependencies from cache
-      if: (!startsWith(matrix.php, '7.2'))
-      id: composer-cache
-      run: echo "::set-output name=dir::$(composer config cache-files-dir)"
-    - name: Cache Composer dependencies
-      if: (!startsWith(matrix.php, '7.2'))
-      uses: actions/cache@v1
-      with:
-        path: ${{ steps.composer-cache.outputs.dir }}
-        key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
-        restore-keys: ${{ matrix.os }}-composer-
-    - name: Install dependencies
-      if: (!startsWith(matrix.php, '7.2'))
-      run: |
-        composer install --no-interaction
-    - name: Run tests
-      if: (!startsWith(matrix.php, '7.2'))
-      run: |
-        ./vendor/bin/phpunit --coverage-clover coverage.xml
-      env:
-        MONGO_HOST: 0.0.0.0
-        MYSQL_HOST: 0.0.0.0
-        MYSQL_PORT: 3307
-    - uses: codecov/codecov-action@v1
-      with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        fail_ci_if_error: false
+    build:
+        runs-on: ${{ matrix.os }}
+        name: PHP v${{ matrix.php }} with Mongo v${{ matrix.mongodb }}
+        continue-on-error: ${{ matrix.experimental }}
+        strategy:
+            matrix:
+                include:
+                    - { os: ubuntu-latest, php: 7.2, mongodb: 3.6, experimental: true }
+                    - { os: ubuntu-latest, php: 7.2, mongodb: '4.0', experimental: true }
+                    - { os: ubuntu-latest, php: 7.2, mongodb: 4.2, experimental: true }
+                    - { os: ubuntu-latest, php: 7.2, mongodb: 4.4, experimental: true }
+                    - { os: ubuntu-latest, php: 7.3, mongodb: 3.6, experimental: false }
+                    - { os: ubuntu-latest, php: 7.3, mongodb: '4.0', experimental: false }
+                    - { os: ubuntu-latest, php: 7.3, mongodb: 4.2, experimental: false }
+                    - { os: ubuntu-latest, php: 7.3, mongodb: 4.4, experimental: false }
+                    - { os: ubuntu-latest, php: 7.4, mongodb: 3.6, experimental: false }
+                    - { os: ubuntu-latest, php: 7.4, mongodb: '4.0', experimental: false }
+                    - { os: ubuntu-latest, php: 7.4, mongodb: 4.2, experimental: false }
+                    - { os: ubuntu-latest, php: 7.4, mongodb: 4.4, experimental: false }
+                    - { os: ubuntu-latest, php: 8.0, mongodb: 4.4, experimental: false }
+        services:
+            mongo:
+                image: mongo:${{ matrix.mongodb }}
+                ports:
+                    - 27017:27017
+            mysql:
+                image: mysql:5.7
+                ports:
+                    - 3307:3306
+                env:
+                    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+                    MYSQL_DATABASE: 'unittest'
+                    MYSQL_ROOT_PASSWORD:
+
+        steps:
+            -   uses: actions/checkout@v2
+            -   name: "Installing php"
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    extensions: curl,mbstring,xdebug
+                    coverage: xdebug
+                    tools: composer
+            -   name: Show PHP version
+                run: php -v && composer -V
+            -   name: Show Docker version
+                run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
+                env:
+                    DEBUG: ${{secrets.DEBUG}}
+            -   name: Download Composer cache dependencies from cache
+                if: (!startsWith(matrix.php, '7.2'))
+                id: composer-cache
+                run: echo "::set-output name=dir::$(composer config cache-files-dir)"
+            -   name: Cache Composer dependencies
+                if: (!startsWith(matrix.php, '7.2'))
+                uses: actions/cache@v1
+                with:
+                    path: ${{ steps.composer-cache.outputs.dir }}
+                    key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
+                    restore-keys: ${{ matrix.os }}-composer-
+            -   name: Install dependencies
+                if: (!startsWith(matrix.php, '7.2'))
+                run: |
+                    composer install --no-interaction
+            -   name: Run tests
+                if: (!startsWith(matrix.php, '7.2'))
+                run: |
+                    ./vendor/bin/phpunit --coverage-clover coverage.xml
+                env:
+                    MONGO_HOST: 0.0.0.0
+                    MYSQL_HOST: 0.0.0.0
+                    MYSQL_PORT: 3307
+            -   uses: codecov/codecov-action@v1
+                with:
+                    token: ${{ secrets.CODECOV_TOKEN }}
+                    fail_ci_if_error: false
