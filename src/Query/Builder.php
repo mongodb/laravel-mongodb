@@ -1137,6 +1137,76 @@ class Builder extends BaseBuilder
 
     /**
      * @param array $where
+     * @return array
+     */
+    protected function compileWhereDate(array $where)
+    {
+        extract($where);
+
+        $where['operator'] = $operator;
+        $where['value'] = $value;
+
+        return $this->compileWhereBasic($where);
+    }
+
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereMonth(array $where)
+    {
+        extract($where);
+
+        $where['operator'] = $operator;
+        $where['value'] = $value;
+
+        return $this->compileWhereBasic($where);
+    }
+
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereDay(array $where)
+    {
+        extract($where);
+
+        $where['operator'] = $operator;
+        $where['value'] = $value;
+
+        return $this->compileWhereBasic($where);
+    }
+
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereYear(array $where)
+    {
+        extract($where);
+
+        $where['operator'] = $operator;
+        $where['value'] = $value;
+
+        return $this->compileWhereBasic($where);
+    }
+
+    /**
+     * @param array $where
+     * @return array
+     */
+    protected function compileWhereTime(array $where)
+    {
+        extract($where);
+
+        $where['operator'] = $operator;
+        $where['value'] = $value;
+
+        return $this->compileWhereBasic($where);
+    }
+
+    /**
+     * @param array $where
      * @return mixed
      */
     protected function compileWhereRaw(array $where)
