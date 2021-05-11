@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Collection;
@@ -438,9 +439,12 @@ class RelationsTest extends TestCase
 
     public function testHasNumeric(): void
     {
-        $author1 = User::create(['_id' => '1', 'name' => 'George R. R. Martin']);
-        $author1->books()->create(['_id' => '1', 'title' => 'A Game of Thrones', 'rating' => 5]);
+        $author1 = User::create(['name' => 'George R. R. Martin']);
+        $author1->books()->create(['title' => 'A Game of Thrones', 'rating' => 5]);
         $author1->books()->create(['_id' => '2', 'title' => 'A Clash of Kings', 'rating' => 5]);
+
+        $author2 = User::create(['name' => 'John Doe']);
+        $author2->books()->create(['title' => 'My book', 'rating' => 2]);
 
         $authors = User::has('books', '>', 1)->get();
         $this->assertCount(1, $authors);

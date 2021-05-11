@@ -71,7 +71,7 @@ trait QueriesRelationships
     }
 
     /**
-     * Compare across databases
+     * Compare across databases.
      * @param Relation $relation
      * @param string $operator
      * @param int $count
@@ -91,7 +91,7 @@ trait QueriesRelationships
         $not = in_array($operator, ['<', '<=', '!=']);
         // If we are comparing to 0, we need an additional $not flip.
         if ($count == 0) {
-            $not = !$not;
+            $not = ! $not;
         }
 
         $relations = $hasQuery->pluck($this->getHasCompareKey($relation));
@@ -123,10 +123,14 @@ trait QueriesRelationships
     protected function getConstrainedRelatedIds($relations, $operator, $count)
     {
         $intHash = 'INT_RELATION_';
-        $relationCount = array_count_values(array_map(function ($id) use ($intHash) {
-            if (!is_string($id) && is_int($id)) {
-                return $intHash . $id;
+        $hasNumericIndex = false;
+        $relationCount = array_count_values(array_map(function ($id) use ($intHash, &$hasNumericIndex) {
+            if (! is_string($id) && is_int($id)) {
+                $hasNumericIndex = true;
+
+                return $intHash.$id;
             }
+
             return (string) $id; // Convert Back ObjectIds to Strings
         }, is_array($relations) ? $relations : $relations->flatten()->toArray()));
         // Remove unwanted related objects based on the operator and count.
@@ -149,16 +153,22 @@ trait QueriesRelationships
         });
 
         // All related ids.
+        if (! $hasNumericIndex) {
+            return array_keys($relationCount);
+        }
+
+        // Has any numeric index?
         return array_map(static function ($id) use ($intHash) {
             if (strpos($id, $intHash, 0) === 0) {
                 return (int) str_replace($intHash, '', $id);
             }
+
             return (string) $id;
         }, array_keys($relationCount));
     }
 
     /**
-     * Returns key we are constraining this parent model's query with
+     * Returns key we are constraining this parent model's query with.
      * @param Relation $relation
      * @return string
      * @throws Exception
@@ -173,10 +183,10 @@ trait QueriesRelationships
             return $relation->getForeignKeyName();
         }
 
-        if ($relation instanceof BelongsToMany && !$this->isAcrossConnections($relation)) {
+        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation)) {
             return $this->model->getKeyName();
         }
 
-        throw new Exception(class_basename($relation) . ' is not supported for hybrid query constraints.');
+        throw new Exception(class_basename($relation).' is not supported for hybrid query constraints.');
     }
 }
