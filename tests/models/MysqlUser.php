@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -38,7 +39,7 @@ class MysqlUser extends Eloquent
         /** @var \Illuminate\Database\Schema\MySqlBuilder $schema */
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('users')) {
+        if (! $schema->hasTable('users')) {
             Schema::connection('mysql')->create('users', function (Blueprint $table) {
                 $table->increments('id');
                 $table->string('name');

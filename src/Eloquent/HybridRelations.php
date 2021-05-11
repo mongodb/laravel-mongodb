@@ -9,8 +9,8 @@ use Jenssegers\Mongodb\Relations\BelongsTo;
 use Jenssegers\Mongodb\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Relations\HasMany;
 use Jenssegers\Mongodb\Relations\HasOne;
-use Jenssegers\Mongodb\Relations\MorphTo;
 use Jenssegers\Mongodb\Relations\MorphMany;
+use Jenssegers\Mongodb\Relations\MorphTo;
 
 trait HybridRelations
 {
@@ -24,7 +24,7 @@ trait HybridRelations
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
 
@@ -49,13 +49,13 @@ trait HybridRelations
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
         $instance = new $related;
 
-        list($type, $id) = $this->getMorphs($name, $type, $id);
+        [$type, $id] = $this->getMorphs($name, $type, $id);
 
         $localKey = $localKey ?: $this->getKeyName();
 
@@ -72,7 +72,7 @@ trait HybridRelations
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
 
@@ -97,7 +97,7 @@ trait HybridRelations
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
@@ -106,7 +106,7 @@ trait HybridRelations
         // Here we will gather up the morph type and ID for the relationship so that we
         // can properly query the intermediate table of a relation. Finally, we will
         // get the table and create the relationship instances for the developers.
-        list($type, $id) = $this->getMorphs($name, $type, $id);
+        [$type, $id] = $this->getMorphs($name, $type, $id);
 
         $table = $instance->getTable();
 
@@ -129,13 +129,13 @@ trait HybridRelations
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relationships.
         if ($relation === null) {
-            list($current, $caller) = debug_backtrace(false, 2);
+            [$current, $caller] = debug_backtrace(false, 2);
 
             $relation = $caller['function'];
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::belongsTo($related, $foreignKey, $otherKey, $relation);
         }
 
@@ -143,7 +143,7 @@ trait HybridRelations
         // foreign key name by using the name of the relationship function, which
         // when combined with an "_id" should conventionally match the columns.
         if ($foreignKey === null) {
-            $foreignKey = Str::snake($relation) . '_id';
+            $foreignKey = Str::snake($relation).'_id';
         }
 
         $instance = new $related;
@@ -172,12 +172,12 @@ trait HybridRelations
         // since that is most likely the name of the polymorphic interface. We can
         // use that to get both the class and foreign key that will be utilized.
         if ($name === null) {
-            list($current, $caller) = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+            [$current, $caller] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
             $name = Str::snake($caller['function']);
         }
 
-        list($type, $id) = $this->getMorphs($name, $type, $id);
+        [$type, $id] = $this->getMorphs($name, $type, $id);
 
         // If the type value is null it is probably safe to assume we're eager loading
         // the relationship. When that is the case we will pass in a dummy query as
@@ -230,7 +230,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
+        if (! is_subclass_of($related, \Jenssegers\Mongodb\Eloquent\Model::class)) {
             return parent::belongsToMany(
                 $related,
                 $collection,
@@ -245,11 +245,11 @@ trait HybridRelations
         // First, we'll need to determine the foreign key and "other key" for the
         // relationship. Once we have determined the keys we'll make the query
         // instances as well as the relationship instances we need for this.
-        $foreignKey = $foreignKey ?: $this->getForeignKey() . 's';
+        $foreignKey = $foreignKey ?: $this->getForeignKey().'s';
 
         $instance = new $related;
 
-        $otherKey = $otherKey ?: $instance->getForeignKey() . 's';
+        $otherKey = $otherKey ?: $instance->getForeignKey().'s';
 
         // If no table name was provided, we can guess it by concatenating the two
         // models using underscores in alphabetical order. The two model names

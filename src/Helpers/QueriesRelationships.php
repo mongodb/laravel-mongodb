@@ -71,7 +71,7 @@ trait QueriesRelationships
     }
 
     /**
-     * Compare across databases
+     * Compare across databases.
      * @param Relation $relation
      * @param string $operator
      * @param int $count
@@ -91,7 +91,7 @@ trait QueriesRelationships
         $not = in_array($operator, ['<', '<=', '!=']);
         // If we are comparing to 0, we need an additional $not flip.
         if ($count == 0) {
-            $not = !$not;
+            $not = ! $not;
         }
 
         $relations = $hasQuery->pluck($this->getHasCompareKey($relation));
@@ -149,7 +149,7 @@ trait QueriesRelationships
     }
 
     /**
-     * Returns key we are constraining this parent model's query with
+     * Returns key we are constraining this parent model's query with.
      * @param Relation $relation
      * @return string
      * @throws Exception
@@ -164,10 +164,10 @@ trait QueriesRelationships
             return $relation->getForeignKeyName();
         }
 
-        if ($relation instanceof BelongsToMany && !$this->isAcrossConnections($relation)) {
+        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation)) {
             return $this->model->getKeyName();
         }
 
-        throw new Exception(class_basename($relation) . ' is not supported for hybrid query constraints.');
+        throw new Exception(class_basename($relation).' is not supported for hybrid query constraints.');
     }
 }

@@ -16,7 +16,7 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
      */
     public function getCount($collection, $column, $value, $excludeId = null, $idColumn = null, array $extra = [])
     {
-        $query = $this->table($collection)->where($column, 'regex', "/" . preg_quote($value) . "/i");
+        $query = $this->table($collection)->where($column, 'regex', '/'.preg_quote($value).'/i');
 
         if ($excludeId !== null && $excludeId != 'NULL') {
             $query->where($idColumn ?: 'id', '<>', $excludeId);
@@ -40,7 +40,7 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
     public function getMultiCount($collection, $column, array $values, array $extra = [])
     {
         // Generates a regex like '/(a|b|c)/i' which can query multiple values
-        $regex = '/(' . implode('|', $values) . ')/i';
+        $regex = '/('.implode('|', $values).')/i';
 
         $query = $this->table($collection)->where($column, 'regex', $regex);
 

@@ -18,8 +18,7 @@ use MongoDB\BSON\UTCDateTime;
 use RuntimeException;
 
 /**
- * Class Builder
- * @package Jenssegers\Mongodb\Query
+ * Class Builder.
  */
 class Builder extends BaseBuilder
 {
@@ -197,11 +196,11 @@ class Builder extends BaseBuilder
      */
     public function cursor($columns = [])
     {
-        $result =  $this->getFresh($columns, true);
+        $result = $this->getFresh($columns, true);
         if ($result instanceof LazyCollection) {
             return $result;
         }
-        throw new RuntimeException("Query not compatible with cursor");
+        throw new RuntimeException('Query not compatible with cursor');
     }
 
     /**
@@ -235,18 +234,18 @@ class Builder extends BaseBuilder
             // Add grouping columns to the $group part of the aggregation pipeline.
             if ($this->groups) {
                 foreach ($this->groups as $column) {
-                    $group['_id'][$column] = '$' . $column;
+                    $group['_id'][$column] = '$'.$column;
 
                     // When grouping, also add the $last operator to each grouped field,
                     // this mimics MySQL's behaviour a bit.
-                    $group[$column] = ['$last' => '$' . $column];
+                    $group[$column] = ['$last' => '$'.$column];
                 }
 
                 // Do the same for other columns that are selected.
                 foreach ($this->columns as $column) {
                     $key = str_replace('.', '_', $column);
 
-                    $group[$key] = ['$last' => '$' . $column];
+                    $group[$key] = ['$last' => '$'.$column];
                 }
             }
 
@@ -278,15 +277,16 @@ class Builder extends BaseBuilder
                         $results = [
                             [
                                 '_id'       => null,
-                                'aggregate' => $totalResults
-                            ]
+                                'aggregate' => $totalResults,
+                            ],
                         ];
+
                         return new Collection($results);
                     } elseif ($function == 'count') {
                         // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
                     } else {
-                        $group['aggregate'] = ['$' . $function => '$' . $column];
+                        $group['aggregate'] = ['$'.$function => '$'.$column];
                     }
                 }
             }
@@ -304,7 +304,7 @@ class Builder extends BaseBuilder
 
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
-                $pipeline[] = ['$unwind' => '$' . $unwind];
+                $pipeline[] = ['$unwind' => '$'.$unwind];
             }
 
             if ($group) {
@@ -408,6 +408,7 @@ class Builder extends BaseBuilder
 
             // Return results as an array with numeric keys
             $results = iterator_to_array($cursor, false);
+
             return new Collection($results);
         }
     }
@@ -556,20 +557,20 @@ class Builder extends BaseBuilder
         foreach ($values as $value) {
             // As soon as we find a value that is not an array we assume the user is
             // inserting a single document.
-            if (!is_array($value)) {
+            if (! is_array($value)) {
                 $batch = false;
                 break;
             }
         }
 
-        if (!$batch) {
+        if (! $batch) {
             $values = [$values];
         }
 
         // Batch insert
         $result = $this->collection->insertMany($values);
 
-        return (1 == (int) $result->isAcknowledged());
+        return 1 == (int) $result->isAcknowledged();
     }
 
     /**
@@ -595,7 +596,7 @@ class Builder extends BaseBuilder
     public function update(array $values, array $options = [])
     {
         // Use $set as default operator.
-        if (!Str::startsWith(key($values), '$')) {
+        if (! Str::startsWith(key($values), '$')) {
             $values = ['$set' => $values];
         }
 
@@ -609,7 +610,7 @@ class Builder extends BaseBuilder
     {
         $query = ['$inc' => [$column => $amount]];
 
-        if (!empty($extra)) {
+        if (! empty($extra)) {
             $query['$set'] = $extra;
         }
 
@@ -658,11 +659,13 @@ class Builder extends BaseBuilder
         if ($key == '_id') {
             $results = $results->map(function ($item) {
                 $item['_id'] = (string) $item['_id'];
+
                 return $item;
             });
         }
 
         $p = Arr::pluck($results, $column, $key);
+
         return new Collection($p);
     }
 
@@ -706,7 +709,7 @@ class Builder extends BaseBuilder
     {
         $result = $this->collection->deleteMany([]);
 
-        return (1 === (int) $result->isAcknowledged());
+        return 1 === (int) $result->isAcknowledged();
     }
 
     /**
@@ -796,7 +799,7 @@ class Builder extends BaseBuilder
      */
     public function drop($columns)
     {
-        if (!is_array($columns)) {
+        if (! is_array($columns)) {
             $columns = [$columns];
         }
 
@@ -816,7 +819,7 @@ class Builder extends BaseBuilder
      */
     public function newQuery()
     {
-        return new Builder($this->connection, $this->processor);
+        return new self($this->connection, $this->processor);
     }
 
     /**
@@ -828,7 +831,7 @@ class Builder extends BaseBuilder
     protected function performUpdate($query, array $options = [])
     {
         // Update multiple items by default.
-        if (!array_key_exists('multiple', $options)) {
+        if (! array_key_exists('multiple', $options)) {
             $options['multiple'] = true;
         }
 
@@ -1006,10 +1009,10 @@ class Builder extends BaseBuilder
             $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
 
             // Convert like to regular expression.
-            if (!Str::startsWith($value, '%')) {
-                $regex = '^' . $regex;
+            if (! Str::startsWith($value, '%')) {
+                $regex = '^'.$regex;
             }
-            if (!Str::endsWith($value, '%')) {
+            if (! Str::endsWith($value, '%')) {
                 $regex .= '$';
             }
 
@@ -1017,7 +1020,7 @@ class Builder extends BaseBuilder
         } // Manipulate regexp operations.
         elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
-            if (!$value instanceof Regex) {
+            if (! $value instanceof Regex) {
                 $e = explode('/', $value);
                 $flag = end($e);
                 $regstr = substr($value, 1, -(strlen($flag) + 1));
@@ -1031,12 +1034,12 @@ class Builder extends BaseBuilder
             }
         }
 
-        if (!isset($operator) || $operator == '=') {
+        if (! isset($operator) || $operator == '=') {
             $query = [$column => $value];
         } elseif (array_key_exists($operator, $this->conversion)) {
             $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
-            $query = [$column => ['$' . $operator => $value]];
+            $query = [$column => ['$'.$operator => $value]];
         }
 
         return $query;

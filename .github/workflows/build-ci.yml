@@ -9,6 +9,8 @@ on:
 jobs:
     php-cs-fixer:
         runs-on: ubuntu-latest
+        env:
+            PHP_CS_FIXER_VERSION: v2.18.7
         strategy:
             matrix:
                 php:
@@ -21,9 +23,9 @@ jobs:
                 with:
                     php-version: ${{ matrix.php }}
                     extensions: curl,mbstring
-                    tools: php-cs-fixer
+                    tools: php-cs-fixer:${{ env.PHP_CS_FIXER_VERSION }}
                     coverage: none
-            -   name: Run PHP-CS-Fixer Fix
+            -   name: Run PHP-CS-Fixer Fix, version ${{ env.PHP_CS_FIXER_VERSION }}
                 run: php-cs-fixer fix --dry-run --diff --ansi
 
     build:

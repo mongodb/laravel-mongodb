@@ -37,7 +37,7 @@ class Builder extends EloquentBuilder
         'push',
         'raw',
         'sum',
-        'toSql'
+        'toSql',
     ];
 
     /**
@@ -190,13 +190,13 @@ class Builder extends EloquentBuilder
      * Add the "updated at" column to an array of values.
      * TODO Remove if https://github.com/laravel/framework/commit/6484744326531829341e1ff886cc9b628b20d73e
      * wiil be reverted
-     * Issue in laravel frawework https://github.com/laravel/framework/issues/27791
+     * Issue in laravel frawework https://github.com/laravel/framework/issues/27791.
      * @param array $values
      * @return array
      */
     protected function addUpdatedAtColumn(array $values)
     {
-        if (!$this->model->usesTimestamps() || $this->model->getUpdatedAtColumn() === null) {
+        if (! $this->model->usesTimestamps() || $this->model->getUpdatedAtColumn() === null) {
             return $values;
         }
 
