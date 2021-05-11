@@ -3,7 +3,6 @@
 namespace Jenssegers\Mongodb\Schema;
 
 use Closure;
-use Jenssegers\Mongodb\Connection;
 
 class Builder extends \Illuminate\Database\Schema\Builder
 {

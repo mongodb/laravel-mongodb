@@ -1,4 +1,5 @@
 <?php
+
 declare(strict_types=1);
 
 use Carbon\Carbon;
@@ -495,6 +496,9 @@ class ModelTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
         $user->setAttribute('birthday', new DateTime('1965-08-08 04.08.37.324'));
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+
+        $user->setAttribute('birthday', new DateTimeImmutable('1965-08-08 04.08.37.324'));
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
         //Test with create and array property

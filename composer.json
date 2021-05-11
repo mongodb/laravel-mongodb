@@ -32,8 +32,8 @@
         "doctrine/dbal": "^2.6"
     },
     "autoload": {
-        "psr-0": {
-            "Jenssegers\\Mongodb": "src/"
+        "psr-4": {
+            "Jenssegers\\Mongodb\\": "src/"
         }
     },
     "autoload-dev": {

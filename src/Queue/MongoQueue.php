@@ -131,4 +131,13 @@ class MongoQueue extends DatabaseQueue
     {
         $this->database->collection($this->table)->where('_id', $id)->delete();
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function deleteAndRelease($queue, $job, $delay)
+    {
+        $this->deleteReserved($queue, $job->getJobId());
+        $this->release($queue, $job->getJobRecord(), $delay);
+    }
 }

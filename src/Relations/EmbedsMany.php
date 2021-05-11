@@ -39,13 +39,14 @@ class EmbedsMany extends EmbedsOneOrMany
     public function performInsert(Model $model)
     {
         // Generate a new key if needed.
-        if ($model->getKeyName() == '_id' && !$model->getKey()) {
+        if ($model->getKeyName() == '_id' && ! $model->getKey()) {
             $model->setAttribute('_id', new ObjectID);
         }
 
         // For deeply nested documents, let the parent handle the changes.
         if ($this->isNested()) {
             $this->associate($model);
+
             return $this->parent->save() ? $model : false;
         }
 
@@ -77,10 +78,10 @@ class EmbedsMany extends EmbedsOneOrMany
         // Get the correct foreign key value.
         $foreignKey = $this->getForeignKeyValue($model);
 
-        $values = $this->getUpdateValues($model->getDirty(), $this->localKey . '.$.');
+        $values = $this->getUpdateValues($model->getDirty(), $this->localKey.'.$.');
 
         // Update document in database.
-        $result = $this->getBaseQuery()->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)
+        $result = $this->getBaseQuery()->where($this->localKey.'.'.$model->getKeyName(), $foreignKey)
             ->update($values);
 
         // Attach the model to its parent.
@@ -124,7 +125,7 @@ class EmbedsMany extends EmbedsOneOrMany
      */
     public function associate(Model $model)
     {
-        if (!$this->contains($model)) {
+        if (! $this->contains($model)) {
             return $this->associateNew($model);
         }
 
@@ -227,7 +228,7 @@ class EmbedsMany extends EmbedsOneOrMany
     protected function associateNew($model)
     {
         // Create a new key if needed.
-        if ($model->getKeyName() === '_id' && !$model->getAttribute('_id')) {
+        if ($model->getKeyName() === '_id' && ! $model->getAttribute('_id')) {
             $model->setAttribute('_id', new ObjectID);
         }
 
@@ -292,7 +293,7 @@ class EmbedsMany extends EmbedsOneOrMany
             $perPage,
             $page,
             [
-                'path' => Paginator::resolveCurrentPath()
+                'path' => Paginator::resolveCurrentPath(),
             ]
         );
     }
@@ -310,7 +311,7 @@ class EmbedsMany extends EmbedsOneOrMany
      */
     protected function setEmbedded($models)
     {
-        if (!is_array($models)) {
+        if (! is_array($models)) {
             $models = [$models];
         }
 

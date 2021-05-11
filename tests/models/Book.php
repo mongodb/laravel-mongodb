@@ -1,11 +1,12 @@
 <?php
+
 declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 /**
- * Class Book
+ * Class Book.
  * @property string $title
  * @property string $author
  * @property array $chapters

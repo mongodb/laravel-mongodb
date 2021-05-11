@@ -34,6 +34,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
 
         $all = array_map(function ($job) {
             $job['id'] = (string) $job['_id'];
+
             return (object) $job;
         }, $all);
 
@@ -49,7 +50,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     {
         $job = $this->getTable()->find($id);
 
-        if (!$job) {
+        if (! $job) {
             return;
         }
 
