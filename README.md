@@ -20,9 +20,10 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
   - [Configuration](#configuration)
   - [Eloquent](#eloquent)
     - [Extending the base model](#extending-the-base-model)
+    - [Extending the Authenticable base model](#extending-the-authenticable-base-model)
     - [Soft Deletes](#soft-deletes)
-    - [Dates](#dates)
     - [Guarding attributes](#guarding-attributes)
+    - [Dates](#dates)
     - [Basic Usage](#basic-usage)
     - [MongoDB-specific operators](#mongodb-specific-operators)
     - [MongoDB-specific Geo operations](#mongodb-specific-geo-operations)
@@ -44,9 +45,10 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
     - [Authentication](#authentication)
     - [Queues](#queues)
       - [Laravel specific](#laravel-specific)
-      - [Lumen specific](#Lumen-specific)
+      - [Lumen specific](#lumen-specific)
   - [Upgrading](#upgrading)
       - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
+  - [Security contact information](#security-contact-information)
 
 Installation
 ------------
@@ -355,6 +357,14 @@ $posts = Post::whereBetween('votes', [1, 100])->get();
 ```php
 $users = User::whereNull('age')->get();
 ```
+
+**whereDate**
+
+```php
+$users = User::whereDate('birthday', '2021-5-12')->get();
+```
+The usage is the same as `whereMonth` / `whereDay` / `whereYear` / `whereTime`
+
 
 **Advanced wheres**
 
