@@ -56,21 +56,21 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
 
 ### Laravel version Compatibility
 
- Laravel  | Package
-:---------|:----------
- 4.2.x    | 2.0.x
- 5.0.x    | 2.1.x
- 5.1.x    | 2.2.x or 3.0.x
- 5.2.x    | 2.3.x or 3.0.x
- 5.3.x    | 3.1.x or 3.2.x
- 5.4.x    | 3.2.x
- 5.5.x    | 3.3.x
- 5.6.x    | 3.4.x
- 5.7.x    | 3.4.x
- 5.8.x    | 3.5.x
- 6.x      | 3.6.x
- 7.x      | 3.7.x
- 8.x      | 3.8.x
+ Laravel  | Package        | Maintained
+:---------|:---------------|:----------
+ 8.x      | 3.8.x          | :white_check_mark:
+ 7.x      | 3.7.x          | :x:
+ 6.x      | 3.6.x          | :white_check_mark:
+ 5.8.x    | 3.5.x          | :x:
+ 5.7.x    | 3.4.x          | :x:
+ 5.6.x    | 3.4.x          | :x:
+ 5.5.x    | 3.3.x          | :x:
+ 5.4.x    | 3.2.x          | :x:
+ 5.3.x    | 3.1.x or 3.2.x | :x:
+ 5.2.x    | 2.3.x or 3.0.x | :x:
+ 5.1.x    | 2.2.x or 3.0.x | :x:
+ 5.0.x    | 2.1.x          | :x:
+ 4.2.x    | 2.0.x          | :x:
 
 Install the package via Composer:
 
