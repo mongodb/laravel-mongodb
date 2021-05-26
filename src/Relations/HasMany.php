@@ -46,19 +46,6 @@ class HasMany extends EloquentHasMany
     }
 
     /**
-     * Add the constraints for a relationship count query.
-     * @param Builder $query
-     * @param Builder $parent
-     * @return Builder
-     */
-    public function getRelationCountQuery(Builder $query, Builder $parent)
-    {
-        $foreignKey = $this->getHasCompareKey();
-
-        return $query->select($foreignKey)->where($foreignKey, 'exists', true);
-    }
-
-    /**
      * Get the name of the "where in" method for eager loading.
      * @param \Illuminate\Database\Eloquent\Model $model
      * @param string $key
