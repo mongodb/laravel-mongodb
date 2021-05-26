@@ -39,6 +39,7 @@ class QueueTest extends TestCase
             'job' => 'test',
             'maxTries' => null,
             'maxExceptions' => null,
+            'failOnTimeout' => false,
             'backoff' => null,
             'timeout' => null,
             'data' => ['action' => 'QueueJobLifeCycle'],
