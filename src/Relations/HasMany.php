@@ -59,22 +59,6 @@ class HasMany extends EloquentHasMany
     }
 
     /**
-     * Add the constraints for a relationship query.
-     * @param Builder $query
-     * @param Builder $parent
-     * @param array|mixed $columns
-     * @return Builder
-     */
-    public function getRelationQuery(Builder $query, Builder $parent, $columns = ['*'])
-    {
-        $query->select($columns);
-
-        $key = $this->wrap($this->getQualifiedParentKeyName());
-
-        return $query->where($this->getHasCompareKey(), 'exists', true);
-    }
-
-    /**
      * Get the name of the "where in" method for eager loading.
      * @param \Illuminate\Database\Eloquent\Model $model
      * @param string $key
