@@ -27,15 +27,6 @@ class HasOne extends EloquentHasOne
     }
 
     /**
-     * Get the plain foreign key.
-     * @return string
-     */
-    public function getPlainForeignKey()
-    {
-        return $this->getForeignKeyName();
-    }
-
-    /**
      * @inheritdoc
      */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
