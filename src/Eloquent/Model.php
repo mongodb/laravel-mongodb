@@ -216,7 +216,9 @@ abstract class Model extends BaseModel
         // Convert dot-notation dates.
         foreach ($this->getDates() as $key) {
             if (Str::contains($key, '.') && Arr::has($attributes, $key)) {
-                Arr::set($attributes, $key, (string) $this->asDateTime(Arr::get($attributes, $key)));
+                Arr::set($attributes, $key, $this->serializeDate(
+                    $this->asDateTime(Arr::get($attributes, $key))
+                ));
             }
         }
 
