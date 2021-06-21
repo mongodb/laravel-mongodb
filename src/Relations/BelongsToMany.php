@@ -128,7 +128,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // See issue #256.
         if ($current instanceof Collection) {
-            $current = $ids->modelKeys();
+            $current = $current->modelKeys();
         }
 
         $records = $this->formatSyncList($ids);
