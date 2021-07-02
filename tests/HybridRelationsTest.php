@@ -194,6 +194,7 @@ class HybridRelationsTest extends TestCase
                 $this->assertEquals($user->id, $user->books->count());
             });
     }
+    
     public function testHybridSync()
     {
         $user = new MysqlUser;

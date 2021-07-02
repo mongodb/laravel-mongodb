@@ -223,12 +223,9 @@ class BelongsToMany extends EloquentBelongsToMany
         // We'll return the numbers of affected rows when we do the deletes.
         $ids = (array) $ids;
 
-
         if ($this->parent instanceof \Jenssegers\Mongodb\Eloquent\Model) {
             $this->parent->pull($this->getRelatedKey(), $ids);
         }
-
-
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
