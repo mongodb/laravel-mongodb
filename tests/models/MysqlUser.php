@@ -33,7 +33,7 @@ class MysqlUser extends Eloquent
 
     public function clients()
     {
-        return $this->belongsToMany('Client',null,'mysql_users_id','clients');
+        return $this->belongsToMany('Client', null, 'mysql_users_id', 'clients');
     }
 
     /**
@@ -55,7 +55,7 @@ class MysqlUser extends Eloquent
             Schema::connection('mysql')->create('client_mysql_user', function (Blueprint $table) {
                 $table->integer('mysql_user_id')->unsigned();
                 $table->string('client_id');
-                $table->primary(['mysql_user_id','client_id']);
+                $table->primary(['mysql_user_id', 'client_id']);
             });
         }
     }
