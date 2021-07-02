@@ -194,4 +194,49 @@ class HybridRelationsTest extends TestCase
                 $this->assertEquals($user->id, $user->books->count());
             });
     }
+    public function testHybridSync()
+    {
+        $user = new MysqlUser;
+        $this->assertInstanceOf(MysqlUser::class, $user);
+        $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
+
+        // Mysql User
+        $user->name = 'John Doe';
+        $user->save();
+        $this->assertIsInt($user->id);
+        // SQL has many
+        $book = new Book(['title' => 'Harry Potter']);
+        $otherBook = new Book(['title' => 'Game of Thrones']);
+
+        $user->books()->sync([$book->id,$otherBook->id]);
+        $user = MysqlUser::find($user->id); // refetch
+        $this->assertCount(2, $user->books);
+
+        $user->books()->sync([$book->id]);
+        $user = MysqlUser::find($user->id); // refetch
+        $this->assertCount(1, $user->books);
+
+        $user->books()->sync([$book->id,$otherBook->id]);
+        $user = MysqlUser::find($user->id); // refetch
+        $this->assertCount(2, $user->books);
+        // MongoDB User
+        $user = new User;
+        $user->name = 'John Doe';
+        $user->save();
+        // MongoDB has many
+        $book = new MysqlBook(['title' => 'Harry Potter']);
+        $otherBook = new MysqlBook(['title' => 'Game of Thrones']);
+
+        $user->mysqlBooks()->sync([$book->id,$otherBook->id]);
+        $user = User::find($user->_id);
+        $this->assertCount(2, $user->mysqlBooks);
+
+        $user->mysqlBooks()->sync([$book->id]);
+        $user = User::find($user->_id);
+        $this->assertCount(1, $user->mysqlBooks);
+
+        $user->mysqlBooks()->sync([$book->id,$otherBook->id]);
+        $user = User::find($user->_id);
+        $this->assertCount(2, $user->mysqlBooks);
+    }
 }
