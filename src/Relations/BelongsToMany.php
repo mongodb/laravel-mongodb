@@ -224,7 +224,7 @@ class BelongsToMany extends EloquentBelongsToMany
         $ids = (array) $ids;
 
 
-        if ($this->parent instanceof \Jenssegers\Mongodb\Eloquent\Model){
+        if ($this->parent instanceof \Jenssegers\Mongodb\Eloquent\Model) {
             $this->parent->pull($this->getRelatedKey(), $ids);
         }
 

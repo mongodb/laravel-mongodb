@@ -208,7 +208,7 @@ class HybridRelationsTest extends TestCase
         $book = new Book(['title' => 'Harry Potter']);
         $otherBook = new Book(['title' => 'Game of Thrones']);
 
-        $user->books()->sync([$book->id,$otherBook->id]);
+        $user->books()->sync([$book->id, $otherBook->id]);
         $user = MysqlUser::find($user->id); // refetch
         $this->assertCount(2, $user->books);
 
@@ -216,7 +216,7 @@ class HybridRelationsTest extends TestCase
         $user = MysqlUser::find($user->id); // refetch
         $this->assertCount(1, $user->books);
 
-        $user->books()->sync([$book->id,$otherBook->id]);
+        $user->books()->sync([$book->id, $otherBook->id]);
         $user = MysqlUser::find($user->id); // refetch
         $this->assertCount(2, $user->books);
         // MongoDB User
@@ -227,7 +227,7 @@ class HybridRelationsTest extends TestCase
         $book = new MysqlBook(['title' => 'Harry Potter']);
         $otherBook = new MysqlBook(['title' => 'Game of Thrones']);
 
-        $user->mysqlBooks()->sync([$book->id,$otherBook->id]);
+        $user->mysqlBooks()->sync([$book->id, $otherBook->id]);
         $user = User::find($user->_id);
         $this->assertCount(2, $user->mysqlBooks);
 
@@ -235,7 +235,7 @@ class HybridRelationsTest extends TestCase
         $user = User::find($user->_id);
         $this->assertCount(1, $user->mysqlBooks);
 
-        $user->mysqlBooks()->sync([$book->id,$otherBook->id]);
+        $user->mysqlBooks()->sync([$book->id, $otherBook->id]);
         $user = User::find($user->_id);
         $this->assertCount(2, $user->mysqlBooks);
     }
