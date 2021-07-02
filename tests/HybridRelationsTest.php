@@ -227,7 +227,7 @@ class HybridRelationsTest extends TestCase
         $this->assertEquals(2, $client->usersMysql->count());
 
         // sync 2 Clients
-        $user->clients()->sync([$client->_id, $otherClient->_id ]);
+        $user->clients()->sync([$client->_id, $otherClient->_id]);
         $user = MysqlUser::find($user->id);
         $this->assertEquals(2, $user->clients->count());
         // Sync 1 Client
@@ -235,7 +235,7 @@ class HybridRelationsTest extends TestCase
         $user = MysqlUser::find($user->id);
         $this->assertEquals(1, $user->clients->count());
         // Sync 2 Clients again
-        $user->clients()->sync([$client->_id, $otherClient->_id ]);
+        $user->clients()->sync([$client->_id, $otherClient->_id]);
         $user = MysqlUser::find($user->id);
         $this->assertEquals(2, $user->clients->count());
     }
