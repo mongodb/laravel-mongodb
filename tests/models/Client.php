@@ -27,4 +27,9 @@ class Client extends Eloquent
     {
         return $this->hasMany('Address', 'data.client_id', 'data.client_id');
     }
+
+    public function usersMysql(): BelongsToMany
+    {
+        return $this->belongsToMany('MysqlUser');
+    }
 }

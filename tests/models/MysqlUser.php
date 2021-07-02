@@ -31,6 +31,11 @@ class MysqlUser extends Eloquent
         return $this->hasMany(MysqlBook::class);
     }
 
+    public function clients()
+    {
+        return $this->belongsToMany('Client',null,'mysql_users_id','clients');
+    }
+
     /**
      * Check if we need to run the schema.
      */
@@ -44,6 +49,13 @@ class MysqlUser extends Eloquent
                 $table->increments('id');
                 $table->string('name');
                 $table->timestamps();
+            });
+        }
+        if (! $schema->hasTable('client_mysql_user')) {
+            Schema::connection('mysql')->create('client_mysql_user', function (Blueprint $table) {
+                $table->integer('mysql_user_id')->unsigned();
+                $table->string('client_id');
+                $table->primary(['mysql_user_id','client_id']);
             });
         }
     }
