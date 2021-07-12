@@ -128,7 +128,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // See issue #256.
         if ($current instanceof Collection) {
-            $current = $ids->modelKeys();
+            $current = $current->modelKeys();
         }
 
         $records = $this->formatSyncList($ids);
@@ -223,8 +223,9 @@ class BelongsToMany extends EloquentBelongsToMany
         // We'll return the numbers of affected rows when we do the deletes.
         $ids = (array) $ids;
 
-        // Detach all ids from the parent model.
-        $this->parent->pull($this->getRelatedKey(), $ids);
+        if ($this->parent instanceof \Jenssegers\Mongodb\Eloquent\Model) {
+            $this->parent->pull($this->getRelatedKey(), $ids);
+        }
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {

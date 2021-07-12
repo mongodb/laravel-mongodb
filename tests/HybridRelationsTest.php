@@ -8,7 +8,6 @@ class HybridRelationsTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
-
         MysqlUser::executeSchema();
         MysqlBook::executeSchema();
         MysqlRole::executeSchema();
@@ -192,5 +191,51 @@ class HybridRelationsTest extends TestCase
             ->each(function ($user) {
                 $this->assertEquals($user->id, $user->books->count());
             });
+    }
+
+    public function testHybridSync()
+    {
+        $user = new MysqlUser;
+        $otherUser = new MysqlUser;
+        $this->assertInstanceOf(MysqlUser::class, $user);
+        $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
+        $this->assertInstanceOf(MysqlUser::class, $otherUser);
+        $this->assertInstanceOf(MySqlConnection::class, $otherUser->getConnection());
+
+        // Create Mysql Users
+        $user->name = 'John Doe';
+        $user->save();
+        $user = MysqlUser::find($user->id);
+        $otherUser->name = 'Maria Doe';
+        $otherUser->save();
+        // Create Mongodb Clients
+        $client = Client::create(['name' => 'Pork Pies Ltd.']);
+        $otherClient = Client::create(['name' => 'Pork Pies Ltd.']);
+
+        // sync 2 users
+        $client->usersMysql()->sync([$user->id, $otherUser->id]);
+        $client = Client::find($client->_id);
+        $this->assertEquals(2, $client->usersMysql->count());
+        // sync 1 user
+        $client->usersMysql()->sync([$user->id]);
+        $client = Client::find($client->_id);
+        $this->assertEquals(1, $client->usersMysql->count());
+        // sync 2 users again
+        $client->usersMysql()->sync([$user->id, $otherUser->id]);
+        $client = Client::find($client->_id);
+        $this->assertEquals(2, $client->usersMysql->count());
+
+        // sync 2 Clients
+        $user->clients()->sync([$client->_id, $otherClient->_id]);
+        $user = MysqlUser::find($user->id);
+        $this->assertEquals(2, $user->clients->count());
+        // Sync 1 Client
+        $user->clients()->sync([$client->_id]);
+        $user = MysqlUser::find($user->id);
+        $this->assertEquals(1, $user->clients->count());
+        // Sync 2 Clients again
+        $user->clients()->sync([$client->_id, $otherClient->_id]);
+        $user = MysqlUser::find($user->id);
+        $this->assertEquals(2, $user->clients->count());
     }
 }
