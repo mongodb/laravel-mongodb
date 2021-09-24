@@ -16,9 +16,10 @@ trait HybridRelations
 {
     /**
      * Define a one-to-one relationship.
-     * @param string $related
-     * @param string $foreignKey
-     * @param string $localKey
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @param  string  $localKey
      * @return \Illuminate\Database\Eloquent\Relations\HasOne
      */
     public function hasOne($related, $foreignKey = null, $localKey = null)
@@ -39,11 +40,12 @@ trait HybridRelations
 
     /**
      * Define a polymorphic one-to-one relationship.
-     * @param string $related
-     * @param string $name
-     * @param string $type
-     * @param string $id
-     * @param string $localKey
+     *
+     * @param  string  $related
+     * @param  string  $name
+     * @param  string  $type
+     * @param  string  $id
+     * @param  string  $localKey
      * @return \Illuminate\Database\Eloquent\Relations\MorphOne
      */
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
@@ -64,9 +66,10 @@ trait HybridRelations
 
     /**
      * Define a one-to-many relationship.
-     * @param string $related
-     * @param string $foreignKey
-     * @param string $localKey
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @param  string  $localKey
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function hasMany($related, $foreignKey = null, $localKey = null)
@@ -87,11 +90,12 @@ trait HybridRelations
 
     /**
      * Define a polymorphic one-to-many relationship.
-     * @param string $related
-     * @param string $name
-     * @param string $type
-     * @param string $id
-     * @param string $localKey
+     *
+     * @param  string  $related
+     * @param  string  $name
+     * @param  string  $type
+     * @param  string  $id
+     * @param  string  $localKey
      * @return \Illuminate\Database\Eloquent\Relations\MorphMany
      */
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
@@ -117,10 +121,11 @@ trait HybridRelations
 
     /**
      * Define an inverse one-to-one or many relationship.
-     * @param string $related
-     * @param string $foreignKey
-     * @param string $otherKey
-     * @param string $relation
+     *
+     * @param  string  $related
+     * @param  string  $foreignKey
+     * @param  string  $otherKey
+     * @param  string  $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function belongsTo($related, $foreignKey = null, $otherKey = null, $relation = null)
@@ -160,10 +165,11 @@ trait HybridRelations
 
     /**
      * Define a polymorphic, inverse one-to-one or many relationship.
-     * @param string $name
-     * @param string $type
-     * @param string $id
-     * @param string $ownerKey
+     *
+     * @param  string  $name
+     * @param  string  $type
+     * @param  string  $id
+     * @param  string  $ownerKey
      * @return \Illuminate\Database\Eloquent\Relations\MorphTo
      */
     public function morphTo($name = null, $type = null, $id = null, $ownerKey = null)
@@ -204,13 +210,14 @@ trait HybridRelations
 
     /**
      * Define a many-to-many relationship.
-     * @param string $related
-     * @param string $collection
-     * @param string $foreignKey
-     * @param string $otherKey
-     * @param string $parentKey
-     * @param string $relatedKey
-     * @param string $relation
+     *
+     * @param  string  $related
+     * @param  string  $collection
+     * @param  string  $foreignKey
+     * @param  string  $otherKey
+     * @param  string  $parentKey
+     * @param  string  $relatedKey
+     * @param  string  $relation
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function belongsToMany(
@@ -277,6 +284,7 @@ trait HybridRelations
 
     /**
      * Get the relationship name of the belongs to many.
+     *
      * @return string
      */
     protected function guessBelongsToManyRelation()
