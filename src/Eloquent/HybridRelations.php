@@ -180,10 +180,10 @@ trait HybridRelations
         if ($name === null) {
             [$current, $caller] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
-            $name = Str::snake($caller['function']);
+            $name = $caller['function'];
         }
 
-        [$type, $id] = $this->getMorphs($name, $type, $id);
+        [$type, $id] = $this->getMorphs(Str::snake($name), $type, $id);
 
         // If the type value is null it is probably safe to assume we're eager loading
         // the relationship. When that is the case we will pass in a dummy query as
