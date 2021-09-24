@@ -370,21 +370,21 @@ class RelationsTest extends TestCase
         $this->assertEquals($photo->id, $client->photo->id);
 
         $photo = Photo::first();
-        $this->assertEquals($photo->imageable->name, $user->name);
+        $this->assertEquals($photo->hasImage->name, $user->name);
 
         $user = User::with('photos')->find($user->_id);
         $relations = $user->getRelations();
         $this->assertArrayHasKey('photos', $relations);
         $this->assertEquals(1, $relations['photos']->count());
 
-        $photos = Photo::with('imageable')->get();
+        $photos = Photo::with('hasImage')->get();
         $relations = $photos[0]->getRelations();
-        $this->assertArrayHasKey('imageable', $relations);
-        $this->assertInstanceOf(User::class, $photos[0]->imageable);
+        $this->assertArrayHasKey('hasImage', $relations);
+        $this->assertInstanceOf(User::class, $photos[0]->hasImage);
 
         $relations = $photos[1]->getRelations();
-        $this->assertArrayHasKey('imageable', $relations);
-        $this->assertInstanceOf(Client::class, $photos[1]->imageable);
+        $this->assertArrayHasKey('hasImage', $relations);
+        $this->assertInstanceOf(Client::class, $photos[1]->hasImage);
     }
 
     public function testHasManyHas(): void

@@ -20,7 +20,7 @@ class Client extends Eloquent
 
     public function photo(): MorphOne
     {
-        return $this->morphOne('Photo', 'imageable');
+        return $this->morphOne('Photo', 'has_image');
     }
 
     public function addresses(): HasMany
