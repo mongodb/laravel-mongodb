@@ -23,7 +23,7 @@
         "illuminate/container": "^8.0",
         "illuminate/database": "^8.0",
         "illuminate/events": "^8.0",
-        "mongodb/mongodb": "^1.6"
+        "mongodb/mongodb": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.0",
