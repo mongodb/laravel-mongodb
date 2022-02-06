@@ -35,19 +35,14 @@ jobs:
         strategy:
             matrix:
                 include:
-                    - { os: ubuntu-latest, php: 7.2, mongodb: 3.6, experimental: true }
-                    - { os: ubuntu-latest, php: 7.2, mongodb: '4.0', experimental: true }
-                    - { os: ubuntu-latest, php: 7.2, mongodb: 4.2, experimental: true }
-                    - { os: ubuntu-latest, php: 7.2, mongodb: 4.4, experimental: true }
-                    - { os: ubuntu-latest, php: 7.3, mongodb: 3.6, experimental: false }
-                    - { os: ubuntu-latest, php: 7.3, mongodb: '4.0', experimental: false }
-                    - { os: ubuntu-latest, php: 7.3, mongodb: 4.2, experimental: false }
-                    - { os: ubuntu-latest, php: 7.3, mongodb: 4.4, experimental: false }
-                    - { os: ubuntu-latest, php: 7.4, mongodb: 3.6, experimental: false }
-                    - { os: ubuntu-latest, php: 7.4, mongodb: '4.0', experimental: false }
-                    - { os: ubuntu-latest, php: 7.4, mongodb: 4.2, experimental: false }
-                    - { os: ubuntu-latest, php: 7.4, mongodb: 4.4, experimental: false }
+                    - { os: ubuntu-latest, php: 8.0, mongodb: '4.0', experimental: false }
+                    - { os: ubuntu-latest, php: 8.0, mongodb: 4.2, experimental: false }
                     - { os: ubuntu-latest, php: 8.0, mongodb: 4.4, experimental: false }
+                    - { os: ubuntu-latest, php: 8.0, mongodb: '5.0', experimental: false }
+                    - { os: ubuntu-latest, php: 8.1, mongodb: '4.0', experimental: false }
+                    - { os: ubuntu-latest, php: 8.1, mongodb: 4.2, experimental: false }
+                    - { os: ubuntu-latest, php: 8.1, mongodb: 4.4, experimental: false }
+                    - { os: ubuntu-latest, php: 8.1, mongodb: '5.0', experimental: false }
         services:
             mongo:
                 image: mongo:${{ matrix.mongodb }}
@@ -78,22 +73,18 @@ jobs:
                 env:
                     DEBUG: ${{secrets.DEBUG}}
             -   name: Download Composer cache dependencies from cache
-                if: (!startsWith(matrix.php, '7.2'))
                 id: composer-cache
                 run: echo "::set-output name=dir::$(composer config cache-files-dir)"
             -   name: Cache Composer dependencies
-                if: (!startsWith(matrix.php, '7.2'))
                 uses: actions/cache@v1
                 with:
                     path: ${{ steps.composer-cache.outputs.dir }}
                     key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
                     restore-keys: ${{ matrix.os }}-composer-
             -   name: Install dependencies
-                if: (!startsWith(matrix.php, '7.2'))
                 run: |
                     composer install --no-interaction
             -   name: Run tests
-                if: (!startsWith(matrix.php, '7.2'))
                 run: |
                     ./vendor/bin/phpunit --coverage-clover coverage.xml
                 env:
