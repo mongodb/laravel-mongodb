@@ -526,9 +526,13 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
-    public function whereBetween($column, array $values, $boolean = 'and', $not = false)
+    public function whereBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         $type = 'between';
+
+        if ($values instanceof CarbonPeriod) {
+            $values = $values->toArray();
+        }
 
         $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
 
