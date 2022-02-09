@@ -15,8 +15,8 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * The MongoCollection object for this blueprint.
-     * @var \Jenssegers\Mongodb\Collection|\MongoDB\Collection
      *
+     * @var \Jenssegers\Mongodb\Collection|\MongoDB\Collection
      */
     protected $collection;
 
