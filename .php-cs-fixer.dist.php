@@ -25,7 +25,7 @@ $rules = [
         ],
     ],
     'cast_spaces' => true,
-    'class_definition' => true,
+    'class_definition' => false,
     'clean_namespace' => true,
     'compact_nullable_typehint' => true,
     'concat_space' => [
@@ -46,16 +46,22 @@ $rules = [
     'heredoc_to_nowdoc' => true,
     'include' => true,
     'indentation_type' => true,
+    'integer_literal_case' => true,
+    'braces' => false,
     'lowercase_cast' => true,
-    'lowercase_constants' => true,
+    'constant_case' => [
+        'case' => 'lower',
+    ],
     'lowercase_keywords' => true,
     'lowercase_static_reference' => true,
     'magic_constant_casing' => true,
     'magic_method_casing' => true,
-    'method_argument_space' => true,
+    'method_argument_space' => [
+        'on_multiline' => 'ignore',
+    ],
     'class_attributes_separation' => [
         'elements' => [
-            'method',
+            'method' => 'one',
         ],
     ],
     'visibility_required' => [
@@ -74,7 +80,6 @@ $rules = [
         'tokens' => [
             'throw',
             'use',
-            'use_trait',
             'extra',
         ],
     ],
@@ -87,6 +92,7 @@ $rules = [
     'multiline_whitespace_before_semicolons' => true,
     'no_short_bool_cast' => true,
     'no_singleline_whitespace_before_semicolons' => true,
+    'no_space_around_double_colon' => true,
     'no_spaces_after_function_name' => true,
     'no_spaces_around_offset' => [
         'positions' => [
@@ -120,7 +126,9 @@ $rules = [
     'phpdoc_summary' => true,
     'phpdoc_trim' => true,
     'phpdoc_no_alias_tag' => [
-        'type' => 'var',
+        'replacements' => [
+            'type' => 'var',
+        ],
     ],
     'phpdoc_types' => true,
     'phpdoc_var_without_name' => true,
@@ -130,7 +138,6 @@ $rules = [
     'no_mixed_echo_print' => [
         'use' => 'echo',
     ],
-    'braces' => true,
     'return_type_declaration' => [
         'space_before' => 'none',
     ],
@@ -153,22 +160,28 @@ $rules = [
     'switch_case_space' => true,
     'switch_continue_to_break' => true,
     'ternary_operator_spaces' => true,
-    'trailing_comma_in_multiline_array' => true,
+    'trailing_comma_in_multiline' => [
+        'elements' => [
+            'arrays',
+        ],
+    ],
     'trim_array_spaces' => true,
     'unary_operator_spaces' => true,
+    'types_spaces' => [
+        'space' => 'none',
+    ],
     'line_ending' => true,
     'whitespace_after_comma_in_array' => true,
     'no_alias_functions' => true,
     'no_unreachable_default_argument_value' => true,
-    'psr4' => true,
+    'psr_autoloading' => true,
     'self_accessor' => true,
 ];
 
 $finder = PhpCsFixer\Finder::create()
     ->in(__DIR__);
 
-$config = new PhpCsFixer\Config();
-return $config
+return (new PhpCsFixer\Config())
     ->setRiskyAllowed(true)
     ->setRules($rules)
     ->setFinder($finder);

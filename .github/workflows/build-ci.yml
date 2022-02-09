@@ -10,11 +10,11 @@ jobs:
     php-cs-fixer:
         runs-on: ubuntu-latest
         env:
-            PHP_CS_FIXER_VERSION: v2.18.7
+            PHP_CS_FIXER_VERSION: v3.6.0
         strategy:
             matrix:
                 php:
-                    - '7.4'
+                    - '8.0'
         steps:
             -   name: Checkout
                 uses: actions/checkout@v2
