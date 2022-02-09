@@ -10,6 +10,7 @@ class HasMany extends EloquentHasMany
 {
     /**
      * Get the plain foreign key.
+     *
      * @return string
      */
     public function getForeignKeyName()
@@ -19,6 +20,7 @@ class HasMany extends EloquentHasMany
 
     /**
      * Get the key for comparing against the parent key in "has" query.
+     *
      * @return string
      */
     public function getHasCompareKey()
@@ -38,6 +40,7 @@ class HasMany extends EloquentHasMany
 
     /**
      * Get the name of the "where in" method for eager loading.
+     *
      * @param \Illuminate\Database\Eloquent\Model $model
      * @param string $key
      * @return string

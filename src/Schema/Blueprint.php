@@ -8,6 +8,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 {
     /**
      * The MongoConnection object for this blueprint.
+     *
      * @var \Jenssegers\Mongodb\Connection
      */
     protected $connection;
@@ -15,11 +16,13 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * The MongoCollection object for this blueprint.
      * @var \Jenssegers\Mongodb\Collection|\MongoDB\Collection
+     *
      */
     protected $collection;
 
     /**
      * Fluent columns.
+     *
      * @var array
      */
     protected $columns = [];
@@ -167,6 +170,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Specify a non blocking index for the collection.
+     *
      * @param string|array $columns
      * @return Blueprint
      */
@@ -181,6 +185,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Specify a sparse index for the collection.
+     *
      * @param string|array $columns
      * @param array $options
      * @return Blueprint
@@ -198,6 +203,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Specify a geospatial index for the collection.
+     *
      * @param string|array $columns
      * @param string $index
      * @param array $options
@@ -221,8 +227,9 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /**
-     * Specify the number of seconds after wich a document should be considered expired based,
+     * Specify the number of seconds after which a document should be considered expired based,
      * on the given single-field index containing a date.
+     *
      * @param string|array $columns
      * @param int $seconds
      * @return Blueprint
@@ -238,6 +245,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Indicate that the collection needs to be created.
+     *
      * @param array $options
      * @return void
      */
@@ -271,6 +279,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Specify a sparse and unique index for the collection.
+     *
      * @param string|array $columns
      * @param array $options
      * @return Blueprint
@@ -289,6 +298,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Allow fluent columns.
+     *
      * @param string|array $columns
      * @return string|array
      */
@@ -305,6 +315,7 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
 
     /**
      * Allows the use of unsupported schema methods.
+     *
      * @param $method
      * @param $args
      * @return Blueprint

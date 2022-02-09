@@ -6,6 +6,7 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
 {
     /**
      * Count the number of objects in a collection having the given value.
+     *
      * @param string $collection
      * @param string $column
      * @param string $value

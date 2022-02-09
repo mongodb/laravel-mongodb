@@ -33,6 +33,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Save a new model and attach it to the parent model.
+     *
      * @param Model $model
      * @return Model|bool
      */
@@ -63,6 +64,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Save an existing model and attach it to the parent model.
+     *
      * @param Model $model
      * @return Model|bool
      */
@@ -94,6 +96,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Delete an existing model and detach it from the parent model.
+     *
      * @param Model $model
      * @return int
      */
@@ -120,6 +123,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Associate the model instance to the given parent, without saving it to the database.
+     *
      * @param Model $model
      * @return Model
      */
@@ -134,6 +138,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Dissociate the model instance from the given parent, without saving it to the database.
+     *
      * @param mixed $ids
      * @return int
      */
@@ -162,6 +167,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Destroy the embedded models for the given IDs.
+     *
      * @param mixed $ids
      * @return int
      */
@@ -186,6 +192,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Delete all embedded models.
+     *
      * @return int
      */
     public function delete()
@@ -202,6 +209,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Destroy alias.
+     *
      * @param mixed $ids
      * @return int
      */
@@ -212,6 +220,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Save alias.
+     *
      * @param Model $model
      * @return Model
      */
@@ -222,6 +231,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Associate a new model instance to the given parent, without saving it to the database.
+     *
      * @param Model $model
      * @return Model
      */
@@ -242,6 +252,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Associate an existing model instance to the given parent, without saving it to the database.
+     *
      * @param Model $model
      * @return Model
      */
@@ -332,6 +343,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
     /**
      * Get the name of the "where in" method for eager loading.
+     *
      * @param \Illuminate\Database\Eloquent\Model $model
      * @param string $key
      * @return string

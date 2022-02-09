@@ -8,6 +8,7 @@ class PasswordResetServiceProvider extends BasePasswordResetServiceProvider
 {
     /**
      * Register the token repository implementation.
+     *
      * @return void
      */
     protected function registerTokenRepository()

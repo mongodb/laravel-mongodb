@@ -13,6 +13,7 @@ class Builder extends EloquentBuilder
 
     /**
      * The methods that should be returned from query builder.
+     *
      * @var array
      */
     protected $passthru = [
