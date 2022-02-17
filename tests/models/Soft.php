@@ -7,6 +7,7 @@ use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 
 /**
  * Class Soft.
+ *
  * @property \Carbon\Carbon $deleted_at
  */
 class Soft extends Eloquent

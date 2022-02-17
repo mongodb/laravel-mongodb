@@ -24,42 +24,49 @@ class Builder extends BaseBuilder
 {
     /**
      * The database collection.
+     *
      * @var \MongoDB\Collection
      */
     protected $collection;
 
     /**
      * The column projections.
+     *
      * @var array
      */
     public $projections;
 
     /**
      * The cursor timeout value.
+     *
      * @var int
      */
     public $timeout;
 
     /**
      * The cursor hint value.
+     *
      * @var int
      */
     public $hint;
 
     /**
      * Custom options to add to the query.
+     *
      * @var array
      */
     public $options = [];
 
     /**
      * Indicate if we are executing a pagination query.
+     *
      * @var bool
      */
     public $paginating = false;
 
     /**
      * All of the available clause operators.
+     *
      * @var array
      */
     public $operators = [
@@ -107,6 +114,7 @@ class Builder extends BaseBuilder
 
     /**
      * Operator conversion.
+     *
      * @var array
      */
     protected $conversion = [
@@ -131,6 +139,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the projections.
+     *
      * @param array $columns
      * @return $this
      */
@@ -155,6 +164,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor hint.
+     *
      * @param mixed $index
      * @return $this
      */
@@ -205,6 +215,7 @@ class Builder extends BaseBuilder
 
     /**
      * Execute the query as a fresh "select" statement.
+     *
      * @param array $columns
      * @param bool $returnLazy
      * @return array|static[]|Collection|LazyCollection
@@ -415,6 +426,7 @@ class Builder extends BaseBuilder
 
     /**
      * Generate the unique cache key for the current query.
+     *
      * @return string
      */
     public function generateCacheKey()
@@ -508,6 +520,7 @@ class Builder extends BaseBuilder
 
     /**
      * Add a "where all" clause to the query.
+     *
      * @param string $column
      * @param array $values
      * @param string $boolean
@@ -526,7 +539,7 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
-    public function whereBetween($column, array $values, $boolean = 'and', $not = false)
+    public function whereBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         $type = 'between';
 
@@ -714,6 +727,7 @@ class Builder extends BaseBuilder
 
     /**
      * Get an array with the values of a given column.
+     *
      * @param string $column
      * @param string $key
      * @return array
@@ -745,6 +759,7 @@ class Builder extends BaseBuilder
 
     /**
      * Append one or more values to an array.
+     *
      * @param mixed $column
      * @param mixed $value
      * @param bool $unique
@@ -771,6 +786,7 @@ class Builder extends BaseBuilder
 
     /**
      * Remove one or more values from an array.
+     *
      * @param mixed $column
      * @param mixed $value
      * @return int
@@ -794,6 +810,7 @@ class Builder extends BaseBuilder
 
     /**
      * Remove one or more fields.
+     *
      * @param mixed $columns
      * @return int
      */
@@ -824,6 +841,7 @@ class Builder extends BaseBuilder
 
     /**
      * Perform an update query.
+     *
      * @param array $query
      * @param array $options
      * @return int
@@ -846,6 +864,7 @@ class Builder extends BaseBuilder
 
     /**
      * Convert a key to ObjectID if needed.
+     *
      * @param mixed $id
      * @return mixed
      */
@@ -883,6 +902,7 @@ class Builder extends BaseBuilder
 
     /**
      * Compile the where array.
+     *
      * @return array
      */
     protected function compileWheres()
@@ -1216,6 +1236,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set custom options for the query.
+     *
      * @param array $options
      * @return $this
      */

@@ -8,6 +8,7 @@ class TestCase extends Orchestra\Testbench\TestCase
 {
     /**
      * Get application providers.
+     *
      * @param \Illuminate\Foundation\Application $app
      * @return array
      */
@@ -22,6 +23,7 @@ class TestCase extends Orchestra\Testbench\TestCase
 
     /**
      * Get package providers.
+     *
      * @param \Illuminate\Foundation\Application $app
      * @return array
      */
@@ -37,6 +39,7 @@ class TestCase extends Orchestra\Testbench\TestCase
 
     /**
      * Define environment setup.
+     *
      * @param Illuminate\Foundation\Application $app
      * @return void
      */

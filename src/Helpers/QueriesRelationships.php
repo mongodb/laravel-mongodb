@@ -15,12 +15,14 @@ trait QueriesRelationships
 {
     /**
      * Add a relationship count / exists condition to the query.
+     *
      * @param Relation|string $relation
      * @param string $operator
      * @param int $count
      * @param string $boolean
      * @param Closure|null $callback
      * @return Builder|static
+     * @throws Exception
      */
     public function has($relation, $operator = '>=', $count = 1, $boolean = 'and', Closure $callback = null)
     {
@@ -72,6 +74,7 @@ trait QueriesRelationships
 
     /**
      * Compare across databases.
+     *
      * @param Relation $relation
      * @param string $operator
      * @param int $count
@@ -150,6 +153,7 @@ trait QueriesRelationships
 
     /**
      * Returns key we are constraining this parent model's query with.
+     *
      * @param Relation $relation
      * @return string
      * @throws Exception

@@ -12,6 +12,7 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 /**
  * Class User.
+ *
  * @property string $_id
  * @property string $name
  * @property string $email

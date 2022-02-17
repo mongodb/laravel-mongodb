@@ -11,18 +11,21 @@ class Connection extends BaseConnection
 {
     /**
      * The MongoDB database handler.
+     *
      * @var \MongoDB\Database
      */
     protected $db;
 
     /**
      * The MongoDB connection handler.
+     *
      * @var \MongoDB\Client
      */
     protected $connection;
 
     /**
      * Create a new database connection instance.
+     *
      * @param array $config
      */
     public function __construct(array $config)
@@ -53,6 +56,7 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
+     *
      * @param string $collection
      * @return Query\Builder
      */
@@ -65,6 +69,7 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
+     *
      * @param string $table
      * @param string|null $as
      * @return Query\Builder
@@ -76,6 +81,7 @@ class Connection extends BaseConnection
 
     /**
      * Get a MongoDB collection.
+     *
      * @param string $name
      * @return Collection
      */
@@ -94,6 +100,7 @@ class Connection extends BaseConnection
 
     /**
      * Get the MongoDB database object.
+     *
      * @return \MongoDB\Database
      */
     public function getMongoDB()
@@ -103,6 +110,7 @@ class Connection extends BaseConnection
 
     /**
      * return MongoDB object.
+     *
      * @return \MongoDB\Client
      */
     public function getMongoClient()
@@ -120,6 +128,7 @@ class Connection extends BaseConnection
 
     /**
      * Get the name of the default database based on db config or try to detect it from dsn.
+     *
      * @param string $dsn
      * @param array $config
      * @return string
@@ -140,6 +149,7 @@ class Connection extends BaseConnection
 
     /**
      * Create a new MongoDB connection.
+     *
      * @param string $dsn
      * @param array $config
      * @param array $options
@@ -175,6 +185,7 @@ class Connection extends BaseConnection
 
     /**
      * Determine if the given configuration array has a dsn string.
+     *
      * @param array $config
      * @return bool
      */
@@ -185,6 +196,7 @@ class Connection extends BaseConnection
 
     /**
      * Get the DSN string form configuration.
+     *
      * @param array $config
      * @return string
      */
@@ -195,6 +207,7 @@ class Connection extends BaseConnection
 
     /**
      * Get the DSN string for a host / port configuration.
+     *
      * @param array $config
      * @return string
      */
@@ -218,6 +231,7 @@ class Connection extends BaseConnection
 
     /**
      * Create a DSN string from a configuration.
+     *
      * @param array $config
      * @return string
      */
@@ -270,6 +284,7 @@ class Connection extends BaseConnection
 
     /**
      * Set database.
+     *
      * @param \MongoDB\Database $db
      */
     public function setDatabase(\MongoDB\Database $db)
@@ -279,6 +294,7 @@ class Connection extends BaseConnection
 
     /**
      * Dynamically pass methods to the connection.
+     *
      * @param string $method
      * @param array $parameters
      * @return mixed

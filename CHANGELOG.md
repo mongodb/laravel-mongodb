@@ -3,6 +3,9 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+### Added
+- Compatibility with Laravel 9.x [#2344](https://github.com/jenssegers/laravel-mongodb/pull/2344) by [@divine](https://github.com/divine).
+
 ## [3.8.4] - 2021-05-27
 
 ### Fixed
