@@ -193,7 +193,7 @@ class Builder extends EloquentBuilder
      * wiil be reverted
      * Issue in laravel frawework https://github.com/laravel/framework/issues/27791.
      *
-     * @param array $values
+     * @param  array  $values
      * @return array
      */
     protected function addUpdatedAtColumn(array $values)
