@@ -216,4 +216,35 @@ class Builder extends EloquentBuilder
     {
         return $this->query->getConnection();
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function ensureOrderForCursorPagination($shouldReverse = false)
+    {
+        if (empty($this->query->orders)) {
+            $this->enforceOrderBy();
+        }
+
+        if ($shouldReverse) {
+            $this->query->orders = collect($this->query->orders)->map(function ($direction) {
+                return $direction === 1 ? -1 : 1;
+            })->toArray();
+        }
+
+        return $this->mapMongodbOrdersToEloquentOrders($this->query->orders);
+    }
+
+    private function mapMongodbOrdersToEloquentOrders($orders) {
+        $eloquentOrders = [];
+
+        foreach($orders as $column => $direction) {
+            $eloquentOrders[] = [
+                'column' => $column,
+                'direction' => $direction === 1 ? 'asc' : 'desc',
+            ];
+        }
+
+        return collect($eloquentOrders);
+    }
 }
