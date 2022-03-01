@@ -44,5 +44,4 @@ class MongodbQueueServiceProvider extends QueueServiceProvider
     {
         return new MongoFailedJobProvider($this->app['db'], $config['database'], $config['table']);
     }
-
 }
