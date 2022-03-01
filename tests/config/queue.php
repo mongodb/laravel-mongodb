@@ -17,6 +17,7 @@ return [
 
     'failed' => [
         'database' => env('MONGO_DATABASE'),
+        'driver' => 'mongodb',
         'table' => 'failed_jobs',
     ],
 
