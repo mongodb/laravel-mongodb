@@ -234,20 +234,11 @@ class Builder extends EloquentBuilder
             })->toArray();
         }
 
-        return $this->mapMongodbOrdersToEloquentOrders($this->query->orders);
-    }
-
-    private function mapMongodbOrdersToEloquentOrders($orders)
-    {
-        $eloquentOrders = [];
-
-        foreach ($orders as $column => $direction) {
-            $eloquentOrders[] = [
+        return collect($this->query->orders)->map(function ($direction, $column) {
+            return [
                 'column' => $column,
                 'direction' => $direction === 1 ? 'asc' : 'desc',
             ];
-        }
-
-        return collect($eloquentOrders);
+        })->values();
     }
 }
