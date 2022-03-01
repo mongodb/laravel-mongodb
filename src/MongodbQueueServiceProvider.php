@@ -2,9 +2,9 @@
 
 namespace Jenssegers\Mongodb;
 
+use Illuminate\Queue\Failed\NullFailedJobProvider;
 use Illuminate\Queue\QueueServiceProvider;
 use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
-use Illuminate\Queue\Failed\NullFailedJobProvider;
 
 class MongodbQueueServiceProvider extends QueueServiceProvider
 {
@@ -25,7 +25,7 @@ class MongodbQueueServiceProvider extends QueueServiceProvider
 
             if (isset($config['driver']) && $config['driver'] === 'mongodb') {
                 return $this->mongoFailedJobProvider($config);
-            } else if (isset($config['driver']) && $config['driver'] === 'dynamodb') {
+            } elseif (isset($config['driver']) && $config['driver'] === 'dynamodb') {
                 return $this->dynamoFailedJobProvider($config);
             } elseif (isset($config['driver']) && $config['driver'] === 'database-uuids') {
                 return $this->databaseUuidFailedJobProvider($config);
@@ -39,7 +39,6 @@ class MongodbQueueServiceProvider extends QueueServiceProvider
 
     /**
      * Create a new MongoDB failed job provider.
-     *
      */
     protected function mongoFailedJobProvider(array $config): MongoFailedJobProvider
     {
