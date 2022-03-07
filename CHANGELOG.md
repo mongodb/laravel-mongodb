@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- Backport support for cursor pagination [#2358](https://github.com/jenssegers/laravel-mongodb/pull/2358) by [@Jeroenwv](https://github.com/Jeroenwv).
+
+## [3.9.0] - 2022-02-17
+
+### Added
 - Compatibility with Laravel 9.x [#2344](https://github.com/jenssegers/laravel-mongodb/pull/2344) by [@divine](https://github.com/divine).
 
 ## [3.8.4] - 2021-05-27
