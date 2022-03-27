@@ -8,6 +8,7 @@ use DateTimeInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Jenssegers\Mongodb\Connection;
@@ -1182,10 +1183,45 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $startOfDay = new UTCDateTime(Carbon::parse($value)->startOfDay());
+        $endOfDay = new UTCDateTime(Carbon::parse($value)->endOfDay());
 
-        return $this->compileWhereBasic($where);
+        $operator = $this->conversion[$operator];
+
+        return match($operator) {
+            '=' => [
+                $column => [
+                    '$gte' => $startOfDay,
+                    '$lte' => $endOfDay,
+                ],
+            ],
+            '$ne' => [
+                $column => [
+                    '$gt' => $endOfDay,
+                    '$lt' => $startOfDay,
+                ],
+            ],
+            '$lt' => [
+                $column => [
+                    '$lt' => $startOfDay,
+                ],
+            ],
+            '$gt' => [
+                $column => [
+                    '$gt' => $endOfDay,
+                ],
+            ],
+            '$lte' => [
+                $column => [
+                    '$lte' => $endOfDay,
+                ],
+            ],
+            '$gte' => [
+                $column => [
+                    '$gte' => $startOfDay,
+                ],
+            ],
+        };
     }
 
     /**
@@ -1196,10 +1232,19 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
+        $value = str_starts_with($value, '0') ? intval(str_replace('0', '', $value)) : $value;
 
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                $operator => [
+                    [
+                        '$month' => '$'.$column
+                    ],
+                    $value,
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1210,10 +1255,19 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
+        $value = str_starts_with($value, '0') ? intval(str_replace('0', '', $value)) : $value;
 
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                $operator => [
+                    [
+                        '$dayOfMonth' => '$'.$column
+                    ],
+                    $value,
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1224,10 +1278,18 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
 
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                $operator => [
+                    [
+                        '$year' => '$'.$column
+                    ],
+                    $value
+                ],
+            ],
+        ];
     }
 
     /**
