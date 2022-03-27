@@ -1209,6 +1209,7 @@ class Builder extends BaseBuilder
         extract($where);
 
         $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
+        $value = str_starts_with($value, '0') ? intval(str_replace('0', '', $value)) : $value;
 
         return [
             '$expr' => [
@@ -1254,7 +1255,6 @@ class Builder extends BaseBuilder
         extract($where);
         
         $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
-        $value = str_starts_with($value, '0') ? intval(str_replace('0', '', $value)) : $value;
 
         return [
             '$expr' => [
