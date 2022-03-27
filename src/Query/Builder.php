@@ -7,6 +7,7 @@ use DateTimeInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
@@ -1163,10 +1164,40 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $date = Carbon::parse($value);
 
-        return $this->compileWhereBasic($where);
+        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
+
+        return [
+            '$expr' => [
+                '$and' => [
+                    [
+                        $operator => [
+                            [
+                                '$dayOfMonth' => '$'.$column
+                            ],
+                            $date->day
+                        ],
+                    ],
+                    [
+                        $operator => [
+                            [
+                                '$month' => '$'.$column
+                            ],
+                            $date->month
+                        ],
+                    ],
+                    [
+                        $operator => [
+                            [
+                                '$month' => '$'.$column
+                            ],
+                            $date->year
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1177,10 +1208,18 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
 
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                $operator => [
+                    [
+                        '$month' => '$'.$column
+                    ],
+                    $value,
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1191,10 +1230,18 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
 
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                $operator => [
+                    [
+                        '$dayOfMonth' => '$'.$column
+                    ],
+                    $value,
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1204,11 +1251,19 @@ class Builder extends BaseBuilder
     protected function compileWhereYear(array $where)
     {
         extract($where);
+        
+        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
-
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                $operator => [
+                    [
+                        '$year' => '$'.$column
+                    ],
+                    $value
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1219,10 +1274,40 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
 
-        return $this->compileWhereBasic($where);
+        $time = Carbon::parse($value);
+
+        return [
+            '$expr' => [
+                '$and' => [
+                    [
+                        $operator => [
+                            [
+                                '$hour' => '$'.$column
+                            ],
+                            $time->hour
+                        ],
+                    ],
+                    [
+                        $operator => [
+                            [
+                                '$minute' => '$'.$column
+                            ],
+                            $time->minute
+                        ],
+                    ],
+                    [
+                        $operator => [
+                            [
+                                '$second' => '$'.$column
+                            ],
+                            $time->second
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**
