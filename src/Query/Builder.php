@@ -1166,13 +1166,15 @@ class Builder extends BaseBuilder
 
         $date = Carbon::parse($value);
 
-        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
+        $operator = $this->conversion[$operator];
+        $operatorDay = $operator === '=' ? '$eq' : $operator;
+        $operatorMonthYear = $operator === '=' ? '$eq' : (in_array($operator, ['$gt', '$lt']) ? $operator . 'e' : $operator);
 
         return [
             '$expr' => [
                 '$and' => [
                     [
-                        $operator => [
+                        $operatorDay => [
                             [
                                 '$dayOfMonth' => '$'.$column
                             ],
@@ -1180,7 +1182,7 @@ class Builder extends BaseBuilder
                         ],
                     ],
                     [
-                        $operator => [
+                        $operatorMonthYear => [
                             [
                                 '$month' => '$'.$column
                             ],
@@ -1188,9 +1190,9 @@ class Builder extends BaseBuilder
                         ],
                     ],
                     [
-                        $operator => [
+                        $operatorMonthYear => [
                             [
-                                '$month' => '$'.$column
+                                '$year' => '$'.$column
                             ],
                             $date->year
                         ],
