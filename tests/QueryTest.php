@@ -20,12 +20,12 @@ class QueryTest extends TestCase
         User::create(['name' => 'Tommy Toe', 'age' => 33, 'title' => 'user']);
         User::create(['name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin']);
         User::create(['name' => 'Error', 'age' => null, 'title' => null]);
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2020-04-10 10:53:11')->toDateTimeString());
-        Birthday::create(['name' => 'Jane Doe', 'birthday' => Carbon::parse('2021-05-12 10:53:12')->toDateTimeString());
-        Birthday::create(['name' => 'Harry Hoe', 'birthday' => Carbon::parse('2021-05-11 10:53:13')->toDateTimeString());
-        Birthday::create(['name' => 'Robert Doe', 'birthday' => Carbon::parse('2021-05-12 10:53:14')->toDateTimeString());
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2021-05-12 10:53:15')->toDateTimeString());
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2021-05-12 10:53:16')->toDateTimeString());
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2020-04-10 10:53:11')->toDateTimeString(), 'time' => '10:53:11');
+        Birthday::create(['name' => 'Jane Doe', 'birthday' => Carbon::parse('2021-05-12 10:53:12')->toDateTimeString(), 'time' => '10:53:12');
+        Birthday::create(['name' => 'Harry Hoe', 'birthday' => Carbon::parse('2021-05-11 10:53:13')->toDateTimeString(), 'time' => '10:53:13');
+        Birthday::create(['name' => 'Robert Doe', 'birthday' => Carbon::parse('2021-05-12 10:53:14')->toDateTimeString(), 'time' => '10:53:14');
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2021-05-12 10:53:15')->toDateTimeString(), 'time' => '10:53:15');
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2021-05-12 10:53:16')->toDateTimeString(), 'time' => '10:53:16');
     }
 
     public function tearDown(): void
@@ -213,10 +213,10 @@ class QueryTest extends TestCase
 
     public function testWhereTime(): void
     {
-        $time = Birthday::whereTime('birthday', '10:53:11')->get();
+        $time = Birthday::whereTime('time', '10:53:11')->get();
         $this->assertCount(1, $time);
 
-        $time = Birthday::whereTime('birthday', '>=', '10:53:14')->get();
+        $time = Birthday::whereTime('time', '>=', '10:53:14')->get();
         $this->assertCount(3, $time);
     }
 

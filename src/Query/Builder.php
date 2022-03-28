@@ -1281,40 +1281,10 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
+        $where['operator'] = $operator;
+        $where['value'] = $value;
 
-        $time = Carbon::parse($value);
-
-        return [
-            '$expr' => [
-                '$and' => [
-                    [
-                        $operator => [
-                            [
-                                '$hour' => '$'.$column
-                            ],
-                            $time->hour
-                        ],
-                    ],
-                    [
-                        $operator => [
-                            [
-                                '$minute' => '$'.$column
-                            ],
-                            $time->minute
-                        ],
-                    ],
-                    [
-                        $operator => [
-                            [
-                                '$second' => '$'.$column
-                            ],
-                            $time->second
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        return $this->compileWhereBasic($where);
     }
 
     /**
