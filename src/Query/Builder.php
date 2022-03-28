@@ -141,7 +141,7 @@ class Builder extends BaseBuilder
     /**
      * Set the projections.
      *
-     * @param array $columns
+     * @param  array  $columns
      * @return $this
      */
     public function project($columns)
@@ -153,7 +153,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor timeout in seconds.
-     * @param int $seconds
+     * @param  int  $seconds
      * @return $this
      */
     public function timeout($seconds)
@@ -166,7 +166,7 @@ class Builder extends BaseBuilder
     /**
      * Set the cursor hint.
      *
-     * @param mixed $index
+     * @param  mixed  $index
      * @return $this
      */
     public function hint($index)
@@ -217,8 +217,8 @@ class Builder extends BaseBuilder
     /**
      * Execute the query as a fresh "select" statement.
      *
-     * @param array $columns
-     * @param bool $returnLazy
+     * @param  array  $columns
+     * @param  bool  $returnLazy
      * @return array|static[]|Collection|LazyCollection
      */
     public function getFresh($columns = [], $returnLazy = false)
@@ -522,10 +522,10 @@ class Builder extends BaseBuilder
     /**
      * Add a "where all" clause to the query.
      *
-     * @param string $column
-     * @param array $values
-     * @param string $boolean
-     * @param bool $not
+     * @param  string  $column
+     * @param  array  $values
+     * @param  string  $boolean
+     * @param  bool  $not
      * @return $this
      */
     public function whereAll($column, array $values, $boolean = 'and', $not = false)
@@ -729,8 +729,8 @@ class Builder extends BaseBuilder
     /**
      * Get an array with the values of a given column.
      *
-     * @param string $column
-     * @param string $key
+     * @param  string  $column
+     * @param  string  $key
      * @return array
      * @deprecated
      */
@@ -761,9 +761,9 @@ class Builder extends BaseBuilder
     /**
      * Append one or more values to an array.
      *
-     * @param mixed $column
-     * @param mixed $value
-     * @param bool $unique
+     * @param  mixed  $column
+     * @param  mixed  $value
+     * @param  bool  $unique
      * @return int
      */
     public function push($column, $value = null, $unique = false)
@@ -788,8 +788,8 @@ class Builder extends BaseBuilder
     /**
      * Remove one or more values from an array.
      *
-     * @param mixed $column
-     * @param mixed $value
+     * @param  mixed  $column
+     * @param  mixed  $value
      * @return int
      */
     public function pull($column, $value = null)
@@ -812,7 +812,7 @@ class Builder extends BaseBuilder
     /**
      * Remove one or more fields.
      *
-     * @param mixed $columns
+     * @param  mixed  $columns
      * @return int
      */
     public function drop($columns)
@@ -843,8 +843,8 @@ class Builder extends BaseBuilder
     /**
      * Perform an update query.
      *
-     * @param array $query
-     * @param array $options
+     * @param  array  $query
+     * @param  array  $options
      * @return int
      */
     protected function performUpdate($query, array $options = [])
@@ -866,7 +866,7 @@ class Builder extends BaseBuilder
     /**
      * Convert a key to ObjectID if needed.
      *
-     * @param mixed $id
+     * @param  mixed  $id
      * @return mixed
      */
     public function convertKey($id)
@@ -1000,7 +1000,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereAll(array $where)
@@ -1011,7 +1011,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereBasic(array $where)
@@ -1067,7 +1067,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return mixed
      */
     protected function compileWhereNested(array $where)
@@ -1078,7 +1078,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereIn(array $where)
@@ -1089,7 +1089,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereNotIn(array $where)
@@ -1100,7 +1100,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereNull(array $where)
@@ -1112,7 +1112,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereNotNull(array $where)
@@ -1124,7 +1124,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereBetween(array $where)
@@ -1157,7 +1157,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereDate(array $where)
@@ -1169,7 +1169,7 @@ class Builder extends BaseBuilder
 
         $operator = $this->conversion[$operator];
 
-        return match($operator) {
+        return match ($operator) {
             '=' => [
                 $column => [
                     '$gte' => $startOfDay,
@@ -1206,7 +1206,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereMonth(array $where)
@@ -1220,7 +1220,7 @@ class Builder extends BaseBuilder
             '$expr' => [
                 $operator => [
                     [
-                        '$month' => '$'.$column
+                        '$month' => '$'.$column,
                     ],
                     $value,
                 ],
@@ -1229,7 +1229,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereDay(array $where)
@@ -1243,7 +1243,7 @@ class Builder extends BaseBuilder
             '$expr' => [
                 $operator => [
                     [
-                        '$dayOfMonth' => '$'.$column
+                        '$dayOfMonth' => '$'.$column,
                     ],
                     $value,
                 ],
@@ -1252,7 +1252,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array $where
      * @return array
      */
     protected function compileWhereYear(array $where)
@@ -1265,16 +1265,16 @@ class Builder extends BaseBuilder
             '$expr' => [
                 $operator => [
                     [
-                        '$year' => '$'.$column
+                        '$year' => '$'.$column,
                     ],
-                    $value
+                    $value,
                 ],
             ],
         ];
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereTime(array $where)
@@ -1288,7 +1288,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param array $where
+     * @param  array  $where
      * @return mixed
      */
     protected function compileWhereRaw(array $where)
@@ -1299,7 +1299,7 @@ class Builder extends BaseBuilder
     /**
      * Set custom options for the query.
      *
-     * @param array $options
+     * @param  array  $options
      * @return $this
      */
     public function options(array $options)
