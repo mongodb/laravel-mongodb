@@ -1164,42 +1164,45 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $date = Carbon::parse($value);
+        $startOfDay = new UTCDateTime(Carbon::parse($value)->startOfDay());
+        $endOfDay = new UTCDateTime(Carbon::parse($value)->endOfDay());
 
         $operator = $this->conversion[$operator];
-        $operatorDay = $operator === '=' ? '$eq' : $operator;
-        $operatorMonthYear = $operator === '=' ? '$eq' : (in_array($operator, ['$gt', '$lt']) ? $operator . 'e' : $operator);
 
-        return [
-            '$expr' => [
-                '$and' => [
-                    [
-                        $operatorDay => [
-                            [
-                                '$dayOfMonth' => '$'.$column
-                            ],
-                            $date->day
-                        ],
-                    ],
-                    [
-                        $operatorMonthYear => [
-                            [
-                                '$month' => '$'.$column
-                            ],
-                            $date->month
-                        ],
-                    ],
-                    [
-                        $operatorMonthYear => [
-                            [
-                                '$year' => '$'.$column
-                            ],
-                            $date->year
-                        ],
-                    ],
+        return match($operator) {
+            '=' => [
+                $column => [
+                    '$gte' => $startOfDay,
+                    '$lte' => $endOfDay,
                 ],
             ],
-        ];
+            '$ne' => [
+                $column => [
+                    '$gt' => $endOfDay,
+                    '$lt' => $startOfDay,
+                ],
+            ],
+            '$lt' => [
+                $column => [
+                    '$lt' => $startOfDay,
+                ],
+            ],
+            '$gt' => [
+                $column => [
+                    '$gt' => $endOfDay,
+                ],
+            ],
+            '$lte' => [
+                $column => [
+                    '$lte' => $endOfDay,
+                ],
+            ],
+            '$gte' => [
+                $column => [
+                    '$gte' => $startOfDay,
+                ],
+            ],
+        };
     }
 
     /**
