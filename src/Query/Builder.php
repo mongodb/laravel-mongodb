@@ -153,6 +153,7 @@ class Builder extends BaseBuilder
 
     /**
      * Set the cursor timeout in seconds.
+     * 
      * @param  int  $seconds
      * @return $this
      */
@@ -732,6 +733,7 @@ class Builder extends BaseBuilder
      * @param  string  $column
      * @param  string  $key
      * @return array
+     * 
      * @deprecated
      */
     public function lists($column, $key = null)
@@ -1252,7 +1254,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param  array $where
+     * @param  array  $where
      * @return array
      */
     protected function compileWhereYear(array $where)
