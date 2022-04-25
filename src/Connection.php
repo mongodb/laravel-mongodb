@@ -10,6 +10,11 @@ use MongoDB\Client;
 class Connection extends BaseConnection
 {
     /**
+     * @var \MongoDB\Driver\Session
+     */
+    protected $session;
+
+    /**
      * The MongoDB database handler.
      * @var \MongoDB\Database
      */
@@ -286,5 +291,39 @@ class Connection extends BaseConnection
     public function __call($method, $parameters)
     {
         return call_user_func_array([$this->db, $method], $parameters);
+    }
+
+    public function getSession()
+    {
+        return $this->session;
+    }
+
+    protected function clearSession()
+    {
+        $this->session = null;
+    }
+
+    public function beginTransaction(array $options = [])
+    {
+        if (!$this->getSession()) {
+            $this->session = $this->getMongoClient()->startSession();
+            $this->session->startTransaction($options);
+        }
+    }
+
+    public function rollBack($toLevel = null)
+    {
+        if ($this->getSession()) {
+            $this->session->abortTransaction();
+            $this->clearSession();
+        }
+    }
+
+    public function commit()
+    {
+        if ($this->getSession()) {
+            $this->session->commitTransaction();
+            $this->clearSession();
+        }
     }
 }

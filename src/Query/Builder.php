@@ -568,7 +568,11 @@ class Builder extends BaseBuilder
         }
 
         // Batch insert
-        $result = $this->collection->insertMany($values);
+        $options = [];
+        if ($session = $this->getSession()) {
+            $options['session'] = $session;
+        }
+        $result = $this->collection->insertMany($values, $options);
 
         return 1 == (int) $result->isAcknowledged();
     }
@@ -578,7 +582,11 @@ class Builder extends BaseBuilder
      */
     public function insertGetId(array $values, $sequence = null)
     {
-        $result = $this->collection->insertOne($values);
+        $options = [];
+        if ($session = $this->getSession()) {
+            $options['session'] = $session;
+        }
+        $result = $this->collection->insertOne($values, $options);
 
         if (1 == (int) $result->isAcknowledged()) {
             if ($sequence === null) {
@@ -682,7 +690,11 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
-        $result = $this->collection->DeleteMany($wheres);
+        $options = [];
+        if ($session = $this->getSession()) {
+            $options['session'] = $session;
+        }
+        $result = $this->collection->DeleteMany($wheres, $options);
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getDeletedCount();
         }
@@ -836,6 +848,9 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
+        if ($session = $this->getSession()) {
+            $options['session'] = $session;
+        }
         $result = $this->collection->UpdateMany($wheres, $query, $options);
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
@@ -1236,5 +1251,17 @@ class Builder extends BaseBuilder
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * @return \MongoDB\Driver\Session|null
+     */
+    protected function getSession()
+    {
+        if ($session = $this->connection->getSession()) {
+            return $session;
+        }
+
+        return null;
     }
 }
