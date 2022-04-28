@@ -11,19 +11,22 @@ class Connection extends BaseConnection
 {
     /**
      * The MongoDB database handler.
+     *
      * @var \MongoDB\Database
      */
     protected $db;
 
     /**
      * The MongoDB connection handler.
+     *
      * @var \MongoDB\Client
      */
     protected $connection;
 
     /**
      * Create a new database connection instance.
-     * @param array $config
+     *
+     * @param  array  $config
      */
     public function __construct(array $config)
     {
@@ -53,7 +56,8 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
-     * @param string $collection
+     *
+     * @param  string  $collection
      * @return Query\Builder
      */
     public function collection($collection)
@@ -65,8 +69,9 @@ class Connection extends BaseConnection
 
     /**
      * Begin a fluent query against a database collection.
-     * @param string $table
-     * @param string|null $as
+     *
+     * @param  string  $table
+     * @param  string|null  $as
      * @return Query\Builder
      */
     public function table($table, $as = null)
@@ -76,7 +81,8 @@ class Connection extends BaseConnection
 
     /**
      * Get a MongoDB collection.
-     * @param string $name
+     *
+     * @param  string  $name
      * @return Collection
      */
     public function getCollection($name)
@@ -94,6 +100,7 @@ class Connection extends BaseConnection
 
     /**
      * Get the MongoDB database object.
+     *
      * @return \MongoDB\Database
      */
     public function getMongoDB()
@@ -103,6 +110,7 @@ class Connection extends BaseConnection
 
     /**
      * return MongoDB object.
+     *
      * @return \MongoDB\Client
      */
     public function getMongoClient()
@@ -120,8 +128,9 @@ class Connection extends BaseConnection
 
     /**
      * Get the name of the default database based on db config or try to detect it from dsn.
-     * @param string $dsn
-     * @param array $config
+     *
+     * @param  string  $dsn
+     * @param  array  $config
      * @return string
      * @throws InvalidArgumentException
      */
@@ -140,9 +149,10 @@ class Connection extends BaseConnection
 
     /**
      * Create a new MongoDB connection.
-     * @param string $dsn
-     * @param array $config
-     * @param array $options
+     *
+     * @param  string  $dsn
+     * @param  array  $config
+     * @param  array  $options
      * @return \MongoDB\Client
      */
     protected function createConnection($dsn, array $config, array $options)
@@ -175,7 +185,8 @@ class Connection extends BaseConnection
 
     /**
      * Determine if the given configuration array has a dsn string.
-     * @param array $config
+     *
+     * @param  array  $config
      * @return bool
      */
     protected function hasDsnString(array $config)
@@ -185,7 +196,8 @@ class Connection extends BaseConnection
 
     /**
      * Get the DSN string form configuration.
-     * @param array $config
+     *
+     * @param  array  $config
      * @return string
      */
     protected function getDsnString(array $config)
@@ -195,7 +207,8 @@ class Connection extends BaseConnection
 
     /**
      * Get the DSN string for a host / port configuration.
-     * @param array $config
+     *
+     * @param  array  $config
      * @return string
      */
     protected function getHostDsn(array $config)
@@ -218,7 +231,8 @@ class Connection extends BaseConnection
 
     /**
      * Create a DSN string from a configuration.
-     * @param array $config
+     *
+     * @param  array  $config
      * @return string
      */
     protected function getDsn(array $config)
@@ -278,7 +292,8 @@ class Connection extends BaseConnection
 
     /**
      * Set database.
-     * @param \MongoDB\Database $db
+     *
+     * @param  \MongoDB\Database  $db
      */
     public function setDatabase(\MongoDB\Database $db)
     {
@@ -287,8 +302,9 @@ class Connection extends BaseConnection
 
     /**
      * Dynamically pass methods to the connection.
-     * @param string $method
-     * @param array $parameters
+     *
+     * @param  string  $method
+     * @param  array  $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
