@@ -245,6 +245,14 @@ class Connection extends BaseConnection
     }
 
     /**
+     * @inheritDoc
+     */
+    public function getName()
+    {
+        return $this->getDriverName();
+    }
+
+    /**
      * @inheritdoc
      */
     protected function getDefaultPostProcessor()
