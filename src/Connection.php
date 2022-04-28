@@ -132,6 +132,7 @@ class Connection extends BaseConnection
      * @param  string  $dsn
      * @param  array  $config
      * @return string
+     *
      * @throws InvalidArgumentException
      */
     protected function getDefaultDatabaseName($dsn, $config)
