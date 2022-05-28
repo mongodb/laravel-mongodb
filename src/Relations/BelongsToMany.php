@@ -123,7 +123,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         if ($ids instanceof Collection) {
             $ids = $ids->modelKeys();
-        } else if ($ids instanceof MongodbModel) {
+        } elseif ($ids instanceof MongodbModel) {
 			$ids = [$ids->{$this->relatedKey}];
 		}
 
