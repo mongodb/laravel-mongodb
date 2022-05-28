@@ -155,8 +155,12 @@ abstract class Model extends BaseModel
         }
 
         // This checks for embedded relation support.
-        if (method_exists($this, $key) && ! method_exists(self::class, $key)) {
-            return $this->getRelationValue($key);
+        if (
+			method_exists($this, $key)
+			&& ! method_exists(self::class, $key)
+			&& ! $this->hasAttributeGetMutator($key)
+		) {
+			return $this->getRelationValue($key);
         }
 
         return parent::getAttribute($key);
