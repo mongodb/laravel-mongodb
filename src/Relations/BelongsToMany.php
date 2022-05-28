@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
+use Jenssegers\Mongodb\Eloquent\Model as MongodbModel;
 
 class BelongsToMany extends EloquentBelongsToMany
 {
@@ -122,7 +123,9 @@ class BelongsToMany extends EloquentBelongsToMany
 
         if ($ids instanceof Collection) {
             $ids = $ids->modelKeys();
-        }
+        } else if ($ids instanceof MongodbModel) {
+			$ids = [$ids->{$this->relatedKey}];
+		}
 
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
