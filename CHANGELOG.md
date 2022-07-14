@@ -6,6 +6,9 @@ All notable changes to this project will be documented in this file.
 ### Added
 - Support for cursor pagination [#2358](https://github.com/jenssegers/laravel-mongodb/pull/2358) by [@Jeroenwv](https://github.com/Jeroenwv).
 
+### Fixed
+- Backport check if queue service is disabled [#2357](https://github.com/jenssegers/laravel-mongodb/pull/2357) by [@robjbrain](https://github.com/robjbrain).
+
 ## [3.8.4] - 2021-05-27
 
 ### Fixed
