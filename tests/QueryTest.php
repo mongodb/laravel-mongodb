@@ -241,7 +241,7 @@ class QueryTest extends TestCase
 
     public function testStringableOrder(): void
     {
-        $age = new stringableObject("age");
+        $age = new stringableObject('age');
 
         $user = User::whereNotNull('age')->orderBy($age, 'asc')->first();
         $this->assertEquals(13, $user->age);
@@ -483,7 +483,7 @@ class QueryTest extends TestCase
 }
 
 /**
- * Mockup class to test stringable objects
+ * Mockup class to test stringable objects.
  */
 class stringableObject implements Stringable {
 
