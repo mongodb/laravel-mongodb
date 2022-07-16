@@ -239,6 +239,17 @@ class QueryTest extends TestCase
         $this->assertEquals(35, $user->age);
     }
 
+    public function testStringableOrder(): void
+    {
+        $age = new stringableObject("age");
+
+        $user = User::whereNotNull('age')->orderBy($age, 'asc')->first();
+        $this->assertEquals(13, $user->age);
+
+        $user = User::whereNotNull('age')->orderBy($age, 'desc')->first();
+        $this->assertEquals(37, $user->age);
+    }
+
     public function testGroupBy(): void
     {
         $users = User::groupBy('title')->get();
@@ -468,5 +479,23 @@ class QueryTest extends TestCase
         $this->assertEquals('Yvonne Yoe', $subset[0]->name);
         $this->assertEquals('John Doe', $subset[1]->name);
         $this->assertEquals('Brett Boe', $subset[2]->name);
+    }
+}
+
+/**
+ * Mockup class to test stringable objects
+ */
+class stringableObject implements Stringable {
+
+    private $string;
+
+    public function __construct($string)
+    {
+        $this->string = $string;
+    }
+
+    public function __toString()
+    {
+        return $this->string;
     }
 }

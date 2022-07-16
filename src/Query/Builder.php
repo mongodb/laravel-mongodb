@@ -512,7 +512,7 @@ class Builder extends BaseBuilder
         if ($column == 'natural') {
             $this->orders['$natural'] = $direction;
         } else {
-            $this->orders[$column] = $direction;
+            $this->orders[(string) $column] = $direction;
         }
 
         return $this;
