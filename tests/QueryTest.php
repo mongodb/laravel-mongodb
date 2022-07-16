@@ -486,9 +486,9 @@ class QueryTest extends TestCase
  * Mockup class to test stringable objects.
  */
 class stringableObject implements Stringable {
-    private String $string;
+    private string $string;
 
-    public function __construct(String $string)
+    public function __construct(string $string)
     {
         $this->string = $string;
     }
