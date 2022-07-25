@@ -481,20 +481,3 @@ class QueryTest extends TestCase
         $this->assertEquals('Brett Boe', $subset[2]->name);
     }
 }
-
-/**
- * Mockup class to test stringable objects.
- */
-class stringableObject implements Stringable {
-    private string $string;
-
-    public function __construct(string $string)
-    {
-        $this->string = $string;
-    }
-
-    public function __toString()
-    {
-        return $this->string;
-    }
-}
