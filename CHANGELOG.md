@@ -3,8 +3,13 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+## [3.9.1] - 2022-03-11
+
 ### Added
 - Backport support for cursor pagination [#2358](https://github.com/jenssegers/laravel-mongodb/pull/2358) by [@Jeroenwv](https://github.com/Jeroenwv).
+
+### Fixed
+- Check if queue service is disabled [#2357](https://github.com/jenssegers/laravel-mongodb/pull/2357) by [@robjbrain](https://github.com/robjbrain).
 
 ## [3.9.0] - 2022-02-17
 
