@@ -239,6 +239,17 @@ class QueryTest extends TestCase
         $this->assertEquals(35, $user->age);
     }
 
+    public function testStringableOrder(): void
+    {
+        $age = str('age');
+
+        $user = User::whereNotNull('age')->orderBy($age, 'asc')->first();
+        $this->assertEquals(13, $user->age);
+
+        $user = User::whereNotNull('age')->orderBy($age, 'desc')->first();
+        $this->assertEquals(37, $user->age);
+    }
+
     public function testGroupBy(): void
     {
         $users = User::groupBy('title')->get();
