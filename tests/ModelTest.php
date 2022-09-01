@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Eloquent\Model;
@@ -676,6 +677,23 @@ class ModelTest extends TestCase
         ]);
 
         $this->assertEquals('Strasbourg', $user['address.city']);
+    }
+
+    public function testAttributeMutator(): void
+    {
+        $username = 'JaneDoe';
+        $usernameSlug = Str::slug($username);
+        $user = User::create([
+            'name' => 'Jane Doe',
+            'username' => $username,
+        ]);
+
+        $this->assertNotEquals($username, $user->getAttribute('username'));
+        $this->assertNotEquals($username, $user['username']);
+        $this->assertNotEquals($username, $user->username);
+        $this->assertEquals($usernameSlug, $user->getAttribute('username'));
+        $this->assertEquals($usernameSlug, $user['username']);
+        $this->assertEquals($usernameSlug, $user->username);
     }
 
     public function testMultipleLevelDotNotation(): void
