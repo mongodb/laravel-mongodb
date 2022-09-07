@@ -25,7 +25,7 @@ return [
 
         'dsn_mongodb_db' => [
             'driver' => 'mongodb',
-            'dsn' => 'mongodb://'.env('MONGO_USER').':'.env('MONGO_PASS').'@$mongoHost:$mongoPort/'.env('MONGO_DATABASE', 'unittest') . '?authSource=admin',
+            'dsn' => 'mongodb://'.env('MONGO_USER').':'.env('MONGO_PASS').'@$mongoHost:$mongoPort/'.env('MONGO_DATABASE', 'unittest').'?authSource=admin',
         ],
 
         'mysql' => [
