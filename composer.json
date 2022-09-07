@@ -1,5 +1,5 @@
 {
-    "name": "jenssegers/mongodb",
+    "name": "reverseads/mongodb",
     "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
     "keywords": [
         "laravel",
@@ -15,6 +15,10 @@
         {
             "name": "Jens Segers",
             "homepage": "https://jenssegers.com"
+        },
+        {
+            "name": "Nayana Hettiarachchi",
+            "homepage": "https://gnuzero.org"
         }
     ],
     "license": "MIT",
