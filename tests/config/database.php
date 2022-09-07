@@ -12,18 +12,20 @@ return [
             'name' => 'mongodb',
             'driver' => 'mongodb',
             'host' => $mongoHost,
+            'username' => env('MONGO_USER'),
+            'password' => env('MONGO_PASS'),
             'database' => env('MONGO_DATABASE', 'unittest'),
         ],
 
         'dsn_mongodb' => [
             'driver' => 'mongodb',
-            'dsn' => "mongodb://$mongoHost:$mongoPort",
+            'dsn' => "mongodb://" . env('MONGO_USER') .":" . env('MONGO_PASS') ."@$mongoHost:$mongoPort/admin",
             'database' => env('MONGO_DATABASE', 'unittest'),
         ],
 
         'dsn_mongodb_db' => [
             'driver' => 'mongodb',
-            'dsn' => "mongodb://$mongoHost:$mongoPort/".env('MONGO_DATABASE', 'unittest'),
+            'dsn' => "mongodb://" . env('MONGO_USER') .":" . env('MONGO_PASS') ."@$mongoHost:$mongoPort/".env('MONGO_DATABASE', 'unittest') . "?authSource=admin",
         ],
 
         'mysql' => [
