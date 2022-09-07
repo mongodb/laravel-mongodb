@@ -13,3 +13,5 @@ RUN apt-get update && \
 COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /code
+
+CMD [ "phpunit"]
