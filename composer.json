@@ -22,7 +22,6 @@
         "illuminate/support": "^9.0",
         "illuminate/container": "^9.0",
         "illuminate/database": "^9.0",
-        "illuminate/events": "^9.0",
         "mongodb/mongodb": "^1.11"
     },
     "require-dev": {
