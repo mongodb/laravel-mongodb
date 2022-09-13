@@ -935,6 +935,10 @@ class Builder extends BaseBuilder
                 }
             }
 
+            if(Str::startsWith($where['column'], $this->from . '.')) {
+                $where['column'] = Str::after($where['column'], $this->from . '.');
+            }
+
             // Convert id's.
             if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '._id'))) {
                 // Multiple values.
