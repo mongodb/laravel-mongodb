@@ -82,6 +82,14 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
+    public function getIncrementing()
+    {
+        return $this->incrementing;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function fromDateTime($value)
     {
         // If the value is already a UTCDateTime instance, we don't need to parse it.
