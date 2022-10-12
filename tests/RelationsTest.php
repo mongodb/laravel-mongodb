@@ -543,7 +543,7 @@ class RelationsTest extends TestCase
         Item::create(['user_id' => $user->_id]);
         Item::create(['user_id' => null]);
 
-        $items = Item::query()->whereBelongsTo($user)->get();
+        $items = Item::whereBelongsTo($user)->get();
 
         $this->assertCount(3, $items);
     }
