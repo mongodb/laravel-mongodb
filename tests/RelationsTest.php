@@ -534,4 +534,17 @@ class RelationsTest extends TestCase
         $this->assertEquals([$user->_id], $client->user_ids);
         $this->assertEquals([$client->_id], $user->client_ids);
     }
+
+    public function testWhereBelongsTo()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        Item::create(['user_id' => $user->_id]);
+        Item::create(['user_id' => $user->_id]);
+        Item::create(['user_id' => $user->_id]);
+        Item::create(['user_id' => null]);
+
+        $items = Item::query()->whereBelongsTo($user)->get();
+
+        $this->assertCount(3, $items);
+    }
 }
