@@ -768,4 +768,23 @@ class ModelTest extends TestCase
         $model->fill(['level1' => $dataValues]);
         $this->assertEquals($dataValues, $model->getAttribute('level1'));
     }
+
+    public function testFirstOrCreate(): void
+    {
+        $name = 'Jane Poe';
+
+        /** @var User $user */
+        $user = User::where('name', $name)->first();
+        $this->assertNull($user);
+
+        /** @var User $user */
+        $user = User::firstOrCreate(compact('name'));
+        $this->assertInstanceOf(Model::class, $user);
+        $this->assertTrue($user->exists);
+        $this->assertEquals($name, $user->name);
+
+        /** @var User $check */
+        $check = User::where('name', $name)->first();
+        $this->assertEquals($user->_id, $check->_id);
+    }
 }
