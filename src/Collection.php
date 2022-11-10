@@ -39,7 +39,7 @@ class Collection
      * @param array $parameters
      * @return mixed
      */
-    public function __call($method, $parameters)
+    public function __call(string $method, array $parameters)
     {
         $start = microtime(true);
         $result = $this->collection->$method(...$parameters);
