@@ -380,7 +380,7 @@ class Builder extends BaseBuilder
 
             // Apply order, offset, limit and projection
             if ($this->timeout) {
-                $options['maxTimeMS'] = $this->timeout;
+                $options['maxTimeMS'] = $this->timeout * 1000;
             }
             if ($this->orders) {
                 $options['sort'] = $this->orders;

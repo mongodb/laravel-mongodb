@@ -5,12 +5,17 @@ declare(strict_types=1);
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
+use Illuminate\Testing\Assert;
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Query\Builder;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\Cursor;
+use MongoDB\Driver\Monitoring\CommandFailedEvent;
+use MongoDB\Driver\Monitoring\CommandStartedEvent;
+use MongoDB\Driver\Monitoring\CommandSubscriber;
+use MongoDB\Driver\Monitoring\CommandSucceededEvent;
 
 class QueryBuilderTest extends TestCase
 {
@@ -127,6 +132,41 @@ class QueryBuilderTest extends TestCase
 
         $user = DB::collection('users')->find($id);
         $this->assertEquals('John Doe', $user['name']);
+    }
+
+    public function testFindWithTimeout()
+    {
+        $id = DB::collection('users')->insertGetId(['name' => 'John Doe']);
+
+        $subscriber = new class implements CommandSubscriber
+        {
+            public function commandStarted(CommandStartedEvent $event)
+            {
+                if ($event->getCommandName() !== 'find') {
+                    return;
+                }
+
+                Assert::assertObjectHasAttribute('maxTimeMS', $event->getCommand());
+
+                // Expect the timeout to be converted to milliseconds
+                Assert::assertSame(1000, $event->getCommand()->maxTimeMS);
+            }
+
+            public function commandFailed(CommandFailedEvent $event)
+            {
+            }
+
+            public function commandSucceeded(CommandSucceededEvent $event)
+            {
+            }
+        };
+
+        DB::getMongoClient()->getManager()->addSubscriber($subscriber);
+        try {
+            DB::collection('users')->timeout(1)->find($id);
+        } finally {
+            DB::getMongoClient()->getManager()->removeSubscriber($subscriber);
+        }
     }
 
     public function testFindNull()
