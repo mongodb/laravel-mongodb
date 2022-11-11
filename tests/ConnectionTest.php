@@ -106,6 +106,14 @@ class ConnectionTest extends TestCase
                 'database' => 'tests',
             ],
         ];
+
+        yield 'Database is extracted from DSN if not specified' => [
+            'expectedUri' => 'mongodb://some-host:12345/tests',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'dsn' => 'mongodb://some-host:12345/tests',
+            ],
+        ];
     }
 
     /** @dataProvider dataConnectionConfig */
