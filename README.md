@@ -143,7 +143,20 @@ Keep in mind that these traits are not yet supported:
 
 Configuration
 -------------
-You can use MongoDB either as the main database, either as a side database. To do so, add a new `mongodb` connection to `config/database.php`:
+
+To configure a new MongoDB connection, add a new connection entry to `config/database.php`:
+
+```php
+'mongodb' => [
+    'driver' => 'mongodb',
+    'dsn' => env('DB_DSN'),
+    'database' => env('DB_DATABASE', 'homestead'),
+],
+```
+
+The `dsn` key contains the connection string used to connect to your MongoDB deployment. The format and available options are documented in the [MongoDB documentation](https://docs.mongodb.com/manual/reference/connection-string/).
+
+Instead of using a connection string, you can also use the `host` and `port` configuration options to have the connection string created for you.
 
 ```php
 'mongodb' => [
@@ -154,36 +167,12 @@ You can use MongoDB either as the main database, either as a side database. To d
     'username' => env('DB_USERNAME', 'homestead'),
     'password' => env('DB_PASSWORD', 'secret'),
     'options' => [
-        // here you can pass more settings to the Mongo Driver Manager
-        // see https://www.php.net/manual/en/mongodb-driver-manager.construct.php under "Uri Options" for a list of complete parameters that you can use
-
-        'database' => env('DB_AUTHENTICATION_DATABASE', 'admin'), // required with Mongo 3+
+        'appname' => 'homestead',
     ],
 ],
 ```
 
-For multiple servers or replica set configurations, set the host to an array and specify each server host:
-
-```php
-'mongodb' => [
-    'driver' => 'mongodb',
-    'host' => ['server1', 'server2', ...],
-    ...
-    'options' => [
-        'replicaSet' => 'rs0',
-    ],
-],
-```
-
-If you wish to use a connection string instead of full key-value params, you can set it so. Check the documentation on MongoDB's URI format: https://docs.mongodb.com/manual/reference/connection-string/
-
-```php
-'mongodb' => [
-    'driver' => 'mongodb',
-    'dsn' => env('DB_DSN'),
-    'database' => env('DB_DATABASE', 'homestead'),
-],
-```
+The `options` key in the connection configuration corresponds to the [`uriOptions` parameter](https://www.php.net/manual/en/mongodb-driver-manager.construct.php#mongodb-driver-manager.construct-urioptions).
 
 Eloquent
 --------
@@ -223,7 +212,7 @@ class Book extends Model
     protected $primaryKey = 'id';
 }
 
-// Mongo will also create _id, but the 'id' property will be used for primary key actions like find().
+// MongoDB will also create _id, but the 'id' property will be used for primary key actions like find().
 Book::create(['id' => 1, 'title' => 'The Fault in Our Stars']);
 ```
 
@@ -238,7 +227,7 @@ class Book extends Model
 }
 ```
 
-### Extending the Authenticable base model
+### Extending the Authenticatable base model
 This package includes a MongoDB Authenticatable Eloquent class `Jenssegers\Mongodb\Auth\User` that you can use to replace the default Authenticatable class `Illuminate\Foundation\Auth\User` for your `User` model.
 
 ```php
