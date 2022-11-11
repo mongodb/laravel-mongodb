@@ -192,7 +192,8 @@ class Builder extends EloquentBuilder
      * TODO Remove if https://github.com/laravel/framework/commit/6484744326531829341e1ff886cc9b628b20d73e
      * wiil be reverted
      * Issue in laravel frawework https://github.com/laravel/framework/issues/27791.
-     * @param array $values
+     *
+     * @param  array  $values
      * @return array
      */
     protected function addUpdatedAtColumn(array $values)
