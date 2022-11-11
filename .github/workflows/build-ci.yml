@@ -88,7 +88,7 @@ jobs:
                 run: |
                     ./vendor/bin/phpunit --coverage-clover coverage.xml
                 env:
-                    MONGO_HOST: 0.0.0.0
+                    MONGODB_URI: 'mongodb://127.0.0.1/'
                     MYSQL_HOST: 0.0.0.0
                     MYSQL_PORT: 3307
             -   uses: codecov/codecov-action@v1
