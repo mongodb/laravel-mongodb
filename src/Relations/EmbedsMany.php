@@ -34,7 +34,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Save a new model and attach it to the parent model.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model|bool
      */
     public function performInsert(Model $model)
@@ -65,7 +65,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Save an existing model and attach it to the parent model.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model|bool
      */
     public function performUpdate(Model $model)
@@ -97,7 +97,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Delete an existing model and detach it from the parent model.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return int
      */
     public function performDelete(Model $model)
@@ -124,7 +124,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Associate the model instance to the given parent, without saving it to the database.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model
      */
     public function associate(Model $model)
@@ -139,7 +139,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Dissociate the model instance from the given parent, without saving it to the database.
      *
-     * @param mixed $ids
+     * @param  mixed  $ids
      * @return int
      */
     public function dissociate($ids = [])
@@ -168,7 +168,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Destroy the embedded models for the given IDs.
      *
-     * @param mixed $ids
+     * @param  mixed  $ids
      * @return int
      */
     public function destroy($ids = [])
@@ -210,7 +210,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Destroy alias.
      *
-     * @param mixed $ids
+     * @param  mixed  $ids
      * @return int
      */
     public function detach($ids = [])
@@ -221,7 +221,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Save alias.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model
      */
     public function attach(Model $model)
@@ -232,7 +232,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Associate a new model instance to the given parent, without saving it to the database.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model
      */
     protected function associateNew($model)
@@ -253,7 +253,7 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Associate an existing model instance to the given parent, without saving it to the database.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model
      */
     protected function associateExisting($model)
@@ -277,10 +277,10 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /**
-     * @param null $perPage
-     * @param array $columns
-     * @param string $pageName
-     * @param null $page
+     * @param  null  $perPage
+     * @param  array  $columns
+     * @param  string  $pageName
+     * @param  null  $page
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
@@ -335,7 +335,7 @@ class EmbedsMany extends EmbedsOneOrMany
     public function __call($method, $parameters)
     {
         if (method_exists(Collection::class, $method)) {
-            return call_user_func_array([$this->getResults(), $method], $parameters);
+            return $this->getResults()->$method(...$parameters);
         }
 
         return parent::__call($method, $parameters);
@@ -344,8 +344,8 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Get the name of the "where in" method for eager loading.
      *
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @param string $key
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
      * @return string
      */
     protected function whereInMethod(EloquentModel $model, $key)
