@@ -510,7 +510,7 @@ abstract class Model extends BaseModel
     {
         // Unset method
         if ($method == 'unset') {
-            return call_user_func_array([$this, 'drop'], $parameters);
+            return $this->drop(...$parameters);
         }
 
         return parent::__call($method, $parameters);

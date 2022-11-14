@@ -335,7 +335,7 @@ class EmbedsMany extends EmbedsOneOrMany
     public function __call($method, $parameters)
     {
         if (method_exists(Collection::class, $method)) {
-            return call_user_func_array([$this->getResults(), $method], $parameters);
+            return $this->getResults()->$method(...$parameters);
         }
 
         return parent::__call($method, $parameters);

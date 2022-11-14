@@ -897,7 +897,7 @@ class Builder extends BaseBuilder
             }
         }
 
-        return call_user_func_array('parent::where', $params);
+        return parent::where(...$params);
     }
 
     /**
@@ -1253,7 +1253,7 @@ class Builder extends BaseBuilder
     public function __call($method, $parameters)
     {
         if ($method == 'unset') {
-            return call_user_func_array([$this, 'drop'], $parameters);
+            return $this->drop(...$parameters);
         }
 
         return parent::__call($method, $parameters);
