@@ -37,11 +37,101 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(Client::class, $connection->getMongoClient());
     }
 
-    public function testDsnDb()
+    public function dataConnectionConfig(): Generator
     {
-        $connection = DB::connection('dsn_mongodb_db');
-        $this->assertInstanceOf(Database::class, $connection->getMongoDB());
-        $this->assertInstanceOf(Client::class, $connection->getMongoClient());
+        yield 'Single host' => [
+            'expectedUri' => 'mongodb://some-host',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => 'some-host',
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'Host and port' => [
+            'expectedUri' => 'mongodb://some-host:12345',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => 'some-host',
+                'port' => 12345,
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'Port in host name takes precedence' => [
+            'expectedUri' => 'mongodb://some-host:12345',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => 'some-host:12345',
+                'port' => 54321,
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'Multiple hosts' => [
+            'expectedUri' => 'mongodb://host-1,host-2',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => ['host-1', 'host-2'],
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'Multiple hosts with same port' => [
+            'expectedUri' => 'mongodb://host-1:12345,host-2:12345',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => ['host-1', 'host-2'],
+                'port' => 12345,
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'Multiple hosts with port' => [
+            'expectedUri' => 'mongodb://host-1:12345,host-2:54321',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => ['host-1:12345', 'host-2:54321'],
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'DSN takes precedence over host/port config' => [
+            'expectedUri' => 'mongodb://some-host:12345/auth-database',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'dsn' => 'mongodb://some-host:12345/auth-database',
+                'host' => 'wrong-host',
+                'port' => 54321,
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'Database is extracted from DSN if not specified' => [
+            'expectedUri' => 'mongodb://some-host:12345/tests',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'dsn' => 'mongodb://some-host:12345/tests',
+            ],
+        ];
+    }
+
+    /** @dataProvider dataConnectionConfig */
+    public function testConnectionConfig(string $expectedUri, string $expectedDatabaseName, array $config): void
+    {
+        $connection = new Connection($config);
+        $client = $connection->getMongoClient();
+
+        $this->assertSame($expectedUri, (string) $client);
+        $this->assertSame($expectedDatabaseName, $connection->getMongoDB()->getDatabaseName());
+    }
+
+    public function testConnectionWithoutConfiguredDatabase(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Database is not properly configured.');
+
+        new Connection(['dsn' => 'mongodb://some-host']);
     }
 
     public function testCollection()
@@ -88,34 +178,5 @@ class ConnectionTest extends TestCase
     {
         $driver = DB::connection('mongodb')->getDriverName();
         $this->assertEquals('mongodb', $driver);
-    }
-
-    public function testAuth()
-    {
-        $host = Config::get('database.connections.mongodb.host');
-        Config::set('database.connections.mongodb.username', 'foo');
-        Config::set('database.connections.mongodb.password', 'bar');
-        Config::set('database.connections.mongodb.options.database', 'custom');
-
-        $connection = DB::connection('mongodb');
-        $this->assertEquals('mongodb://'.$host.'/custom', (string) $connection->getMongoClient());
-    }
-
-    public function testCustomHostAndPort()
-    {
-        Config::set('database.connections.mongodb.host', 'db1');
-        Config::set('database.connections.mongodb.port', 27000);
-
-        $connection = DB::connection('mongodb');
-        $this->assertEquals('mongodb://db1:27000', (string) $connection->getMongoClient());
-    }
-
-    public function testHostWithPorts()
-    {
-        Config::set('database.connections.mongodb.port', 27000);
-        Config::set('database.connections.mongodb.host', ['db1:27001', 'db2:27002', 'db3:27000']);
-
-        $connection = DB::connection('mongodb');
-        $this->assertEquals('mongodb://db1:27001,db2:27002,db3:27000', (string) $connection->getMongoClient());
     }
 }

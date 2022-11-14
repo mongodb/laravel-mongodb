@@ -55,7 +55,7 @@ abstract class Model extends BaseModel
      */
     public function getIdAttribute($value = null)
     {
-        // If we don't have a value for 'id', we will use the Mongo '_id' value.
+        // If we don't have a value for 'id', we will use the MongoDB '_id' value.
         // This allows us to work with models in a more sql-like way.
         if (! $value && array_key_exists('_id', $this->attributes)) {
             $value = $this->attributes['_id'];

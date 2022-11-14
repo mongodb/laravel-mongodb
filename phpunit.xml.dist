@@ -35,9 +35,8 @@
         </testsuite>
     </testsuites>
     <php>
-        <env name="MONGO_HOST" value="mongodb"/>
+        <env name="MONGODB_URI" value="mongodb://127.0.0.1/" />
         <env name="MONGO_DATABASE" value="unittest"/>
-        <env name="MONGO_PORT" value="27017"/>
         <env name="MYSQL_HOST" value="mysql"/>
         <env name="MYSQL_PORT" value="3306"/>
         <env name="MYSQL_DATABASE" value="unittest"/>
