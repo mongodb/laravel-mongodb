@@ -58,10 +58,10 @@ jobs:
             -   name: Create MongoDB Replica Set
                 run: |
                     docker run --name mongodb -p 27017:27017 -e MONGO_INITDB_DATABASE=unittest --detach mongo:${{ matrix.mongodb }} mongod --replSet rs
-                    until docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "db.serverStatus()"; do
+                    until docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "db.runCommand({ ping: 1 })"; do
                     sleep 1
                     done
-                    sudo docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1:27017\" }]})"
+                    sudo docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "rs.initiate()"
             -   name: "Installing php"
                 uses: shivammathur/setup-php@v2
                 with:
