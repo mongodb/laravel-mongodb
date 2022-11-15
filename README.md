@@ -970,16 +970,14 @@ If you are familiar with [Eloquent Queries](http://laravel.com/docs/queries), th
 To see the available operations, check the [Eloquent](#eloquent) section.
 
 Transactions
--------
+------------
 Transactions require MongoDB version ^4.0 as well as deployment of replica set or sharded clusters. You can find more information [in the MongoDB docs](https://docs.mongodb.com/manual/core/transactions/)
 
 ### Basic Usage
 
-Transaction supports all operations.
-
 ```php
 DB::transaction(function () {
-    User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'klinsonup@gmail.com']);
+    User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'john@example.com']);
     DB::collection('users')->where('name', 'john')->update(['age' => 20]);
     DB::collection('users')->where('name', 'john')->delete();
 });
@@ -988,24 +986,32 @@ DB::transaction(function () {
 ```php
 // begin a transaction
 DB::beginTransaction();
-User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'klinsonup@gmail.com']);
+User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'john@example.com']);
 DB::collection('users')->where('name', 'john')->update(['age' => 20]);
 DB::collection('users')->where('name', 'john')->delete();
 
-// you can commit your changes
+// commit changes
 DB::commit();
-
-// you can also rollback them
-//DB::rollBack();
 ```
+
+To abort a transaction, call the `rollBack` method at any point during the transaction:
+```php
+DB::beginTransaction();
+User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'john@example.com']);
+
+// Abort the transaction, discarding any data created as part of it
+DB::rollBack();
+```
+
 **NOTE:** Transactions in MongoDB cannot be nested. DB::beginTransaction() function will start new transactions in a new created or existing session and will raise the RuntimeException when transactions already exist. See more in MongoDB official docs [Transactions and Sessions](https://www.mongodb.com/docs/manual/core/transactions/#transactions-and-sessions)
 ```php
-// This code will raise a RuntimeException
 DB::beginTransaction();
-    User::create(['name' => 'john', 'age' => 20, 'title' => 'admin']);
-    DB::beginTransaction()
-        DB::collection('users')->where('name', 'john')->update(['age' => 20]);
-    DB::commit()
+User::create(['name' => 'john', 'age' => 20, 'title' => 'admin']);
+
+// This call to start a nested transaction will raise a RuntimeException
+DB::beginTransaction();
+DB::collection('users')->where('name', 'john')->update(['age' => 20]);
+DB::commit();
 DB::rollBack();
 ```
 
