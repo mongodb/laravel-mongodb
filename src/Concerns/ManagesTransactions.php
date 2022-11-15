@@ -8,9 +8,14 @@ use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Session;
 use function MongoDB\with_transaction;
 
+/**
+ * @see https://docs.mongodb.com/manual/core/transactions/
+ */
 trait ManagesTransactions
 {
     protected ?Session $session = null;
+
+    protected $transactions = 0;
 
     /**
      * @return Client
@@ -43,12 +48,7 @@ trait ManagesTransactions
     }
 
     /**
-     * Use the existing or create new session and start a transaction in session.
-     *
-     * In version 4.0, MongoDB supports multi-document transactions on replica sets.
-     * In version 4.2, MongoDB introduces distributed transactions, which adds support for multi-document transactions on sharded clusters and incorporates the existing support for multi-document transactions on replica sets.
-     *
-     * @see https://docs.mongodb.com/manual/core/transactions/
+     * Starts a transaction on the active session. An active session will be created if none exists.
      */
     public function beginTransaction(array $options = []): void
     {
@@ -66,7 +66,7 @@ trait ManagesTransactions
     }
 
     /**
-     * Rollback transaction in this session.
+     * Abort transaction in this session.
      */
     public function rollBack($toLevel = null): void
     {

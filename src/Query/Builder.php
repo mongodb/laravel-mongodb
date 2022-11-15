@@ -734,7 +734,7 @@ class Builder extends BaseBuilder
     public function truncate(): bool
     {
         $options = $this->inheritConnectionOptions();
-        $result = $this->collection->deleteMany($options);
+        $result = $this->collection->deleteMany([], $options);
 
         return 1 === (int) $result->isAcknowledged();
     }
