@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Eloquent\Model;
 use MongoDB\BSON\ObjectId;
-use MongoDB\Driver\ReadPreference;
 use MongoDB\Driver\Server;
 
 class TransactionTest extends TestCase
@@ -425,6 +424,6 @@ class TransactionTest extends TestCase
 
     private function getPrimaryServerType(): int
     {
-        return DB::getMongoClient()->getManager()->selectServer(new ReadPreference(ReadPreference::RP_PRIMARY))->getType();
+        return DB::getMongoClient()->getManager()->selectServer()->getType();
     }
 }
