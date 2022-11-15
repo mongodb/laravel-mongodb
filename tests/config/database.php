@@ -6,7 +6,7 @@ return [
             'name' => 'mongodb',
             'driver' => 'mongodb',
             'dsn' => env('MONGODB_URI', 'mongodb://127.0.0.1/'),
-            'database' => env('MONGO_DATABASE', 'unittest'),
+            'database' => env('MONGODB_DATABASE', 'unittest'),
             'options' => [
                 'connectTimeoutMS'         => 100,
                 'serverSelectionTimeoutMS' => 250,
