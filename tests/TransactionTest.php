@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\DB;
+use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Eloquent\Model;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Driver\Server;
@@ -316,7 +317,7 @@ class TransactionTest extends TestCase
     {
         User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
 
-        DB::transaction(function (): void {
+        DB::transaction(function (Connection $connection): void {
             User::create(['name' => 'alcaeus', 'age' => 38, 'title' => 'admin']);
             User::where(['name' => 'klinson'])->update(['age' => 21]);
         });

@@ -84,8 +84,6 @@ trait ManagesTransactions
         $attemptsLeft = $attempts;
         $callbackResult = null;
 
-        $session = $this->getSessionOrCreate();
-
         $callbackFunction = function (Session $session) use ($callback, &$attemptsLeft, &$callbackResult) {
             $attemptsLeft--;
 
@@ -95,10 +93,10 @@ trait ManagesTransactions
                 return;
             }
 
-            $callbackResult = $callback();
+            $callbackResult = $callback($this);
         };
 
-        with_transaction($session, $callbackFunction, $options);
+        with_transaction($this->getSessionOrCreate(), $callbackFunction, $options);
 
         return $callbackResult;
     }
