@@ -62,6 +62,9 @@ jobs:
                     sleep 1
                     done
                     sudo docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1:27017\" }]})"
+            -   name: Show MongoDB server status
+                run: |
+                    docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "db.runCommand({ serverStatus: 1 })"
             -   name: "Installing php"
                 uses: shivammathur/setup-php@v2
                 with:
