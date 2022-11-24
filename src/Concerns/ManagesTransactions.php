@@ -95,7 +95,7 @@ trait ManagesTransactions
                 return;
             }
 
-            // Catch, store and re-throw any exception thrown during execution
+            // Catch, store, and re-throw any exception thrown during execution
             // of the callable. The last exception is re-thrown if the transaction
             // was aborted because the number of callback attempts has been exceeded.
             try {
