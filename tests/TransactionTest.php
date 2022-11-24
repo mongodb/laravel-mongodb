@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Eloquent\Model;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Driver\Server;
 
 class TransactionTest extends TestCase
@@ -317,6 +318,8 @@ class TransactionTest extends TestCase
     {
         User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
 
+        // The $connection parameter may be unused, but is implicitly used to
+        // test that the closure is executed with the connection as an argument.
         DB::transaction(function (Connection $connection): void {
             User::create(['name' => 'alcaeus', 'age' => 38, 'title' => 'admin']);
             User::where(['name' => 'klinson'])->update(['age' => 21]);
@@ -336,14 +339,18 @@ class TransactionTest extends TestCase
         $timesRun = 0;
 
         DB::transaction(function () use (&$timesRun): void {
-            User::where(['name' => 'klinson'])->update(['age' => 21]);
+            $timesRun++;
 
-            // Update user during transaction to simulate a simultaneous update
-            if ($timesRun == 0) {
+            // Run a query to start the transaction on the server
+            User::create(['name' => 'alcaeus', 'age' => 38, 'title' => 'admin']);
+
+            // Update user outside of the session
+            if ($timesRun == 1) {
                 DB::getCollection('users')->updateOne(['name' => 'klinson'], ['$set' => ['age' => 22]]);
             }
 
-            $timesRun++;
+            // This update will create a write conflict, aborting the transaction
+            User::where(['name' => 'klinson'])->update(['age' => 21]);
         }, 2);
 
         $this->assertSame(2, $timesRun);
@@ -356,14 +363,25 @@ class TransactionTest extends TestCase
 
         $timesRun = 0;
 
-        DB::transaction(function () use (&$timesRun): void {
-            User::where(['name' => 'klinson'])->update(['age' => 21]);
+        try {
+            DB::transaction(function () use (&$timesRun): void {
+                $timesRun++;
 
-            // Update user during transaction to simulate a simultaneous update
-            DB::getCollection('users')->updateOne(['name' => 'klinson'], ['$inc' => ['age' => 2]]);
+                // Run a query to start the transaction on the server
+                User::create(['name' => 'alcaeus', 'age' => 38, 'title' => 'admin']);
 
-            $timesRun++;
-        }, 2);
+                // Update user outside of the session
+                DB::getCollection('users')->updateOne(['name' => 'klinson'], ['$inc' => ['age' => 2]]);
+
+                // This update will create a write conflict, aborting the transaction
+                User::where(['name' => 'klinson'])->update(['age' => 21]);
+            }, 2);
+
+            $this->fail('Expected exception during transaction');
+        } catch (BulkWriteException $e) {
+            $this->assertInstanceOf(BulkWriteException::class, $e);
+            $this->assertStringContainsString('WriteConflict', $e->getMessage());
+        }
 
         $this->assertSame(2, $timesRun);
 

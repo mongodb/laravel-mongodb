@@ -7,6 +7,7 @@ use MongoDB\Client;
 use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Session;
 use function MongoDB\with_transaction;
+use Throwable;
 
 /**
  * @see https://docs.mongodb.com/manual/core/transactions/
@@ -83,8 +84,9 @@ trait ManagesTransactions
     {
         $attemptsLeft = $attempts;
         $callbackResult = null;
+        $throwable = null;
 
-        $callbackFunction = function (Session $session) use ($callback, &$attemptsLeft, &$callbackResult) {
+        $callbackFunction = function (Session $session) use ($callback, &$attemptsLeft, &$callbackResult, &$throwable) {
             $attemptsLeft--;
 
             if ($attemptsLeft < 0) {
@@ -93,10 +95,21 @@ trait ManagesTransactions
                 return;
             }
 
-            $callbackResult = $callback($this);
+            // Catch, store and re-throw any exception thrown during execution
+            // of the callable. The last exception is re-thrown if the transaction
+            // was aborted because the number of callback attempts has been exceeded.
+            try {
+                $callbackResult = $callback($this);
+            } catch (Throwable $throwable) {
+                throw $throwable;
+            }
         };
 
         with_transaction($this->getSessionOrCreate(), $callbackFunction, $options);
+
+        if ($attemptsLeft < 0 && $throwable) {
+            throw $throwable;
+        }
 
         return $callbackResult;
     }
