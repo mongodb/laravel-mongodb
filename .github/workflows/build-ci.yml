@@ -27,7 +27,27 @@ jobs:
                     coverage: none
             -   name: Run PHP-CS-Fixer Fix, version ${{ env.PHP_CS_FIXER_VERSION }}
                 run: php-cs-fixer fix --dry-run --diff --ansi
-
+    phpstan:
+        runs-on: ubuntu-latest
+        strategy:
+            matrix:
+                php:
+                    - '8.1'
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+            -   name: Setup PHP
+                uses: shivammathur/setup-php@v2
+                with:
+                    php-version: ${{ matrix.php }}
+                    extensions: curl,mbstring
+                    tools: composer
+                    coverage: none
+                    ini-values: memory_limit=-1
+            -   name: Install dependencies
+                run: composer install --no-interaction
+            -   name: Run PHPStan Analysis
+                run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi
     build:
         runs-on: ${{ matrix.os }}
         name: PHP v${{ matrix.php }} with MongoDB ${{ matrix.mongodb }}

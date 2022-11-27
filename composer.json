@@ -23,7 +23,8 @@
         "illuminate/container": "^9.0",
         "illuminate/database": "^9.0",
         "illuminate/events": "^9.0",
-        "mongodb/mongodb": "^1.11"
+        "mongodb/mongodb": "^1.11",
+        "nunomaduro/larastan": "^2.2"
     },
     "require-dev": {
         "phpunit/phpunit": "^9.5.8",
