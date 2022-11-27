@@ -5,11 +5,14 @@ namespace Jenssegers\Mongodb;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
+use Jenssegers\Mongodb\Concerns\ManagesTransactions;
 use MongoDB\Client;
 use MongoDB\Database;
 
 class Connection extends BaseConnection
 {
+    use ManagesTransactions;
+
     /**
      * The MongoDB database handler.
      *
