@@ -593,7 +593,17 @@ The data in the `location` field must be saved as [GeoJSON](https://www.mongodb.
 The `location` points must be saved as [WGS84](https://www.mongodb.com/docs/manual/reference/glossary/#std-term-WGS84) reference system for geometry calculation. That means, basically, you need to save longitude and latitude, in that order specifically.
 
 ```
-Bar::find("63a0cd574d08564f330ceae2")->update(['location' => ['type' => 'Point','coordinates' => [-0.1367563, 51.5100913]]]);
+Bar::find("63a0cd574d08564f330ceae2")->update(
+    [
+        'location' => [
+            'type' => 'Point',
+            'coordinates' => [
+                -0.1367563,
+                51.5100913
+            ]
+        ]
+    ]
+);
 $bars = Bar::raw(function ($collection) {
     return $collection->aggregate([
         [
