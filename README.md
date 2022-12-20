@@ -590,7 +590,7 @@ You don't need to specify the automatic fields on the model.
 The returned instance is a collection. So you're able to make the [Collection](https://laravel.com/docs/9.x/collections) operations.
 Just make sure that your model has a `location` field, and a [2ndSphereIndex](https://www.mongodb.com/docs/manual/core/2dsphere).
 The data in the `location` field must be saved as [GeoJSON](https://www.mongodb.com/docs/manual/reference/geojson/).
-The `location` points must be saved as [WGS84](https://www.mongodb.com/docs/manual/reference/glossary/#std-term-WGS84) reference system for geometry calculation. That means, basically, you need to save longitude and latitude, in that order specifically.
+The `location` points must be saved as [WGS84](https://www.mongodb.com/docs/manual/reference/glossary/#std-term-WGS84) reference system for geometry calculation. That means, basically, you need to save longitude and latitude, in that order specifically, and to find near with calculated distance, you `need to do the same way`.
 
 ```
 Bar::find("63a0cd574d08564f330ceae2")->update(
