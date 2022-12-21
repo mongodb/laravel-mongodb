@@ -33,6 +33,9 @@
         <testsuite name="validation">
             <file>tests/ValidationTest.php</file>
         </testsuite>
+        <testsuite name="transaction">
+            <file>tests/TransactionTest.php</file>
+        </testsuite>
     </testsuites>
     <php>
         <env name="MONGO_HOST" value="mongodb"/>

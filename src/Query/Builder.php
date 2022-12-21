@@ -567,8 +567,8 @@ class Builder extends BaseBuilder
             $values = [$values];
         }
 
-        // Batch insert
-        $result = $this->collection->insertMany($values);
+        $options = $this->inheritConnectionOptions();
+        $result = $this->collection->insertMany($values, $options);
 
         return 1 == (int) $result->isAcknowledged();
     }
@@ -578,7 +578,8 @@ class Builder extends BaseBuilder
      */
     public function insertGetId(array $values, $sequence = null)
     {
-        $result = $this->collection->insertOne($values);
+        $options = $this->inheritConnectionOptions();
+        $result = $this->collection->insertOne($values, $options);
 
         if (1 == (int) $result->isAcknowledged()) {
             if ($sequence === null) {
@@ -682,7 +683,8 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
-        $result = $this->collection->DeleteMany($wheres);
+        $options = $this->inheritConnectionOptions();
+        $result = $this->collection->deleteMany($wheres, $options);
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getDeletedCount();
         }
@@ -836,7 +838,8 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
-        $result = $this->collection->UpdateMany($wheres, $query, $options);
+        $options = $this->inheritConnectionOptions($options);
+        $result = $this->collection->updateMany($wheres, $query, $options);
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
         }
@@ -1224,6 +1227,18 @@ class Builder extends BaseBuilder
         $this->options = $options;
 
         return $this;
+    }
+
+    /**
+     * Apply the connection's session to options if it's not already specified.
+     */
+    private function inheritConnectionOptions(array $options = []): array
+    {
+        if (!isset($options['session']) && ($session = $this->connection->getSession())) {
+            $options['session'] = $session;
+        }
+
+        return $options;
     }
 
     /**
