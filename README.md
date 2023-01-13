@@ -259,6 +259,18 @@ class User extends Model
 
 For more information check [Laravel Docs about Soft Deleting](http://laravel.com/docs/eloquent#soft-deleting).
 
+### [Laravel Sanctum](https://laravel.com/docs/9.x/sanctum)
+This trait will provide you correct implementation of Sanctum with this package. If your model is already using the `Laravel\Sanctum\HasApiTokens` trait, you may replace it with this `Jenssegers\Mongodb\Sanctum\HasApiTokens`
+
+```php
+use Jenssegers\Mongodb\Sanctum\HasApiTokens;
+
+class User
+{
+    use HasApiTokens;
+}
+```
+
 ### Guarding attributes
 
 When choosing between guarding attributes or marking some as fillable, Taylor Otwell prefers the fillable route.
