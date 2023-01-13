@@ -270,6 +270,21 @@ class User
     use HasApiTokens;
 }
 ```
+And then you have to set This package PersonalAccessToken as default to Sanctum in `AuthServiceProvider`
+```php
+use Laravel\Sanctum\Sanctum;
+use Jenssegers\Mongodb\Sanctum\PersonalAccessToken;
+//...
+
+class AuthServiceProvider extends ServiceProvider
+{
+    public function boot()
+    {
+        //...
+        Sanctum::usePersonalAccessTokenModel(PersonalAccessToken::class);
+    }
+}
+```
 
 ### Guarding attributes
 
