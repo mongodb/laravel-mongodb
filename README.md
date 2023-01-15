@@ -7,7 +7,8 @@ Laravel MongoDB
 [![codecov](https://codecov.io/gh/jenssegers/laravel-mongodb/branch/master/graph/badge.svg)](https://codecov.io/gh/jenssegers/laravel-mongodb/branch/master)
 [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
 
-This package adds functionalities to the Eloquent model and Query builder for MongoDB, using the original Laravel API.  *This library extends the original Laravel classes, so it uses exactly the same methods.*
+This package adds functionalities to the Eloquent model and Query builder for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
+
 - [Laravel MongoDB](#laravel-mongodb)
     - [Installation](#installation)
         - [Laravel version Compatibility](#laravel-version-compatibility)
@@ -50,7 +51,8 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
         - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
     - [Security contact information](#security-contact-information)
 
-## Installation
+Installation
+------------
 
 Make sure you have the MongoDB PHP driver installed. You can find installation instructions at http://php.net/manual/en/mongodb.installation.php
 
