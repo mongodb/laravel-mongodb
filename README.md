@@ -1,4 +1,5 @@
-# Laravel MongoDB
+Laravel MongoDB
+===============
 
 [![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb)
 [![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb)
@@ -6,49 +7,48 @@
 [![codecov](https://codecov.io/gh/jenssegers/laravel-mongodb/branch/master/graph/badge.svg)](https://codecov.io/gh/jenssegers/laravel-mongodb/branch/master)
 [![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
 
-This package adds functionalities to the Eloquent model and Query builder for MongoDB, using the original Laravel API. _This library extends the original Laravel classes, so it uses exactly the same methods._
-
--   [Laravel MongoDB](#laravel-mongodb)
-    -   [Installation](#installation)
-        -   [Laravel version Compatibility](#laravel-version-compatibility)
-        -   [Laravel](#laravel)
-        -   [Lumen](#lumen)
-        -   [Non-Laravel projects](#non-laravel-projects)
-    -   [Testing](#testing)
-    -   [Database Testing](#database-testing)
-    -   [Configuration](#configuration)
-    -   [Eloquent](#eloquent)
-        -   [Extending the base model](#extending-the-base-model)
-        -   [Extending the Authenticable base model](#extending-the-authenticable-base-model)
-        -   [Soft Deletes](#soft-deletes)
-        -   [Guarding attributes](#guarding-attributes)
-        -   [Dates](#dates)
-        -   [Basic Usage](#basic-usage)
-        -   [MongoDB-specific operators](#mongodb-specific-operators)
-        -   [MongoDB-specific Geo operations](#mongodb-specific-geo-operations)
-        -   [Inserts, updates and deletes](#inserts-updates-and-deletes)
-        -   [MongoDB specific operations](#mongodb-specific-operations)
-    -   [Relationships](#relationships)
-        -   [Basic Usage](#basic-usage-1)
-        -   [belongsToMany and pivots](#belongstomany-and-pivots)
-        -   [EmbedsMany Relationship](#embedsmany-relationship)
-        -   [EmbedsOne Relationship](#embedsone-relationship)
-    -   [Query Builder](#query-builder)
-        -   [Basic Usage](#basic-usage-2)
-        -   [Available operations](#available-operations)
-    -   [Transactions](#transactions)
-    -   [Schema](#schema)
-        -   [Basic Usage](#basic-usage-3)
-        -   [Geospatial indexes](#geospatial-indexes)
-    -   [Extending](#extending)
-        -   [Cross-Database Relationships](#cross-database-relationships)
-        -   [Authentication](#authentication)
-        -   [Queues](#queues)
-            -   [Laravel specific](#laravel-specific)
-            -   [Lumen specific](#lumen-specific)
-    -   [Upgrading](#upgrading)
-        -   [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
-    -   [Security contact information](#security-contact-information)
+This package adds functionalities to the Eloquent model and Query builder for MongoDB, using the original Laravel API.  *This library extends the original Laravel classes, so it uses exactly the same methods.*
+- [Laravel MongoDB](#laravel-mongodb)
+    - [Installation](#installation)
+        - [Laravel version Compatibility](#laravel-version-compatibility)
+        - [Laravel](#laravel)
+        - [Lumen](#lumen)
+        - [Non-Laravel projects](#non-laravel-projects)
+    - [Testing](#testing)
+    - [Database Testing](#database-testing)
+    - [Configuration](#configuration)
+    - [Eloquent](#eloquent)
+        - [Extending the base model](#extending-the-base-model)
+        - [Extending the Authenticable base model](#extending-the-authenticable-base-model)
+        - [Soft Deletes](#soft-deletes)
+        - [Guarding attributes](#guarding-attributes)
+        - [Dates](#dates)
+        - [Basic Usage](#basic-usage)
+        - [MongoDB-specific operators](#mongodb-specific-operators)
+        - [MongoDB-specific Geo operations](#mongodb-specific-geo-operations)
+        - [Inserts, updates and deletes](#inserts-updates-and-deletes)
+        - [MongoDB specific operations](#mongodb-specific-operations)
+    - [Relationships](#relationships)
+        - [Basic Usage](#basic-usage-1)
+        - [belongsToMany and pivots](#belongstomany-and-pivots)
+        - [EmbedsMany Relationship](#embedsmany-relationship)
+        - [EmbedsOne Relationship](#embedsone-relationship)
+    - [Query Builder](#query-builder)
+        - [Basic Usage](#basic-usage-2)
+        - [Available operations](#available-operations)
+    - [Transactions](#transactions)
+    - [Schema](#schema)
+        - [Basic Usage](#basic-usage-3)
+        - [Geospatial indexes](#geospatial-indexes)
+    - [Extending](#extending)
+        - [Cross-Database Relationships](#cross-database-relationships)
+        - [Authentication](#authentication)
+        - [Queues](#queues)
+            - [Laravel specific](#laravel-specific)
+            - [Lumen specific](#lumen-specific)
+    - [Upgrading](#upgrading)
+        - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
+    - [Security contact information](#security-contact-information)
 
 ## Installation
 
@@ -61,7 +61,7 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
 | 9.x     | 3.9.x          | :white_check_mark: |
 | 8.x     | 3.8.x          | :white_check_mark: |
 | 7.x     | 3.7.x          | :x:                |
-| 6.x     | 3.6.x          | :white_check_mark: |
+| 6.x     | 3.6.x          | :x:                |
 | 5.8.x   | 3.5.x          | :x:                |
 | 5.7.x   | 3.4.x          | :x:                |
 | 5.6.x   | 3.4.x          | :x:                |
@@ -113,7 +113,8 @@ $capsule->getDatabaseManager()->extend('mongodb', function($config, $name) {
 });
 ```
 
-## Testing
+Testing
+-------
 
 To run the test for this package, run:
 
@@ -121,7 +122,8 @@ To run the test for this package, run:
 docker-compose up
 ```
 
-## Database Testing
+Database Testing
+-------
 
 To reset the database after each test, add:
 
@@ -140,7 +142,8 @@ Keep in mind that these traits are not yet supported:
 -   `use Database Transactions;`
 -   `use RefreshDatabase;`
 
-## Configuration
+Configuration
+-------------
 
 To configure a new MongoDB connection, add a new connection entry to `config/database.php`:
 
@@ -172,7 +175,8 @@ Instead of using a connection string, you can also use the `host` and `port` con
 
 The `options` key in the connection configuration corresponds to the [`uriOptions` parameter](https://www.php.net/manual/en/mongodb-driver-manager.construct.php#mongodb-driver-manager.construct-urioptions).
 
-## Eloquent
+Eloquent
+--------
 
 ### Extending the base model
 
@@ -770,7 +774,8 @@ DB::collection('users')
 $user->unset('note');
 ```
 
-## Relationships
+Relationships
+-------------
 
 ### Basic Usage
 
@@ -816,7 +821,7 @@ class Item extends Model
 
 ### belongsToMany and pivots
 
-The belongsToMany relation will not use a pivot "table" but will push id's to a **related_ids** attribute instead. This makes the second parameter for the belongsToMany method useless.
+The belongsToMany relation will not use a pivot "table" but will push id's to a __related_ids__ attribute instead. This makes the second parameter for the belongsToMany method useless.
 
 If you want to define custom keys for your relation, set it to `null`:
 
@@ -979,7 +984,8 @@ $newAuthor = new Author(['name' => 'Jane Doe']);
 $book->author()->save($newAuthor);
 ```
 
-## Query Builder
+Query Builder
+-------------
 
 ### Basic Usage
 
@@ -1004,7 +1010,8 @@ If you are familiar with [Eloquent Queries](http://laravel.com/docs/queries), th
 
 To see the available operations, check the [Eloquent](#eloquent) section.
 
-## Transactions
+Transactions
+------------
 
 Transactions require MongoDB version ^4.0 as well as deployment of replica set or sharded clusters. You can find more information [in the MongoDB docs](https://docs.mongodb.com/manual/core/transactions/)
 
@@ -1052,7 +1059,8 @@ DB::commit();
 DB::rollBack();
 ```
 
-## Schema
+Schema
+------
 
 The database driver also has (limited) schema builder support. You can easily manipulate collections and set indexes.
 
@@ -1121,7 +1129,8 @@ Schema::create('bars', function ($collection) {
 });
 ```
 
-## Extending
+Extending
+---------
 
 ### Cross-Database Relationships
 
@@ -1225,7 +1234,8 @@ $app->make('queue');
 $app->register(Jenssegers\Mongodb\MongodbQueueServiceProvider::class);
 ```
 
-## Upgrading
+Upgrading
+---------
 
 #### Upgrading from version 2 to 3
 
