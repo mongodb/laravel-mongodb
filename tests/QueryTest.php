@@ -20,12 +20,12 @@ class QueryTest extends TestCase
         User::create(['name' => 'Tommy Toe', 'age' => 33, 'title' => 'user']);
         User::create(['name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin']);
         User::create(['name' => 'Error', 'age' => null, 'title' => null]);
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2020-04-10 10:53:11')->toDateTimeString(), 'time' => '10:53:11']);
-        Birthday::create(['name' => 'Jane Doe', 'birthday' => Carbon::parse('2021-05-12 10:53:12')->toDateTimeString(), 'time' => '10:53:12']);
-        Birthday::create(['name' => 'Harry Hoe', 'birthday' => Carbon::parse('2021-05-11 10:53:13')->toDateTimeString(), 'time' => '10:53:13']);
-        Birthday::create(['name' => 'Robert Doe', 'birthday' => Carbon::parse('2021-05-12 10:53:14')->toDateTimeString(), 'time' => '10:53:14']);
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2021-05-12 10:53:15')->toDateTimeString(), 'time' => '10:53:15']);
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => Carbon::parse('2021-05-12 10:53:16')->toDateTimeString(), 'time' => '10:53:16']);
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => '2020-04-10', 'day' => '10', 'month' => '04', 'year' => '2020', 'time' => '10:53:11']);
+        Birthday::create(['name' => 'Jane Doe', 'birthday' => '2021-05-12', 'day' => '12', 'month' => '05', 'year' => '2021', 'time' => '10:53:12']);
+        Birthday::create(['name' => 'Harry Hoe', 'birthday' => '2021-05-11', 'day' => '11', 'month' => '05', 'year' => '2021', 'time' => '10:53:13']);
+        Birthday::create(['name' => 'Robert Doe', 'birthday' => '2021-05-12', 'day' => '12', 'month' => '05', 'year' => '2021', 'time' => '10:53:14']);
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => '2021-05-12', 'day' => '12', 'month' => '05', 'year' => '2021', 'time' => '10:53:15']);
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => '2022-05-12', 'day' => '12', 'month' => '05', 'year' => '2022', 'time' => '10:53:16']);
     }
 
     public function tearDown(): void
@@ -183,31 +183,31 @@ class QueryTest extends TestCase
 
     public function testWhereDay(): void
     {
-        $day = Birthday::whereDay('birthday', 12)->get();
+        $day = Birthday::whereDay('day', '12')->get();
         $this->assertCount(4, $day);
 
-        $day = Birthday::whereDay('birthday', 11)->get();
+        $day = Birthday::whereDay('day', '11')->get();
         $this->assertCount(1, $day);
     }
 
     public function testWhereMonth(): void
     {
-        $month = Birthday::whereMonth('birthday', 4)->get();
+        $month = Birthday::whereMonth('month', '04')->get();
         $this->assertCount(1, $month);
 
-        $month = Birthday::whereMonth('birthday', 5)->get();
+        $month = Birthday::whereMonth('month', '05')->get();
         $this->assertCount(5, $month);
     }
 
     public function testWhereYear(): void
     {
-        $year = Birthday::whereYear('birthday', 2021)->get();
+        $year = Birthday::whereYear('year', '2021')->get();
         $this->assertCount(4, $year);
 
-        $year = Birthday::whereYear('birthday', 2022)->get();
+        $year = Birthday::whereYear('year', '2022')->get();
         $this->assertCount(1, $year);
 
-        $year = Birthday::whereYear('birthday', '<', 2021)->get();
+        $year = Birthday::whereYear('year', '<', '2021')->get();
         $this->assertCount(1, $year);
     }
 
