@@ -41,7 +41,6 @@ jobs:
                     - '4.4'
                     - '5.0'
                 php:
-                    - '8.0'
                     - '8.1'
         services:
             mysql:
