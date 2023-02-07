@@ -33,7 +33,10 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
     use Notifiable;
 
     protected $connection = 'mongodb';
-    protected $dates = ['birthday', 'entry.date'];
+    protected $casts = [
+        'birthday' => 'datetime',
+        'entry.date' => 'datetime',
+    ];
     protected static $unguarded = true;
 
     public function books()

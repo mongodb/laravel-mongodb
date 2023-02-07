@@ -577,8 +577,7 @@ class ModelTest extends TestCase
         $this->assertInstanceOf(Carbon::class, $user->getAttribute('entry.date'));
 
         $data = $user->toArray();
-        $this->assertNotInstanceOf(UTCDateTime::class, $data['entry']['date']);
-        $this->assertEquals((string) $user->getAttribute('entry.date')->format('Y-m-d H:i:s'), $data['entry']['date']);
+        $this->assertIsString($data['entry']['date']);
     }
 
     public function testCarbonDateMockingWorks()
