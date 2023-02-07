@@ -146,8 +146,6 @@ class QueryBuilderTest extends TestCase
                     return;
                 }
 
-                Assert::assertObjectHasAttribute('maxTimeMS', $event->getCommand());
-
                 // Expect the timeout to be converted to milliseconds
                 Assert::assertSame(1000, $event->getCommand()->maxTimeMS);
             }
