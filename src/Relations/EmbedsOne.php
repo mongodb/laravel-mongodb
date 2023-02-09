@@ -50,7 +50,7 @@ class EmbedsOne extends EmbedsOneOrMany
             return $this->parent->save() ? $model : false;
         }
 
-        $result = $this->getBaseQuery()->update([$this->localKey => $model->getAttributes()]);
+        $result = $this->toBase()->update([$this->localKey => $model->getAttributes()]);
 
         // Attach the model to its parent.
         if ($result) {
@@ -76,7 +76,7 @@ class EmbedsOne extends EmbedsOneOrMany
 
         $values = $this->getUpdateValues($model->getDirty(), $this->localKey.'.');
 
-        $result = $this->getBaseQuery()->update($values);
+        $result = $this->toBase()->update($values);
 
         // Attach the model to its parent.
         if ($result) {
@@ -101,7 +101,7 @@ class EmbedsOne extends EmbedsOneOrMany
         }
 
         // Overwrite the local key with an empty array.
-        $result = $this->getBaseQuery()->update([$this->localKey => null]);
+        $result = $this->toBase()->update([$this->localKey => null]);
 
         // Detach the model from its parent.
         if ($result) {
