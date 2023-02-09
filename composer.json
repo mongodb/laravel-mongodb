@@ -28,8 +28,7 @@
     "require-dev": {
         "phpunit/phpunit": "^9.5.10",
         "orchestra/testbench": "^8.0",
-        "mockery/mockery": "^1.4.4",
-        "doctrine/dbal": "^3.5"
+        "mockery/mockery": "^1.4.4"
     },
     "autoload": {
         "psr-4": {
