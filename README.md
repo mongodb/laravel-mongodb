@@ -256,8 +256,6 @@ use Jenssegers\Mongodb\Eloquent\SoftDeletes;
 class User extends Model
 {
     use SoftDeletes;
-
-    protected $dates = ['deleted_at'];
 }
 ```
 
@@ -279,7 +277,7 @@ use Jenssegers\Mongodb\Eloquent\Model;
 
 class User extends Model
 {
-    protected $dates = ['birthday'];
+    protected $casts = ['birthday' => 'datetime'];
 }
 ```
 

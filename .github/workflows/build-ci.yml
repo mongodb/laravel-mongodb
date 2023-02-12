@@ -14,10 +14,10 @@ jobs:
         strategy:
             matrix:
                 php:
-                    - '8.0'
+                    - '8.1'
         steps:
             -   name: Checkout
-                uses: actions/checkout@v2
+                uses: actions/checkout@v3
             -   name: Setup PHP
                 uses: shivammathur/setup-php@v2
                 with:
@@ -41,8 +41,8 @@ jobs:
                     - '4.4'
                     - '5.0'
                 php:
-                    - '8.0'
                     - '8.1'
+                    - '8.2'
         services:
             mysql:
                 image: mysql:5.7
@@ -54,7 +54,7 @@ jobs:
                     MYSQL_ROOT_PASSWORD:
 
         steps:
-            -   uses: actions/checkout@v2
+            -   uses: actions/checkout@v3
             -   name: Create MongoDB Replica Set
                 run: |
                     docker run --name mongodb -p 27017:27017 -e MONGO_INITDB_DATABASE=unittest --detach mongo:${{ matrix.mongodb }} mongod --replSet rs --setParameter transactionLifetimeLimitSeconds=5

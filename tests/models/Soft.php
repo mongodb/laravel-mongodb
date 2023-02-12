@@ -17,5 +17,5 @@ class Soft extends Eloquent
     protected $connection = 'mongodb';
     protected $collection = 'soft';
     protected static $unguarded = true;
-    protected $dates = ['deleted_at'];
+    protected $casts = ['deleted_at' => 'datetime'];
 }
