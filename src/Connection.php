@@ -326,14 +326,16 @@ class Connection extends BaseConnection
 
     private static function lookupVersion(): string
     {
+        self::$version = 'unknown';
+
         if (class_exists(InstalledVersions::class)) {
             try {
-                return self::$version = InstalledVersions::getPrettyVersion('jenssegers/laravel-mongodb');
+                self::$version = InstalledVersions::getPrettyVersion('jenssegers/mongodb');
             } catch (Throwable $t) {
                 // Ignore exceptions and return unknown version
             }
         }
 
-        return self::$version = 'unknown';
+        return self::$version;
     }
 }
