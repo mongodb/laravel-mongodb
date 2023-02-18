@@ -1108,7 +1108,7 @@ MongoDB specific operations:
 
 All other (unsupported) operations are implemented as dummy pass-through methods because MongoDB does not use a predefined schema.
 
-Read more about the schema builder on [Laravel Docs](https://laravel.com/docs/6.0/migrations#tables)
+Read more about the schema builder on [Laravel Docs](https://laravel.com/docs/10.x/migrations#tables)
 
 ### Geospatial indexes
 
