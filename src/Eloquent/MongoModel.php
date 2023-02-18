@@ -2,7 +2,9 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
+use function array_key_exists;
 use DateTimeInterface;
+use function explode;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
@@ -11,17 +13,14 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
+use function in_array;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
-
-use function array_key_exists;
-use function explode;
-use function in_array;
 use function uniqid;
 
-abstract class MongoModel extends BaseModel
+abstract class Model extends BaseModel
 {
     use HybridRelations, EmbedsRelations;
 
@@ -57,22 +56,21 @@ abstract class MongoModel extends BaseModel
      * Custom accessor for the model's id.
      *
      * @param  mixed  $value
-     *
      * @return mixed
      */
     public function getIdAttribute($value = null)
     {
         // If we don't have a value for 'id', we will use the MongoDB '_id' value.
         // This allows us to work with models in a more sql-like way.
-        if ( ! $value && array_key_exists('_id', $this->attributes)) {
+        if (! $value && array_key_exists('_id', $this->attributes)) {
             $value = $this->attributes['_id'];
         }
 
         // Convert ObjectID to string.
         if ($value instanceof ObjectID) {
-            return (string)$value;
+            return (string) $value;
         } elseif ($value instanceof Binary) {
-            return (string)$value->getData();
+            return (string) $value->getData();
         }
 
         return $value;
@@ -97,11 +95,30 @@ abstract class MongoModel extends BaseModel
         }
 
         // Let Eloquent convert the value to a DateTime instance.
-        if ( ! $value instanceof DateTimeInterface) {
+        if (! $value instanceof DateTimeInterface) {
             $value = parent::asDateTime($value);
         }
 
         return new UTCDateTime($value);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function asDateTime($value)
+    {
+        // Convert UTCDateTime instances.
+        if ($value instanceof UTCDateTime) {
+            $date = $value->toDateTime();
+
+            $seconds = $date->format('U');
+            $milliseconds = abs($date->format('v'));
+            $timestampMs = sprintf('%d%03d', $seconds, $milliseconds);
+
+            return Date::createFromTimestampMs($timestampMs);
+        }
+
+        return parent::asDateTime($value);
     }
 
     /**
@@ -133,7 +150,7 @@ abstract class MongoModel extends BaseModel
      */
     public function getAttribute($key)
     {
-        if ( ! $key) {
+        if (! $key) {
             return;
         }
 
@@ -152,6 +169,19 @@ abstract class MongoModel extends BaseModel
         }
 
         return parent::getAttribute($key);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function getAttributeFromArray($key)
+    {
+        // Support keys in dot notation.
+        if (Str::contains($key, '.')) {
+            return Arr::get($this->attributes, $key);
+        }
+
+        return parent::getAttributeFromArray($key);
     }
 
     /**
@@ -182,16 +212,6 @@ abstract class MongoModel extends BaseModel
     /**
      * @inheritdoc
      */
-    protected function newBaseQueryBuilder()
-    {
-        $connection = $this->getConnection();
-
-        return new QueryBuilder($connection, $connection->getPostProcessor());
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function attributesToArray()
     {
         $attributes = parent::attributesToArray();
@@ -202,9 +222,9 @@ abstract class MongoModel extends BaseModel
         // nicely when your models are converted to JSON.
         foreach ($attributes as $key => &$value) {
             if ($value instanceof ObjectID) {
-                $value = (string)$value;
+                $value = (string) $value;
             } elseif ($value instanceof Binary) {
-                $value = (string)$value->getData();
+                $value = (string) $value->getData();
             }
         }
 
@@ -214,14 +234,22 @@ abstract class MongoModel extends BaseModel
     /**
      * @inheritdoc
      */
+    public function getCasts()
+    {
+        return $this->casts;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function originalIsEquivalent($key)
     {
-        if ( ! array_key_exists($key, $this->original)) {
+        if (! array_key_exists($key, $this->original)) {
             return false;
         }
 
         $attribute = Arr::get($this->attributes, $key);
-        $original  = Arr::get($this->original, $key);
+        $original = Arr::get($this->original, $key);
 
         if ($attribute === $original) {
             return true;
@@ -233,7 +261,7 @@ abstract class MongoModel extends BaseModel
 
         if ($this->isDateAttribute($key)) {
             $attribute = $attribute instanceof UTCDateTime ? $this->asDateTime($attribute) : $attribute;
-            $original  = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
+            $original = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
 
             return $attribute == $original;
         }
@@ -244,26 +272,26 @@ abstract class MongoModel extends BaseModel
         }
 
         return is_numeric($attribute) && is_numeric($original)
-            && strcmp((string)$attribute, (string)$original) === 0;
+            && strcmp((string) $attribute, (string) $original) === 0;
     }
 
     /**
-     * @inheritdoc
+     * Remove one or more fields.
+     *
+     * @param  mixed  $columns
+     * @return int
      */
-    protected function asDateTime($value)
+    public function drop($columns)
     {
-        // Convert UTCDateTime instances.
-        if ($value instanceof UTCDateTime) {
-            $date = $value->toDateTime();
+        $columns = Arr::wrap($columns);
 
-            $seconds = $date->format('U');
-            $milliseconds = abs($date->format('v'));
-            $timestampMs = sprintf('%d%03d', $seconds, $milliseconds);
-
-            return Date::createFromTimestampMs($timestampMs);
+        // Unset attributes
+        foreach ($columns as $column) {
+            $this->__unset($column);
         }
 
-        return parent::asDateTime($value);
+        // Perform unset only on current document
+        return $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
     }
 
     /**
@@ -294,49 +322,10 @@ abstract class MongoModel extends BaseModel
     }
 
     /**
-     * Append one or more values to the underlying attribute value and sync with original.
-     *
-     * @param  string  $column
-     * @param  array  $values
-     * @param  bool  $unique
-     */
-    protected function pushAttributeValues($column, array $values, $unique = false)
-    {
-        $current = $this->getAttributeFromArray($column) ?: [];
-
-        foreach ($values as $value) {
-            // Don't add duplicate values when we only want unique values.
-            if ($unique && ( ! is_array($current) || in_array($value, $current))) {
-                continue;
-            }
-
-            $current[] = $value;
-        }
-
-        $this->attributes[$column] = $current;
-
-        $this->syncOriginalAttribute($column);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function getAttributeFromArray($key)
-    {
-        // Support keys in dot notation.
-        if (Str::contains($key, '.')) {
-            return Arr::get($this->attributes, $key);
-        }
-
-        return parent::getAttributeFromArray($key);
-    }
-
-    /**
      * Remove one or more values from an array.
      *
      * @param  string  $column
      * @param  mixed  $values
-     *
      * @return mixed
      */
     public function pull($column, $values)
@@ -349,6 +338,31 @@ abstract class MongoModel extends BaseModel
         $this->pullAttributeValues($column, $values);
 
         return $query->pull($column, $values);
+    }
+
+    /**
+     * Append one or more values to the underlying attribute value and sync with original.
+     *
+     * @param  string  $column
+     * @param  array  $values
+     * @param  bool  $unique
+     */
+    protected function pushAttributeValues($column, array $values, $unique = false)
+    {
+        $current = $this->getAttributeFromArray($column) ?: [];
+
+        foreach ($values as $value) {
+            // Don't add duplicate values when we only want unique values.
+            if ($unique && (! is_array($current) || in_array($value, $current))) {
+                continue;
+            }
+
+            $current[] = $value;
+        }
+
+        $this->attributes[$column] = $current;
+
+        $this->syncOriginalAttribute($column);
     }
 
     /**
@@ -385,11 +399,49 @@ abstract class MongoModel extends BaseModel
     }
 
     /**
+     * Set the parent relation.
+     *
+     * @param  \Illuminate\Database\Eloquent\Relations\Relation  $relation
+     */
+    public function setParentRelation(Relation $relation)
+    {
+        $this->parentRelation = $relation;
+    }
+
+    /**
+     * Get the parent relation.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\Relation
+     */
+    public function getParentRelation()
+    {
+        return $this->parentRelation;
+    }
+
+    /**
      * @inheritdoc
      */
     public function newEloquentBuilder($query)
     {
         return new Builder($query);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function newBaseQueryBuilder()
+    {
+        $connection = $this->getConnection();
+
+        return new QueryBuilder($connection, $connection->getPostProcessor());
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function removeTableFromKey($key)
+    {
+        return $key;
     }
 
     /**
@@ -439,23 +491,15 @@ abstract class MongoModel extends BaseModel
     }
 
     /**
-     * Get the parent relation.
+     * Checks if column exists on a table.  As this is a document model, just return true.  This also
+     * prevents calls to non-existent function Grammar::compileColumnListing().
      *
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
+     * @param  string  $key
+     * @return bool
      */
-    public function getParentRelation()
+    protected function isGuardableColumn($key)
     {
-        return $this->parentRelation;
-    }
-
-    /**
-     * Set the parent relation.
-     *
-     * @param  \Illuminate\Database\Eloquent\Relations\Relation  $relation
-     */
-    public function setParentRelation(Relation $relation)
-    {
-        $this->parentRelation = $relation;
+        return true;
     }
 
     /**
@@ -472,53 +516,12 @@ abstract class MongoModel extends BaseModel
     }
 
     /**
-     * Remove one or more fields.
-     *
-     * @param  mixed  $columns
-     *
-     * @return int
-     */
-    public function drop($columns)
-    {
-        $columns = Arr::wrap($columns);
-
-        // Unset attributes
-        foreach ($columns as $column) {
-            $this->__unset($column);
-        }
-
-        // Perform unset only on current document
-        return $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function removeTableFromKey($key)
-    {
-        return $key;
-    }
-
-    /**
-     * Checks if column exists on a table.  As this is a document model, just return true.  This also
-     * prevents calls to non-existent function Grammar::compileColumnListing().
-     *
-     * @param  string  $key
-     *
-     * @return bool
-     */
-    protected function isGuardableColumn($key)
-    {
-        return true;
-    }
-
-    /**
      * @inheritdoc
      */
     protected function addCastAttributesToArray(array $attributes, array $mutatedAttributes): array
     {
         foreach ($this->getCasts() as $key => $castType) {
-            if ( ! Arr::has($attributes, $key) || Arr::has($mutatedAttributes, $key)) {
+            if (! Arr::has($attributes, $key) || Arr::has($mutatedAttributes, $key)) {
                 continue;
             }
 
@@ -528,26 +531,23 @@ abstract class MongoModel extends BaseModel
             // then we will serialize the date for the array. This will convert the dates
             // to strings based on the date format specified for these Eloquent models.
             $castValue = $this->castAttribute(
-                $key,
-                $originalValue
+                $key, $originalValue
             );
 
             // If the attribute cast was a date or a datetime, we will serialize the date as
             // a string. This allows the developers to customize how dates are serialized
             // into an array without affecting how they are persisted into the storage.
-            if ($castValue !== null
-                && in_array($castType, ['date', 'datetime', 'immutable_date', 'immutable_datetime'])
-            ) {
+            if ($castValue !== null && in_array($castType, ['date', 'datetime', 'immutable_date', 'immutable_datetime'])) {
                 $castValue = $this->serializeDate($castValue);
             }
 
-            if ($castValue !== null
-                && ($this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType))
-            ) {
+            if ($castValue !== null && ($this->isCustomDateTimeCast($castType) ||
+                    $this->isImmutableCustomDateTimeCast($castType))) {
                 $castValue = $castValue->format(explode(':', $castType, 2)[1]);
             }
 
-            if ($castValue instanceof DateTimeInterface && $this->isClassCastable($key)) {
+            if ($castValue instanceof DateTimeInterface &&
+                $this->isClassCastable($key)) {
                 $castValue = $this->serializeDate($castValue);
             }
 
@@ -555,7 +555,7 @@ abstract class MongoModel extends BaseModel
                 $castValue = $this->serializeClassCastableAttribute($key, $castValue);
             }
 
-            if ($this->isEnumCastable($key) && ( ! $castValue instanceof Arrayable)) {
+            if ($this->isEnumCastable($key) && (! $castValue instanceof Arrayable)) {
                 $castValue = $castValue !== null ? $this->getStorableEnumValue($attributes[$key]) : null;
             }
 
@@ -567,13 +567,5 @@ abstract class MongoModel extends BaseModel
         }
 
         return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getCasts()
-    {
-        return $this->casts;
     }
 }
