@@ -1,5 +1,8 @@
-FROM composer:2.5.4
-FROM php:8.1-cli
+ARG PHP_VERSION=8.1
+ARG COMPOSER_VERSION=2.5.4
+
+FROM composer:${COMPOSER_VERSION}
+FROM php:${PHP_VERSION}-cli
 
 RUN apt-get update && \
     apt-get install -y autoconf pkg-config libssl-dev git libzip-dev zlib1g-dev && \
@@ -11,10 +14,8 @@ COPY --from=composer /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /code
 
-COPY composer.* ./
+COPY . .
 
 RUN composer install
-
-COPY ./ ./
 
 CMD ["./vendor/bin/phpunit"]
