@@ -13,7 +13,11 @@ COPY --from=composer:${COMPOSER_VERSION} /usr/bin/composer /usr/local/bin/compos
 
 WORKDIR /code
 
-COPY . .
+COPY composer.* ./
+
+RUN composer install
+
+COPY ./ ./
 
 RUN composer install
 
