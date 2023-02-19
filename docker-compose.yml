@@ -3,6 +3,7 @@ version: '3'
 services:
     tests:
         container_name: tests
+        tty: true
         build:
             context: .
             dockerfile: Dockerfile
@@ -15,20 +16,16 @@ services:
 
     mysql:
         container_name: mysql
-        image: mysql:5.7
+        image: mysql:8.0
         ports:
-            - 3306:3306
+            - "3306:3306"
         environment:
             MYSQL_ROOT_PASSWORD:
             MYSQL_DATABASE: unittest
             MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-        logging:
-            driver: none
 
     mongodb:
         container_name: mongodb
-        image: mongo
+        image: mongo:latest
         ports:
-            - 27017:27017
-        logging:
-            driver: none
+            - "27017:27017"
