@@ -38,8 +38,9 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
         - [Basic Usage](#basic-usage-2)
         - [Available operations](#available-operations)
     - [Transactions](#transactions)
-    - [Schema](#schema)
         - [Basic Usage](#basic-usage-3)
+    - [Schema](#schema)
+        - [Basic Usage](#basic-usage-4)
         - [Geospatial indexes](#geospatial-indexes)
     - [Extending](#extending)
         - [Cross-Database Relationships](#cross-database-relationships)
@@ -1107,7 +1108,7 @@ MongoDB specific operations:
 
 All other (unsupported) operations are implemented as dummy pass-through methods because MongoDB does not use a predefined schema.
 
-Read more about the schema builder on [Laravel Docs](https://laravel.com/docs/6.0/migrations#tables)
+Read more about the schema builder on [Laravel Docs](https://laravel.com/docs/10.x/migrations#tables)
 
 ### Geospatial indexes
 
