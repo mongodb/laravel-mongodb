@@ -187,7 +187,7 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
-    public function setAttribute($key, $value): static
+    public function setAttribute($key, $value)
     {
         // Convert _id to ObjectID.
         if ($key == '_id' && is_string($value)) {
