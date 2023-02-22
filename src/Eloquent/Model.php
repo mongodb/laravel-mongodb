@@ -187,7 +187,7 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
-    public function setAttribute($key, $value): static
+    public function setAttribute($key, $value)
     {
         // Convert _id to ObjectID.
         if ($key == '_id' && is_string($value)) {
@@ -518,7 +518,7 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
-    protected function addCastAttributesToArray(array $attributes, array $mutatedAttributes): array
+    protected function addCastAttributesToArray(array $attributes, array $mutatedAttributes)
     {
         foreach ($this->getCasts() as $key => $castType) {
             if (! Arr::has($attributes, $key) || Arr::has($mutatedAttributes, $key)) {
