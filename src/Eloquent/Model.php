@@ -556,7 +556,7 @@ abstract class Model extends BaseModel
             }
 
             if ($this->isEnumCastable($key) && (! $castValue instanceof Arrayable)) {
-                $castValue = $castValue !== null ? $this->getStorableEnumValue($attributes[$key]) : null;
+                $castValue = $castValue !== null ? $this->getStorableEnumValue($castValue) : null;
             }
 
             if ($castValue instanceof Arrayable) {

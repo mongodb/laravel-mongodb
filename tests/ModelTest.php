@@ -786,4 +786,19 @@ class ModelTest extends TestCase
         $check = User::where('name', $name)->first();
         $this->assertEquals($user->_id, $check->_id);
     }
+
+    public function testEnumCast(): void
+    {
+        $name = 'John Member';
+
+        $user = new User();
+        $user->name = $name;
+        $user->member_status = MemberStatus::Member;
+        $user->save();
+
+        /** @var User $check */
+        $check = User::where('name', $name)->first();
+        $this->assertSame(MemberStatus::Member->value, $check->getRawOriginal('member_status'));
+        $this->assertSame(MemberStatus::Member, $check->member_status);
+    }
 }
