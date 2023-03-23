@@ -11,3 +11,4 @@ composer.lock
 composer.phar
 phpunit.phar
 phpunit.xml
+/docs/node_modules
