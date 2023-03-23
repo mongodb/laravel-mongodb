@@ -3,9 +3,9 @@
     "vitepress": "^1.0.0-alpha.61"
   },
   "scripts": {
-    "docs:dev": "vitepress dev config",
-    "docs:build": "vitepress build config",
-    "docs:preview": "vitepress preview config"
+    "docs:dev": "vitepress dev",
+    "docs:build": "vitepress build",
+    "docs:preview": "vitepress preview"
   },
   "dependencies": {
     "vue": "^3.2.47"

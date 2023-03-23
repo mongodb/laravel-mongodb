@@ -1,0 +1,1 @@
+import{_ as s,c as a,o as n,N as l}from"./chunks/framework.8a749e37.js";const A=JSON.parse('{"title":"Dates","description":"","frontmatter":{},"headers":[],"relativePath":"v3/guide/eloquent/dates.md"}'),o={name:"v3/guide/eloquent/dates.md"},e=l("",5),p=[e];function t(c,r,D,F,y,C){return n(),a("div",null,p)}const d=s(o,[["render",t]]);export{A as __pageData,d as default};
