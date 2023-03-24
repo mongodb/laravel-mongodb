@@ -6,7 +6,16 @@ export default defineConfig({
     description: "A Laravel Package that will easily setup your project in connecting to mongodb",
     head: [["link", { rel: "icon", type: "image/x-icon", href: "/fav.png" }]],
     themeConfig: {
-        // https://vitepress.dev/reference/default-theme-config
+        editLink: {
+            pattern: "https://github.com/BroJenuel/laravel-mongodb/tree/master/docs/:path",
+            text: "Edit this page on Github",
+        },
+        socialLinks: [
+            {
+                icon: "github",
+                link: "https://github.com/BroJenuel/laravel-mongodb",
+            },
+        ],
         nav: [
             { text: "Home", link: "/" },
             { text: "Guide", link: "/v3/guide/getting-started/installation", activeMatch: "/v3/guide/" },
@@ -172,7 +181,5 @@ export default defineConfig({
                 },
             ],
         },
-
-        socialLinks: [{ icon: "github", link: "https://github.com/vuejs/vitepress" }],
     },
 });
