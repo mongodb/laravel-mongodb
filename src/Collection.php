@@ -3,6 +3,7 @@
 namespace Jenssegers\Mongodb;
 
 use Exception;
+use Illuminate\Support\Facades\Log;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Collection as MongoCollection;
 
@@ -23,8 +24,8 @@ class Collection
     protected $collection;
 
     /**
-     * @param  Connection  $connection
-     * @param  MongoCollection  $collection
+     * @param Connection $connection
+     * @param MongoCollection $collection
      */
     public function __construct(Connection $connection, MongoCollection $collection)
     {
@@ -35,14 +36,33 @@ class Collection
     /**
      * Handle dynamic method calls.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public function __call(string $method, array $parameters)
     {
         $start = microtime(true);
-        $result = $this->collection->$method(...$parameters);
+        try {
+            $result = $this->collection->$method(...$parameters);
+        } catch (Exception $e) {
+//            11602 - operation was interrupted
+//            10107 - not primary
+            if ($e->getCode() == 11602 || $e->getCode() == 10107) {
+                Log::info(
+                    'Query execution was interrupted and will be retried',
+                    ['code' => $e->getCode(), 'mess' => $e->getMessage(), 'params' => $parameters]
+                );
+            } else {
+                Log::info('Unexpected error', [
+                    'mess' => $e->getMessage(),
+                    'code' => $e->getCode(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                ]);
+            }
+            $result = $this->collection->$method(...$parameters);
+        }
 
         // Once we have run the query we will calculate the time that it took to run and
         // then log the query, bindings, and execution time so we will report them on
@@ -54,7 +74,7 @@ class Collection
         // Convert the query parameters to a json string.
         array_walk_recursive($parameters, function (&$item, $key) {
             if ($item instanceof ObjectID) {
-                $item = (string) $item;
+                $item = (string)$item;
             }
         });
 
@@ -67,7 +87,7 @@ class Collection
             }
         }
 
-        $queryString = $this->collection->getCollectionName().'.'.$method.'('.implode(',', $query).')';
+        $queryString = $this->collection->getCollectionName() . '.' . $method . '(' . implode(',', $query) . ')';
 
         $this->connection->logQuery($queryString, [], $time);
 
