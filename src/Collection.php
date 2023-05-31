@@ -54,6 +54,7 @@ class Collection
                     ['code' => $e->getCode(), 'mess' => $e->getMessage(), 'params' => $parameters]
                 );
             } else {
+                report('Unexpected error');
                 Log::info('Unexpected error', [
                     'mess' => $e->getMessage(),
                     'code' => $e->getCode(),
