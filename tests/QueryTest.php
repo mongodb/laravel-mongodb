@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use Jenssegers\Mongodb\Tests\Models\Birthday;
+use Jenssegers\Mongodb\Tests\Models\Scoped;
+use Jenssegers\Mongodb\Tests\Models\User;
+
 class QueryTest extends TestCase
 {
     protected static $started = false;

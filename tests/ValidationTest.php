@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use Illuminate\Support\Facades\Validator;
+use Jenssegers\Mongodb\Tests\Models\User;
+
 class ValidationTest extends TestCase
 {
     public function tearDown(): void

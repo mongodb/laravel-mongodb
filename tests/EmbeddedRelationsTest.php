@@ -2,8 +2,20 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use DateTime;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Events\Dispatcher;
+use Jenssegers\Mongodb\Tests\Models\Address;
+use Jenssegers\Mongodb\Tests\Models\Book;
+use Jenssegers\Mongodb\Tests\Models\Client;
+use Jenssegers\Mongodb\Tests\Models\Group;
+use Jenssegers\Mongodb\Tests\Models\Item;
+use Jenssegers\Mongodb\Tests\Models\Photo;
+use Jenssegers\Mongodb\Tests\Models\Role;
+use Jenssegers\Mongodb\Tests\Models\User;
+use Mockery;
 use MongoDB\BSON\ObjectId;
 
 class EmbeddedRelationsTest extends TestCase
@@ -678,7 +690,7 @@ class EmbeddedRelationsTest extends TestCase
     {
         /** @var User $user */
         $user = User::create(['name' => 'John Doe']);
-        /** @var \Address $address */
+        /** @var Address $address */
         $address = $user->addresses()->create(['city' => 'New York']);
         $father = $user->father()->create(['name' => 'Mark Doe']);
 

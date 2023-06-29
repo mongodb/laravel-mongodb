@@ -1,5 +1,7 @@
 <?php
 
+namespace Jenssegers\Mongodb\Tests\Seeder;
+
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -11,6 +13,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        $this->call('UserTableSeeder');
+        $this->call(UserTableSeeder::class);
     }
 }

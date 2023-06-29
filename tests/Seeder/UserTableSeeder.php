@@ -1,5 +1,7 @@
 <?php
 
+namespace Jenssegers\Mongodb\Tests\Seeder;
+
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 

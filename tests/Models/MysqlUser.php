@@ -2,13 +2,17 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\MySqlBuilder;
 use Illuminate\Support\Facades\Schema;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
-class MysqlUser extends Eloquent
+class MysqlUser extends EloquentModel
 {
     use HybridRelations;
 
@@ -18,12 +22,12 @@ class MysqlUser extends Eloquent
 
     public function books(): HasMany
     {
-        return $this->hasMany('Book', 'author_id');
+        return $this->hasMany(Book::class, 'author_id');
     }
 
     public function role(): HasOne
     {
-        return $this->hasOne('Role');
+        return $this->hasOne(Role::class);
     }
 
     public function mysqlBooks(): HasMany
@@ -36,7 +40,7 @@ class MysqlUser extends Eloquent
      */
     public static function executeSchema(): void
     {
-        /** @var \Illuminate\Database\Schema\MySqlBuilder $schema */
+        /** @var MySqlBuilder $schema */
         $schema = Schema::connection('mysql');
 
         if (! $schema->hasTable('users')) {

@@ -2,21 +2,30 @@
 
 declare(strict_types=1);
 
-use Illuminate\Auth\Passwords\PasswordResetServiceProvider;
+namespace Jenssegers\Mongodb\Tests;
 
-class TestCase extends Orchestra\Testbench\TestCase
+use Illuminate\Auth\Passwords\PasswordResetServiceProvider as BasePasswordResetServiceProviderAlias;
+use Illuminate\Foundation\Application;
+use Jenssegers\Mongodb\Auth\PasswordResetServiceProvider;
+use Jenssegers\Mongodb\MongodbQueueServiceProvider;
+use Jenssegers\Mongodb\MongodbServiceProvider;
+use Jenssegers\Mongodb\Tests\Models\User;
+use Jenssegers\Mongodb\Validation\ValidationServiceProvider;
+use Orchestra\Testbench\TestCase as OrchestraTestCase;
+
+class TestCase extends OrchestraTestCase
 {
     /**
      * Get application providers.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return array
      */
     protected function getApplicationProviders($app)
     {
         $providers = parent::getApplicationProviders($app);
 
-        unset($providers[array_search(PasswordResetServiceProvider::class, $providers)]);
+        unset($providers[array_search(BasePasswordResetServiceProviderAlias::class, $providers)]);
 
         return $providers;
     }
@@ -24,23 +33,23 @@ class TestCase extends Orchestra\Testbench\TestCase
     /**
      * Get package providers.
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return array
      */
     protected function getPackageProviders($app)
     {
         return [
-            Jenssegers\Mongodb\MongodbServiceProvider::class,
-            Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
-            Jenssegers\Mongodb\Auth\PasswordResetServiceProvider::class,
-            Jenssegers\Mongodb\Validation\ValidationServiceProvider::class,
+            MongodbServiceProvider::class,
+            MongodbQueueServiceProvider::class,
+            PasswordResetServiceProvider::class,
+            ValidationServiceProvider::class,
         ];
     }
 
     /**
      * Define environment setup.
      *
-     * @param  Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return void
      */
     protected function getEnvironmentSetUp($app)
@@ -57,8 +66,8 @@ class TestCase extends Orchestra\Testbench\TestCase
         $app['config']->set('database.connections.mongodb', $config['connections']['mongodb']);
         $app['config']->set('database.connections.mongodb2', $config['connections']['mongodb']);
 
-        $app['config']->set('auth.model', 'User');
-        $app['config']->set('auth.providers.users.model', 'User');
+        $app['config']->set('auth.model', User::class);
+        $app['config']->set('auth.providers.users.model', User::class);
         $app['config']->set('cache.driver', 'array');
 
         $app['config']->set('queue.default', 'database');
