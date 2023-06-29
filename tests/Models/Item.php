@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Jenssegers\Mongodb\Eloquent\Builder;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
@@ -19,7 +21,7 @@ class Item extends Eloquent
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo('User');
+        return $this->belongsTo(User::class);
     }
 
     public function scopeSharp(Builder $query)

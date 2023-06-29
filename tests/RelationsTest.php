@@ -2,7 +2,18 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
 use Illuminate\Database\Eloquent\Collection;
+use Jenssegers\Mongodb\Tests\Models\Address;
+use Jenssegers\Mongodb\Tests\Models\Book;
+use Jenssegers\Mongodb\Tests\Models\Client;
+use Jenssegers\Mongodb\Tests\Models\Group;
+use Jenssegers\Mongodb\Tests\Models\Item;
+use Jenssegers\Mongodb\Tests\Models\Photo;
+use Jenssegers\Mongodb\Tests\Models\Role;
+use Jenssegers\Mongodb\Tests\Models\User;
+use Mockery;
 
 class RelationsTest extends TestCase
 {
@@ -16,7 +27,6 @@ class RelationsTest extends TestCase
         Book::truncate();
         Item::truncate();
         Role::truncate();
-        Client::truncate();
         Group::truncate();
         Photo::truncate();
     }

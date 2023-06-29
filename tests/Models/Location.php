@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
 class Location extends Eloquent

@@ -1,6 +1,12 @@
 <?php
 
+namespace Jenssegers\Mongodb\Tests;
+
 use Illuminate\Auth\Passwords\PasswordBroker;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Jenssegers\Mongodb\Tests\Models\User;
 use MongoDB\BSON\UTCDateTime;
 
 class AuthTest extends TestCase

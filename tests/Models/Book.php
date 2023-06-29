@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
@@ -21,11 +23,11 @@ class Book extends Eloquent
 
     public function author(): BelongsTo
     {
-        return $this->belongsTo('User', 'author_id');
+        return $this->belongsTo(User::class, 'author_id');
     }
 
     public function mysqlAuthor(): BelongsTo
     {
-        return $this->belongsTo('MysqlUser', 'author_id');
+        return $this->belongsTo(MysqlUser::class, 'author_id');
     }
 }

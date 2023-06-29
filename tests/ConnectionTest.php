@@ -2,7 +2,11 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use Generator;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Query\Builder;

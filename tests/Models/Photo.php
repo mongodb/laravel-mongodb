@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 

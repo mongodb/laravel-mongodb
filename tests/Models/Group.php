@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
 
@@ -13,6 +15,6 @@ class Group extends Eloquent
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany('User', 'users', 'groups', 'users', '_id', '_id', 'users');
+        return $this->belongsToMany(User::class, 'users', 'groups', 'users', '_id', '_id', 'users');
     }
 }

@@ -1,11 +1,15 @@
 <?php
 
+namespace Jenssegers\Mongodb\Tests;
+
 use Illuminate\Support\Facades\DB;
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Eloquent\Model;
+use Jenssegers\Mongodb\Tests\Models\User;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Driver\Server;
+use RuntimeException;
 
 class TransactionTest extends TestCase
 {
