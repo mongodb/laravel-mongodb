@@ -787,10 +787,44 @@ class Builder extends BaseBuilder
         return $this->performUpdate($query, $options);
     }
 
+    public function incrementEach(array $columns, array $extra = [], array $options = [])
+    {
+        $query = ['$inc' => $columns];
+
+        if (! empty($extra)) {
+            $query['$set'] = $extra;
+        }
+
+        // Protect
+        foreach ($columns as $column => $amount) {
+            $this->where(function ($query) use ($column) {
+                $query->where($column, 'exists', false);
+
+                $query->orWhereNotNull($column);
+            });
+        }
+
+        $options = $this->inheritConnectionOptions($options);
+
+        return $this->performUpdate($query, $options);
+    }
+
     /** @inheritdoc */
     public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
         return $this->increment($column, -1 * $amount, $extra, $options);
+    }
+
+    /** @inheritdoc */
+    public function decrementEach(array $columns, array $extra = [], array $options = [])
+    {
+        $decrement = [];
+
+        foreach ($columns as $column => $amount) {
+            $decrement[$column] = -1 * $amount;
+        }
+
+        return $this->incrementEach($decrement, $extra, $options);
     }
 
     /** @inheritdoc */
