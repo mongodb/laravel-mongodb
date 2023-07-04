@@ -14,7 +14,7 @@ use Throwable;
  */
 trait ManagesTransactions
 {
-    protected ?Session $session = null;
+    protected  $session = null;
 
     protected $transactions = 0;
 
@@ -80,7 +80,7 @@ trait ManagesTransactions
      *
      * @param  int  $attempts
      */
-    public function transaction(Closure $callback, $attempts = 1, array $options = []): mixed
+    public function transaction(Closure $callback, $attempts = 1, array $options = [])
     {
         $attemptsLeft = $attempts;
         $callbackResult = null;
