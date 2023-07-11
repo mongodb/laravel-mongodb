@@ -345,6 +345,14 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(3, $user['messages']);
     }
 
+    public function testPushRefuses2ndArgumentWhen1stIsAnArray()
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('2nd argument of Jenssegers\Mongodb\Query\Builder::push() must be "null" when 1st argument is an array. Got "string" instead.');
+
+        DB::collection('users')->push(['tags' => 'tag1'], 'tag2');
+    }
+
     public function testPull()
     {
         $message1 = ['from' => 'Jane', 'body' => 'Hi John'];

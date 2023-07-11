@@ -786,9 +786,12 @@ class Builder extends BaseBuilder
         $operator = $unique ? '$addToSet' : '$push';
 
         // Check if we are pushing multiple values.
-        $batch = (is_array($value) && array_keys($value) === range(0, count($value) - 1));
+        $batch = is_array($value) && array_is_list($value);
 
         if (is_array($column)) {
+            if ($value !== null) {
+                throw new \InvalidArgumentException(sprintf('2nd argument of %s() must be "null" when 1st argument is an array. Got "%s" instead.', __METHOD__, get_debug_type($value)));
+            }
             $query = [$operator => $column];
         } elseif ($batch) {
             $query = [$operator => [$column => ['$each' => $value]]];
