@@ -15,6 +15,7 @@ use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Driver\Cursor;
 use RuntimeException;
 
 /**
@@ -215,27 +216,21 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Execute the query as a fresh "select" statement.
+     * Return the MongoDB query to be run in the form of an element array like ['method' => [arguments]].
      *
-     * @param  array  $columns
-     * @param  bool  $returnLazy
-     * @return array|static[]|Collection|LazyCollection
+     * Example: ['find' => [['name' => 'John Doe'], ['projection' => ['birthday' => 1]]]]
+     *
+     * @return array<string, mixed[]>
      */
-    public function getFresh($columns = [], $returnLazy = false)
+    public function toMql(): array
     {
-        // If no columns have been specified for the select statement, we will set them
-        // here to either the passed columns, or the standard default of retrieving
-        // all of the columns on the table using the "wildcard" column character.
-        if ($this->columns === null) {
-            $this->columns = $columns;
-        }
+        $columns = $this->columns ?? [];
 
         // Drop all columns if * is present, MongoDB does not work this way.
-        if (in_array('*', $this->columns)) {
-            $this->columns = [];
+        if (in_array('*', $columns)) {
+            $columns = [];
         }
 
-        // Compile wheres
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
@@ -254,7 +249,7 @@ class Builder extends BaseBuilder
                 }
 
                 // Do the same for other columns that are selected.
-                foreach ($this->columns as $column) {
+                foreach ($columns as $column) {
                     $key = str_replace('.', '_', $column);
 
                     $group[$key] = ['$last' => '$'.$column];
@@ -274,26 +269,10 @@ class Builder extends BaseBuilder
                         $column = implode('.', $splitColumns);
                     }
 
-                    // Null coalense only > 7.2
-
                     $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
 
                     if (in_array('*', $aggregations) && $function == 'count') {
-                        // When ORM is paginating, count doesnt need a aggregation, just a cursor operation
-                        // elseif added to use this only in pagination
-                        // https://docs.mongodb.com/manual/reference/method/cursor.count/
-                        // count method returns int
-
-                        $totalResults = $this->collection->count($wheres);
-                        // Preserving format expected by framework
-                        $results = [
-                            [
-                                '_id'       => null,
-                                'aggregate' => $totalResults,
-                            ],
-                        ];
-
-                        return new Collection($results);
+                        return ['count' => [$wheres, []]];
                     } elseif ($function == 'count') {
                         // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
@@ -348,34 +327,23 @@ class Builder extends BaseBuilder
 
             $options = $this->inheritConnectionOptions($options);
 
-            // Execute aggregation
-            $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
-
-            // Return results
-            return new Collection($results);
+            return ['aggregate' => [$pipeline, $options]];
         } // Distinct query
         elseif ($this->distinct) {
             // Return distinct results directly
-            $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
+            $column = isset($columns[0]) ? $columns[0] : '_id';
 
             $options = $this->inheritConnectionOptions();
 
-            // Execute distinct
-            $result = $this->collection->distinct($column, $wheres ?: [], $options);
-
-            return new Collection($result);
+            return ['distinct' => [$column, $wheres ?: [], $options]];
         } // Normal query
         else {
-            $columns = [];
-
             // Convert select columns to simple projections.
-            foreach ($this->columns as $column) {
-                $columns[$column] = true;
-            }
+            $projection = array_fill_keys($columns, true);
 
             // Add custom projections.
             if ($this->projections) {
-                $columns = array_merge($columns, $this->projections);
+                $projection = array_merge($projection, $this->projections);
             }
             $options = [];
 
@@ -395,8 +363,8 @@ class Builder extends BaseBuilder
             if ($this->hint) {
                 $options['hint'] = $this->hint;
             }
-            if ($columns) {
-                $options['projection'] = $columns;
+            if ($projection) {
+                $options['projection'] = $projection;
             }
 
             // Fix for legacy support, converts the results to arrays instead of objects.
@@ -409,22 +377,62 @@ class Builder extends BaseBuilder
 
             $options = $this->inheritConnectionOptions($options);
 
-            // Execute query and get MongoCursor
-            $cursor = $this->collection->find($wheres, $options);
-
-            if ($returnLazy) {
-                return LazyCollection::make(function () use ($cursor) {
-                    foreach ($cursor as $item) {
-                        yield $item;
-                    }
-                });
-            }
-
-            // Return results as an array with numeric keys
-            $results = iterator_to_array($cursor, false);
-
-            return new Collection($results);
+            return ['find' => [$wheres, $options]];
         }
+    }
+
+    /**
+     * Execute the query as a fresh "select" statement.
+     *
+     * @param  array  $columns
+     * @param  bool  $returnLazy
+     * @return array|static[]|Collection|LazyCollection
+     */
+    public function getFresh($columns = [], $returnLazy = false)
+    {
+        // If no columns have been specified for the select statement, we will set them
+        // here to either the passed columns, or the standard default of retrieving
+        // all of the columns on the table using the "wildcard" column character.
+        if ($this->columns === null) {
+            $this->columns = $columns;
+        }
+
+        // Drop all columns if * is present, MongoDB does not work this way.
+        if (in_array('*', $this->columns)) {
+            $this->columns = [];
+        }
+
+        $command = $this->toMql($columns);
+        assert(count($command) >= 1, 'At least one method call is required to execute a query');
+
+        $result = $this->collection;
+        foreach ($command as $method => $arguments) {
+            $result = call_user_func_array([$result, $method], $arguments);
+        }
+
+        // countDocuments method returns int, wrap it to the format expected by the framework
+        if (is_int($result)) {
+            $result = [
+                [
+                    '_id'       => null,
+                    'aggregate' => $result,
+                ],
+            ];
+        }
+
+        if ($returnLazy) {
+            return LazyCollection::make(function () use ($result) {
+                foreach ($result as $item) {
+                    yield $item;
+                }
+            });
+        }
+
+        if ($result instanceof Cursor) {
+            $result = $result->toArray();
+        }
+
+        return new Collection($result);
     }
 
     /**
