@@ -144,8 +144,7 @@ class QueryBuilderTest extends TestCase
     {
         $id = DB::collection('users')->insertGetId(['name' => 'John Doe']);
 
-        $subscriber = new class implements CommandSubscriber
-        {
+        $subscriber = new class implements CommandSubscriber {
             public function commandStarted(CommandStartedEvent $event)
             {
                 if ($event->getCommandName() !== 'find') {
@@ -830,7 +829,7 @@ class QueryBuilderTest extends TestCase
     public function testHintOptions()
     {
         DB::collection('items')->insert([
-            ['name' => 'fork',  'tags' => ['sharp', 'pointy']],
+            ['name' => 'fork', 'tags' => ['sharp', 'pointy']],
             ['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']],
             ['name' => 'spoon', 'tags' => ['round', 'bowl']],
         ]);

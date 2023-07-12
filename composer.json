@@ -19,6 +19,7 @@
     ],
     "license": "MIT",
     "require": {
+        "ext-mongodb": "^1.15",
         "illuminate/support": "^10.0",
         "illuminate/container": "^10.0",
         "illuminate/database": "^10.0",
