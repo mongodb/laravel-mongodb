@@ -513,11 +513,16 @@ class Builder extends BaseBuilder
 
     /**
      * @inheritdoc
+     * @param int|string|array $direction
      */
     public function orderBy($column, $direction = 'asc')
     {
         if (is_string($direction)) {
-            $direction = (strtolower($direction) == 'asc' ? 1 : -1);
+            $direction = match ($direction) {
+                'asc', 'ASC' => 1,
+                'desc', 'DESC' => -1,
+                default => throw new \InvalidArgumentException('Order direction must be "asc" or "desc".'),
+            };
         }
 
         if ($column == 'natural') {
