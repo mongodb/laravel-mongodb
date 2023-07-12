@@ -600,19 +600,19 @@ class QueryBuilderTest extends TestCase
     public function testDates()
     {
         DB::collection('users')->insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse('1980-01-01 00:00:00')->format('Uv'))],
-            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse('1982-01-01 00:00:00')->format('Uv'))],
-            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse('1983-01-01 00:00:00.1')->format('Uv'))],
-            ['name' => 'Frank White', 'birthday' => new UTCDateTime(Date::parse('1960-01-01 12:12:12.1')->format('Uv'))],
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse('1980-01-01 00:00:00'))],
+            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse('1982-01-01 00:00:00'))],
+            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse('1983-01-01 00:00:00.1'))],
+            ['name' => 'Frank White', 'birthday' => new UTCDateTime(Date::parse('1960-01-01 12:12:12.1'))],
         ]);
 
         $user = DB::collection('users')
-            ->where('birthday', new UTCDateTime(Date::parse('1980-01-01 00:00:00')->format('Uv')))
+            ->where('birthday', new UTCDateTime(Date::parse('1980-01-01 00:00:00')))
             ->first();
         $this->assertEquals('John Doe', $user['name']);
 
         $user = DB::collection('users')
-            ->where('birthday', new UTCDateTime(Date::parse('1960-01-01 12:12:12.1')->format('Uv')))
+            ->where('birthday', new UTCDateTime(Date::parse('1960-01-01 12:12:12.1')))
             ->first();
         $this->assertEquals('Frank White', $user['name']);
 
@@ -629,8 +629,8 @@ class QueryBuilderTest extends TestCase
     public function testImmutableDates()
     {
         DB::collection('users')->insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse('1980-01-01 00:00:00')->format('Uv'))],
-            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse('1982-01-01 00:00:00')->format('Uv'))],
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse('1980-01-01 00:00:00'))],
+            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse('1982-01-01 00:00:00'))],
         ]);
 
         $users = DB::collection('users')->where('birthday', '=', new DateTimeImmutable('1980-01-01 00:00:00'))->get();
