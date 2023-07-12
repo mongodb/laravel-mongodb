@@ -18,7 +18,7 @@ class DatabaseTokenRepository extends BaseDatabaseTokenRepository
         return [
             'email' => $email,
             'token' => $this->hasher->make($token),
-            'created_at' => new UTCDateTime(Date::now()->format('Uv')),
+            'created_at' => new UTCDateTime(Date::now()),
         ];
     }
 

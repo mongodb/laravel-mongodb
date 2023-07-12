@@ -882,7 +882,7 @@ class Builder extends BaseBuilder
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
-        $result = $this->collection->UpdateMany($wheres, $query, $options);
+        $result = $this->collection->updateMany($wheres, $query, $options);
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
         }
@@ -981,18 +981,18 @@ class Builder extends BaseBuilder
                 if (is_array($where['value'])) {
                     array_walk_recursive($where['value'], function (&$item, $key) {
                         if ($item instanceof DateTimeInterface) {
-                            $item = new UTCDateTime($item->format('Uv'));
+                            $item = new UTCDateTime($item);
                         }
                     });
                 } else {
                     if ($where['value'] instanceof DateTimeInterface) {
-                        $where['value'] = new UTCDateTime($where['value']->format('Uv'));
+                        $where['value'] = new UTCDateTime($where['value']);
                     }
                 }
             } elseif (isset($where['values'])) {
                 array_walk_recursive($where['values'], function (&$item, $key) {
                     if ($item instanceof DateTimeInterface) {
-                        $item = new UTCDateTime($item->format('Uv'));
+                        $item = new UTCDateTime($item);
                     }
                 });
             }
