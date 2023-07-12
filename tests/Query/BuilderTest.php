@@ -156,6 +156,52 @@ class BuilderTest extends TestCase
         ];
     }
 
+    /** @dataProvider getEloquentMethodsNotSupported */
+    public function testEloquentMethodsNotSupported(\Closure $callback)
+    {
+        $builder = self::getBuilder();
+
+        $this->expectException(\BadMethodCallException::class);
+        $this->expectExceptionMessage('This method is not supported by MongoDB');
+
+        $callback($builder);
+    }
+
+    public static function getEloquentMethodsNotSupported()
+    {
+        // Most of this methods can be implemented using aggregation framework
+        // whereInRaw, whereNotInRaw, orWhereInRaw, orWhereNotInRaw, whereBetweenColumns
+
+        yield 'toSql' => [fn (Builder $builder) => $builder->toSql()];
+        yield 'toRawSql' => [fn (Builder $builder) => $builder->toRawSql()];
+
+        /** @see DatabaseQueryBuilderTest::testBasicWhereColumn() */
+        /** @see DatabaseQueryBuilderTest::testArrayWhereColumn() */
+        yield 'whereColumn' => [fn (Builder $builder) => $builder->whereColumn('first_name', 'last_name')];
+        yield 'orWhereColumn' => [fn (Builder $builder) => $builder->orWhereColumn('first_name', 'last_name')];
+
+        /** @see DatabaseQueryBuilderTest::testWhereFulltextMySql() */
+        yield 'whereFulltext' => [fn (Builder $builder) => $builder->whereFulltext('body', 'Hello World')];
+
+        /** @see DatabaseQueryBuilderTest::testGroupBys() */
+        yield 'groupByRaw' => [fn (Builder $builder) => $builder->groupByRaw('DATE(created_at)')];
+
+        /** @see DatabaseQueryBuilderTest::testOrderBys() */
+        yield 'orderByRaw' => [fn (Builder $builder) => $builder->orderByRaw('"age" ? desc', ['foo'])];
+
+        /** @see DatabaseQueryBuilderTest::testInRandomOrderMySql */
+        yield 'inRandomOrder' => [fn (Builder $builder) => $builder->inRandomOrder()];
+
+        yield 'union' => [fn (Builder $builder) => $builder->union($builder)];
+        yield 'unionAll' => [fn (Builder $builder) => $builder->unionAll($builder)];
+
+        /** @see DatabaseQueryBuilderTest::testRawHavings */
+        yield 'havingRaw' => [fn (Builder $builder) => $builder->havingRaw('user_foo < user_bar')];
+        yield 'having' => [fn (Builder $builder) => $builder->having('baz', '=', 1)];
+        yield 'havingBetween' => [fn (Builder $builder) => $builder->havingBetween('last_login_date', ['2018-11-16', '2018-12-16'])];
+        yield 'orHavingRaw' => [fn (Builder $builder) => $builder->orHavingRaw('user_foo < user_bar')];
+    }
+
     private static function getBuilder(): Builder
     {
         $connection = m::mock(Connection::class);

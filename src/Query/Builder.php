@@ -1303,4 +1303,70 @@ class Builder extends BaseBuilder
 
         return parent::__call($method, $parameters);
     }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function toSql()
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB. Try "toMql()" instead.');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function toRawSql()
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB. Try "toMql()" instead.');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function whereColumn($first, $operator = null, $second = null, $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function whereFullText($columns, $value, array $options = [], $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function groupByRaw($sql, array $bindings = [])
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function orderByRaw($sql, $bindings = [])
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function unionAll($query)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function union($query, $all = false)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function having($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function havingRaw($sql, array $bindings = [], $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function havingBetween($column, iterable $values, $boolean = 'and', $not = false)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
 }
