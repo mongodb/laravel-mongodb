@@ -12,6 +12,10 @@ use Jenssegers\Mongodb\Relations\HasOne;
 use Jenssegers\Mongodb\Relations\MorphMany;
 use Jenssegers\Mongodb\Relations\MorphTo;
 
+/**
+ * Cross-database relationships between SQL and MongoDB.
+ * Use this trait in SQL models to define relationships with MongoDB models.
+ */
 trait HybridRelations
 {
     /**

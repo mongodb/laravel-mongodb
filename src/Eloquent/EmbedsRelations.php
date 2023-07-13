@@ -6,6 +6,9 @@ use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Relations\EmbedsMany;
 use Jenssegers\Mongodb\Relations\EmbedsOne;
 
+/**
+ * Embeds relations for MongoDB models.
+ */
 trait EmbedsRelations
 {
     /**

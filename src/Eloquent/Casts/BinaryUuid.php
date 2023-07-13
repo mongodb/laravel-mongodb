@@ -46,7 +46,7 @@ class BinaryUuid implements CastsAttributes
      * @param  string  $key
      * @param  mixed  $value
      * @param  array  $attributes
-     * @return mixed
+     * @return Binary
      */
     public function set($model, string $key, $value, array $attributes)
     {

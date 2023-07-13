@@ -12,6 +12,9 @@ use MongoDB\Client;
 use MongoDB\Database;
 use Throwable;
 
+/**
+ * @mixin Database
+ */
 class Connection extends BaseConnection
 {
     use ManagesTransactions;
