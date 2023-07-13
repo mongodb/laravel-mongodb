@@ -788,9 +788,9 @@ class Builder extends BaseBuilder
     /**
      * Append one or more values to an array.
      *
-     * @param  mixed  $column
-     * @param  mixed  $value
-     * @param  bool  $unique
+     * @param  string|array  $column
+     * @param  mixed         $value
+     * @param  bool          $unique
      * @return int
      */
     public function push($column, $value = null, $unique = false)
@@ -818,14 +818,14 @@ class Builder extends BaseBuilder
     /**
      * Remove one or more values from an array.
      *
-     * @param  mixed  $column
-     * @param  mixed  $value
+     * @param  string|array  $column
+     * @param  mixed         $value
      * @return int
      */
     public function pull($column, $value = null)
     {
         // Check if we passed an associative array.
-        $batch = (is_array($value) && array_keys($value) === range(0, count($value) - 1));
+        $batch = is_array($value) && array_is_list($value);
 
         // If we are pulling multiple values, we need to use $pullAll.
         $operator = $batch ? '$pullAll' : '$pull';
@@ -842,7 +842,7 @@ class Builder extends BaseBuilder
     /**
      * Remove one or more fields.
      *
-     * @param  mixed  $columns
+     * @param  string|string[]  $columns
      * @return int
      */
     public function drop($columns)

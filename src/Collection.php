@@ -6,6 +6,9 @@ use Exception;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Collection as MongoCollection;
 
+/**
+ * @mixin MongoCollection
+ */
 class Collection
 {
     /**
