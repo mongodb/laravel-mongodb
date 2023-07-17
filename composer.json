@@ -1,5 +1,5 @@
 {
-    "name": "jenssegers/mongodb",
+    "name": "kolayik/laravel-mongodb",
     "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
     "keywords": [
         "laravel",
@@ -10,7 +10,7 @@
         "model",
         "moloquent"
     ],
-    "homepage": "https://github.com/jenssegers/laravel-mongodb",
+    "homepage": "https://github.com/kolayik/laravel-mongodb",
     "authors": [
         {
             "name": "Jens Segers",
@@ -26,7 +26,7 @@
         "mongodb/mongodb": "^1.15"
     },
     "require-dev": {
-        "phpunit/phpunit": "^9.5.10",
+        "phpunit/phpunit": "^10.2",
         "orchestra/testbench": "^8.0",
         "mockery/mockery": "^1.4.4"
     },
