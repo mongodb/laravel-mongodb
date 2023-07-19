@@ -3,9 +3,17 @@ All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
 
+- Add classes to cast ObjectId and UUID instances [#1](https://github.com/GromNaN/laravel-mongodb-private/pull/1) by [@alcaeus](https://github.com/alcaeus).
+- Add `Query\Builder::toMql()` to simplify comprehensive query tests [#6](https://github.com/GromNaN/laravel-mongodb-private/pull/6) by [@GromNaN](https://github.com/GromNaN).
+- Fix `Query\Builder::whereNot` to use MongoDB [`$not`](https://www.mongodb.com/docs/manual/reference/operator/query/not/) operator [#13](https://github.com/GromNaN/laravel-mongodb-private/pull/13) by [@GromNaN](https://github.com/GromNaN).
+- Fix `Query\Builder::whereBetween` to accept `Carbon\Period` object [#10](https://github.com/GromNaN/laravel-mongodb-private/pull/10) by [@GromNaN](https://github.com/GromNaN).
+- Throw an exception for unsupported `Query\Builder` methods [#9](https://github.com/GromNaN/laravel-mongodb-private/pull/9) by [@GromNaN](https://github.com/GromNaN).
+- Throw an exception when `Query\Builder::orderBy()` is used with invalid direction [#7](https://github.com/GromNaN/laravel-mongodb-private/pull/7) by [@GromNaN](https://github.com/GromNaN).
+- Throw an exception when `Query\Builder::push()` is used incorrectly [#5](https://github.com/GromNaN/laravel-mongodb-private/pull/5) by [@GromNaN](https://github.com/GromNaN).
+
 ## [3.9.2] - 2022-09-01
 
-### Addded 
+### Added
 - Add single word name mutators [#2438](https://github.com/jenssegers/laravel-mongodb/pull/2438) by [@RosemaryOrchard](https://github.com/RosemaryOrchard) & [@mrneatly](https://github.com/mrneatly).
 
 ### Fixed
