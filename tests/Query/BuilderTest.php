@@ -50,6 +50,17 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where('foo', 'bar'),
         ];
 
+        yield 'where with single array of conditions' => [
+            ['find' => [
+                ['$and' => [
+                    ['foo' => 1],
+                    ['bar' => 2],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder->where(['foo' => 1, 'bar' => 2]),
+        ];
+
         yield 'find > date' => [
             ['find' => [['foo' => ['$gt' => new UTCDateTime($date)]], []]],
             fn (Builder $builder) => $builder->where('foo', '>', $date),
@@ -63,6 +74,177 @@ class BuilderTest extends TestCase
         yield 'find limit offset select' => [
             ['find' => [[], ['limit' => 10, 'skip' => 5, 'projection' => ['foo' => 1, 'bar' => 1]]]],
             fn (Builder $builder) => $builder->limit(10)->offset(5)->select('foo', 'bar'),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testBasicWhereNot() */
+        yield 'whereNot (multiple)' => [
+            ['find' => [
+                ['$and' => [
+                    ['$not' => ['name' => 'foo']],
+                    ['$not' => ['name' => ['$ne' => 'bar']]],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->whereNot('name', 'foo')
+                ->whereNot('name', '<>', 'bar'),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testBasicOrWheres() */
+        yield 'where orWhere' => [
+            ['find' => [
+                ['$or' => [
+                    ['id' => 1],
+                    ['email' => 'foo'],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->where('id', '=', 1)
+                ->orWhere('email', '=', 'foo'),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testBasicOrWhereNot() */
+        yield 'orWhereNot' => [
+            ['find' => [
+                ['$or' => [
+                    ['$not' => ['name' => 'foo']],
+                    ['$not' => ['name' => ['$ne' => 'bar']]],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->orWhereNot('name', 'foo')
+                ->orWhereNot('name', '<>', 'bar'),
+        ];
+
+        yield 'whereNot orWhere' => [
+            ['find' => [
+                ['$or' => [
+                    ['$not' => ['name' => 'foo']],
+                    ['name' => ['$ne' => 'bar']],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->whereNot('name', 'foo')
+                ->orWhere('name', '<>', 'bar'),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testWhereNot() */
+        yield 'whereNot callable' => [
+            ['find' => [
+                ['$not' => ['name' => 'foo']],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->whereNot(fn (Builder $q) => $q->where('name', 'foo')),
+        ];
+
+        yield 'where whereNot' => [
+            ['find' => [
+                ['$and' => [
+                    ['name' => 'bar'],
+                    ['$not' => ['email' => 'foo']],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->where('name', '=', 'bar')
+                ->whereNot(function (Builder $q) {
+                    $q->where('email', '=', 'foo');
+                }),
+        ];
+
+        yield 'whereNot (nested)' => [
+            ['find' => [
+                ['$not' => [
+                    '$and' => [
+                        ['name' => 'foo'],
+                        ['$not' => ['email' => ['$ne' => 'bar']]],
+                    ],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->whereNot(function (Builder $q) {
+                    $q->where('name', '=', 'foo')
+                      ->whereNot('email', '<>', 'bar');
+                }),
+        ];
+
+        yield 'orWhere orWhereNot' => [
+            ['find' => [
+                ['$or' => [
+                    ['name' => 'bar'],
+                    ['$not' => ['email' => 'foo']],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->orWhere('name', '=', 'bar')
+                ->orWhereNot(function (Builder $q) {
+                    $q->where('email', '=', 'foo');
+                }),
+        ];
+
+        yield 'where orWhereNot' => [
+            ['find' => [
+                ['$or' => [
+                    ['name' => 'bar'],
+                    ['$not' => ['email' => 'foo']],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->where('name', '=', 'bar')
+                ->orWhereNot('email', '=', 'foo'),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testWhereNotWithArrayConditions() */
+        yield 'whereNot with arrays of single condition' => [
+            ['find' => [
+                ['$not' => [
+                    '$and' => [
+                        ['foo' => 1],
+                        ['bar' => 2],
+                    ],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->whereNot([['foo', 1], ['bar', 2]]),
+        ];
+
+        yield 'whereNot with single array of conditions' => [
+            ['find' => [
+                ['$not' => [
+                    '$and' => [
+                        ['foo' => 1],
+                        ['bar' => 2],
+                    ],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->whereNot(['foo' => 1, 'bar' => 2]),
+        ];
+
+        yield 'whereNot with arrays of single condition with operator' => [
+            ['find' => [
+                ['$not' => [
+                    '$and' => [
+                        ['foo' => 1],
+                        ['bar' => ['$lt' => 2]],
+                    ],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->whereNot([
+                    ['foo', 1],
+                    ['bar', '<', 2],
+                ]),
         ];
 
         /** @see DatabaseQueryBuilderTest::testOrderBys() */

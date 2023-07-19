@@ -332,6 +332,12 @@ $users =
         ->get();
 ```
 
+**NOT statements**
+
+```php
+$users = User::whereNot('age', '>', 18)->get();
+```
+
 **whereIn**
 
 ```php
