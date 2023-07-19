@@ -2,6 +2,7 @@
 
 namespace Jenssegers\Mongodb\Query;
 
+use Carbon\CarbonPeriod;
 use Closure;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
@@ -554,10 +555,19 @@ class Builder extends BaseBuilder
 
     /**
      * @inheritdoc
+     * @param list{mixed, mixed}|CarbonPeriod $values
      */
     public function whereBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         $type = 'between';
+
+        if ($values instanceof Collection) {
+            $values = $values->all();
+        }
+
+        if (is_array($values) && (! array_is_list($values) || count($values) !== 2)) {
+            throw new \InvalidArgumentException('Between $values must be a list with exactly two elements: [min, max]');
+        }
 
         $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
 
@@ -995,11 +1005,18 @@ class Builder extends BaseBuilder
                     }
                 }
             } elseif (isset($where['values'])) {
-                array_walk_recursive($where['values'], function (&$item, $key) {
-                    if ($item instanceof DateTimeInterface) {
-                        $item = new UTCDateTime($item);
-                    }
-                });
+                if (is_array($where['values'])) {
+                    array_walk_recursive($where['values'], function (&$item, $key) {
+                        if ($item instanceof DateTimeInterface) {
+                            $item = new UTCDateTime($item);
+                        }
+                    });
+                } elseif ($where['values'] instanceof CarbonPeriod) {
+                    $where['values'] = [
+                        new UTCDateTime($where['values']->getStartDate()),
+                        new UTCDateTime($where['values']->getEndDate()),
+                    ];
+                }
             }
 
             // The next item in a "chain" of wheres devices the boolean of the
