@@ -247,6 +247,12 @@ class BuilderTest extends TestCase
                 ]),
         ];
 
+        /** @see DatabaseQueryBuilderTest::testForPage() */
+        yield 'forPage' => [
+            ['find' => [[], ['limit' => 20, 'skip' => 40]]],
+            fn (Builder $builder) => $builder->forPage(3, 20),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testOrderBys() */
         yield 'orderBy multiple columns' => [
             ['find' => [[], ['sort' => ['email' => 1, 'age' => -1]]]],
