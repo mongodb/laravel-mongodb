@@ -10,6 +10,7 @@ All notable changes to this project will be documented in this file.
 - Throw an exception for unsupported `Query\Builder` methods [#9](https://github.com/GromNaN/laravel-mongodb-private/pull/9) by [@GromNaN](https://github.com/GromNaN).
 - Throw an exception when `Query\Builder::orderBy()` is used with invalid direction [#7](https://github.com/GromNaN/laravel-mongodb-private/pull/7) by [@GromNaN](https://github.com/GromNaN).
 - Throw an exception when `Query\Builder::push()` is used incorrectly [#5](https://github.com/GromNaN/laravel-mongodb-private/pull/5) by [@GromNaN](https://github.com/GromNaN).
+- Remove public property `Query\Builder::$paginating` [#15](https://github.com/GromNaN/laravel-mongodb-private/pull/15) by [@GromNaN](https://github.com/GromNaN).
 
 ## [3.9.2] - 2022-09-01
 

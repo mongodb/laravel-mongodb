@@ -60,13 +60,6 @@ class Builder extends BaseBuilder
     public $options = [];
 
     /**
-     * Indicate if we are executing a pagination query.
-     *
-     * @var bool
-     */
-    public $paginating = false;
-
-    /**
      * All of the available clause operators.
      *
      * @var array
@@ -572,16 +565,6 @@ class Builder extends BaseBuilder
         $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function forPage($page, $perPage = 15)
-    {
-        $this->paginating = true;
-
-        return $this->skip(($page - 1) * $perPage)->take($perPage);
     }
 
     /**
