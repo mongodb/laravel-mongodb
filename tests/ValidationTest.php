@@ -48,6 +48,12 @@ class ValidationTest extends TestCase
         );
         $this->assertFalse($validator->fails());
 
+        $validator = Validator::make(
+            ['name' => 'John'], // Part of an existing value
+            ['name' => 'required|unique:users']
+        );
+        $this->assertFalse($validator->fails());
+
         User::create(['name' => 'Johnny Cash', 'email' => 'johnny.cash+200@gmail.com']);
 
         $validator = Validator::make(
