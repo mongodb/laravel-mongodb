@@ -483,6 +483,17 @@ Car::where('weight', 300)
 
 ### MongoDB-specific operators
 
+In addition to the Laravel Eloquent operators, all available MongoDB query operators can be used with `where`:
+
+```php
+User::where($fieldName, $operator, $value)->get();
+```
+
+It generates the following MongoDB filter:
+```ts
+{ $fieldName: { $operator: $value } }
+```
+
 **Exists**
 
 Matches documents that have the specified field.
