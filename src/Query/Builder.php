@@ -266,7 +266,9 @@ class Builder extends BaseBuilder
                     $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
 
                     if (in_array('*', $aggregations) && $function == 'count') {
-                        return ['count' => [$wheres, []]];
+                        $options = $this->inheritConnectionOptions();
+
+                        return ['countDocuments' => [$wheres, $options]];
                     } elseif ($function == 'count') {
                         // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
@@ -329,7 +331,7 @@ class Builder extends BaseBuilder
 
             $options = $this->inheritConnectionOptions();
 
-            return ['distinct' => [$column, $wheres ?: [], $options]];
+            return ['distinct' => [$column, $wheres, $options]];
         } // Normal query
         else {
             // Convert select columns to simple projections.
@@ -396,7 +398,7 @@ class Builder extends BaseBuilder
             $this->columns = [];
         }
 
-        $command = $this->toMql($columns);
+        $command = $this->toMql();
         assert(count($command) >= 1, 'At least one method call is required to execute a query');
 
         $result = $this->collection;
