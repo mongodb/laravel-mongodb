@@ -333,6 +333,22 @@ class BuilderTest extends TestCase
                 ]),
         ];
 
+        yield 'where all' => [
+            ['find' => [['tags' => ['$all' => ['ssl', 'security']]], []]],
+            fn (Builder $builder) => $builder->where('tags', 'all', ['ssl', 'security']),
+        ];
+
+        yield 'where all nested operators' => [
+            ['find' => [['tags' => ['$all' => [
+                ['$elemMatch' => ['size' => 'M', 'num' => ['$gt' => 50]]],
+                ['$elemMatch' => ['num' => 100, 'color' => 'green']],
+            ]]], []]],
+            fn (Builder $builder) => $builder->where('tags', 'all', [
+                ['$elemMatch' => ['size' => 'M', 'num' => ['$gt' => 50]]],
+                ['$elemMatch' => ['num' => 100, 'color' => 'green']],
+            ]),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testForPage() */
         yield 'forPage' => [
             ['find' => [[], ['limit' => 20, 'skip' => 40]]],
