@@ -14,6 +14,7 @@ All notable changes to this project will be documented in this file.
 - Remove call to deprecated `Collection::count` for `countDocuments` [#18](https://github.com/GromNaN/laravel-mongodb-private/pull/18) by [@GromNaN](https://github.com/GromNaN).
 - Accept operators prefixed by `$` in `Query\Builder::orWhere` [#20](https://github.com/GromNaN/laravel-mongodb-private/pull/20) by [@GromNaN](https://github.com/GromNaN).
 - Remove `Query\Builder::whereAll($column, $values)`. Use `Query\Builder::where($column, 'all', $values)` instead. [#16](https://github.com/GromNaN/laravel-mongodb-private/pull/16) by [@GromNaN](https://github.com/GromNaN).
+- Fix validation of unique values when the validated value is found as part of an existing value. [#21](https://github.com/GromNaN/laravel-mongodb-private/pull/21) by [@GromNaN](https://github.com/GromNaN).
 
 ## [3.9.2] - 2022-09-01
 
