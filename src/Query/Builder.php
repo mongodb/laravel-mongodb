@@ -917,10 +917,10 @@ class Builder extends BaseBuilder
         $params = func_get_args();
 
         // Remove the leading $ from operators.
-        if (func_num_args() == 3) {
+        if (func_num_args() >= 3) {
             $operator = &$params[1];
 
-            if (Str::startsWith($operator, '$')) {
+            if (is_string($operator) && str_starts_with($operator, '$')) {
                 $operator = substr($operator, 1);
             }
         }

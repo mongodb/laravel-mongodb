@@ -76,6 +76,19 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->limit(10)->offset(5)->select('foo', 'bar'),
         ];
 
+        yield 'where accepts $ in operators' => [
+            ['find' => [
+                ['$or' => [
+                    ['foo' => ['$type' => 2]],
+                    ['foo' => ['$type' => 4]],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder
+                ->where('foo', '$type', 2)
+                ->orWhere('foo', '$type', 4),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testBasicWhereNot() */
         yield 'whereNot (multiple)' => [
             ['find' => [
