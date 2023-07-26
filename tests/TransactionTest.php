@@ -332,7 +332,7 @@ class TransactionTest extends TestCase
         $count = User::count();
         $this->assertEquals(2, $count);
 
-        $this->assertTrue(User::where('alcaeus')->exists());
+        $this->assertTrue(User::where('name', 'alcaeus')->exists());
         $this->assertTrue(User::where(['name' => 'klinson'])->where('age', 21)->exists());
     }
 

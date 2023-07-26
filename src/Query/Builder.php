@@ -925,6 +925,10 @@ class Builder extends BaseBuilder
             }
         }
 
+        if (func_num_args() == 1 && is_string($column)) {
+            throw new \ArgumentCountError(sprintf('Too few arguments to function %s("%s"), 1 passed and at least 2 expected when the 1st is a string.', __METHOD__, $column));
+        }
+
         return parent::where(...$params);
     }
 
@@ -1375,6 +1379,30 @@ class Builder extends BaseBuilder
 
     /** @internal This method is not supported by MongoDB. */
     public function havingBetween($column, iterable $values, $boolean = 'and', $not = false)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function whereIntegerInRaw($column, $values, $boolean = 'and', $not = false)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function orWhereIntegerInRaw($column, $values)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function whereIntegerNotInRaw($column, $values, $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new \BadMethodCallException('This method is not supported by MongoDB');
     }

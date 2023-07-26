@@ -45,7 +45,36 @@ class BuilderTest extends TestCase
          */
         $date = new DateTimeImmutable('2016-07-12 15:30:00');
 
-        yield 'find' => [
+        yield 'select replaces previous select' => [
+            ['find' => [[], ['projection' => ['bar' => 1]]]],
+            fn (Builder $builder) => $builder->select('foo')->select('bar'),
+        ];
+
+        yield 'select array' => [
+            ['find' => [[], ['projection' => ['foo' => 1, 'bar' => 1]]]],
+            fn (Builder $builder) => $builder->select(['foo', 'bar']),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testAddingSelects */
+        yield 'addSelect' => [
+            ['find' => [[], ['projection' => ['foo' => 1, 'bar' => 1, 'baz' => 1, 'boom' => 1]]]],
+            fn (Builder $builder) => $builder->select('foo')
+                ->addSelect('bar')
+                ->addSelect(['baz', 'boom'])
+                ->addSelect('bar'),
+        ];
+
+        yield 'select all' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder->select('*'),
+        ];
+
+        yield 'find all with select' => [
+            ['find' => [[], ['projection' => ['foo' => 1, 'bar' => 1]]]],
+            fn (Builder $builder) => $builder->select('foo', 'bar'),
+        ];
+
+        yield 'find equals' => [
             ['find' => [['foo' => 'bar'], []]],
             fn (Builder $builder) => $builder->where('foo', 'bar'),
         ];
@@ -66,9 +95,53 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where('foo', '>', $date),
         ];
 
-        yield 'find in array' => [
+        /** @see DatabaseQueryBuilderTest::testBasicWhereIns */
+        yield 'whereIn' => [
             ['find' => [['foo' => ['$in' => ['bar', 'baz']]], []]],
             fn (Builder $builder) => $builder->whereIn('foo', ['bar', 'baz']),
+        ];
+
+        // Nested array are not flattened like in the Eloquent builder. MongoDB can compare objects.
+        $array = [['issue' => 45582], ['id' => 2], [3]];
+        yield 'whereIn nested array' => [
+            ['find' => [['id' => ['$in' => $array]], []]],
+            fn (Builder $builder) => $builder->whereIn('id', $array),
+        ];
+
+        yield 'orWhereIn' => [
+            ['find' => [
+                ['$or' => [
+                    ['id' => 1],
+                    ['id' => ['$in' => [1, 2, 3]]],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder->where('id', '=', 1)
+                ->orWhereIn('id', [1, 2, 3]),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testBasicWhereNotIns */
+        yield 'whereNotIn' => [
+            ['find' => [['id' => ['$nin' => [1, 2, 3]]], []]],
+            fn (Builder $builder) => $builder->whereNotIn('id', [1, 2, 3]),
+        ];
+
+        yield 'orWhereNotIn' => [
+            ['find' => [
+                ['$or' => [
+                    ['id' => 1],
+                    ['id' => ['$nin' => [1, 2, 3]]],
+                ]],
+                [], // options
+            ]],
+            fn (Builder $builder) => $builder->where('id', '=', 1)
+                ->orWhereNotIn('id', [1, 2, 3]),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testEmptyWhereIns */
+        yield 'whereIn empty array' => [
+            ['find' => [['id' => ['$in' => []]], []]],
+            fn (Builder $builder) => $builder->whereIn('id', []),
         ];
 
         yield 'find limit offset select' => [
@@ -266,6 +339,43 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->forPage(3, 20),
         ];
 
+        /** @see DatabaseQueryBuilderTest::testLimitsAndOffsets() */
+        yield 'offset limit' => [
+            ['find' => [[], ['skip' => 5, 'limit' => 10]]],
+            fn (Builder $builder) => $builder->offset(5)->limit(10),
+        ];
+
+        yield 'offset limit zero (unset)' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder
+                ->offset(0)->limit(0),
+        ];
+
+        yield 'offset limit zero (reset)' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder
+                ->offset(5)->limit(10)
+                ->offset(0)->limit(0),
+        ];
+
+        yield 'offset limit negative (unset)' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder
+                ->offset(-5)->limit(-10),
+        ];
+
+        yield 'offset limit null (reset)' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder
+                ->offset(5)->limit(10)
+                ->offset(null)->limit(null),
+        ];
+
+        yield 'skip take (aliases)' => [
+            ['find' => [[], ['skip' => 5, 'limit' => 10]]],
+            fn (Builder $builder) => $builder->skip(5)->limit(10),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testOrderBys() */
         yield 'orderBy multiple columns' => [
             ['find' => [[], ['sort' => ['email' => 1, 'age' => -1]]]],
@@ -452,9 +562,55 @@ class BuilderTest extends TestCase
                 ->orWhereNotBetween('id', collect([3, 4])),
         ];
 
+        /** @see DatabaseQueryBuilderTest::testBasicSelectDistinct */
         yield 'distinct' => [
             ['distinct' => ['foo', [], []]],
             fn (Builder $builder) => $builder->distinct('foo'),
+        ];
+
+        yield 'select distinct' => [
+            ['distinct' => ['foo', [], []]],
+            fn (Builder $builder) => $builder->select('foo', 'bar')
+                ->distinct(),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testBasicSelectDistinctOnColumns */
+        yield 'select distinct on' => [
+            ['distinct' => ['foo', [], []]],
+            fn (Builder $builder) => $builder->distinct('foo')
+                ->select('foo', 'bar'),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testLatest() */
+        yield 'latest' => [
+            ['find' => [[], ['sort' => ['created_at' => -1]]]],
+            fn (Builder $builder) => $builder->latest(),
+        ];
+
+        yield 'latest limit' => [
+            ['find' => [[], ['sort' => ['created_at' => -1], 'limit' => 1]]],
+            fn (Builder $builder) => $builder->latest()->limit(1),
+        ];
+
+        yield 'latest custom field' => [
+            ['find' => [[], ['sort' => ['updated_at' => -1]]]],
+            fn (Builder $builder) => $builder->latest('updated_at'),
+        ];
+
+        /** @see DatabaseQueryBuilderTest::testOldest() */
+        yield 'oldest' => [
+            ['find' => [[], ['sort' => ['created_at' => 1]]]],
+            fn (Builder $builder) => $builder->oldest(),
+        ];
+
+        yield 'oldest limit' => [
+            ['find' => [[], ['sort' => ['created_at' => 1], 'limit' => 1]]],
+            fn (Builder $builder) => $builder->oldest()->limit(1),
+        ];
+
+        yield 'oldest custom field' => [
+            ['find' => [[], ['sort' => ['updated_at' => 1]]]],
+            fn (Builder $builder) => $builder->oldest('updated_at'),
         ];
 
         yield 'groupBy' => [
@@ -516,6 +672,12 @@ class BuilderTest extends TestCase
             'Between $values must be a list with exactly two elements: [min, max]',
             fn (Builder $builder) => $builder->whereBetween('id', ['min' => 1, 'max' => 2]),
         ];
+
+        yield 'find with single string argument' => [
+            \ArgumentCountError::class,
+            'Too few arguments to function Jenssegers\Mongodb\Query\Builder::where("foo"), 1 passed and at least 2 expected when the 1st is a string',
+            fn (Builder $builder) => $builder->where('foo'),
+        ];
     }
 
     /** @dataProvider getEloquentMethodsNotSupported */
@@ -562,6 +724,18 @@ class BuilderTest extends TestCase
         yield 'having' => [fn (Builder $builder) => $builder->having('baz', '=', 1)];
         yield 'havingBetween' => [fn (Builder $builder) => $builder->havingBetween('last_login_date', ['2018-11-16', '2018-12-16'])];
         yield 'orHavingRaw' => [fn (Builder $builder) => $builder->orHavingRaw('user_foo < user_bar')];
+
+        /** @see DatabaseQueryBuilderTest::testWhereIntegerInRaw */
+        yield 'whereIntegerInRaw' => [fn (Builder $builder) => $builder->whereIntegerInRaw('id', ['1a', 2])];
+
+        /** @see DatabaseQueryBuilderTest::testOrWhereIntegerInRaw */
+        yield 'orWhereIntegerInRaw' => [fn (Builder $builder) => $builder->orWhereIntegerInRaw('id', ['1a', 2])];
+
+        /** @see DatabaseQueryBuilderTest::testWhereIntegerNotInRaw */
+        yield 'whereIntegerNotInRaw' => [fn (Builder $builder) => $builder->whereIntegerNotInRaw('id', ['1a', 2])];
+
+        /** @see DatabaseQueryBuilderTest::testOrWhereIntegerNotInRaw */
+        yield 'orWhereIntegerNotInRaw' => [fn (Builder $builder) => $builder->orWhereIntegerNotInRaw('id', ['1a', 2])];
     }
 
     private static function getBuilder(): Builder
