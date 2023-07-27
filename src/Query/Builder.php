@@ -24,6 +24,8 @@ use RuntimeException;
  */
 class Builder extends BaseBuilder
 {
+    private const REGEX_DELIMITERS = ['/', '#', '~'];
+
     /**
      * The database collection.
      *
@@ -91,6 +93,7 @@ class Builder extends BaseBuilder
         'all',
         'size',
         'regex',
+        'not regex',
         'text',
         'slice',
         'elemmatch',
@@ -113,13 +116,22 @@ class Builder extends BaseBuilder
      * @var array
      */
     protected $conversion = [
-        '=' => '=',
-        '!=' => '$ne',
-        '<>' => '$ne',
-        '<' => '$lt',
-        '<=' => '$lte',
-        '>' => '$gt',
-        '>=' => '$gte',
+        '!=' => 'ne',
+        '<>' => 'ne',
+        '<' => 'lt',
+        '<=' => 'lte',
+        '>' => 'gt',
+        '>=' => 'gte',
+        'regexp' => 'regex',
+        'not regexp' => 'not regex',
+        'ilike' => 'like',
+        'elemmatch' => 'elemMatch',
+        'geointersects' => 'geoIntersects',
+        'geowithin' => 'geoWithin',
+        'nearsphere' => 'nearSphere',
+        'maxdistance' => 'maxDistance',
+        'centersphere' => 'centerSphere',
+        'uniquedocs' => 'uniqueDocs',
     ];
 
     /**
@@ -932,20 +944,9 @@ class Builder extends BaseBuilder
             if (isset($where['operator'])) {
                 $where['operator'] = strtolower($where['operator']);
 
-                // Operator conversions
-                $convert = [
-                    'regexp' => 'regex',
-                    'elemmatch' => 'elemMatch',
-                    'geointersects' => 'geoIntersects',
-                    'geowithin' => 'geoWithin',
-                    'nearsphere' => 'nearSphere',
-                    'maxdistance' => 'maxDistance',
-                    'centersphere' => 'centerSphere',
-                    'uniquedocs' => 'uniqueDocs',
-                ];
-
-                if (array_key_exists($where['operator'], $convert)) {
-                    $where['operator'] = $convert[$where['operator']];
+                // Convert aliased operators
+                if (isset($this->conversion[$where['operator']])) {
+                    $where['operator'] = $this->conversion[$where['operator']];
                 }
             }
 
@@ -1036,45 +1037,55 @@ class Builder extends BaseBuilder
 
         // Replace like or not like with a Regex instance.
         if (in_array($operator, ['like', 'not like'])) {
-            if ($operator === 'not like') {
-                $operator = 'not';
-            } else {
-                $operator = '=';
-            }
+            $regex = preg_replace(
+                [
+                    // Unescaped % are converted to .*
+                    // Group consecutive %
+                    '#(^|[^\\\])%+#',
+                    // Unescaped _ are converted to .
+                    // Use positive lookahead to replace consecutive _
+                    '#(?<=^|[^\\\\])_#',
+                    // Escaped \% or \_ are unescaped
+                    '#\\\\\\\(%|_)#',
+                ],
+                ['$1.*', '$1.', '$1'],
+                // Escape any regex reserved characters, so they are matched
+                // All backslashes are converted to \\, which are needed in matching regexes.
+                preg_quote($value),
+            );
+            $value = new Regex('^'.$regex.'$', 'i');
 
-            // Convert to regular expression.
-            $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
+            // For inverse like operations, we can just use the $not operator with the Regex
+            $operator = $operator === 'like' ? '=' : 'not';
+        }
 
-            // Convert like to regular expression.
-            if (! Str::startsWith($value, '%')) {
-                $regex = '^'.$regex;
-            }
-            if (! Str::endsWith($value, '%')) {
-                $regex .= '$';
-            }
-
-            $value = new Regex($regex, 'i');
-        } // Manipulate regexp operations.
-        elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
+        // Manipulate regex operations.
+        elseif (in_array($operator, ['regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
-            if (! $value instanceof Regex) {
-                $e = explode('/', $value);
-                $flag = end($e);
-                $regstr = substr($value, 1, -(strlen($flag) + 1));
-                $value = new Regex($regstr, $flag);
+            if (is_string($value)) {
+                // Detect the delimiter and validate the preg pattern
+                $delimiter = substr($value, 0, 1);
+                if (! in_array($delimiter, self::REGEX_DELIMITERS)) {
+                    throw new \LogicException(sprintf('Missing expected starting delimiter in regular expression "%s", supported delimiters are: %s', $value, implode(' ', self::REGEX_DELIMITERS)));
+                }
+                $e = explode($delimiter, $value);
+                // We don't try to detect if the last delimiter is escaped. This would be an invalid regex.
+                if (count($e) < 3) {
+                    throw new \LogicException(sprintf('Missing expected ending delimiter "%s" in regular expression "%s"', $delimiter, $value));
+                }
+                // Flags are after the last delimiter
+                $flags = end($e);
+                // Extract the regex string between the delimiters
+                $regstr = substr($value, 1, -1 - strlen($flags));
+                $value = new Regex($regstr, $flags);
             }
 
-            // For inverse regexp operations, we can just use the $not operator
-            // and pass it a Regex instence.
-            if (Str::startsWith($operator, 'not')) {
-                $operator = 'not';
-            }
+            // For inverse regex operations, we can just use the $not operator with the Regex
+            $operator = $operator === 'regex' ? '=' : 'not';
         }
 
         if (! isset($operator) || $operator == '=') {
             $query = [$column => $value];
-        } elseif (array_key_exists($operator, $this->conversion)) {
-            $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
             $query = [$column => ['$'.$operator => $value]];
         }
@@ -1133,7 +1144,7 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereNotNull(array $where): array
     {
-        $where['operator'] = '!=';
+        $where['operator'] = 'ne';
         $where['value'] = null;
 
         return $this->compileWhereBasic($where);
