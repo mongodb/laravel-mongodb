@@ -148,28 +148,28 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
-    public function getAttribute($key)
-    {
-        if (! $key) {
-            return;
-        }
-
-        // Dot notation support.
-        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
-            return $this->getAttributeValue($key);
-        }
-
-        // This checks for embedded relation support.
-        if (
-            method_exists($this, $key)
-            && ! method_exists(self::class, $key)
-            && ! $this->hasAttributeGetMutator($key)
-        ) {
-            return $this->getRelationValue($key);
-        }
-
-        return parent::getAttribute($key);
-    }
+//    public function getAttribute($key)
+//    {
+//        if (! $key) {
+//            return;
+//        }
+//
+//        // Dot notation support.
+//        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
+//            return $this->getAttributeValue($key);
+//        }
+//
+//        // This checks for embedded relation support.
+//        if (
+//            method_exists($this, $key)
+//            && ! method_exists(self::class, $key)
+//            && ! $this->hasAttributeGetMutator($key)
+//        ) {
+//            return $this->getRelationValue($key);
+//        }
+//
+//        return parent::getAttribute($key);
+//    }
 
     /**
      * @inheritdoc
