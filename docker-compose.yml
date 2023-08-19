@@ -1,4 +1,4 @@
-version: '3'
+version: '3.5'
 
 services:
     tests:
@@ -11,9 +11,10 @@ services:
             - .:/code
         working_dir: /code
         depends_on:
-          - mongodb
-          - mysql
-
+            mongodb:
+                condition: service_healthy
+            mysql:
+                condition: service_started
     mysql:
         container_name: mysql
         image: mysql:8.0
@@ -29,3 +30,8 @@ services:
         image: mongo:latest
         ports:
             - "27017:27017"
+        healthcheck:
+            test: echo 'db.runCommand("ping").ok' | mongosh mongodb:27017 --quiet
+            interval: 10s
+            timeout: 10s
+            retries: 5
