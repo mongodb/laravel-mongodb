@@ -30,6 +30,7 @@ jobs:
 
     build:
         runs-on: ${{ matrix.os }}
+        timeout-minutes: 10
         name: PHP v${{ matrix.php }} with MongoDB ${{ matrix.mongodb }}
         strategy:
             matrix:
@@ -57,13 +58,13 @@ jobs:
             -   name: Create MongoDB Replica Set
                 run: |
                     docker run --name mongodb -p 27017:27017 -e MONGO_INITDB_DATABASE=unittest --detach mongo:${{ matrix.mongodb }} mongosh --replSet rs --setParameter transactionLifetimeLimitSeconds=5
-                    until docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "db.runCommand({ ping: 1 })"; do
+                    until docker exec --tty mongodb mongosh 127.0.0.1:27017 --eval "db.runCommand({ ping: 1 })"; do
                     sleep 1
                     done
-                    sudo docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1:27017\" }]})"
+                    sudo docker exec --tty mongodb mongosh 127.0.0.1:27017 --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1:27017\" }]})"
             -   name: Show MongoDB server status
                 run: |
-                    docker exec --tty mongodb mongo 127.0.0.1:27017 --eval "db.runCommand({ serverStatus: 1 })"
+                    docker exec --tty mongodb mongosh 127.0.0.1:27017 --eval "db.runCommand({ serverStatus: 1 })"
             -   name: "Installing php"
                 uses: shivammathur/setup-php@v2
                 with:
