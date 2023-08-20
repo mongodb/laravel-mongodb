@@ -2,9 +2,10 @@ name: CI
 
 on:
     push:
-        branches:
+        branches: [ "master" ]
         tags:
     pull_request:
+        branches: [ "master" ]
 
 jobs:
     php-cs-fixer:
