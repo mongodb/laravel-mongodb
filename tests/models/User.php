@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Carbon\Carbon;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -11,6 +12,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use Jenssegers\Mongodb\Relations\EmbedsMany;
+use Jenssegers\Mongodb\Relations\EmbedsOne;
 
 /**
  * Class User.
@@ -20,9 +23,9 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
  * @property string $email
  * @property string $title
  * @property int $age
- * @property \Carbon\Carbon $birthday
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $birthday
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property string $username
  * @property MemberStatus member_status
  */
@@ -73,7 +76,7 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
 
     public function groups()
     {
-        return $this->belongsToMany('Group', 'groups', 'users', 'groups', '_id', '_id', 'groups');
+        return $this->belongsToMany('Group');
     }
 
     public function photos()
@@ -81,12 +84,12 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->morphMany('Photo', 'has_image');
     }
 
-    public function addresses()
+    public function addresses(): EmbedsMany
     {
         return $this->embedsMany('Address');
     }
 
-    public function father()
+    public function father(): EmbedsOne
     {
         return $this->embedsOne('User');
     }
@@ -102,5 +105,15 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
             get: fn ($value) => $value,
             set: fn ($value) => Str::slug($value)
         );
+    }
+
+    public function getFooAttribute()
+    {
+        return 'normal attribute';
+    }
+
+    public function foo()
+    {
+        return 'normal function';
     }
 }
