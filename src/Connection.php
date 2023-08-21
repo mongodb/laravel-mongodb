@@ -5,7 +5,6 @@ namespace Jenssegers\Mongodb;
 use function class_exists;
 use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
-use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Jenssegers\Mongodb\Concerns\ManagesTransactions;
 use MongoDB\Client;
@@ -48,7 +47,7 @@ class Connection extends BaseConnection
         $dsn = $this->getDsn($config);
 
         // You can pass options directly to the MongoDB constructor
-        $options = Arr::get($config, 'options', []);
+        $options = $config['options'] ?? [];
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);

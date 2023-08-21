@@ -10,7 +10,6 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
-use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
