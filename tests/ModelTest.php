@@ -801,4 +801,11 @@ class ModelTest extends TestCase
         $this->assertSame(MemberStatus::Member->value, $check->getRawOriginal('member_status'));
         $this->assertSame(MemberStatus::Member, $check->member_status);
     }
+
+    public function testGetFooAttributeAccessor()
+    {
+        $user = new User();
+
+        $this->assertSame('normal attribute', $user->foo);
+    }
 }
