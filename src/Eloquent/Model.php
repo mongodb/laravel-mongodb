@@ -2,11 +2,6 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
-use Jenssegers\Mongodb\Relations\EmbedsMany;
-use Jenssegers\Mongodb\Relations\EmbedsOne;
-use ReflectionException;
-use ReflectionMethod;
-use ReflectionNamedType;
 use function array_key_exists;
 use DateTimeInterface;
 use function explode;
@@ -20,9 +15,14 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use function in_array;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
+use Jenssegers\Mongodb\Relations\EmbedsMany;
+use Jenssegers\Mongodb\Relations\EmbedsOne;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionNamedType;
 use function uniqid;
 
 abstract class Model extends BaseModel

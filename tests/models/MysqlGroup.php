@@ -30,7 +30,7 @@ class MysqlGroup extends Eloquent
         /** @var MySqlBuilder $schema */
         $schema = Schema::connection('mysql');
 
-        if (!$schema->hasTable('groups')) {
+        if (! $schema->hasTable('groups')) {
             Schema::connection('mysql')->create('groups', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -38,7 +38,7 @@ class MysqlGroup extends Eloquent
             });
         }
 
-        if (!$schema->hasTable('group_user')) {
+        if (! $schema->hasTable('group_user')) {
             Schema::connection('mysql')->create('group_user', function (Blueprint $table) {
                 $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
                 $table->foreignId('group_id')->constrained('groups')->cascadeOnUpdate()->cascadeOnDelete();

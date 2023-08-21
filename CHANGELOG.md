@@ -2,10 +2,29 @@
 All notable changes to this project will be documented in this file.
 
 ## [Unreleased]
+None yet.
+
+## [10.0] - 2023-08-22
+
+### Added
+- MongoDB v6.0 supports and tests
+- use Mongosh in tests instead of the old Mongo
+- Mysql 8 Hybrid relation tests
+
+### Removed
+- MongoDB v4.* support was dropped
+
+### Fixed
+- Fixing the priority between attributes and relations dynamic property call to be the same as Laravel, that mean attribute first then relation (previous it was relation then attribute)
+- using function names that exist as attribute accessor/caster: previously if you use a function name that has an accessor; say u use foo() and you have getFooAttribute, calling $model->foo will always fail as the function is called before the accessor, this has been fixed.
+
+### Breaking
+- EmbedsOne and EmbedsMany now require return type to work (Example in the documentation has been updated)
+- You can't have the belongsToMany foreign key to be the same as the relation name (check documentation for more details)
 
 ## [3.9.2] - 2022-09-01
 
-### Addded 
+### Addded
 - Add single word name mutators [#2438](https://github.com/jenssegers/laravel-mongodb/pull/2438) by [@RosemaryOrchard](https://github.com/RosemaryOrchard) & [@mrneatly](https://github.com/mrneatly).
 
 ### Fixed
