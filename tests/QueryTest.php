@@ -31,6 +31,7 @@ class QueryTest extends TestCase
         Birthday::create(['name' => 'Robert Doe', 'birthday' => new DateTimeImmutable('2021-05-12 10:53:14'), 'time' => '10:53:14']);
         Birthday::create(['name' => 'Mark Moe', 'birthday' => new DateTimeImmutable('2021-05-12 10:53:15'), 'time' => '10:53:15']);
         Birthday::create(['name' => 'Mark Moe', 'birthday' => new DateTimeImmutable('2022-05-12 10:53:16'), 'time' => '10:53:16']);
+        Birthday::create(['name' => 'Boo']);
     }
 
     public function tearDown(): void
@@ -217,6 +218,9 @@ class QueryTest extends TestCase
 
         $birthdayCount = Birthday::whereDate('birthday', '<=', '2021-05-11')->get();
         $this->assertCount(2, $birthdayCount);
+
+        $birthdayCount = Birthday::whereDate('birthday', '<>', '2021-05-11')->get();
+        $this->assertCount(5, $birthdayCount);
     }
 
     public function testWhereDay(): void
@@ -240,10 +244,10 @@ class QueryTest extends TestCase
         $this->assertCount(5, $month);
 
         $month = Birthday::whereMonth('birthday', '<', '10')->get();
-        $this->assertCount(6, $month);
+        $this->assertCount(7, $month);
 
         $month = Birthday::whereMonth('birthday', '<>', '5')->get();
-        $this->assertCount(1, $month);
+        $this->assertCount(2, $month);
     }
 
     public function testWhereYear(): void
@@ -255,10 +259,10 @@ class QueryTest extends TestCase
         $this->assertCount(1, $year);
 
         $year = Birthday::whereYear('birthday', '<', '2021')->get();
-        $this->assertCount(1, $year);
+        $this->assertCount(2, $year);
 
         $year = Birthday::whereYear('birthday', '<>', '2021')->get();
-        $this->assertCount(2, $year);
+        $this->assertCount(3, $year);
     }
 
     public function testWhereTime(): void
