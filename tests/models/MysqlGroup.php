@@ -3,39 +3,23 @@
 declare(strict_types=1);
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\MySqlBuilder;
 use Illuminate\Support\Facades\Schema;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
-class MysqlUser extends Eloquent
+class MysqlGroup extends Eloquent
 {
     use HybridRelations;
 
     protected $connection = 'mysql';
-    protected $table = 'users';
+    protected $table = 'groups';
     protected static $unguarded = true;
+    protected $primaryKey = 'name';
 
-    public function books(): HasMany
+    public function users(): BelongsToMany
     {
-        return $this->hasMany('Book', 'author_id');
-    }
-
-    public function role(): HasOne
-    {
-        return $this->hasOne('Role');
-    }
-
-    public function mysqlBooks(): HasMany
-    {
-        return $this->hasMany(MysqlBook::class);
-    }
-
-    public function groups(): BelongsToMany
-    {
-        return $this->belongsToMany(MysqlGroup::class, 'group_user', 'user_id', 'group_id');
+        return $this->belongsToMany(MysqlUser::class);
     }
 
     /**
@@ -46,11 +30,18 @@ class MysqlUser extends Eloquent
         /** @var MySqlBuilder $schema */
         $schema = Schema::connection('mysql');
 
-        if (! $schema->hasTable('users')) {
-            Schema::connection('mysql')->create('users', function (Blueprint $table) {
+        if (!$schema->hasTable('groups')) {
+            Schema::connection('mysql')->create('groups', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
                 $table->timestamps();
+            });
+        }
+
+        if (!$schema->hasTable('group_user')) {
+            Schema::connection('mysql')->create('group_user', function (Blueprint $table) {
+                $table->foreignId('user_id')->constrained('users')->cascadeOnUpdate()->cascadeOnDelete();
+                $table->foreignId('group_id')->constrained('groups')->cascadeOnUpdate()->cascadeOnDelete();
             });
         }
     }

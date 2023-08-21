@@ -2,6 +2,11 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
+use Jenssegers\Mongodb\Relations\EmbedsMany;
+use Jenssegers\Mongodb\Relations\EmbedsOne;
+use ReflectionException;
+use ReflectionMethod;
+use ReflectionNamedType;
 use function array_key_exists;
 use DateTimeInterface;
 use function explode;
@@ -23,6 +28,8 @@ use function uniqid;
 abstract class Model extends BaseModel
 {
     use HybridRelations, EmbedsRelations;
+
+    public static array $embeddedCache = [];
 
     /**
      * The collection associated with the model.
@@ -148,28 +155,50 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
-//    public function getAttribute($key)
-//    {
-//        if (! $key) {
-//            return;
-//        }
-//
-//        // Dot notation support.
-//        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
-//            return $this->getAttributeValue($key);
-//        }
-//
-//        // This checks for embedded relation support.
-//        if (
-//            method_exists($this, $key)
-//            && ! method_exists(self::class, $key)
-//            && ! $this->hasAttributeGetMutator($key)
-//        ) {
-//            return $this->getRelationValue($key);
-//        }
-//
-//        return parent::getAttribute($key);
-//    }
+    public function getAttribute($key)
+    {
+        if (! $key) {
+            return;
+        }
+
+        // Dot notation support.
+        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
+            return $this->getAttributeValue($key);
+        }
+
+        // This checks for embedded relation support.
+        if (
+            $this->hasEmbeddedRelation($key)
+        ) {
+            return $this->getRelationValue($key);
+        }
+
+        return parent::getAttribute($key);
+    }
+
+    /**
+     * Determine if an attribute is an embedded relation.
+     *
+     * @param string $key
+     * @return bool
+     * @throws ReflectionException
+     */
+    public function hasEmbeddedRelation(string $key): bool
+    {
+        if (! method_exists($this, $method = Str::camel($key))) {
+            return false;
+        }
+
+        if (isset(static::$embeddedCache[get_class($this)][$key])) {
+            return static::$embeddedCache[get_class($this)][$key];
+        }
+
+        $returnType = (new ReflectionMethod($this, $method))->getReturnType();
+
+        return $returnType && static::$embeddedCache[get_class($this)][$key] =
+            $returnType instanceof ReflectionNamedType &&
+            $returnType->getName() === EmbedsOne::class || $returnType->getName() === EmbedsMany::class;
+    }
 
     /**
      * @inheritdoc
@@ -401,7 +430,7 @@ abstract class Model extends BaseModel
     /**
      * Set the parent relation.
      *
-     * @param  \Illuminate\Database\Eloquent\Relations\Relation  $relation
+     * @param Relation $relation
      */
     public function setParentRelation(Relation $relation)
     {
@@ -411,7 +440,7 @@ abstract class Model extends BaseModel
     /**
      * Get the parent relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
+     * @return Relation
      */
     public function getParentRelation()
     {

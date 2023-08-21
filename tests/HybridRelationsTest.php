@@ -13,6 +13,7 @@ class HybridRelationsTest extends TestCase
         MysqlUser::executeSchema();
         MysqlBook::executeSchema();
         MysqlRole::executeSchema();
+//        MysqlGroup::executeSchema();
     }
 
     public function tearDown(): void
@@ -20,7 +21,18 @@ class HybridRelationsTest extends TestCase
         MysqlUser::truncate();
         MysqlBook::truncate();
         MysqlRole::truncate();
+//        MysqlGroup::truncate();
     }
+
+//    public function testMysqlGroups()
+//    {
+//        $user = new MysqlUser;
+//        $user->name = 'John Doe';
+//        $user->save();
+//        $this->assertIsInt($user->id);
+//
+//        $group = $user->groups()->create(['name' => 'test']);
+//    }
 
     public function testMysqlRelations()
     {
