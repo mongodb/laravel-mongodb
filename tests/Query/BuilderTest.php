@@ -758,6 +758,26 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->whereYear('created_at', '>', '2023'),
         ];
 
+        yield 'where time' => [
+            ['find' => [['$expr' => [
+                '$eq' => [
+                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                    '10:11:12',
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereTime('created_at', '10:11:12'),
+        ];
+
+        yield 'where time >' => [
+            ['find' => [['$expr' => [
+                '$gt' => [
+                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                    '10:11:12',
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereTime('created_at', '>', '10:11:12'),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testBasicSelectDistinct */
         yield 'distinct' => [
             ['distinct' => ['foo', [], []]],

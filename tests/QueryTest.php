@@ -25,12 +25,12 @@ class QueryTest extends TestCase
         User::create(['name' => 'Tommy Toe', 'age' => 33, 'title' => 'user']);
         User::create(['name' => 'Yvonne Yoe', 'age' => 35, 'title' => 'admin']);
         User::create(['name' => 'Error', 'age' => null, 'title' => null]);
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => new DateTimeImmutable('2020-04-10 10:53:11'), 'time' => '10:53:11']);
-        Birthday::create(['name' => 'Jane Doe', 'birthday' => new DateTimeImmutable('2021-05-12 10:53:12'), 'time' => '10:53:12']);
-        Birthday::create(['name' => 'Harry Hoe', 'birthday' => new DateTimeImmutable('2021-05-11 10:53:13'), 'time' => '10:53:13']);
-        Birthday::create(['name' => 'Robert Doe', 'birthday' => new DateTimeImmutable('2021-05-12 10:53:14'), 'time' => '10:53:14']);
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => new DateTimeImmutable('2021-05-12 10:53:15'), 'time' => '10:53:15']);
-        Birthday::create(['name' => 'Mark Moe', 'birthday' => new DateTimeImmutable('2022-05-12 10:53:16'), 'time' => '10:53:16']);
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => new DateTimeImmutable('2020-04-10 10:53:11')]);
+        Birthday::create(['name' => 'Jane Doe', 'birthday' => new DateTimeImmutable('2021-05-12 10:53:12')]);
+        Birthday::create(['name' => 'Harry Hoe', 'birthday' => new DateTimeImmutable('2021-05-11 10:53:13')]);
+        Birthday::create(['name' => 'Robert Doe', 'birthday' => new DateTimeImmutable('2021-05-12 10:53:14')]);
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => new DateTimeImmutable('2021-05-12 10:53:15')]);
+        Birthday::create(['name' => 'Mark Moe', 'birthday' => new DateTimeImmutable('2022-05-12 10:53:16')]);
         Birthday::create(['name' => 'Boo']);
     }
 
@@ -267,11 +267,17 @@ class QueryTest extends TestCase
 
     public function testWhereTime(): void
     {
-        $time = Birthday::whereTime('time', '10:53:11')->get();
+        $time = Birthday::whereTime('birthday', '10:53:11')->get();
         $this->assertCount(1, $time);
 
-        $time = Birthday::whereTime('time', '>=', '10:53:14')->get();
+        $time = Birthday::whereTime('birthday', '>=', '10:53:14')->get();
         $this->assertCount(3, $time);
+
+        $time = Birthday::whereTime('birthday', '!=', '10:53:14')->get();
+        $this->assertCount(6, $time);
+
+        $time = Birthday::whereTime('birthday', '<', '10:53:12')->get();
+        $this->assertCount(2, $time);
     }
 
     public function testOrder(): void
