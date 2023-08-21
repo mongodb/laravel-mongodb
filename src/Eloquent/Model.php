@@ -155,7 +155,7 @@ abstract class Model extends BaseModel
         }
 
         // Dot notation support.
-        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
+        if (str_contains($key, '.') && Arr::has($this->attributes, $key)) {
             return $this->getAttributeValue($key);
         }
 
@@ -177,7 +177,7 @@ abstract class Model extends BaseModel
     protected function getAttributeFromArray($key)
     {
         // Support keys in dot notation.
-        if (Str::contains($key, '.')) {
+        if (str_contains($key, '.')) {
             return Arr::get($this->attributes, $key);
         }
 
@@ -195,7 +195,7 @@ abstract class Model extends BaseModel
 
             $value = $builder->convertKey($value);
         } // Support keys in dot notation.
-        elseif (Str::contains($key, '.')) {
+        elseif (str_contains($key, '.')) {
             // Store to a temporary key, then move data to the actual key
             $uniqueKey = uniqid($key);
             parent::setAttribute($uniqueKey, $value);

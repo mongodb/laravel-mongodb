@@ -617,7 +617,7 @@ class Builder extends BaseBuilder
     public function update(array $values, array $options = [])
     {
         // Use $set as default operator.
-        if (! Str::startsWith(key($values), '$')) {
+        if (! str_starts_with(key($values), '$')) {
             $values = ['$set' => $values];
         }
 
@@ -951,7 +951,7 @@ class Builder extends BaseBuilder
             }
 
             // Convert id's.
-            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '._id'))) {
+            if (isset($where['column']) && ($where['column'] == '_id' || str_ends_with($where['column'], '._id'))) {
                 // Multiple values.
                 if (isset($where['values'])) {
                     foreach ($where['values'] as &$value) {
