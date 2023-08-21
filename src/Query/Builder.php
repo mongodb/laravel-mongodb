@@ -116,6 +116,7 @@ class Builder extends BaseBuilder
      * @var array
      */
     protected $conversion = [
+        '=' => 'eq',
         '!=' => 'ne',
         '<>' => 'ne',
         '<' => 'lt',
@@ -1076,7 +1077,7 @@ class Builder extends BaseBuilder
             $operator = $operator === 'regex' ? '=' : 'not';
         }
 
-        if (! isset($operator) || $operator == '=') {
+        if (! isset($operator) || $operator === '=' || $operator === 'eq') {
             $query = [$column => $value];
         } else {
             $query = [$column => ['$'.$operator => $value]];
@@ -1186,39 +1187,27 @@ class Builder extends BaseBuilder
         $startOfDay = new UTCDateTime(Carbon::parse($value)->startOfDay());
         $endOfDay = new UTCDateTime(Carbon::parse($value)->endOfDay());
 
-        $operator = $this->conversion[$operator];
-
         return match($operator) {
-            '=' => [
+            'eq', '=' => [
                 $column => [
                     '$gte' => $startOfDay,
                     '$lte' => $endOfDay,
                 ],
             ],
-            '$ne' => [
+            'ne' => [
                 $column => [
                     '$gt' => $endOfDay,
                     '$lt' => $startOfDay,
                 ],
             ],
-            '$lt' => [
+            'lt', 'gte' => [
                 $column => [
-                    '$lt' => $startOfDay,
+                    '$'.$operator => $startOfDay,
                 ],
             ],
-            '$gt' => [
+            'gt', 'lte' => [
                 $column => [
-                    '$gt' => $endOfDay,
-                ],
-            ],
-            '$lte' => [
-                $column => [
-                    '$lte' => $endOfDay,
-                ],
-            ],
-            '$gte' => [
-                $column => [
-                    '$gte' => $startOfDay,
+                    '$'.$operator => $endOfDay,
                 ],
             ],
         };
@@ -1232,14 +1221,13 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
-        $value = str_starts_with($value, '0') ? intval(str_replace('0', '', $value)) : $value;
+        $value = (int) ltrim($value, '0');
 
         return [
             '$expr' => [
-                $operator => [
+                '$'.$operator => [
                     [
-                        '$month' => '$'.$column
+                        '$month' => '$'.$column,
                     ],
                     $value,
                 ],
@@ -1255,14 +1243,13 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
-        $value = str_starts_with($value, '0') ? intval(str_replace('0', '', $value)) : $value;
+        $value = (int) ltrim($value, '0');
 
         return [
             '$expr' => [
-                $operator => [
+                '$'.$operator => [
                     [
-                        '$dayOfMonth' => '$'.$column
+                        '$dayOfMonth' => '$'.$column,
                     ],
                     $value,
                 ],
@@ -1278,15 +1265,15 @@ class Builder extends BaseBuilder
     {
         extract($where);
 
-        $operator = $operator === '=' ? '$eq' : $this->conversion[$operator];
+        $value = (int) $value;
 
         return [
             '$expr' => [
-                $operator => [
+                '$'.$operator => [
                     [
-                        '$year' => '$'.$column
+                        '$year' => '$'.$column,
                     ],
-                    $value
+                    $value,
                 ],
             ],
         ];

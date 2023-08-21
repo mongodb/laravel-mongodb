@@ -646,6 +646,110 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where('name', 'not regex', '/^acme$/si'),
         ];
 
+        yield 'where date' => [
+            ['find' => [['created_at' => [
+                '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+            ]], []]],
+            fn (Builder $builder) => $builder->whereDate('created_at', '2018-09-30'),
+        ];
+
+        yield 'where date DateTimeImmutable' => [
+            ['find' => [['created_at' => [
+                '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+            ]], []]],
+            fn (Builder $builder) => $builder->whereDate('created_at', '=', new DateTimeImmutable('2018-09-30 15:00:00 +02:00')),
+        ];
+
+        yield 'where date <' => [
+            ['find' => [['created_at' => [
+                '$lt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+            ]], []]],
+            fn (Builder $builder) => $builder->whereDate('created_at', '<', '2018-09-30'),
+        ];
+
+        yield 'where date >=' => [
+            ['find' => [['created_at' => [
+                '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+            ]], []]],
+            fn (Builder $builder) => $builder->whereDate('created_at', '>=', '2018-09-30'),
+        ];
+
+        yield 'where date >' => [
+            ['find' => [['created_at' => [
+                '$gt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+            ]], []]],
+            fn (Builder $builder) => $builder->whereDate('created_at', '>', '2018-09-30'),
+        ];
+
+        yield 'where date <=' => [
+            ['find' => [['created_at' => [
+                '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+            ]], []]],
+            fn (Builder $builder) => $builder->whereDate('created_at', '<=', '2018-09-30'),
+        ];
+
+        yield 'where day' => [
+            ['find' => [['$expr' => [
+                '$eq' => [
+                    ['$dayOfMonth' => '$created_at'],
+                    5,
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereDay('created_at', 5),
+        ];
+
+        yield 'where day > string' => [
+            ['find' => [['$expr' => [
+                '$gt' => [
+                    ['$dayOfMonth' => '$created_at'],
+                    5,
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereDay('created_at', '>', '05'),
+        ];
+
+        yield 'where month' => [
+            ['find' => [['$expr' => [
+                '$eq' => [
+                    ['$month' => '$created_at'],
+                    10,
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereMonth('created_at', 10),
+        ];
+
+        yield 'where month > string' => [
+            ['find' => [['$expr' => [
+                '$gt' => [
+                    ['$month' => '$created_at'],
+                    5,
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereMonth('created_at', '>', '05'),
+        ];
+
+        yield 'where year' => [
+            ['find' => [['$expr' => [
+                '$eq' => [
+                    ['$year' => '$created_at'],
+                    2023,
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereYear('created_at', 2023),
+        ];
+
+        yield 'where year > string' => [
+            ['find' => [['$expr' => [
+                '$gt' => [
+                    ['$year' => '$created_at'],
+                    2023,
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereYear('created_at', '>', '2023'),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testBasicSelectDistinct */
         yield 'distinct' => [
             ['distinct' => ['foo', [], []]],

@@ -18,4 +18,8 @@ class Birthday extends Eloquent
     protected $connection = 'mongodb';
     protected $collection = 'birthday';
     protected $fillable = ['name', 'birthday', 'time'];
+
+    protected $casts = [
+        'birthday' => 'datetime',
+    ];
 }
