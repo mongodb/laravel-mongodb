@@ -1182,14 +1182,12 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereDate(array $where): array
     {
-        extract($where);
+        $startOfDay = new UTCDateTime(Carbon::parse($where['value'])->startOfDay());
+        $endOfDay = new UTCDateTime(Carbon::parse($where['value'])->endOfDay());
 
-        $startOfDay = new UTCDateTime(Carbon::parse($value)->startOfDay());
-        $endOfDay = new UTCDateTime(Carbon::parse($value)->endOfDay());
-
-        return match($operator) {
+        return match($where['operator']) {
             'eq', '=' => [
-                $column => [
+                $where['column'] => [
                     '$gte' => $startOfDay,
                     '$lte' => $endOfDay,
                 ],
@@ -1197,25 +1195,25 @@ class Builder extends BaseBuilder
             'ne' => [
                 '$or' => [
                     [
-                        $column => [
+                        $where['column'] => [
                             '$lt' => $startOfDay,
                         ],
                     ],
                     [
-                        $column => [
+                        $where['column'] => [
                             '$gt' => $endOfDay,
                         ],
                     ],
                 ],
             ],
             'lt', 'gte' => [
-                $column => [
-                    '$'.$operator => $startOfDay,
+                $where['column'] => [
+                    '$'.$where['operator'] => $startOfDay,
                 ],
             ],
             'gt', 'lte' => [
-                $column => [
-                    '$'.$operator => $endOfDay,
+                $where['column'] => [
+                    '$'.$where['operator'] => $endOfDay,
                 ],
             ],
         };
@@ -1227,17 +1225,13 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereMonth(array $where): array
     {
-        extract($where);
-
-        $value = (int) ltrim($value, '0');
-
         return [
             '$expr' => [
-                '$'.$operator => [
+                '$'.$where['operator'] => [
                     [
-                        '$month' => '$'.$column,
+                        '$month' => '$'.$where['column'],
                     ],
-                    $value,
+                    (int) $where['value'],
                 ],
             ],
         ];
@@ -1249,17 +1243,13 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereDay(array $where): array
     {
-        extract($where);
-
-        $value = (int) ltrim($value, '0');
-
         return [
             '$expr' => [
-                '$'.$operator => [
+                '$'.$where['operator'] => [
                     [
-                        '$dayOfMonth' => '$'.$column,
+                        '$dayOfMonth' => '$'.$where['column'],
                     ],
-                    $value,
+                    (int) $where['value'],
                 ],
             ],
         ];
@@ -1271,17 +1261,13 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereYear(array $where): array
     {
-        extract($where);
-
-        $value = (int) $value;
-
         return [
             '$expr' => [
-                '$'.$operator => [
+                '$'.$where['operator'] => [
                     [
-                        '$year' => '$'.$column,
+                        '$year' => '$'.$where['column'],
                     ],
-                    $value,
+                    (int) $where['value'],
                 ],
             ],
         ];
@@ -1293,15 +1279,13 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereTime(array $where): array
     {
-        extract($where);
-
         return [
             '$expr' => [
-                '$'.$operator => [
+                '$'.$where['operator'] => [
                     [
-                        '$dateToString' => ['date' => '$'.$column, 'format' => '%H:%M:%S'],
+                        '$dateToString' => ['date' => '$'.$where['column'], 'format' => '%H:%M:%S'],
                     ],
-                    $value,
+                    $where['value'],
                 ],
             ],
         ];
