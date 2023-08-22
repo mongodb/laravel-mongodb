@@ -220,7 +220,7 @@ class QueryTest extends TestCase
         $this->assertCount(2, $birthdayCount);
 
         $birthdayCount = Birthday::whereDate('birthday', '<>', '2021-05-11')->get();
-        $this->assertCount(5, $birthdayCount);
+        $this->assertCount(6, $birthdayCount);
     }
 
     public function testWhereDay(): void
