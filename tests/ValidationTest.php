@@ -110,6 +110,18 @@ class ValidationTest extends TestCase
         );
         $this->assertTrue($validator->fails());
 
+        $validator = Validator::make(
+            ['name' => '(invalid regex{'],
+            ['name' => 'required|exists:users']
+        );
+        $this->assertTrue($validator->fails());
+
+        $validator = Validator::make(
+            ['name' => ['foo', '(invalid regex{']],
+            ['name' => 'required|exists:users']
+        );
+        $this->assertTrue($validator->fails());
+
         User::create(['name' => '']);
 
         $validator = Validator::make(

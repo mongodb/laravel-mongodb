@@ -49,7 +49,7 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
         }
 
         // Generates a regex like '/^(a|b|c)$/i' which can query multiple values
-        $regex = new Regex('^('.implode('|', $values).')$', 'i');
+        $regex = new Regex('^('.implode('|', array_map(preg_quote(...), $values)).')$', 'i');
 
         $query = $this->table($collection)->where($column, 'regex', $regex);
 
