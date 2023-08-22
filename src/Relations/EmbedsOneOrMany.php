@@ -1,12 +1,12 @@
 <?php
 
-namespace Jenssegers\Mongodb\Relations;
+namespace MongoDB\Laravel\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 abstract class EmbedsOneOrMany extends Relation
 {

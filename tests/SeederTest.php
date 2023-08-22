@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Support\Facades\Artisan;
-use Jenssegers\Mongodb\Tests\Models\User;
-use Jenssegers\Mongodb\Tests\Seeder\DatabaseSeeder;
-use Jenssegers\Mongodb\Tests\Seeder\UserTableSeeder;
+use MongoDB\Laravel\Tests\Models\User;
+use MongoDB\Laravel\Tests\Seeder\DatabaseSeeder;
+use MongoDB\Laravel\Tests\Seeder\UserTableSeeder;
 
 class SeederTest extends TestCase
 {

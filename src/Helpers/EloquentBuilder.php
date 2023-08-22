@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Helpers;
+namespace MongoDB\Laravel\Helpers;
 
 use Illuminate\Database\Eloquent\Builder;
 

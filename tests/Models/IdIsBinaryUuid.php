@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests\Models;
+namespace MongoDB\Laravel\Tests\Models;
 
-use Jenssegers\Mongodb\Eloquent\Casts\BinaryUuid;
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\Casts\BinaryUuid;
+use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class IdIsBinaryUuid extends Eloquent
 {

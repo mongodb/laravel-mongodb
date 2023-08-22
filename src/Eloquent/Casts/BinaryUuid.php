@@ -1,12 +1,12 @@
 <?php
 
-namespace Jenssegers\Mongodb\Eloquent\Casts;
+namespace MongoDB\Laravel\Eloquent\Casts;
 
 use function bin2hex;
 use function hex2bin;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
-use Jenssegers\Mongodb\Eloquent\Model;
 use MongoDB\BSON\Binary;
+use MongoDB\Laravel\Eloquent\Model;
 use function str_replace;
 use function substr;
 

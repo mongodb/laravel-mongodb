@@ -1,10 +1,10 @@
 <?php
 
-namespace Jenssegers\Mongodb;
+namespace MongoDB\Laravel;
 
 use Illuminate\Queue\Failed\NullFailedJobProvider;
 use Illuminate\Queue\QueueServiceProvider;
-use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
+use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 
 class MongodbQueueServiceProvider extends QueueServiceProvider
 {

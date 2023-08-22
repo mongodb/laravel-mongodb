@@ -1,10 +1,10 @@
 <?php
 
-namespace Jenssegers\Mongodb\Eloquent\Casts;
+namespace MongoDB\Laravel\Eloquent\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
-use Jenssegers\Mongodb\Eloquent\Model;
 use MongoDB\BSON\ObjectId as BSONObjectId;
+use MongoDB\Laravel\Eloquent\Model;
 
 class ObjectId implements CastsAttributes
 {

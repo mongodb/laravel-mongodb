@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests\Models;
+namespace MongoDB\Laravel\Tests\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class Client extends Eloquent
 {

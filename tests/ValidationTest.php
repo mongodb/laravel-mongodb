@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Support\Facades\Validator;
-use Jenssegers\Mongodb\Tests\Models\User;
+use MongoDB\Laravel\Tests\Models\User;
 
 class ValidationTest extends TestCase
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Carbon\Carbon;
 use DateTime;
@@ -11,21 +11,21 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
-use Jenssegers\Mongodb\Collection;
-use Jenssegers\Mongodb\Connection;
-use Jenssegers\Mongodb\Eloquent\Model;
-use Jenssegers\Mongodb\Tests\Models\Book;
-use Jenssegers\Mongodb\Tests\Models\Guarded;
-use Jenssegers\Mongodb\Tests\Models\IdIsBinaryUuid;
-use Jenssegers\Mongodb\Tests\Models\IdIsInt;
-use Jenssegers\Mongodb\Tests\Models\IdIsString;
-use Jenssegers\Mongodb\Tests\Models\Item;
-use Jenssegers\Mongodb\Tests\Models\MemberStatus;
-use Jenssegers\Mongodb\Tests\Models\Soft;
-use Jenssegers\Mongodb\Tests\Models\User;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Laravel\Collection;
+use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Tests\Models\Book;
+use MongoDB\Laravel\Tests\Models\Guarded;
+use MongoDB\Laravel\Tests\Models\IdIsBinaryUuid;
+use MongoDB\Laravel\Tests\Models\IdIsInt;
+use MongoDB\Laravel\Tests\Models\IdIsString;
+use MongoDB\Laravel\Tests\Models\Item;
+use MongoDB\Laravel\Tests\Models\MemberStatus;
+use MongoDB\Laravel\Tests\Models\Soft;
+use MongoDB\Laravel\Tests\Models\User;
 
 class ModelTest extends TestCase
 {

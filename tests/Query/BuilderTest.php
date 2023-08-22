@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests\Query;
+namespace MongoDB\Laravel\Tests\Query;
 
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
-use Jenssegers\Mongodb\Connection;
-use Jenssegers\Mongodb\Query\Builder;
-use Jenssegers\Mongodb\Query\Grammar;
-use Jenssegers\Mongodb\Query\Processor;
 use Mockery as m;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Query\Builder;
+use MongoDB\Laravel\Query\Grammar;
+use MongoDB\Laravel\Query\Processor;
 use PHPUnit\Framework\TestCase;
 
 class BuilderTest extends TestCase
@@ -923,7 +923,7 @@ class BuilderTest extends TestCase
 
         yield 'find with single string argument' => [
             \ArgumentCountError::class,
-            'Too few arguments to function Jenssegers\Mongodb\Query\Builder::where("foo"), 1 passed and at least 2 expected when the 1st is a string',
+            'Too few arguments to function MongoDB\Laravel\Query\Builder::where("foo"), 1 passed and at least 2 expected when the 1st is a string',
             fn (Builder $builder) => $builder->where('foo'),
         ];
 

@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests\Models;
+namespace MongoDB\Laravel\Tests\Models;
 
-use Jenssegers\Mongodb\Eloquent\Casts\ObjectId;
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\Casts\ObjectId;
+use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class CastObjectId extends Eloquent
 {

@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
-use Jenssegers\Mongodb\Queue\Failed\MongoFailedJobProvider;
-use Jenssegers\Mongodb\Queue\MongoQueue;
 use Mockery;
+use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
+use MongoDB\Laravel\Queue\MongoQueue;
 
 class QueueTest extends TestCase
 {
@@ -36,7 +36,7 @@ class QueueTest extends TestCase
 
         // Get and reserve the test job (next available)
         $job = Queue::pop('test');
-        $this->assertInstanceOf(\Jenssegers\Mongodb\Queue\MongoJob::class, $job);
+        $this->assertInstanceOf(\MongoDB\Laravel\Queue\MongoJob::class, $job);
         $this->assertEquals(1, $job->isReserved());
         $this->assertEquals(json_encode([
             'uuid' => $uuid,

@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Eloquent;
+namespace MongoDB\Laravel\Eloquent;
 
 use function array_key_exists;
 use DateTimeInterface;
@@ -14,10 +14,10 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use function in_array;
-use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use function uniqid;
 
 abstract class Model extends BaseModel

@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Queue;
+namespace MongoDB\Laravel\Queue;
 
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Queue\Connectors\ConnectorInterface;

@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Queue;
+namespace MongoDB\Laravel\Queue;
 
 use Illuminate\Queue\Jobs\DatabaseJob;
 

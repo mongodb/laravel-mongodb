@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Tests\Models;
+namespace MongoDB\Laravel\Tests\Models;
 
 enum MemberStatus: string
 {

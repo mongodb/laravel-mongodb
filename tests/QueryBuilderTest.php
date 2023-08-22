@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use DateTime;
 use DateTimeImmutable;
@@ -10,10 +10,6 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Testing\Assert;
-use Jenssegers\Mongodb\Collection;
-use Jenssegers\Mongodb\Query\Builder;
-use Jenssegers\Mongodb\Tests\Models\Item;
-use Jenssegers\Mongodb\Tests\Models\User;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -22,6 +18,10 @@ use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber;
 use MongoDB\Driver\Monitoring\CommandSucceededEvent;
+use MongoDB\Laravel\Collection;
+use MongoDB\Laravel\Query\Builder;
+use MongoDB\Laravel\Tests\Models\Item;
+use MongoDB\Laravel\Tests\Models\User;
 
 class QueryBuilderTest extends TestCase
 {
@@ -379,7 +379,7 @@ class QueryBuilderTest extends TestCase
     public function testPushRefuses2ndArgumentWhen1stIsAnArray()
     {
         $this->expectException(\InvalidArgumentException::class);
-        $this->expectExceptionMessage('2nd argument of Jenssegers\Mongodb\Query\Builder::push() must be "null" when 1st argument is an array. Got "string" instead.');
+        $this->expectExceptionMessage('2nd argument of MongoDB\Laravel\Query\Builder::push() must be "null" when 1st argument is an array. Got "string" instead.');
 
         DB::collection('users')->push(['tags' => 'tag1'], 'tag2');
     }

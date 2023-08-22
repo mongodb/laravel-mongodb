@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests\Models;
+namespace MongoDB\Laravel\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
-use Jenssegers\Mongodb\Eloquent\HybridRelations;
+use MongoDB\Laravel\Eloquent\HybridRelations;
 
 class MysqlBook extends EloquentModel
 {

@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb;
+namespace MongoDB\Laravel;
 
 use Exception;
 use MongoDB\BSON\ObjectID;

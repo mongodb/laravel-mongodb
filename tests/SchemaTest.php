@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use Jenssegers\Mongodb\Schema\Blueprint;
+use MongoDB\Laravel\Schema\Blueprint;
 
 class SchemaTest extends TestCase
 {

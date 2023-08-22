@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Auth;
+namespace MongoDB\Laravel\Auth;
 
 use DateTime;
 use DateTimeZone;

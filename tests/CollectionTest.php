@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
-use Jenssegers\Mongodb\Collection;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Collection as MongoCollection;
+use MongoDB\Laravel\Collection;
+use MongoDB\Laravel\Connection;
 
 class CollectionTest extends TestCase
 {

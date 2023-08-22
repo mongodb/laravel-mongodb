@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests\Models;
+namespace MongoDB\Laravel\Tests\Models;
 
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
-use Jenssegers\Mongodb\Relations\EmbedsMany;
+use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Relations\EmbedsMany;
 
 class Address extends Eloquent
 {

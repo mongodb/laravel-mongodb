@@ -1,14 +1,14 @@
 <?php
 
-namespace Jenssegers\Mongodb;
+namespace MongoDB\Laravel;
 
 use function class_exists;
 use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
 use InvalidArgumentException;
-use Jenssegers\Mongodb\Concerns\ManagesTransactions;
 use MongoDB\Client;
 use MongoDB\Database;
+use MongoDB\Laravel\Concerns\ManagesTransactions;
 use Throwable;
 
 /**
@@ -330,7 +330,7 @@ class Connection extends BaseConnection
     {
         if (class_exists(InstalledVersions::class)) {
             try {
-                return self::$version = InstalledVersions::getPrettyVersion('jenssegers/laravel-mongodb');
+                return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-eloquent');
             } catch (Throwable $t) {
                 // Ignore exceptions and return unknown version
             }

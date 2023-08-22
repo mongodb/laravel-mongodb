@@ -1,10 +1,10 @@
 <?php
 
-namespace Jenssegers\Mongodb\Eloquent;
+namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use Jenssegers\Mongodb\Helpers\QueriesRelationships;
 use MongoDB\Driver\Cursor;
+use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Model\BSONDocument;
 
 class Builder extends EloquentBuilder

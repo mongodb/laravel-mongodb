@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Tests\Seeder;
+namespace MongoDB\Laravel\Tests\Seeder;
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
