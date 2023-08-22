@@ -12,6 +12,10 @@ use Jenssegers\Mongodb\Relations\HasOne;
 use Jenssegers\Mongodb\Relations\MorphMany;
 use Jenssegers\Mongodb\Relations\MorphTo;
 
+/**
+ * Cross-database relationships between SQL and MongoDB.
+ * Use this trait in SQL models to define relationships with MongoDB models.
+ */
 trait HybridRelations
 {
     /**
@@ -134,9 +138,7 @@ trait HybridRelations
         // the calling method's name and use that as the relationship name as most
         // of the time this will be what we desire to use for the relationships.
         if ($relation === null) {
-            [$current, $caller] = debug_backtrace(false, 2);
-
-            $relation = $caller['function'];
+            $relation = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
         }
 
         // Check if it is a relation with an original model.
@@ -178,9 +180,7 @@ trait HybridRelations
         // since that is most likely the name of the polymorphic interface. We can
         // use that to get both the class and foreign key that will be utilized.
         if ($name === null) {
-            [$current, $caller] = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
-
-            $name = $caller['function'];
+            $name = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2)[1]['function'];
         }
 
         [$type, $id] = $this->getMorphs(Str::snake($name), $type, $id);

@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use Illuminate\Support\Facades\Schema;
+use Jenssegers\Mongodb\Tests\Models\Location;
+
 class GeospatialTest extends TestCase
 {
     public function setUp(): void

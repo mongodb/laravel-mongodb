@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
-class MysqlBook extends Eloquent
+class MysqlBook extends EloquentModel
 {
     use HybridRelations;
 
@@ -18,7 +21,7 @@ class MysqlBook extends Eloquent
 
     public function author(): BelongsTo
     {
-        return $this->belongsTo('User', 'author_id');
+        return $this->belongsTo(User::class, 'author_id');
     }
 
     /**

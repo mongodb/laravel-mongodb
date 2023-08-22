@@ -2,13 +2,31 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use Illuminate\Database\Connection;
 use Illuminate\Database\MySqlConnection;
+use Illuminate\Support\Facades\DB;
+use Jenssegers\Mongodb\Tests\Models\Book;
+use Jenssegers\Mongodb\Tests\Models\MysqlBook;
+use Jenssegers\Mongodb\Tests\Models\MysqlRole;
+use Jenssegers\Mongodb\Tests\Models\MysqlUser;
+use Jenssegers\Mongodb\Tests\Models\Role;
+use Jenssegers\Mongodb\Tests\Models\User;
+use PDOException;
 
 class HybridRelationsTest extends TestCase
 {
     public function setUp(): void
     {
         parent::setUp();
+
+        /** @var Connection */
+        try {
+            DB::connection('mysql')->select('SELECT 1');
+        } catch (PDOException) {
+            $this->markTestSkipped('MySQL connection is not available.');
+        }
 
         MysqlUser::executeSchema();
         MysqlBook::executeSchema();

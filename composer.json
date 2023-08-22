@@ -19,6 +19,8 @@
     ],
     "license": "MIT",
     "require": {
+        "php": "^8.1",
+        "ext-mongodb": "^1.15",
         "illuminate/support": "^10.0",
         "illuminate/container": "^10.0",
         "illuminate/database": "^10.0",
@@ -36,11 +38,9 @@
         }
     },
     "autoload-dev": {
-        "classmap": [
-            "tests/TestCase.php",
-            "tests/models",
-            "tests/seeds"
-        ]
+        "psr-4": {
+            "Jenssegers\\Mongodb\\Tests\\": "tests/"
+        }
     },
     "suggest": {
         "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB",

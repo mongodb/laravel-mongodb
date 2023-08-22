@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use Illuminate\Support\Facades\Validator;
+use Jenssegers\Mongodb\Tests\Models\User;
+
 class ValidationTest extends TestCase
 {
     public function tearDown(): void
@@ -39,6 +44,12 @@ class ValidationTest extends TestCase
 
         $validator = Validator::make(
             ['name' => 'test doe'],
+            ['name' => 'required|unique:users']
+        );
+        $this->assertFalse($validator->fails());
+
+        $validator = Validator::make(
+            ['name' => 'John'], // Part of an existing value
             ['name' => 'required|unique:users']
         );
         $this->assertFalse($validator->fails());

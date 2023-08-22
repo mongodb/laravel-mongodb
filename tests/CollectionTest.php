@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
 use Jenssegers\Mongodb\Collection;
 use Jenssegers\Mongodb\Connection;
 use MongoDB\BSON\ObjectID;

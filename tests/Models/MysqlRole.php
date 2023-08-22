@@ -2,12 +2,15 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
+use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 
-class MysqlRole extends Eloquent
+class MysqlRole extends EloquentModel
 {
     use HybridRelations;
 
@@ -17,12 +20,12 @@ class MysqlRole extends Eloquent
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo('User');
+        return $this->belongsTo(User::class);
     }
 
     public function mysqlUser(): BelongsTo
     {
-        return $this->belongsTo('MysqlUser');
+        return $this->belongsTo(MysqlUser::class);
     }
 
     /**
