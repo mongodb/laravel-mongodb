@@ -760,7 +760,7 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->whereYear('created_at', '>', '2023'),
         ];
 
-        yield 'where time' => [
+        yield 'where time HH:MM:SS' => [
             ['find' => [['$expr' => [
                 '$eq' => [
                     ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
@@ -768,6 +768,36 @@ class BuilderTest extends TestCase
                 ],
             ]], []]],
             fn (Builder $builder) => $builder->whereTime('created_at', '10:11:12'),
+        ];
+
+        yield 'where time HH:MM' => [
+            ['find' => [['$expr' => [
+                '$eq' => [
+                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M']],
+                    '10:11',
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereTime('created_at', '10:11'),
+        ];
+
+        yield 'where time HH' => [
+            ['find' => [['$expr' => [
+                '$eq' => [
+                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H']],
+                    '10',
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereTime('created_at', '10'),
+        ];
+
+        yield 'where time DateTime' => [
+            ['find' => [['$expr' => [
+                '$eq' => [
+                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                    '10:11:12',
+                ],
+            ]], []]],
+            fn (Builder $builder) => $builder->whereTime('created_at', new \DateTimeImmutable('2023-08-22 10:11:12')),
         ];
 
         yield 'where time >' => [
@@ -907,6 +937,24 @@ class BuilderTest extends TestCase
             \LogicException::class,
             'Missing expected ending delimiter "/" in regular expression "/foo#bar"',
             fn (Builder $builder) => $builder->where('name', 'regex', '/foo#bar'),
+        ];
+
+        yield 'whereTime with invalid time' => [
+            \InvalidArgumentException::class,
+            'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "10:11:12:13"',
+            fn (Builder $builder) => $builder->whereTime('created_at', '10:11:12:13'),
+        ];
+
+        yield 'whereTime out of range' => [
+            \InvalidArgumentException::class,
+            'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "23:70"',
+            fn (Builder $builder) => $builder->whereTime('created_at', '23:70'),
+        ];
+
+        yield 'whereTime invalid type' => [
+            \InvalidArgumentException::class,
+            'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "stdClass"',
+            fn (Builder $builder) => $builder->whereTime('created_at', new \stdClass()),
         ];
     }
 

@@ -270,6 +270,12 @@ class QueryTest extends TestCase
         $time = Birthday::whereTime('birthday', '10:53:11')->get();
         $this->assertCount(1, $time);
 
+        $time = Birthday::whereTime('birthday', '10:53')->get();
+        $this->assertCount(6, $time);
+
+        $time = Birthday::whereTime('birthday', '10')->get();
+        $this->assertCount(6, $time);
+
         $time = Birthday::whereTime('birthday', '>=', '10:53:14')->get();
         $this->assertCount(3, $time);
 

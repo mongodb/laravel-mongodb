@@ -1273,11 +1273,21 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereTime(array $where): array
     {
+        if (! is_string($where['value']) || ! preg_match('/^[0-2][0-9](:[0-6][0-9](:[0-6][0-9])?)?$/', $where['value'], $matches)) {
+            throw new \InvalidArgumentException(sprintf('Invalid time format, expected HH:MM:SS, HH:MM or HH, got "%s"', is_string($where['value']) ? $where['value'] : get_debug_type($where['value'])));
+        }
+
+        $format = match (count($matches)) {
+            1 => '%H',
+            2 => '%H:%M',
+            3 => '%H:%M:%S',
+        };
+
         return [
             '$expr' => [
                 '$'.$where['operator'] => [
                     [
-                        '$dateToString' => ['date' => '$'.$where['column'], 'format' => '%H:%M:%S'],
+                        '$dateToString' => ['date' => '$'.$where['column'], 'format' => $format],
                     ],
                     $where['value'],
                 ],
