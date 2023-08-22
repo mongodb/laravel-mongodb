@@ -1,5 +1,5 @@
 {
-    "name": "mshamaseen/laravel-mongodb",
+    "name": "jenssegers/mongodb",
     "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
     "keywords": [
         "laravel",

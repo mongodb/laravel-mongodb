@@ -60,17 +60,26 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
 ### Laravel version Compatibility
 
 | Laravel | Package        | Maintained         |
-|:--------|:---------------|:-------------------|
-| 10.x    | 10.x           | :white_check_mark: |
+| :------ | :------------- | :----------------- |
 | 9.x     | 3.9.x          | :white_check_mark: |
-| 8.x     | 3.8.x          | :x:                |
+| 8.x     | 3.8.x          | :white_check_mark: |
 | 7.x     | 3.7.x          | :x:                |
 | 6.x     | 3.6.x          | :x:                |
+| 5.8.x   | 3.5.x          | :x:                |
+| 5.7.x   | 3.4.x          | :x:                |
+| 5.6.x   | 3.4.x          | :x:                |
+| 5.5.x   | 3.3.x          | :x:                |
+| 5.4.x   | 3.2.x          | :x:                |
+| 5.3.x   | 3.1.x or 3.2.x | :x:                |
+| 5.2.x   | 2.3.x or 3.0.x | :x:                |
+| 5.1.x   | 2.2.x or 3.0.x | :x:                |
+| 5.0.x   | 2.1.x          | :x:                |
+| 4.2.x   | 2.0.x          | :x:                |
 
 Install the package via Composer:
 
 ```bash
-$ composer require mshamaseen/laravel-mongodb
+$ composer require jenssegers/mongodb
 ```
 
 ### Laravel
@@ -855,7 +864,7 @@ If you want to embed models, rather than referencing them, you can use the `embe
 
 **REMEMBER**: These relations return Eloquent collections, they don't return query builder objects!
 
-**Breaking changes** starting from v10.0 you need to define the return type of EmbedsOne and EmbedsMany relation for it to work
+**Breaking changes** starting from v4.0 you need to define the return type of EmbedsOne and EmbedsMany relation for it to work
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model;
@@ -949,7 +958,7 @@ Embedded relations will return a Collection of embedded items instead of a query
 
 The embedsOne relation is similar to the embedsMany relation, but only embeds a single model.
 
-**Breaking changes** starting from v10.0 you need to define the return type of EmbedsOne and EmbedsMany relation for it to work
+**Breaking changes** starting from v4.0 you need to define the return type of EmbedsOne and EmbedsMany relation for it to work
 
 ```php
 use Jenssegers\Mongodb\Eloquent\Model;

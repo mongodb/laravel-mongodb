@@ -2,9 +2,9 @@ name: CI
 
 on:
     push:
-        branches: [ "master" ]
+        branches:
+        tags:
     pull_request:
-        branches: [ "master" ]
 
 jobs:
     php-cs-fixer:
@@ -30,7 +30,6 @@ jobs:
 
     build:
         runs-on: ${{ matrix.os }}
-        timeout-minutes: 10
         name: PHP v${{ matrix.php }} with MongoDB ${{ matrix.mongodb }}
         strategy:
             matrix:
