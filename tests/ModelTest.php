@@ -834,12 +834,12 @@ class ModelTest extends TestCase
         User::create(['name' => 'spork', 'tags' => ['sharp', 'pointy', 'round', 'bowl']]);
         User::create(['name' => 'spoon', 'tags' => ['round', 'bowl']]);
 
-        $count = 0;
-        User::chunkById(2, function (EloquentCollection $items) use (&$count) {
-            $count += count($items);
+        $names = [];
+        User::chunkById(2, function (EloquentCollection $items) use (&$names) {
+            $names = array_merge($names, $items->pluck('name')->all());
         });
 
-        $this->assertEquals(3, $count);
+        $this->assertEquals(['fork', 'spork', 'spoon'], $names);
     }
 
     public function testTruncateModel()
