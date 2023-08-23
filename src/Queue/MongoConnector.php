@@ -4,7 +4,6 @@ namespace Jenssegers\Mongodb\Queue;
 
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Queue\Connectors\ConnectorInterface;
-use Illuminate\Support\Arr;
 
 class MongoConnector implements ConnectorInterface
 {
@@ -34,10 +33,10 @@ class MongoConnector implements ConnectorInterface
     public function connect(array $config)
     {
         return new MongoQueue(
-            $this->connections->connection(Arr::get($config, 'connection')),
+            $this->connections->connection($config['connection'] ?? null),
             $config['table'],
             $config['queue'],
-            Arr::get($config, 'expire', 60)
+            $config['expire'] ?? 60
         );
     }
 }
