@@ -203,6 +203,38 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(20, $jane['age']);
     }
 
+    public function testUpdateOperators()
+    {
+        DB::collection('users')->insert([
+            ['name' => 'Jane Doe', 'age' => 20],
+            ['name' => 'John Doe', 'age' => 19],
+        ]);
+
+        DB::collection('users')->where('name', 'John Doe')->update(
+            [
+                '$unset' => ['age' => 1],
+                'ageless' => true,
+            ]
+        );
+        DB::collection('users')->where('name', 'Jane Doe')->update(
+            [
+                '$inc' => ['age' => 1],
+                '$set' => ['pronoun' => 'she'],
+                'ageless' => false,
+            ]
+        );
+
+        $john = DB::collection('users')->where('name', 'John Doe')->first();
+        $jane = DB::collection('users')->where('name', 'Jane Doe')->first();
+
+        $this->assertArrayNotHasKey('age', $john);
+        $this->assertTrue($john['ageless']);
+
+        $this->assertEquals(21, $jane['age']);
+        $this->assertEquals('she', $jane['pronoun']);
+        $this->assertFalse($jane['ageless']);
+    }
+
     public function testDelete()
     {
         DB::collection('users')->insert([

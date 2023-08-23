@@ -18,6 +18,7 @@ All notable changes to this project will be documented in this file.
 - Support `%` and `_` in `like` expression [#17](https://github.com/GromNaN/laravel-mongodb/pull/17) by [@GromNaN](https://github.com/GromNaN).
 - Change signature of `Query\Builder::__constructor` to match the parent class [#26](https://github.com/GromNaN/laravel-mongodb-private/pull/26) by [@GromNaN](https://github.com/GromNaN).
 - Fix Query on `whereDate`, `whereDay`, `whereMonth`, `whereYear`, `whereTime` to use MongoDB operators [#2570](https://github.com/jenssegers/laravel-mongodb/pull/2376) by [@Davpyu](https://github.com/Davpyu) and [@GromNaN](https://github.com/GromNaN).
+- `Model::unset()` does not persist the change. Call `Model::save()` to persist the change [#2578](https://github.com/jenssegers/laravel-mongodb/pull/2578) by [@GromNaN](https://github.com/GromNaN).
 
 ## [3.9.2] - 2022-09-01
 

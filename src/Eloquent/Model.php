@@ -20,6 +20,9 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use function uniqid;
 
+/**
+ * @method void unset(string|string[] $columns) Remove one or more fields.
+ */
 abstract class Model extends BaseModel
 {
     use HybridRelations, EmbedsRelations;
@@ -51,6 +54,13 @@ abstract class Model extends BaseModel
      * @var Relation
      */
     protected $parentRelation;
+
+    /**
+     * List of field names to unset from the document on save.
+     *
+     * @var array{string, true}
+     */
+    private array $unset = [];
 
     /**
      * Custom accessor for the model's id.
@@ -151,7 +161,12 @@ abstract class Model extends BaseModel
     public function getAttribute($key)
     {
         if (! $key) {
-            return;
+            return null;
+        }
+
+        // An unset attribute is null or throw an exception.
+        if (isset($this->unset[$key])) {
+            return $this->throwMissingAttributeExceptionIfApplicable($key);
         }
 
         // Dot notation support.
@@ -206,6 +221,9 @@ abstract class Model extends BaseModel
             return $this;
         }
 
+        // Setting an attribute cancels the unset operation.
+        unset($this->unset[$key]);
+
         return parent::setAttribute($key, $value);
     }
 
@@ -242,9 +260,29 @@ abstract class Model extends BaseModel
     /**
      * @inheritdoc
      */
+    public function getDirty()
+    {
+        $dirty = parent::getDirty();
+
+        // The specified value in the $unset expression does not impact the operation.
+        if (! empty($this->unset)) {
+            $dirty['$unset'] = $this->unset;
+        }
+
+        return $dirty;
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function originalIsEquivalent($key)
     {
         if (! array_key_exists($key, $this->original)) {
+            return false;
+        }
+
+        // Calling unset on an attribute marks it as "not equivalent".
+        if (isset($this->unset[$key])) {
             return false;
         }
 
@@ -276,10 +314,33 @@ abstract class Model extends BaseModel
     }
 
     /**
+     * @inheritdoc
+     */
+    public function offsetUnset($offset): void
+    {
+        parent::offsetUnset($offset);
+
+        // Force unsetting even if the attribute is not set.
+        // End user can optimize DB calls by checking if the attribute is set before unsetting it.
+        $this->unset[$offset] = true;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function offsetSet($offset, $value): void
+    {
+        parent::offsetSet($offset, $value);
+
+        // Setting an attribute cancels the unset operation.
+        unset($this->unset[$offset]);
+    }
+
+    /**
      * Remove one or more fields.
      *
-     * @param  mixed  $columns
-     * @return int
+     * @param  string|string[]  $columns
+     * @return void
      */
     public function drop($columns)
     {
@@ -289,9 +350,6 @@ abstract class Model extends BaseModel
         foreach ($columns as $column) {
             $this->__unset($column);
         }
-
-        // Perform unset only on current document
-        return $this->newQuery()->where($this->getKeyName(), $this->getKey())->unset($columns);
     }
 
     /**
