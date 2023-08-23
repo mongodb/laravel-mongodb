@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use Jenssegers\Mongodb\Connection;
 use Jenssegers\Mongodb\Query\Builder;
+use Jenssegers\Mongodb\Query\Grammar;
 use Jenssegers\Mongodb\Query\Processor;
 use Mockery as m;
 use MongoDB\BSON\Regex;
@@ -838,7 +839,8 @@ class BuilderTest extends TestCase
         $connection = m::mock(Connection::class);
         $processor = m::mock(Processor::class);
         $connection->shouldReceive('getSession')->andReturn(null);
+        $connection->shouldReceive('getQueryGrammar')->andReturn(new Grammar());
 
-        return new Builder($connection, $processor);
+        return new Builder($connection, null, $processor);
     }
 }
