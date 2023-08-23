@@ -511,7 +511,7 @@ class ModelTest extends TestCase
         $this->assertTrue($user->originalIsEquivalent('note1'));
 
         // Unset the value
-        unset($user['note1']);
+        $user->unset('note1');
         $this->assertFalse(isset($user->note1));
         $this->assertNull($user['note1']);
         $this->assertFalse($user->originalIsEquivalent('note1'));

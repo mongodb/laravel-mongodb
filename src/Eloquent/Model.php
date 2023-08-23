@@ -20,9 +20,6 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use function uniqid;
 
-/**
- * @method void unset(string|string[] $columns) Remove one or more fields.
- */
 abstract class Model extends BaseModel
 {
     use HybridRelations, EmbedsRelations;
@@ -341,8 +338,21 @@ abstract class Model extends BaseModel
      *
      * @param  string|string[]  $columns
      * @return void
+     *
+     * @deprecated Use unset() instead.
      */
     public function drop($columns)
+    {
+        $this->unset($columns);
+    }
+
+    /**
+     * Remove one or more fields.
+     *
+     * @param  string|string[]  $columns
+     * @return void
+     */
+    public function unset($columns)
     {
         $columns = Arr::wrap($columns);
 
@@ -558,19 +568,6 @@ abstract class Model extends BaseModel
     protected function isGuardableColumn($key)
     {
         return true;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function __call($method, $parameters)
-    {
-        // Unset method
-        if ($method == 'unset') {
-            return $this->drop(...$parameters);
-        }
-
-        return parent::__call($method, $parameters);
     }
 
     /**
