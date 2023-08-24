@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Jenssegers\Mongodb\Tests\Models;
 
-use DateTimeInterface;
 use Carbon\Carbon;
+use DateTimeInterface;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
