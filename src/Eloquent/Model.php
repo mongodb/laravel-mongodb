@@ -154,6 +154,7 @@ abstract class Model extends BaseModel
 
     /**
      * @inheritdoc
+     * @throws ReflectionException
      */
     public function getAttribute($key)
     {
@@ -183,7 +184,7 @@ abstract class Model extends BaseModel
      * @return bool
      * @throws ReflectionException
      */
-    public function hasEmbeddedRelation(string $key): bool
+    private function hasEmbeddedRelation(string $key): bool
     {
         if (! method_exists($this, $method = Str::camel($key))) {
             return false;
@@ -195,7 +196,7 @@ abstract class Model extends BaseModel
 
         $returnType = (new ReflectionMethod($this, $method))->getReturnType();
 
-        return $returnType && static::$embeddedCache[get_class($this)][$key] =
+        return $returnType && static::$embeddedCache[static::class][$key] =
             $returnType instanceof ReflectionNamedType &&
             $returnType->getName() === EmbedsOne::class || $returnType->getName() === EmbedsMany::class;
     }
