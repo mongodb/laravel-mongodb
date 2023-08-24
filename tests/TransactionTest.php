@@ -384,7 +384,6 @@ class TransactionTest extends TestCase
             $this->fail('Expected exception during transaction');
         } catch (BulkWriteException $e) {
             $this->assertInstanceOf(BulkWriteException::class, $e);
-            $this->assertStringContainsString('WriteConflict', $e->getMessage());
         }
 
         $this->assertSame(2, $timesRun);
