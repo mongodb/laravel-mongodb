@@ -156,18 +156,10 @@ class Builder extends EloquentBuilder
     /**
      * @inheritdoc
      */
-    public function chunkById($count, callable $callback, $column = '_id', $alias = null)
-    {
-        return parent::chunkById($count, $callback, $column, $alias);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function raw($expression = null)
+    public function raw($value = null)
     {
         // Get raw results from the query builder.
-        $results = $this->query->raw($expression);
+        $results = $this->query->raw($value);
 
         // Convert MongoCursor results to a collection of models.
         if ($results instanceof Cursor) {

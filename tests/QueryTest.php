@@ -2,6 +2,12 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use Jenssegers\Mongodb\Tests\Models\Birthday;
+use Jenssegers\Mongodb\Tests\Models\Scoped;
+use Jenssegers\Mongodb\Tests\Models\User;
+
 class QueryTest extends TestCase
 {
     protected static $started = false;
@@ -64,6 +70,21 @@ class QueryTest extends TestCase
         $this->assertCount(2, $users);
     }
 
+    public function testRegexp(): void
+    {
+        User::create(['name' => 'Simple', 'company' => 'acme']);
+        User::create(['name' => 'With slash', 'company' => 'oth/er']);
+
+        $users = User::where('company', 'regexp', '/^acme$/')->get();
+        $this->assertCount(1, $users);
+
+        $users = User::where('company', 'regexp', '/^ACME$/i')->get();
+        $this->assertCount(1, $users);
+
+        $users = User::where('company', 'regexp', '/^oth\/er$/')->get();
+        $this->assertCount(1, $users);
+    }
+
     public function testLike(): void
     {
         $users = User::where('name', 'like', '%doe')->get();
@@ -76,6 +97,12 @@ class QueryTest extends TestCase
         $this->assertCount(3, $users);
 
         $users = User::where('name', 'like', 't%')->get();
+        $this->assertCount(1, $users);
+
+        $users = User::where('name', 'like', 'j___ doe')->get();
+        $this->assertCount(2, $users);
+
+        $users = User::where('name', 'like', '_oh_ _o_')->get();
         $this->assertCount(1, $users);
     }
 

@@ -2,16 +2,23 @@
 
 namespace Jenssegers\Mongodb;
 
+use function class_exists;
+use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
-use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use Jenssegers\Mongodb\Concerns\ManagesTransactions;
 use MongoDB\Client;
 use MongoDB\Database;
+use Throwable;
 
+/**
+ * @mixin Database
+ */
 class Connection extends BaseConnection
 {
     use ManagesTransactions;
+
+    private static ?string $version = null;
 
     /**
      * The MongoDB database handler.
@@ -40,7 +47,7 @@ class Connection extends BaseConnection
         $dsn = $this->getDsn($config);
 
         // You can pass options directly to the MongoDB constructor
-        $options = Arr::get($config, 'options', []);
+        $options = $config['options'] ?? [];
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
@@ -66,7 +73,7 @@ class Connection extends BaseConnection
      */
     public function collection($collection)
     {
-        $query = new Query\Builder($this, $this->getPostProcessor());
+        $query = new Query\Builder($this, $this->getQueryGrammar(), $this->getPostProcessor());
 
         return $query->from($collection);
     }
@@ -168,6 +175,11 @@ class Connection extends BaseConnection
         if (isset($config['driver_options']) && is_array($config['driver_options'])) {
             $driverOptions = $config['driver_options'];
         }
+
+        $driverOptions['driver'] = [
+            'name' => 'laravel-mongodb',
+            'version' => self::getVersion(),
+        ];
 
         // Check if the credentials are not already set in the options
         if (! isset($options['username']) && ! empty($config['username'])) {
@@ -307,5 +319,23 @@ class Connection extends BaseConnection
     public function __call($method, $parameters)
     {
         return $this->db->$method(...$parameters);
+    }
+
+    private static function getVersion(): string
+    {
+        return self::$version ?? self::lookupVersion();
+    }
+
+    private static function lookupVersion(): string
+    {
+        if (class_exists(InstalledVersions::class)) {
+            try {
+                return self::$version = InstalledVersions::getPrettyVersion('jenssegers/laravel-mongodb');
+            } catch (Throwable $t) {
+                // Ignore exceptions and return unknown version
+            }
+        }
+
+        return self::$version = 'unknown';
     }
 }

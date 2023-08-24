@@ -1,7 +1,6 @@
-ARG PHP_VERSION=8.0
-ARG COMPOSER_VERSION=2.0
+ARG PHP_VERSION=8.1
+ARG COMPOSER_VERSION=2.5.4
 
-FROM composer:${COMPOSER_VERSION}
 FROM php:${PHP_VERSION}-cli
 
 RUN apt-get update && \
@@ -10,6 +9,16 @@ RUN apt-get update && \
     pecl install xdebug && docker-php-ext-enable xdebug && \
     docker-php-ext-install -j$(nproc) pdo_mysql zip
 
-COPY --from=composer /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer:${COMPOSER_VERSION} /usr/bin/composer /usr/local/bin/composer
 
 WORKDIR /code
+
+COPY composer.* ./
+
+RUN composer install
+
+COPY ./ ./
+
+RUN composer install
+
+CMD ["./vendor/bin/phpunit"]

@@ -52,7 +52,7 @@ class EmbedsMany extends EmbedsOneOrMany
         }
 
         // Push the new model to the database.
-        $result = $this->getBaseQuery()->push($this->localKey, $model->getAttributes(), true);
+        $result = $this->toBase()->push($this->localKey, $model->getAttributes(), true);
 
         // Attach the model to its parent.
         if ($result) {
@@ -83,7 +83,7 @@ class EmbedsMany extends EmbedsOneOrMany
         $values = $this->getUpdateValues($model->getDirty(), $this->localKey.'.$.');
 
         // Update document in database.
-        $result = $this->getBaseQuery()->where($this->localKey.'.'.$model->getKeyName(), $foreignKey)
+        $result = $this->toBase()->where($this->localKey.'.'.$model->getKeyName(), $foreignKey)
             ->update($values);
 
         // Attach the model to its parent.
@@ -112,7 +112,7 @@ class EmbedsMany extends EmbedsOneOrMany
         // Get the correct foreign key value.
         $foreignKey = $this->getForeignKeyValue($model);
 
-        $result = $this->getBaseQuery()->pull($this->localKey, [$model->getKeyName() => $foreignKey]);
+        $result = $this->toBase()->pull($this->localKey, [$model->getKeyName() => $foreignKey]);
 
         if ($result) {
             $this->dissociate($model);

@@ -2,18 +2,23 @@
 
 namespace Jenssegers\Mongodb\Eloquent;
 
+use function array_key_exists;
 use DateTimeInterface;
+use function explode;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
+use function in_array;
 use Jenssegers\Mongodb\Query\Builder as QueryBuilder;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
+use function uniqid;
 
 abstract class Model extends BaseModel
 {
@@ -94,7 +99,7 @@ abstract class Model extends BaseModel
             $value = parent::asDateTime($value);
         }
 
-        return new UTCDateTime($value->format('Uv'));
+        return new UTCDateTime($value);
     }
 
     /**
@@ -129,7 +134,7 @@ abstract class Model extends BaseModel
      */
     public function freshTimestamp()
     {
-        return new UTCDateTime(Date::now()->format('Uv'));
+        return new UTCDateTime(Date::now());
     }
 
     /**
@@ -150,7 +155,7 @@ abstract class Model extends BaseModel
         }
 
         // Dot notation support.
-        if (Str::contains($key, '.') && Arr::has($this->attributes, $key)) {
+        if (str_contains($key, '.') && Arr::has($this->attributes, $key)) {
             return $this->getAttributeValue($key);
         }
 
@@ -172,7 +177,7 @@ abstract class Model extends BaseModel
     protected function getAttributeFromArray($key)
     {
         // Support keys in dot notation.
-        if (Str::contains($key, '.')) {
+        if (str_contains($key, '.')) {
             return Arr::get($this->attributes, $key);
         }
 
@@ -190,14 +195,15 @@ abstract class Model extends BaseModel
 
             $value = $builder->convertKey($value);
         } // Support keys in dot notation.
-        elseif (Str::contains($key, '.')) {
-            if (in_array($key, $this->getDates()) && $value) {
-                $value = $this->fromDateTime($value);
-            }
+        elseif (str_contains($key, '.')) {
+            // Store to a temporary key, then move data to the actual key
+            $uniqueKey = uniqid($key);
+            parent::setAttribute($uniqueKey, $value);
 
-            Arr::set($this->attributes, $key, $value);
+            Arr::set($this->attributes, $key, $this->attributes[$uniqueKey] ?? null);
+            unset($this->attributes[$uniqueKey]);
 
-            return;
+            return $this;
         }
 
         return parent::setAttribute($key, $value);
@@ -219,13 +225,6 @@ abstract class Model extends BaseModel
                 $value = (string) $value;
             } elseif ($value instanceof Binary) {
                 $value = (string) $value->getData();
-            }
-        }
-
-        // Convert dot-notation dates.
-        foreach ($this->getDates() as $key) {
-            if (Str::contains($key, '.') && Arr::has($attributes, $key)) {
-                Arr::set($attributes, $key, (string) $this->asDateTime(Arr::get($attributes, $key)));
             }
         }
 
@@ -434,7 +433,7 @@ abstract class Model extends BaseModel
     {
         $connection = $this->getConnection();
 
-        return new QueryBuilder($connection, $connection->getPostProcessor());
+        return new QueryBuilder($connection, $connection->getQueryGrammar(), $connection->getPostProcessor());
     }
 
     /**
@@ -514,5 +513,59 @@ abstract class Model extends BaseModel
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function addCastAttributesToArray(array $attributes, array $mutatedAttributes)
+    {
+        foreach ($this->getCasts() as $key => $castType) {
+            if (! Arr::has($attributes, $key) || Arr::has($mutatedAttributes, $key)) {
+                continue;
+            }
+
+            $originalValue = Arr::get($attributes, $key);
+
+            // Here we will cast the attribute. Then, if the cast is a date or datetime cast
+            // then we will serialize the date for the array. This will convert the dates
+            // to strings based on the date format specified for these Eloquent models.
+            $castValue = $this->castAttribute(
+                $key, $originalValue
+            );
+
+            // If the attribute cast was a date or a datetime, we will serialize the date as
+            // a string. This allows the developers to customize how dates are serialized
+            // into an array without affecting how they are persisted into the storage.
+            if ($castValue !== null && in_array($castType, ['date', 'datetime', 'immutable_date', 'immutable_datetime'])) {
+                $castValue = $this->serializeDate($castValue);
+            }
+
+            if ($castValue !== null && ($this->isCustomDateTimeCast($castType) ||
+                    $this->isImmutableCustomDateTimeCast($castType))) {
+                $castValue = $castValue->format(explode(':', $castType, 2)[1]);
+            }
+
+            if ($castValue instanceof DateTimeInterface &&
+                $this->isClassCastable($key)) {
+                $castValue = $this->serializeDate($castValue);
+            }
+
+            if ($castValue !== null && $this->isClassSerializable($key)) {
+                $castValue = $this->serializeClassCastableAttribute($key, $castValue);
+            }
+
+            if ($this->isEnumCastable($key) && (! $castValue instanceof Arrayable)) {
+                $castValue = $castValue !== null ? $this->getStorableEnumValue($castValue) : null;
+            }
+
+            if ($castValue instanceof Arrayable) {
+                $castValue = $castValue->toArray();
+            }
+
+            Arr::set($attributes, $key, $castValue);
+        }
+
+        return $attributes;
     }
 }

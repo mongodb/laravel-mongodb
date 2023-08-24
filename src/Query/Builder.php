@@ -2,6 +2,7 @@
 
 namespace Jenssegers\Mongodb\Query;
 
+use Carbon\CarbonPeriod;
 use Closure;
 use DateTimeInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
@@ -9,12 +10,12 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
-use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Connection;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Driver\Cursor;
 use RuntimeException;
 
 /**
@@ -22,6 +23,8 @@ use RuntimeException;
  */
 class Builder extends BaseBuilder
 {
+    private const REGEX_DELIMITERS = ['/', '#', '~'];
+
     /**
      * The database collection.
      *
@@ -58,13 +61,6 @@ class Builder extends BaseBuilder
     public $options = [];
 
     /**
-     * Indicate if we are executing a pagination query.
-     *
-     * @var bool
-     */
-    public $paginating = false;
-
-    /**
      * All of the available clause operators.
      *
      * @var array
@@ -96,6 +92,7 @@ class Builder extends BaseBuilder
         'all',
         'size',
         'regex',
+        'not regex',
         'text',
         'slice',
         'elemmatch',
@@ -118,24 +115,23 @@ class Builder extends BaseBuilder
      * @var array
      */
     protected $conversion = [
-        '=' => '=',
-        '!=' => '$ne',
-        '<>' => '$ne',
-        '<' => '$lt',
-        '<=' => '$lte',
-        '>' => '$gt',
-        '>=' => '$gte',
+        '!=' => 'ne',
+        '<>' => 'ne',
+        '<' => 'lt',
+        '<=' => 'lte',
+        '>' => 'gt',
+        '>=' => 'gte',
+        'regexp' => 'regex',
+        'not regexp' => 'not regex',
+        'ilike' => 'like',
+        'elemmatch' => 'elemMatch',
+        'geointersects' => 'geoIntersects',
+        'geowithin' => 'geoWithin',
+        'nearsphere' => 'nearSphere',
+        'maxdistance' => 'maxDistance',
+        'centersphere' => 'centerSphere',
+        'uniquedocs' => 'uniqueDocs',
     ];
-
-    /**
-     * @inheritdoc
-     */
-    public function __construct(Connection $connection, Processor $processor)
-    {
-        $this->grammar = new Grammar;
-        $this->connection = $connection;
-        $this->processor = $processor;
-    }
 
     /**
      * Set the projections.
@@ -215,27 +211,21 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Execute the query as a fresh "select" statement.
+     * Return the MongoDB query to be run in the form of an element array like ['method' => [arguments]].
      *
-     * @param  array  $columns
-     * @param  bool  $returnLazy
-     * @return array|static[]|Collection|LazyCollection
+     * Example: ['find' => [['name' => 'John Doe'], ['projection' => ['birthday' => 1]]]]
+     *
+     * @return array<string, mixed[]>
      */
-    public function getFresh($columns = [], $returnLazy = false)
+    public function toMql(): array
     {
-        // If no columns have been specified for the select statement, we will set them
-        // here to either the passed columns, or the standard default of retrieving
-        // all of the columns on the table using the "wildcard" column character.
-        if ($this->columns === null) {
-            $this->columns = $columns;
-        }
+        $columns = $this->columns ?? [];
 
         // Drop all columns if * is present, MongoDB does not work this way.
-        if (in_array('*', $this->columns)) {
-            $this->columns = [];
+        if (in_array('*', $columns)) {
+            $columns = [];
         }
 
-        // Compile wheres
         $wheres = $this->compileWheres();
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
@@ -254,7 +244,7 @@ class Builder extends BaseBuilder
                 }
 
                 // Do the same for other columns that are selected.
-                foreach ($this->columns as $column) {
+                foreach ($columns as $column) {
                     $key = str_replace('.', '_', $column);
 
                     $group[$key] = ['$last' => '$'.$column];
@@ -274,26 +264,12 @@ class Builder extends BaseBuilder
                         $column = implode('.', $splitColumns);
                     }
 
-                    // Null coalense only > 7.2
-
                     $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
 
                     if (in_array('*', $aggregations) && $function == 'count') {
-                        // When ORM is paginating, count doesnt need a aggregation, just a cursor operation
-                        // elseif added to use this only in pagination
-                        // https://docs.mongodb.com/manual/reference/method/cursor.count/
-                        // count method returns int
+                        $options = $this->inheritConnectionOptions();
 
-                        $totalResults = $this->collection->count($wheres);
-                        // Preserving format expected by framework
-                        $results = [
-                            [
-                                '_id'       => null,
-                                'aggregate' => $totalResults,
-                            ],
-                        ];
-
-                        return new Collection($results);
+                        return ['countDocuments' => [$wheres, $options]];
                     } elseif ($function == 'count') {
                         // Translate count into sum.
                         $group['aggregate'] = ['$sum' => 1];
@@ -348,34 +324,23 @@ class Builder extends BaseBuilder
 
             $options = $this->inheritConnectionOptions($options);
 
-            // Execute aggregation
-            $results = iterator_to_array($this->collection->aggregate($pipeline, $options));
-
-            // Return results
-            return new Collection($results);
+            return ['aggregate' => [$pipeline, $options]];
         } // Distinct query
         elseif ($this->distinct) {
             // Return distinct results directly
-            $column = isset($this->columns[0]) ? $this->columns[0] : '_id';
+            $column = isset($columns[0]) ? $columns[0] : '_id';
 
             $options = $this->inheritConnectionOptions();
 
-            // Execute distinct
-            $result = $this->collection->distinct($column, $wheres ?: [], $options);
-
-            return new Collection($result);
+            return ['distinct' => [$column, $wheres, $options]];
         } // Normal query
         else {
-            $columns = [];
-
             // Convert select columns to simple projections.
-            foreach ($this->columns as $column) {
-                $columns[$column] = true;
-            }
+            $projection = array_fill_keys($columns, true);
 
             // Add custom projections.
             if ($this->projections) {
-                $columns = array_merge($columns, $this->projections);
+                $projection = array_merge($projection, $this->projections);
             }
             $options = [];
 
@@ -395,8 +360,8 @@ class Builder extends BaseBuilder
             if ($this->hint) {
                 $options['hint'] = $this->hint;
             }
-            if ($columns) {
-                $options['projection'] = $columns;
+            if ($projection) {
+                $options['projection'] = $projection;
             }
 
             // Fix for legacy support, converts the results to arrays instead of objects.
@@ -409,22 +374,62 @@ class Builder extends BaseBuilder
 
             $options = $this->inheritConnectionOptions($options);
 
-            // Execute query and get MongoCursor
-            $cursor = $this->collection->find($wheres, $options);
-
-            if ($returnLazy) {
-                return LazyCollection::make(function () use ($cursor) {
-                    foreach ($cursor as $item) {
-                        yield $item;
-                    }
-                });
-            }
-
-            // Return results as an array with numeric keys
-            $results = iterator_to_array($cursor, false);
-
-            return new Collection($results);
+            return ['find' => [$wheres, $options]];
         }
+    }
+
+    /**
+     * Execute the query as a fresh "select" statement.
+     *
+     * @param  array  $columns
+     * @param  bool  $returnLazy
+     * @return array|static[]|Collection|LazyCollection
+     */
+    public function getFresh($columns = [], $returnLazy = false)
+    {
+        // If no columns have been specified for the select statement, we will set them
+        // here to either the passed columns, or the standard default of retrieving
+        // all of the columns on the table using the "wildcard" column character.
+        if ($this->columns === null) {
+            $this->columns = $columns;
+        }
+
+        // Drop all columns if * is present, MongoDB does not work this way.
+        if (in_array('*', $this->columns)) {
+            $this->columns = [];
+        }
+
+        $command = $this->toMql();
+        assert(count($command) >= 1, 'At least one method call is required to execute a query');
+
+        $result = $this->collection;
+        foreach ($command as $method => $arguments) {
+            $result = call_user_func_array([$result, $method], $arguments);
+        }
+
+        // countDocuments method returns int, wrap it to the format expected by the framework
+        if (is_int($result)) {
+            $result = [
+                [
+                    '_id'       => null,
+                    'aggregate' => $result,
+                ],
+            ];
+        }
+
+        if ($returnLazy) {
+            return LazyCollection::make(function () use ($result) {
+                foreach ($result as $item) {
+                    yield $item;
+                }
+            });
+        }
+
+        if ($result instanceof Cursor) {
+            $result = $result->toArray();
+        }
+
+        return new Collection($result);
     }
 
     /**
@@ -505,11 +510,16 @@ class Builder extends BaseBuilder
 
     /**
      * @inheritdoc
+     * @param int|string|array $direction
      */
     public function orderBy($column, $direction = 'asc')
     {
         if (is_string($direction)) {
-            $direction = (strtolower($direction) == 'asc' ? 1 : -1);
+            $direction = match ($direction) {
+                'asc', 'ASC' => 1,
+                'desc', 'DESC' => -1,
+                default => throw new \InvalidArgumentException('Order direction must be "asc" or "desc".'),
+            };
         }
 
         if ($column == 'natural') {
@@ -522,43 +532,24 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Add a "where all" clause to the query.
-     *
-     * @param  string  $column
-     * @param  array  $values
-     * @param  string  $boolean
-     * @param  bool  $not
-     * @return $this
-     */
-    public function whereAll($column, array $values, $boolean = 'and', $not = false)
-    {
-        $type = 'all';
-
-        $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
-
-        return $this;
-    }
-
-    /**
      * @inheritdoc
+     * @param list{mixed, mixed}|CarbonPeriod $values
      */
     public function whereBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         $type = 'between';
 
+        if ($values instanceof Collection) {
+            $values = $values->all();
+        }
+
+        if (is_array($values) && (! array_is_list($values) || count($values) !== 2)) {
+            throw new \InvalidArgumentException('Between $values must be a list with exactly two elements: [min, max]');
+        }
+
         $this->wheres[] = compact('column', 'type', 'boolean', 'values', 'not');
 
         return $this;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function forPage($page, $perPage = 15)
-    {
-        $this->paginating = true;
-
-        return $this->skip(($page - 1) * $perPage)->take($perPage);
     }
 
     /**
@@ -615,7 +606,7 @@ class Builder extends BaseBuilder
     public function update(array $values, array $options = [])
     {
         // Use $set as default operator.
-        if (! Str::startsWith(key($values), '$')) {
+        if (! str_starts_with(key($values), '$')) {
             $values = ['$set' => $values];
         }
 
@@ -756,16 +747,16 @@ class Builder extends BaseBuilder
     /**
      * @inheritdoc
      */
-    public function raw($expression = null)
+    public function raw($value = null)
     {
         // Execute the closure on the mongodb collection
-        if ($expression instanceof Closure) {
-            return call_user_func($expression, $this->collection);
+        if ($value instanceof Closure) {
+            return call_user_func($value, $this->collection);
         }
 
         // Create an expression for the given value
-        if ($expression !== null) {
-            return new Expression($expression);
+        if ($value !== null) {
+            return new Expression($value);
         }
 
         // Quick access to the mongodb collection
@@ -775,9 +766,9 @@ class Builder extends BaseBuilder
     /**
      * Append one or more values to an array.
      *
-     * @param  mixed  $column
-     * @param  mixed  $value
-     * @param  bool  $unique
+     * @param  string|array  $column
+     * @param  mixed         $value
+     * @param  bool          $unique
      * @return int
      */
     public function push($column, $value = null, $unique = false)
@@ -786,9 +777,12 @@ class Builder extends BaseBuilder
         $operator = $unique ? '$addToSet' : '$push';
 
         // Check if we are pushing multiple values.
-        $batch = (is_array($value) && array_keys($value) === range(0, count($value) - 1));
+        $batch = is_array($value) && array_is_list($value);
 
         if (is_array($column)) {
+            if ($value !== null) {
+                throw new \InvalidArgumentException(sprintf('2nd argument of %s() must be "null" when 1st argument is an array. Got "%s" instead.', __METHOD__, get_debug_type($value)));
+            }
             $query = [$operator => $column];
         } elseif ($batch) {
             $query = [$operator => [$column => ['$each' => $value]]];
@@ -802,14 +796,14 @@ class Builder extends BaseBuilder
     /**
      * Remove one or more values from an array.
      *
-     * @param  mixed  $column
-     * @param  mixed  $value
+     * @param  string|array  $column
+     * @param  mixed         $value
      * @return int
      */
     public function pull($column, $value = null)
     {
         // Check if we passed an associative array.
-        $batch = (is_array($value) && array_keys($value) === range(0, count($value) - 1));
+        $batch = is_array($value) && array_is_list($value);
 
         // If we are pulling multiple values, we need to use $pullAll.
         $operator = $batch ? '$pullAll' : '$pull';
@@ -826,7 +820,7 @@ class Builder extends BaseBuilder
     /**
      * Remove one or more fields.
      *
-     * @param  mixed  $columns
+     * @param  string|string[]  $columns
      * @return int
      */
     public function drop($columns)
@@ -848,10 +842,12 @@ class Builder extends BaseBuilder
 
     /**
      * @inheritdoc
+     *
+     * @return static
      */
     public function newQuery()
     {
-        return new self($this->connection, $this->processor);
+        return new static($this->connection, $this->grammar, $this->processor);
     }
 
     /**
@@ -871,7 +867,7 @@ class Builder extends BaseBuilder
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
-        $result = $this->collection->UpdateMany($wheres, $query, $options);
+        $result = $this->collection->updateMany($wheres, $query, $options);
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
         }
@@ -906,12 +902,16 @@ class Builder extends BaseBuilder
         $params = func_get_args();
 
         // Remove the leading $ from operators.
-        if (func_num_args() == 3) {
+        if (func_num_args() >= 3) {
             $operator = &$params[1];
 
-            if (Str::startsWith($operator, '$')) {
+            if (is_string($operator) && str_starts_with($operator, '$')) {
                 $operator = substr($operator, 1);
             }
+        }
+
+        if (func_num_args() == 1 && is_string($column)) {
+            throw new \ArgumentCountError(sprintf('Too few arguments to function %s("%s"), 1 passed and at least 2 expected when the 1st is a string.', __METHOD__, $column));
         }
 
         return parent::where(...$params);
@@ -935,25 +935,14 @@ class Builder extends BaseBuilder
             if (isset($where['operator'])) {
                 $where['operator'] = strtolower($where['operator']);
 
-                // Operator conversions
-                $convert = [
-                    'regexp' => 'regex',
-                    'elemmatch' => 'elemMatch',
-                    'geointersects' => 'geoIntersects',
-                    'geowithin' => 'geoWithin',
-                    'nearsphere' => 'nearSphere',
-                    'maxdistance' => 'maxDistance',
-                    'centersphere' => 'centerSphere',
-                    'uniquedocs' => 'uniqueDocs',
-                ];
-
-                if (array_key_exists($where['operator'], $convert)) {
-                    $where['operator'] = $convert[$where['operator']];
+                // Convert aliased operators
+                if (isset($this->conversion[$where['operator']])) {
+                    $where['operator'] = $this->conversion[$where['operator']];
                 }
             }
 
             // Convert id's.
-            if (isset($where['column']) && ($where['column'] == '_id' || Str::endsWith($where['column'], '._id'))) {
+            if (isset($where['column']) && ($where['column'] == '_id' || str_ends_with($where['column'], '._id'))) {
                 // Multiple values.
                 if (isset($where['values'])) {
                     foreach ($where['values'] as &$value) {
@@ -970,35 +959,49 @@ class Builder extends BaseBuilder
                 if (is_array($where['value'])) {
                     array_walk_recursive($where['value'], function (&$item, $key) {
                         if ($item instanceof DateTimeInterface) {
-                            $item = new UTCDateTime($item->format('Uv'));
+                            $item = new UTCDateTime($item);
                         }
                     });
                 } else {
                     if ($where['value'] instanceof DateTimeInterface) {
-                        $where['value'] = new UTCDateTime($where['value']->format('Uv'));
+                        $where['value'] = new UTCDateTime($where['value']);
                     }
                 }
             } elseif (isset($where['values'])) {
-                array_walk_recursive($where['values'], function (&$item, $key) {
-                    if ($item instanceof DateTimeInterface) {
-                        $item = new UTCDateTime($item->format('Uv'));
-                    }
-                });
+                if (is_array($where['values'])) {
+                    array_walk_recursive($where['values'], function (&$item, $key) {
+                        if ($item instanceof DateTimeInterface) {
+                            $item = new UTCDateTime($item);
+                        }
+                    });
+                } elseif ($where['values'] instanceof CarbonPeriod) {
+                    $where['values'] = [
+                        new UTCDateTime($where['values']->getStartDate()),
+                        new UTCDateTime($where['values']->getEndDate()),
+                    ];
+                }
             }
 
-            // The next item in a "chain" of wheres devices the boolean of the
-            // first item. So if we see that there are multiple wheres, we will
-            // use the operator of the next where.
-            if ($i == 0 && count($wheres) > 1 && $where['boolean'] == 'and') {
-                $where['boolean'] = $wheres[$i + 1]['boolean'];
+            // In a sequence of "where" clauses, the logical operator of the
+            // first "where" is determined by the 2nd "where".
+            // $where['boolean'] = "and", "or", "and not" or "or not"
+            if ($i == 0 && count($wheres) > 1
+                && str_starts_with($where['boolean'], 'and')
+                && str_starts_with($wheres[$i + 1]['boolean'], 'or')
+            ) {
+                $where['boolean'] = 'or'.(str_ends_with($where['boolean'], 'not') ? ' not' : '');
             }
 
             // We use different methods to compile different wheres.
             $method = "compileWhere{$where['type']}";
             $result = $this->{$method}($where);
 
+            if (str_ends_with($where['boolean'], 'not')) {
+                $result = ['$not' => $result];
+            }
+
             // Wrap the where with an $or operator.
-            if ($where['boolean'] == 'or') {
+            if (str_starts_with($where['boolean'], 'or')) {
                 $result = ['$or' => [$result]];
             }
 
@@ -1019,62 +1022,61 @@ class Builder extends BaseBuilder
      * @param  array  $where
      * @return array
      */
-    protected function compileWhereAll(array $where): array
-    {
-        extract($where);
-
-        return [$column => ['$all' => array_values($values)]];
-    }
-
-    /**
-     * @param  array  $where
-     * @return array
-     */
     protected function compileWhereBasic(array $where): array
     {
         extract($where);
 
         // Replace like or not like with a Regex instance.
         if (in_array($operator, ['like', 'not like'])) {
-            if ($operator === 'not like') {
-                $operator = 'not';
-            } else {
-                $operator = '=';
-            }
+            $regex = preg_replace(
+                [
+                    // Unescaped % are converted to .*
+                    // Group consecutive %
+                    '#(^|[^\\\])%+#',
+                    // Unescaped _ are converted to .
+                    // Use positive lookahead to replace consecutive _
+                    '#(?<=^|[^\\\\])_#',
+                    // Escaped \% or \_ are unescaped
+                    '#\\\\\\\(%|_)#',
+                ],
+                ['$1.*', '$1.', '$1'],
+                // Escape any regex reserved characters, so they are matched
+                // All backslashes are converted to \\, which are needed in matching regexes.
+                preg_quote($value),
+            );
+            $value = new Regex('^'.$regex.'$', 'i');
 
-            // Convert to regular expression.
-            $regex = preg_replace('#(^|[^\\\])%#', '$1.*', preg_quote($value));
+            // For inverse like operations, we can just use the $not operator with the Regex
+            $operator = $operator === 'like' ? '=' : 'not';
+        }
 
-            // Convert like to regular expression.
-            if (! Str::startsWith($value, '%')) {
-                $regex = '^'.$regex;
-            }
-            if (! Str::endsWith($value, '%')) {
-                $regex .= '$';
-            }
-
-            $value = new Regex($regex, 'i');
-        } // Manipulate regexp operations.
-        elseif (in_array($operator, ['regexp', 'not regexp', 'regex', 'not regex'])) {
+        // Manipulate regex operations.
+        elseif (in_array($operator, ['regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
-            if (! $value instanceof Regex) {
-                $e = explode('/', $value);
-                $flag = end($e);
-                $regstr = substr($value, 1, -(strlen($flag) + 1));
-                $value = new Regex($regstr, $flag);
+            if (is_string($value)) {
+                // Detect the delimiter and validate the preg pattern
+                $delimiter = substr($value, 0, 1);
+                if (! in_array($delimiter, self::REGEX_DELIMITERS)) {
+                    throw new \LogicException(sprintf('Missing expected starting delimiter in regular expression "%s", supported delimiters are: %s', $value, implode(' ', self::REGEX_DELIMITERS)));
+                }
+                $e = explode($delimiter, $value);
+                // We don't try to detect if the last delimiter is escaped. This would be an invalid regex.
+                if (count($e) < 3) {
+                    throw new \LogicException(sprintf('Missing expected ending delimiter "%s" in regular expression "%s"', $delimiter, $value));
+                }
+                // Flags are after the last delimiter
+                $flags = end($e);
+                // Extract the regex string between the delimiters
+                $regstr = substr($value, 1, -1 - strlen($flags));
+                $value = new Regex($regstr, $flags);
             }
 
-            // For inverse regexp operations, we can just use the $not operator
-            // and pass it a Regex instence.
-            if (Str::startsWith($operator, 'not')) {
-                $operator = 'not';
-            }
+            // For inverse regex operations, we can just use the $not operator with the Regex
+            $operator = $operator === 'regex' ? '=' : 'not';
         }
 
         if (! isset($operator) || $operator == '=') {
             $query = [$column => $value];
-        } elseif (array_key_exists($operator, $this->conversion)) {
-            $query = [$column => [$this->conversion[$operator] => $value]];
         } else {
             $query = [$column => ['$'.$operator => $value]];
         }
@@ -1133,7 +1135,7 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereNotNull(array $where): array
     {
-        $where['operator'] = '!=';
+        $where['operator'] = 'ne';
         $where['value'] = null;
 
         return $this->compileWhereBasic($where);
@@ -1286,5 +1288,95 @@ class Builder extends BaseBuilder
         }
 
         return parent::__call($method, $parameters);
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function toSql()
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB. Try "toMql()" instead.');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function toRawSql()
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB. Try "toMql()" instead.');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function whereColumn($first, $operator = null, $second = null, $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function whereFullText($columns, $value, array $options = [], $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function groupByRaw($sql, array $bindings = [])
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function orderByRaw($sql, $bindings = [])
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function unionAll($query)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function union($query, $all = false)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function having($column, $operator = null, $value = null, $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function havingRaw($sql, array $bindings = [], $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function havingBetween($column, iterable $values, $boolean = 'and', $not = false)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function whereIntegerInRaw($column, $values, $boolean = 'and', $not = false)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function orWhereIntegerInRaw($column, $values)
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function whereIntegerNotInRaw($column, $values, $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
+    {
+        throw new \BadMethodCallException('This method is not supported by MongoDB');
     }
 }

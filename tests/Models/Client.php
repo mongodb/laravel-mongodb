@@ -2,6 +2,8 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
@@ -15,16 +17,16 @@ class Client extends Eloquent
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany('User');
+        return $this->belongsToMany(User::class);
     }
 
     public function photo(): MorphOne
     {
-        return $this->morphOne('Photo', 'imageable');
+        return $this->morphOne(Photo::class, 'has_image');
     }
 
     public function addresses(): HasMany
     {
-        return $this->hasMany('Address', 'data.client_id', 'data.client_id');
+        return $this->hasMany(Address::class, 'data.client_id', 'data.client_id');
     }
 }

@@ -72,4 +72,9 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return 'whereIn';
     }
+
+    public function getQualifiedForeignKeyName(): string
+    {
+        return $this->foreignKey;
+    }
 }

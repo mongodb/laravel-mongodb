@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests\Models;
+
+use DateTimeInterface;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
@@ -24,6 +27,7 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
  * @property \Carbon\Carbon $created_at
  * @property \Carbon\Carbon $updated_at
  * @property string $username
+ * @property MemberStatus member_status
  */
 class User extends Eloquent implements AuthenticatableContract, CanResetPasswordContract
 {
@@ -33,57 +37,61 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
     use Notifiable;
 
     protected $connection = 'mongodb';
-    protected $dates = ['birthday', 'entry.date'];
+    protected $casts = [
+        'birthday' => 'datetime',
+        'entry.date' => 'datetime',
+        'member_status' => MemberStatus::class,
+    ];
     protected static $unguarded = true;
 
     public function books()
     {
-        return $this->hasMany('Book', 'author_id');
+        return $this->hasMany(Book::class, 'author_id');
     }
 
     public function mysqlBooks()
     {
-        return $this->hasMany('MysqlBook', 'author_id');
+        return $this->hasMany(MysqlBook::class, 'author_id');
     }
 
     public function items()
     {
-        return $this->hasMany('Item');
+        return $this->hasMany(Item::class);
     }
 
     public function role()
     {
-        return $this->hasOne('Role');
+        return $this->hasOne(Role::class);
     }
 
     public function mysqlRole()
     {
-        return $this->hasOne('MysqlRole');
+        return $this->hasOne(MysqlRole::class);
     }
 
     public function clients()
     {
-        return $this->belongsToMany('Client');
+        return $this->belongsToMany(Client::class);
     }
 
     public function groups()
     {
-        return $this->belongsToMany('Group', 'groups', 'users', 'groups', '_id', '_id', 'groups');
+        return $this->belongsToMany(Group::class, 'groups', 'users', 'groups', '_id', '_id', 'groups');
     }
 
     public function photos()
     {
-        return $this->morphMany('Photo', 'imageable');
+        return $this->morphMany(Photo::class, 'has_image');
     }
 
     public function addresses()
     {
-        return $this->embedsMany('Address');
+        return $this->embedsMany(Address::class);
     }
 
     public function father()
     {
-        return $this->embedsOne('User');
+        return $this->embedsOne(self::class);
     }
 
     protected function serializeDate(DateTimeInterface $date)

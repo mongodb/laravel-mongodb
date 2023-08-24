@@ -33,7 +33,7 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Save a new model and attach it to the parent model.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model|bool
      */
     public function performInsert(Model $model)
@@ -50,7 +50,7 @@ class EmbedsOne extends EmbedsOneOrMany
             return $this->parent->save() ? $model : false;
         }
 
-        $result = $this->getBaseQuery()->update([$this->localKey => $model->getAttributes()]);
+        $result = $this->toBase()->update([$this->localKey => $model->getAttributes()]);
 
         // Attach the model to its parent.
         if ($result) {
@@ -63,7 +63,7 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Save an existing model and attach it to the parent model.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model|bool
      */
     public function performUpdate(Model $model)
@@ -76,7 +76,7 @@ class EmbedsOne extends EmbedsOneOrMany
 
         $values = $this->getUpdateValues($model->getDirty(), $this->localKey.'.');
 
-        $result = $this->getBaseQuery()->update($values);
+        $result = $this->toBase()->update($values);
 
         // Attach the model to its parent.
         if ($result) {
@@ -101,7 +101,7 @@ class EmbedsOne extends EmbedsOneOrMany
         }
 
         // Overwrite the local key with an empty array.
-        $result = $this->getBaseQuery()->update([$this->localKey => null]);
+        $result = $this->toBase()->update([$this->localKey => null]);
 
         // Detach the model from its parent.
         if ($result) {
@@ -114,7 +114,7 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Attach the model to its parent.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Model
      */
     public function associate(Model $model)
@@ -145,8 +145,8 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Get the name of the "where in" method for eager loading.
      *
-     * @param \Illuminate\Database\Eloquent\Model $model
-     * @param string $key
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  string  $key
      * @return string
      */
     protected function whereInMethod(EloquentModel $model, $key)

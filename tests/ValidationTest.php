@@ -2,6 +2,11 @@
 
 declare(strict_types=1);
 
+namespace Jenssegers\Mongodb\Tests;
+
+use Illuminate\Support\Facades\Validator;
+use Jenssegers\Mongodb\Tests\Models\User;
+
 class ValidationTest extends TestCase
 {
     public function tearDown(): void
@@ -39,6 +44,12 @@ class ValidationTest extends TestCase
 
         $validator = Validator::make(
             ['name' => 'test doe'],
+            ['name' => 'required|unique:users']
+        );
+        $this->assertFalse($validator->fails());
+
+        $validator = Validator::make(
+            ['name' => 'John'], // Part of an existing value
             ['name' => 'required|unique:users']
         );
         $this->assertFalse($validator->fails());
@@ -90,6 +101,32 @@ class ValidationTest extends TestCase
         $validator = Validator::make(
             ['name' => ['test name', 'john doe']],
             ['name' => 'required|exists:users']
+        );
+        $this->assertFalse($validator->fails());
+
+        $validator = Validator::make(
+            ['name' => ['test name', 'john']], // Part of an existing value
+            ['name' => 'required|exists:users']
+        );
+        $this->assertTrue($validator->fails());
+
+        $validator = Validator::make(
+            ['name' => '(invalid regex{'],
+            ['name' => 'required|exists:users']
+        );
+        $this->assertTrue($validator->fails());
+
+        $validator = Validator::make(
+            ['name' => ['foo', '(invalid regex{']],
+            ['name' => 'required|exists:users']
+        );
+        $this->assertTrue($validator->fails());
+
+        User::create(['name' => '']);
+
+        $validator = Validator::make(
+            ['name' => []],
+            ['name' => 'exists:users']
         );
         $this->assertFalse($validator->fails());
     }
