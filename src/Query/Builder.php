@@ -8,6 +8,7 @@ use DateTimeInterface;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use Jenssegers\Mongodb\Connection;
@@ -115,6 +116,7 @@ class Builder extends BaseBuilder
      * @var array
      */
     protected $conversion = [
+        '=' => 'eq',
         '!=' => 'ne',
         '<>' => 'ne',
         '<' => 'lt',
@@ -1075,7 +1077,7 @@ class Builder extends BaseBuilder
             $operator = $operator === 'regex' ? '=' : 'not';
         }
 
-        if (! isset($operator) || $operator == '=') {
+        if (! isset($operator) || $operator === '=' || $operator === 'eq') {
             $query = [$column => $value];
         } else {
             $query = [$column => ['$'.$operator => $value]];
@@ -1180,12 +1182,35 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereDate(array $where): array
     {
-        extract($where);
+        $startOfDay = new UTCDateTime(Carbon::parse($where['value'])->startOfDay());
+        $endOfDay = new UTCDateTime(Carbon::parse($where['value'])->endOfDay());
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
-
-        return $this->compileWhereBasic($where);
+        return match($where['operator']) {
+            'eq', '=' => [
+                $where['column'] => [
+                    '$gte' => $startOfDay,
+                    '$lte' => $endOfDay,
+                ],
+            ],
+            'ne' => [
+                $where['column'] => [
+                    '$not' => [
+                        '$gte' => $startOfDay,
+                        '$lte' => $endOfDay,
+                    ],
+                ],
+            ],
+            'lt', 'gte' => [
+                $where['column'] => [
+                    '$'.$where['operator'] => $startOfDay,
+                ],
+            ],
+            'gt', 'lte' => [
+                $where['column'] => [
+                    '$'.$where['operator'] => $endOfDay,
+                ],
+            ],
+        };
     }
 
     /**
@@ -1194,12 +1219,16 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereMonth(array $where): array
     {
-        extract($where);
-
-        $where['operator'] = $operator;
-        $where['value'] = $value;
-
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                '$'.$where['operator'] => [
+                    [
+                        '$month' => '$'.$where['column'],
+                    ],
+                    (int) $where['value'],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1208,12 +1237,16 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereDay(array $where): array
     {
-        extract($where);
-
-        $where['operator'] = $operator;
-        $where['value'] = $value;
-
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                '$'.$where['operator'] => [
+                    [
+                        '$dayOfMonth' => '$'.$where['column'],
+                    ],
+                    (int) $where['value'],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1222,12 +1255,16 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereYear(array $where): array
     {
-        extract($where);
-
-        $where['operator'] = $operator;
-        $where['value'] = $value;
-
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                '$'.$where['operator'] => [
+                    [
+                        '$year' => '$'.$where['column'],
+                    ],
+                    (int) $where['value'],
+                ],
+            ],
+        ];
     }
 
     /**
@@ -1236,12 +1273,26 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereTime(array $where): array
     {
-        extract($where);
+        if (! is_string($where['value']) || ! preg_match('/^[0-2][0-9](:[0-6][0-9](:[0-6][0-9])?)?$/', $where['value'], $matches)) {
+            throw new \InvalidArgumentException(sprintf('Invalid time format, expected HH:MM:SS, HH:MM or HH, got "%s"', is_string($where['value']) ? $where['value'] : get_debug_type($where['value'])));
+        }
 
-        $where['operator'] = $operator;
-        $where['value'] = $value;
+        $format = match (count($matches)) {
+            1 => '%H',
+            2 => '%H:%M',
+            3 => '%H:%M:%S',
+        };
 
-        return $this->compileWhereBasic($where);
+        return [
+            '$expr' => [
+                '$'.$where['operator'] => [
+                    [
+                        '$dateToString' => ['date' => '$'.$where['column'], 'format' => $format],
+                    ],
+                    $where['value'],
+                ],
+            ],
+        ];
     }
 
     /**
