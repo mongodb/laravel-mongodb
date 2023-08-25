@@ -607,9 +607,12 @@ class Builder extends BaseBuilder
      */
     public function update(array $values, array $options = [])
     {
-        // Use $set as default operator.
-        if (! str_starts_with(key($values), '$')) {
-            $values = ['$set' => $values];
+        // Use $set as default operator for field names that are not in an operator
+        foreach ($values as $key => $value) {
+            if (! str_starts_with($key, '$')) {
+                $values['$set'][$key] = $value;
+                unset($values[$key]);
+            }
         }
 
         $options = $this->inheritConnectionOptions($options);

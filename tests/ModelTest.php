@@ -474,6 +474,10 @@ class ModelTest extends TestCase
         $user1->unset('note1');
 
         $this->assertFalse(isset($user1->note1));
+
+        $user1->save();
+
+        $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
         $this->assertTrue(isset($user2->note1));
         $this->assertTrue(isset($user2->note2));
@@ -488,9 +492,60 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user2->note2));
 
         $user2->unset(['note1', 'note2']);
+        $user2->save();
 
         $this->assertFalse(isset($user2->note1));
         $this->assertFalse(isset($user2->note2));
+
+        // Re-re-fetch to be sure
+        $user2 = User::find($user2->_id);
+
+        $this->assertFalse(isset($user2->note1));
+        $this->assertFalse(isset($user2->note2));
+    }
+
+    public function testUnsetAndSet(): void
+    {
+        $user = User::create(['name' => 'John Doe', 'note1' => 'ABC', 'note2' => 'DEF']);
+
+        $this->assertTrue($user->originalIsEquivalent('note1'));
+
+        // Unset the value
+        $user->unset('note1');
+        $this->assertFalse(isset($user->note1));
+        $this->assertNull($user['note1']);
+        $this->assertFalse($user->originalIsEquivalent('note1'));
+        $this->assertTrue($user->isDirty());
+        $this->assertSame(['$unset' => ['note1' => true]], $user->getDirty());
+
+        // Reset the previous value
+        $user->note1 = 'ABC';
+        $this->assertTrue($user->originalIsEquivalent('note1'));
+        $this->assertFalse($user->isDirty());
+        $this->assertSame([], $user->getDirty());
+
+        // Change the value
+        $user->note1 = 'GHI';
+        $this->assertTrue(isset($user->note1));
+        $this->assertSame('GHI', $user['note1']);
+        $this->assertFalse($user->originalIsEquivalent('note1'));
+        $this->assertTrue($user->isDirty());
+        $this->assertSame(['note1' => 'GHI'], $user->getDirty());
+
+        // Fetch to be sure the changes are not persisted yet
+        $userCheck = User::find($user->_id);
+        $this->assertSame('ABC', $userCheck['note1']);
+
+        // Persist the changes
+        $user->save();
+
+        // Re-fetch to be sure
+        $user = User::find($user->_id);
+
+        $this->assertTrue(isset($user->note1));
+        $this->assertSame('GHI', $user->note1);
+        $this->assertTrue($user->originalIsEquivalent('note1'));
+        $this->assertFalse($user->isDirty());
     }
 
     public function testDates(): void
