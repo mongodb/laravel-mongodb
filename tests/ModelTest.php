@@ -515,11 +515,13 @@ class ModelTest extends TestCase
         $this->assertFalse(isset($user->note1));
         $this->assertNull($user['note1']);
         $this->assertFalse($user->originalIsEquivalent('note1'));
+        $this->assertTrue($user->isDirty());
         $this->assertSame(['$unset' => ['note1' => true]], $user->getDirty());
 
         // Reset the previous value
         $user->note1 = 'ABC';
         $this->assertTrue($user->originalIsEquivalent('note1'));
+        $this->assertFalse($user->isDirty());
         $this->assertSame([], $user->getDirty());
 
         // Change the value
@@ -527,6 +529,7 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user->note1));
         $this->assertSame('GHI', $user['note1']);
         $this->assertFalse($user->originalIsEquivalent('note1'));
+        $this->assertTrue($user->isDirty());
         $this->assertSame(['note1' => 'GHI'], $user->getDirty());
 
         // Fetch to be sure the changes are not persisted yet
@@ -542,6 +545,7 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user->note1));
         $this->assertSame('GHI', $user->note1);
         $this->assertTrue($user->originalIsEquivalent('note1'));
+        $this->assertFalse($user->isDirty());
     }
 
     public function testDates(): void
