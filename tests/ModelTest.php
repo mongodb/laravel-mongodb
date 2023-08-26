@@ -876,10 +876,45 @@ class ModelTest extends TestCase
     public function testGetDirtyDates(): void
     {
         $user = new User();
-        $user->setRawAttributes(['name' => 'John Doe', 'birthday' => new DateTime('19 august 1989')], true);
+        $user->name = 'John Doe';
+        $user->birthday = new DateTime('19 august 1989');
+        $user->syncOriginal();
         $this->assertEmpty($user->getDirty());
 
         $user->birthday = new DateTime('19 august 1989');
+        $this->assertEmpty($user->getDirty());
+    }
+
+    public function testGetDirty()
+    {
+        $user = new User([
+            'name' => 'John Doe',
+            'email' => 'john.doe@example.com',
+            'phone' => '123456789',
+        ]);
+
+        $user->save();
+
+        $this->assertFalse($user->isDirty());
+
+        $user->phone = '1234555555';
+        $this->assertTrue($user->isDirty());
+
+        $dirty = $user->getDirty();
+        $this->assertArrayHasKey('phone', $dirty);
+        $this->assertEquals('1234555555', $dirty['phone']);
+
+        $user->email = 'jane.doe@example.com';
+        $this->assertTrue($user->isDirty());
+        $dirty = $user->getDirty();
+        $this->assertArrayHasKey('phone', $dirty);
+        $this->assertArrayHasKey('email', $dirty);
+        $this->assertEquals('1234555555', $dirty['phone']);
+        $this->assertEquals('jane.doe@example.com', $dirty['email']);
+
+        $user->save();
+
+        $this->assertFalse($user->isDirty());
         $this->assertEmpty($user->getDirty());
     }
 
