@@ -2,9 +2,12 @@
 
 namespace Jenssegers\Mongodb;
 
+use Illuminate\Bus\BatchFactory;
+use Illuminate\Bus\BatchRepository;
 use Illuminate\Support\ServiceProvider;
 use Jenssegers\Mongodb\Eloquent\Model;
 use Jenssegers\Mongodb\Queue\MongoConnector;
+use Jenssegers\Mongodb\Bus\MongodbBatchRepository;
 
 class MongodbServiceProvider extends ServiceProvider
 {
@@ -37,6 +40,22 @@ class MongodbServiceProvider extends ServiceProvider
             $queue->addConnector('mongodb', function () {
                 return new MongoConnector($this->app['db']);
             });
+        });
+
+        $this->app->extend(BatchRepository::class, function () {
+            return new MongodbBatchRepository(
+                app()->make(BatchFactory::class),
+                app()->make('db')->connection(app()->config->get('queue.batching.database')),
+                app()->config->get('queue.batching.table', 'job_batches')
+            );
+        });
+
+        $this->app->bind(MongodbBatchRepository::class, function ($app) {
+            return new MongodbBatchRepository(
+                $app->make(BatchFactory::class),
+                $app->make('db')->connection($app->config->get('queue.batching.database')),
+                $app->config->get('queue.batching.table', 'job_batches')
+            );
         });
     }
 }

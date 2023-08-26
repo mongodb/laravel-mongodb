@@ -18,7 +18,7 @@ class Connection extends BaseConnection
 {
     use ManagesTransactions;
 
-    private static ?string $version = null;
+    private static  $version = null;
 
     /**
      * The MongoDB database handler.
