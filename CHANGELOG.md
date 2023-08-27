@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 - Change signature of `Query\Builder::__constructor` to match the parent class [#26](https://github.com/GromNaN/laravel-mongodb-private/pull/26) by [@GromNaN](https://github.com/GromNaN).
 - Fix Query on `whereDate`, `whereDay`, `whereMonth`, `whereYear`, `whereTime` to use MongoDB operators [#2570](https://github.com/jenssegers/laravel-mongodb/pull/2376) by [@Davpyu](https://github.com/Davpyu) and [@GromNaN](https://github.com/GromNaN).
 - `Model::unset()` does not persist the change. Call `Model::save()` to persist the change [#2578](https://github.com/jenssegers/laravel-mongodb/pull/2578) by [@GromNaN](https://github.com/GromNaN).
-- Use mongodb function to check for dirtiness [#2515](https://github.com/jenssegers/laravel-mongodb/pull/2515) by [@halaei](https://github.com/halaei) and [@GromNaN](https://github.com/GromNaN).
+- Use `MongoDB\BSON\fromPHP` to detect changes [#2515](https://github.com/jenssegers/laravel-mongodb/pull/2515) by [@halaei](https://github.com/halaei) and [@divine](https://github.com/divine).
 
 ## [3.9.2] - 2022-09-01
 
