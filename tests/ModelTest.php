@@ -548,6 +548,79 @@ class ModelTest extends TestCase
         $this->assertFalse($user->isDirty());
     }
 
+    public function testUnsetDotAttributes(): void
+    {
+        $user = User::create(['name' => 'John Doe', 'notes' => ['note1' => 'ABC', 'note2' => 'DEF']]);
+
+        $user->unset('notes.note1');
+
+        $this->assertFalse(isset($user->notes['note1']));
+        $this->assertTrue(isset($user->notes['note2']));
+        $this->assertTrue($user->isDirty());
+        $dirty = $user->getDirty();
+        $this->assertArrayHasKey('notes', $dirty);
+        $this->assertArrayNotHasKey('$unset', $dirty);
+
+        $user->save();
+
+        $this->assertFalse(isset($user->notes['note1']));
+        $this->assertTrue(isset($user->notes['note2']));
+
+        // Re-fetch to be sure
+        $user = User::find($user->_id);
+
+        $this->assertFalse(isset($user->notes['note1']));
+        $this->assertTrue(isset($user->notes['note2']));
+
+        // Unset the parent key
+        $user->unset('notes');
+
+        $this->assertFalse(isset($user->notes['note1']));
+        $this->assertFalse(isset($user->notes['note2']));
+        $this->assertFalse(isset($user->notes));
+
+        $user->save();
+
+        $this->assertFalse(isset($user->notes));
+
+        // Re-fetch to be sure
+        $user = User::find($user->_id);
+
+        $this->assertFalse(isset($user->notes));
+    }
+
+    public function testUnsetDotAttributesAndSet(): void
+    {
+        $user = User::create(['name' => 'John Doe', 'notes' => ['note1' => 'ABC', 'note2' => 'DEF']]);
+
+        // notes.note2 is the last attribute of the document
+        $user->unset('notes.note2');
+        $this->assertTrue($user->isDirty());
+        $this->assertSame(['note1' => 'ABC'], $user->notes);
+
+        $user->setAttribute('notes.note2', 'DEF');
+        $this->assertFalse($user->isDirty());
+        $this->assertSame(['note1' => 'ABC', 'note2' => 'DEF'], $user->notes);
+
+        // Unsetting and resetting the 1st attribute of the document will change the order of the attributes
+        $user->unset('notes.note1');
+        $this->assertSame(['note2' => 'DEF'], $user->notes);
+        $this->assertTrue($user->isDirty());
+
+        $user->setAttribute('notes.note1', 'ABC');
+        $this->assertSame(['note2' => 'DEF', 'note1' => 'ABC'], $user->notes);
+        $this->assertTrue($user->isDirty());
+        $this->assertSame(['notes' => ['note2' => 'DEF', 'note1' => 'ABC']], $user->getDirty());
+
+        $user->save();
+        $this->assertSame(['note2' => 'DEF', 'note1' => 'ABC'], $user->notes);
+
+        // Re-fetch to be sure
+        $user = User::find($user->_id);
+
+        $this->assertSame(['note2' => 'DEF', 'note1' => 'ABC'], $user->notes);
+    }
+
     public function testDates(): void
     {
         $user = User::create(['name' => 'John Doe', 'birthday' => new DateTime('1965/1/1')]);
