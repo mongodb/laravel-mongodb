@@ -5,12 +5,19 @@ namespace MongoDB\Laravel\Eloquent;
 use Illuminate\Support\Str;
 use MongoDB\Laravel\Relations\EmbedsMany;
 use MongoDB\Laravel\Relations\EmbedsOne;
+use ReflectionMethod;
+use ReflectionNamedType;
 
 /**
  * Embeds relations for MongoDB models.
  */
 trait EmbedsRelations
 {
+    /**
+     * @var array<class-string, array<string, bool>>
+     */
+    private static array $hasEmbeddedRelation = [];
+
     /**
      * Define an embedded one-to-many relationship.
      *
@@ -75,5 +82,28 @@ trait EmbedsRelations
         $instance = new $related;
 
         return new EmbedsOne($query, $this, $instance, $localKey, $foreignKey, $relation);
+    }
+
+    /**
+     * Determine if an attribute is an embedded relation.
+     *
+     * @param string $key
+     * @return bool
+     * @throws \ReflectionException
+     */
+    private function hasEmbeddedRelation(string $key): bool
+    {
+        if (! method_exists($this, $method = Str::camel($key))) {
+            return false;
+        }
+
+        if (isset(self::$hasEmbeddedRelation[static::class][$key])) {
+            return self::$hasEmbeddedRelation[static::class][$key];
+        }
+
+        $returnType = (new ReflectionMethod($this, $method))->getReturnType();
+
+        return self::$hasEmbeddedRelation[static::class][$key] = $returnType instanceof ReflectionNamedType
+            && in_array($returnType->getName(), [EmbedsOne::class, EmbedsMany::class], true);
     }
 }

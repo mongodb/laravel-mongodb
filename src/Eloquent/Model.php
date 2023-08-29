@@ -18,6 +18,7 @@ use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
+use ReflectionException;
 use function uniqid;
 
 abstract class Model extends BaseModel
@@ -154,6 +155,7 @@ abstract class Model extends BaseModel
 
     /**
      * @inheritdoc
+     * @throws ReflectionException
      */
     public function getAttribute($key)
     {
@@ -172,11 +174,7 @@ abstract class Model extends BaseModel
         }
 
         // This checks for embedded relation support.
-        if (
-            method_exists($this, $key)
-            && ! method_exists(self::class, $key)
-            && ! $this->hasAttributeGetMutator($key)
-        ) {
+        if ($this->hasEmbeddedRelation($key)) {
             return $this->getRelationValue($key);
         }
 
@@ -474,7 +472,7 @@ abstract class Model extends BaseModel
     /**
      * Set the parent relation.
      *
-     * @param  \Illuminate\Database\Eloquent\Relations\Relation  $relation
+     * @param Relation $relation
      */
     public function setParentRelation(Relation $relation)
     {
@@ -484,7 +482,7 @@ abstract class Model extends BaseModel
     /**
      * Get the parent relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\Relation
+     * @return Relation
      */
     public function getParentRelation()
     {

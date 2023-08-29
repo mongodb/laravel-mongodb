@@ -805,6 +805,7 @@ class User extends Model
     }
 }
 ```
+**Warning:** naming the foreign key same as the relation name will prevent the relation for being called on dynamic property, i.e. in the example above if you replaced `group_ids` with `groups` calling `$user->groups` will return the column instead of the relation.
 
 ### EmbedsMany Relationship
 
@@ -812,12 +813,15 @@ If you want to embed models, rather than referencing them, you can use the `embe
 
 **REMEMBER**: These relations return Eloquent collections, they don't return query builder objects!
 
+**Breaking changes** starting from v4.0 you need to define the return type of EmbedsOne and EmbedsMany relation for it to work
+
 ```php
 use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Relations\EmbedsMany;
 
 class User extends Model
 {
-    public function books()
+    public function books(): EmbedsMany
     {
         return $this->embedsMany(Book::class);
     }
@@ -886,10 +890,11 @@ Like other relations, embedsMany assumes the local key of the relationship based
 
 ```php
 use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Relations\EmbedsMany;
 
 class User extends Model
 {
-    public function books()
+    public function books(): EmbedsMany
     {
         return $this->embedsMany(Book::class, 'local_key');
     }
@@ -902,12 +907,15 @@ Embedded relations will return a Collection of embedded items instead of a query
 
 The embedsOne relation is similar to the embedsMany relation, but only embeds a single model.
 
+**Breaking changes** starting from v4.0 you need to define the return type of EmbedsOne and EmbedsMany relation for it to work
+
 ```php
 use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Relations\EmbedsOne;
 
 class Book extends Model
 {
-    public function author()
+    public function author(): EmbedsOne
     {
         return $this->embedsOne(Author::class);
     }

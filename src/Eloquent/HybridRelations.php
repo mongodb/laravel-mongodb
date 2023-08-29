@@ -272,6 +272,10 @@ trait HybridRelations
 
         $instance = new $related;
 
+        if ($relatedPivotKey === $relation) {
+            throw new \LogicException(sprintf('In %s::%s(), the key cannot be identical to the relation name "%s". The default key is "%s".', static::class, $relation, $relation, $instance->getForeignKey().'s'));
+        }
+
         $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey().'s';
 
         // If no table name was provided, we can guess it by concatenating the two
