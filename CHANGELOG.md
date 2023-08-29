@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [4.0.0] - unreleased
 
 - Rename package to `mongodb/laravel-mongodb`
-- Change namespace to `Mongodb\Laravel`
+- Change namespace to `MongoDB\Laravel`
 - Add classes to cast `ObjectId` and `UUID` instances [#1](https://github.com/GromNaN/laravel-mongodb/pull/1) by [@alcaeus](https://github.com/alcaeus).
 - Add `Query\Builder::toMql()` to simplify comprehensive query tests [#6](https://github.com/GromNaN/laravel-mongodb/pull/6) by [@GromNaN](https://github.com/GromNaN).
 - Fix `Query\Builder::whereNot` to use MongoDB [`$not`](https://www.mongodb.com/docs/manual/reference/operator/query/not/) operator [#13](https://github.com/GromNaN/laravel-mongodb/pull/13) by [@GromNaN](https://github.com/GromNaN).
