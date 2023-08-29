@@ -330,7 +330,7 @@ class Connection extends BaseConnection
     {
         if (class_exists(InstalledVersions::class)) {
             try {
-                return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-eloquent');
+                return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-mongodb');
             } catch (Throwable $t) {
                 // Ignore exceptions and return unknown version
             }

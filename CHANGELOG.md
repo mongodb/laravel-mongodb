@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [4.0.0] - unreleased
 
-- Rename package to `mongodb/laravel-eloquent`
+- Rename package to `mongodb/laravel-mongodb`
 - Change namespace to `Mongodb\Laravel`
 - Add classes to cast `ObjectId` and `UUID` instances [#1](https://github.com/GromNaN/laravel-mongodb/pull/1) by [@alcaeus](https://github.com/alcaeus).
 - Add `Query\Builder::toMql()` to simplify comprehensive query tests [#6](https://github.com/GromNaN/laravel-mongodb/pull/6) by [@GromNaN](https://github.com/GromNaN).

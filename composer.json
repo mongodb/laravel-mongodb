@@ -1,5 +1,5 @@
 {
-    "name": "mongodb/laravel-eloquent",
+    "name": "mongodb/laravel-mongodb",
     "description": "A MongoDB based Eloquent model and Query builder for Laravel",
     "keywords": [
         "laravel",
@@ -9,12 +9,16 @@
         "database",
         "model"
     ],
-    "homepage": "https://github.com/mongodb/laravel-eloquent",
+    "homepage": "https://github.com/mongodb/laravel-mongodb",
+    "support": {
+        "issues": "https://www.mongodb.com/support",
+        "security": "https://www.mongodb.com/security"
+    },
     "authors": [
-        {
-            "name": "Jens Segers",
-            "homepage": "https://jenssegers.com"
-        }
+        { "name": "Andreas Braun", "email": "andreas.braun@mongodb.com", "role": "Leader" },
+        { "name": "Jérôme Tamarelle", "email": "jerome.tamarelle@mongodb.com", "role": "Maintainer" },
+        { "name": "Jeremy Mikola", "email": "jmikola@gmail.com", "role": "Maintainer" },
+        { "name": "Jens Segers", "homepage": "https://jenssegers.com", "role": "Creator" }
     ],
     "license": "MIT",
     "require": {
@@ -30,6 +34,9 @@
         "phpunit/phpunit": "^9.5.10",
         "orchestra/testbench": "^8.0",
         "mockery/mockery": "^1.4.4"
+    },
+    "replace": {
+        "jenssegers/mongodb": "self.version"
     },
     "autoload": {
         "psr-4": {
