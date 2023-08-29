@@ -315,11 +315,16 @@ abstract class Model extends BaseModel
      */
     public function offsetUnset($offset): void
     {
-        parent::offsetUnset($offset);
+        if (str_contains($offset, '.')) {
+            // Update the field in the subdocument
+            Arr::forget($this->attributes, $offset);
+        } else {
+            parent::offsetUnset($offset);
 
-        // Force unsetting even if the attribute is not set.
-        // End user can optimize DB calls by checking if the attribute is set before unsetting it.
-        $this->unset[$offset] = true;
+            // Force unsetting even if the attribute is not set.
+            // End user can optimize DB calls by checking if the attribute is set before unsetting it.
+            $this->unset[$offset] = true;
+        }
     }
 
     /**
