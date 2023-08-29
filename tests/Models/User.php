@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Jenssegers\Mongodb\Tests\Models;
 
+use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -14,6 +15,8 @@ use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use Jenssegers\Mongodb\Eloquent\HybridRelations;
 use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use Jenssegers\Mongodb\Relations\EmbedsMany;
+use Jenssegers\Mongodb\Relations\EmbedsOne;
 
 /**
  * Class User.
@@ -23,9 +26,9 @@ use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
  * @property string $email
  * @property string $title
  * @property int $age
- * @property \Carbon\Carbon $birthday
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $birthday
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property string $username
  * @property MemberStatus member_status
  */
@@ -76,7 +79,7 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
 
     public function groups()
     {
-        return $this->belongsToMany(Group::class, 'groups', 'users', 'groups', '_id', '_id', 'groups');
+        return $this->belongsToMany(Group::class);
     }
 
     public function photos()
@@ -84,12 +87,12 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->morphMany(Photo::class, 'has_image');
     }
 
-    public function addresses()
+    public function addresses(): EmbedsMany
     {
         return $this->embedsMany(Address::class);
     }
 
-    public function father()
+    public function father(): EmbedsOne
     {
         return $this->embedsOne(self::class);
     }
@@ -105,5 +108,15 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
             get: fn ($value) => $value,
             set: fn ($value) => Str::slug($value)
         );
+    }
+
+    public function getFooAttribute()
+    {
+        return 'normal attribute';
+    }
+
+    public function foo()
+    {
+        return 'normal function';
     }
 }

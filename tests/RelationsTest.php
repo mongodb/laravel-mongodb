@@ -344,8 +344,8 @@ class RelationsTest extends TestCase
         $group = Group::find($group->_id);
 
         // Check for custom relation attributes
-        $this->assertArrayHasKey('users', $group->getAttributes());
-        $this->assertArrayHasKey('groups', $user->getAttributes());
+        $this->assertArrayHasKey('user_ids', $group->getAttributes());
+        $this->assertArrayHasKey('group_ids', $user->getAttributes());
 
         // Assert they are attached
         $this->assertContains($group->_id, $user->groups->pluck('_id')->toArray());
