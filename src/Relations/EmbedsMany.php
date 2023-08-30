@@ -277,10 +277,10 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /**
-     * @param  null  $perPage
+     * @param  int|null  $perPage
      * @param  array  $columns
      * @param  string  $pageName
-     * @param  null  $page
+     * @param  int|null  $page
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)

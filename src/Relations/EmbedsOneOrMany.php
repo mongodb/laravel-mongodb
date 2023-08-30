@@ -41,7 +41,7 @@ abstract class EmbedsOneOrMany extends Relation
      * @param  string  $foreignKey
      * @param  string  $relation
      */
-    public function __construct(Builder $query, Model $parent, Model $related, $localKey, $foreignKey, $relation)
+    public function __construct(Builder $query, Model $parent, Model $related, string $localKey, string $foreignKey, string $relation)
     {
         $this->query = $query;
         $this->parent = $parent;
