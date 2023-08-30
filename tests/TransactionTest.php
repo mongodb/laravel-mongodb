@@ -1,14 +1,14 @@
 <?php
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Support\Facades\DB;
-use Jenssegers\Mongodb\Connection;
-use Jenssegers\Mongodb\Eloquent\Model;
-use Jenssegers\Mongodb\Tests\Models\User;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Driver\Server;
+use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Tests\Models\User;
 use RuntimeException;
 
 class TransactionTest extends TestCase

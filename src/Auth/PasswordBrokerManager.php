@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Auth;
+namespace MongoDB\Laravel\Auth;
 
 use Illuminate\Auth\Passwords\PasswordBrokerManager as BasePasswordBrokerManager;
 

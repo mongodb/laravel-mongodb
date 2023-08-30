@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Generator;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
-use Jenssegers\Mongodb\Collection;
-use Jenssegers\Mongodb\Connection;
-use Jenssegers\Mongodb\Query\Builder;
-use Jenssegers\Mongodb\Schema\Builder as SchemaBuilder;
 use MongoDB\Client;
 use MongoDB\Database;
+use MongoDB\Laravel\Collection;
+use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Query\Builder;
+use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
 
 class ConnectionTest extends TestCase
 {

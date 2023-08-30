@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Query;
+namespace MongoDB\Laravel\Query;
 
 use Carbon\CarbonPeriod;
 use Closure;
@@ -11,12 +11,12 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
-use Jenssegers\Mongodb\Connection;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\Cursor;
+use MongoDB\Laravel\Connection;
 use RuntimeException;
 
 /**

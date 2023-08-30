@@ -1,10 +1,10 @@
 <?php
 
-namespace Jenssegers\Mongodb\Queue;
+namespace MongoDB\Laravel\Queue;
 
 use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
-use Jenssegers\Mongodb\Connection;
+use MongoDB\Laravel\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
 
 class MongoQueue extends DatabaseQueue

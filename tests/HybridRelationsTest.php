@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Connection;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Support\Facades\DB;
-use Jenssegers\Mongodb\Tests\Models\Book;
-use Jenssegers\Mongodb\Tests\Models\MysqlBook;
-use Jenssegers\Mongodb\Tests\Models\MysqlRole;
-use Jenssegers\Mongodb\Tests\Models\MysqlUser;
-use Jenssegers\Mongodb\Tests\Models\Role;
-use Jenssegers\Mongodb\Tests\Models\User;
+use MongoDB\Laravel\Tests\Models\Book;
+use MongoDB\Laravel\Tests\Models\MysqlBook;
+use MongoDB\Laravel\Tests\Models\MysqlRole;
+use MongoDB\Laravel\Tests\Models\MysqlUser;
+use MongoDB\Laravel\Tests\Models\Role;
+use MongoDB\Laravel\Tests\Models\User;
 use PDOException;
 
 class HybridRelationsTest extends TestCase

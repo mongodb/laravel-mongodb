@@ -1,10 +1,10 @@
 <?php
 
-namespace Jenssegers\Mongodb\Eloquent;
+namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Support\Str;
-use Jenssegers\Mongodb\Relations\EmbedsMany;
-use Jenssegers\Mongodb\Relations\EmbedsOne;
+use MongoDB\Laravel\Relations\EmbedsMany;
+use MongoDB\Laravel\Relations\EmbedsOne;
 
 /**
  * Embeds relations for MongoDB models.
@@ -18,7 +18,7 @@ trait EmbedsRelations
      * @param string $localKey
      * @param string $foreignKey
      * @param string $relation
-     * @return \Jenssegers\Mongodb\Relations\EmbedsMany
+     * @return \MongoDB\Laravel\Relations\EmbedsMany
      */
     protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
     {
@@ -51,7 +51,7 @@ trait EmbedsRelations
      * @param string $localKey
      * @param string $foreignKey
      * @param string $relation
-     * @return \Jenssegers\Mongodb\Relations\EmbedsOne
+     * @return \MongoDB\Laravel\Relations\EmbedsOne
      */
     protected function embedsOne($related, $localKey = null, $foreignKey = null, $relation = null)
     {

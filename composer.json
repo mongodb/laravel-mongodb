@@ -1,21 +1,24 @@
 {
-    "name": "jenssegers/mongodb",
-    "description": "A MongoDB based Eloquent model and Query builder for Laravel (Moloquent)",
+    "name": "mongodb/laravel-mongodb",
+    "description": "A MongoDB based Eloquent model and Query builder for Laravel",
     "keywords": [
         "laravel",
         "eloquent",
         "mongodb",
         "mongo",
         "database",
-        "model",
-        "moloquent"
+        "model"
     ],
-    "homepage": "https://github.com/jenssegers/laravel-mongodb",
+    "homepage": "https://github.com/mongodb/laravel-mongodb",
+    "support": {
+        "issues": "https://www.mongodb.com/support",
+        "security": "https://www.mongodb.com/security"
+    },
     "authors": [
-        {
-            "name": "Jens Segers",
-            "homepage": "https://jenssegers.com"
-        }
+        { "name": "Andreas Braun", "email": "andreas.braun@mongodb.com", "role": "Leader" },
+        { "name": "Jérôme Tamarelle", "email": "jerome.tamarelle@mongodb.com", "role": "Maintainer" },
+        { "name": "Jeremy Mikola", "email": "jmikola@gmail.com", "role": "Maintainer" },
+        { "name": "Jens Segers", "homepage": "https://jenssegers.com", "role": "Creator" }
     ],
     "license": "MIT",
     "require": {
@@ -32,25 +35,24 @@
         "orchestra/testbench": "^8.0",
         "mockery/mockery": "^1.4.4"
     },
+    "replace": {
+        "jenssegers/mongodb": "self.version"
+    },
     "autoload": {
         "psr-4": {
-            "Jenssegers\\Mongodb\\": "src/"
+            "MongoDB\\Laravel\\": "src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Jenssegers\\Mongodb\\Tests\\": "tests/"
+            "MongoDB\\Laravel\\Tests\\": "tests/"
         }
-    },
-    "suggest": {
-        "jenssegers/mongodb-session": "Add MongoDB session support to Laravel-MongoDB",
-        "jenssegers/mongodb-sentry": "Add Sentry support to Laravel-MongoDB"
     },
     "extra": {
         "laravel": {
             "providers": [
-                "Jenssegers\\Mongodb\\MongodbServiceProvider",
-                "Jenssegers\\Mongodb\\MongodbQueueServiceProvider"
+                "MongoDB\\Laravel\\MongodbServiceProvider",
+                "MongoDB\\Laravel\\MongodbQueueServiceProvider"
             ]
         }
     },

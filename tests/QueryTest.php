@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use DateTimeImmutable;
-use Jenssegers\Mongodb\Tests\Models\Birthday;
-use Jenssegers\Mongodb\Tests\Models\Scoped;
-use Jenssegers\Mongodb\Tests\Models\User;
+use MongoDB\Laravel\Tests\Models\Birthday;
+use MongoDB\Laravel\Tests\Models\Scoped;
+use MongoDB\Laravel\Tests\Models\User;
 
 class QueryTest extends TestCase
 {

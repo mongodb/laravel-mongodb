@@ -1,11 +1,11 @@
 <?php
 
-namespace Jenssegers\Mongodb\Tests\Casts;
+namespace MongoDB\Laravel\Tests\Casts;
 
 use Generator;
-use Jenssegers\Mongodb\Tests\Models\CastObjectId;
-use Jenssegers\Mongodb\Tests\TestCase;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Laravel\Tests\Models\CastObjectId;
+use MongoDB\Laravel\Tests\TestCase;
 
 class ObjectIdTest extends TestCase
 {

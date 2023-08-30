@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Support\Facades\Schema;
-use Jenssegers\Mongodb\Tests\Models\Location;
+use MongoDB\Laravel\Tests\Models\Location;
 
 class GeospatialTest extends TestCase
 {

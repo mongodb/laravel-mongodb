@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Schema;
+namespace MongoDB\Laravel\Schema;
 
 use Illuminate\Database\Schema\Grammars\Grammar as BaseGrammar;
 

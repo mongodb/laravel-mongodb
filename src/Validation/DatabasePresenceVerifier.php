@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Validation;
+namespace MongoDB\Laravel\Validation;
 
 use MongoDB\BSON\Regex;
 

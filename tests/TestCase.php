@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider as BasePasswordResetServiceProviderAlias;
 use Illuminate\Foundation\Application;
-use Jenssegers\Mongodb\Auth\PasswordResetServiceProvider;
-use Jenssegers\Mongodb\MongodbQueueServiceProvider;
-use Jenssegers\Mongodb\MongodbServiceProvider;
-use Jenssegers\Mongodb\Tests\Models\User;
-use Jenssegers\Mongodb\Validation\ValidationServiceProvider;
+use MongoDB\Laravel\Auth\PasswordResetServiceProvider;
+use MongoDB\Laravel\MongodbQueueServiceProvider;
+use MongoDB\Laravel\MongodbServiceProvider;
+use MongoDB\Laravel\Tests\Models\User;
+use MongoDB\Laravel\Validation\ValidationServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
 class TestCase extends OrchestraTestCase

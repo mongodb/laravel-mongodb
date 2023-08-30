@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Helpers;
+namespace MongoDB\Laravel\Helpers;
 
 use Closure;
 use Exception;
@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 trait QueriesRelationships
 {

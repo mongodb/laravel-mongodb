@@ -1,10 +1,10 @@
 <?php
 
-namespace Jenssegers\Mongodb;
+namespace MongoDB\Laravel;
 
 use Illuminate\Support\ServiceProvider;
-use Jenssegers\Mongodb\Eloquent\Model;
-use Jenssegers\Mongodb\Queue\MongoConnector;
+use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Queue\MongoConnector;
 
 class MongodbServiceProvider extends ServiceProvider
 {

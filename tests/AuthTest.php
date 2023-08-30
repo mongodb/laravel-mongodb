@@ -1,13 +1,13 @@
 <?php
 
-namespace Jenssegers\Mongodb\Tests;
+namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Jenssegers\Mongodb\Tests\Models\User;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Laravel\Tests\Models\User;
 
 class AuthTest extends TestCase
 {

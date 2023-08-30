@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Schema;
+namespace MongoDB\Laravel\Schema;
 
 use Illuminate\Database\Connection;
 
@@ -9,14 +9,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     /**
      * The MongoConnection object for this blueprint.
      *
-     * @var \Jenssegers\Mongodb\Connection
+     * @var \MongoDB\Laravel\Connection
      */
     protected $connection;
 
     /**
      * The MongoCollection object for this blueprint.
      *
-     * @var \Jenssegers\Mongodb\Collection|\MongoDB\Collection
+     * @var \MongoDB\Laravel\Collection|\MongoDB\Collection
      */
     protected $collection;
 

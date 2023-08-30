@@ -1,6 +1,6 @@
 <?php
 
-namespace Jenssegers\Mongodb\Concerns;
+namespace MongoDB\Laravel\Concerns;
 
 use Closure;
 use MongoDB\Client;

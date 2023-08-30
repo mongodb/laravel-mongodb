@@ -1,11 +1,10 @@
 Laravel MongoDB
 ===============
 
-[![Latest Stable Version](http://img.shields.io/github/release/jenssegers/laravel-mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb)
-[![Total Downloads](http://img.shields.io/packagist/dm/jenssegers/mongodb.svg)](https://packagist.org/packages/jenssegers/mongodb)
-[![Build Status](https://img.shields.io/github/workflow/status/jenssegers/laravel-mongodb/CI)](https://github.com/jenssegers/laravel-mongodb/actions)
-[![codecov](https://codecov.io/gh/jenssegers/laravel-mongodb/branch/master/graph/badge.svg)](https://codecov.io/gh/jenssegers/laravel-mongodb/branch/master)
-[![Donate](https://img.shields.io/badge/donate-paypal-blue.svg)](https://www.paypal.me/jenssegers)
+[![Latest Stable Version](http://img.shields.io/github/release/mongodb/laravel-mongodb.svg)](https://packagist.org/packages/mongodb/laravel-mongodb)
+[![Total Downloads](http://img.shields.io/packagist/dm/mongodb/laravel-mongodb.svg)](https://packagist.org/packages/mongodb/laravel-mongodb)
+[![Build Status](https://img.shields.io/github/workflow/status/mongodb/laravel-mongodb/CI)](https://github.com/mongodb/laravel-mongodb/actions)
+[![codecov](https://codecov.io/gh/mongodb/laravel-mongodb/branch/master/graph/badge.svg)](https://codecov.io/gh/mongodb/laravel-mongodb/branch/master)
 
 This package adds functionalities to the Eloquent model and Query builder for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
@@ -46,8 +45,6 @@ This package adds functionalities to the Eloquent model and Query builder for Mo
         - [Cross-Database Relationships](#cross-database-relationships)
         - [Authentication](#authentication)
         - [Queues](#queues)
-            - [Laravel specific](#laravel-specific)
-            - [Lumen specific](#lumen-specific)
     - [Upgrading](#upgrading)
         - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
     - [Security contact information](#security-contact-information)
@@ -79,7 +76,7 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
 Install the package via Composer:
 
 ```bash
-$ composer require jenssegers/mongodb
+$ composer require mongodb/laravel-mongodb
 ```
 
 ### Laravel
@@ -87,7 +84,7 @@ $ composer require jenssegers/mongodb
 In case your Laravel version does NOT autoload the packages, add the service provider to `config/app.php`:
 
 ```php
-Jenssegers\Mongodb\MongodbServiceProvider::class,
+MongoDB\Laravel\MongodbServiceProvider::class,
 ```
 
 ### Lumen
@@ -95,7 +92,7 @@ Jenssegers\Mongodb\MongodbServiceProvider::class,
 For usage with [Lumen](http://lumen.laravel.com), add the service provider in `bootstrap/app.php`. In this file, you will also need to enable Eloquent. You must however ensure that your call to `$app->withEloquent();` is **below** where you have registered the `MongodbServiceProvider`:
 
 ```php
-$app->register(Jenssegers\Mongodb\MongodbServiceProvider::class);
+$app->register(MongoDB\Laravel\MongodbServiceProvider::class);
 
 $app->withEloquent();
 ```
@@ -112,7 +109,7 @@ For usage outside Laravel, check out the [Capsule manager](https://github.com/il
 $capsule->getDatabaseManager()->extend('mongodb', function($config, $name) {
     $config['name'] = $name;
 
-    return new Jenssegers\Mongodb\Connection($config);
+    return new MongoDB\Laravel\Connection($config);
 });
 ```
 
@@ -186,7 +183,7 @@ Eloquent
 This package includes a MongoDB enabled Eloquent class that you can use to define models for corresponding collections.
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Book extends Model
 {
@@ -199,7 +196,7 @@ Just like a normal model, the MongoDB model class will know which collection to 
 To change the collection, pass the `$collection` property:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Book extends Model
 {
@@ -210,7 +207,7 @@ class Book extends Model
 **NOTE:** MongoDB documents are automatically stored with a unique ID that is stored in the `_id` property. If you wish to use your own ID, substitute the `$primaryKey` property and set it to your own primary key attribute name.
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Book extends Model
 {
@@ -224,7 +221,7 @@ Book::create(['id' => 1, 'title' => 'The Fault in Our Stars']);
 Likewise, you may define a `connection` property to override the name of the database connection that should be used when utilizing the model.
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Book extends Model
 {
@@ -234,10 +231,10 @@ class Book extends Model
 
 ### Extending the Authenticatable base model
 
-This package includes a MongoDB Authenticatable Eloquent class `Jenssegers\Mongodb\Auth\User` that you can use to replace the default Authenticatable class `Illuminate\Foundation\Auth\User` for your `User` model.
+This package includes a MongoDB Authenticatable Eloquent class `MongoDB\Laravel\Auth\User` that you can use to replace the default Authenticatable class `Illuminate\Foundation\Auth\User` for your `User` model.
 
 ```php
-use Jenssegers\Mongodb\Auth\User as Authenticatable;
+use MongoDB\Laravel\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
@@ -249,10 +246,10 @@ class User extends Authenticatable
 
 When soft deleting a model, it is not actually removed from your database. Instead, a deleted_at timestamp is set on the record.
 
-To enable soft deletes for a model, apply the `Jenssegers\Mongodb\Eloquent\SoftDeletes` Trait to the model:
+To enable soft deletes for a model, apply the `MongoDB\Laravel\Eloquent\SoftDeletes` Trait to the model:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\SoftDeletes;
+use MongoDB\Laravel\Eloquent\SoftDeletes;
 
 class User extends Model
 {
@@ -274,7 +271,7 @@ Keep in mind guarding still works, but you may experience unexpected behavior.
 Eloquent allows you to work with Carbon or DateTime objects instead of MongoDate objects. Internally, these dates will be converted to MongoDate objects when saved to the database.
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class User extends Model
 {
@@ -812,7 +809,7 @@ The MongoDB-specific relationships are:
 Here is a small example:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class User extends Model
 {
@@ -826,7 +823,7 @@ class User extends Model
 The inverse relation of `hasMany` is `belongsTo`:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Item extends Model
 {
@@ -844,7 +841,7 @@ The belongsToMany relation will not use a pivot "table" but will push id's to a 
 If you want to define custom keys for your relation, set it to `null`:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class User extends Model
 {
@@ -864,7 +861,7 @@ If you want to embed models, rather than referencing them, you can use the `embe
 **REMEMBER**: These relations return Eloquent collections, they don't return query builder objects!
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class User extends Model
 {
@@ -936,7 +933,7 @@ $user->save();
 Like other relations, embedsMany assumes the local key of the relationship based on the model name. You can override the default local key by passing a second argument to the embedsMany method:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class User extends Model
 {
@@ -954,7 +951,7 @@ Embedded relations will return a Collection of embedded items instead of a query
 The embedsOne relation is similar to the embedsMany relation, but only embeds a single model.
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Book extends Model
 {
@@ -1156,14 +1153,14 @@ If you're using a hybrid MongoDB and SQL setup, you can define relationships acr
 
 The model will automatically return a MongoDB-related or SQL-related relation based on the type of the related model.
 
-If you want this functionality to work both ways, your SQL-models will need to use the `Jenssegers\Mongodb\Eloquent\HybridRelations` trait.
+If you want this functionality to work both ways, your SQL-models will need to use the `MongoDB\Laravel\Eloquent\HybridRelations` trait.
 
 **This functionality only works for `hasOne`, `hasMany` and `belongsTo`.**
 
 The MySQL model should use the `HybridRelations` trait:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\HybridRelations;
+use MongoDB\Laravel\Eloquent\HybridRelations;
 
 class User extends Model
 {
@@ -1181,7 +1178,7 @@ class User extends Model
 Within your MongoDB model, you should define the relationship:
 
 ```php
-use Jenssegers\Mongodb\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Message extends Model
 {
@@ -1199,7 +1196,7 @@ class Message extends Model
 If you want to use Laravel's native Auth functionality, register this included service provider:
 
 ```php
-Jenssegers\Mongodb\Auth\PasswordResetServiceProvider::class,
+MongoDB\Laravel\Auth\PasswordResetServiceProvider::class,
 ```
 
 This service provider will slightly modify the internal DatabaseReminderRepository to add support for MongoDB based password reminders.
@@ -1234,63 +1231,19 @@ If you want to use MongoDB to handle failed jobs, change the database in `config
 ],
 ```
 
-#### Laravel specific
-
 Add the service provider in `config/app.php`:
 
 ```php
-Jenssegers\Mongodb\MongodbQueueServiceProvider::class,
-```
-
-#### Lumen specific
-
-With [Lumen](http://lumen.laravel.com), add the service provider in `bootstrap/app.php`. You must however ensure that you add the following **after** the `MongodbServiceProvider` registration.
-
-```php
-$app->make('queue');
-
-$app->register(Jenssegers\Mongodb\MongodbQueueServiceProvider::class);
+MongoDB\Laravel\MongodbQueueServiceProvider::class,
 ```
 
 Upgrading
 ---------
 
-#### Upgrading from version 2 to 3
+#### Upgrading from version 3 to 4
 
-In this new major release which supports the new MongoDB PHP extension, we also moved the location of the Model class and replaced the MySQL model class with a trait.
-
-Please change all `Jenssegers\Mongodb\Model` references to `Jenssegers\Mongodb\Eloquent\Model` either at the top of your model files or your registered alias.
-
-```php
-use Jenssegers\Mongodb\Eloquent\Model;
-
-class User extends Model
-{
-    //
-}
-```
-
-If you are using hybrid relations, your MySQL classes should now extend the original Eloquent model class `Illuminate\Database\Eloquent\Model` instead of the removed `Jenssegers\Eloquent\Model`.
-
-Instead use the new `Jenssegers\Mongodb\Eloquent\HybridRelations` trait. This should make things more clear as there is only one single model class in this package.
-
-```php
-use Jenssegers\Mongodb\Eloquent\HybridRelations;
-
-class User extends Model
-{
-
-    use HybridRelations;
-
-    protected $connection = 'mysql';
-}
-```
-
-Embedded relations now return an `Illuminate\Database\Eloquent\Collection` rather than a custom Collection class. If you were using one of the special methods that were available, convert them to Collection operations.
-
-```php
-$books = $user->books()->sortBy('title')->get();
-```
+Change project name in composer.json to `mongodb/laravel` and run `composer update`.
+Change namespace from `Jenssegers\Mongodb` to `MongoDB\Laravel` in your models and config.
 
 ## Security contact information
 

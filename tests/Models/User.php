@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Jenssegers\Mongodb\Tests\Models;
+namespace MongoDB\Laravel\Tests\Models;
 
 use DateTimeInterface;
 use Illuminate\Auth\Authenticatable;
@@ -12,8 +12,8 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
-use Jenssegers\Mongodb\Eloquent\HybridRelations;
-use Jenssegers\Mongodb\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\HybridRelations;
+use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 /**
  * Class User.
