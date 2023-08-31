@@ -9,7 +9,7 @@ Laravel MongoDB
 This package adds functionalities to the Eloquent model and Query builder for MongoDB, using the original Laravel API. *This library extends the original Laravel classes, so it uses exactly the same methods.*
 
 This package was renamed to `mongodb/laravel-mongodb` because of a transfer of ownership to MongoDB, Inc.
-It is compatible with Laravel 10.x. For older versions of Laravel, please refer to the [old versions](https://packagist.org/packages/jenssegers/mongodb).
+It is compatible with Laravel 10.x. For older versions of Laravel, please refer to the [old versions](https://github.com/mongodb/laravel-mongodb/tree/3.9#laravel-version-compatibility).
 
 - [Laravel MongoDB](#laravel-mongodb)
     - [Installation](#installation)
