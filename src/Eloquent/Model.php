@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use function in_array;
 use MongoDB\BSON\Binary;
+use function MongoDB\BSON\fromPHP;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
@@ -294,20 +295,11 @@ abstract class Model extends BaseModel
             return false;
         }
 
-        if ($this->isDateAttribute($key)) {
-            $attribute = $attribute instanceof UTCDateTime ? $this->asDateTime($attribute) : $attribute;
-            $original = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
-
-            return $attribute == $original;
+        if (is_scalar($attribute) || is_scalar($original)) {
+            return false;
         }
 
-        if ($this->hasCast($key, static::$primitiveCastTypes)) {
-            return $this->castAttribute($key, $attribute) ===
-                $this->castAttribute($key, $original);
-        }
-
-        return is_numeric($attribute) && is_numeric($original)
-            && strcmp((string) $attribute, (string) $original) === 0;
+        return fromPHP([$attribute]) === fromPHP([$original]);
     }
 
     /**
