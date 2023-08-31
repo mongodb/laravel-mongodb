@@ -14,11 +14,11 @@ trait EmbedsRelations
     /**
      * Define an embedded one-to-many relationship.
      *
-     * @param string $related
-     * @param string $localKey
-     * @param string $foreignKey
-     * @param string $relation
-     * @return \MongoDB\Laravel\Relations\EmbedsMany
+     * @param class-string $related
+     * @param string|null $localKey
+     * @param string|null $foreignKey
+     * @param string|null $relation
+     * @return EmbedsMany
      */
     protected function embedsMany($related, $localKey = null, $foreignKey = null, $relation = null)
     {
@@ -47,11 +47,11 @@ trait EmbedsRelations
     /**
      * Define an embedded one-to-many relationship.
      *
-     * @param string $related
-     * @param string $localKey
-     * @param string $foreignKey
-     * @param string $relation
-     * @return \MongoDB\Laravel\Relations\EmbedsOne
+     * @param class-string $related
+     * @param string|null $localKey
+     * @param string|null $foreignKey
+     * @param string|null $relation
+     * @return EmbedsOne
      */
     protected function embedsOne($related, $localKey = null, $foreignKey = null, $relation = null)
     {
