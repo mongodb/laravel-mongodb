@@ -9,6 +9,7 @@ use DateTimeImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
+use Illuminate\Support\Str;
 use Illuminate\Testing\Assert;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
@@ -894,5 +895,65 @@ class QueryBuilderTest extends TestCase
         foreach ($results as $i => $result) {
             $this->assertEquals($data[$i]['name'], $result['name']);
         }
+    }
+
+    public function testStringableColumn()
+    {
+        DB::collection('users')->insert([
+            ['name' => 'Jane Doe', 'age' => 36, 'birthday' => new UTCDateTime(new \DateTime('1987-01-01 00:00:00'))],
+            ['name' => 'John Doe', 'age' => 28, 'birthday' => new UTCDateTime(new \DateTime('1995-01-01 00:00:00'))],
+        ]);
+
+        $nameColumn = Str::of('name');
+        $this->assertInstanceOf(\Stringable::class, $nameColumn, 'Ensure we are testing the feature with a Stringable instance');
+
+        $user = DB::collection('users')->where($nameColumn, 'John Doe')->first();
+        $this->assertEquals('John Doe', $user['name']);
+
+        // Test this other document to be sure this is not a random success to data order
+        $user = DB::collection('users')->where($nameColumn, 'Jane Doe')->orderBy('natural')->first();
+        $this->assertEquals('Jane Doe', $user['name']);
+
+        // With an operator
+        $user = DB::collection('users')->where($nameColumn, '!=', 'Jane Doe')->first();
+        $this->assertEquals('John Doe', $user['name']);
+
+        // whereIn and whereNotIn
+        $user = DB::collection('users')->whereIn($nameColumn, ['John Doe'])->first();
+        $this->assertEquals('John Doe', $user['name']);
+
+        $user = DB::collection('users')->whereNotIn($nameColumn, ['John Doe'])->first();
+        $this->assertEquals('Jane Doe', $user['name']);
+
+        // whereBetween and whereNotBetween
+        $ageColumn = Str::of('age');
+        $user = DB::collection('users')->whereBetween($ageColumn, [30, 40])->first();
+        $this->assertEquals('Jane Doe', $user['name']);
+
+        // whereBetween and whereNotBetween
+        $ageColumn = Str::of('age');
+        $user = DB::collection('users')->whereNotBetween($ageColumn, [30, 40])->first();
+        $this->assertEquals('John Doe', $user['name']);
+
+        // whereDate
+        $birthdayColumn = Str::of('birthday');
+        $user = DB::collection('users')->whereDate($birthdayColumn, '1995-01-01')->first();
+        $this->assertEquals('John Doe', $user['name']);
+
+        $user = DB::collection('users')->whereDate($birthdayColumn, '<', '1990-01-01')
+            ->orderBy($birthdayColumn, 'desc')->first();
+        $this->assertEquals('Jane Doe', $user['name']);
+
+        $user = DB::collection('users')->whereDate($birthdayColumn, '>', '1990-01-01')
+            ->orderBy($birthdayColumn, 'asc')->first();
+        $this->assertEquals('John Doe', $user['name']);
+
+        $user = DB::collection('users')->whereDate($birthdayColumn, '!=', '1987-01-01')->first();
+        $this->assertEquals('John Doe', $user['name']);
+
+        // increment
+        DB::collection('users')->where($ageColumn, 28)->increment($ageColumn, 1);
+        $user = DB::collection('users')->where($ageColumn, 29)->first();
+        $this->assertEquals('John Doe', $user['name']);
     }
 }
