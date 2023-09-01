@@ -703,7 +703,14 @@ class Builder extends BaseBuilder
         $wheres = $this->compileWheres();
         $options = $this->inheritConnectionOptions();
 
-        $result = $this->collection->deleteMany($wheres, $options);
+        if (is_int($this->limit)) {
+            if ($this->limit !== 1) {
+                throw new \LogicException(sprintf('Delete limit can be 1 or null (unlimited). Got %d', $this->limit));
+            }
+            $result = $this->collection->deleteOne($wheres, $options);
+        } else {
+            $result = $this->collection->deleteMany($wheres, $options);
+        }
 
         if (1 == (int) $result->isAcknowledged()) {
             return $result->getDeletedCount();
