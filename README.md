@@ -44,6 +44,7 @@ It is compatible with Laravel 10.x. For older versions of Laravel, please refer 
         - [Cross-Database Relationships](#cross-database-relationships)
         - [Authentication](#authentication)
         - [Queues](#queues)
+        - [Prunable](#prunable)
     - [Upgrading](#upgrading)
         - [Upgrading from version 2 to 3](#upgrading-from-version-2-to-3)
     - [Security contact information](#security-contact-information)
@@ -1189,13 +1190,34 @@ Add the service provider in `config/app.php`:
 MongoDB\Laravel\MongodbQueueServiceProvider::class,
 ```
 
+### Prunable
+
+`Prunable` and `MassPrunable` traits are Laravel features to automatically remove models from your database. You can use
+`Illuminate\Database\Eloquent\Prunable` trait to remove models one by one. If you want to remove models in bulk, you need
+to use the `MongoDB\Laravel\Eloquent\MassPrunable` trait instead: it will be more performant but can break links with
+other documents as it does not load the models.
+
+
+```php
+use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\MassPrunable;
+
+class Book extends Model
+{
+    use MassPrunable;
+}
+```
+
 Upgrading
 ---------
 
 #### Upgrading from version 3 to 4
 
 Change project name in composer.json to `mongodb/laravel` and run `composer update`.
+
 Change namespace from `Jenssegers\Mongodb` to `MongoDB\Laravel` in your models and config.
+
+Replace `Illuminate\Database\Eloquent\MassPrunable` with `MongoDB\Laravel\Eloquent\MassPrunable` in your models.
 
 ## Security contact information
 
