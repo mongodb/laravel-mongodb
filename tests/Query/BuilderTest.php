@@ -4,9 +4,14 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Query;
 
+use ArgumentCountError;
+use BadMethodCallException;
+use Closure;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
+use InvalidArgumentException;
+use LogicException;
 use Mockery as m;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -15,13 +20,16 @@ use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Query\Grammar;
 use MongoDB\Laravel\Query\Processor;
 use PHPUnit\Framework\TestCase;
+use stdClass;
+
+use function collect;
+use function now;
+use function var_export;
 
 class BuilderTest extends TestCase
 {
-    /**
-     * @dataProvider provideQueryBuilderToMql
-     */
-    public function testMql(array $expected, \Closure $build): void
+    /** @dataProvider provideQueryBuilderToMql */
+    public function testMql(array $expected, Closure $build): void
     {
         $builder = $build(self::getBuilder());
         $this->assertInstanceOf(Builder::class, $builder);
@@ -31,6 +39,7 @@ class BuilderTest extends TestCase
         if (isset($expected['find'][1])) {
             $expected['find'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
         }
+
         if (isset($expected['aggregate'][1])) {
             $expected['aggregate'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
         }
@@ -82,13 +91,17 @@ class BuilderTest extends TestCase
         ];
 
         yield 'where with single array of conditions' => [
-            ['find' => [
-                ['$and' => [
-                    ['foo' => 1],
-                    ['bar' => 2],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            ['foo' => 1],
+                            ['bar' => 2],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder->where(['foo' => 1, 'bar' => 2]),
         ];
 
@@ -111,13 +124,17 @@ class BuilderTest extends TestCase
         ];
 
         yield 'orWhereIn' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['id' => ['$in' => [1, 2, 3]]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            ['id' => ['$in' => [1, 2, 3]]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder->where('id', '=', 1)
                 ->orWhereIn('id', [1, 2, 3]),
         ];
@@ -129,13 +146,17 @@ class BuilderTest extends TestCase
         ];
 
         yield 'orWhereNotIn' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['id' => ['$nin' => [1, 2, 3]]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            ['id' => ['$nin' => [1, 2, 3]]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder->where('id', '=', 1)
                 ->orWhereNotIn('id', [1, 2, 3]),
         ];
@@ -152,13 +173,17 @@ class BuilderTest extends TestCase
         ];
 
         yield 'where accepts $ in operators' => [
-            ['find' => [
-                ['$or' => [
-                    ['foo' => ['$type' => 2]],
-                    ['foo' => ['$type' => 4]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['foo' => ['$type' => 2]],
+                            ['foo' => ['$type' => 4]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('foo', '$type', 2)
                 ->orWhere('foo', '$type', 4),
@@ -166,13 +191,17 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testBasicWhereNot() */
         yield 'whereNot (multiple)' => [
-            ['find' => [
-                ['$and' => [
-                    ['$not' => ['name' => 'foo']],
-                    ['$not' => ['name' => ['$ne' => 'bar']]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            ['$not' => ['name' => 'foo']],
+                            ['$not' => ['name' => ['$ne' => 'bar']]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->whereNot('name', 'foo')
                 ->whereNot('name', '<>', 'bar'),
@@ -180,13 +209,17 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testBasicOrWheres() */
         yield 'where orWhere' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['email' => 'foo'],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            ['email' => 'foo'],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('id', '=', 1)
                 ->orWhere('email', '=', 'foo'),
@@ -194,26 +227,34 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testBasicOrWhereNot() */
         yield 'orWhereNot' => [
-            ['find' => [
-                ['$or' => [
-                    ['$not' => ['name' => 'foo']],
-                    ['$not' => ['name' => ['$ne' => 'bar']]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['$not' => ['name' => 'foo']],
+                            ['$not' => ['name' => ['$ne' => 'bar']]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->orWhereNot('name', 'foo')
                 ->orWhereNot('name', '<>', 'bar'),
         ];
 
         yield 'whereNot orWhere' => [
-            ['find' => [
-                ['$or' => [
-                    ['$not' => ['name' => 'foo']],
-                    ['name' => ['$ne' => 'bar']],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['$not' => ['name' => 'foo']],
+                            ['name' => ['$ne' => 'bar']],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->whereNot('name', 'foo')
                 ->orWhere('name', '<>', 'bar'),
@@ -221,22 +262,28 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testWhereNot() */
         yield 'whereNot callable' => [
-            ['find' => [
-                ['$not' => ['name' => 'foo']],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    ['$not' => ['name' => 'foo']],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->whereNot(fn (Builder $q) => $q->where('name', 'foo')),
         ];
 
         yield 'where whereNot' => [
-            ['find' => [
-                ['$and' => [
-                    ['name' => 'bar'],
-                    ['$not' => ['email' => 'foo']],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            ['name' => 'bar'],
+                            ['$not' => ['email' => 'foo']],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('name', '=', 'bar')
                 ->whereNot(function (Builder $q) {
@@ -245,15 +292,19 @@ class BuilderTest extends TestCase
         ];
 
         yield 'whereNot (nested)' => [
-            ['find' => [
-                ['$not' => [
-                    '$and' => [
-                        ['name' => 'foo'],
-                        ['$not' => ['email' => ['$ne' => 'bar']]],
+            [
+                'find' => [
+                    [
+                        '$not' => [
+                            '$and' => [
+                                ['name' => 'foo'],
+                                ['$not' => ['email' => ['$ne' => 'bar']]],
+                            ],
+                        ],
                     ],
-                ]],
-                [], // options
-            ]],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->whereNot(function (Builder $q) {
                     $q->where('name', '=', 'foo')
@@ -262,13 +313,17 @@ class BuilderTest extends TestCase
         ];
 
         yield 'orWhere orWhereNot' => [
-            ['find' => [
-                ['$or' => [
-                    ['name' => 'bar'],
-                    ['$not' => ['email' => 'foo']],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['name' => 'bar'],
+                            ['$not' => ['email' => 'foo']],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->orWhere('name', '=', 'bar')
                 ->orWhereNot(function (Builder $q) {
@@ -277,13 +332,17 @@ class BuilderTest extends TestCase
         ];
 
         yield 'where orWhereNot' => [
-            ['find' => [
-                ['$or' => [
-                    ['name' => 'bar'],
-                    ['$not' => ['email' => 'foo']],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['name' => 'bar'],
+                            ['$not' => ['email' => 'foo']],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('name', '=', 'bar')
                 ->orWhereNot('email', '=', 'foo'),
@@ -291,43 +350,55 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testWhereNotWithArrayConditions() */
         yield 'whereNot with arrays of single condition' => [
-            ['find' => [
-                ['$not' => [
-                    '$and' => [
-                        ['foo' => 1],
-                        ['bar' => 2],
+            [
+                'find' => [
+                    [
+                        '$not' => [
+                            '$and' => [
+                                ['foo' => 1],
+                                ['bar' => 2],
+                            ],
+                        ],
                     ],
-                ]],
-                [], // options
-            ]],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->whereNot([['foo', 1], ['bar', 2]]),
         ];
 
         yield 'whereNot with single array of conditions' => [
-            ['find' => [
-                ['$not' => [
-                    '$and' => [
-                        ['foo' => 1],
-                        ['bar' => 2],
+            [
+                'find' => [
+                    [
+                        '$not' => [
+                            '$and' => [
+                                ['foo' => 1],
+                                ['bar' => 2],
+                            ],
+                        ],
                     ],
-                ]],
-                [], // options
-            ]],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->whereNot(['foo' => 1, 'bar' => 2]),
         ];
 
         yield 'whereNot with arrays of single condition with operator' => [
-            ['find' => [
-                ['$not' => [
-                    '$and' => [
-                        ['foo' => 1],
-                        ['bar' => ['$lt' => 2]],
+            [
+                'find' => [
+                    [
+                        '$not' => [
+                            '$and' => [
+                                ['foo' => 1],
+                                ['bar' => ['$lt' => 2]],
+                            ],
+                        ],
                     ],
-                ]],
-                [], // options
-            ]],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->whereNot([
                     ['foo', 1],
@@ -341,10 +412,19 @@ class BuilderTest extends TestCase
         ];
 
         yield 'where all nested operators' => [
-            ['find' => [['tags' => ['$all' => [
-                ['$elemMatch' => ['size' => 'M', 'num' => ['$gt' => 50]]],
-                ['$elemMatch' => ['num' => 100, 'color' => 'green']],
-            ]]], []]],
+            [
+                'find' => [
+                    [
+                        'tags' => [
+                            '$all' => [
+                                ['$elemMatch' => ['size' => 'M', 'num' => ['$gt' => 50]]],
+                                ['$elemMatch' => ['num' => 100, 'color' => 'green']],
+                            ],
+                        ],
+                    ],
+                    [],
+                ],
+            ],
             fn (Builder $builder) => $builder->where('tags', 'all', [
                 ['$elemMatch' => ['size' => 'M', 'num' => ['$gt' => 50]]],
                 ['$elemMatch' => ['num' => 100, 'color' => 'green']],
@@ -445,10 +525,12 @@ class BuilderTest extends TestCase
 
         /** @link https://www.mongodb.com/docs/manual/reference/method/cursor.sort/#text-score-metadata-sort */
         yield 'orderBy array meta' => [
-            ['find' => [
-                ['$text' => ['$search' => 'operating']],
-                ['sort' => ['score' => ['$meta' => 'textScore']]],
-            ]],
+            [
+                'find' => [
+                    ['$text' => ['$search' => 'operating']],
+                    ['sort' => ['score' => ['$meta' => 'textScore']]],
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('$text', ['$search' => 'operating'])
                 ->orderBy('score', ['$meta' => 'textScore']),
@@ -467,10 +549,12 @@ class BuilderTest extends TestCase
 
         $period = now()->toPeriod(now()->addMonth());
         yield 'whereBetween CarbonPeriod' => [
-            ['find' => [
-                ['created_at' => ['$gte' => new UTCDateTime($period->start), '$lte' => new UTCDateTime($period->end)]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    ['created_at' => ['$gte' => new UTCDateTime($period->start), '$lte' => new UTCDateTime($period->end)]],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder->whereBetween('created_at', $period),
         ];
 
@@ -481,13 +565,17 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testOrWhereBetween() */
         yield 'orWhereBetween array of numbers' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['id' => ['$gte' => 3, '$lte' => 5]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            ['id' => ['$gte' => 3, '$lte' => 5]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('id', '=', 1)
                 ->orWhereBetween('id', [3, 5]),
@@ -495,86 +583,116 @@ class BuilderTest extends TestCase
 
         /** @link https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order/#arrays */
         yield 'orWhereBetween nested array of numbers' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['id' => ['$gte' => [4], '$lte' => [6, 8]]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            ['id' => ['$gte' => [4], '$lte' => [6, 8]]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('id', '=', 1)
                 ->orWhereBetween('id', [[4], [6, 8]]),
         ];
 
         yield 'orWhereBetween collection' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['id' => ['$gte' => 3, '$lte' => 4]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            ['id' => ['$gte' => 3, '$lte' => 4]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('id', '=', 1)
                 ->orWhereBetween('id', collect([3, 4])),
         ];
 
         yield 'whereNotBetween array of numbers' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => ['$lte' => 1]],
-                    ['id' => ['$gte' => 2]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => ['$lte' => 1]],
+                            ['id' => ['$gte' => 2]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder->whereNotBetween('id', [1, 2]),
         ];
 
         /** @see DatabaseQueryBuilderTest::testOrWhereNotBetween() */
         yield 'orWhereNotBetween array of numbers' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['$or' => [
-                        ['id' => ['$lte' => 3]],
-                        ['id' => ['$gte' => 5]],
-                    ]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            [
+                                '$or' => [
+                                    ['id' => ['$lte' => 3]],
+                                    ['id' => ['$gte' => 5]],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('id', '=', 1)
                 ->orWhereNotBetween('id', [3, 5]),
         ];
 
         yield 'orWhereNotBetween nested array of numbers' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['$or' => [
-                        ['id' => ['$lte' => [2, 3]]],
-                        ['id' => ['$gte' => [5]]],
-                    ]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            [
+                                '$or' => [
+                                    ['id' => ['$lte' => [2, 3]]],
+                                    ['id' => ['$gte' => [5]]],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('id', '=', 1)
                 ->orWhereNotBetween('id', [[2, 3], [5]]),
         ];
 
         yield 'orWhereNotBetween collection' => [
-            ['find' => [
-                ['$or' => [
-                    ['id' => 1],
-                    ['$or' => [
-                        ['id' => ['$lte' => 3]],
-                        ['id' => ['$gte' => 4]],
-                    ]],
-                ]],
-                [], // options
-            ]],
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['id' => 1],
+                            [
+                                '$or' => [
+                                    ['id' => ['$lte' => 3]],
+                                    ['id' => ['$gte' => 4]],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->where('id', '=', 1)
                 ->orWhereNotBetween('id', collect([3, 4])),
@@ -647,166 +765,292 @@ class BuilderTest extends TestCase
         ];
 
         yield 'where date' => [
-            ['find' => [['created_at' => [
-                '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
-                '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
-            ]], []]],
+            [
+                'find' => [
+                    [
+                        'created_at' => [
+                            '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                            '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        ],
+                    ],
+                    [],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereDate('created_at', '2018-09-30'),
         ];
 
         yield 'where date DateTimeImmutable' => [
-            ['find' => [['created_at' => [
-                '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
-                '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
-            ]], []]],
+            [
+                'find' => [
+                    [
+                        'created_at' => [
+                            '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                            '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        ],
+                    ],
+                    [],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereDate('created_at', '=', new DateTimeImmutable('2018-09-30 15:00:00 +02:00')),
         ];
 
         yield 'where date !=' => [
-            ['find' => [['created_at' => [
-                '$not' => [
-                    '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
-                    '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+            [
+                'find' => [
+                    [
+                        'created_at' => [
+                            '$not' => [
+                                '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                                '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereDate('created_at', '!=', '2018-09-30'),
         ];
 
         yield 'where date <' => [
-            ['find' => [['created_at' => [
-                '$lt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
-            ]], []]],
+            [
+                'find' => [
+                    [
+                        'created_at' => [
+                            '$lt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                        ],
+                    ],
+                    [],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereDate('created_at', '<', '2018-09-30'),
         ];
 
         yield 'where date >=' => [
-            ['find' => [['created_at' => [
-                '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
-            ]], []]],
+            [
+                'find' => [
+                    [
+                        'created_at' => [
+                            '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                        ],
+                    ],
+                    [],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereDate('created_at', '>=', '2018-09-30'),
         ];
 
         yield 'where date >' => [
-            ['find' => [['created_at' => [
-                '$gt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
-            ]], []]],
+            [
+                'find' => [
+                    [
+                        'created_at' => [
+                            '$gt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        ],
+                    ],
+                    [],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereDate('created_at', '>', '2018-09-30'),
         ];
 
         yield 'where date <=' => [
-            ['find' => [['created_at' => [
-                '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
-            ]], []]],
+            [
+                'find' => [
+                    [
+                        'created_at' => [
+                            '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        ],
+                    ],
+                    [],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereDate('created_at', '<=', '2018-09-30'),
         ];
 
         yield 'where day' => [
-            ['find' => [['$expr' => [
-                '$eq' => [
-                    ['$dayOfMonth' => '$created_at'],
-                    5,
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$dayOfMonth' => '$created_at'],
+                                5,
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereDay('created_at', 5),
         ];
 
         yield 'where day > string' => [
-            ['find' => [['$expr' => [
-                '$gt' => [
-                    ['$dayOfMonth' => '$created_at'],
-                    5,
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$gt' => [
+                                ['$dayOfMonth' => '$created_at'],
+                                5,
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereDay('created_at', '>', '05'),
         ];
 
         yield 'where month' => [
-            ['find' => [['$expr' => [
-                '$eq' => [
-                    ['$month' => '$created_at'],
-                    10,
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$month' => '$created_at'],
+                                10,
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereMonth('created_at', 10),
         ];
 
         yield 'where month > string' => [
-            ['find' => [['$expr' => [
-                '$gt' => [
-                    ['$month' => '$created_at'],
-                    5,
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$gt' => [
+                                ['$month' => '$created_at'],
+                                5,
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereMonth('created_at', '>', '05'),
         ];
 
         yield 'where year' => [
-            ['find' => [['$expr' => [
-                '$eq' => [
-                    ['$year' => '$created_at'],
-                    2023,
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$year' => '$created_at'],
+                                2023,
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereYear('created_at', 2023),
         ];
 
         yield 'where year > string' => [
-            ['find' => [['$expr' => [
-                '$gt' => [
-                    ['$year' => '$created_at'],
-                    2023,
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$gt' => [
+                                ['$year' => '$created_at'],
+                                2023,
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereYear('created_at', '>', '2023'),
         ];
 
         yield 'where time HH:MM:SS' => [
-            ['find' => [['$expr' => [
-                '$eq' => [
-                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
-                    '10:11:12',
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                                '10:11:12',
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereTime('created_at', '10:11:12'),
         ];
 
         yield 'where time HH:MM' => [
-            ['find' => [['$expr' => [
-                '$eq' => [
-                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M']],
-                    '10:11',
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M']],
+                                '10:11',
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereTime('created_at', '10:11'),
         ];
 
         yield 'where time HH' => [
-            ['find' => [['$expr' => [
-                '$eq' => [
-                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H']],
-                    '10',
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H']],
+                                '10',
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereTime('created_at', '10'),
         ];
 
         yield 'where time DateTime' => [
-            ['find' => [['$expr' => [
-                '$eq' => [
-                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
-                    '10:11:12',
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                                '10:11:12',
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
-            fn (Builder $builder) => $builder->whereTime('created_at', new \DateTimeImmutable('2023-08-22 10:11:12')),
+            ],
+            fn (Builder $builder) => $builder->whereTime('created_at', new DateTimeImmutable('2023-08-22 10:11:12')),
         ];
 
         yield 'where time >' => [
-            ['find' => [['$expr' => [
-                '$gt' => [
-                    ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
-                    '10:11:12',
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$gt' => [
+                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                                '10:11:12',
+                            ],
+                        ],
+                    ],
+                    [],
                 ],
-            ]], []]],
+            ],
             fn (Builder $builder) => $builder->whereTime('created_at', '>', '10:11:12'),
         ];
 
@@ -862,18 +1106,18 @@ class BuilderTest extends TestCase
         ];
 
         yield 'groupBy' => [
-            ['aggregate' => [
-                [['$group' => ['_id' => ['foo' => '$foo'], 'foo' => ['$last' => '$foo']]]],
-                [], // options
-            ]],
+            [
+                'aggregate' => [
+                    [['$group' => ['_id' => ['foo' => '$foo'], 'foo' => ['$last' => '$foo']]]],
+                    [], // options
+                ],
+            ],
             fn (Builder $builder) => $builder->groupBy('foo'),
         ];
     }
 
-    /**
-     * @dataProvider provideExceptions
-     */
-    public function testException($class, $message, \Closure $build): void
+    /** @dataProvider provideExceptions */
+    public function testException($class, $message, Closure $build): void
     {
         $builder = self::getBuilder();
 
@@ -885,85 +1129,85 @@ class BuilderTest extends TestCase
     public static function provideExceptions(): iterable
     {
         yield 'orderBy invalid direction' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Order direction must be "asc" or "desc"',
             fn (Builder $builder) => $builder->orderBy('_id', 'dasc'),
         ];
 
         /** @see DatabaseQueryBuilderTest::testWhereBetweens */
         yield 'whereBetween array too short' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Between $values must be a list with exactly two elements: [min, max]',
             fn (Builder $builder) => $builder->whereBetween('id', [1]),
         ];
 
         yield 'whereBetween array too short (nested)' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Between $values must be a list with exactly two elements: [min, max]',
             fn (Builder $builder) => $builder->whereBetween('id', [[1, 2]]),
         ];
 
         yield 'whereBetween array too long' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Between $values must be a list with exactly two elements: [min, max]',
             fn (Builder $builder) => $builder->whereBetween('id', [1, 2, 3]),
         ];
 
         yield 'whereBetween collection too long' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Between $values must be a list with exactly two elements: [min, max]',
             fn (Builder $builder) => $builder->whereBetween('id', new Collection([1, 2, 3])),
         ];
 
         yield 'whereBetween array is not a list' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Between $values must be a list with exactly two elements: [min, max]',
             fn (Builder $builder) => $builder->whereBetween('id', ['min' => 1, 'max' => 2]),
         ];
 
         yield 'find with single string argument' => [
-            \ArgumentCountError::class,
+            ArgumentCountError::class,
             'Too few arguments to function MongoDB\Laravel\Query\Builder::where("foo"), 1 passed and at least 2 expected when the 1st is a string',
             fn (Builder $builder) => $builder->where('foo'),
         ];
 
         yield 'where regex not starting with /' => [
-            \LogicException::class,
+            LogicException::class,
             'Missing expected starting delimiter in regular expression "^ac/me$", supported delimiters are: / # ~',
             fn (Builder $builder) => $builder->where('name', 'regex', '^ac/me$'),
         ];
 
         yield 'where regex not ending with /' => [
-            \LogicException::class,
+            LogicException::class,
             'Missing expected ending delimiter "/" in regular expression "/foo#bar"',
             fn (Builder $builder) => $builder->where('name', 'regex', '/foo#bar'),
         ];
 
         yield 'whereTime with invalid time' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "10:11:12:13"',
             fn (Builder $builder) => $builder->whereTime('created_at', '10:11:12:13'),
         ];
 
         yield 'whereTime out of range' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "23:70"',
             fn (Builder $builder) => $builder->whereTime('created_at', '23:70'),
         ];
 
         yield 'whereTime invalid type' => [
-            \InvalidArgumentException::class,
+            InvalidArgumentException::class,
             'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "stdClass"',
-            fn (Builder $builder) => $builder->whereTime('created_at', new \stdClass()),
+            fn (Builder $builder) => $builder->whereTime('created_at', new stdClass()),
         ];
     }
 
     /** @dataProvider getEloquentMethodsNotSupported */
-    public function testEloquentMethodsNotSupported(\Closure $callback)
+    public function testEloquentMethodsNotSupported(Closure $callback)
     {
         $builder = self::getBuilder();
 
-        $this->expectException(\BadMethodCallException::class);
+        $this->expectException(BadMethodCallException::class);
         $this->expectExceptionMessage('This method is not supported by MongoDB');
 
         $callback($builder);
@@ -1019,7 +1263,7 @@ class BuilderTest extends TestCase
     private static function getBuilder(): Builder
     {
         $connection = m::mock(Connection::class);
-        $processor = m::mock(Processor::class);
+        $processor  = m::mock(Processor::class);
         $connection->shouldReceive('getSession')->andReturn(null);
         $connection->shouldReceive('getQueryGrammar')->andReturn(new Grammar());
 

@@ -1,8 +1,9 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel;
 
-use function class_exists;
 use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
 use InvalidArgumentException;
@@ -11,9 +12,17 @@ use MongoDB\Database;
 use MongoDB\Laravel\Concerns\ManagesTransactions;
 use Throwable;
 
-/**
- * @mixin Database
- */
+use function class_exists;
+use function filter_var;
+use function implode;
+use function is_array;
+use function preg_match;
+use function str_contains;
+
+use const FILTER_FLAG_IPV6;
+use const FILTER_VALIDATE_IP;
+
+/** @mixin Database */
 class Connection extends BaseConnection
 {
     use ManagesTransactions;
@@ -36,8 +45,6 @@ class Connection extends BaseConnection
 
     /**
      * Create a new database connection instance.
-     *
-     * @param  array  $config
      */
     public function __construct(array $config)
     {
@@ -52,11 +59,8 @@ class Connection extends BaseConnection
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
 
-        // Get default database name
-        $default_db = $this->getDefaultDatabaseName($dsn, $config);
-
         // Select database
-        $this->db = $this->connection->selectDatabase($default_db);
+        $this->db = $this->connection->selectDatabase($this->getDefaultDatabaseName($dsn, $config));
 
         $this->useDefaultPostProcessor();
 
@@ -68,7 +72,8 @@ class Connection extends BaseConnection
     /**
      * Begin a fluent query against a database collection.
      *
-     * @param  string  $collection
+     * @param  string $collection
+     *
      * @return Query\Builder
      */
     public function collection($collection)
@@ -81,8 +86,9 @@ class Connection extends BaseConnection
     /**
      * Begin a fluent query against a database collection.
      *
-     * @param  string  $table
-     * @param  string|null  $as
+     * @param  string      $table
+     * @param  string|null $as
+     *
      * @return Query\Builder
      */
     public function table($table, $as = null)
@@ -93,7 +99,8 @@ class Connection extends BaseConnection
     /**
      * Get a MongoDB collection.
      *
-     * @param  string  $name
+     * @param  string $name
+     *
      * @return Collection
      */
     public function getCollection($name)
@@ -101,9 +108,7 @@ class Connection extends BaseConnection
         return new Collection($this, $this->db->selectCollection($name));
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function getSchemaBuilder()
     {
         return new Schema\Builder($this);
@@ -130,7 +135,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * {@inheritdoc}
+     * {@inheritDoc}
      */
     public function getDatabaseName()
     {
@@ -140,20 +145,16 @@ class Connection extends BaseConnection
     /**
      * Get the name of the default database based on db config or try to detect it from dsn.
      *
-     * @param  string  $dsn
-     * @param  array  $config
-     * @return string
-     *
      * @throws InvalidArgumentException
      */
     protected function getDefaultDatabaseName(string $dsn, array $config): string
     {
         if (empty($config['database'])) {
-            if (preg_match('/^mongodb(?:[+]srv)?:\\/\\/.+\\/([^?&]+)/s', $dsn, $matches)) {
-                $config['database'] = $matches[1];
-            } else {
+            if (! preg_match('/^mongodb(?:[+]srv)?:\\/\\/.+\\/([^?&]+)/s', $dsn, $matches)) {
                 throw new InvalidArgumentException('Database is not properly configured.');
             }
+
+            $config['database'] = $matches[1];
         }
 
         return $config['database'];
@@ -161,13 +162,8 @@ class Connection extends BaseConnection
 
     /**
      * Create a new MongoDB connection.
-     *
-     * @param  string  $dsn
-     * @param  array  $config
-     * @param  array  $options
-     * @return Client
      */
-    protected function createConnection($dsn, array $config, array $options): Client
+    protected function createConnection(string $dsn, array $config, array $options): Client
     {
         // By default driver options is an empty array.
         $driverOptions = [];
@@ -185,6 +181,7 @@ class Connection extends BaseConnection
         if (! isset($options['username']) && ! empty($config['username'])) {
             $options['username'] = $config['username'];
         }
+
         if (! isset($options['password']) && ! empty($config['password'])) {
             $options['password'] = $config['password'];
         }
@@ -192,9 +189,7 @@ class Connection extends BaseConnection
         return new Client($dsn, $options, $driverOptions);
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function disconnect()
     {
         unset($this->connection);
@@ -202,20 +197,14 @@ class Connection extends BaseConnection
 
     /**
      * Determine if the given configuration array has a dsn string.
-     *
-     * @param  array  $config
-     * @return bool
      */
-    protected function hasDsnString(array $config)
+    protected function hasDsnString(array $config): bool
     {
-        return isset($config['dsn']) && ! empty($config['dsn']);
+        return ! empty($config['dsn']);
     }
 
     /**
      * Get the DSN string form configuration.
-     *
-     * @param  array  $config
-     * @return string
      */
     protected function getDsnString(array $config): string
     {
@@ -224,9 +213,6 @@ class Connection extends BaseConnection
 
     /**
      * Get the DSN string for a host / port configuration.
-     *
-     * @param  array  $config
-     * @return string
      */
     protected function getHostDsn(array $config): string
     {
@@ -235,30 +221,27 @@ class Connection extends BaseConnection
 
         foreach ($hosts as &$host) {
             // ipv6
-            if (filter_var($host, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV6)) {
-                $host = '['.$host.']';
+            if (filter_var($host, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                $host = '[' . $host . ']';
                 if (! empty($config['port'])) {
-                    $host = $host.':'.$config['port'];
+                    $host .= ':' . $config['port'];
                 }
             } else {
                 // Check if we need to add a port to the host
                 if (! str_contains($host, ':') && ! empty($config['port'])) {
-                    $host = $host.':'.$config['port'];
+                    $host .= ':' . $config['port'];
                 }
             }
         }
 
         // Check if we want to authenticate against a specific database.
-        $auth_database = isset($config['options']) && ! empty($config['options']['database']) ? $config['options']['database'] : null;
+        $authDatabase = isset($config['options']) && ! empty($config['options']['database']) ? $config['options']['database'] : null;
 
-        return 'mongodb://'.implode(',', $hosts).($auth_database ? '/'.$auth_database : '');
+        return 'mongodb://' . implode(',', $hosts) . ($authDatabase ? '/' . $authDatabase : '');
     }
 
     /**
      * Create a DSN string from a configuration.
-     *
-     * @param  array  $config
-     * @return string
      */
     protected function getDsn(array $config): string
     {
@@ -267,41 +250,31 @@ class Connection extends BaseConnection
             : $this->getHostDsn($config);
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function getElapsedTime($start)
     {
         return parent::getElapsedTime($start);
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function getDriverName()
     {
         return 'mongodb';
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function getDefaultPostProcessor()
     {
         return new Query\Processor();
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function getDefaultQueryGrammar()
     {
         return new Query\Grammar();
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function getDefaultSchemaGrammar()
     {
         return new Schema\Grammar();
@@ -309,10 +282,8 @@ class Connection extends BaseConnection
 
     /**
      * Set database.
-     *
-     * @param  \MongoDB\Database  $db
      */
-    public function setDatabase(\MongoDB\Database $db)
+    public function setDatabase(Database $db)
     {
         $this->db = $db;
     }
@@ -320,8 +291,9 @@ class Connection extends BaseConnection
     /**
      * Dynamically pass methods to the connection.
      *
-     * @param  string  $method
+     * @param  string $method
      * @param  array  $parameters
+     *
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -339,7 +311,7 @@ class Connection extends BaseConnection
         if (class_exists(InstalledVersions::class)) {
             try {
                 return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-mongodb');
-            } catch (Throwable $t) {
+            } catch (Throwable) {
                 // Ignore exceptions and return unknown version
             }
         }

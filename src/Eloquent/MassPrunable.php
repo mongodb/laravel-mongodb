@@ -1,9 +1,15 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\Eloquent\MassPrunable as EloquentMassPrunable;
 use Illuminate\Database\Events\ModelsPruned;
+
+use function class_uses_recursive;
+use function event;
+use function in_array;
 
 trait MassPrunable
 {
@@ -17,7 +23,7 @@ trait MassPrunable
     public function pruneAll(): int
     {
         $query = $this->prunable();
-        $total = in_array(SoftDeletes::class, class_uses_recursive(get_class($this)))
+        $total = in_array(SoftDeletes::class, class_uses_recursive(static::class))
                     ? $query->forceDelete()
                     : $query->delete();
 

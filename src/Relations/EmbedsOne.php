@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Relations;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Model as EloquentModel;
 use MongoDB\BSON\ObjectID;
 
 class EmbedsOne extends EmbedsOneOrMany
@@ -33,14 +34,13 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Save a new model and attach it to the parent model.
      *
-     * @param  Model  $model
      * @return Model|bool
      */
     public function performInsert(Model $model)
     {
         // Generate a new key if needed.
-        if ($model->getKeyName() == '_id' && ! $model->getKey()) {
-            $model->setAttribute('_id', new ObjectID);
+        if ($model->getKeyName() === '_id' && ! $model->getKey()) {
+            $model->setAttribute('_id', new ObjectID());
         }
 
         // For deeply nested documents, let the parent handle the changes.
@@ -63,7 +63,6 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Save an existing model and attach it to the parent model.
      *
-     * @param  Model  $model
      * @return Model|bool
      */
     public function performUpdate(Model $model)
@@ -74,7 +73,7 @@ class EmbedsOne extends EmbedsOneOrMany
             return $this->parent->save();
         }
 
-        $values = $this->getUpdateValues($model->getDirty(), $this->localKey.'.');
+        $values = $this->getUpdateValues($model->getDirty(), $this->localKey . '.');
 
         $result = $this->toBase()->update($values);
 
@@ -114,7 +113,6 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Attach the model to its parent.
      *
-     * @param  Model  $model
      * @return Model
      */
     public function associate(Model $model)
@@ -145,11 +143,11 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Get the name of the "where in" method for eager loading.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     * @param  string  $key
+     * @param  string $key
+     *
      * @return string
      */
-    protected function whereInMethod(EloquentModel $model, $key)
+    protected function whereInMethod(Model $model, $key)
     {
         return 'whereIn';
     }

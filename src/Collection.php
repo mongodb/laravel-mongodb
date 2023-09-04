@@ -1,14 +1,21 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel;
 
 use Exception;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Collection as MongoCollection;
 
-/**
- * @mixin MongoCollection
- */
+use function array_walk_recursive;
+use function implode;
+use function json_encode;
+use function microtime;
+
+use const JSON_THROW_ON_ERROR;
+
+/** @mixin MongoCollection */
 class Collection
 {
     /**
@@ -25,10 +32,6 @@ class Collection
      */
     protected $collection;
 
-    /**
-     * @param  Connection  $connection
-     * @param  MongoCollection  $collection
-     */
     public function __construct(Connection $connection, MongoCollection $collection)
     {
         $this->connection = $connection;
@@ -38,13 +41,11 @@ class Collection
     /**
      * Handle dynamic method calls.
      *
-     * @param  string  $method
-     * @param  array  $parameters
      * @return mixed
      */
     public function __call(string $method, array $parameters)
     {
-        $start = microtime(true);
+        $start  = microtime(true);
         $result = $this->collection->$method(...$parameters);
 
         // Once we have run the query we will calculate the time that it took to run and
@@ -64,13 +65,13 @@ class Collection
         // Convert the query parameters to a json string.
         foreach ($parameters as $parameter) {
             try {
-                $query[] = json_encode($parameter);
-            } catch (Exception $e) {
+                $query[] = json_encode($parameter, JSON_THROW_ON_ERROR);
+            } catch (Exception) {
                 $query[] = '{...}';
             }
         }
 
-        $queryString = $this->collection->getCollectionName().'.'.$method.'('.implode(',', $query).')';
+        $queryString = $this->collection->getCollectionName() . '.' . $method . '(' . implode(',', $query) . ')';
 
         $this->connection->logQuery($queryString, [], $time);
 

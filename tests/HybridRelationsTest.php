@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
-use Illuminate\Database\Connection;
 use Illuminate\Database\MySqlConnection;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Tests\Models\Book;
@@ -21,7 +20,6 @@ class HybridRelationsTest extends TestCase
     {
         parent::setUp();
 
-        /** @var Connection */
         try {
             DB::connection('mysql')->select('SELECT 1');
         } catch (PDOException) {
@@ -42,7 +40,7 @@ class HybridRelationsTest extends TestCase
 
     public function testMysqlRelations()
     {
-        $user = new MysqlUser;
+        $user = new MysqlUser();
         $this->assertInstanceOf(MysqlUser::class, $user);
         $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
 
@@ -72,7 +70,7 @@ class HybridRelationsTest extends TestCase
         $this->assertEquals('John Doe', $role->mysqlUser->name);
 
         // MongoDB User
-        $user = new User;
+        $user       = new User();
         $user->name = 'John Doe';
         $user->save();
 
@@ -99,8 +97,8 @@ class HybridRelationsTest extends TestCase
 
     public function testHybridWhereHas()
     {
-        $user = new MysqlUser;
-        $otherUser = new MysqlUser;
+        $user      = new MysqlUser();
+        $otherUser = new MysqlUser();
         $this->assertInstanceOf(MysqlUser::class, $user);
         $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
         $this->assertInstanceOf(MysqlUser::class, $otherUser);
@@ -108,11 +106,11 @@ class HybridRelationsTest extends TestCase
 
         //MySql User
         $user->name = 'John Doe';
-        $user->id = 2;
+        $user->id   = 2;
         $user->save();
         // Other user
         $otherUser->name = 'Other User';
-        $otherUser->id = 3;
+        $otherUser->id   = 3;
         $otherUser->save();
         // Make sure they are created
         $this->assertIsInt($user->id);
@@ -153,8 +151,8 @@ class HybridRelationsTest extends TestCase
 
     public function testHybridWith()
     {
-        $user = new MysqlUser;
-        $otherUser = new MysqlUser;
+        $user      = new MysqlUser();
+        $otherUser = new MysqlUser();
         $this->assertInstanceOf(MysqlUser::class, $user);
         $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
         $this->assertInstanceOf(MysqlUser::class, $otherUser);
@@ -162,11 +160,11 @@ class HybridRelationsTest extends TestCase
 
         //MySql User
         $user->name = 'John Doe';
-        $user->id = 2;
+        $user->id   = 2;
         $user->save();
         // Other user
         $otherUser->name = 'Other User';
-        $otherUser->id = 3;
+        $otherUser->id   = 3;
         $otherUser->save();
         // Make sure they are created
         $this->assertIsInt($user->id);

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Queue;
 
+use DateTime;
 use Illuminate\Queue\Jobs\DatabaseJob;
 
 class MongoJob extends DatabaseJob
@@ -16,9 +19,7 @@ class MongoJob extends DatabaseJob
         return $this->job->reserved;
     }
 
-    /**
-     * @return \DateTime
-     */
+    /** @return DateTime */
     public function reservedAt()
     {
         return $this->job->reserved_at;

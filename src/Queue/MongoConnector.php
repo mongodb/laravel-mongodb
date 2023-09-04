@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Queue;
 
+use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Queue\Connectors\ConnectorInterface;
 
@@ -10,14 +13,12 @@ class MongoConnector implements ConnectorInterface
     /**
      * Database connections.
      *
-     * @var \Illuminate\Database\ConnectionResolverInterface
+     * @var ConnectionResolverInterface
      */
     protected $connections;
 
     /**
      * Create a new connector instance.
-     *
-     * @param \Illuminate\Database\ConnectionResolverInterface $connections
      */
     public function __construct(ConnectionResolverInterface $connections)
     {
@@ -27,8 +28,7 @@ class MongoConnector implements ConnectorInterface
     /**
      * Establish a queue connection.
      *
-     * @param array $config
-     * @return \Illuminate\Contracts\Queue\Queue
+     * @return Queue
      */
     public function connect(array $config)
     {
@@ -36,7 +36,7 @@ class MongoConnector implements ConnectorInterface
             $this->connections->connection($config['connection'] ?? null),
             $config['table'],
             $config['queue'],
-            $config['expire'] ?? 60
+            $config['expire'] ?? 60,
         );
     }
 }

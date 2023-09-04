@@ -9,9 +9,9 @@ use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class IdIsBinaryUuid extends Eloquent
 {
-    protected $connection = 'mongodb';
+    protected $connection       = 'mongodb';
     protected static $unguarded = true;
-    protected $casts = [
+    protected $casts            = [
         '_id' => BinaryUuid::class,
     ];
 }

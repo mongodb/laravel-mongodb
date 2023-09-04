@@ -33,7 +33,8 @@
     "require-dev": {
         "phpunit/phpunit": "^9.5.10",
         "orchestra/testbench": "^8.0",
-        "mockery/mockery": "^1.4.4"
+        "mockery/mockery": "^1.4.4",
+        "doctrine/coding-standard": "12.0.x-dev"
     },
     "replace": {
         "jenssegers/mongodb": "self.version"
@@ -56,5 +57,10 @@
             ]
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "config": {
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    }
 }

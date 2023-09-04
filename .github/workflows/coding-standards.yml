@@ -1,0 +1,55 @@
+name: "Coding Standards"
+
+on:
+  push:
+    branches:
+    tags:
+  pull_request:
+
+env:
+  PHP_VERSION: "8.2"
+  DRIVER_VERSION: "stable"
+
+jobs:
+  phpcs:
+    name: "phpcs"
+    runs-on: "ubuntu-22.04"
+
+    steps:
+      - name: "Checkout"
+        uses: "actions/checkout@v3"
+
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: "mongodb-${{ env.DRIVER_VERSION }}"
+          key: "extcache-v1"
+
+      - name: Cache extensions
+        uses: actions/cache@v3
+        with:
+          path: ${{ steps.extcache.outputs.dir }}
+          key: ${{ steps.extcache.outputs.key }}
+          restore-keys: ${{ steps.extcache.outputs.key }}
+
+      - name: "Install PHP"
+        uses: "shivammathur/setup-php@v2"
+        with:
+          coverage: "none"
+          extensions: "mongodb-${{ env.DRIVER_VERSION }}"
+          php-version: "${{ env.PHP_VERSION }}"
+          tools: "cs2pr"
+
+      - name: "Show driver information"
+        run: "php --ri mongodb"
+
+      - name: "Install dependencies with Composer"
+        uses: "ramsey/composer-install@2.2.0"
+        with:
+          composer-options: "--no-suggest"
+
+      # The -q option is required until phpcs v4 is released
+      - name: "Run PHP_CodeSniffer"
+        run: "vendor/bin/phpcs -q --no-colors --report=checkstyle | cs2pr"

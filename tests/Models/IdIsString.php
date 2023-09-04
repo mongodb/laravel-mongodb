@@ -8,9 +8,7 @@ use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class IdIsString extends Eloquent
 {
-    protected $connection = 'mongodb';
+    protected $connection       = 'mongodb';
     protected static $unguarded = true;
-    protected $casts = [
-        '_id' => 'string',
-    ];
+    protected $casts            = ['_id' => 'string'];
 }

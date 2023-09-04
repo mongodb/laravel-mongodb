@@ -11,6 +11,9 @@ use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
 
+use function class_uses_recursive;
+use function in_array;
+
 class MassPrunableTest extends TestCase
 {
     public function tearDown(): void
@@ -51,9 +54,7 @@ class MassPrunableTest extends TestCase
         $this->assertEquals(0, Soft::withTrashed()->count());
     }
 
-    /**
-     * @see PruneCommand::isPrunable()
-     */
+    /** @see PruneCommand::isPrunable() */
     protected function isPrunable($model)
     {
         $uses = class_uses_recursive($model);

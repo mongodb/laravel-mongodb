@@ -14,6 +14,8 @@ use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
 
+use function spl_object_hash;
+
 class ConnectionTest extends TestCase
 {
     public function testConnection()
@@ -162,9 +164,7 @@ class ConnectionTest extends TestCase
         yield 'Database is extracted from DSN if not specified' => [
             'expectedUri' => 'mongodb://some-host:12345/tests',
             'expectedDatabaseName' => 'tests',
-            'config' => [
-                'dsn' => 'mongodb://some-host:12345/tests',
-            ],
+            'config' => ['dsn' => 'mongodb://some-host:12345/tests'],
         ];
     }
 
@@ -172,7 +172,7 @@ class ConnectionTest extends TestCase
     public function testConnectionConfig(string $expectedUri, string $expectedDatabaseName, array $config): void
     {
         $connection = new Connection($config);
-        $client = $connection->getMongoClient();
+        $client     = $connection->getMongoClient();
 
         $this->assertSame($expectedUri, (string) $client);
         $this->assertSame($expectedDatabaseName, $connection->getMongoDB()->getDatabaseName());

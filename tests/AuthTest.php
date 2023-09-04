@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -9,11 +11,14 @@ use Illuminate\Support\Facades\Hash;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\Models\User;
 
+use function bcrypt;
+
 class AuthTest extends TestCase
 {
     public function tearDown(): void
     {
         parent::setUp();
+
         User::truncate();
         DB::collection('password_reset_tokens')->truncate();
     }
@@ -50,8 +55,8 @@ class AuthTest extends TestCase
                     $this->assertEquals($user->_id, $actualUser->_id);
                     // Store token for later use
                     $token = $actualToken;
-                }
-            )
+                },
+            ),
         );
 
         $this->assertEquals(1, DB::collection('password_reset_tokens')->count());

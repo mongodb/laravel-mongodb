@@ -7,27 +7,6 @@ on:
     pull_request:
 
 jobs:
-    php-cs-fixer:
-        runs-on: ubuntu-latest
-        env:
-            PHP_CS_FIXER_VERSION: v3.6.0
-        strategy:
-            matrix:
-                php:
-                    - '8.1'
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v3
-            -   name: Setup PHP
-                uses: shivammathur/setup-php@v2
-                with:
-                    php-version: ${{ matrix.php }}
-                    extensions: curl,mbstring
-                    tools: php-cs-fixer:${{ env.PHP_CS_FIXER_VERSION }}
-                    coverage: none
-            -   name: Run PHP-CS-Fixer Fix, version ${{ env.PHP_CS_FIXER_VERSION }}
-                run: php-cs-fixer fix --dry-run --diff --ansi
-
     build:
         runs-on: ${{ matrix.os }}
         name: PHP v${{ matrix.php }} with MongoDB ${{ matrix.mongodb }}

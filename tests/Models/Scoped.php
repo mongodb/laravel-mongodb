@@ -11,7 +11,7 @@ class Scoped extends Eloquent
 {
     protected $connection = 'mongodb';
     protected $collection = 'scoped';
-    protected $fillable = ['name', 'favorite'];
+    protected $fillable   = ['name', 'favorite'];
 
     protected static function boot()
     {

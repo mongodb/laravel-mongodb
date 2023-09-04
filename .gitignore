@@ -4,8 +4,7 @@
 .DS_Store
 .idea/
 .phpunit.result.cache
-/.php-cs-fixer.php
-/.php-cs-fixer.cache
+.phpcs-cache
 /vendor
 composer.lock
 composer.phar
