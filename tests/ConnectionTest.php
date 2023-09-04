@@ -62,6 +62,54 @@ class ConnectionTest extends TestCase
             ],
         ];
 
+        yield 'IPv4' => [
+            'expectedUri' => 'mongodb://1.2.3.4',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => '1.2.3.4',
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'IPv4 and port' => [
+            'expectedUri' => 'mongodb://1.2.3.4:1234',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => '1.2.3.4',
+                'port' => 1234,
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'IPv6' => [
+            'expectedUri' => 'mongodb://[2001:db8:3333:4444:5555:6666:7777:8888]',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => '2001:db8:3333:4444:5555:6666:7777:8888',
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'IPv6 and port' => [
+            'expectedUri' => 'mongodb://[2001:db8:3333:4444:5555:6666:7777:8888]:1234',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => '2001:db8:3333:4444:5555:6666:7777:8888',
+                'port' => 1234,
+                'database' => 'tests',
+            ],
+        ];
+
+        yield 'multiple IPv6' => [
+            'expectedUri' => 'mongodb://[::1],[2001:db8::1:0:0:1]',
+            'expectedDatabaseName' => 'tests',
+            'config' => [
+                'host' => ['::1', '2001:db8::1:0:0:1'],
+                'port' => null,
+                'database' => 'tests',
+            ],
+        ];
+
         yield 'Port in host name takes precedence' => [
             'expectedUri' => 'mongodb://some-host:12345',
             'expectedDatabaseName' => 'tests',

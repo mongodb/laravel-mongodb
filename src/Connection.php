@@ -234,9 +234,17 @@ class Connection extends BaseConnection
         $hosts = is_array($config['host']) ? $config['host'] : [$config['host']];
 
         foreach ($hosts as &$host) {
-            // Check if we need to add a port to the host
-            if (strpos($host, ':') === false && ! empty($config['port'])) {
-                $host = $host.':'.$config['port'];
+            // ipv6
+            if (filter_var($host, \FILTER_VALIDATE_IP, \FILTER_FLAG_IPV6)) {
+                $host = '['.$host.']';
+                if (! empty($config['port'])) {
+                    $host = $host.':'.$config['port'];
+                }
+            } else {
+                // Check if we need to add a port to the host
+                if (! str_contains($host, ':') && ! empty($config['port'])) {
+                    $host = $host.':'.$config['port'];
+                }
             }
         }
 
