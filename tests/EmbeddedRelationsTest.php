@@ -298,6 +298,20 @@ class EmbeddedRelationsTest extends TestCase
         $freshUser = User::find($user->id);
         $this->assertEquals(0, $user->addresses->count());
         $this->assertEquals(1, $freshUser->addresses->count());
+
+        $broken_address = Address::make(['name' => 'Broken']);
+
+        $user->update([
+            "addresses" => array_merge(
+                [$broken_address->toArray()],
+                $user->addresses()->toArray()
+            )]);
+
+        $curitiba = $user->addresses()->create(['city' => 'Curitiba']);
+        $user->addresses()->dissociate($curitiba->id);
+
+        $this->assertEquals(1, $user->addresses->where('name', $broken_address->name)->count());
+        $this->assertEquals(1, $user->addresses->count());
     }
 
     public function testEmbedsManyAliases()
