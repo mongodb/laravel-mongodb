@@ -22,6 +22,7 @@ All notable changes to this project will be documented in this file.
 - Fix Query on `whereDate`, `whereDay`, `whereMonth`, `whereYear`, `whereTime` to use MongoDB operators [#2570](https://github.com/mongodb/laravel-mongodb/pull/2376) by [@Davpyu](https://github.com/Davpyu) and [@GromNaN](https://github.com/GromNaN).
 - `Model::unset()` does not persist the change. Call `Model::save()` to persist the change [#2578](https://github.com/mongodb/laravel-mongodb/pull/2578) by [@GromNaN](https://github.com/GromNaN).
 - Support delete one document with `Query\Builder::limit(1)->delete()` [#2591](https://github.com/mongodb/laravel-mongodb/pull/2591) by [@GromNaN](https://github.com/GromNaN)
+- Add trait `MongoDB\Laravel\Eloquent\MassPrunable` to replace the Eloquent trait on MongoDB models [#2598](https://github.com/mongodb/laravel-mongodb/pull/2598) by [@GromNaN](https://github.com/GromNaN)
 
 ## [3.9.2] - 2022-09-01
 

@@ -12,7 +12,9 @@ use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Eloquent\HybridRelations;
+use MongoDB\Laravel\Eloquent\MassPrunable;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 /**
@@ -35,6 +37,7 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
     use CanResetPassword;
     use HybridRelations;
     use Notifiable;
+    use MassPrunable;
 
     protected $connection = 'mongodb';
     protected $casts = [
@@ -105,5 +108,10 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
             get: fn ($value) => $value,
             set: fn ($value) => Str::slug($value)
         );
+    }
+
+    public function prunable(): Builder
+    {
+        return $this->where('age', '>', 18);
     }
 }
