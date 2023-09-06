@@ -152,7 +152,7 @@ class EmbedsMany extends EmbedsOneOrMany
 
         // Remove the document from the parent model.
         foreach ($records as $i => $record) {
-            if (in_array($record[$primaryKey], $ids)) {
+            if (array_key_exists($primaryKey, $record) && in_array($record[$primaryKey], $ids)) {
                 unset($records[$i]);
             }
         }
