@@ -1,0 +1,12 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Discussions
+    url: https://github.com/mongodb/laravel-mongodb/discussions/new/choose
+    about: For questions, discussions, or general technical support from other Laravel users, visit the Discussions page.
+  - name: MongoDB Developer Community Forums
+    url: https://developer.mongodb.com/community/forums/
+    about: For questions, discussions, or general technical support, visit the MongoDB Community Forums. The MongoDB Community Forums are a centralized place to connect with other MongoDB users, ask questions, and get answers.
+  - name: Report a Security Vulnerability
+    url: https://mongodb.com/docs/manual/tutorial/create-a-vulnerability-report
+    about: If you believe you have discovered a vulnerability in MongoDB products or have experienced a security incident related to MongoDB products, please report the issue to aid in its resolution.
