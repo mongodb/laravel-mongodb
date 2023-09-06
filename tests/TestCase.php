@@ -13,12 +13,15 @@ use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Validation\ValidationServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
 
+use function array_search;
+
 class TestCase extends OrchestraTestCase
 {
     /**
      * Get application providers.
      *
-     * @param  Application  $app
+     * @param  Application $app
+     *
      * @return array
      */
     protected function getApplicationProviders($app)
@@ -33,7 +36,8 @@ class TestCase extends OrchestraTestCase
     /**
      * Get package providers.
      *
-     * @param  Application  $app
+     * @param  Application $app
+     *
      * @return array
      */
     protected function getPackageProviders($app)
@@ -49,7 +53,8 @@ class TestCase extends OrchestraTestCase
     /**
      * Define environment setup.
      *
-     * @param  Application  $app
+     * @param  Application $app
+     *
      * @return void
      */
     protected function getEnvironmentSetUp($app)

@@ -1,10 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel;
 
 use Illuminate\Queue\Failed\NullFailedJobProvider;
 use Illuminate\Queue\QueueServiceProvider;
 use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
+
+use function array_key_exists;
 
 class MongodbQueueServiceProvider extends QueueServiceProvider
 {
@@ -18,22 +22,27 @@ class MongodbQueueServiceProvider extends QueueServiceProvider
         $this->app->singleton('queue.failer', function ($app) {
             $config = $app['config']['queue.failed'];
 
-            if (array_key_exists('driver', $config) &&
-                (is_null($config['driver']) || $config['driver'] === 'null')) {
-                return new NullFailedJobProvider;
+            if (array_key_exists('driver', $config) && ($config['driver'] === null || $config['driver'] === 'null')) {
+                return new NullFailedJobProvider();
             }
 
             if (isset($config['driver']) && $config['driver'] === 'mongodb') {
                 return $this->mongoFailedJobProvider($config);
-            } elseif (isset($config['driver']) && $config['driver'] === 'dynamodb') {
-                return $this->dynamoFailedJobProvider($config);
-            } elseif (isset($config['driver']) && $config['driver'] === 'database-uuids') {
-                return $this->databaseUuidFailedJobProvider($config);
-            } elseif (isset($config['table'])) {
-                return $this->databaseFailedJobProvider($config);
-            } else {
-                return new NullFailedJobProvider;
             }
+
+            if (isset($config['driver']) && $config['driver'] === 'dynamodb') {
+                return $this->dynamoFailedJobProvider($config);
+            }
+
+            if (isset($config['driver']) && $config['driver'] === 'database-uuids') {
+                return $this->databaseUuidFailedJobProvider($config);
+            }
+
+            if (isset($config['table'])) {
+                return $this->databaseFailedJobProvider($config);
+            }
+
+            return new NullFailedJobProvider();
         });
     }
 

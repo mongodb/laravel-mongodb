@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Queue;
 
 use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
 use MongoDB\Laravel\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
+use stdClass;
 
 class MongoQueue extends DatabaseQueue
 {
@@ -23,18 +26,15 @@ class MongoQueue extends DatabaseQueue
      */
     protected $connectionName;
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function __construct(Connection $database, $table, $default = 'default', $retryAfter = 60)
     {
         parent::__construct($database, $table, $default, $retryAfter);
+
         $this->retryAfter = $retryAfter;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function pop($queue = null)
     {
         $queue = $this->getQueue($queue);
@@ -43,11 +43,18 @@ class MongoQueue extends DatabaseQueue
             $this->releaseJobsThatHaveBeenReservedTooLong($queue);
         }
 
-        if ($job = $this->getNextAvailableJobAndReserve($queue)) {
-            return new MongoJob(
-                $this->container, $this, $job, $this->connectionName, $queue
-            );
+        $job = $this->getNextAvailableJobAndReserve($queue);
+        if (! $job) {
+            return null;
         }
+
+        return new MongoJob(
+            $this->container,
+            $this,
+            $job,
+            $this->connectionName,
+            $queue,
+        );
     }
 
     /**
@@ -55,12 +62,13 @@ class MongoQueue extends DatabaseQueue
      * When using multiple daemon queue listeners to process jobs there
      * is a possibility that multiple processes can end up reading the
      * same record before one has flagged it as reserved.
-     * This race condition can result in random jobs being run more then
+     * This race condition can result in random jobs being run more than
      * once. To solve this we use findOneAndUpdate to lock the next jobs
      * record while flagging it as reserved at the same time.
      *
      * @param string|null $queue
-     * @return \StdClass|null
+     *
+     * @return stdClass|null
      */
     protected function getNextAvailableJobAndReserve($queue)
     {
@@ -75,14 +83,12 @@ class MongoQueue extends DatabaseQueue
                     'reserved' => 1,
                     'reserved_at' => Carbon::now()->getTimestamp(),
                 ],
-                '$inc' => [
-                    'attempts' => 1,
-                ],
+                '$inc' => ['attempts' => 1],
             ],
             [
                 'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
                 'sort' => ['available_at' => 1],
-            ]
+            ],
         );
 
         if ($job) {
@@ -96,6 +102,7 @@ class MongoQueue extends DatabaseQueue
      * Release the jobs that have been reserved for too long.
      *
      * @param string $queue
+     *
      * @return void
      */
     protected function releaseJobsThatHaveBeenReservedTooLong($queue)
@@ -117,7 +124,8 @@ class MongoQueue extends DatabaseQueue
      * Release the given job ID from reservation.
      *
      * @param string $id
-     * @param int $attempts
+     * @param int    $attempts
+     *
      * @return void
      */
     protected function releaseJob($id, $attempts)
@@ -129,17 +137,13 @@ class MongoQueue extends DatabaseQueue
         ]);
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function deleteReserved($queue, $id)
     {
         $this->database->collection($this->table)->where('_id', $id)->delete();
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function deleteAndRelease($queue, $job, $delay)
     {
         $this->deleteReserved($queue, $job->getJobId());

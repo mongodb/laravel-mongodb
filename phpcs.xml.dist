@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<ruleset>
+    <arg name="basepath" value="." />
+    <arg name="extensions" value="php" />
+    <arg name="parallel" value="80" />
+    <arg name="cache" value=".phpcs-cache" />
+    <arg name="colors" />
+
+    <!-- Ignore warnings (n), show progress of the run (p), and show sniff names (s) -->
+    <arg value="nps"/>
+
+    <file>src</file>
+    <file>tests</file>
+
+    <!-- Target minimum supported PHP version -->
+    <config name="php_version" value="80100"/>
+
+    <!-- ****************************************** -->
+    <!-- Import rules from doctrine/coding-standard -->
+    <!-- ****************************************** -->
+    <rule ref="Doctrine">
+        <exclude name="SlevomatCodingStandard.ControlStructures.EarlyExit.EarlyExitNotUsed"/>
+        <exclude name="SlevomatCodingStandard.ControlStructures.JumpStatementsSpacing"/>
+        <exclude name="SlevomatCodingStandard.ControlStructures.NewWithParentheses"/>
+        <exclude name="SlevomatCodingStandard.Exceptions.ReferenceThrowableOnly"/>
+        <exclude name="SlevomatCodingStandard.Functions.ArrowFunctionDeclaration"/>
+        <exclude name="SlevomatCodingStandard.Functions.StaticClosure"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.UnionTypeHintFormat.DisallowedShortNullable"/>
+
+        <!-- Model properties use snake_case -->
+        <exclude name="Squiz.NamingConventions.ValidVariableName.MemberNotCamelCaps"/>
+
+        <!-- Type changes needs to be synchronized with laravel/framework -->
+        <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint"/>
+        <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint"/>
+    </rule>
+</ruleset>

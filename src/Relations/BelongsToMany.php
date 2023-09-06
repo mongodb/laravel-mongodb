@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
@@ -7,6 +9,16 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
+
+use function array_diff;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function array_values;
+use function count;
+use function is_array;
+use function is_numeric;
+use function property_exists;
 
 class BelongsToMany extends EloquentBelongsToMany
 {
@@ -20,17 +32,13 @@ class BelongsToMany extends EloquentBelongsToMany
         return $this->getForeignKey();
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
         return $query;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function hydratePivotRelation(array $models)
     {
         // Do nothing.
@@ -39,7 +47,6 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Set the select clause for the relation query.
      *
-     * @param array $columns
      * @return array
      */
     protected function getSelectColumns(array $columns = ['*'])
@@ -47,17 +54,13 @@ class BelongsToMany extends EloquentBelongsToMany
         return $columns;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function shouldSelect(array $columns = ['*'])
     {
         return $columns;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function addConstraints()
     {
         if (static::$constraints) {
@@ -79,9 +82,7 @@ class BelongsToMany extends EloquentBelongsToMany
         return $this;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function save(Model $model, array $joining = [], $touch = true)
     {
         $model->save(['touch' => false]);
@@ -91,9 +92,7 @@ class BelongsToMany extends EloquentBelongsToMany
         return $model;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function create(array $attributes = [], array $joining = [], $touch = true)
     {
         $instance = $this->related->newInstance($attributes);
@@ -108,9 +107,7 @@ class BelongsToMany extends EloquentBelongsToMany
         return $instance;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function sync($ids, $detaching = true)
     {
         $changes = [
@@ -158,7 +155,8 @@ class BelongsToMany extends EloquentBelongsToMany
         // touching until after the entire operation is complete so we don't fire a
         // ton of touch operations until we are totally done syncing the records.
         $changes = array_merge(
-            $changes, $this->attachNew($records, $current, false)
+            $changes,
+            $this->attachNew($records, $current, false),
         );
 
         if (count($changes['attached']) || count($changes['updated'])) {
@@ -168,17 +166,13 @@ class BelongsToMany extends EloquentBelongsToMany
         return $changes;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
         // Do nothing, we have no pivot table.
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function attach($id, array $attributes = [], $touch = true)
     {
         if ($id instanceof Model) {
@@ -204,14 +198,14 @@ class BelongsToMany extends EloquentBelongsToMany
         // Attach the new ids to the parent model.
         $this->parent->push($this->getRelatedKey(), (array) $id, true);
 
-        if ($touch) {
-            $this->touchIfTouching();
+        if (! $touch) {
+            return;
         }
+
+        $this->touchIfTouching();
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function detach($ids = [], $touch = true)
     {
         if ($ids instanceof Model) {
@@ -243,9 +237,7 @@ class BelongsToMany extends EloquentBelongsToMany
         return count($ids);
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function buildDictionary(Collection $results)
     {
         $foreign = $this->foreignPivotKey;
@@ -264,9 +256,7 @@ class BelongsToMany extends EloquentBelongsToMany
         return $dictionary;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function newPivotQuery()
     {
         return $this->newRelatedQuery();
@@ -292,17 +282,13 @@ class BelongsToMany extends EloquentBelongsToMany
         return $this->foreignPivotKey;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function getQualifiedForeignPivotKeyName()
     {
         return $this->foreignPivotKey;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function getQualifiedRelatedPivotKeyName()
     {
         return $this->relatedPivotKey;
@@ -312,9 +298,9 @@ class BelongsToMany extends EloquentBelongsToMany
      * Format the sync list so that it is keyed by ID. (Legacy Support)
      * The original function has been renamed to formatRecordsList since Laravel 5.3.
      *
-     * @param array $records
-     * @return array
      * @deprecated
+     *
+     * @return array
      */
     protected function formatSyncList(array $records)
     {
@@ -323,6 +309,7 @@ class BelongsToMany extends EloquentBelongsToMany
             if (! is_array($attributes)) {
                 [$id, $attributes] = [$attributes, []];
             }
+
             $results[$id] = $attributes;
         }
 
@@ -342,8 +329,8 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Get the name of the "where in" method for eager loading.
      *
-     * @param \Illuminate\Database\Eloquent\Model $model
      * @param string $key
+     *
      * @return string
      */
     protected function whereInMethod(Model $model, $key)

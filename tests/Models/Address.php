@@ -9,7 +9,7 @@ use MongoDB\Laravel\Relations\EmbedsMany;
 
 class Address extends Eloquent
 {
-    protected $connection = 'mongodb';
+    protected $connection       = 'mongodb';
     protected static $unguarded = true;
 
     public function addresses(): EmbedsMany

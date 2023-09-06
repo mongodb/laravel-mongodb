@@ -8,18 +8,16 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 /**
- * Class Book.
- *
  * @property string $title
  * @property string $author
  * @property array $chapters
  */
 class Book extends Eloquent
 {
-    protected $connection = 'mongodb';
-    protected $collection = 'books';
+    protected $connection       = 'mongodb';
+    protected $collection       = 'books';
     protected static $unguarded = true;
-    protected $primaryKey = 'title';
+    protected $primaryKey       = 'title';
 
     public function author(): BelongsTo
     {

@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use DateTimeImmutable;
+use LogicException;
 use MongoDB\Laravel\Tests\Models\Birthday;
 use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\User;
+
+use function str;
 
 class QueryTest extends TestCase
 {
@@ -16,6 +19,7 @@ class QueryTest extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
         User::create(['name' => 'John Doe', 'age' => 35, 'title' => 'admin']);
         User::create(['name' => 'Jane Doe', 'age' => 33, 'title' => 'admin']);
         User::create(['name' => 'Harry Hoe', 'age' => 13, 'title' => 'user']);
@@ -39,6 +43,7 @@ class QueryTest extends TestCase
         User::truncate();
         Scoped::truncate();
         Birthday::truncate();
+
         parent::tearDown();
     }
 
@@ -422,7 +427,7 @@ class QueryTest extends TestCase
 
         $where1 = ['age' => ['$gt' => 30, '$lte' => 35]];
         $where2 = ['age' => ['$gt' => 35, '$lt' => 40]];
-        $users = User::whereRaw($where1)->orWhereRaw($where2)->get();
+        $users  = User::whereRaw($where1)->orWhereRaw($where2)->get();
 
         $this->assertCount(6, $users);
     }
@@ -580,7 +585,7 @@ class QueryTest extends TestCase
      */
     public function testDeleteException(int $limit): void
     {
-        $this->expectException(\LogicException::class);
+        $this->expectException(LogicException::class);
         $this->expectExceptionMessage('Delete limit can be 1 or null (unlimited).');
         User::limit($limit)->delete();
     }

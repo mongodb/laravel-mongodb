@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Tests\Casts;
 
 use Generator;
@@ -30,7 +32,7 @@ class ObjectIdTest extends TestCase
 
     public static function provideObjectIdCast(): Generator
     {
-        $objectId = new ObjectId();
+        $objectId       = new ObjectId();
         $stringObjectId = (string) $objectId;
 
         yield 'Save ObjectId, Query ObjectId' => [$objectId, $objectId];
@@ -39,7 +41,7 @@ class ObjectIdTest extends TestCase
 
     public function testQueryByStringDoesNotCast(): void
     {
-        $objectId = new ObjectId();
+        $objectId       = new ObjectId();
         $stringObjectId = (string) $objectId;
 
         CastObjectId::create(['oid' => $objectId]);

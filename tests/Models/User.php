@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
+use Carbon\Carbon;
 use DateTimeInterface;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Auth\Passwords\CanResetPassword;
@@ -18,16 +19,14 @@ use MongoDB\Laravel\Eloquent\MassPrunable;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 /**
- * Class User.
- *
  * @property string $_id
  * @property string $name
  * @property string $email
  * @property string $title
  * @property int $age
- * @property \Carbon\Carbon $birthday
- * @property \Carbon\Carbon $created_at
- * @property \Carbon\Carbon $updated_at
+ * @property Carbon $birthday
+ * @property Carbon $created_at
+ * @property Carbon $updated_at
  * @property string $username
  * @property MemberStatus member_status
  */
@@ -39,8 +38,8 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
     use Notifiable;
     use MassPrunable;
 
-    protected $connection = 'mongodb';
-    protected $casts = [
+    protected $connection       = 'mongodb';
+    protected $casts            = [
         'birthday' => 'datetime',
         'entry.date' => 'datetime',
         'member_status' => MemberStatus::class,

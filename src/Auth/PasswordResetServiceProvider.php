@@ -1,14 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Auth;
 
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider as BasePasswordResetServiceProvider;
 
 class PasswordResetServiceProvider extends BasePasswordResetServiceProvider
 {
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     protected function registerPasswordBroker()
     {
         $this->app->singleton('auth.password', function ($app) {

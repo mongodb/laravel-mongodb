@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Assert;
+use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -23,6 +24,14 @@ use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\User;
+use Stringable;
+
+use function count;
+use function key;
+use function md5;
+use function sort;
+use function strlen;
+use function strtotime;
 
 class QueryBuilderTest extends TestCase
 {
@@ -38,20 +47,20 @@ class QueryBuilderTest extends TestCase
             ['name' => 'Jane Doe', 'age' => 20],
         ]);
 
-        $user_id = (string) $user;
+        $userId = (string) $user;
 
         DB::collection('items')->insert([
-            ['name' => 'one thing', 'user_id' => $user_id],
-            ['name' => 'last thing', 'user_id' => $user_id],
-            ['name' => 'another thing', 'user_id' => $user_id],
-            ['name' => 'one more thing', 'user_id' => $user_id],
+            ['name' => 'one thing', 'user_id' => $userId],
+            ['name' => 'last thing', 'user_id' => $userId],
+            ['name' => 'another thing', 'user_id' => $userId],
+            ['name' => 'one more thing', 'user_id' => $userId],
         ]);
 
         $product = DB::collection('items')->first();
 
         $pid = (string) ($product['_id']);
 
-        DB::collection('items')->where('user_id', $user_id)->delete($pid);
+        DB::collection('items')->where('user_id', $userId)->delete($pid);
 
         $this->assertEquals(3, DB::collection('items')->count());
 
@@ -59,9 +68,9 @@ class QueryBuilderTest extends TestCase
 
         $pid = $product['_id'];
 
-        DB::collection('items')->where('user_id', $user_id)->delete($pid);
+        DB::collection('items')->where('user_id', $userId)->delete($pid);
 
-        DB::collection('items')->where('user_id', $user_id)->delete(md5('random-id'));
+        DB::collection('items')->where('user_id', $userId)->delete(md5('random-id'));
 
         $this->assertEquals(2, DB::collection('items')->count());
     }
@@ -215,14 +224,14 @@ class QueryBuilderTest extends TestCase
             [
                 '$unset' => ['age' => 1],
                 'ageless' => true,
-            ]
+            ],
         );
         DB::collection('users')->where('name', 'Jane Doe')->update(
             [
                 '$inc' => ['age' => 1],
                 '$set' => ['pronoun' => 'she'],
                 'ageless' => false,
-            ]
+            ],
         );
 
         $john = DB::collection('users')->where('name', 'John Doe')->first();
@@ -379,7 +388,7 @@ class QueryBuilderTest extends TestCase
 
     public function testPushRefuses2ndArgumentWhen1stIsAnArray()
     {
-        $this->expectException(\InvalidArgumentException::class);
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('2nd argument of MongoDB\Laravel\Query\Builder::push() must be "null" when 1st argument is an array. Got "string" instead.');
 
         DB::collection('users')->push(['tags' => 'tag1'], 'tag2');
@@ -584,7 +593,7 @@ class QueryBuilderTest extends TestCase
         DB::collection('items')->where('name', 'knife')
             ->update(
                 ['amount' => 1],
-                ['upsert' => true]
+                ['upsert' => true],
             );
 
         $this->assertEquals(1, DB::collection('items')->count());
@@ -592,7 +601,7 @@ class QueryBuilderTest extends TestCase
         Item::where('name', 'spoon')
             ->update(
                 ['amount' => 1],
-                ['upsert' => true]
+                ['upsert' => true],
             );
 
         $this->assertEquals(2, DB::collection('items')->count());
@@ -653,7 +662,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals('John Doe', $user['name']);
 
         $start = new UTCDateTime(1000 * strtotime('1950-01-01 00:00:00'));
-        $stop = new UTCDateTime(1000 * strtotime('1981-01-01 00:00:00'));
+        $stop  = new UTCDateTime(1000 * strtotime('1981-01-01 00:00:00'));
 
         $users = DB::collection('users')->whereBetween('birthday', [$start, $stop])->get();
         $this->assertCount(2, $users);
@@ -743,11 +752,11 @@ class QueryBuilderTest extends TestCase
         $results = DB::collection('items')->where('tags', 'size', 4)->get();
         $this->assertCount(1, $results);
 
-        $regex = new Regex('.*doe', 'i');
+        $regex   = new Regex('.*doe', 'i');
         $results = DB::collection('users')->where('name', 'regex', $regex)->get();
         $this->assertCount(2, $results);
 
-        $regex = new Regex('.*doe', 'i');
+        $regex   = new Regex('.*doe', 'i');
         $results = DB::collection('users')->where('name', 'regexp', $regex)->get();
         $this->assertCount(2, $results);
 
@@ -900,12 +909,12 @@ class QueryBuilderTest extends TestCase
     public function testStringableColumn()
     {
         DB::collection('users')->insert([
-            ['name' => 'Jane Doe', 'age' => 36, 'birthday' => new UTCDateTime(new \DateTime('1987-01-01 00:00:00'))],
-            ['name' => 'John Doe', 'age' => 28, 'birthday' => new UTCDateTime(new \DateTime('1995-01-01 00:00:00'))],
+            ['name' => 'Jane Doe', 'age' => 36, 'birthday' => new UTCDateTime(new DateTime('1987-01-01 00:00:00'))],
+            ['name' => 'John Doe', 'age' => 28, 'birthday' => new UTCDateTime(new DateTime('1995-01-01 00:00:00'))],
         ]);
 
         $nameColumn = Str::of('name');
-        $this->assertInstanceOf(\Stringable::class, $nameColumn, 'Ensure we are testing the feature with a Stringable instance');
+        $this->assertInstanceOf(Stringable::class, $nameColumn, 'Ensure we are testing the feature with a Stringable instance');
 
         $user = DB::collection('users')->where($nameColumn, 'John Doe')->first();
         $this->assertEquals('John Doe', $user['name']);
@@ -925,18 +934,17 @@ class QueryBuilderTest extends TestCase
         $user = DB::collection('users')->whereNotIn($nameColumn, ['John Doe'])->first();
         $this->assertEquals('Jane Doe', $user['name']);
 
-        // whereBetween and whereNotBetween
         $ageColumn = Str::of('age');
+        // whereBetween and whereNotBetween
         $user = DB::collection('users')->whereBetween($ageColumn, [30, 40])->first();
         $this->assertEquals('Jane Doe', $user['name']);
 
         // whereBetween and whereNotBetween
-        $ageColumn = Str::of('age');
         $user = DB::collection('users')->whereNotBetween($ageColumn, [30, 40])->first();
         $this->assertEquals('John Doe', $user['name']);
 
-        // whereDate
         $birthdayColumn = Str::of('birthday');
+        // whereDate
         $user = DB::collection('users')->whereDate($birthdayColumn, '1995-01-01')->first();
         $this->assertEquals('John Doe', $user['name']);
 

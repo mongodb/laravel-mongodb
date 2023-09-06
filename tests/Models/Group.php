@@ -9,8 +9,8 @@ use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class Group extends Eloquent
 {
-    protected $connection = 'mongodb';
-    protected $collection = 'groups';
+    protected $connection       = 'mongodb';
+    protected $collection       = 'groups';
     protected static $unguarded = true;
 
     public function users(): BelongsToMany

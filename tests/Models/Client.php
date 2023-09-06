@@ -11,8 +11,8 @@ use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class Client extends Eloquent
 {
-    protected $connection = 'mongodb';
-    protected $collection = 'clients';
+    protected $connection       = 'mongodb';
+    protected $collection       = 'clients';
     protected static $unguarded = true;
 
     public function users(): BelongsToMany

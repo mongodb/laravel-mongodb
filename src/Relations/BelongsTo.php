@@ -1,9 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Relations;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Model;
+
+use function property_exists;
 
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
@@ -17,9 +21,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         return $this->getOwnerKey();
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function addConstraints()
     {
         if (static::$constraints) {
@@ -30,9 +32,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         }
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function addEagerConstraints(array $models)
     {
         // We'll grab the primary key name of the related models since it could be set to
@@ -43,9 +43,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         $this->query->whereIn($key, $this->getEagerModelKeys($models));
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
         return $query;
@@ -64,11 +62,11 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
     /**
      * Get the name of the "where in" method for eager loading.
      *
-     * @param \Illuminate\Database\Eloquent\Model $model
      * @param string $key
+     *
      * @return string
      */
-    protected function whereInMethod(EloquentModel $model, $key)
+    protected function whereInMethod(Model $model, $key)
     {
         return 'whereIn';
     }

@@ -1,22 +1,25 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Schema;
 
 use Closure;
+use MongoDB\Model\CollectionInfo;
+
+use function count;
+use function current;
+use function iterator_to_array;
 
 class Builder extends \Illuminate\Database\Schema\Builder
 {
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function hasColumn($table, $column)
     {
         return true;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function hasColumns($table, array $columns)
     {
         return true;
@@ -26,6 +29,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
      * Determine if the given collection exists.
      *
      * @param string $name
+     *
      * @return bool
      */
     public function hasCollection($name)
@@ -33,17 +37,13 @@ class Builder extends \Illuminate\Database\Schema\Builder
         $db = $this->connection->getMongoDB();
 
         $collections = iterator_to_array($db->listCollections([
-            'filter' => [
-                'name' => $name,
-            ],
+            'filter' => ['name' => $name],
         ]), false);
 
-        return count($collections) ? true : false;
+        return count($collections) !== 0;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function hasTable($collection)
     {
         return $this->hasCollection($collection);
@@ -53,8 +53,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
      * Modify a collection on the schema.
      *
      * @param string $collection
-     * @param Closure $callback
-     * @return bool
+     *
+     * @return void
      */
     public function collection($collection, Closure $callback)
     {
@@ -65,18 +65,14 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function table($collection, Closure $callback)
     {
-        return $this->collection($collection, $callback);
+        $this->collection($collection, $callback);
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function create($collection, Closure $callback = null, array $options = [])
+    /** @inheritdoc */
+    public function create($collection, ?Closure $callback = null, array $options = [])
     {
         $blueprint = $this->createBlueprint($collection);
 
@@ -87,31 +83,23 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function dropIfExists($collection)
     {
         if ($this->hasCollection($collection)) {
-            return $this->drop($collection);
+            $this->drop($collection);
         }
-
-        return false;
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function drop($collection)
     {
         $blueprint = $this->createBlueprint($collection);
 
-        return $blueprint->drop();
+        $blueprint->drop();
     }
 
-    /**
-     * @inheritdoc
-     */
+    /** @inheritdoc */
     public function dropAllTables()
     {
         foreach ($this->getAllCollections() as $collection) {
@@ -119,10 +107,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    protected function createBlueprint($collection, Closure $callback = null)
+    /** @inheritdoc */
+    protected function createBlueprint($collection, ?Closure $callback = null)
     {
         return new Blueprint($this->connection, $collection);
     }
@@ -131,16 +117,15 @@ class Builder extends \Illuminate\Database\Schema\Builder
      * Get collection.
      *
      * @param string $name
-     * @return bool|\MongoDB\Model\CollectionInfo
+     *
+     * @return bool|CollectionInfo
      */
     public function getCollection($name)
     {
         $db = $this->connection->getMongoDB();
 
         $collections = iterator_to_array($db->listCollections([
-            'filter' => [
-                'name' => $name,
-            ],
+            'filter' => ['name' => $name],
         ]), false);
 
         return count($collections) ? current($collections) : false;

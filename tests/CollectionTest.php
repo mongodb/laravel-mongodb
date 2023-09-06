@@ -13,9 +13,9 @@ class CollectionTest extends TestCase
 {
     public function testExecuteMethodCall()
     {
-        $return = ['foo' => 'bar'];
-        $where = ['id' => new ObjectID('56f94800911dcc276b5723dd')];
-        $time = 1.1;
+        $return      = ['foo' => 'bar'];
+        $where       = ['id' => new ObjectID('56f94800911dcc276b5723dd')];
+        $time        = 1.1;
         $queryString = 'name-collection.findOne({"id":"56f94800911dcc276b5723dd"})';
 
         $mongoCollection = $this->getMockBuilder(MongoCollection::class)

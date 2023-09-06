@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace MongoDB\Laravel\Eloquent\Casts;
 
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
@@ -11,10 +13,9 @@ class ObjectId implements CastsAttributes
     /**
      * Cast the given value.
      *
-     * @param  Model  $model
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  array  $attributes
+     * @param  Model $model
+     * @param  mixed $value
+     *
      * @return mixed
      */
     public function get($model, string $key, $value, array $attributes)
@@ -29,10 +30,9 @@ class ObjectId implements CastsAttributes
     /**
      * Prepare the given value for storage.
      *
-     * @param  Model  $model
-     * @param  string  $key
-     * @param  mixed  $value
-     * @param  array  $attributes
+     * @param  Model $model
+     * @param  mixed $value
+     *
      * @return mixed
      */
     public function set($model, string $key, $value, array $attributes)

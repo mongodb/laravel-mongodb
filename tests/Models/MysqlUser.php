@@ -12,12 +12,14 @@ use Illuminate\Database\Schema\MySqlBuilder;
 use Illuminate\Support\Facades\Schema;
 use MongoDB\Laravel\Eloquent\HybridRelations;
 
+use function assert;
+
 class MysqlUser extends EloquentModel
 {
     use HybridRelations;
 
-    protected $connection = 'mysql';
-    protected $table = 'users';
+    protected $connection       = 'mysql';
+    protected $table            = 'users';
     protected static $unguarded = true;
 
     public function books(): HasMany
@@ -40,15 +42,17 @@ class MysqlUser extends EloquentModel
      */
     public static function executeSchema(): void
     {
-        /** @var MySqlBuilder $schema */
         $schema = Schema::connection('mysql');
+        assert($schema instanceof MySqlBuilder);
 
-        if (! $schema->hasTable('users')) {
-            Schema::connection('mysql')->create('users', function (Blueprint $table) {
-                $table->increments('id');
-                $table->string('name');
-                $table->timestamps();
-            });
+        if ($schema->hasTable('users')) {
+            return;
         }
+
+        Schema::connection('mysql')->create('users', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('name');
+            $table->timestamps();
+        });
     }
 }
