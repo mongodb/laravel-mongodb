@@ -28,7 +28,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
             'connection' => $connection,
             'queue' => $queue,
             'payload' => $payload,
-            'failed_at' => Carbon::now()->getTimestamp(),
+            'failed_at' => new \MongoDB\BSON\UTCDateTime(now()),
             'exception' => (string) $exception,
         ]);
     }
