@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Mockery;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 use MongoDB\Laravel\Queue\MongoJob;
 use MongoDB\Laravel\Queue\MongoQueue;
@@ -31,9 +32,11 @@ class QueueTest extends TestCase
     {
         $uuid = Str::uuid();
 
-        Str::createUuidsUsing(function () use ($uuid) {
-            return $uuid;
-        });
+        Str::createUuidsUsing(
+            function () use ($uuid) {
+                return $uuid;
+            }
+        );
 
         $id = Queue::push('test', ['action' => 'QueueJobLifeCycle'], 'test');
         $this->assertNotNull($id);
@@ -42,17 +45,21 @@ class QueueTest extends TestCase
         $job = Queue::pop('test');
         $this->assertInstanceOf(MongoJob::class, $job);
         $this->assertEquals(1, $job->isReserved());
-        $this->assertEquals(json_encode([
-            'uuid' => $uuid,
-            'displayName' => 'test',
-            'job' => 'test',
-            'maxTries' => null,
-            'maxExceptions' => null,
-            'failOnTimeout' => false,
-            'backoff' => null,
-            'timeout' => null,
-            'data' => ['action' => 'QueueJobLifeCycle'],
-        ]), $job->getRawBody());
+        $this->assertEquals(
+            json_encode(
+                [
+                'uuid' => $uuid,
+                'displayName' => 'test',
+                'job' => 'test',
+                'maxTries' => null,
+                'maxExceptions' => null,
+                'failOnTimeout' => false,
+                'backoff' => null,
+                'timeout' => null,
+                'data' => ['action' => 'QueueJobLifeCycle'],
+                ]
+            ), $job->getRawBody()
+        );
 
         // Remove reserved job
         $job->delete();
@@ -184,5 +191,20 @@ class QueueTest extends TestCase
         $mock->expects('release')->once()->with($queue, $job->getJobRecord(), $delay);
 
         $mock->deleteAndRelease($queue, $job, $delay);
+    }
+
+    public function testFailedJobLogging()
+    {
+        Carbon::setTestNow('2019-01-01 00:00:00');
+        $provider = app('queue.failer');
+        $provider->log('test_connection', 'test_queue', 'test_payload', new \Exception('test_exception'));
+
+        $failedJob = Queue::getDatabase()->table(Config::get('queue.failed.table'))->first();
+
+        $this->assertSame('test_connection', $failedJob['connection']);
+        $this->assertSame('test_queue', $failedJob['queue']);
+        $this->assertSame('test_payload', $failedJob['payload']);
+        $this->assertEquals(new UTCDateTime(now()), $failedJob['failed_at']);
+        $this->assertStringStartsWith('Exception: test_exception in ', $failedJob['exception']);
     }
 }
