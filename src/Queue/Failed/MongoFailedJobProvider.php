@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
 
+use MongoDB\BSON\UTCDateTime;
 use function array_map;
 
 class MongoFailedJobProvider extends DatabaseFailedJobProvider
@@ -24,13 +25,15 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
      */
     public function log($connection, $queue, $payload, $exception)
     {
-        $this->getTable()->insert([
-            'connection' => $connection,
-            'queue' => $queue,
-            'payload' => $payload,
-            'failed_at' => new \MongoDB\BSON\UTCDateTime(now()),
-            'exception' => (string) $exception,
-        ]);
+        $this->getTable()->insert(
+            [
+                'connection' => $connection,
+                'queue' => $queue,
+                'payload' => $payload,
+                'failed_at' => new UTCDateTime(Carbon::now()),
+                'exception' => (string) $exception,
+            ]
+        );
     }
 
     /**
@@ -42,11 +45,13 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     {
         $all = $this->getTable()->orderBy('_id', 'desc')->get()->all();
 
-        $all = array_map(function ($job) {
-            $job['id'] = (string) $job['_id'];
+        $all = array_map(
+            function ($job) {
+                $job['id'] = (string) $job['_id'];
 
-            return (object) $job;
-        }, $all);
+                return (object) $job;
+            }, $all
+        );
 
         return $all;
     }
@@ -62,7 +67,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     {
         $job = $this->getTable()->find($id);
 
-        if (! $job) {
+        if (!$job) {
             return;
         }
 
