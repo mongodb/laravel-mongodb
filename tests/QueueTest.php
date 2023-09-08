@@ -35,7 +35,7 @@ class QueueTest extends TestCase
         Str::createUuidsUsing(
             function () use ($uuid) {
                 return $uuid;
-            }
+            },
         );
 
         $id = Queue::push('test', ['action' => 'QueueJobLifeCycle'], 'test');
@@ -48,15 +48,15 @@ class QueueTest extends TestCase
         $this->assertEquals(
             json_encode(
                 [
-                'uuid' => $uuid,
-                'displayName' => 'test',
-                'job' => 'test',
-                'maxTries' => null,
-                'maxExceptions' => null,
-                'failOnTimeout' => false,
-                'backoff' => null,
-                'timeout' => null,
-                'data' => ['action' => 'QueueJobLifeCycle'],
+                    'uuid' => $uuid,
+                    'displayName' => 'test',
+                    'job' => 'test',
+                    'maxTries' => null,
+                    'maxExceptions' => null,
+                    'failOnTimeout' => false,
+                    'backoff' => null,
+                    'timeout' => null,
+                    'data' => ['action' => 'QueueJobLifeCycle'],
                 ]
             ), $job->getRawBody()
         );
