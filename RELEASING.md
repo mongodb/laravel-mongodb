@@ -25,7 +25,7 @@ and have a resolution of "Fixed". Issues with other resolutions (e.g.
 that they do not appear in the release notes.
 
 Check the corresponding "laravel-*.x" fix version to see if it contains any
-issues that  are resolved as "Fixed" and should be included in this release
+issues that are resolved as "Fixed" and should be included in this release
 version.
 
 Update the version's release date and status from the
