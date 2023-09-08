@@ -55,8 +55,8 @@
         },
         "laravel": {
             "providers": [
-                "MongoDB\\Laravel\\MongodbServiceProvider",
-                "MongoDB\\Laravel\\MongodbQueueServiceProvider"
+                "MongoDBServiceProvider",
+                "MongoDBQueueServiceProvider"
             ]
         }
     },
