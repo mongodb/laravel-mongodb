@@ -8,14 +8,12 @@ RUN apt-get update && \
     pecl install xdebug && docker-php-ext-enable xdebug && \
     docker-php-ext-install -j$(nproc) pdo_mysql zip
 
-COPY --from=composer:2.5.8 /usr/bin/composer /usr/local/bin/composer
+COPY --from=composer:2.6.2 /usr/bin/composer /usr/local/bin/composer
+
+ENV COMPOSER_ALLOW_SUPERUSER=1
 
 WORKDIR /code
 
 COPY ./ ./
 
-ENV COMPOSER_ALLOW_SUPERUSER=1
-
-RUN composer install
-
-CMD ["./vendor/bin/phpunit", "--testdox"]
+CMD ["bash", "-c", "composer install && ./vendor/bin/phpunit --testdox"]

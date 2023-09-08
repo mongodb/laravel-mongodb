@@ -16,16 +16,14 @@ It is compatible with Laravel 10.x. For older versions of Laravel, please refer 
 - [Eloquent Models](docs/eloquent-models.md)
 - [Query Builder](docs/query-builder.md)
 - [Transactions](docs/transactions.md)
+- [User Authentication](docs/authentication.md)
 - [Queues](docs/queues.md)
 - [Upgrading](docs/upgrade.md)
 
 ## Reporting Issues
 
-Issues pertaining to the library should be reported in the
-[PHPLIB](https://jira.mongodb.org/secure/CreateIssue!default.jspa?project-field=PHPLIB)
-project in MongoDB's JIRA. Extension-related issues should be reported in the
-[PHPC](https://jira.mongodb.org/secure/CreateIssue!default.jspa?project-field=PHPC)
-project.
+Issues pertaining to the library should be reported as
+[GitHub Issue](https://github.com/mongodb/laravel-mongodb/issues/new/choose).
 
 For general questions and support requests, please use one of MongoDB's
 [Technical Support](https://mongodb.com/docs/manual/support/) channels.
@@ -39,6 +37,6 @@ project, please report it according to the instructions in
 ## Development
 
 Development is tracked in the
-[PHPLIB](https://jira.mongodb.org/projects/PHPORM/summary) project in MongoDB's
+[PHPORM](https://jira.mongodb.org/projects/PHPORM/summary) project in MongoDB's
 JIRA. Documentation for contributing to this project may be found in
 [CONTRIBUTING.md](CONTRIBUTING.md).
