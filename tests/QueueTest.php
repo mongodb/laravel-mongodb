@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
@@ -16,6 +17,7 @@ use MongoDB\Laravel\Queue\MongoQueue;
 
 use function app;
 use function json_encode;
+use function now;
 
 class QueueTest extends TestCase
 {
@@ -57,8 +59,9 @@ class QueueTest extends TestCase
                     'backoff' => null,
                     'timeout' => null,
                     'data' => ['action' => 'QueueJobLifeCycle'],
-                ]
-            ), $job->getRawBody()
+                ],
+            ),
+            $job->getRawBody(),
         );
 
         // Remove reserved job
@@ -197,7 +200,7 @@ class QueueTest extends TestCase
     {
         Carbon::setTestNow('2019-01-01 00:00:00');
         $provider = app('queue.failer');
-        $provider->log('test_connection', 'test_queue', 'test_payload', new \Exception('test_exception'));
+        $provider->log('test_connection', 'test_queue', 'test_payload', new Exception('test_exception'));
 
         $failedJob = Queue::getDatabase()->table(Config::get('queue.failed.table'))->first();
 
