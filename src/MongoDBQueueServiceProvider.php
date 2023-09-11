@@ -10,7 +10,7 @@ use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 
 use function array_key_exists;
 
-class MongodbQueueServiceProvider extends QueueServiceProvider
+class MongoDBQueueServiceProvider extends QueueServiceProvider
 {
     /**
      * Register the failed job services.
