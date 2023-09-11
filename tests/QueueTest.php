@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Carbon\Carbon;
+use Exception;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Mockery;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 use MongoDB\Laravel\Queue\MongoJob;
 use MongoDB\Laravel\Queue\MongoQueue;
@@ -30,10 +32,7 @@ class QueueTest extends TestCase
     public function testQueueJobLifeCycle(): void
     {
         $uuid = Str::uuid();
-
-        Str::createUuidsUsing(function () use ($uuid) {
-            return $uuid;
-        });
+        Str::createUuidsUsing(fn () => $uuid);
 
         $id = Queue::push('test', ['action' => 'QueueJobLifeCycle'], 'test');
         $this->assertNotNull($id);
@@ -184,5 +183,20 @@ class QueueTest extends TestCase
         $mock->expects('release')->once()->with($queue, $job->getJobRecord(), $delay);
 
         $mock->deleteAndRelease($queue, $job, $delay);
+    }
+
+    public function testFailedJobLogging()
+    {
+        Carbon::setTestNow('2019-01-01 00:00:00');
+        $provider = app('queue.failer');
+        $provider->log('test_connection', 'test_queue', 'test_payload', new Exception('test_exception'));
+
+        $failedJob = Queue::getDatabase()->table(Config::get('queue.failed.table'))->first();
+
+        $this->assertSame('test_connection', $failedJob['connection']);
+        $this->assertSame('test_queue', $failedJob['queue']);
+        $this->assertSame('test_payload', $failedJob['payload']);
+        $this->assertEquals(new UTCDateTime(Carbon::now()), $failedJob['failed_at']);
+        $this->assertStringStartsWith('Exception: test_exception in ', $failedJob['exception']);
     }
 }

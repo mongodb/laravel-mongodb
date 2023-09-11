@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Queue\Failed;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
+use MongoDB\BSON\UTCDateTime;
 
 use function array_map;
 
@@ -28,7 +29,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
             'connection' => $connection,
             'queue' => $queue,
             'payload' => $payload,
-            'failed_at' => Carbon::now()->getTimestamp(),
+            'failed_at' => new UTCDateTime(Carbon::now()),
             'exception' => (string) $exception,
         ]);
     }
