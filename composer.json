@@ -55,13 +55,16 @@
         },
         "laravel": {
             "providers": [
-                "MongoDB\\Laravel\\MongodbServiceProvider",
-                "MongoDB\\Laravel\\MongodbQueueServiceProvider"
+                "MongoDB\\Laravel\\MongoDBServiceProvider",
+                "MongoDB\\Laravel\\MongoDBQueueServiceProvider"
             ]
         }
     },
     "minimum-stability": "dev",
     "config": {
+        "platform": {
+            "php": "8.1"
+        },
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         }

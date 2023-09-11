@@ -36,6 +36,32 @@ Before submitting a pull request:
 - Check the codebase to ensure that your feature doesn't already exist.
 - Check the pull requests to ensure that another person hasn't already submitted the feature or fix.
 
+## Run Tests
+
+The full test suite requires PHP cli with mongodb extension, a running MongoDB server and a running MySQL server.
+Tests requiring MySQL will be skipped if it is not running.
+Duplicate the `phpunit.xml.dist` file to `phpunit.xml` and edit the environment variables to match your setup.
+
+```bash
+$ docker-compose up -d mongodb mysql
+$ docker-compose run tests
+```
+
+Docker can be slow to start. You can run the command `php vendor/bin/phpunit --testdox` locally or in a docker container.
+
+```bash
+$ docker-compose run -it tests bash
+# Inside the container
+$ composer install
+$ vendor/bin/phpunit --testdox
+```
+
+For fixing style issues, you can run the PHP Code Beautifier and Fixer:
+
+```bash
+$ php vendor/bin/phpcbf
+```
+
 ## Requirements
 
 If the project maintainer has any additional requirements, you will find them listed here.
@@ -44,7 +70,7 @@ If the project maintainer has any additional requirements, you will find them li
 
 - **Add tests!** - Your patch won't be accepted if it doesn't have tests.
 
-- **Document any change in behaviour** - Make sure the `README.md` and any other relevant documentation are kept up-to-date.
+- **Document any change in behaviour** - Make sure the documentation is kept up-to-date.
 
 - **Consider our release cycle** - We try to follow [SemVer v2.0.0](https://semver.org/). Randomly breaking public APIs is not an option.
 

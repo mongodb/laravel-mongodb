@@ -8,7 +8,7 @@ use Illuminate\Support\ServiceProvider;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Queue\MongoConnector;
 
-class MongodbServiceProvider extends ServiceProvider
+class MongoDBServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap the application events.

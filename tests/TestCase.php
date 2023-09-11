@@ -7,8 +7,8 @@ namespace MongoDB\Laravel\Tests;
 use Illuminate\Auth\Passwords\PasswordResetServiceProvider as BasePasswordResetServiceProviderAlias;
 use Illuminate\Foundation\Application;
 use MongoDB\Laravel\Auth\PasswordResetServiceProvider;
-use MongoDB\Laravel\MongodbQueueServiceProvider;
-use MongoDB\Laravel\MongodbServiceProvider;
+use MongoDB\Laravel\MongoDBQueueServiceProvider;
+use MongoDB\Laravel\MongoDBServiceProvider;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Validation\ValidationServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
@@ -43,8 +43,8 @@ class TestCase extends OrchestraTestCase
     protected function getPackageProviders($app)
     {
         return [
-            MongodbServiceProvider::class,
-            MongodbQueueServiceProvider::class,
+            MongoDBServiceProvider::class,
+            MongoDBQueueServiceProvider::class,
             PasswordResetServiceProvider::class,
             ValidationServiceProvider::class,
         ];
