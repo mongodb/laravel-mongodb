@@ -79,7 +79,7 @@ jobs:
                     MONGODB_URI: 'mongodb://127.0.0.1/?replicaSet=rs'
                     MYSQL_HOST: 0.0.0.0
                     MYSQL_PORT: 3307
-            -   uses: codecov/codecov-action@v1
+            -   uses: codecov/codecov-action@v3
                 with:
                     token: ${{ secrets.CODECOV_TOKEN }}
                     fail_ci_if_error: false
