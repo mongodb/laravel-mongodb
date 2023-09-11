@@ -17,7 +17,6 @@ use MongoDB\Laravel\Queue\MongoQueue;
 
 use function app;
 use function json_encode;
-use function now;
 
 class QueueTest extends TestCase
 {
@@ -33,12 +32,7 @@ class QueueTest extends TestCase
     public function testQueueJobLifeCycle(): void
     {
         $uuid = Str::uuid();
-
-        Str::createUuidsUsing(
-            function () use ($uuid) {
-                return $uuid;
-            },
-        );
+        Str::createUuidsUsing(fn () => $uuid);
 
         $id = Queue::push('test', ['action' => 'QueueJobLifeCycle'], 'test');
         $this->assertNotNull($id);
@@ -47,22 +41,17 @@ class QueueTest extends TestCase
         $job = Queue::pop('test');
         $this->assertInstanceOf(MongoJob::class, $job);
         $this->assertEquals(1, $job->isReserved());
-        $this->assertEquals(
-            json_encode(
-                [
-                    'uuid' => $uuid,
-                    'displayName' => 'test',
-                    'job' => 'test',
-                    'maxTries' => null,
-                    'maxExceptions' => null,
-                    'failOnTimeout' => false,
-                    'backoff' => null,
-                    'timeout' => null,
-                    'data' => ['action' => 'QueueJobLifeCycle'],
-                ],
-            ),
-            $job->getRawBody(),
-        );
+        $this->assertEquals(json_encode([
+            'uuid' => $uuid,
+            'displayName' => 'test',
+            'job' => 'test',
+            'maxTries' => null,
+            'maxExceptions' => null,
+            'failOnTimeout' => false,
+            'backoff' => null,
+            'timeout' => null,
+            'data' => ['action' => 'QueueJobLifeCycle'],
+        ]), $job->getRawBody());
 
         // Remove reserved job
         $job->delete();
@@ -207,7 +196,7 @@ class QueueTest extends TestCase
         $this->assertSame('test_connection', $failedJob['connection']);
         $this->assertSame('test_queue', $failedJob['queue']);
         $this->assertSame('test_payload', $failedJob['payload']);
-        $this->assertEquals(new UTCDateTime(now()), $failedJob['failed_at']);
+        $this->assertEquals(new UTCDateTime(Carbon::now()), $failedJob['failed_at']);
         $this->assertStringStartsWith('Exception: test_exception in ', $failedJob['exception']);
     }
 }
