@@ -43,7 +43,7 @@ class ConnectionTest extends TestCase
         $this->assertInstanceOf(Client::class, $connection->getMongoClient());
     }
 
-    public function dataConnectionConfig(): Generator
+    public static function dataConnectionConfig(): Generator
     {
         yield 'Single host' => [
             'expectedUri' => 'mongodb://some-host',
