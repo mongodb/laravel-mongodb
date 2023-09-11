@@ -1,10 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" backupGlobals="false" backupStaticAttributes="false" bootstrap="vendor/autoload.php" colors="true" convertErrorsToExceptions="true" convertNoticesToExceptions="true" convertWarningsToExceptions="true" processIsolation="false" stopOnFailure="false" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/9.3/phpunit.xsd">
-    <coverage processUncoveredFiles="true">
-        <include>
-            <directory suffix=".php">./src</directory>
-        </include>
-    </coverage>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.4/phpunit.xsd"
+         backupGlobals="false"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         cacheDirectory=".phpunit.cache"
+         backupStaticProperties="false"
+>
+    <coverage/>
     <testsuites>
         <testsuite name="all">
             <directory>tests/</directory>
@@ -38,7 +43,7 @@
         </testsuite>
     </testsuites>
     <php>
-        <env name="MONGODB_URI" value="mongodb://mongodb/" />
+        <env name="MONGODB_URI" value="mongodb://mongodb/"/>
         <env name="MONGODB_DATABASE" value="unittest"/>
         <env name="MYSQL_HOST" value="mysql"/>
         <env name="MYSQL_PORT" value="3306"/>
@@ -46,4 +51,9 @@
         <env name="MYSQL_USERNAME" value="root"/>
         <env name="QUEUE_CONNECTION" value="database"/>
     </php>
+    <source>
+        <include>
+            <directory suffix=".php">./src</directory>
+        </include>
+    </source>
 </phpunit>
