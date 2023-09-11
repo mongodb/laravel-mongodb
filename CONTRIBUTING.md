@@ -39,6 +39,7 @@ Before submitting a pull request:
 ## Run Tests
 
 The full test suite requires PHP cli with mongodb extension, a running MongoDB server and a running MySQL server.
+Tests requiring MySQL will be skipped if it is not running.
 Duplicate the `phpunit.xml.dist` file to `phpunit.xml` and edit the environment variables to match your setup.
 
 ```bash
@@ -69,7 +70,7 @@ If the project maintainer has any additional requirements, you will find them li
 
 - **Add tests!** - Your patch won't be accepted if it doesn't have tests.
 
-- **Document any change in behaviour** - Make sure the documentations are kept up-to-date.
+- **Document any change in behaviour** - Make sure the documentation is kept up-to-date.
 
 - **Consider our release cycle** - We try to follow [SemVer v2.0.0](https://semver.org/). Randomly breaking public APIs is not an option.
 
