@@ -7,8 +7,6 @@ namespace MongoDB\Laravel\Relations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-use function property_exists;
-
 class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
 {
     /**
@@ -18,7 +16,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function getHasCompareKey()
     {
-        return $this->getOwnerKey();
+        return $this->ownerKey;
     }
 
     /** @inheritdoc */
@@ -28,7 +26,7 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
             // For belongs to relationships, which are essentially the inverse of has one
             // or has many relationships, we need to actually query on the primary key
             // of the related models matching on the foreign key that's on a parent.
-            $this->query->where($this->getOwnerKey(), '=', $this->parent->{$this->foreignKey});
+            $this->query->where($this->ownerKey, '=', $this->parent->{$this->foreignKey});
         }
     }
 
@@ -38,25 +36,13 @@ class BelongsTo extends \Illuminate\Database\Eloquent\Relations\BelongsTo
         // We'll grab the primary key name of the related models since it could be set to
         // a non-standard name and not "id". We will then construct the constraint for
         // our eagerly loading query so it returns the proper models from execution.
-        $key = $this->getOwnerKey();
-
-        $this->query->whereIn($key, $this->getEagerModelKeys($models));
+        $this->query->whereIn($this->ownerKey, $this->getEagerModelKeys($models));
     }
 
     /** @inheritdoc */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
         return $query;
-    }
-
-    /**
-     * Get the owner key with backwards compatible support.
-     *
-     * @return string
-     */
-    public function getOwnerKey()
-    {
-        return property_exists($this, 'ownerKey') ? $this->ownerKey : $this->otherKey;
     }
 
     /**
