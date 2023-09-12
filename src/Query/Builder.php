@@ -276,7 +276,7 @@ class Builder extends BaseBuilder
                     $group['_id'][$column] = '$' . $column;
 
                     // When grouping, also add the $last operator to each grouped field,
-                    // this mimics MySQL's behaviour a bit.
+                    // this mimics SQL's behaviour a bit.
                     $group[$column] = ['$last' => '$' . $column];
                 }
 

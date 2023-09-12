@@ -12,22 +12,9 @@ services:
         working_dir: /code
         environment:
             MONGODB_URI: 'mongodb://mongodb/'
-            MYSQL_HOST: 'mysql'
         depends_on:
             mongodb:
                 condition: service_healthy
-            mysql:
-                condition: service_started
-
-    mysql:
-        container_name: mysql
-        image: mysql:8.0
-        ports:
-            - "3306:3306"
-        environment:
-            MYSQL_ROOT_PASSWORD:
-            MYSQL_DATABASE: unittest
-            MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
 
     mongodb:
         container_name: mongodb

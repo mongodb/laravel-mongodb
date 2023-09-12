@@ -8,17 +8,17 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\MySqlBuilder;
+use Illuminate\Database\Schema\SQLiteBuilder;
 use Illuminate\Support\Facades\Schema;
 use MongoDB\Laravel\Eloquent\HybridRelations;
 
 use function assert;
 
-class MysqlUser extends EloquentModel
+class SqlUser extends EloquentModel
 {
     use HybridRelations;
 
-    protected $connection       = 'mysql';
+    protected $connection       = 'sqlite';
     protected $table            = 'users';
     protected static $unguarded = true;
 
@@ -32,9 +32,9 @@ class MysqlUser extends EloquentModel
         return $this->hasOne(Role::class);
     }
 
-    public function mysqlBooks(): HasMany
+    public function sqlBooks(): HasMany
     {
-        return $this->hasMany(MysqlBook::class);
+        return $this->hasMany(SqlBook::class);
     }
 
     /**
@@ -42,14 +42,11 @@ class MysqlUser extends EloquentModel
      */
     public static function executeSchema(): void
     {
-        $schema = Schema::connection('mysql');
-        assert($schema instanceof MySqlBuilder);
+        $schema = Schema::connection('sqlite');
+        assert($schema instanceof SQLiteBuilder);
 
-        if ($schema->hasTable('users')) {
-            return;
-        }
-
-        Schema::connection('mysql')->create('users', function (Blueprint $table) {
+        $schema->dropIfExists('users');
+        $schema->create('users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('name');
             $table->timestamps();

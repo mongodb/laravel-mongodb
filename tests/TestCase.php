@@ -67,7 +67,7 @@ class TestCase extends OrchestraTestCase
         $app['config']->set('app.key', 'ZsZewWyUJ5FsKp9lMwv4tYbNlegQilM7');
 
         $app['config']->set('database.default', 'mongodb');
-        $app['config']->set('database.connections.mysql', $config['connections']['mysql']);
+        $app['config']->set('database.connections.sqlite', $config['connections']['sqlite']);
         $app['config']->set('database.connections.mongodb', $config['connections']['mongodb']);
         $app['config']->set('database.connections.mongodb2', $config['connections']['mongodb']);
 

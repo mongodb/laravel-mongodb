@@ -39,11 +39,10 @@ Before submitting a pull request:
 ## Run Tests
 
 The full test suite requires PHP cli with mongodb extension, a running MongoDB server and a running MySQL server.
-Tests requiring MySQL will be skipped if it is not running.
 Duplicate the `phpunit.xml.dist` file to `phpunit.xml` and edit the environment variables to match your setup.
 
 ```bash
-$ docker-compose up -d mongodb mysql
+$ docker-compose up -d mongodb
 $ docker-compose run tests
 ```
 

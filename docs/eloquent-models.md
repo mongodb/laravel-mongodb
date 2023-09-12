@@ -427,7 +427,7 @@ If you want this functionality to work both ways, your SQL-models will need to u
 
 **This functionality only works for `hasOne`, `hasMany` and `belongsTo`.**
 
-The MySQL model should use the `HybridRelations` trait:
+The SQL model should use the `HybridRelations` trait:
 
 ```php
 use MongoDB\Laravel\Eloquent\HybridRelations;
