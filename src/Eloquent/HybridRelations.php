@@ -18,7 +18,6 @@ use MongoDB\Laravel\Relations\MorphTo;
 
 use function debug_backtrace;
 use function is_subclass_of;
-use function method_exists;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
 
@@ -322,20 +321,6 @@ trait HybridRelations
             $relatedKey ?: $instance->getKeyName(),
             $relation,
         );
-    }
-
-    /**
-     * Get the relationship name of the belongs to many.
-     *
-     * @return string
-     */
-    protected function guessBelongsToManyRelation()
-    {
-        if (method_exists($this, 'getBelongsToManyCaller')) {
-            return $this->getBelongsToManyCaller();
-        }
-
-        return parent::guessBelongsToManyRelation();
     }
 
     /** @inheritdoc */
