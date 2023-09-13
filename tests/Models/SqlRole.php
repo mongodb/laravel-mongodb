@@ -7,17 +7,17 @@ namespace MongoDB\Laravel\Tests\Models;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\MySqlBuilder;
+use Illuminate\Database\Schema\SQLiteBuilder;
 use Illuminate\Support\Facades\Schema;
 use MongoDB\Laravel\Eloquent\HybridRelations;
 
 use function assert;
 
-class MysqlRole extends EloquentModel
+class SqlRole extends EloquentModel
 {
     use HybridRelations;
 
-    protected $connection       = 'mysql';
+    protected $connection       = 'sqlite';
     protected $table            = 'roles';
     protected static $unguarded = true;
 
@@ -26,9 +26,9 @@ class MysqlRole extends EloquentModel
         return $this->belongsTo(User::class);
     }
 
-    public function mysqlUser(): BelongsTo
+    public function sqlUser(): BelongsTo
     {
-        return $this->belongsTo(MysqlUser::class);
+        return $this->belongsTo(SqlUser::class);
     }
 
     /**
@@ -36,14 +36,11 @@ class MysqlRole extends EloquentModel
      */
     public static function executeSchema()
     {
-        $schema = Schema::connection('mysql');
-        assert($schema instanceof MySqlBuilder);
+        $schema = Schema::connection('sqlite');
+        assert($schema instanceof SQLiteBuilder);
 
-        if ($schema->hasTable('roles')) {
-            return;
-        }
-
-        Schema::connection('mysql')->create('roles', function (Blueprint $table) {
+        $schema->dropIfExists('roles');
+        $schema->create('roles', function (Blueprint $table) {
             $table->string('type');
             $table->string('user_id');
             $table->timestamps();

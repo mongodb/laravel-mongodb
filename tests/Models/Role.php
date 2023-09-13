@@ -18,8 +18,8 @@ class Role extends Eloquent
         return $this->belongsTo(User::class);
     }
 
-    public function mysqlUser(): BelongsTo
+    public function sqlUser(): BelongsTo
     {
-        return $this->belongsTo(MysqlUser::class);
+        return $this->belongsTo(SqlUser::class);
     }
 }

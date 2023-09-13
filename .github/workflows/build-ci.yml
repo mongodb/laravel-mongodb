@@ -22,15 +22,6 @@ jobs:
                 php:
                     - '8.1'
                     - '8.2'
-        services:
-            mysql:
-                image: mysql:8.0
-                ports:
-                    - 3307:3306
-                env:
-                    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-                    MYSQL_DATABASE: 'unittest'
-                    MYSQL_ROOT_PASSWORD:
 
         steps:
             -   uses: actions/checkout@v4
@@ -77,8 +68,6 @@ jobs:
                     ./vendor/bin/phpunit --coverage-clover coverage.xml
                 env:
                     MONGODB_URI: 'mongodb://127.0.0.1/?replicaSet=rs'
-                    MYSQL_HOST: 0.0.0.0
-                    MYSQL_PORT: 3307
             -   uses: codecov/codecov-action@v3
                 with:
                     token: ${{ secrets.CODECOV_TOKEN }}

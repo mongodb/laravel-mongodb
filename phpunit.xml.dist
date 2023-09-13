@@ -11,44 +11,14 @@
 >
     <coverage/>
     <testsuites>
-        <testsuite name="all">
+        <testsuite name="Test Suite">
             <directory>tests/</directory>
-        </testsuite>
-        <testsuite name="schema">
-            <file>tests/SchemaTest.php</file>
-        </testsuite>
-        <testsuite name="seeder">
-            <file>tests/SeederTest.php</file>
-        </testsuite>
-        <testsuite name="builder">
-            <file>tests/QueryBuilderTest.php</file>
-            <file>tests/QueryTest.php</file>
-        </testsuite>
-        <testsuite name="transaction">
-            <file>tests/TransactionTest.php</file>
-        </testsuite>
-        <testsuite name="model">
-            <file>tests/ModelTest.php</file>
-            <file>tests/RelationsTest.php</file>
-        </testsuite>
-        <testsuite name="relations">
-            <file>tests/RelationsTest.php</file>
-            <file>tests/EmbeddedRelationsTest.php</file>
-        </testsuite>
-        <testsuite name="mysqlrelations">
-            <file>tests/RelationsTest.php</file>
-        </testsuite>
-        <testsuite name="validation">
-            <file>tests/ValidationTest.php</file>
         </testsuite>
     </testsuites>
     <php>
         <env name="MONGODB_URI" value="mongodb://mongodb/"/>
         <env name="MONGODB_DATABASE" value="unittest"/>
-        <env name="MYSQL_HOST" value="mysql"/>
-        <env name="MYSQL_PORT" value="3306"/>
-        <env name="MYSQL_DATABASE" value="unittest"/>
-        <env name="MYSQL_USERNAME" value="root"/>
+        <env name="SQLITE_DATABASE" value=":memory:"/>
         <env name="QUEUE_CONNECTION" value="database"/>
     </php>
     <source>

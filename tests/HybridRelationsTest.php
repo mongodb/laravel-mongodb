@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
-use Illuminate\Database\MySqlConnection;
+use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Tests\Models\Book;
-use MongoDB\Laravel\Tests\Models\MysqlBook;
-use MongoDB\Laravel\Tests\Models\MysqlRole;
-use MongoDB\Laravel\Tests\Models\MysqlUser;
 use MongoDB\Laravel\Tests\Models\Role;
+use MongoDB\Laravel\Tests\Models\SqlBook;
+use MongoDB\Laravel\Tests\Models\SqlRole;
+use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
 use PDOException;
 
@@ -21,30 +21,30 @@ class HybridRelationsTest extends TestCase
         parent::setUp();
 
         try {
-            DB::connection('mysql')->select('SELECT 1');
+            DB::connection('sqlite')->select('SELECT 1');
         } catch (PDOException) {
-            $this->markTestSkipped('MySQL connection is not available.');
+            $this->markTestSkipped('SQLite connection is not available.');
         }
 
-        MysqlUser::executeSchema();
-        MysqlBook::executeSchema();
-        MysqlRole::executeSchema();
+        SqlUser::executeSchema();
+        SqlBook::executeSchema();
+        SqlRole::executeSchema();
     }
 
     public function tearDown(): void
     {
-        MysqlUser::truncate();
-        MysqlBook::truncate();
-        MysqlRole::truncate();
+        SqlUser::truncate();
+        SqlBook::truncate();
+        SqlRole::truncate();
     }
 
-    public function testMysqlRelations()
+    public function testSqlRelations()
     {
-        $user = new MysqlUser();
-        $this->assertInstanceOf(MysqlUser::class, $user);
-        $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
+        $user = new SqlUser();
+        $this->assertInstanceOf(SqlUser::class, $user);
+        $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
 
-        // Mysql User
+        // SQL User
         $user->name = 'John Doe';
         $user->save();
         $this->assertIsInt($user->id);
@@ -52,22 +52,22 @@ class HybridRelationsTest extends TestCase
         // SQL has many
         $book = new Book(['title' => 'Game of Thrones']);
         $user->books()->save($book);
-        $user = MysqlUser::find($user->id); // refetch
+        $user = SqlUser::find($user->id); // refetch
         $this->assertCount(1, $user->books);
 
         // MongoDB belongs to
         $book = $user->books()->first(); // refetch
-        $this->assertEquals('John Doe', $book->mysqlAuthor->name);
+        $this->assertEquals('John Doe', $book->sqlAuthor->name);
 
         // SQL has one
         $role = new Role(['type' => 'admin']);
         $user->role()->save($role);
-        $user = MysqlUser::find($user->id); // refetch
+        $user = SqlUser::find($user->id); // refetch
         $this->assertEquals('admin', $user->role->type);
 
         // MongoDB belongs to
         $role = $user->role()->first(); // refetch
-        $this->assertEquals('John Doe', $role->mysqlUser->name);
+        $this->assertEquals('John Doe', $role->sqlUser->name);
 
         // MongoDB User
         $user       = new User();
@@ -75,36 +75,36 @@ class HybridRelationsTest extends TestCase
         $user->save();
 
         // MongoDB has many
-        $book = new MysqlBook(['title' => 'Game of Thrones']);
-        $user->mysqlBooks()->save($book);
+        $book = new SqlBook(['title' => 'Game of Thrones']);
+        $user->sqlBooks()->save($book);
         $user = User::find($user->_id); // refetch
-        $this->assertCount(1, $user->mysqlBooks);
+        $this->assertCount(1, $user->sqlBooks);
 
         // SQL belongs to
-        $book = $user->mysqlBooks()->first(); // refetch
+        $book = $user->sqlBooks()->first(); // refetch
         $this->assertEquals('John Doe', $book->author->name);
 
         // MongoDB has one
-        $role = new MysqlRole(['type' => 'admin']);
-        $user->mysqlRole()->save($role);
+        $role = new SqlRole(['type' => 'admin']);
+        $user->sqlRole()->save($role);
         $user = User::find($user->_id); // refetch
-        $this->assertEquals('admin', $user->mysqlRole->type);
+        $this->assertEquals('admin', $user->sqlRole->type);
 
         // SQL belongs to
-        $role = $user->mysqlRole()->first(); // refetch
+        $role = $user->sqlRole()->first(); // refetch
         $this->assertEquals('John Doe', $role->user->name);
     }
 
     public function testHybridWhereHas()
     {
-        $user      = new MysqlUser();
-        $otherUser = new MysqlUser();
-        $this->assertInstanceOf(MysqlUser::class, $user);
-        $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
-        $this->assertInstanceOf(MysqlUser::class, $otherUser);
-        $this->assertInstanceOf(MySqlConnection::class, $otherUser->getConnection());
+        $user      = new SqlUser();
+        $otherUser = new SqlUser();
+        $this->assertInstanceOf(SqlUser::class, $user);
+        $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
+        $this->assertInstanceOf(SqlUser::class, $otherUser);
+        $this->assertInstanceOf(SQLiteConnection::class, $otherUser->getConnection());
 
-        //MySql User
+        // SQL User
         $user->name = 'John Doe';
         $user->id   = 2;
         $user->save();
@@ -130,19 +130,19 @@ class HybridRelationsTest extends TestCase
             new Book(['title' => 'Harry Planter']),
         ]);
 
-        $users = MysqlUser::whereHas('books', function ($query) {
+        $users = SqlUser::whereHas('books', function ($query) {
             return $query->where('title', 'LIKE', 'Har%');
         })->get();
 
         $this->assertEquals(2, $users->count());
 
-        $users = MysqlUser::whereHas('books', function ($query) {
+        $users = SqlUser::whereHas('books', function ($query) {
             return $query->where('title', 'LIKE', 'Harry%');
         }, '>=', 2)->get();
 
         $this->assertEquals(1, $users->count());
 
-        $books = Book::whereHas('mysqlAuthor', function ($query) {
+        $books = Book::whereHas('sqlAuthor', function ($query) {
             return $query->where('name', 'LIKE', 'Other%');
         })->get();
 
@@ -151,14 +151,14 @@ class HybridRelationsTest extends TestCase
 
     public function testHybridWith()
     {
-        $user      = new MysqlUser();
-        $otherUser = new MysqlUser();
-        $this->assertInstanceOf(MysqlUser::class, $user);
-        $this->assertInstanceOf(MySqlConnection::class, $user->getConnection());
-        $this->assertInstanceOf(MysqlUser::class, $otherUser);
-        $this->assertInstanceOf(MySqlConnection::class, $otherUser->getConnection());
+        $user      = new SqlUser();
+        $otherUser = new SqlUser();
+        $this->assertInstanceOf(SqlUser::class, $user);
+        $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
+        $this->assertInstanceOf(SqlUser::class, $otherUser);
+        $this->assertInstanceOf(SQLiteConnection::class, $otherUser->getConnection());
 
-        //MySql User
+        // SQL User
         $user->name = 'John Doe';
         $user->id   = 2;
         $user->save();
@@ -171,18 +171,18 @@ class HybridRelationsTest extends TestCase
         $this->assertIsInt($otherUser->id);
         // Clear to start
         Book::truncate();
-        MysqlBook::truncate();
+        SqlBook::truncate();
         // Create books
-        // Mysql relation
-        $user->mysqlBooks()->saveMany([
-            new MysqlBook(['title' => 'Game of Thrones']),
-            new MysqlBook(['title' => 'Harry Potter']),
+        // SQL relation
+        $user->sqlBooks()->saveMany([
+            new SqlBook(['title' => 'Game of Thrones']),
+            new SqlBook(['title' => 'Harry Potter']),
         ]);
 
-        $otherUser->mysqlBooks()->saveMany([
-            new MysqlBook(['title' => 'Harry Plants']),
-            new MysqlBook(['title' => 'Harveys']),
-            new MysqlBook(['title' => 'Harry Planter']),
+        $otherUser->sqlBooks()->saveMany([
+            new SqlBook(['title' => 'Harry Plants']),
+            new SqlBook(['title' => 'Harveys']),
+            new SqlBook(['title' => 'Harry Planter']),
         ]);
         // SQL has many Hybrid
         $user->books()->saveMany([
@@ -196,12 +196,12 @@ class HybridRelationsTest extends TestCase
             new Book(['title' => 'Harry Planter']),
         ]);
 
-        MysqlUser::with('books')->get()
+        SqlUser::with('books')->get()
             ->each(function ($user) {
                 $this->assertEquals($user->id, $user->books->count());
             });
 
-        MysqlUser::whereHas('mysqlBooks', function ($query) {
+        SqlUser::whereHas('sqlBooks', function ($query) {
             return $query->where('title', 'LIKE', 'Harry%');
         })
             ->with('books')
