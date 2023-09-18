@@ -195,8 +195,8 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$and' => [
-                            ['$not' => ['name' => 'foo']],
-                            ['$not' => ['name' => ['$ne' => 'bar']]],
+                            ['$nor' => [['name' => 'foo']]],
+                            ['$nor' => [['name' => ['$ne' => 'bar']]]],
                         ],
                     ],
                     [], // options
@@ -231,8 +231,8 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['$not' => ['name' => 'foo']],
-                            ['$not' => ['name' => ['$ne' => 'bar']]],
+                            ['$nor' => [['name' => 'foo']]],
+                            ['$nor' => [['name' => ['$ne' => 'bar']]]],
                         ],
                     ],
                     [], // options
@@ -248,7 +248,7 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['$not' => ['name' => 'foo']],
+                            ['$nor' => [['name' => 'foo']]],
                             ['name' => ['$ne' => 'bar']],
                         ],
                     ],
@@ -264,7 +264,7 @@ class BuilderTest extends TestCase
         yield 'whereNot callable' => [
             [
                 'find' => [
-                    ['$not' => ['name' => 'foo']],
+                    ['$nor' => [['name' => 'foo']]],
                     [], // options
                 ],
             ],
@@ -278,7 +278,7 @@ class BuilderTest extends TestCase
                     [
                         '$and' => [
                             ['name' => 'bar'],
-                            ['$not' => ['email' => 'foo']],
+                            ['$nor' => [['email' => 'foo']]],
                         ],
                     ],
                     [], // options
@@ -295,10 +295,12 @@ class BuilderTest extends TestCase
             [
                 'find' => [
                     [
-                        '$not' => [
-                            '$and' => [
-                                ['name' => 'foo'],
-                                ['$not' => ['email' => ['$ne' => 'bar']]],
+                        '$nor' => [
+                            [
+                                '$and' => [
+                                    ['name' => 'foo'],
+                                    ['$nor' => [['email' => ['$ne' => 'bar']]]],
+                                ],
                             ],
                         ],
                     ],
@@ -318,7 +320,7 @@ class BuilderTest extends TestCase
                     [
                         '$or' => [
                             ['name' => 'bar'],
-                            ['$not' => ['email' => 'foo']],
+                            ['$nor' => [['email' => 'foo']]],
                         ],
                     ],
                     [], // options
@@ -337,7 +339,7 @@ class BuilderTest extends TestCase
                     [
                         '$or' => [
                             ['name' => 'bar'],
-                            ['$not' => ['email' => 'foo']],
+                            ['$nor' => [['email' => 'foo']]],
                         ],
                     ],
                     [], // options
@@ -353,10 +355,12 @@ class BuilderTest extends TestCase
             [
                 'find' => [
                     [
-                        '$not' => [
-                            '$and' => [
-                                ['foo' => 1],
-                                ['bar' => 2],
+                        '$nor' => [
+                            [
+                                '$and' => [
+                                    ['foo' => 1],
+                                    ['bar' => 2],
+                                ],
                             ],
                         ],
                     ],
@@ -371,10 +375,12 @@ class BuilderTest extends TestCase
             [
                 'find' => [
                     [
-                        '$not' => [
-                            '$and' => [
-                                ['foo' => 1],
-                                ['bar' => 2],
+                        '$nor' => [
+                            [
+                                '$and' => [
+                                    ['foo' => 1],
+                                    ['bar' => 2],
+                                ],
                             ],
                         ],
                     ],
@@ -389,10 +395,12 @@ class BuilderTest extends TestCase
             [
                 'find' => [
                     [
-                        '$not' => [
-                            '$and' => [
-                                ['foo' => 1],
-                                ['bar' => ['$lt' => 2]],
+                        '$nor' => [
+                            [
+                                '$and' => [
+                                    ['foo' => 1],
+                                    ['bar' => ['$lt' => 2]],
+                                ],
                             ],
                         ],
                     ],
