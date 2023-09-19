@@ -170,12 +170,17 @@ class QueryTest extends TestCase
         $users = User::whereNot('title', '!=', 'admin')->get();
         $this->assertCount(3, $users);
 
+        // nested negation
+        $users = User::whereNot(fn (Builder $builder) => $builder
+            ->whereNot('title', 'admin'))->get();
+        $this->assertCount(3, $users);
+
         // explicit equality operator
         $users = User::whereNot('title', '=', 'admin')->get();
         $this->assertCount(6, $users);
 
         // custom query operator
-        $users = User::whereNot('title', ['$eq' => 'admin'])->get();
+        $users = User::whereNot('title', ['$in' => ['admin']])->get();
         $this->assertCount(6, $users);
 
         // regex
