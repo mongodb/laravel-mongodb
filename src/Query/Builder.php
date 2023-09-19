@@ -1053,8 +1053,9 @@ class Builder extends BaseBuilder
             $method = 'compileWhere' . $where['type'];
             $result = $this->{$method}($where);
 
+            // Negate the expression
             if (str_ends_with($where['boolean'], 'not')) {
-                $result = ['$not' => $result];
+                $result = ['$nor' => [$result]];
             }
 
             // Wrap the where with an $or operator.

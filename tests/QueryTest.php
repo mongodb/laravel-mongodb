@@ -6,6 +6,8 @@ namespace MongoDB\Laravel\Tests;
 
 use DateTimeImmutable;
 use LogicException;
+use MongoDB\BSON\Regex;
+use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Tests\Models\Birthday;
 use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\User;
@@ -152,6 +154,48 @@ class QueryTest extends TestCase
 
         $this->assertEquals('John Doe', $user->name);
         $this->assertNull($user->age);
+    }
+
+    public function testWhereNot(): void
+    {
+        // implicit equality operator
+        $users = User::whereNot('title', 'admin')->get();
+        $this->assertCount(6, $users);
+
+        // nested query
+        $users = User::whereNot(fn (Builder $builder) => $builder->where('title', 'admin'))->get();
+        $this->assertCount(6, $users);
+
+        // double negation
+        $users = User::whereNot('title', '!=', 'admin')->get();
+        $this->assertCount(3, $users);
+
+        // nested negation
+        $users = User::whereNot(fn (Builder $builder) => $builder
+            ->whereNot('title', 'admin'))->get();
+        $this->assertCount(3, $users);
+
+        // explicit equality operator
+        $users = User::whereNot('title', '=', 'admin')->get();
+        $this->assertCount(6, $users);
+
+        // custom query operator
+        $users = User::whereNot('title', ['$in' => ['admin']])->get();
+        $this->assertCount(6, $users);
+
+        // regex
+        $users = User::whereNot('title', new Regex('^admin$'))->get();
+        $this->assertCount(6, $users);
+
+        // equals null
+        $users = User::whereNot('title', null)->get();
+        $this->assertCount(8, $users);
+
+        // nested $or
+        $users = User::whereNot(fn (Builder $builder) => $builder
+            ->where('title', 'admin')
+            ->orWhere('age', 35))->get();
+        $this->assertCount(5, $users);
     }
 
     public function testOrWhere(): void
