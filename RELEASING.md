@@ -58,6 +58,7 @@ When releasing a new major or minor version (e.g. 4.0.0), the default branch
 should be renamed to the next version (e.g. 4.1). Renaming the default branch
 using GitHub's UI ensures that all open pull request are changed to target the
 new version.
+
 Once the default branch has been renamed, create the maintenance branch for the
 version to be released (e.g. 4.0):
 
