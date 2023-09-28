@@ -1,28 +1,28 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [4.0.0] - unreleased
+## [4.0.0] - 2023-09-28
 
 - Rename package to `mongodb/laravel-mongodb`
 - Change namespace to `MongoDB\Laravel`
-- Add classes to cast `ObjectId` and `UUID` instances [#1](https://github.com/GromNaN/laravel-mongodb/pull/1) by [@alcaeus](https://github.com/alcaeus).
-- Add `Query\Builder::toMql()` to simplify comprehensive query tests [#6](https://github.com/GromNaN/laravel-mongodb/pull/6) by [@GromNaN](https://github.com/GromNaN).
-- Fix `Query\Builder::whereNot` to use MongoDB [`$not`](https://www.mongodb.com/docs/manual/reference/operator/query/not/) operator [#13](https://github.com/GromNaN/laravel-mongodb/pull/13) by [@GromNaN](https://github.com/GromNaN).
-- Fix `Query\Builder::whereBetween` to accept `Carbon\Period` object [#10](https://github.com/GromNaN/laravel-mongodb/pull/10) by [@GromNaN](https://github.com/GromNaN).
-- Throw an exception for unsupported `Query\Builder` methods [#9](https://github.com/GromNaN/laravel-mongodb/pull/9) by [@GromNaN](https://github.com/GromNaN).
-- Throw an exception when `Query\Builder::orderBy()` is used with invalid direction [#7](https://github.com/GromNaN/laravel-mongodb/pull/7) by [@GromNaN](https://github.com/GromNaN).
-- Throw an exception when `Query\Builder::push()` is used incorrectly [#5](https://github.com/GromNaN/laravel-mongodb/pull/5) by [@GromNaN](https://github.com/GromNaN).
-- Remove public property `Query\Builder::$paginating` [#15](https://github.com/GromNaN/laravel-mongodb/pull/15) by [@GromNaN](https://github.com/GromNaN).
-- Remove call to deprecated `Collection::count` for `countDocuments` [#18](https://github.com/GromNaN/laravel-mongodb/pull/18) by [@GromNaN](https://github.com/GromNaN).
-- Accept operators prefixed by `$` in `Query\Builder::orWhere` [#20](https://github.com/GromNaN/laravel-mongodb/pull/20) by [@GromNaN](https://github.com/GromNaN).
-- Remove `Query\Builder::whereAll($column, $values)`. Use `Query\Builder::where($column, 'all', $values)` instead. [#16](https://github.com/GromNaN/laravel-mongodb/pull/16) by [@GromNaN](https://github.com/GromNaN).
-- Fix validation of unique values when the validated value is found as part of an existing value. [#21](https://github.com/GromNaN/laravel-mongodb/pull/21) by [@GromNaN](https://github.com/GromNaN).
-- Support `%` and `_` in `like` expression [#17](https://github.com/GromNaN/laravel-mongodb/pull/17) by [@GromNaN](https://github.com/GromNaN).
-- Change signature of `Query\Builder::__constructor` to match the parent class [#26](https://github.com/GromNaN/laravel-mongodb-private/pull/26) by [@GromNaN](https://github.com/GromNaN).
-- Fix Query on `whereDate`, `whereDay`, `whereMonth`, `whereYear`, `whereTime` to use MongoDB operators [#2570](https://github.com/mongodb/laravel-mongodb/pull/2376) by [@Davpyu](https://github.com/Davpyu) and [@GromNaN](https://github.com/GromNaN).
-- `Model::unset()` does not persist the change. Call `Model::save()` to persist the change [#2578](https://github.com/mongodb/laravel-mongodb/pull/2578) by [@GromNaN](https://github.com/GromNaN).
-- Support delete one document with `Query\Builder::limit(1)->delete()` [#2591](https://github.com/mongodb/laravel-mongodb/pull/2591) by [@GromNaN](https://github.com/GromNaN)
-- Add trait `MongoDB\Laravel\Eloquent\MassPrunable` to replace the Eloquent trait on MongoDB models [#2598](https://github.com/mongodb/laravel-mongodb/pull/2598) by [@GromNaN](https://github.com/GromNaN)
+- Add classes to cast `ObjectId` and `UUID` instances [5105553](https://github.com/mongodb/laravel-mongodb/commit/5105553cbb672a982ccfeaa5b653d33aaca1553e) by [@alcaeus](https://github.com/alcaeus).
+- Add `Query\Builder::toMql()` to simplify comprehensive query tests [ae3e0d5](https://github.com/mongodb/laravel-mongodb/commit/ae3e0d5f72c24edcb2a78d321910397f4134e90f) by @GromNaN.
+- Fix `Query\Builder::whereNot` to use MongoDB [`$not`](https://www.mongodb.com/docs/manual/reference/operator/query/not/) operator [e045fab](https://github.com/mongodb/laravel-mongodb/commit/e045fab6c315fe6d17f75669665898ed98b88107) by @GromNaN.
+- Fix `Query\Builder::whereBetween` to accept `Carbon\Period` object [f729baa](https://github.com/mongodb/laravel-mongodb/commit/f729baad59b4baf3307121df7f60c5cd03a504f5) by @GromNaN.
+- Throw an exception for unsupported `Query\Builder` methods [e1a83f4](https://github.com/mongodb/laravel-mongodb/commit/e1a83f47f16054286bc433fc9ccfee078bb40741) by @GromNaN.
+- Throw an exception when `Query\Builder::orderBy()` is used with invalid direction [edd0871](https://github.com/mongodb/laravel-mongodb/commit/edd08715a0dd64bab9fd1194e70fface09e02900) by @GromNaN.
+- Throw an exception when `Query\Builder::push()` is used incorrectly [19cf7a2](https://github.com/mongodb/laravel-mongodb/commit/19cf7a2ee2c0f2c69459952c4207ee8279b818d3) by @GromNaN.
+- Remove public property `Query\Builder::$paginating` [e045fab](https://github.com/mongodb/laravel-mongodb/commit/e045fab6c315fe6d17f75669665898ed98b88107) by @GromNaN.
+- Remove call to deprecated `Collection::count` for `countDocuments` [4514964](https://github.com/mongodb/laravel-mongodb/commit/4514964145c70c37e6221be8823f8f73a201c259) by @GromNaN.
+- Accept operators prefixed by `$` in `Query\Builder::orWhere` [0fb83af](https://github.com/mongodb/laravel-mongodb/commit/0fb83af01284cb16def1eda6987432ebbd64bb8f) by @GromNaN.
+- Remove `Query\Builder::whereAll($column, $values)`. Use `Query\Builder::where($column, 'all', $values)` instead. [1d74dc3](https://github.com/mongodb/laravel-mongodb/commit/1d74dc3d3df9f7a579b343f3109160762050ca01) by @GromNaN.
+- Fix validation of unique values when the validated value is found as part of an existing value. []() and [d5f1bb9](https://github.com/mongodb/laravel-mongodb/commit/d5f1bb901f3e3c6777bc604be1af0a8238dc089a) by @GromNaN.
+- Support `%` and `_` in `like` expression [ea89e86](https://github.com/mongodb/laravel-mongodb/commit/ea89e8631350cd81c8d5bf977efb4c09e60d7807) by @GromNaN.
+- Change signature of `Query\Builder::__constructor` to match the parent class [#2570](https://github.com/mongodb/laravel-mongodb/pull/2570) by @GromNaN.
+- Fix Query on `whereDate`, `whereDay`, `whereMonth`, `whereYear`, `whereTime` to use MongoDB operators [#2570](https://github.com/mongodb/laravel-mongodb/pull/2376) by [@Davpyu](https://github.com/Davpyu) and @GromNaN.
+- `Model::unset()` does not persist the change. Call `Model::save()` to persist the change [#2578](https://github.com/mongodb/laravel-mongodb/pull/2578) by @GromNaN.
+- Support delete one document with `Query\Builder::limit(1)->delete()` [#2591](https://github.com/mongodb/laravel-mongodb/pull/2591) by @GromNaN
+- Add trait `MongoDB\Laravel\Eloquent\MassPrunable` to replace the Eloquent trait on MongoDB models [#2598](https://github.com/mongodb/laravel-mongodb/pull/2598) by @GromNaN
 
 ## [3.9.2] - 2022-09-01
 
