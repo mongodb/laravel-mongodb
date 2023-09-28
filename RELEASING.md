@@ -1,8 +1,7 @@
 # Releasing
 
-The following steps outline the release process for both new minor versions (e.g.
-releasing the `master` branch as X.Y.0) and patch versions (e.g. releasing the
-`vX.Y` branch as X.Y.Z).
+The following steps outline the release process for both new minor versions and
+patch versions.
 
 The command examples below assume that the canonical "mongodb" repository has
 the remote name "mongodb". You may need to adjust these commands if you've given
@@ -37,26 +36,10 @@ page.
 This uses [semantic versioning](https://semver.org/). Do not break
 backwards compatibility in a non-major release or your users will kill you.
 
-Before proceeding, ensure that the `master` branch is up-to-date with all code
+Before proceeding, ensure that the default branch is up-to-date with all code
 changes in this maintenance branch. This is important because we will later
-merge the ensuing release commits up to master with `--strategy=ours`, which
-will ignore changes from the merged commits.
-
-## Update composer.json
-
-This is especially important before releasing a new minor version.
-
-Ensure that the extension and PHP library requirements, as well as the branch
-alias in `composer.json` are correct for the version being released. For
-example, the branch alias for the 4.1.0 release in the `master` branch should
-be `4.1.x-dev`.
-
-Commit and push any changes:
-
-```console
-$ git commit -m "Update composer.json X.Y.Z" composer.json
-$ git push mongodb
-```
+merge the ensuing release commits with `--strategy=ours`, which will ignore
+changes from the merged commits.
 
 ## Tag the release
 
@@ -69,78 +52,34 @@ $ git push mongodb --tags
 
 ## Branch management
 
-# Creating a maintenance branch and updating master branch alias
+# Creating a maintenance branch and updating default branch name
 
-After releasing a new major or minor version (e.g. 4.0.0), a maintenance branch
-(e.g. v4.0) should be created. Any development towards a patch release (e.g.
-4.0.1) would then be done within that branch and any development for the next
-major or minor release can continue in master.
-
-After creating a maintenance branch, the `extra.branch-alias.dev-master` field
-in the master branch's `composer.json` file should be updated. For example,
-after branching v4.0, `composer.json` in the master branch may still read:
-
-```
-"branch-alias": {
-    "dev-master": "4.0.x-dev"
-}
-```
-
-The above would be changed to:
-
-```
-"branch-alias": {
-    "dev-master": "4.1.x-dev"
-}
-```
-
-Commit this change:
+When releasing a new major or minor version (e.g. 4.0.0), the default branch
+should be renamed to the next version (e.g. 4.1). Renaming the default branch
+using GitHub's UI ensures that all open pull request are changed to target the
+new version.
+Once the default branch has been renamed, create the maintenance branch for the
+version to be released (e.g. 4.0):
 
 ```console
-$ git commit -m "Master is now 4.1-dev" composer.json
-```
-
-### After releasing a new minor version
-
-After a new minor version is released (i.e. `master` was tagged), a maintenance
-branch should be created for future patch releases:
-
-```console
-$ git checkout -b vX.Y
-$ git push mongodb vX.Y
-```
-
-Update the master branch alias in `composer.json`:
-
-```diff
- "extra": {
-   "branch-alias": {
--    "dev-master": "4.0.x-dev"
-+    "dev-master": "4.1.x-dev"
-   }
- },
-```
-
-Commit and push this change:
-
-```console
-$ git commit -m "Master is now X.Y-dev" composer.json
-$ git push mongodb
+$ git checkout -b X.Y
+$ git push mongodb X.Y
 ```
 
 ### After releasing a patch version
 
-If this was a patch release, the maintenance branch must be merged up to master:
+If this was a patch release, the maintenance branch must be merged up to the
+default branch (e.g. 4.1):
 
 ```console
-$ git checkout master
-$ git pull mongodb master
-$ git merge vX.Y --strategy=ours
+$ git checkout 4.1
+$ git pull mongodb 4.1
+$ git merge 4.0 --strategy=ours
 $ git push mongodb
 ```
 
 The `--strategy=ours` option ensures that all changes from the merged commits
-will be ignored. This is OK because we previously ensured that the `master`
+will be ignored. This is OK because we previously ensured that the `4.1`
 branch was up-to-date with all code changes in this maintenance branch before
 tagging.
 
