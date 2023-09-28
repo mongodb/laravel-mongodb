@@ -16,7 +16,7 @@ All notable changes to this project will be documented in this file.
 - Remove call to deprecated `Collection::count` for `countDocuments` [4514964](https://github.com/mongodb/laravel-mongodb/commit/4514964145c70c37e6221be8823f8f73a201c259) by @GromNaN.
 - Accept operators prefixed by `$` in `Query\Builder::orWhere` [0fb83af](https://github.com/mongodb/laravel-mongodb/commit/0fb83af01284cb16def1eda6987432ebbd64bb8f) by @GromNaN.
 - Remove `Query\Builder::whereAll($column, $values)`. Use `Query\Builder::where($column, 'all', $values)` instead. [1d74dc3](https://github.com/mongodb/laravel-mongodb/commit/1d74dc3d3df9f7a579b343f3109160762050ca01) by @GromNaN.
-- Fix validation of unique values when the validated value is found as part of an existing value. []() and [d5f1bb9](https://github.com/mongodb/laravel-mongodb/commit/d5f1bb901f3e3c6777bc604be1af0a8238dc089a) by @GromNaN.
+- Fix validation of unique values when the validated value is found as part of an existing value. [d5f1bb9](https://github.com/mongodb/laravel-mongodb/commit/d5f1bb901f3e3c6777bc604be1af0a8238dc089a) by @GromNaN.
 - Support `%` and `_` in `like` expression [ea89e86](https://github.com/mongodb/laravel-mongodb/commit/ea89e8631350cd81c8d5bf977efb4c09e60d7807) by @GromNaN.
 - Change signature of `Query\Builder::__constructor` to match the parent class [#2570](https://github.com/mongodb/laravel-mongodb/pull/2570) by @GromNaN.
 - Fix Query on `whereDate`, `whereDay`, `whereMonth`, `whereYear`, `whereTime` to use MongoDB operators [#2376](https://github.com/mongodb/laravel-mongodb/pull/2376) by [@Davpyu](https://github.com/Davpyu) and @GromNaN.
