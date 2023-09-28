@@ -19,7 +19,7 @@ All notable changes to this project will be documented in this file.
 - Fix validation of unique values when the validated value is found as part of an existing value. []() and [d5f1bb9](https://github.com/mongodb/laravel-mongodb/commit/d5f1bb901f3e3c6777bc604be1af0a8238dc089a) by @GromNaN.
 - Support `%` and `_` in `like` expression [ea89e86](https://github.com/mongodb/laravel-mongodb/commit/ea89e8631350cd81c8d5bf977efb4c09e60d7807) by @GromNaN.
 - Change signature of `Query\Builder::__constructor` to match the parent class [#2570](https://github.com/mongodb/laravel-mongodb/pull/2570) by @GromNaN.
-- Fix Query on `whereDate`, `whereDay`, `whereMonth`, `whereYear`, `whereTime` to use MongoDB operators [#2570](https://github.com/mongodb/laravel-mongodb/pull/2376) by [@Davpyu](https://github.com/Davpyu) and @GromNaN.
+- Fix Query on `whereDate`, `whereDay`, `whereMonth`, `whereYear`, `whereTime` to use MongoDB operators [#2376](https://github.com/mongodb/laravel-mongodb/pull/2376) by [@Davpyu](https://github.com/Davpyu) and @GromNaN.
 - `Model::unset()` does not persist the change. Call `Model::save()` to persist the change [#2578](https://github.com/mongodb/laravel-mongodb/pull/2578) by @GromNaN.
 - Support delete one document with `Query\Builder::limit(1)->delete()` [#2591](https://github.com/mongodb/laravel-mongodb/pull/2591) by @GromNaN
 - Add trait `MongoDB\Laravel\Eloquent\MassPrunable` to replace the Eloquent trait on MongoDB models [#2598](https://github.com/mongodb/laravel-mongodb/pull/2598) by @GromNaN
