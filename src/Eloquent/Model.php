@@ -252,37 +252,6 @@ abstract class Model extends BaseModel
     }
 
     /** @inheritdoc */
-    protected function setAttributeMarkedMutatedAttributeValue($key, $value)
-    {
-        $attribute = $this->{Str::camel($key)}();
-
-        $callback = $attribute->set ?: function ($value) use ($key) {
-            $this->attributes[$key] = $value;
-        };
-
-        $normalizeCastClassResponse = $this->normalizeCastClassResponse(
-            $key, $callback($value, $this->attributes)
-        );
-
-        if (count($normalizeCastClassResponse) > 1) {
-            $normalizeCastClassResponse = [$key => $normalizeCastClassResponse];
-        }
-
-        $this->attributes = array_merge(
-            $this->attributes,
-            $normalizeCastClassResponse
-        );
-
-        if ($attribute->withCaching || (is_object($value) && $attribute->withObjectCaching)) {
-            $this->attributeCastCache[$key] = $value;
-        } else {
-            unset($this->attributeCastCache[$key]);
-        }
-
-        return $this;
-    }
-
-    /** @inheritdoc */
     public function getCasts()
     {
         return $this->casts;
