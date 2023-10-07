@@ -114,6 +114,19 @@ class ModelTest extends TestCase
 
         $check = User::find($user->_id);
         $this->assertEquals(20, $check->age);
+
+        $check->skills = ['PHP', 'Laravel', 'MongoDB', 'Laravel'];
+        $check->save();
+
+        $check = User::find($user->_id);
+        $this->assertCount(3,$check->skills);
+        $this->assertEquals(['PHP', 'Laravel', 'MongoDB'],$check->skills);
+
+        $check->update(['skills' => ['Git','Github','Unit testing','Github']]);
+
+        $check = User::find($user->_id);
+        $this->assertCount(3,$check->skills);
+        $this->assertEquals(['Git','Github','Unit testing'],$check->skills);
     }
 
     public function testManualStringId(): void

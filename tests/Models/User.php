@@ -109,6 +109,14 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         );
     }
 
+    protected function skills(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $value,
+            set: fn ($values) => array_unique($values)
+        );
+    }
+
     public function prunable(): Builder
     {
         return $this->where('age', '>', 18);
