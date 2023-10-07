@@ -252,6 +252,12 @@ abstract class Model extends BaseModel
     }
 
     /** @inheritdoc */
+    protected function normalizeCastClassResponse($key, $value)
+    {
+        return [$key => $value];
+    }
+
+    /** @inheritdoc */
     public function getCasts()
     {
         return $this->casts;
