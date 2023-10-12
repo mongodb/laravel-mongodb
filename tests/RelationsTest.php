@@ -11,6 +11,7 @@ use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
 use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
+use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\User;
@@ -29,6 +30,7 @@ class RelationsTest extends TestCase
         Role::truncate();
         Group::truncate();
         Photo::truncate();
+        Label::truncate();
     }
 
     public function testHasMany(): void
@@ -395,6 +397,53 @@ class RelationsTest extends TestCase
         $relations = $photos[1]->getRelations();
         $this->assertArrayHasKey('hasImage', $relations);
         $this->assertInstanceOf(Client::class, $photos[1]->hasImage);
+    }
+
+    public function testMorphToMany(): void
+    {
+
+        // cerate user
+        $user = User::updateOrCreate(['name' => 'John Doe']);
+        // create client
+        $client = Client::updateOrCreate(['name' => 'Jane Doe']);
+        // create label
+        $label  = Label::updateOrCreate(['name' => 'My test label']);
+        $label2 = Label::updateOrCreate(['name' => 'My test label 2']);
+
+        // check attach
+
+        // attach label to models
+        $user->labels()->attach($label);
+        $client->labels()->attach($label);
+
+        $this->assertEquals(1, $user->labels->count());
+        $this->assertEquals($label->id, $user->labels->first()->id);
+
+        $this->assertEquals(1, $client->labels->count());
+        $this->assertEquals($label->id, $client->labels->first()->id);
+
+        // check if label is attached to client
+        $this->assertEquals($label->id, $client->labels->first()->id);
+
+        // check if label is attached to user
+        $this->assertEquals($label->id, $user->labels->first()->id);
+
+        // check if client is attached to label
+        $this->assertEquals($client->id, $label->clients->first()->id);
+
+        // check if user is attached to label
+        $this->assertEquals($user->id, $label->users->first()->id);
+
+        // check detaching
+        $user->labels()->detach($label);
+        $this->assertNotContains($label->_id, $user->fresh()->labels->pluck('_id')->toArray());
+
+        // check if label still connected to client
+        $this->assertEquals($label->id, $client->fresh()->labels->first()->id);
+
+        // check sync
+        $user->labels()->sync([$label->_id, $label2->_id]);
+        $this->assertCount(2, $user->fresh()->labels);
     }
 
     public function testHasManyHas(): void

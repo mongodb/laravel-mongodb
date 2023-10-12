@@ -15,6 +15,8 @@ use MongoDB\Laravel\Relations\HasMany;
 use MongoDB\Laravel\Relations\HasOne;
 use MongoDB\Laravel\Relations\MorphMany;
 use MongoDB\Laravel\Relations\MorphTo;
+use MongoDB\Laravel\Relations\MorphToMany;
+
 
 use function debug_backtrace;
 use function is_subclass_of;
@@ -41,7 +43,7 @@ trait HybridRelations
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (!is_subclass_of($related, MongoDBModel::class)) {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
 
@@ -70,7 +72,7 @@ trait HybridRelations
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (!is_subclass_of($related, MongoDBModel::class)) {
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
@@ -97,7 +99,7 @@ trait HybridRelations
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (!is_subclass_of($related, MongoDBModel::class)) {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
 
@@ -126,7 +128,7 @@ trait HybridRelations
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (!is_subclass_of($related, MongoDBModel::class)) {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
@@ -166,7 +168,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (!is_subclass_of($related, MongoDBModel::class)) {
             return parent::belongsTo($related, $foreignKey, $ownerKey, $relation);
         }
 
@@ -278,7 +280,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (!is_subclass_of($related, MongoDBModel::class)) {
             return parent::belongsToMany(
                 $related,
                 $collection,
@@ -321,6 +323,139 @@ trait HybridRelations
             $relatedKey ?: $instance->getKeyName(),
             $relation,
         );
+    }
+
+    /**
+     * Define a many-to-many relationship.
+     *
+     * @param string $related
+     * @param string $collection
+     * @param string $foreignKey
+     * @param string $otherKey
+     * @param string $parentKey
+     * @param string $relatedKey
+     * @param string $relation
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     */
+    public function morphToMany(
+        $related,
+        $name,
+        $table = null,
+        $foreignPivotKey = null,
+        $relatedPivotKey = null,
+        $parentKey = null,
+        $relatedKey = null,
+        $relation = null,
+        $inverse = false
+    ) {
+
+        // Check if it is a relation with an original model.
+        if (!is_subclass_of($related, \Mongodb\Laravel\Eloquent\Model::class)) {
+            return parent::MorphToMany(
+                $related,
+                $name,
+                $table,
+                $foreignPivotKey,
+                $relatedPivotKey,
+                $parentKey,
+                $relatedKey,
+                $inverse,
+            );
+        }
+
+        $caller = $this->guessBelongsToManyRelation();
+
+        $instance = new $related;
+
+        $foreignPivotKey = $foreignPivotKey ?: $name . '_id';
+
+        $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's';
+
+        // Now we're ready to create a new query builder for the related model and
+        // the relationship instances for this relation. This relation will set
+        // appropriate query constraints then entirely manage the hydrations.
+        if (!$table) {
+            $words = preg_split('/(_)/u', $name, -1, PREG_SPLIT_DELIM_CAPTURE);
+
+            $lastWord = array_pop($words);
+
+            $table = implode('', $words) . Str::plural($lastWord);
+        }
+
+        return new MorphToMany(
+            $instance->newQuery(),
+            $this,
+            $name,
+            $table,
+            $foreignPivotKey,
+            $relatedPivotKey,
+            $parentKey ?: $this->getKeyName(),
+            $relatedKey ?: $instance->getKeyName(),
+            $caller,
+            $inverse,
+        );
+    }
+
+    /**
+     * Define a polymorphic, inverse many-to-many relationship.
+     *
+     * @param  string      $related
+     * @param  string      $name
+     * @param  string|null $table
+     * @param  string|null $foreignPivotKey
+     * @param  string|null $relatedPivotKey
+     * @param  string|null $parentKey
+     * @param  string|null $relatedKey
+     * @param  string|null $relation
+     * @param  bool        $inverse
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     */
+    public function morphedByMany(
+        $related,
+        $name,
+        $table = null,
+        $foreignPivotKey = null,
+        $relatedPivotKey = null,
+        $parentKey = null,
+        $relatedKey = null,
+        $inverse = false
+    ) {
+        $caller = $this->guessBelongsToManyRelation();
+
+        // $instance = new $related;
+        // For the inverse of the polymorphic many-to-many relations, we will change
+        // the way we determine the foreign and other keys, as it is the opposite
+        // of the morph-to-many method since we're figuring out these inverses.
+        $relatedPivotKey = $relatedPivotKey ?: $name . '_id';
+
+        $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
+
+        return $this->morphToMany(
+            $related,
+            $name,
+            $table,
+            $foreignPivotKey,
+            $relatedPivotKey,
+            $parentKey,
+            $relatedKey,
+            null,
+            true,
+        );
+    }
+
+    /**
+     * Get the relationship name of the belongs to many.
+     *
+     * @return string
+     */
+    protected function guessBelongsToManyRelation()
+    {
+        if (method_exists($this, 'getBelongsToManyCaller')) {
+            return $this->getBelongsToManyCaller();
+        }
+
+        return parent::guessBelongsToManyRelation();
     }
 
     /** @inheritdoc */

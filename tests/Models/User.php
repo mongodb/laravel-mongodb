@@ -38,11 +38,21 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
     use Notifiable;
     use MassPrunable;
 
-    protected $connection       = 'mongodb';
-    protected $casts            = [
+    protected $connection = 'mongodb';
+    protected $casts      = [
         'birthday' => 'datetime',
         'entry.date' => 'datetime',
         'member_status' => MemberStatus::class,
+    ];
+
+    protected $fillable         = [
+        'name',
+        'email',
+        'title',
+        'age',
+        'birthday',
+        'username',
+        'member_status',
     ];
     protected static $unguarded = true;
 
@@ -112,5 +122,11 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
     public function prunable(): Builder
     {
         return $this->where('age', '>', 18);
+    }
+
+    // labels
+    public function labels()
+    {
+        return $this->morphToMany(Label::class, 'labelled');
     }
 }
