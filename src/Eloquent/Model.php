@@ -20,6 +20,7 @@ use MongoDB\Laravel\Query\Builder as QueryBuilder;
 
 use function abs;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_unique;
 use function array_values;
@@ -254,7 +255,11 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     protected function normalizeCastClassResponse($key, $value)
     {
-        return [$key => $value];
+        if (! is_array($value) || (count($value) && is_numeric(array_key_first($value)))) {
+            return [$key => $value];
+        }
+
+        return $value;
     }
 
     /** @inheritdoc */
