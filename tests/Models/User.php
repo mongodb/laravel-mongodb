@@ -18,6 +18,8 @@ use MongoDB\Laravel\Eloquent\HybridRelations;
 use MongoDB\Laravel\Eloquent\MassPrunable;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
+use function array_unique;
+
 /**
  * @property string $_id
  * @property string $name
@@ -114,6 +116,14 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return Attribute::make(
             get: fn ($value) => $value,
             set: fn ($values) => array_unique($values)
+        );
+    }
+
+    protected function fullname(): Attribute
+    {
+        return Attribute::make(
+            get: fn ($value) => $this->first_name . ' ' . $this->last_name,
+            set: fn ($values) => ['first_name' => $values[0], 'last_name' => $values[1]]
         );
     }
 
