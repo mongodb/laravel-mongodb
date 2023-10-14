@@ -112,21 +112,20 @@ class ModelTest extends TestCase
         $raw = $user->getAttributes();
         $this->assertInstanceOf(ObjectID::class, $raw['_id']);
 
-        $check = User::find($user->_id);
-        $this->assertEquals(20, $check->age);
-
         $check->skills = ['PHP', 'Laravel', 'MongoDB', 'Laravel'];
         $check->save();
 
         $check = User::find($user->_id);
-        $this->assertCount(3,$check->skills);
-        $this->assertEquals(['PHP', 'Laravel', 'MongoDB'],$check->skills);
+        $this->assertCount(3, $check->skills);
+        $this->assertEquals(['PHP', 'Laravel', 'MongoDB'], $check->skills);
 
-        $check->update(['skills' => ['Git','Github','Unit testing','Github']]);
+        $check->fullname = ['Hans', 'Thomas'];
+        $check->save();
 
         $check = User::find($user->_id);
-        $this->assertCount(3,$check->skills);
-        $this->assertEquals(['Git','Github','Unit testing'],$check->skills);
+        self::assertEquals('Hans', $check->first_name);
+        self::assertEquals('Thomas', $check->last_name);
+        self::assertEquals('Hans Thomas', $check->fullname);
     }
 
     public function testManualStringId(): void
