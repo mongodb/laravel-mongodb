@@ -971,4 +971,20 @@ class ModelTest extends TestCase
         $this->assertSame(MemberStatus::Member->value, $check->getRawOriginal('member_status'));
         $this->assertSame(MemberStatus::Member, $check->member_status);
     }
+
+    public function testNumericFieldName(): void
+    {
+        $user      = new User();
+        $user->{1} = 'one';
+        $user->{2} = ['2' => 'two.two'];
+        $user->save();
+
+        $found = User::where(1, 'one')->first();
+        $this->assertInstanceOf(User::class, $found);
+        $this->assertEquals('one', $found[1]);
+
+        $found = User::where('2.2', 'two.two')->first();
+        $this->assertInstanceOf(User::class, $found);
+        $this->assertEquals([2 => 'two.two'], $found[2]);
+    }
 }
