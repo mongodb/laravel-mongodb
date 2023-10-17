@@ -27,6 +27,7 @@ use RuntimeException;
 use function array_fill_keys;
 use function array_is_list;
 use function array_key_exists;
+use function array_map;
 use function array_merge;
 use function array_values;
 use function array_walk_recursive;
@@ -1006,9 +1007,7 @@ class Builder extends BaseBuilder
             if (isset($where['column']) && ($where['column'] === '_id' || str_ends_with($where['column'], '._id'))) {
                 if (isset($where['values'])) {
                     // Multiple values.
-                    foreach ($where['values'] as &$value) {
-                        $value = $this->convertKey($value);
-                    }
+                    $where['values'] = array_map($this->convertKey(...), $where['values']);
                 } elseif (isset($where['value'])) {
                     // Single value.
                     $where['value'] = $this->convertKey($where['value']);
