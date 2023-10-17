@@ -51,6 +51,16 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->hasMany(Book::class, 'author_id');
     }
 
+    public function softs()
+    {
+        return $this->hasMany(Soft::class);
+    }
+
+    public function softsWithTrashed()
+    {
+        return $this->hasMany(Soft::class)->withTrashed();
+    }
+
     public function sqlBooks()
     {
         return $this->hasMany(SqlBook::class, 'author_id');

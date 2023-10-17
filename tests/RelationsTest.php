@@ -13,6 +13,7 @@ use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\Role;
+use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
 
 class RelationsTest extends TestCase
@@ -48,6 +49,24 @@ class RelationsTest extends TestCase
 
         $items = $user->items;
         $this->assertCount(3, $items);
+    }
+    
+    public function testHasManyWithTrashed(): void
+    {
+        $user = User::create(['name' => 'George R. R. Martin']);
+        $first = Soft::create(['title' => 'A Game of Thrones', 'user_id' => $user->_id]);
+        $second = Soft::create(['title' => 'The Witcher', 'user_id' => $user->_id]);
+
+        self::assertNull($first->deleted_at);
+        self::assertEquals($user->_id,$first->user->_id);
+        self::assertEquals([$first->_id,$second->_id],$user->softs->pluck('_id')->toArray());
+
+        $first->delete();
+        $user->refresh();
+
+        self::assertNotNull($first->deleted_at);
+        self::assertEquals([$second->_id],$user->softs->pluck('_id')->toArray());
+        self::assertEquals([$first->_id,$second->_id],$user->softsWithTrashed->pluck('_id')->toArray());
     }
 
     public function testBelongsTo(): void

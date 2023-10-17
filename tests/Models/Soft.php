@@ -25,4 +25,10 @@ class Soft extends Eloquent
     {
         return $this->newQuery();
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }
