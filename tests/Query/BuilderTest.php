@@ -1180,13 +1180,13 @@ class BuilderTest extends TestCase
 
         yield 'find with single string argument' => [
             ArgumentCountError::class,
-            'Too few arguments to function MongoDB\Laravel\Query\Builder::where(\'foo\'), 1 passed and at least 2 expected when the 1st is a scalar',
+            'Too few arguments to function MongoDB\Laravel\Query\Builder::where(\'foo\'), 1 passed and at least 2 expected when the 1st is not an array',
             fn (Builder $builder) => $builder->where('foo'),
         ];
 
         yield 'find with single numeric argument' => [
             ArgumentCountError::class,
-            'Too few arguments to function MongoDB\Laravel\Query\Builder::where(123), 1 passed and at least 2 expected when the 1st is a scalar',
+            'Too few arguments to function MongoDB\Laravel\Query\Builder::where(123), 1 passed and at least 2 expected when the 1st is not an array',
             fn (Builder $builder) => $builder->where(123),
         ];
 

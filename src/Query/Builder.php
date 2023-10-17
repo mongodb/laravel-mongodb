@@ -968,7 +968,7 @@ class Builder extends BaseBuilder
         }
 
         if (func_num_args() === 1 && is_scalar($column)) {
-            throw new ArgumentCountError(sprintf('Too few arguments to function %s(%s), 1 passed and at least 2 expected when the 1st is a scalar.', __METHOD__, var_export($column, true)));
+            throw new ArgumentCountError(sprintf('Too few arguments to function %s(%s), 1 passed and at least 2 expected when the 1st is not an array.', __METHOD__, var_export($column, true)));
         }
 
         return parent::where(...$params);
