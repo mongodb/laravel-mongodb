@@ -209,14 +209,14 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     public function setAttribute($key, $value)
     {
+        $key = (string) $key;
+
         // Convert _id to ObjectID.
         if ($key === '_id' && is_string($value)) {
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
         }
-
-        $key = (string) $key;
 
         // Support keys in dot notation.
         if (str_contains($key, '.')) {
