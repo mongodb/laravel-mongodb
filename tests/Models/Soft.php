@@ -30,5 +30,4 @@ class Soft extends Eloquent
     {
         return $this->belongsTo(User::class);
     }
-
 }
