@@ -45,8 +45,8 @@ use function get_debug_type;
 use function implode;
 use function in_array;
 use function is_array;
+use function is_callable;
 use function is_int;
-use function is_scalar;
 use function is_string;
 use function md5;
 use function preg_match;
@@ -967,8 +967,8 @@ class Builder extends BaseBuilder
             }
         }
 
-        if (func_num_args() === 1 && is_scalar($column)) {
-            throw new ArgumentCountError(sprintf('Too few arguments to function %s(%s), 1 passed and at least 2 expected when the 1st is not an array.', __METHOD__, var_export($column, true)));
+        if (func_num_args() === 1 && ! is_array($column) && ! is_callable($column)) {
+            throw new ArgumentCountError(sprintf('Too few arguments to function %s(%s), 1 passed and at least 2 expected when the 1st is not an array or a callable', __METHOD__, var_export($column, true)));
         }
 
         return parent::where(...$params);
