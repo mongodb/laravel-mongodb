@@ -83,10 +83,6 @@ class ModelTest extends TestCase
         $this->assertEquals(35, $user->age);
     }
 
-    /**
-     * @return void
-     * @group hans
-     */
     public function testUpdate(): void
     {
         $user        = new User();
