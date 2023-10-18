@@ -976,15 +976,19 @@ class ModelTest extends TestCase
     {
         $user      = new User();
         $user->{1} = 'one';
-        $user->{2} = ['2' => 'two.two'];
+        $user->{2} = ['3' => 'two.three'];
         $user->save();
 
         $found = User::where(1, 'one')->first();
         $this->assertInstanceOf(User::class, $found);
         $this->assertEquals('one', $found[1]);
 
-        $found = User::where('2.2', 'two.two')->first();
+        $found = User::where('2.3', 'two.three')->first();
         $this->assertInstanceOf(User::class, $found);
-        $this->assertEquals([2 => 'two.two'], $found[2]);
+        $this->assertEquals([3 => 'two.three'], $found[2]);
+
+        $found = User::where(2.3, 'two.three')->first();
+        $this->assertInstanceOf(User::class, $found);
+        $this->assertEquals([3 => 'two.three'], $found[2]);
     }
 }
