@@ -114,6 +114,14 @@ class ModelTest extends TestCase
 
         $check = User::find($user->_id);
         $this->assertEquals(20, $check->age);
+
+        $check->age      = 24;
+        $check->fullname = 'Hans Thomas'; // new field
+        $check->save();
+
+        $check = User::find($user->_id);
+        $this->assertEquals(24, $check->age);
+        $this->assertEquals('Hans Thomas', $check->fullname);
     }
 
     public function testManualStringId(): void
@@ -215,6 +223,12 @@ class ModelTest extends TestCase
 
         $this->assertEquals('John Doe', $check->name);
         $this->assertEquals(35, $check->age);
+    }
+
+    public function testInsertEmpty(): void
+    {
+        $success = User::insert([]);
+        $this->assertTrue($success);
     }
 
     public function testGet(): void
