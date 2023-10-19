@@ -16,14 +16,19 @@ It is compatible with Laravel 10.x. For older versions of Laravel, please refer 
 - [Eloquent Models](docs/eloquent-models.md)
 - [Query Builder](docs/query-builder.md)
 - [Transactions](docs/transactions.md)
-- [User Authentication](docs/authentication.md)
+- [User Authentication](docs/user-authentication.md)
 - [Queues](docs/queues.md)
 - [Upgrading](docs/upgrade.md)
 
 ## Reporting Issues
 
-Issues pertaining to the library should be reported as
-[GitHub Issue](https://github.com/mongodb/laravel-mongodb/issues/new/choose).
+Think you’ve found a bug? Want to see a new feature? Please open a case in our issue management tool, JIRA:
+
+- [Create an account and login.](https://jira.mongodb.org/)
+- Navigate to the [PHPORM](https://jira.mongodb.org/browse/PHPORM) project.
+- Click Create - Please provide as much information as possible about the issue type and how to reproduce it.
+
+Note: All reported issues in JIRA project are public.
 
 For general questions and support requests, please use one of MongoDB's
 [Technical Support](https://mongodb.com/docs/manual/support/) channels.
