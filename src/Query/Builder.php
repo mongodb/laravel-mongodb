@@ -953,7 +953,20 @@ class Builder extends BaseBuilder
         return $id;
     }
 
-    /** @inheritdoc */
+    /**
+     * Add a basic where clause to the query.
+     *
+     * If 1 argument, the signature is: where(array|Closure $where)
+     * If 2 arguments, the signature is: where(string $column, mixed $value)
+     * If 3 arguments, the signature is: where(string $colum, string $operator, mixed $value)
+     *
+     * @param  Closure|string|array $column
+     * @param  mixed                $operator
+     * @param  mixed                $value
+     * @param  string               $boolean
+     *
+     * @return $this
+     */
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
         $params = func_get_args();
