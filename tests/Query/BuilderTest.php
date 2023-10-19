@@ -1222,7 +1222,7 @@ class BuilderTest extends TestCase
 
         yield 'where invalid column type' => [
             InvalidArgumentException::class,
-            'First argument of MongoDB\Laravel\Query\Builder::where must be a column name as "string". Got "float"',
+            'First argument of MongoDB\Laravel\Query\Builder::where must be a field path as "string". Got "float"',
             fn (Builder $builder) => $builder->where(2.3, '>', 1),
         ];
     }
