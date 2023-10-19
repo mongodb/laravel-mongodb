@@ -22,7 +22,7 @@ It is compatible with Laravel 10.x. For older versions of Laravel, please refer 
 
 ## Reporting Issues
 
-Think you’ve found a bug? Want to see a new feature? Please open a case in our issue management tool, JIRA:
+Think you’ve found a bug in the library? Want to see a new feature? Please open a case in our issue management tool, JIRA:
 
 - [Create an account and login.](https://jira.mongodb.org/)
 - Navigate to the [PHPORM](https://jira.mongodb.org/browse/PHPORM) project.
