@@ -225,6 +225,12 @@ class ModelTest extends TestCase
         $this->assertEquals(35, $check->age);
     }
 
+    public function testInsertEmpty(): void
+    {
+        $success = User::insert([]);
+        $this->assertTrue($success);
+    }
+
     public function testGet(): void
     {
         User::insert([

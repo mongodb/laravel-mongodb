@@ -613,6 +613,11 @@ class Builder extends BaseBuilder
     /** @inheritdoc */
     public function insert(array $values)
     {
+        // Allow empty insert batch for consistency with Eloquent SQL
+        if ($values === []) {
+            return true;
+        }
+
         // Since every insert gets treated like a batch insert, we will have to detect
         // if the user is inserting a single document or an array of documents.
         $batch = true;
