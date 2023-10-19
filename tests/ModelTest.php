@@ -986,9 +986,5 @@ class ModelTest extends TestCase
         $found = User::where('2.3', 'two.three')->first();
         $this->assertInstanceOf(User::class, $found);
         $this->assertEquals([3 => 'two.three'], $found[2]);
-
-        $found = User::where(2.3, 'two.three')->first();
-        $this->assertInstanceOf(User::class, $found);
-        $this->assertEquals([3 => 'two.three'], $found[2]);
     }
 }

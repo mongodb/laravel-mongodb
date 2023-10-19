@@ -1219,6 +1219,12 @@ class BuilderTest extends TestCase
             'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "stdClass"',
             fn (Builder $builder) => $builder->whereTime('created_at', new stdClass()),
         ];
+
+        yield 'where invalid column type' => [
+            InvalidArgumentException::class,
+            'First argument of MongoDB\Laravel\Query\Builder::where must be a column name as "string". Got "float"',
+            fn (Builder $builder) => $builder->where(2.3, '>', 1),
+        ];
     }
 
     /** @dataProvider getEloquentMethodsNotSupported */
