@@ -3,7 +3,7 @@ Laravel MongoDB
 
 [![Latest Stable Version](http://img.shields.io/github/release/mongodb/laravel-mongodb.svg)](https://packagist.org/packages/mongodb/laravel-mongodb)
 [![Total Downloads](http://img.shields.io/packagist/dm/mongodb/laravel-mongodb.svg)](https://packagist.org/packages/mongodb/laravel-mongodb)
-[![Build Status](https://img.shields.io/github/workflow/status/mongodb/laravel-mongodb/CI)](https://github.com/mongodb/laravel-mongodb/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/mongodb/laravel-mongodb/build-ci.yml)](https://github.com/mongodb/laravel-mongodb/actions/workflows/build-ci.yml)
 
 This package adds functionalities to the Eloquent model and Query builder for MongoDB, using the original Laravel API.
 *This library extends the original Laravel classes, so it uses exactly the same methods.*
