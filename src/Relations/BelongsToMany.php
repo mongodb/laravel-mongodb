@@ -117,6 +117,8 @@ class BelongsToMany extends EloquentBelongsToMany
 
         if ($ids instanceof Collection) {
             $ids = $ids->modelKeys();
+        } elseif ($ids instanceof Model) {
+            $ids = $this->parseIds($ids);
         }
 
         // First we need to attach any of the associated models that are not currently

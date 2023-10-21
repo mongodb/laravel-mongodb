@@ -255,6 +255,36 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $client->users);
     }
 
+    public function testSyncBelongsToMany()
+    {
+        $user = User::create(['name' => 'John Doe']);
+
+        $first  = Client::query()->create(['name' => 'Hans']);
+        $second = Client::query()->create(['name' => 'Thomas']);
+
+        $user->load('clients');
+        self::assertEmpty($user->clients);
+
+        $user->clients()->sync($first);
+
+        $user->load('clients');
+        self::assertCount(1, $user->clients);
+        self::assertTrue($user->clients->first()->is($first));
+
+        $user->clients()->sync($second);
+
+        $user->load('clients');
+        self::assertCount(1, $user->clients);
+        self::assertTrue($user->clients->first()->is($second));
+
+        $user->clients()->syncWithoutDetaching($first);
+
+        $user->load('clients');
+        self::assertCount(2, $user->clients);
+        self::assertTrue($user->clients->first()->is($first));
+        self::assertTrue($user->clients->last()->is($second));
+    }
+
     public function testBelongsToManyAttachesExistingModels(): void
     {
         $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523']]);
