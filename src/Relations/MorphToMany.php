@@ -4,67 +4,179 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Relations;
 
+use Arr;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\MorphToMany as EloquentMorphToMany;
 
-class MorphToMany extends BelongsToMany
+use function array_diff;
+use function array_keys;
+use function array_map;
+use function array_merge;
+use function array_values;
+use function count;
+use function is_array;
+use function is_numeric;
+
+class MorphToMany extends EloquentMorphToMany
 {
-    protected $morphType;
-
-    protected $morphClass;
-
     /**
-     * Create a new morph to many relationship instance.
+     * Get the key for comparing against the parent key in "has" query.
      *
-     * @param  Builder     $query
-     * @param  Model       $parent
-     * @param  string      $name
-     * @param  string      $table
-     * @param  string      $foreignPivotKey
-     * @param  string      $relatedPivotKey
-     * @param  string      $parentKey
-     * @param  string      $relatedKey
-     * @param  string|null $relationName
-     * @param  bool        $inverse
-     *
-     * @return void
+     * @return string
      */
-    public function __construct(
-        Builder $query,
-        Model $parent,
-        $name,
-        $table,
-        $foreignPivotKey,
-        $relatedPivotKey,
-        $parentKey,
-        $relatedKey,
-        $relationName = null,
-        protected $inverse = false,
-    ) {
-        $this->morphType  = $name . '_type';
-        $this->morphClass = $inverse ? $query->getModel()->getMorphClass() : $parent->getMorphClass();
+    public function getHasCompareKey()
+    {
+        return $this->getForeignKey();
+    }
 
-        parent::__construct(
-            $query,
-            $parent,
-            $table,
-            $foreignPivotKey,
-            $relatedPivotKey,
-            $parentKey,
-            $relatedKey,
-            $relationName,
-        );
+    /** @inheritdoc */
+    public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
+    {
+        return $query;
+    }
+
+    /** @inheritdoc */
+    protected function hydratePivotRelation(array $models)
+    {
+        // Do nothing.
     }
 
     /**
-     * Attach a model to the parent.
+     * Set the select clause for the relation query.
      *
-     * @param  mixed $id
-     * @param  array $attributes
-     * @param  bool  $touch
-     *
-     * @return void
+     * @return array
      */
+    protected function getSelectColumns(array $columns = ['*'])
+    {
+        return $columns;
+    }
+
+    /** @inheritdoc */
+    protected function shouldSelect(array $columns = ['*'])
+    {
+        return $columns;
+    }
+
+    /** @inheritdoc */
+    public function addConstraints()
+    {
+        if (static::$constraints) {
+            $this->setWhere();
+        }
+    }
+
+    /**
+     * Set the where clause for the relation query.
+     *
+     * @return $this
+     */
+    protected function setWhere()
+    {
+        $foreign = $this->getForeignKey();
+
+        if ($this->getInverse()) {
+            $this->query->where($foreign, '=', $this->parent->getKey());
+        } else {
+            $relatedModels = $this->parent->{$this->relatedPivotKey} ?? [];
+            $this->query->whereIn($this->relatedKey, $relatedModels);
+        }
+
+        return $this;
+    }
+
+    /** @inheritdoc */
+    public function save(Model $model, array $joining = [], $touch = true)
+    {
+        $model->save(['touch' => false]);
+
+        $this->attach($model, $joining, $touch);
+
+        return $model;
+    }
+
+    /** @inheritdoc */
+    public function create(array $attributes = [], array $joining = [], $touch = true)
+    {
+        $instance = $this->related->newInstance($attributes);
+
+        // Once we save the related model, we need to attach it to the base model via
+        // through intermediate table so we'll use the existing "attach" method to
+        // accomplish this which will insert the record and any more attributes.
+        $instance->save(['touch' => false]);
+
+        $this->attach($instance, $joining, $touch);
+
+        return $instance;
+    }
+
+    /** @inheritdoc */
+    public function sync($ids, $detaching = true)
+    {
+        $changes = [
+            'attached' => [],
+            'detached' => [],
+            'updated' => [],
+        ];
+
+        if ($ids instanceof Collection) {
+            $ids = $ids->modelKeys();
+        }
+
+        // First we need to attach any of the associated models that are not currently
+        // in this joining table. We'll spin through the given IDs, checking to see
+        // if they exist in the array of current ones, and if not we will insert.
+        $current = $this->parent->{$this->relatedPivotKey} ?: [];
+
+        // See issue #256.
+        if ($current instanceof Collection) {
+            $current = $ids->modelKeys();
+        }
+
+        $records = $this->formatSyncList($ids);
+
+        $current = Arr::wrap($current);
+
+        $detach = array_diff($current, array_keys($records));
+
+        // We need to make sure we pass a clean array, so that it is not interpreted
+        // as an associative array.
+        $detach = array_values($detach);
+
+        // Next, we will take the differences of the currents and given IDs and detach
+        // all of the entities that exist in the "current" array but are not in the
+        // the array of the IDs given to the method which will complete the sync.
+        if ($detaching && count($detach) > 0) {
+            $this->detach($detach);
+
+            $changes['detached'] = (array) array_map(function ($v) {
+                return is_numeric($v) ? (int) $v : (string) $v;
+            }, $detach);
+        }
+
+        // Now we are finally ready to attach the new records. Note that we'll disable
+        // touching until after the entire operation is complete so we don't fire a
+        // ton of touch operations until we are totally done syncing the records.
+        $changes = array_merge(
+            $changes,
+            $this->attachNew($records, $current, false),
+        );
+
+        if (count($changes['attached']) || count($changes['updated'])) {
+            $this->touchIfTouching();
+        }
+
+        return $changes;
+    }
+
+    /** @inheritdoc */
+    public function updateExistingPivot($id, array $attributes, $touch = true)
+    {
+        // Do nothing, we have no pivot table.
+    }
+
+    /** @inheritdoc */
     public function attach($id, array $attributes = [], $touch = true)
     {
         if ($id instanceof Model) {
@@ -137,53 +249,94 @@ class MorphToMany extends BelongsToMany
         return count($ids);
     }
 
-
-    /**
-     * Get the foreign key "type" name.
-     *
-     * @return string
-     */
-    public function getMorphType()
+    /** @inheritdoc */
+    protected function buildDictionary(Collection $results)
     {
-        return $this->morphType;
-    }
+        $foreign = $this->foreignPivotKey;
 
-    /**
-     * Get the class name of the parent model.
-     *
-     * @return string
-     */
-    public function getMorphClass()
-    {
-        return $this->morphClass;
-    }
+        // First we will build a dictionary of child models keyed by the foreign key
+        // of the relation so that we will easily and quickly match them to their
+        // parents without having a possibly slow inner loops for every models.
+        $dictionary = [];
 
-    /**
-     * Get the indicator for a reverse relationship.
-     *
-     * @return bool
-     */
-    public function getInverse()
-    {
-        return $this->inverse;
-    }
-
-    /**
-     * Set the where clause for the relation query.
-     *
-     * @return $this
-     */
-    protected function setWhere()
-    {
-        $foreign = $this->getForeignKey();
-
-        if ($this->getInverse()) {
-            $this->query->where($foreign, '=', $this->parent->getKey());
-        } else {
-            $relatedModels = $this->parent->{$this->relatedPivotKey} ?? [];
-            $this->query->whereIn($this->relatedKey, $relatedModels);
+        foreach ($results as $result) {
+            foreach ($result->$foreign as $item) {
+                $dictionary[$item][] = $result;
+            }
         }
 
-        return $this;
+        return $dictionary;
+    }
+
+    /** @inheritdoc */
+    public function newPivotQuery()
+    {
+        return $this->newRelatedQuery();
+    }
+
+    /**
+     * Create a new query builder for the related model.
+     *
+     * @return \Illuminate\Database\Query\Builder
+     */
+    public function newRelatedQuery()
+    {
+        return $this->related->newQuery();
+    }
+
+    /**
+     * Get the fully qualified foreign key for the relation.
+     *
+     * @return string
+     */
+    public function getForeignKey()
+    {
+        return $this->foreignPivotKey;
+    }
+
+    /** @inheritdoc */
+    public function getQualifiedForeignPivotKeyName()
+    {
+        return $this->foreignPivotKey;
+    }
+
+    /** @inheritdoc */
+    public function getQualifiedRelatedPivotKeyName()
+    {
+        return $this->relatedPivotKey;
+    }
+
+    /**
+     * Format the sync list so that it is keyed by ID. (Legacy Support)
+     * The original function has been renamed to formatRecordsList since Laravel 5.3.
+     *
+     * @deprecated
+     *
+     * @return array
+     */
+    protected function formatSyncList(array $records)
+    {
+        $results = [];
+        foreach ($records as $id => $attributes) {
+            if (! is_array($attributes)) {
+                [$id, $attributes] = [$attributes, []];
+            }
+
+            $results[$id] = $attributes;
+        }
+
+        return $results;
+    }
+
+    /**
+     * Get the name of the "where in" method for eager loading.
+     *
+     * @param string $key
+     *
+     * @return string
+     */
+    protected function whereInMethod(Model $model, $key)
+    {
+        return 'whereIn';
     }
 }

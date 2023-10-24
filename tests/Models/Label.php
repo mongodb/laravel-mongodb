@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Models;
 
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
-// use Illuminate\Database\Eloquent\Relations\MorphToMany;
-// use Illuminate\Database\Eloquent\Relations\MorphByMany;
 
 /**
  * @property string $title
