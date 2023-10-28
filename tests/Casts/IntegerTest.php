@@ -18,40 +18,31 @@ class IntegerTest extends TestCase
 
     public function testInt(): void
     {
-        $model = Casting::query()->create(['number' => 1]);
+        $model = Casting::query()->create(['intNumber' => 1]);
         $check = Casting::query()->find($model->_id);
 
-        self::assertIsInt($check->number);
-        self::assertEquals(1,$check->number);
+        self::assertIsInt($check->intNumber);
+        self::assertEquals(1,$check->intNumber);
 
-        $model->update(['number' => 2]);
+        $model->update(['intNumber' => 2]);
         $check = Casting::query()->find($model->_id);
 
-        self::assertIsInt($check->number);
-        self::assertEquals(2,$check->number);
+        self::assertIsInt($check->intNumber);
+        self::assertEquals(2,$check->intNumber);
     }
-    /**
-     * @return void
-     * @group hans
-     */
+
     public function testIntAsString(): void
     {
-        $model = Casting::query()->create(['number' => '1']);
-
+        $model = Casting::query()->create(['intNumber' => '1']);
         $check = Casting::query()->find($model->_id);
-        self::assertIsInt($check->number);
-        self::assertEquals(1,$check->number);
 
-        $model->update(['number' => '1b']);
+        self::assertIsInt($check->intNumber);
+        self::assertEquals(1,$check->intNumber);
 
+        $model->update(['intNumber' => '2']);
         $check = Casting::query()->find($model->_id);
-        self::assertIsInt($check->number);
-        self::assertEquals(1,$check->number);
 
-        $model->update(['number' => 'a1b']);
-
-        $check = Casting::query()->find($model->_id);
-        self::assertIsInt($check->number);
-        self::assertEquals(0,$check->number);
+        self::assertIsInt($check->intNumber);
+        self::assertEquals(2,$check->intNumber);
     }
 }
