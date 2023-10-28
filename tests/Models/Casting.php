@@ -13,10 +13,12 @@ class Casting extends Eloquent
     protected $collection = 'casting';
 
     protected $fillable = [
-        'intNumber'
+        'intNumber',
+        'floatNumber',
     ];
 
     protected $casts = [
-        'intNumber' => 'int'
+        'intNumber' => 'int',
+        'floatNumber' => 'float',
     ];
 }
