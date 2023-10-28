@@ -11,6 +11,7 @@ use DateTimeInterface;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -262,6 +263,15 @@ abstract class Model extends BaseModel
         } catch (BrickMathException $e) {
             throw new MathException('Unable to cast value to a decimal.', previous: $e);
         }
+    }
+
+    /** @inheritdoc */
+    public function fromJson($value, $asObject = false)
+    {
+        if ($this->storingOnDB && !is_string($value)) {
+            $value = Json::encode($value ?? '');
+        }
+        return Json::decode($value ?? '', ! $asObject);
     }
 
     /** @inheritdoc */

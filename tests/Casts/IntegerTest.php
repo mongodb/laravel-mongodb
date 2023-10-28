@@ -7,7 +7,6 @@ namespace MongoDB\Laravel\Tests\Casts;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 
-// TODO: Int32 and Int64 support
 class IntegerTest extends TestCase
 {
     protected function setUp(): void
