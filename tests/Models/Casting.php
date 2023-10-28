@@ -21,6 +21,7 @@ class Casting extends Eloquent
         'booleanValue',
         'objectValue',
         'jsonValue',
+        'collectionValue',
     ];
 
     protected $casts = [
@@ -31,5 +32,6 @@ class Casting extends Eloquent
         'booleanValue' => 'boolean',
         'objectValue' => 'object',
         'jsonValue' => 'json',
+        'collectionValue' => 'collection',
     ];
 }
