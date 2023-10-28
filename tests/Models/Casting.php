@@ -18,6 +18,7 @@ class Casting extends Eloquent
         'decimalNumber',
         'stringContent',
         'stringContent',
+        'booleanValue',
     ];
 
     protected $casts = [
@@ -25,5 +26,6 @@ class Casting extends Eloquent
         'floatNumber' => 'float',
         'decimalNumber' => 'decimal:2',
         'stringContent' => 'string',
+        'booleanValue' => 'boolean',
     ];
 }
