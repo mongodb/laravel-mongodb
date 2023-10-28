@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException as BrickMathException;
+use Brick\Math\RoundingMode;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
@@ -11,9 +14,11 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Exceptions\MathException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Decimal128;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
@@ -70,6 +75,13 @@ abstract class Model extends BaseModel
      * @var Relation
      */
     protected $parentRelation;
+
+    /**
+     * Determine storing or retrieving data from database
+     *
+     * @var bool
+     */
+    protected $storingOnDB = false;
 
     /**
      * List of field names to unset from the document on save.
@@ -205,6 +217,7 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     public function setAttribute($key, $value)
     {
+        $this->storingOnDB = true;
         //Add casts
         if ($this->hasCast($key)) {
             $value = $this->castAttribute($key, $value);
@@ -234,6 +247,21 @@ abstract class Model extends BaseModel
         unset($this->unset[$key]);
 
         return parent::setAttribute($key, $value);
+    }
+
+    /** @inheritdoc */
+    protected function asDecimal($value, $decimals)
+    {
+        try {
+            $value = (string) BigDecimal::of((string)$value)->toScale((int)$decimals, RoundingMode::HALF_UP);
+            if ($this->storingOnDB) {
+                $value = new Decimal128($value);
+            }
+
+            return $value;
+        } catch (BrickMathException $e) {
+            throw new MathException('Unable to cast value to a decimal.', previous: $e);
+        }
     }
 
     /** @inheritdoc */

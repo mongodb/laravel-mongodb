@@ -15,10 +15,12 @@ class Casting extends Eloquent
     protected $fillable = [
         'intNumber',
         'floatNumber',
+        'decimalNumber',
     ];
 
     protected $casts = [
         'intNumber' => 'int',
         'floatNumber' => 'float',
+        'decimalNumber' => 'decimal:2',
     ];
 }
