@@ -205,6 +205,11 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     public function setAttribute($key, $value)
     {
+        //Add casts
+        if ($this->hasCast($key)) {
+            $value = $this->castAttribute($key, $value);
+        }
+
         // Convert _id to ObjectID.
         if ($key === '_id' && is_string($value)) {
             $builder = $this->newBaseQueryBuilder();
