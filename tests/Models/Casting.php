@@ -20,6 +20,7 @@ class Casting extends Eloquent
         'stringContent',
         'booleanValue',
         'objectValue',
+        'jsonValue',
     ];
 
     protected $casts = [
@@ -29,5 +30,6 @@ class Casting extends Eloquent
         'stringContent' => 'string',
         'booleanValue' => 'boolean',
         'objectValue' => 'object',
+        'jsonValue' => 'json',
     ];
 }
