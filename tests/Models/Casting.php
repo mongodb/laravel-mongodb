@@ -16,11 +16,14 @@ class Casting extends Eloquent
         'intNumber',
         'floatNumber',
         'decimalNumber',
+        'stringContent',
+        'stringContent',
     ];
 
     protected $casts = [
         'intNumber' => 'int',
         'floatNumber' => 'float',
         'decimalNumber' => 'decimal:2',
+        'stringContent' => 'string',
     ];
 }

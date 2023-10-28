@@ -6,7 +6,7 @@ namespace MongoDB\Laravel\Tests\Casts;
 
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
-/** @group hans */
+
 class DecimalTest extends TestCase
 {
     protected function setUp(): void
