@@ -21,13 +21,13 @@ class FloatTest extends TestCase
         $model = Casting::query()->create(['floatNumber' => 1.79]);
 
         self::assertIsFloat($model->floatNumber);
-        self::assertEquals(1.79,$model->floatNumber);
+        self::assertEquals(1.79, $model->floatNumber);
 
         $model->update(['floatNumber' => 7E-5]);
         $check = Casting::query()->find($model->_id);
 
         self::assertIsFloat($check->floatNumber);
-        self::assertEquals(7E-5,$check->floatNumber);
+        self::assertEquals(7E-5, $check->floatNumber);
     }
 
     public function testFloatAsString(): void
@@ -35,12 +35,12 @@ class FloatTest extends TestCase
         $model = Casting::query()->create(['floatNumber' => '1.79']);
 
         self::assertIsFloat($model->floatNumber);
-        self::assertEquals(1.79,$model->floatNumber);
+        self::assertEquals(1.79, $model->floatNumber);
 
         $model->update(['floatNumber' => '7E-5']);
         $check = Casting::query()->find($model->_id);
 
         self::assertIsFloat($check->floatNumber);
-        self::assertEquals(7E-5,$check->floatNumber);
+        self::assertEquals(7E-5, $check->floatNumber);
     }
 }

@@ -21,12 +21,12 @@ class StringTest extends TestCase
         $model = Casting::query()->create(['stringContent' => "If I'ma shoot, I shoot to kill"]);
 
         self::assertIsString($model->stringContent);
-        self::assertEquals("If I'ma shoot, I shoot to kill",$model->stringContent);
+        self::assertEquals("If I'ma shoot, I shoot to kill", $model->stringContent);
 
         $model->update(['stringContent' => 'Do what I want to do at will']);
         $check = Casting::query()->find($model->_id);
 
         self::assertIsString($check->stringContent);
-        self::assertEquals('Do what I want to do at will',$check->stringContent);
+        self::assertEquals('Do what I want to do at will', $check->stringContent);
     }
 }

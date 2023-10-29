@@ -246,7 +246,7 @@ abstract class Model extends BaseModel
     protected function asDecimal($value, $decimals)
     {
         try {
-            $value = (string) BigDecimal::of((string)$value)->toScale((int)$decimals, RoundingMode::HALF_UP);
+            $value = (string) BigDecimal::of((string) $value)->toScale((int) $decimals, RoundingMode::HALF_UP);
 
             return new Decimal128($value);
         } catch (BrickMathException $e) {
@@ -257,9 +257,10 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     public function fromJson($value, $asObject = false)
     {
-        if (!is_string($value)) {
+        if (! is_string($value)) {
             $value = Json::encode($value ?? '');
         }
+
         return Json::decode($value ?? '', ! $asObject);
     }
 
