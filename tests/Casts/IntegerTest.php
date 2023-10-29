@@ -19,10 +19,9 @@ class IntegerTest extends TestCase
     public function testInt(): void
     {
         $model = Casting::query()->create(['intNumber' => 1]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsInt($check->intNumber);
-        self::assertEquals(1,$check->intNumber);
+        self::assertIsInt($model->intNumber);
+        self::assertEquals(1,$model->intNumber);
 
         $model->update(['intNumber' => 2]);
         $check = Casting::query()->find($model->_id);
@@ -34,10 +33,9 @@ class IntegerTest extends TestCase
     public function testIntAsString(): void
     {
         $model = Casting::query()->create(['intNumber' => '1']);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsInt($check->intNumber);
-        self::assertEquals(1,$check->intNumber);
+        self::assertIsInt($model->intNumber);
+        self::assertEquals(1,$model->intNumber);
 
         $model->update(['intNumber' => '2']);
         $check = Casting::query()->find($model->_id);

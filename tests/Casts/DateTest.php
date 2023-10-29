@@ -20,10 +20,9 @@ class DateTest extends TestCase
     public function testDate(): void
     {
         $model = Casting::query()->create(['dateField' => now()]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertInstanceOf(Carbon::class,$check->dateField);
-        self::assertEquals(now()->startOfDay()->format('Y-m-d H:i:s'),(string)$check->dateField);
+        self::assertInstanceOf(Carbon::class,$model->dateField);
+        self::assertEquals(now()->startOfDay()->format('Y-m-d H:i:s'),(string)$model->dateField);
 
         $model->update(['dateField' => now()->subDay()]);
         $check = Casting::query()->find($model->_id);

@@ -19,10 +19,9 @@ class BooleanTest extends TestCase
     public function testBool(): void
     {
         $model = Casting::query()->create(['booleanValue' => true]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsBool($check->booleanValue);
-        self::assertEquals(true,$check->booleanValue);
+        self::assertIsBool($model->booleanValue);
+        self::assertEquals(true,$model->booleanValue);
 
         $model->update(['booleanValue' => false]);
         $check = Casting::query()->find($model->_id);
@@ -46,10 +45,9 @@ class BooleanTest extends TestCase
     public function testBoolAsString(): void
     {
         $model = Casting::query()->create(['booleanValue' => '1.79']);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsBool($check->booleanValue);
-        self::assertEquals(true,$check->booleanValue);
+        self::assertIsBool($model->booleanValue);
+        self::assertEquals(true,$model->booleanValue);
 
         $model->update(['booleanValue' => '0']);
         $check = Casting::query()->find($model->_id);

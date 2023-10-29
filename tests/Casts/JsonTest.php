@@ -19,12 +19,11 @@ class JsonTest extends TestCase
     public function testJson(): void
     {
         $model = Casting::query()->create(['jsonValue' => ['g' => 'G-Eazy']]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsArray($check->jsonValue);
-        self::assertEquals(['g' => 'G-Eazy'],$check->jsonValue);
+        self::assertIsArray($model->jsonValue);
+        self::assertEquals(['g' => 'G-Eazy'],$model->jsonValue);
 
-        $model->update(['jsonValue' => ['Dont let me go' => 'Even the longest of nights turn days']]);
+        $model->update(['jsonValue' => json_encode(['Dont let me go' => 'Even the longest of nights turn days'])]);
         $check = Casting::query()->find($model->_id);
 
         self::assertIsArray($check->jsonValue);

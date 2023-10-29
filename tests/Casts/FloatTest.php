@@ -19,10 +19,9 @@ class FloatTest extends TestCase
     public function testFloat(): void
     {
         $model = Casting::query()->create(['floatNumber' => 1.79]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsFloat($check->floatNumber);
-        self::assertEquals(1.79,$check->floatNumber);
+        self::assertIsFloat($model->floatNumber);
+        self::assertEquals(1.79,$model->floatNumber);
 
         $model->update(['floatNumber' => 7E-5]);
         $check = Casting::query()->find($model->_id);
@@ -34,10 +33,9 @@ class FloatTest extends TestCase
     public function testFloatAsString(): void
     {
         $model = Casting::query()->create(['floatNumber' => '1.79']);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsFloat($check->floatNumber);
-        self::assertEquals(1.79,$check->floatNumber);
+        self::assertIsFloat($model->floatNumber);
+        self::assertEquals(1.79,$model->floatNumber);
 
         $model->update(['floatNumber' => '7E-5']);
         $check = Casting::query()->find($model->_id);

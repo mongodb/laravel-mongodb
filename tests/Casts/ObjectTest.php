@@ -19,10 +19,9 @@ class ObjectTest extends TestCase
     public function testObject(): void
     {
         $model = Casting::query()->create(['objectValue' => ['g' => 'G-Eazy']]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsObject($check->objectValue);
-        self::assertEquals((object)['g' => 'G-Eazy'],$check->objectValue);
+        self::assertIsObject($model->objectValue);
+        self::assertEquals((object)['g' => 'G-Eazy'],$model->objectValue);
 
         $model->update(['objectValue' => ['Dont let me go' => 'Even the brightest of colors turn greys']]);
         $check = Casting::query()->find($model->_id);

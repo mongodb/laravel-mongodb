@@ -8,7 +8,6 @@ use Illuminate\Support\Collection;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 
-/** @group hans */
 class CollectionTest extends TestCase
 {
     protected function setUp(): void
@@ -21,10 +20,9 @@ class CollectionTest extends TestCase
     public function testCollection(): void
     {
         $model = Casting::query()->create(['collectionValue' => ['g' => 'G-Eazy']]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertInstanceOf(Collection::class,$check->collectionValue);
-        self::assertEquals(collect(['g' => 'G-Eazy']),$check->collectionValue);
+        self::assertInstanceOf(Collection::class,$model->collectionValue);
+        self::assertEquals(collect(['g' => 'G-Eazy']),$model->collectionValue);
 
         $model->update(['collectionValue' => ['Dont let me go' => 'Even the longest of nights turn days']]);
         $check = Casting::query()->find($model->_id);

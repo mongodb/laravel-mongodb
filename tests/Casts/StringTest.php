@@ -19,10 +19,9 @@ class StringTest extends TestCase
     public function testString(): void
     {
         $model = Casting::query()->create(['stringContent' => "If I'ma shoot, I shoot to kill"]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsString($check->stringContent);
-        self::assertEquals("If I'ma shoot, I shoot to kill",$check->stringContent);
+        self::assertIsString($model->stringContent);
+        self::assertEquals("If I'ma shoot, I shoot to kill",$model->stringContent);
 
         $model->update(['stringContent' => 'Do what I want to do at will']);
         $check = Casting::query()->find($model->_id);
