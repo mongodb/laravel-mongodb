@@ -78,13 +78,6 @@ abstract class Model extends BaseModel
     protected $parentRelation;
 
     /**
-     * Determine storing or retrieving data from database
-     *
-     * @var bool
-     */
-    protected $storingOnDB = false;
-
-    /**
      * List of field names to unset from the document on save.
      *
      * @var array{string, true}
@@ -218,7 +211,6 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     public function setAttribute($key, $value)
     {
-        $this->storingOnDB = true;
         //Add casts
         if ($this->hasCast($key)) {
             $value = $this->castAttribute($key, $value);
@@ -255,11 +247,8 @@ abstract class Model extends BaseModel
     {
         try {
             $value = (string) BigDecimal::of((string)$value)->toScale((int)$decimals, RoundingMode::HALF_UP);
-            if ($this->storingOnDB) {
-                $value = new Decimal128($value);
-            }
 
-            return $value;
+            return new Decimal128($value);
         } catch (BrickMathException $e) {
             throw new MathException('Unable to cast value to a decimal.', previous: $e);
         }
@@ -268,7 +257,7 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     public function fromJson($value, $asObject = false)
     {
-        if ($this->storingOnDB && !is_string($value)) {
+        if (!is_string($value)) {
             $value = Json::encode($value ?? '');
         }
         return Json::decode($value ?? '', ! $asObject);
