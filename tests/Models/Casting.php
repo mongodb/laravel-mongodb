@@ -23,6 +23,7 @@ class Casting extends Eloquent
         'jsonValue',
         'collectionValue',
         'dateField',
+        'datetimeField',
     ];
 
     protected $casts = [
@@ -35,5 +36,6 @@ class Casting extends Eloquent
         'jsonValue' => 'json',
         'collectionValue' => 'collection',
         'dateField' => 'date',
+        'datetimeField' => 'datetime',
     ];
 }
