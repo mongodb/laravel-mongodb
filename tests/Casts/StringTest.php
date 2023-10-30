@@ -18,14 +18,14 @@ class StringTest extends TestCase
 
     public function testString(): void
     {
-        $model = Casting::query()->create(['stringContent' => "If I'ma shoot, I shoot to kill"]);
+        $model = Casting::query()->create(['stringContent' => 'Home is behind The world ahead And there are many paths to tread']);
 
         self::assertIsString($model->stringContent);
-        self::assertEquals("If I'ma shoot, I shoot to kill", $model->stringContent);
+        self::assertEquals('Home is behind The world ahead And there are many paths to tread', $model->stringContent);
 
-        $model->update(['stringContent' => 'Do what I want to do at will']);
+        $model->update(['stringContent' => "Losing hope, don't mean I'm hopeless And maybe all I need is time"]);
 
         self::assertIsString($model->stringContent);
-        self::assertEquals('Do what I want to do at will', $model->stringContent);
+        self::assertEquals("Losing hope, don't mean I'm hopeless And maybe all I need is time", $model->stringContent);
     }
 }
