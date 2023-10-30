@@ -23,13 +23,12 @@ use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\Cursor;
 use RuntimeException;
-use Stringable;
 
 use function array_fill_keys;
 use function array_is_list;
 use function array_key_exists;
+use function array_map;
 use function array_merge;
-use function array_merge_recursive;
 use function array_values;
 use function array_walk_recursive;
 use function assert;
@@ -46,7 +45,11 @@ use function get_debug_type;
 use function implode;
 use function in_array;
 use function is_array;
+use function is_bool;
+use function is_callable;
+use function is_float;
 use function is_int;
+use function is_null;
 use function is_string;
 use function md5;
 use function preg_match;
@@ -60,6 +63,7 @@ use function str_starts_with;
 use function strlen;
 use function strtolower;
 use function substr;
+use function var_export;
 
 class Builder extends BaseBuilder
 {
@@ -665,7 +669,7 @@ class Builder extends BaseBuilder
     {
         // Use $set as default operator for field names that are not in an operator
         foreach ($values as $key => $value) {
-            if (str_starts_with($key, '$')) {
+            if (is_string($key) && str_starts_with($key, '$')) {
                 continue;
             }
 
@@ -952,7 +956,20 @@ class Builder extends BaseBuilder
         return $id;
     }
 
-    /** @inheritdoc */
+    /**
+     * Add a basic where clause to the query.
+     *
+     * If 1 argument, the signature is: where(array|Closure $where)
+     * If 2 arguments, the signature is: where(string $column, mixed $value)
+     * If 3 arguments, the signature is: where(string $colum, string $operator, mixed $value)
+     *
+     * @param  Closure|string|array $column
+     * @param  mixed                $operator
+     * @param  mixed                $value
+     * @param  string               $boolean
+     *
+     * @return $this
+     */
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
         $params = func_get_args();
@@ -966,8 +983,12 @@ class Builder extends BaseBuilder
             }
         }
 
-        if (func_num_args() === 1 && is_string($column)) {
-            throw new ArgumentCountError(sprintf('Too few arguments to function %s("%s"), 1 passed and at least 2 expected when the 1st is a string.', __METHOD__, $column));
+        if (func_num_args() === 1 && ! is_array($column) && ! is_callable($column)) {
+            throw new ArgumentCountError(sprintf('Too few arguments to function %s(%s), 1 passed and at least 2 expected when the 1st is not an array or a callable', __METHOD__, var_export($column, true)));
+        }
+
+        if (is_float($column) || is_bool($column) || is_null($column)) {
+            throw new InvalidArgumentException(sprintf('First argument of %s must be a field path as "string". Got "%s"', __METHOD__, get_debug_type($column)));
         }
 
         return parent::where(...$params);
@@ -998,7 +1019,7 @@ class Builder extends BaseBuilder
             }
 
             // Convert column name to string to use as array key
-            if (isset($where['column']) && $where['column'] instanceof Stringable) {
+            if (isset($where['column'])) {
                 $where['column'] = (string) $where['column'];
             }
 
@@ -1006,9 +1027,7 @@ class Builder extends BaseBuilder
             if (isset($where['column']) && ($where['column'] === '_id' || str_ends_with($where['column'], '._id'))) {
                 if (isset($where['values'])) {
                     // Multiple values.
-                    foreach ($where['values'] as &$value) {
-                        $value = $this->convertKey($value);
-                    }
+                    $where['values'] = array_map($this->convertKey(...), $where['values']);
                 } elseif (isset($where['value'])) {
                     // Single value.
                     $where['value'] = $this->convertKey($where['value']);
@@ -1076,7 +1095,14 @@ class Builder extends BaseBuilder
             }
 
             // Merge the compiled where with the others.
-            $compiled = array_merge_recursive($compiled, $result);
+            // array_merge_recursive can't be used here because it converts int keys to sequential int.
+            foreach ($result as $key => $value) {
+                if (in_array($key, ['$and', '$or', '$nor'])) {
+                    $compiled[$key] = array_merge($compiled[$key] ?? [], $value);
+                } else {
+                    $compiled[$key] = $value;
+                }
+            }
         }
 
         return $compiled;

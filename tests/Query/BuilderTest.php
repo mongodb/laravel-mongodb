@@ -90,6 +90,11 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where('foo', 'bar'),
         ];
 
+        yield 'find with numeric field name' => [
+            ['find' => [['123' => 'bar'], []]],
+            fn (Builder $builder) => $builder->where(123, 'bar'),
+        ];
+
         yield 'where with single array of conditions' => [
             [
                 'find' => [
@@ -1175,8 +1180,14 @@ class BuilderTest extends TestCase
 
         yield 'find with single string argument' => [
             ArgumentCountError::class,
-            'Too few arguments to function MongoDB\Laravel\Query\Builder::where("foo"), 1 passed and at least 2 expected when the 1st is a string',
+            'Too few arguments to function MongoDB\Laravel\Query\Builder::where(\'foo\'), 1 passed and at least 2 expected when the 1st is not an array',
             fn (Builder $builder) => $builder->where('foo'),
+        ];
+
+        yield 'find with single numeric argument' => [
+            ArgumentCountError::class,
+            'Too few arguments to function MongoDB\Laravel\Query\Builder::where(123), 1 passed and at least 2 expected when the 1st is not an array',
+            fn (Builder $builder) => $builder->where(123),
         ];
 
         yield 'where regex not starting with /' => [
@@ -1207,6 +1218,12 @@ class BuilderTest extends TestCase
             InvalidArgumentException::class,
             'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "stdClass"',
             fn (Builder $builder) => $builder->whereTime('created_at', new stdClass()),
+        ];
+
+        yield 'where invalid column type' => [
+            InvalidArgumentException::class,
+            'First argument of MongoDB\Laravel\Query\Builder::where must be a field path as "string". Got "float"',
+            fn (Builder $builder) => $builder->where(2.3, '>', 1),
         ];
     }
 

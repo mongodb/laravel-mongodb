@@ -175,6 +175,8 @@ abstract class Model extends BaseModel
             return null;
         }
 
+        $key = (string) $key;
+
         // An unset attribute is null or throw an exception.
         if (isset($this->unset[$key])) {
             return $this->throwMissingAttributeExceptionIfApplicable($key);
@@ -200,6 +202,8 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     protected function getAttributeFromArray($key)
     {
+        $key = (string) $key;
+
         // Support keys in dot notation.
         if (str_contains($key, '.')) {
             return Arr::get($this->attributes, $key);
@@ -211,6 +215,8 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     public function setAttribute($key, $value)
     {
+        $key = (string) $key;
+
         //Add casts
         if ($this->hasCast($key)) {
             $value = $this->castAttribute($key, $value);
@@ -347,6 +353,8 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     public function offsetUnset($offset): void
     {
+        $offset = (string) $offset;
+
         if (str_contains($offset, '.')) {
             // Update the field in the subdocument
             Arr::forget($this->attributes, $offset);
