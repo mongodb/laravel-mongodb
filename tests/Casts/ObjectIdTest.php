@@ -6,7 +6,7 @@ namespace MongoDB\Laravel\Tests\Casts;
 
 use Generator;
 use MongoDB\BSON\ObjectId;
-use MongoDB\Laravel\Tests\Models\CastObjectId;
+use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 
 class ObjectIdTest extends TestCase
@@ -15,7 +15,7 @@ class ObjectIdTest extends TestCase
     {
         parent::setUp();
 
-        CastObjectId::truncate();
+        Casting::truncate();
     }
 
     /** @dataProvider provideObjectIdCast */
@@ -23,9 +23,9 @@ class ObjectIdTest extends TestCase
     {
         $stringObjectId = (string) $saveObjectId;
 
-        CastObjectId::create(['oid' => $saveObjectId]);
+        Casting::create(['oid' => $saveObjectId]);
 
-        $model = CastObjectId::firstWhere('oid', $queryObjectId);
+        $model = Casting::firstWhere('oid', $queryObjectId);
         $this->assertNotNull($model);
         $this->assertSame($stringObjectId, $model->oid);
     }
@@ -44,9 +44,9 @@ class ObjectIdTest extends TestCase
         $objectId       = new ObjectId();
         $stringObjectId = (string) $objectId;
 
-        CastObjectId::create(['oid' => $objectId]);
+        Casting::create(['oid' => $objectId]);
 
-        $model = CastObjectId::firstWhere('oid', $stringObjectId);
+        $model = Casting::firstWhere('oid', $stringObjectId);
         $this->assertNull($model);
     }
 }
