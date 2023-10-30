@@ -27,6 +27,11 @@ class IntegerTest extends TestCase
 
         self::assertIsInt($model->intNumber);
         self::assertEquals(2, $model->intNumber);
+
+        $model->update(['intNumber' => 9.6]);
+
+        self::assertIsInt($model->intNumber);
+        self::assertEquals(9, $model->intNumber);
     }
 
     public function testIntAsString(): void
@@ -40,5 +45,10 @@ class IntegerTest extends TestCase
 
         self::assertIsInt($model->intNumber);
         self::assertEquals(2, $model->intNumber);
+
+        $model->update(['intNumber' => '9.6']);
+
+        self::assertIsInt($model->intNumber);
+        self::assertEquals(9, $model->intNumber);
     }
 }
