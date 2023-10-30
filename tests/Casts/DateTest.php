@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Casts;
 
+use DateTime;
 use Illuminate\Support\Carbon;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
@@ -27,6 +28,16 @@ class DateTest extends TestCase
         self::assertEquals(now()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
 
         $model->update(['dateField' => now()->subDay()]);
+
+        self::assertInstanceOf(Carbon::class, $model->dateField);
+        self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
+
+        $model->update(['dateField' => new DateTime()]);
+
+        self::assertInstanceOf(Carbon::class, $model->dateField);
+        self::assertEquals(now()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
+
+        $model->update(['dateField' => (new DateTime())->modify('-1 day')]);
 
         self::assertInstanceOf(Carbon::class, $model->dateField);
         self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
