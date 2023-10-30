@@ -4,16 +4,22 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
+use Brick\Math\BigDecimal;
+use Brick\Math\Exception\MathException as BrickMathException;
+use Brick\Math\RoundingMode;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Exceptions\MathException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Decimal128;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
@@ -211,6 +217,11 @@ abstract class Model extends BaseModel
     {
         $key = (string) $key;
 
+        //Add casts
+        if ($this->hasCast($key)) {
+            $value = $this->castAttribute($key, $value);
+        }
+
         // Convert _id to ObjectID.
         if ($key === '_id' && is_string($value)) {
             $builder = $this->newBaseQueryBuilder();
@@ -235,6 +246,28 @@ abstract class Model extends BaseModel
         unset($this->unset[$key]);
 
         return parent::setAttribute($key, $value);
+    }
+
+    /** @inheritdoc */
+    protected function asDecimal($value, $decimals)
+    {
+        try {
+            $value = (string) BigDecimal::of((string) $value)->toScale((int) $decimals, RoundingMode::HALF_UP);
+
+            return new Decimal128($value);
+        } catch (BrickMathException $e) {
+            throw new MathException('Unable to cast value to a decimal.', previous: $e);
+        }
+    }
+
+    /** @inheritdoc */
+    public function fromJson($value, $asObject = false)
+    {
+        if (! is_string($value)) {
+            $value = Json::encode($value ?? '');
+        }
+
+        return Json::decode($value ?? '', ! $asObject);
     }
 
     /** @inheritdoc */
