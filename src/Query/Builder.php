@@ -21,6 +21,17 @@ use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Builder\Accumulator\FirstAccumulator;
+use MongoDB\Builder\BuilderEncoder;
+use MongoDB\Builder\Expression\FieldPath;
+use MongoDB\Builder\Pipeline;
+use MongoDB\Builder\Stage\GroupStage;
+use MongoDB\Builder\Stage\LimitStage;
+use MongoDB\Builder\Stage\MatchStage;
+use MongoDB\Builder\Stage\ReplaceRootStage;
+use MongoDB\Builder\Stage\SkipStage;
+use MongoDB\Builder\Stage\SortStage;
+use MongoDB\Builder\Variable;
 use MongoDB\Driver\Cursor;
 use Override;
 use RuntimeException;
@@ -297,6 +308,8 @@ class Builder extends BaseBuilder
 
         $wheres = $this->compileWheres();
 
+        $pipeline = [new MatchStage($wheres)];
+
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups || $this->aggregate) {
             $group   = [];
@@ -409,7 +422,13 @@ class Builder extends BaseBuilder
 
             $options = $this->inheritConnectionOptions();
 
-            return ['distinct' => [$column, $wheres, $options]];
+            $pipeline[] = new GroupStage(
+                _id: new FieldPath($column),
+                _document: new FirstAccumulator(Variable::root()),
+            );
+            $pipeline[] = new ReplaceRootStage(
+                newRoot: new FieldPath('_document'),
+            );
         }
 
         // Normal query
@@ -429,18 +448,19 @@ class Builder extends BaseBuilder
         }
 
         if ($this->orders) {
-            $options['sort'] = $this->orders;
+            $pipeline[] = new SortStage($this->orders);
         }
 
         if ($this->offset) {
-            $options['skip'] = $this->offset;
+            $pipeline[] = new SkipStage($this->offset);
         }
 
         if ($this->limit) {
-            $options['limit'] = $this->limit;
+            $pipeline[] = new LimitStage($this->limit);
         }
 
         if ($this->hint) {
+            // @todo
             $options['hint'] = $this->hint;
         }
 
@@ -458,7 +478,10 @@ class Builder extends BaseBuilder
 
         $options = $this->inheritConnectionOptions($options);
 
-        return ['find' => [$wheres, $options]];
+        $encoder = new BuilderEncoder();
+        $pipeline = $encoder->encode(new Pipeline(...$pipeline));
+
+        return ['aggregate' => [$pipeline, $options]];
     }
 
     /**

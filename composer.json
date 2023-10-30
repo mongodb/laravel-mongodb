@@ -31,6 +31,7 @@
         "mongodb/mongodb": "^1.15"
     },
     "require-dev": {
+        "mongodb/builder": "^0.1",
         "phpunit/phpunit": "^10.3",
         "orchestra/testbench": "^8.0|^9.0",
         "mockery/mockery": "^1.4.4",
