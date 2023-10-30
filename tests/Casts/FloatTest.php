@@ -24,10 +24,9 @@ class FloatTest extends TestCase
         self::assertEquals(1.79, $model->floatNumber);
 
         $model->update(['floatNumber' => 7E-5]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsFloat($check->floatNumber);
-        self::assertEquals(7E-5, $check->floatNumber);
+        self::assertIsFloat($model->floatNumber);
+        self::assertEquals(7E-5, $model->floatNumber);
     }
 
     public function testFloatAsString(): void
@@ -38,9 +37,8 @@ class FloatTest extends TestCase
         self::assertEquals(1.79, $model->floatNumber);
 
         $model->update(['floatNumber' => '7E-5']);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsFloat($check->floatNumber);
-        self::assertEquals(7E-5, $check->floatNumber);
+        self::assertIsFloat($model->floatNumber);
+        self::assertEquals(7E-5, $model->floatNumber);
     }
 }

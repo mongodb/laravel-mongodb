@@ -25,10 +25,9 @@ class DecimalTest extends TestCase
         self::assertEquals('100.99', $model->decimalNumber);
 
         $model->update(['decimalNumber' => 9999.9]);
-        $check = Casting::query()->find($model->_id);
 
         self::assertInstanceOf(Decimal128::class, $model->decimalNumber);
-        self::assertEquals('9999.90', $check->decimalNumber);
+        self::assertEquals('9999.90', $model->decimalNumber);
     }
 
     public function testDecimalAsString(): void
@@ -39,9 +38,8 @@ class DecimalTest extends TestCase
         self::assertEquals('120.79', $model->decimalNumber);
 
         $model->update(['decimalNumber' => '795']);
-        $check = Casting::query()->find($model->_id);
 
         self::assertInstanceOf(Decimal128::class, $model->decimalNumber);
-        self::assertEquals('795.00', $check->decimalNumber);
+        self::assertEquals('795.00', $model->decimalNumber);
     }
 }

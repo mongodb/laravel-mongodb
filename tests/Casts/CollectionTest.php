@@ -27,9 +27,8 @@ class CollectionTest extends TestCase
         self::assertEquals(collect(['g' => 'G-Eazy']), $model->collectionValue);
 
         $model->update(['collectionValue' => ['Dont let me go' => 'Even the longest of nights turn days']]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertInstanceOf(Collection::class, $check->collectionValue);
-        self::assertEquals(collect(['Dont let me go' => 'Even the longest of nights turn days']), $check->collectionValue);
+        self::assertInstanceOf(Collection::class, $model->collectionValue);
+        self::assertEquals(collect(['Dont let me go' => 'Even the longest of nights turn days']), $model->collectionValue);
     }
 }

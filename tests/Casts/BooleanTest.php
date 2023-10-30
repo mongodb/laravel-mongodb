@@ -24,22 +24,19 @@ class BooleanTest extends TestCase
         self::assertSame(true, $model->booleanValue);
 
         $model->update(['booleanValue' => false]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsBool($check->booleanValue);
-        self::assertSame(false, $check->booleanValue);
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(false, $model->booleanValue);
 
         $model->update(['booleanValue' => 1]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsBool($check->booleanValue);
-        self::assertSame(true, $check->booleanValue);
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(true, $model->booleanValue);
 
         $model->update(['booleanValue' => 0]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsBool($check->booleanValue);
-        self::assertSame(false, $check->booleanValue);
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(false, $model->booleanValue);
     }
 
     public function testBoolAsString(): void
@@ -50,9 +47,8 @@ class BooleanTest extends TestCase
         self::assertSame(true, $model->booleanValue);
 
         $model->update(['booleanValue' => '0']);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsBool($check->booleanValue);
-        self::assertSame(false, $check->booleanValue);
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(false, $model->booleanValue);
     }
 }

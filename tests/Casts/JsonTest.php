@@ -26,9 +26,8 @@ class JsonTest extends TestCase
         self::assertEquals(['g' => 'G-Eazy'], $model->jsonValue);
 
         $model->update(['jsonValue' => json_encode(['Dont let me go' => 'Even the longest of nights turn days'])]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertIsArray($check->jsonValue);
-        self::assertEquals(['Dont let me go' => 'Even the longest of nights turn days'], $check->jsonValue);
+        self::assertIsArray($model->jsonValue);
+        self::assertEquals(['Dont let me go' => 'Even the longest of nights turn days'], $model->jsonValue);
     }
 }

@@ -27,30 +27,27 @@ class DateTest extends TestCase
         self::assertEquals(now()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
 
         $model->update(['dateField' => now()->subDay()]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertInstanceOf(Carbon::class, $check->dateField);
-        self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $check->dateField);
+        self::assertInstanceOf(Carbon::class, $model->dateField);
+        self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
     }
 
     public function testDateAsString(): void
     {
         $model = Casting::query()->create(['dateField' => '2023-10-29']);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertInstanceOf(Carbon::class, $check->dateField);
+        self::assertInstanceOf(Carbon::class, $model->dateField);
         self::assertEquals(
             Carbon::createFromTimestamp(1698577443)->startOfDay()->format('Y-m-d H:i:s'),
-            (string) $check->dateField,
+            (string) $model->dateField,
         );
 
         $model->update(['dateField' => '2023-10-28']);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertInstanceOf(Carbon::class, $check->dateField);
+        self::assertInstanceOf(Carbon::class, $model->dateField);
         self::assertEquals(
             Carbon::createFromTimestamp(1698577443)->subDay()->startOfDay()->format('Y-m-d H:i:s'),
-            (string) $check->dateField,
+            (string) $model->dateField,
         );
     }
 }

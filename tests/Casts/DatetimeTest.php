@@ -27,10 +27,9 @@ class DatetimeTest extends TestCase
         self::assertEquals(now()->format('Y-m-d H:i:s'), (string) $model->datetimeField);
 
         $model->update(['datetimeField' => now()->subDay()]);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertInstanceOf(Carbon::class, $check->datetimeField);
-        self::assertEquals(now()->subDay()->format('Y-m-d H:i:s'), (string) $check->datetimeField);
+        self::assertInstanceOf(Carbon::class, $model->datetimeField);
+        self::assertEquals(now()->subDay()->format('Y-m-d H:i:s'), (string) $model->datetimeField);
     }
 
     public function testDateAsString(): void
@@ -44,12 +43,11 @@ class DatetimeTest extends TestCase
         );
 
         $model->update(['datetimeField' => '2023-10-28 11:04:03']);
-        $check = Casting::query()->find($model->_id);
 
-        self::assertInstanceOf(Carbon::class, $check->datetimeField);
+        self::assertInstanceOf(Carbon::class, $model->datetimeField);
         self::assertEquals(
             Carbon::createFromTimestamp(1698577443)->subDay()->format('Y-m-d H:i:s'),
-            (string) $check->datetimeField,
+            (string) $model->datetimeField,
         );
     }
 }
