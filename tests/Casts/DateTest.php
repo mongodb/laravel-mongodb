@@ -97,7 +97,7 @@ class DateTest extends TestCase
         );
     }
 
-    public function testImmutableDateWithFormat(): void
+    public function testImmutableDateWithCustomFormat(): void
     {
         $model = Casting::query()->create(['immutableDateWithFormatField' => new DateTime()]);
 
