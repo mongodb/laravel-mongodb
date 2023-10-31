@@ -49,7 +49,6 @@ class Casting extends Eloquent
         'immutableDateField' => 'immutable_date',
         'immutableDateWithFormatField' => 'immutable_date:j.n.Y H:i',
         'datetimeField' => 'datetime',
-        'dateWithFormatField' => 'date:j.n.Y H:i',
         'datetimeWithFormatField' => 'datetime:j.n.Y H:i',
         'immutableDatetimeField' => 'immutable_datetime',
         'immutableDatetimeWithFormatField' => 'immutable_datetime:j.n.Y H:i',
