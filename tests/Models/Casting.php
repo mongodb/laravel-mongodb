@@ -25,6 +25,7 @@ class Casting extends Eloquent
         'collectionValue',
         'dateField',
         'datetimeField',
+        'datetimeWithFormatField',
     ];
 
     protected $casts = [
@@ -39,5 +40,6 @@ class Casting extends Eloquent
         'collectionValue' => 'collection',
         'dateField' => 'date',
         'datetimeField' => 'datetime',
+        'datetimeWithFormatField' => 'datetime:j.n.Y H:i',
     ];
 }

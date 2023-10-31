@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Casts;
 
+use DateTime;
 use Illuminate\Support\Carbon;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
@@ -19,7 +20,7 @@ class DatetimeTest extends TestCase
         Casting::truncate();
     }
 
-    public function testDate(): void
+    public function testDatetime(): void
     {
         $model = Casting::query()->create(['datetimeField' => now()]);
 
@@ -32,7 +33,7 @@ class DatetimeTest extends TestCase
         self::assertEquals(now()->subDay()->format('Y-m-d H:i:s'), (string) $model->datetimeField);
     }
 
-    public function testDateAsString(): void
+    public function testDatetimeAsString(): void
     {
         $model = Casting::query()->create(['datetimeField' => '2023-10-29']);
 
@@ -50,4 +51,18 @@ class DatetimeTest extends TestCase
             (string) $model->datetimeField,
         );
     }
+
+    public function testDatetimeWithCustomFormat(): void
+    {
+        $model = Casting::query()->create(['datetimeWithFormatField' => new DateTime()]);
+
+        self::assertInstanceOf(Carbon::class, $model->datetimeWithFormatField);
+        self::assertEquals(now()->format('j.n.Y H:i'), (string) $model->datetimeWithFormatField);
+
+        $model->update(['datetimeWithFormatField' => now()->subDay()]);
+
+        self::assertInstanceOf(Carbon::class, $model->datetimeWithFormatField);
+        self::assertEquals(now()->subDay()->format('j.n.Y H:i'), (string) $model->datetimeWithFormatField);
+    }
+
 }
