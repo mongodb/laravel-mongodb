@@ -86,4 +86,25 @@ class DatetimeTest extends TestCase
             (string) $model->immutableDatetimeField,
         );
     }
+
+    public function testImmutableDatetimeWithFormat(): void
+    {
+        $model = Casting::query()->create(['immutableDatetimeWithFormatField' => new DateTime()]);
+
+        self::assertInstanceOf(CarbonImmutable::class, $model->immutableDatetimeWithFormatField);
+        self::assertEquals(now()->format('j.n.Y H:i'), (string) $model->immutableDatetimeWithFormatField);
+
+        $model->update(['immutableDatetimeWithFormatField' => now()->subDay()]);
+
+        self::assertInstanceOf(CarbonImmutable::class, $model->immutableDatetimeWithFormatField);
+        self::assertEquals(now()->subDay()->format('j.n.Y H:i'), (string) $model->immutableDatetimeWithFormatField);
+
+        $model->update(['immutableDatetimeWithFormatField' => '2023-10-28 11:04:03']);
+
+        self::assertInstanceOf(CarbonImmutable::class, $model->immutableDatetimeWithFormatField);
+        self::assertEquals(
+            Carbon::createFromTimestamp(1698577443)->subDay()->format('j.n.Y H:i'),
+            (string) $model->immutableDatetimeWithFormatField,
+        );
+    }
 }
