@@ -204,6 +204,10 @@ abstract class Model extends BaseModel
     {
         $value = parent::transformModelValue($key,$value);
         if ($value instanceof DateTimeInterface) {
+            $castType = $this->getCasts()[$key];
+            if (str_starts_with($castType, 'date')) {
+                $value->startOfDay();
+            }
             $value->settings(array_merge($value->getSettings(),['toStringFormat'=>$this->getDateFormat()]));
         }
 
