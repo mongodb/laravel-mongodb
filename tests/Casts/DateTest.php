@@ -61,4 +61,17 @@ class DateTest extends TestCase
             (string) $model->dateField,
         );
     }
+
+    public function testDateWithCustomFormat(): void
+    {
+        $model = Casting::query()->create(['dateWithFormatField' => new DateTime()]);
+
+        self::assertInstanceOf(Carbon::class, $model->dateWithFormatField);
+        self::assertEquals(now()->startOfDay()->format('j.n.Y H:i'), (string) $model->dateWithFormatField);
+
+        $model->update(['dateWithFormatField' => now()->subDay()]);
+
+        self::assertInstanceOf(Carbon::class, $model->dateWithFormatField);
+        self::assertEquals(now()->startOfDay()->subDay()->format('j.n.Y H:i'), (string) $model->dateWithFormatField);
+    }
 }
