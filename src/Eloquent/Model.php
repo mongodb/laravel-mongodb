@@ -299,6 +299,23 @@ abstract class Model extends BaseModel
     }
 
     /** @inheritdoc */
+    protected function castAttribute($key, $value)
+    {
+        $castType = $this->getCastType($key);
+
+        switch ($castType) {
+            case 'immutable_custom_datetime':
+            case 'immutable_datetime':
+                if (str_starts_with($this->getCasts()[$key],'immutable_date')){
+                    return $this->asDate($value)->toImmutable();
+                }
+                return $this->asDateTime($value)->toImmutable();
+            default:
+                return parent::castAttribute($key, $value);
+        }
+    }
+
+    /** @inheritdoc */
     public function attributesToArray()
     {
         $attributes = parent::attributesToArray();
