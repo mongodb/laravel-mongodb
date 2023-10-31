@@ -29,6 +29,7 @@ class Casting extends Eloquent
         'immutableDateWithFormatField',
         'datetimeField',
         'datetimeWithFormatField',
+        'immutableDatetimeField',
     ];
 
     protected $casts = [
@@ -47,5 +48,6 @@ class Casting extends Eloquent
         'immutableDateWithFormatField' => 'immutable_date:j.n.Y H:i',
         'datetimeField' => 'datetime',
         'datetimeWithFormatField' => 'datetime:j.n.Y H:i',
+        'immutableDatetimeField' => 'immutable_datetime',
     ];
 }
