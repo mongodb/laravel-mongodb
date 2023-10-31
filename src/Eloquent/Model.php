@@ -200,6 +200,28 @@ abstract class Model extends BaseModel
     }
 
     /** @inheritdoc */
+    protected function transformModelValue($key, $value)
+    {
+        $value = parent::transformModelValue($key,$value);
+        if ($value instanceof DateTimeInterface) {
+            $value->settings(array_merge($value->getSettings(),['toStringFormat'=>$this->getDateFormat()]));
+        }
+
+        return $value;
+    }
+
+    /** @inheritdoc */
+    protected function getCastType($key)
+    {
+        $castType = $this->getCasts()[$key];
+        if ($this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType)) {
+            $this->setDateFormat(Str::after($castType, ':'));
+        }
+
+        return parent::getCastType($key);
+    }
+
+    /** @inheritdoc */
     protected function getAttributeFromArray($key)
     {
         $key = (string) $key;
@@ -217,7 +239,7 @@ abstract class Model extends BaseModel
     {
         $key = (string) $key;
 
-        //Add casts
+        // Add casts
         if ($this->hasCast($key)) {
             $value = $this->castAttribute($key, $value);
         }
