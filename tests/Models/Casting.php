@@ -24,8 +24,9 @@ class Casting extends Eloquent
         'jsonValue',
         'collectionValue',
         'dateField',
-        'datetimeField',
         'dateWithFormatField',
+        'immutableDateField',
+        'datetimeField',
         'datetimeWithFormatField',
     ];
 
@@ -40,8 +41,9 @@ class Casting extends Eloquent
         'jsonValue' => 'json',
         'collectionValue' => 'collection',
         'dateField' => 'date',
-        'datetimeField' => 'datetime',
         'dateWithFormatField' => 'date:j.n.Y H:i',
+        'immutableDateField' => 'immutable_date',
+        'datetimeField' => 'datetime',
         'datetimeWithFormatField' => 'datetime:j.n.Y H:i',
     ];
 }

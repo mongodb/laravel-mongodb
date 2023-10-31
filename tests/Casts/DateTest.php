@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Casts;
 
+use Carbon\CarbonImmutable;
 use DateTime;
 use Illuminate\Support\Carbon;
 use MongoDB\Laravel\Tests\Models\Casting;
@@ -73,5 +74,26 @@ class DateTest extends TestCase
 
         self::assertInstanceOf(Carbon::class, $model->dateWithFormatField);
         self::assertEquals(now()->startOfDay()->subDay()->format('j.n.Y H:i'), (string) $model->dateWithFormatField);
+    }
+
+    public function testImmutableDate(): void
+    {
+        $model = Casting::query()->create(['immutableDateField' => new DateTime()]);
+
+        self::assertInstanceOf(CarbonImmutable::class, $model->immutableDateField);
+        self::assertEquals(now()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->immutableDateField);
+
+        $model->update(['immutableDateField' => now()->subDay()]);
+
+        self::assertInstanceOf(CarbonImmutable::class, $model->immutableDateField);
+        self::assertEquals(now()->startOfDay()->subDay()->format('Y-m-d H:i:s'), (string) $model->immutableDateField);
+
+        $model->update(['immutableDateField' => '2023-10-28']);
+
+        self::assertInstanceOf(CarbonImmutable::class, $model->immutableDateField);
+        self::assertEquals(
+            Carbon::createFromTimestamp(1698577443)->subDay()->startOfDay()->format('Y-m-d H:i:s'),
+            (string) $model->immutableDateField,
+        );
     }
 }
