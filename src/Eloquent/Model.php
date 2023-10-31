@@ -27,6 +27,7 @@ use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use function abs;
 use function array_key_exists;
 use function array_keys;
+use function array_merge;
 use function array_unique;
 use function array_values;
 use function class_basename;
@@ -41,6 +42,7 @@ use function ltrim;
 use function method_exists;
 use function sprintf;
 use function str_contains;
+use function str_starts_with;
 use function strcmp;
 use function uniqid;
 
@@ -202,9 +204,9 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     protected function transformModelValue($key, $value)
     {
-        $value = parent::transformModelValue($key,$value);
+        $value = parent::transformModelValue($key, $value);
         if ($this->hasCast($key) && $value instanceof DateTimeInterface) {
-            $value->settings(array_merge($value->getSettings(),['toStringFormat'=>$this->getDateFormat()]));
+            $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
 
             $castType = $this->getCasts()[$key];
             if ($this->isCustomDateTimeCast($castType) && str_starts_with($castType, 'date:')) {
@@ -305,9 +307,10 @@ abstract class Model extends BaseModel
         switch ($castType) {
             case 'immutable_custom_datetime':
             case 'immutable_datetime':
-                if (str_starts_with($this->getCasts()[$key],'immutable_date:')){
+                if (str_starts_with($this->getCasts()[$key], 'immutable_date:')) {
                     return $this->asDate($value)->toImmutable();
                 }
+
                 return $this->asDateTime($value)->toImmutable();
             default:
                 return parent::castAttribute($key, $value);
