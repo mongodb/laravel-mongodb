@@ -203,12 +203,14 @@ abstract class Model extends BaseModel
     protected function transformModelValue($key, $value)
     {
         $value = parent::transformModelValue($key,$value);
-        if ($value instanceof DateTimeInterface) {
+        if ($this->hasCast($key) && $value instanceof DateTimeInterface) {
+            $value->settings(array_merge($value->getSettings(),['toStringFormat'=>$this->getDateFormat()]));
+
             $castType = $this->getCasts()[$key];
-            if (str_starts_with($castType, 'date')) {
+            if (($this->isCustomDateTimeCast($castType)&& str_starts_with($castType, 'date:')) ||
+               ( $this->isImmutableCustomDateTimeCast($castType) && str_starts_with($castType, 'immutable_date:'))) {
                 $value->startOfDay();
             }
-            $value->settings(array_merge($value->getSettings(),['toStringFormat'=>$this->getDateFormat()]));
         }
 
         return $value;
