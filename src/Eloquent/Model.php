@@ -207,8 +207,7 @@ abstract class Model extends BaseModel
             $value->settings(array_merge($value->getSettings(),['toStringFormat'=>$this->getDateFormat()]));
 
             $castType = $this->getCasts()[$key];
-            if (($this->isCustomDateTimeCast($castType)&& str_starts_with($castType, 'date:')) ||
-               ( $this->isImmutableCustomDateTimeCast($castType) && str_starts_with($castType, 'immutable_date:'))) {
+            if ($this->isCustomDateTimeCast($castType) && str_starts_with($castType, 'date:')) {
                 $value->startOfDay();
             }
         }
@@ -306,7 +305,7 @@ abstract class Model extends BaseModel
         switch ($castType) {
             case 'immutable_custom_datetime':
             case 'immutable_datetime':
-                if (str_starts_with($this->getCasts()[$key],'immutable_date')){
+                if (str_starts_with($this->getCasts()[$key],'immutable_date:')){
                     return $this->asDate($value)->toImmutable();
                 }
                 return $this->asDateTime($value)->toImmutable();
