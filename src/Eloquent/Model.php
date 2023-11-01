@@ -201,32 +201,32 @@ abstract class Model extends BaseModel
         return parent::getAttribute($key);
     }
 
-    /** @inheritdoc */
-    protected function transformModelValue($key, $value)
-    {
-        $value = parent::transformModelValue($key, $value);
-        if ($this->hasCast($key) && $value instanceof DateTimeInterface) {
-            $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
+//    /** @inheritdoc */
+//    protected function transformModelValue($key, $value)
+//    {
+//        $value = parent::transformModelValue($key, $value);
+//        if ($this->hasCast($key) && $value instanceof DateTimeInterface) {
+//            $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
+//
+//            $castType = $this->getCasts()[$key];
+//            if ($this->isCustomDateTimeCast($castType) && str_starts_with($castType, 'date:')) {
+//                $value->startOfDay();
+//            }
+//        }
+//
+//        return $value;
+//    }
 
-            $castType = $this->getCasts()[$key];
-            if ($this->isCustomDateTimeCast($castType) && str_starts_with($castType, 'date:')) {
-                $value->startOfDay();
-            }
-        }
-
-        return $value;
-    }
-
-    /** @inheritdoc */
-    protected function getCastType($key)
-    {
-        $castType = $this->getCasts()[$key];
-        if ($this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType)) {
-            $this->setDateFormat(Str::after($castType, ':'));
-        }
-
-        return parent::getCastType($key);
-    }
+//    /** @inheritdoc */
+//    protected function getCastType($key)
+//    {
+//        $castType = $this->getCasts()[$key];
+//        if ($this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType)) {
+//            $this->setDateFormat(Str::after($castType, ':'));
+//        }
+//
+//        return parent::getCastType($key);
+//    }
 
     /** @inheritdoc */
     protected function getAttributeFromArray($key)
@@ -299,23 +299,23 @@ abstract class Model extends BaseModel
         return Json::decode($value ?? '', ! $asObject);
     }
 
-    /** @inheritdoc */
-    protected function castAttribute($key, $value)
-    {
-        $castType = $this->getCastType($key);
-
-        switch ($castType) {
-            case 'immutable_custom_datetime':
-            case 'immutable_datetime':
-                if (str_starts_with($this->getCasts()[$key], 'immutable_date:')) {
-                    return $this->asDate($value)->toImmutable();
-                }
-
-                return $this->asDateTime($value)->toImmutable();
-            default:
-                return parent::castAttribute($key, $value);
-        }
-    }
+//    /** @inheritdoc */
+//    protected function castAttribute($key, $value)
+//    {
+//        $castType = $this->getCastType($key);
+//
+//        switch ($castType) {
+//            case 'immutable_custom_datetime':
+//            case 'immutable_datetime':
+//                if (str_starts_with($this->getCasts()[$key], 'immutable_date:')) {
+//                    return $this->asDate($value)->toImmutable();
+//                }
+//
+//                return $this->asDateTime($value)->toImmutable();
+//            default:
+//                return parent::castAttribute($key, $value);
+//        }
+//    }
 
     /** @inheritdoc */
     public function attributesToArray()
