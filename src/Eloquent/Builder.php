@@ -92,7 +92,7 @@ class Builder extends EloquentBuilder
             return $this->model->getKey();
         }
 
-        return parent::insertGetId($values, $sequence);
+        return $this->toBase()->insertGetId($values, $sequence);
     }
 
     /** @inheritdoc */
