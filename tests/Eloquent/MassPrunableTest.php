@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Eloquent;
+namespace MongoDB\Laravel\Tests\Eloquent;
 
 use Illuminate\Database\Console\PruneCommand;
 use Illuminate\Database\Eloquent\MassPrunable;
