@@ -6,6 +6,10 @@ namespace MongoDB\Laravel\Relations;
 
 use Illuminate\Database\Eloquent\Model;
 use MongoDB\BSON\ObjectID;
+use MongoDB\Driver\Exception\LogicException;
+use Throwable;
+
+use function throw_if;
 
 class EmbedsOne extends EmbedsOneOrMany
 {
@@ -133,10 +137,16 @@ class EmbedsOne extends EmbedsOneOrMany
     /**
      * Delete all embedded models.
      *
-     * @return int
+     * @param ?string $id
+     *
+     * @throws LogicException|Throwable
+     *
+     * @note The $id is not used to delete embedded models.
      */
-    public function delete()
+    public function delete($id = null): int
     {
+        throw_if($id !== null, new LogicException('The id parameter should not be used.'));
+
         return $this->performDelete();
     }
 
