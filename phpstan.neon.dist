@@ -7,3 +7,7 @@ parameters:
     level: 1
 
     editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
+
+    ignoreErrors:
+        - '#Unsafe usage of new static#'
+        - '#Call to an undefined method [a-zA-Z0-9\\_\<\>]+::[a-zA-Z]+\(\)#'
