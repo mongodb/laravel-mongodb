@@ -171,6 +171,7 @@ class BelongsToMany extends EloquentBelongsToMany
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
         // Do nothing, we have no pivot table.
+        return $this;
     }
 
     /** @inheritdoc */

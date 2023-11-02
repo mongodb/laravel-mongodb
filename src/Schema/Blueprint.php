@@ -275,6 +275,8 @@ class Blueprint extends SchemaBlueprint
     public function drop()
     {
         $this->collection->drop();
+
+        return $this;
     }
 
     /** @inheritdoc */
