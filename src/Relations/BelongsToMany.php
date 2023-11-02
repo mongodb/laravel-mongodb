@@ -267,7 +267,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Create a new query builder for the related model.
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder|Model
      */
     public function newRelatedQuery()
     {
