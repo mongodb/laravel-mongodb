@@ -304,17 +304,12 @@ abstract class Model extends BaseModel
     {
         $castType = $this->getCastType($key);
 
-        switch ($castType) {
-            case 'immutable_custom_datetime':
-            case 'immutable_datetime':
-                if (str_starts_with($this->getCasts()[$key], 'immutable_date:')) {
-                    return $this->asDate($value)->toImmutable();
-                }
-
-                return $this->asDateTime($value)->toImmutable();
-            default:
-                return parent::castAttribute($key, $value);
-        }
+        return match ($castType) {
+            'immutable_custom_datetime','immutable_datetime' => str_starts_with($this->getCasts()[$key], 'immutable_date:') ?
+                $this->asDate($value)->toImmutable() :
+                $this->asDateTime($value)->toImmutable(),
+            default => parent::castAttribute($key, $value)
+        };
     }
 
     /** @inheritdoc */
