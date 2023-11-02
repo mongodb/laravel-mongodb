@@ -206,6 +206,8 @@ abstract class Model extends BaseModel
     protected function transformModelValue($key, $value)
     {
         $value = parent::transformModelValue($key, $value);
+        // Casting attributes to any of date types, will convert that attribute
+        // to a Carbon or CarbonImmutable instance. It's done in setAttribute method L254.
         if ($this->hasCast($key) && $value instanceof CarbonInterface) {
             $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
 
