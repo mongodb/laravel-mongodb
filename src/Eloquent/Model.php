@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Eloquent;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException as BrickMathException;
 use Brick\Math\RoundingMode;
+use Carbon\CarbonInterface;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
@@ -205,7 +206,7 @@ abstract class Model extends BaseModel
     protected function transformModelValue($key, $value)
     {
         $value = parent::transformModelValue($key, $value);
-        if ($this->hasCast($key) && $value instanceof DateTimeInterface) {
+        if ($this->hasCast($key) && $value instanceof CarbonInterface) {
             $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
 
             $castType = $this->getCasts()[$key];
