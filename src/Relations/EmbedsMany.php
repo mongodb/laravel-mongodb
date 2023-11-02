@@ -322,13 +322,13 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /** @inheritdoc */
-    protected function setEmbedded($models)
+    protected function setEmbedded($records)
     {
-        if (! is_array($models)) {
-            $models = [$models];
+        if (! is_array($records)) {
+            $records = [$records];
         }
 
-        return parent::setEmbedded(array_values($models));
+        return parent::setEmbedded(array_values($records));
     }
 
     /** @inheritdoc */

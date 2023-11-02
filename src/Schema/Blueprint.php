@@ -82,11 +82,11 @@ class Blueprint extends SchemaBlueprint
     }
 
     /** @inheritdoc */
-    public function dropIndex($indexOrColumns = null)
+    public function dropIndex($index = null)
     {
-        $indexOrColumns = $this->transformColumns($indexOrColumns);
+        $index = $this->transformColumns($index);
 
-        $this->collection->dropIndex($indexOrColumns);
+        $this->collection->dropIndex($index);
 
         return $this;
     }
@@ -341,11 +341,11 @@ class Blueprint extends SchemaBlueprint
      * Allows the use of unsupported schema methods.
      *
      * @param string $method
-     * @param array  $args
+     * @param array  $parameters
      *
      * @return Blueprint
      */
-    public function __call($method, $args)
+    public function __call($method, $parameters)
     {
         // Dummy.
         return $this;

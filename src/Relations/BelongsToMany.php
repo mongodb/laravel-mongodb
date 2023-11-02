@@ -82,11 +82,11 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /** @inheritdoc */
-    public function save(Model $model, array $joining = [], $touch = true)
+    public function save(Model $model, array $pivotAttributes = [], $touch = true)
     {
         $model->save(['touch' => false]);
 
-        $this->attach($model, $joining, $touch);
+        $this->attach($model, $pivotAttributes, $touch);
 
         return $model;
     }
