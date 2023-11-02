@@ -34,5 +34,7 @@
         <exclude name="SlevomatCodingStandard.TypeHints.ParameterTypeHint"/>
         <exclude name="SlevomatCodingStandard.TypeHints.PropertyTypeHint"/>
         <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint"/>
+
+        <exclude name="Generic.Formatting.MultipleStatementAlignment" />
     </rule>
 </ruleset>
