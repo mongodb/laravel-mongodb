@@ -53,3 +53,28 @@ jobs:
       # The -q option is required until phpcs v4 is released
       - name: "Run PHP_CodeSniffer"
         run: "vendor/bin/phpcs -q --no-colors --report=checkstyle | cs2pr"
+
+  analysis:
+    runs-on: "ubuntu-22.04"
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+          - '8.2'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, mbstring
+          tools: composer:v2
+          coverage: none
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi
