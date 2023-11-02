@@ -9,3 +9,5 @@
 composer.lock
 composer.phar
 phpunit.xml
+phpstan.neon
+/.cache/phpstan/

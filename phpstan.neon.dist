@@ -1,0 +1,9 @@
+parameters:
+    tmpDir: .cache/phpstan
+
+    paths:
+        - src
+
+    level: 1
+
+    editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
