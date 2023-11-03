@@ -1,10 +1,13 @@
+includes:
+    - ./phpstan-baseline.neon
+
 parameters:
     tmpDir: .cache/phpstan
 
     paths:
         - src
 
-    level: 1
+    level: 2
 
     editorUrl: 'phpstorm://open?file=%%file%%&line=%%line%%'
 

@@ -1,0 +1,46 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method MongoDB\\\\Laravel\\\\Connection\\:\\:transaction\\(\\) has invalid return type Illuminate\\\\Database\\\\Concerns\\\\TCallbackReturnType\\.$#"
+			count: 1
+			path: src/Connection.php
+
+		-
+			message: "#^Parameter \\$callback of method MongoDB\\\\Laravel\\\\Connection\\:\\:transaction\\(\\) has invalid type Illuminate\\\\Database\\\\Concerns\\\\TCallbackReturnType\\.$#"
+			count: 1
+			path: src/Connection.php
+
+		-
+			message: "#^Method Illuminate\\\\Database\\\\Query\\\\Builder\\:\\:update\\(\\) invoked with 2 parameters, 1 required\\.$#"
+			count: 1
+			path: src/Eloquent/Builder.php
+
+		-
+			message: "#^Parameter \\$offset of method MongoDB\\\\Laravel\\\\Eloquent\\\\Model\\:\\:offsetSet\\(\\) has invalid type Illuminate\\\\Database\\\\Eloquent\\\\TKey\\.$#"
+			count: 1
+			path: src/Eloquent/Model.php
+
+		-
+			message: "#^Parameter \\$offset of method MongoDB\\\\Laravel\\\\Eloquent\\\\Model\\:\\:offsetUnset\\(\\) has invalid type Illuminate\\\\Database\\\\Eloquent\\\\TKey\\.$#"
+			count: 1
+			path: src/Eloquent/Model.php
+
+		-
+			message: "#^Parameter \\$value of method MongoDB\\\\Laravel\\\\Eloquent\\\\Model\\:\\:offsetSet\\(\\) has invalid type Illuminate\\\\Database\\\\Eloquent\\\\TValue\\.$#"
+			count: 1
+			path: src/Eloquent/Model.php
+
+		-
+			message: "#^Cannot call method modelKeys\\(\\) on array\\|Illuminate\\\\Database\\\\Eloquent\\\\Model\\|Illuminate\\\\Support\\\\Collection\\.$#"
+			count: 1
+			path: src/Relations/BelongsToMany.php
+
+		-
+			message: "#^Method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:push\\(\\) invoked with 3 parameters, 0 required\\.$#"
+			count: 2
+			path: src/Relations/BelongsToMany.php
+
+		-
+			message: "#^Method Illuminate\\\\Database\\\\Schema\\\\Blueprint\\:\\:create\\(\\) invoked with 1 parameter, 0 required\\.$#"
+			count: 1
+			path: src/Schema/Builder.php
