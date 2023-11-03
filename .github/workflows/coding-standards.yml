@@ -72,8 +72,32 @@ jobs:
           tools: composer:v2
           coverage: none
 
+      - name: Cache dependencies
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: ./vendor
+          key: composer-${{ hashFiles('**/composer.lock') }}
+
       - name: Install dependencies
         run: composer install
 
+      - name: Restore cache PHPStan results
+        id: phpstan-cache-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: .cache
+          key: "phpstan-result-cache-${{ github.run_id }}"
+          restore-keys: |
+            phpstan-result-cache-
+
       - name: Run PHPStan
         run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi
+
+      - name: Save cache PHPStan results
+        id: phpstan-cache-save
+        if: always()
+        uses: actions/cache/save@v3
+        with:
+          path: .cache
+          key: ${{ steps.phpstan-cache-restore.outputs.cache-primary-key }}
