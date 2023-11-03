@@ -219,16 +219,15 @@ class Builder extends EloquentBuilder
         }
 
         if ($shouldReverse) {
-            $this->query->orders = collect($this->query->orders)->map(function ($direction) {
-                return $direction === 1 ? -1 : 1;
-            })->toArray();
+            $this->query->orders = collect($this->query->orders)
+                ->map(fn (int $direction) => $direction === 1 ? -1 : 1)
+                ->toArray();
         }
 
-        return collect($this->query->orders)->map(function ($direction, $column) {
-            return [
+        return collect($this->query->orders)
+            ->map(fn ($direction, $column) => [
                 'column' => $column,
                 'direction' => $direction === 1 ? 'asc' : 'desc',
-            ];
-        })->values();
+            ])->values();
     }
 }
