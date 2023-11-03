@@ -48,15 +48,6 @@ class Builder extends EloquentBuilder
         'raw',
         'sum',
         'tomql',
-        // Kept for compatibility with Laravel < 10.3
-        'doesntExist',
-        'getBindings',
-        'getConnection',
-        'getGrammar',
-        'insertGetId',
-        'insertOrIgnore',
-        'insertUsing',
-        'toMql',
     ];
 
     /** @inheritdoc */
