@@ -6,7 +6,6 @@ namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
 use Mockery;
-use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
@@ -358,18 +357,18 @@ class RelationsTest extends TestCase
         $this->assertCount(2, $user->skills);
 
         self::assertIsString($skill1->custom_id);
-        self::assertContains($skill1->custom_id,$user->custom_skill_ids);
+        self::assertContains($skill1->custom_id, $user->custom_skill_ids);
 
         self::assertIsString($skill2->custom_id);
-        self::assertContains($skill2->custom_id,$user->custom_skill_ids);
+        self::assertContains($skill2->custom_id, $user->custom_skill_ids);
 
         $skill1->refresh();
         self::assertIsString($skill1->_id);
-        self::assertNotContains($skill1->_id,$user->custom_skill_ids);
+        self::assertNotContains($skill1->_id, $user->custom_skill_ids);
 
         $skill2->refresh();
         self::assertIsString($skill2->_id);
-        self::assertNotContains($skill2->_id,$user->custom_skill_ids);
+        self::assertNotContains($skill2->_id, $user->custom_skill_ids);
     }
 
     public function testBelongsToManySyncAlreadyPresent(): void
