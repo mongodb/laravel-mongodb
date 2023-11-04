@@ -255,36 +255,6 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $client->users);
     }
 
-    public function testSyncBelongsToMany()
-    {
-        $user = User::create(['name' => 'John Doe']);
-
-        $first  = Client::query()->create(['name' => 'Hans']);
-        $second = Client::query()->create(['name' => 'Thomas']);
-
-        $user->load('clients');
-        self::assertEmpty($user->clients);
-
-        $user->clients()->sync($first);
-
-        $user->load('clients');
-        self::assertCount(1, $user->clients);
-        self::assertTrue($user->clients->first()->is($first));
-
-        $user->clients()->sync($second);
-
-        $user->load('clients');
-        self::assertCount(1, $user->clients);
-        self::assertTrue($user->clients->first()->is($second));
-
-        $user->clients()->syncWithoutDetaching($first);
-
-        $user->load('clients');
-        self::assertCount(2, $user->clients);
-        self::assertTrue($user->clients->first()->is($first));
-        self::assertTrue($user->clients->last()->is($second));
-    }
-
     public function testBelongsToManyAttachesExistingModels(): void
     {
         $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523']]);
@@ -327,20 +297,27 @@ class RelationsTest extends TestCase
     public function testBelongsToManySync(): void
     {
         // create test instances
-        $user    = User::create(['name' => 'John Doe']);
-        $client1 = Client::create(['name' => 'Pork Pies Ltd.'])->_id;
-        $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
+        $user    = User::create(['name' => 'Hans Thomas']);
+        $client1 = Client::create(['name' => 'Pork Pies Ltd.']);
+        $client2 = Client::create(['name' => 'Buffet Bar Inc.']);
 
         // Sync multiple
-        $user->clients()->sync([$client1, $client2]);
+        $user->clients()->sync([$client1->_id, $client2->_id]);
         $this->assertCount(2, $user->clients);
 
-        // Refresh user
-        $user = User::where('name', '=', 'John Doe')->first();
+        // Sync single wrapped by an array
+        $user->clients()->sync([$client1->_id]);
+        $user->load('clients');
 
-        // Sync single
-        $user->clients()->sync([$client1]);
         $this->assertCount(1, $user->clients);
+        self::assertTrue($user->clients->first()->is($client1));
+
+        // Sync single model
+        $user->clients()->sync($client2);
+        $user->load('clients');
+
+        $this->assertCount(1, $user->clients);
+        self::assertTrue($user->clients->first()->is($client2));
     }
 
     public function testBelongsToManyAttachArray(): void
