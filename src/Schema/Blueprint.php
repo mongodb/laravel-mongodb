@@ -44,6 +44,8 @@ class Blueprint extends SchemaBlueprint
      */
     public function __construct(Connection $connection, string $collection)
     {
+        parent::__construct($collection);
+
         $this->connection = $connection;
 
         $this->collection = $this->connection->getCollection($collection);
