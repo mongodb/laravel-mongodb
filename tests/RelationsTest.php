@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
 use Mockery;
+use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
@@ -13,6 +14,7 @@ use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\Role;
+use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
 
@@ -30,6 +32,7 @@ class RelationsTest extends TestCase
         Role::truncate();
         Group::truncate();
         Photo::truncate();
+        Skill::truncate();
     }
 
     public function testHasMany(): void
@@ -341,6 +344,32 @@ class RelationsTest extends TestCase
         $user = User::where('name', '=', 'John Doe')->first();
         $user->clients()->attach($collection);
         $this->assertCount(2, $user->clients);
+    }
+
+    public function testBelongsToManySyncEloquentCollection(): void
+    {
+        $user = User::create(['name' => 'Hans Thomas']);
+        $skill1    = Skill::create(['name' => 'PHP 1']);
+        $skill2    = Skill::create(['name' => 'Laravel 2']);
+        $collection = new Collection([$skill1, $skill2]);
+
+        $user = User::query()->find($user->_id);
+        $user->skills()->sync($collection);
+        $this->assertCount(2, $user->skills);
+
+        self::assertIsString($skill1->custom_id);
+        self::assertContains($skill1->custom_id,$user->custom_skill_ids);
+
+        self::assertIsString($skill2->custom_id);
+        self::assertContains($skill2->custom_id,$user->custom_skill_ids);
+
+        $skill1->refresh();
+        self::assertIsString($skill1->_id);
+        self::assertNotContains($skill1->_id,$user->custom_skill_ids);
+
+        $skill2->refresh();
+        self::assertIsString($skill2->_id);
+        self::assertNotContains($skill2->_id,$user->custom_skill_ids);
     }
 
     public function testBelongsToManySyncAlreadyPresent(): void
