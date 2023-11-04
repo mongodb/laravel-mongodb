@@ -42,8 +42,8 @@ abstract class EmbedsOneOrMany extends Relation
      */
     public function __construct(Builder $query, Model $parent, Model $related, string $localKey, string $foreignKey, string $relation)
     {
-        $this->query      = $query;
-        $this->parent     = $parent;
+        parent::__construct($query, $parent);
+
         $this->related    = $related;
         $this->localKey   = $localKey;
         $this->foreignKey = $foreignKey;
@@ -54,8 +54,6 @@ abstract class EmbedsOneOrMany extends Relation
         if ($parentRelation) {
             $this->query = $parentRelation->getQuery();
         }
-
-        $this->addConstraints();
     }
 
     /** @inheritdoc */
