@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
@@ -352,8 +351,8 @@ class RelationsTest extends TestCase
     public function testBelongsToManySyncEloquentCollectionWithCustomRelatedKey(): void
     {
         $experience = Experience::create(['years' => '5']);
-        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()),'name' => 'PHP']);
-        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()),'name' => 'Laravel']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
         $collection = new Collection([$skill1, $skill2]);
 
         $experience = Experience::query()->find($experience->id);
@@ -377,7 +376,7 @@ class RelationsTest extends TestCase
 
     public function testBelongsToManySyncEloquentCollectionWithCustomParentKey(): void
     {
-        $experience = Experience::create(['cexperience_id' => (string) (new ObjectId()),'years' => '5']);
+        $experience = Experience::create(['cexperience_id' => (string) (new ObjectId()), 'years' => '5']);
         $skill1    = Skill::create(['name' => 'PHP']);
         $skill2    = Skill::create(['name' => 'Laravel']);
         $collection = new Collection([$skill1, $skill2]);
