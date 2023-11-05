@@ -6,9 +6,11 @@ namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
 use Mockery;
+use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
+use MongoDB\Laravel\Tests\Models\Experience;
 use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Photo;
@@ -32,6 +34,7 @@ class RelationsTest extends TestCase
         Group::truncate();
         Photo::truncate();
         Skill::truncate();
+        Experience::truncate();
     }
 
     public function testHasMany(): void
@@ -345,30 +348,30 @@ class RelationsTest extends TestCase
         $this->assertCount(2, $user->clients);
     }
 
-    public function testBelongsToManySyncEloquentCollection(): void
+    public function testBelongsToManySyncEloquentCollectionWithCustomRelatedKey(): void
     {
-        $user = User::create(['name' => 'Hans Thomas']);
-        $skill1    = Skill::create(['name' => 'PHP 1']);
-        $skill2    = Skill::create(['name' => 'Laravel 2']);
+        $experience = Experience::create(['years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()),'name' => 'PHP']);
+        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()),'name' => 'Laravel']);
         $collection = new Collection([$skill1, $skill2]);
 
-        $user = User::query()->find($user->_id);
-        $user->skills()->sync($collection);
-        $this->assertCount(2, $user->skills);
+        $experience = Experience::query()->find($experience->id);
+        $experience->skills()->sync($collection);
+        $this->assertCount(2, $experience->skills);
 
-        self::assertIsString($skill1->custom_id);
-        self::assertContains($skill1->custom_id, $user->custom_skill_ids);
+        self::assertIsString($skill1->cskill_id);
+        self::assertContains($skill1->cskill_id, $experience->skill_ids);
 
-        self::assertIsString($skill2->custom_id);
-        self::assertContains($skill2->custom_id, $user->custom_skill_ids);
+        self::assertIsString($skill2->cskill_id);
+        self::assertContains($skill2->cskill_id, $experience->skill_ids);
 
         $skill1->refresh();
         self::assertIsString($skill1->_id);
-        self::assertNotContains($skill1->_id, $user->custom_skill_ids);
+        self::assertNotContains($skill1->_id, $experience->skill_ids);
 
         $skill2->refresh();
         self::assertIsString($skill2->_id);
-        self::assertNotContains($skill2->_id, $user->custom_skill_ids);
+        self::assertNotContains($skill2->_id, $experience->skill_ids);
     }
 
     public function testBelongsToManySyncAlreadyPresent(): void
