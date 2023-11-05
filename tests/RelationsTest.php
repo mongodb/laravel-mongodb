@@ -356,22 +356,22 @@ class RelationsTest extends TestCase
         $collection = new Collection([$skill1, $skill2]);
 
         $experience = Experience::query()->find($experience->id);
-        $experience->skills()->sync($collection);
-        $this->assertCount(2, $experience->skills);
+        $experience->skillsWithCustomRelatedKey()->sync($collection);
+        $this->assertCount(2, $experience->skillsWithCustomRelatedKey);
 
         self::assertIsString($skill1->cskill_id);
-        self::assertContains($skill1->cskill_id, $experience->skill_ids);
+        self::assertContains($skill1->cskill_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
 
         self::assertIsString($skill2->cskill_id);
-        self::assertContains($skill2->cskill_id, $experience->skill_ids);
+        self::assertContains($skill2->cskill_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
 
         $skill1->refresh();
         self::assertIsString($skill1->_id);
-        self::assertNotContains($skill1->_id, $experience->skill_ids);
+        self::assertNotContains($skill1->_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
 
         $skill2->refresh();
         self::assertIsString($skill2->_id);
-        self::assertNotContains($skill2->_id, $experience->skill_ids);
+        self::assertNotContains($skill2->_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
     }
 
     public function testBelongsToManySyncEloquentCollectionWithCustomParentKey(): void
