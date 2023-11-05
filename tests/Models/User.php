@@ -86,11 +86,6 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->belongsToMany(Client::class);
     }
 
-    public function skills()
-    {
-        return $this->belongsToMany(Skill::class);
-    }
-
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'groups', 'users', 'groups', '_id', '_id', 'groups');
