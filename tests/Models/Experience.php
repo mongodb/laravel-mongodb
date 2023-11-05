@@ -18,4 +18,9 @@ class Experience extends Eloquent
     {
         return $this->belongsToMany(Skill::class, relatedKey: 'cskill_id');
     }
+
+    public function skillsWithCustomParentKey()
+    {
+        return $this->belongsToMany(Skill::class, parentKey: 'cexperience_id');
+    }
 }

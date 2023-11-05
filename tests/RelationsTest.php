@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
@@ -372,6 +373,24 @@ class RelationsTest extends TestCase
         $skill2->refresh();
         self::assertIsString($skill2->_id);
         self::assertNotContains($skill2->_id, $experience->skill_ids);
+    }
+
+    public function testBelongsToManySyncEloquentCollectionWithCustomParentKey(): void
+    {
+        $experience = Experience::create(['cexperience_id' => (string) (new ObjectId()),'years' => '5']);
+        $skill1    = Skill::create(['name' => 'PHP']);
+        $skill2    = Skill::create(['name' => 'Laravel']);
+        $collection = new Collection([$skill1, $skill2]);
+
+        $experience = Experience::query()->find($experience->id);
+        $experience->skillsWithCustomParentKey()->sync($collection);
+        $this->assertCount(2, $experience->skillsWithCustomParentKey);
+
+        self::assertIsString($skill1->_id);
+        self::assertContains($skill1->_id, $experience->skillsWithCustomParentKey->pluck('_id'));
+
+        self::assertIsString($skill2->_id);
+        self::assertContains($skill2->_id, $experience->skillsWithCustomParentKey->pluck('_id'));
     }
 
     public function testBelongsToManySyncAlreadyPresent(): void
