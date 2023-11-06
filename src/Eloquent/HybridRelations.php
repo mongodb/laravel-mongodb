@@ -212,7 +212,7 @@ trait HybridRelations
 
         [$type, $id] = $this->getMorphs(Str::snake($name), $type, $id);
 
-        if ($ownerKey === null){
+        if ($ownerKey === null) {
             $ownerKey = $this->getKeyName();
         }
 
