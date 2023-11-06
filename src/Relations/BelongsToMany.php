@@ -76,7 +76,7 @@ class BelongsToMany extends EloquentBelongsToMany
     {
         $foreign = $this->getForeignKey();
 
-        $this->query->where($foreign, '=', $this->parent->getKey());
+        $this->query->where($foreign, '=', $this->parent->{$this->parentKey});
 
         return $this;
     }
@@ -116,7 +116,7 @@ class BelongsToMany extends EloquentBelongsToMany
         ];
 
         if ($ids instanceof Collection) {
-            $ids = $ids->modelKeys();
+            $ids = $this->parseIds($ids);
         } elseif ($ids instanceof Model) {
             $ids = $this->parseIds($ids);
         }
@@ -190,10 +190,10 @@ class BelongsToMany extends EloquentBelongsToMany
 
             $query = $this->newRelatedQuery();
 
-            $query->whereIn($this->related->getKeyName(), (array) $id);
+            $query->whereIn($this->relatedKey, (array) $id);
 
             // Attach the new parent id to the related model.
-            $query->push($this->foreignPivotKey, $this->parent->getKey(), true);
+            $query->push($this->foreignPivotKey, $this->parent->{$this->parentKey}, true);
         }
 
         // Attach the new ids to the parent model.
