@@ -6,7 +6,7 @@ namespace MongoDB\Laravel\Tests\Casts;
 
 use Generator;
 use MongoDB\BSON\Binary;
-use MongoDB\Laravel\Tests\Models\CastBinaryUuid;
+use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function hex2bin;
@@ -17,15 +17,15 @@ class BinaryUuidTest extends TestCase
     {
         parent::setUp();
 
-        CastBinaryUuid::truncate();
+        Casting::truncate();
     }
 
     /** @dataProvider provideBinaryUuidCast */
     public function testBinaryUuidCastModel(string $expectedUuid, string|Binary $saveUuid, Binary $queryUuid): void
     {
-        CastBinaryUuid::create(['uuid' => $saveUuid]);
+        Casting::create(['uuid' => $saveUuid]);
 
-        $model = CastBinaryUuid::firstWhere('uuid', $queryUuid);
+        $model = Casting::firstWhere('uuid', $queryUuid);
         $this->assertNotNull($model);
         $this->assertSame($expectedUuid, $model->uuid);
     }
@@ -43,9 +43,9 @@ class BinaryUuidTest extends TestCase
     {
         $uuid = '0c103357-3806-48c9-a84b-867dcb625cfb';
 
-        CastBinaryUuid::create(['uuid' => $uuid]);
+        Casting::create(['uuid' => $uuid]);
 
-        $model = CastBinaryUuid::firstWhere('uuid', $uuid);
+        $model = Casting::firstWhere('uuid', $uuid);
         $this->assertNull($model);
     }
 }

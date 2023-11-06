@@ -14,6 +14,7 @@ use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\Role;
+use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
 
 class RelationsTest extends TestCase
@@ -50,6 +51,24 @@ class RelationsTest extends TestCase
 
         $items = $user->items;
         $this->assertCount(3, $items);
+    }
+
+    public function testHasManyWithTrashed(): void
+    {
+        $user   = User::create(['name' => 'George R. R. Martin']);
+        $first  = Soft::create(['title' => 'A Game of Thrones', 'user_id' => $user->_id]);
+        $second = Soft::create(['title' => 'The Witcher', 'user_id' => $user->_id]);
+
+        self::assertNull($first->deleted_at);
+        self::assertEquals($user->_id, $first->user->_id);
+        self::assertEquals([$first->_id, $second->_id], $user->softs->pluck('_id')->toArray());
+
+        $first->delete();
+        $user->refresh();
+
+        self::assertNotNull($first->deleted_at);
+        self::assertEquals([$second->_id], $user->softs->pluck('_id')->toArray());
+        self::assertEquals([$first->_id, $second->_id], $user->softsWithTrashed->pluck('_id')->toArray());
     }
 
     public function testBelongsTo(): void
@@ -236,6 +255,36 @@ class RelationsTest extends TestCase
         $this->assertNotContains($user->_id, $client->user_ids);
         $this->assertCount(0, $user->clients);
         $this->assertCount(1, $client->users);
+    }
+
+    public function testSyncBelongsToMany()
+    {
+        $user = User::create(['name' => 'John Doe']);
+
+        $first  = Client::query()->create(['name' => 'Hans']);
+        $second = Client::query()->create(['name' => 'Thomas']);
+
+        $user->load('clients');
+        self::assertEmpty($user->clients);
+
+        $user->clients()->sync($first);
+
+        $user->load('clients');
+        self::assertCount(1, $user->clients);
+        self::assertTrue($user->clients->first()->is($first));
+
+        $user->clients()->sync($second);
+
+        $user->load('clients');
+        self::assertCount(1, $user->clients);
+        self::assertTrue($user->clients->first()->is($second));
+
+        $user->clients()->syncWithoutDetaching($first);
+
+        $user->load('clients');
+        self::assertCount(2, $user->clients);
+        self::assertTrue($user->clients->first()->is($first));
+        self::assertTrue($user->clients->last()->is($second));
     }
 
     public function testBelongsToManyAttachesExistingModels(): void
