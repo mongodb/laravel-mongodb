@@ -429,6 +429,7 @@ class RelationsTest extends TestCase
         $this->assertEquals($user->_id, $group->users()->first()->_id);
     }
 
+    /** @group hans */
     public function testMorph(): void
     {
         $user   = User::create(['name' => 'John Doe']);
@@ -470,6 +471,14 @@ class RelationsTest extends TestCase
         $relations = $photos[1]->getRelations();
         $this->assertArrayHasKey('hasImage', $relations);
         $this->assertInstanceOf(Client::class, $photos[1]->hasImage);
+
+        // inverse
+        $photo = Photo::query()->create(['url' => 'http://graph.facebook.com/jane.doe/picture']);
+        $client = Client::create(['name' => 'Hans Thomas']);
+        $photo->hasImage()->associate($client)->save();
+
+        $this->assertCount(1, $photo->hasImage()->get());
+        $this->assertEquals($client->_id, $photo->hasImage->_id);
     }
 
     public function testHasManyHas(): void
