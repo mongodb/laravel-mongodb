@@ -481,8 +481,8 @@ class RelationsTest extends TestCase
         $this->assertEquals($client->_id, $photo->hasImage->_id);
 
         // inverse with custom ownerKey
-        $photo = Photo::query()->create([ 'url' => 'https://graph.facebook.com/young.gerald/picture']);
-        $client = Client::create(['cclient_id' => (string) (new ObjectId()),'name' => 'Young Gerald']);
+        $photo = Photo::query()->create(['url' => 'https://graph.facebook.com/young.gerald/picture']);
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'name' => 'Young Gerald']);
         $photo->hasImageWithCustomOwnerKey()->associate($client)->save();
 
         $this->assertCount(1, $photo->hasImageWithCustomOwnerKey()->get());
