@@ -429,7 +429,6 @@ class RelationsTest extends TestCase
         $this->assertEquals($user->_id, $group->users()->first()->_id);
     }
 
-    /** @group hans */
     public function testMorph(): void
     {
         $user   = User::create(['name' => 'John Doe']);
