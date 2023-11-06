@@ -17,4 +17,9 @@ class Photo extends Eloquent
     {
         return $this->morphTo();
     }
+
+    public function hasImageWithCustomOwnerKey(): MorphTo
+    {
+        return $this->morphTo(ownerKey: 'cphoto_id');
+    }
 }

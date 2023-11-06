@@ -473,11 +473,21 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(Client::class, $photos[1]->hasImage);
 
         // inverse
-        $photo = Photo::query()->create(['url' => 'http://graph.facebook.com/jane.doe/picture']);
+        $photo = Photo::query()->create(['url' => 'https://graph.facebook.com/hans.thomas/picture']);
         $client = Client::create(['name' => 'Hans Thomas']);
         $photo->hasImage()->associate($client)->save();
 
         $this->assertCount(1, $photo->hasImage()->get());
+        $this->assertInstanceOf(Client::class, $photo->hasImage);
+        $this->assertEquals($client->_id, $photo->hasImage->_id);
+
+        // inverse with custom ownerKey
+        $photo = Photo::query()->create(['cphoto_id'=>(string)(new ObjectId()), 'url' => 'https://graph.facebook.com/young.gerald/picture']);
+        $client = Client::create(['name' => 'Young Gerald']);
+        $photo->hasImage()->associate($client)->save();
+
+        $this->assertCount(1, $photo->hasImage()->get());
+        $this->assertInstanceOf(Client::class, $photo->hasImage);
         $this->assertEquals($client->_id, $photo->hasImage->_id);
     }
 
