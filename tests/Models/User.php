@@ -106,6 +106,11 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->morphMany(Photo::class, 'has_image');
     }
 
+    public function labels()
+    {
+        return $this->morphToMany(Label::class, 'labelled');
+    }
+
     public function addresses()
     {
         return $this->embedsMany(Address::class);
@@ -132,11 +137,5 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
     public function prunable(): Builder
     {
         return $this->where('age', '>', 18);
-    }
-
-    // labels
-    public function labels()
-    {
-        return $this->morphToMany(Label::class, 'labelled');
     }
 }

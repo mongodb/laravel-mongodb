@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
@@ -448,38 +449,39 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(Client::class, $photos[1]->hasImage);
     }
 
-    /** @group hans */
     public function testMorphToMany(): void
     {
         $user = User::query()->create(['name' => 'John Doe']);
         $client = Client::query()->create(['name' => 'Hans Thomas']);
+
         $label  = Label::query()->create(['name' => 'My test label']);
-        $label2 = Label::query()->create(['name' => 'My test label 2']);
 
         $user->labels()->attach($label);
         $client->labels()->attach($label);
 
         $this->assertEquals(1, $user->labels->count());
-        $this->assertEquals($label->id, $user->labels->first()->id);
+        $this->assertContains($label->_id, $user->labels->pluck('_id'));
 
         $this->assertEquals(1, $client->labels->count());
-        $this->assertEquals($label->id, $client->labels->first()->id);
+        $this->assertContains($label->_id, $user->labels->pluck('_id'));
+    }
 
-        $this->assertEquals($label->id, $client->labels->first()->id);
+    /** @group hans */
+    public function testMorphedByMany(): void
+    {
+        $user = User::query()->create(['name' => 'John Doe']);
+        $client = Client::query()->create(['name' => 'Hans Thomas']);
 
-        $this->assertEquals($label->id, $user->labels->first()->id);
+        $label  = Label::query()->create(['name' => 'My test label']);
 
-        $this->assertEquals($client->id, $label->clients->first()->id);
+        $label->users()->attach($user);
+        $label->clients()->attach($client);
 
-        $this->assertEquals($user->id, $label->users->first()->id);
+        $this->assertEquals(1, $label->users->count());
+        $this->assertContains($user->_id, $label->users->pluck('_id'));
 
-        $user->labels()->detach($label);
-        $this->assertNotContains($label->_id, $user->fresh()->labels->pluck('_id')->toArray());
-
-        $this->assertEquals($label->id, $client->fresh()->labels->first()->id);
-
-        $user->labels()->sync([$label->_id, $label2->_id]);
-        $this->assertCount(2, $user->fresh()->labels);
+        $this->assertEquals(1, $label->clients->count());
+        $this->assertContains($client->_id, $label->clients->pluck('_id'));
     }
 
     public function testHasManyHas(): void

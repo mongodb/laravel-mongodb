@@ -24,7 +24,7 @@ class Label extends Eloquent
     ];
 
     /**
-     * Get all of the posts that are assigned this tag.
+     * Get all the posts that are assigned this tag.
      */
     public function users()
     {
@@ -32,7 +32,7 @@ class Label extends Eloquent
     }
 
     /**
-     * Get all of the videos that are assigned this tag.
+     * Get all the videos that are assigned this tag.
      */
     public function clients()
     {
