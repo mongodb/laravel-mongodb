@@ -5,16 +5,18 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Mockery;
+use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
+use MongoDB\Laravel\Tests\Models\Experience;
 use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\Role;
+use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
 
@@ -33,6 +35,8 @@ class RelationsTest extends TestCase
         Group::truncate();
         Photo::truncate();
         Label::truncate();
+        Skill::truncate();
+        Experience::truncate();
     }
 
     public function testHasMany(): void
@@ -258,36 +262,6 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $client->users);
     }
 
-    public function testSyncBelongsToMany()
-    {
-        $user = User::create(['name' => 'John Doe']);
-
-        $first  = Client::query()->create(['name' => 'Hans']);
-        $second = Client::query()->create(['name' => 'Thomas']);
-
-        $user->load('clients');
-        self::assertEmpty($user->clients);
-
-        $user->clients()->sync($first);
-
-        $user->load('clients');
-        self::assertCount(1, $user->clients);
-        self::assertTrue($user->clients->first()->is($first));
-
-        $user->clients()->sync($second);
-
-        $user->load('clients');
-        self::assertCount(1, $user->clients);
-        self::assertTrue($user->clients->first()->is($second));
-
-        $user->clients()->syncWithoutDetaching($first);
-
-        $user->load('clients');
-        self::assertCount(2, $user->clients);
-        self::assertTrue($user->clients->first()->is($first));
-        self::assertTrue($user->clients->last()->is($second));
-    }
-
     public function testBelongsToManyAttachesExistingModels(): void
     {
         $user = User::create(['name' => 'John Doe', 'client_ids' => ['1234523']]);
@@ -330,20 +304,27 @@ class RelationsTest extends TestCase
     public function testBelongsToManySync(): void
     {
         // create test instances
-        $user    = User::create(['name' => 'John Doe']);
-        $client1 = Client::create(['name' => 'Pork Pies Ltd.'])->_id;
-        $client2 = Client::create(['name' => 'Buffet Bar Inc.'])->_id;
+        $user    = User::create(['name' => 'Hans Thomas']);
+        $client1 = Client::create(['name' => 'Pork Pies Ltd.']);
+        $client2 = Client::create(['name' => 'Buffet Bar Inc.']);
 
         // Sync multiple
-        $user->clients()->sync([$client1, $client2]);
+        $user->clients()->sync([$client1->_id, $client2->_id]);
         $this->assertCount(2, $user->clients);
 
-        // Refresh user
-        $user = User::where('name', '=', 'John Doe')->first();
+        // Sync single wrapped by an array
+        $user->clients()->sync([$client1->_id]);
+        $user->load('clients');
 
-        // Sync single
-        $user->clients()->sync([$client1]);
         $this->assertCount(1, $user->clients);
+        self::assertTrue($user->clients->first()->is($client1));
+
+        // Sync single model
+        $user->clients()->sync($client2);
+        $user->load('clients');
+
+        $this->assertCount(1, $user->clients);
+        self::assertTrue($user->clients->first()->is($client2));
     }
 
     public function testBelongsToManyAttachArray(): void
@@ -367,6 +348,50 @@ class RelationsTest extends TestCase
         $user = User::where('name', '=', 'John Doe')->first();
         $user->clients()->attach($collection);
         $this->assertCount(2, $user->clients);
+    }
+
+    public function testBelongsToManySyncEloquentCollectionWithCustomRelatedKey(): void
+    {
+        $experience = Experience::create(['years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
+        $collection = new Collection([$skill1, $skill2]);
+
+        $experience = Experience::query()->find($experience->id);
+        $experience->skillsWithCustomRelatedKey()->sync($collection);
+        $this->assertCount(2, $experience->skillsWithCustomRelatedKey);
+
+        self::assertIsString($skill1->cskill_id);
+        self::assertContains($skill1->cskill_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
+
+        self::assertIsString($skill2->cskill_id);
+        self::assertContains($skill2->cskill_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
+
+        $skill1->refresh();
+        self::assertIsString($skill1->_id);
+        self::assertNotContains($skill1->_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
+
+        $skill2->refresh();
+        self::assertIsString($skill2->_id);
+        self::assertNotContains($skill2->_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
+    }
+
+    public function testBelongsToManySyncEloquentCollectionWithCustomParentKey(): void
+    {
+        $experience = Experience::create(['cexperience_id' => (string) (new ObjectId()), 'years' => '5']);
+        $skill1    = Skill::create(['name' => 'PHP']);
+        $skill2    = Skill::create(['name' => 'Laravel']);
+        $collection = new Collection([$skill1, $skill2]);
+
+        $experience = Experience::query()->find($experience->id);
+        $experience->skillsWithCustomParentKey()->sync($collection);
+        $this->assertCount(2, $experience->skillsWithCustomParentKey);
+
+        self::assertIsString($skill1->_id);
+        self::assertContains($skill1->_id, $experience->skillsWithCustomParentKey->pluck('_id'));
+
+        self::assertIsString($skill2->_id);
+        self::assertContains($skill2->_id, $experience->skillsWithCustomParentKey->pluck('_id'));
     }
 
     public function testBelongsToManySyncAlreadyPresent(): void
