@@ -200,8 +200,7 @@ class MorphToMany extends EloquentMorphToMany
 
                 // Attach the new ids to the parent model.
                 $model->push($this->foreignPivotKey, $this->parseIds($this->parent), true);
-            }
-            else{
+            } else {
                 $model->push($this->table, [
                     $this->foreignPivotKey => $this->parent->getKey(),
                     $this->morphType => $this->parent instanceof Model ? $this->parent->getMorphClass() : null,

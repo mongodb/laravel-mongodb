@@ -17,11 +17,15 @@ use MongoDB\Laravel\Relations\MorphMany;
 use MongoDB\Laravel\Relations\MorphTo;
 use MongoDB\Laravel\Relations\MorphToMany;
 
-
+use function array_pop;
 use function debug_backtrace;
+use function implode;
 use function is_subclass_of;
+use function method_exists;
+use function preg_split;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
+use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
  * Cross-database relationships between SQL and MongoDB.
@@ -43,7 +47,7 @@ trait HybridRelations
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, MongoDBModel::class)) {
+        if (! is_subclass_of($related, MongoDBModel::class)) {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
 
@@ -72,7 +76,7 @@ trait HybridRelations
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, MongoDBModel::class)) {
+        if (! is_subclass_of($related, MongoDBModel::class)) {
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
@@ -99,7 +103,7 @@ trait HybridRelations
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, MongoDBModel::class)) {
+        if (! is_subclass_of($related, MongoDBModel::class)) {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
 
@@ -128,7 +132,7 @@ trait HybridRelations
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, MongoDBModel::class)) {
+        if (! is_subclass_of($related, MongoDBModel::class)) {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
@@ -168,7 +172,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, MongoDBModel::class)) {
+        if (! is_subclass_of($related, MongoDBModel::class)) {
             return parent::belongsTo($related, $foreignKey, $ownerKey, $relation);
         }
 
@@ -280,7 +284,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, MongoDBModel::class)) {
+        if (! is_subclass_of($related, MongoDBModel::class)) {
             return parent::belongsToMany(
                 $related,
                 $collection,
@@ -328,15 +332,15 @@ trait HybridRelations
     /**
      * Define a morph-to-many relationship.
      *
-     * @param  string  $related
-     * @param          $name
-     * @param  null    $table
-     * @param  null    $foreignPivotKey
-     * @param  null    $relatedPivotKey
-     * @param  null    $parentKey
-     * @param  null    $relatedKey
-     * @param  null    $relation
-     * @param  bool    $inverse
+     * @param  string $related
+     * @param    string $name
+     * @param  null   $table
+     * @param  null   $foreignPivotKey
+     * @param  null   $relatedPivotKey
+     * @param  null   $parentKey
+     * @param  null   $relatedKey
+     * @param  null   $relation
+     * @param  bool   $inverse
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
@@ -349,7 +353,7 @@ trait HybridRelations
         $parentKey = null,
         $relatedKey = null,
         $relation = null,
-        $inverse = false
+        $inverse = false,
     ) {
         // If no relationship name was passed, we will pull backtraces to get the
         // name of the calling function. We will use that function name as the
@@ -359,7 +363,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, Model::class)) {
+        if (! is_subclass_of($related, Model::class)) {
             return parent::MorphToMany(
                 $related,
                 $name,
@@ -373,7 +377,7 @@ trait HybridRelations
             );
         }
 
-        $instance = new $related;
+        $instance = new $related();
 
         $foreignPivotKey = $foreignPivotKey ?: $name . '_id'; // labelled_id
         $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's'; // label_ids
@@ -381,7 +385,7 @@ trait HybridRelations
         // Now we're ready to create a new query builder for the related model and
         // the relationship instances for this relation. This relation will set
         // appropriate query constraints then entirely manage the hydration.
-        if (!$table) {
+        if (! $table) {
             $words = preg_split('/(_)/u', $name, -1, PREG_SPLIT_DELIM_CAPTURE);
             $lastWord = array_pop($words);
             $table = implode('', $words) . Str::plural($lastWord);
@@ -404,13 +408,13 @@ trait HybridRelations
     /**
      * Define a polymorphic, inverse many-to-many relationship.
      *
-     * @param  string  $related
-     * @param  string  $name
-     * @param  null    $table
-     * @param  null    $foreignPivotKey
-     * @param  null    $relatedPivotKey
-     * @param  null    $parentKey
-     * @param  null    $relatedKey
+     * @param  string $related
+     * @param  string $name
+     * @param  null   $table
+     * @param  null   $foreignPivotKey
+     * @param  null   $relatedPivotKey
+     * @param  null   $parentKey
+     * @param  null   $relatedKey
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
@@ -422,15 +426,14 @@ trait HybridRelations
         $relatedPivotKey = null,
         $parentKey = null,
         $relatedKey = null,
-        $relation = null
+        $relation = null,
     ) {
         $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
 
         // For the inverse of the polymorphic many-to-many relations, we will change
         // the way we determine the foreign and other keys, as it is the opposite
         // of the morph-to-many method since we're figuring out these inverses.
-        $relatedPivotKey = $relatedPivotKey ?: $name.'_id';
-
+        $relatedPivotKey = $relatedPivotKey ?: $name . '_id';
 
         return $this->morphToMany(
             $related,

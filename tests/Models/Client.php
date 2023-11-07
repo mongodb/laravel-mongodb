@@ -30,7 +30,6 @@ class Client extends Eloquent
         return $this->hasMany(Address::class, 'data.client_id', 'data.client_id');
     }
 
-    // labels
     public function labels()
     {
         return $this->morphToMany(Label::class, 'labelled');
