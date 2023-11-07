@@ -326,15 +326,18 @@ trait HybridRelations
     }
 
     /**
-     * Define a many-to-many relationship.
+     * Define a morph-to-many relationship.
      *
-     * @param string $related
-     * @param string $collection
-     * @param string $foreignKey
-     * @param string $otherKey
-     * @param string $parentKey
-     * @param string $relatedKey
-     * @param string $relation
+     * @param  string  $related
+     * @param          $name
+     * @param  null    $table
+     * @param  null    $foreignPivotKey
+     * @param  null    $relatedPivotKey
+     * @param  null    $parentKey
+     * @param  null    $relatedKey
+     * @param  null    $relation
+     * @param  bool    $inverse
+     *
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
     public function morphToMany(
@@ -348,9 +351,15 @@ trait HybridRelations
         $relation = null,
         $inverse = false
     ) {
+        // If no relationship name was passed, we will pull backtraces to get the
+        // name of the calling function. We will use that function name as the
+        // title of this relation since that is a great convention to apply.
+        if ($relation === null) {
+            $relation = $this->guessBelongsToManyRelation();
+        }
 
         // Check if it is a relation with an original model.
-        if (!is_subclass_of($related, \Mongodb\Laravel\Eloquent\Model::class)) {
+        if (!is_subclass_of($related, Model::class)) {
             return parent::MorphToMany(
                 $related,
                 $name,
@@ -359,11 +368,10 @@ trait HybridRelations
                 $relatedPivotKey,
                 $parentKey,
                 $relatedKey,
+                $relation,
                 $inverse,
             );
         }
-
-        $caller = $this->guessBelongsToManyRelation();
 
         $instance = new $related;
 
@@ -373,7 +381,7 @@ trait HybridRelations
 
         // Now we're ready to create a new query builder for the related model and
         // the relationship instances for this relation. This relation will set
-        // appropriate query constraints then entirely manage the hydrations.
+        // appropriate query constraints then entirely manage the hydration.
         if (!$table) {
             $words = preg_split('/(_)/u', $name, -1, PREG_SPLIT_DELIM_CAPTURE);
 
@@ -391,7 +399,7 @@ trait HybridRelations
             $relatedPivotKey,
             $parentKey ?: $this->getKeyName(),
             $relatedKey ?: $instance->getKeyName(),
-            $caller,
+            $relation,
             $inverse,
         );
     }
@@ -399,15 +407,14 @@ trait HybridRelations
     /**
      * Define a polymorphic, inverse many-to-many relationship.
      *
-     * @param  string      $related
-     * @param  string      $name
-     * @param  string|null $table
-     * @param  string|null $foreignPivotKey
-     * @param  string|null $relatedPivotKey
-     * @param  string|null $parentKey
-     * @param  string|null $relatedKey
-     * @param  string|null $relation
-     * @param  bool        $inverse
+     * @param  string  $related
+     * @param  string  $name
+     * @param  null    $table
+     * @param  null    $foreignPivotKey
+     * @param  null    $relatedPivotKey
+     * @param  null    $parentKey
+     * @param  null    $relatedKey
+     * @param  bool    $inverse
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
@@ -421,15 +428,12 @@ trait HybridRelations
         $relatedKey = null,
         $inverse = false
     ) {
-        $caller = $this->guessBelongsToManyRelation();
+        $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
 
-        // $instance = new $related;
         // For the inverse of the polymorphic many-to-many relations, we will change
         // the way we determine the foreign and other keys, as it is the opposite
         // of the morph-to-many method since we're figuring out these inverses.
-        $relatedPivotKey = $relatedPivotKey ?: $name . '_id';
-
-        $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
+        $relatedPivotKey = $relatedPivotKey ?: $name.'_id';
 
         return $this->morphToMany(
             $related,
@@ -439,7 +443,7 @@ trait HybridRelations
             $relatedPivotKey,
             $parentKey,
             $relatedKey,
-            null,
+            $relatedKey,
             true,
         );
     }

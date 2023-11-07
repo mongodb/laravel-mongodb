@@ -448,20 +448,14 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(Client::class, $photos[1]->hasImage);
     }
 
+    /** @group hans */
     public function testMorphToMany(): void
     {
+        $user = User::query()->create(['name' => 'John Doe']);
+        $client = Client::query()->create(['name' => 'Hans Thomas']);
+        $label  = Label::query()->create(['name' => 'My test label']);
+        $label2 = Label::query()->create(['name' => 'My test label 2']);
 
-        // create user
-        $user = User::updateOrCreate(['name' => 'John Doe']);
-        // create client
-        $client = Client::updateOrCreate(['name' => 'Jane Doe']);
-        // create label
-        $label  = Label::updateOrCreate(['name' => 'My test label']);
-        $label2 = Label::updateOrCreate(['name' => 'My test label 2']);
-
-        // check attach
-
-        // attach label to models
         $user->labels()->attach($label);
         $client->labels()->attach($label);
 
@@ -471,26 +465,19 @@ class RelationsTest extends TestCase
         $this->assertEquals(1, $client->labels->count());
         $this->assertEquals($label->id, $client->labels->first()->id);
 
-        // check if label is attached to client
         $this->assertEquals($label->id, $client->labels->first()->id);
 
-        // check if label is attached to user
         $this->assertEquals($label->id, $user->labels->first()->id);
 
-        // check if client is attached to label
         $this->assertEquals($client->id, $label->clients->first()->id);
 
-        // check if user is attached to label
         $this->assertEquals($user->id, $label->users->first()->id);
 
-        // check detaching
         $user->labels()->detach($label);
         $this->assertNotContains($label->_id, $user->fresh()->labels->pluck('_id')->toArray());
 
-        // check if label still connected to client
         $this->assertEquals($label->id, $client->fresh()->labels->first()->id);
 
-        // check sync
         $user->labels()->sync([$label->_id, $label2->_id]);
         $this->assertCount(2, $user->fresh()->labels);
     }
