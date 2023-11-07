@@ -238,7 +238,7 @@ trait HybridRelations
 
         // Check if it is a relation with an original model.
         if (! is_subclass_of($instance, MongoDBModel::class)) {
-            return parent::morphTo($name,$type,$id,$ownerKey);
+            return parent::morphTo($name, $type, $id, $ownerKey);
         }
 
         return new MorphTo(
