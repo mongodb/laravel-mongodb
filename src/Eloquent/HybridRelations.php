@@ -375,18 +375,18 @@ trait HybridRelations
 
         $instance = new $related;
 
-        $foreignPivotKey = $foreignPivotKey ?: $name . '_id';
-
-        $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's';
+        $foreignPivotKey = $foreignPivotKey ?: $name . '_id'; // labelled_id
+        $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's'; // label_ids
+        if ($inverse) {
+            $relatedPivotKey = $this->getForeignKey() . 's'; // labelleds
+        }
 
         // Now we're ready to create a new query builder for the related model and
         // the relationship instances for this relation. This relation will set
         // appropriate query constraints then entirely manage the hydration.
         if (!$table) {
             $words = preg_split('/(_)/u', $name, -1, PREG_SPLIT_DELIM_CAPTURE);
-
             $lastWord = array_pop($words);
-
             $table = implode('', $words) . Str::plural($lastWord);
         }
 
@@ -414,7 +414,6 @@ trait HybridRelations
      * @param  null    $relatedPivotKey
      * @param  null    $parentKey
      * @param  null    $relatedKey
-     * @param  bool    $inverse
      *
      * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
      */
@@ -426,15 +425,8 @@ trait HybridRelations
         $relatedPivotKey = null,
         $parentKey = null,
         $relatedKey = null,
-        $inverse = false
+        $relation = null
     ) {
-        $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
-
-        // For the inverse of the polymorphic many-to-many relations, we will change
-        // the way we determine the foreign and other keys, as it is the opposite
-        // of the morph-to-many method since we're figuring out these inverses.
-        $relatedPivotKey = $relatedPivotKey ?: $name.'_id';
-
         return $this->morphToMany(
             $related,
             $name,

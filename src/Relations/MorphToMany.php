@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Relations;
 
-use Arr;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany as EloquentMorphToMany;
+use Illuminate\Support\Arr;
 
 use function array_diff;
 use function array_keys;
@@ -74,11 +74,15 @@ class MorphToMany extends EloquentMorphToMany
      */
     protected function setWhere()
     {
-        $foreign = $this->getForeignKey();
-
         if ($this->getInverse()) {
-            $this->query->where($foreign, '=', $this->parent->getKey());
+            // query -> User
+            // parent -> Label
+            // getForeignKey -> labelled_id -in-> User
+            // relatedPivotKey -> label_ids
+            $this->query->where($this->relatedPivotKey, '=', $this->parent->{$this->parentKey});
         } else {
+            // query -> Label
+            // parent -> User
             $relatedModels = $this->parent->{$this->relatedPivotKey} ?? [];
             $this->query->whereIn($this->relatedKey, $relatedModels);
         }
@@ -182,16 +186,33 @@ class MorphToMany extends EloquentMorphToMany
         if ($id instanceof Model) {
             $model = $id;
 
-            $id = $model->getKey();
+            $id = $this->parseId($model);
 
             // Attach the new parent id to the related model.
-            $model->push($this->table, [
-                $this->foreignPivotKey => $this->parent->getKey(),
-                $this->morphType => $this->parent instanceof Model ? $this->parent->getMorphClass() : null,
-            ], true);
+            if ($this->getInverse()) {
+                // related -> User
+                // parent -> Label
+                // table -> labelleds
+                $this->parent->push($this->table, [
+                    $this->foreignPivotKey => $model->{$this->relatedKey},
+                    $this->morphType => $model->getMorphClass(),
+                ], true);
+
+                // Attach the new ids to the parent model.
+                $model->push($this->relatedPivotKey, $this->parseIds($this->parent), true);
+            }
+            else{
+                $model->push($this->table, [
+                    $this->foreignPivotKey => $this->parent->getKey(),
+                    $this->morphType => $this->parent instanceof Model ? $this->parent->getMorphClass() : null,
+                ], true);
+
+                // Attach the new ids to the parent model.
+                $this->parent->push($this->relatedPivotKey, (array) $id, true);
+            }
         } else {
             if ($id instanceof Collection) {
-                $id = $id->modelKeys();
+                $id = $this->parseIds($id);
             }
 
             $query = $this->newRelatedQuery();
@@ -204,9 +225,6 @@ class MorphToMany extends EloquentMorphToMany
                 $this->morphType => $this->parent instanceof Model ? $this->parent->getMorphClass() : null,
             ], true);
         }
-
-        // Attach the new ids to the parent model.
-        $this->parent->push($this->relatedPivotKey, (array) $id, true);
 
         if ($touch) {
             $this->touchIfTouching();
