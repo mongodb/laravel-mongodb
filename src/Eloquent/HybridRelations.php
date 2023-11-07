@@ -377,9 +377,6 @@ trait HybridRelations
 
         $foreignPivotKey = $foreignPivotKey ?: $name . '_id'; // labelled_id
         $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's'; // label_ids
-        if ($inverse) {
-            $relatedPivotKey = $this->getForeignKey() . 's'; // labelleds
-        }
 
         // Now we're ready to create a new query builder for the related model and
         // the relationship instances for this relation. This relation will set
@@ -427,6 +424,14 @@ trait HybridRelations
         $relatedKey = null,
         $relation = null
     ) {
+        $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
+
+        // For the inverse of the polymorphic many-to-many relations, we will change
+        // the way we determine the foreign and other keys, as it is the opposite
+        // of the morph-to-many method since we're figuring out these inverses.
+        $relatedPivotKey = $relatedPivotKey ?: $name.'_id';
+
+
         return $this->morphToMany(
             $related,
             $name,

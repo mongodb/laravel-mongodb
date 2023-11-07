@@ -466,7 +466,6 @@ class RelationsTest extends TestCase
         $this->assertContains($label->_id, $user->labels->pluck('_id'));
     }
 
-    /** @group hans */
     public function testMorphedByMany(): void
     {
         $user = User::query()->create(['name' => 'John Doe']);

@@ -79,7 +79,7 @@ class MorphToMany extends EloquentMorphToMany
             // parent -> Label
             // getForeignKey -> labelled_id -in-> User
             // relatedPivotKey -> label_ids
-            $this->query->where($this->relatedPivotKey, '=', $this->parent->{$this->parentKey});
+            $this->query->where($this->foreignPivotKey, '=', $this->parent->{$this->parentKey});
         } else {
             // query -> Label
             // parent -> User
@@ -194,12 +194,12 @@ class MorphToMany extends EloquentMorphToMany
                 // parent -> Label
                 // table -> labelleds
                 $this->parent->push($this->table, [
-                    $this->foreignPivotKey => $model->{$this->relatedKey},
+                    $this->relatedPivotKey => $model->{$this->relatedKey},
                     $this->morphType => $model->getMorphClass(),
                 ], true);
 
                 // Attach the new ids to the parent model.
-                $model->push($this->relatedPivotKey, $this->parseIds($this->parent), true);
+                $model->push($this->foreignPivotKey, $this->parseIds($this->parent), true);
             }
             else{
                 $model->push($this->table, [
