@@ -79,7 +79,8 @@ class MorphToMany extends EloquentMorphToMany
             // parent -> Label
             // getForeignKey -> labelled_id -in-> User
             // relatedPivotKey -> label_ids
-            $this->query->where($this->foreignPivotKey, '=', $this->parent->{$this->parentKey});
+            $ids = array_filter((array)$this->parent->{$this->table}, fn ($id) => $id !== get_class($this->related));
+            $this->query->whereIn($this->relatedKey, $ids);
         } else {
             // query -> Label
             // parent -> User
