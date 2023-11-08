@@ -5,30 +5,25 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\SQLiteBuilder;
 use Illuminate\Support\Facades\Schema;
 use MongoDB\Laravel\Eloquent\HybridRelations;
+use MongoDB\Laravel\Relations\MorphTo;
 
 use function assert;
 
-class SqlRole extends EloquentModel
+class SqlPhoto extends EloquentModel
 {
     use HybridRelations;
 
     protected $connection       = 'sqlite';
-    protected $table            = 'role';
-    protected static $unguarded = true;
+    protected $table            = 'photo';
+    protected $fillable = ['url'];
 
-    public function user(): BelongsTo
+    public function hasImage(): MorphTo
     {
-        return $this->belongsTo(User::class);
-    }
-
-    public function sqlUser(): BelongsTo
-    {
-        return $this->belongsTo(SqlUser::class);
+        return $this->morphTo();
     }
 
     /**
@@ -39,10 +34,12 @@ class SqlRole extends EloquentModel
         $schema = Schema::connection('sqlite');
         assert($schema instanceof SQLiteBuilder);
 
-        $schema->dropIfExists('role');
-        $schema->create('role', function (Blueprint $table) {
-            $table->string('type');
-            $table->string('user_id');
+        $schema->dropIfExists('photo');
+        $schema->create('photo', function (Blueprint $table) {
+            $table->increments('id');
+            $table->string('url');
+            $table->string('has_image_id')->nullable();
+            $table->string('has_image_type')->nullable();
             $table->timestamps();
         });
     }

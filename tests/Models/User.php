@@ -17,6 +17,8 @@ use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Eloquent\HybridRelations;
 use MongoDB\Laravel\Eloquent\MassPrunable;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Relations\EmbedsMany;
+use MongoDB\Laravel\Relations\MorphMany;
 
 /**
  * @property string $_id
@@ -91,12 +93,12 @@ class User extends Eloquent implements AuthenticatableContract, CanResetPassword
         return $this->belongsToMany(Group::class, 'groups', 'users', 'groups', '_id', '_id', 'groups');
     }
 
-    public function photos()
+    public function photos(): MorphMany
     {
         return $this->morphMany(Photo::class, 'has_image');
     }
 
-    public function addresses()
+    public function addresses(): EmbedsMany
     {
         return $this->embedsMany(Address::class);
     }

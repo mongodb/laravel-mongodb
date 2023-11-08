@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 /**
@@ -27,5 +28,10 @@ class Book extends Eloquent
     public function sqlAuthor(): BelongsTo
     {
         return $this->belongsTo(SqlUser::class, 'author_id');
+    }
+
+    public function photo(): MorphOne
+    {
+        return $this->morphOne(SqlPhoto::class, 'has_image');
     }
 }

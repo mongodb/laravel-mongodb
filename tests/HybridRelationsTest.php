@@ -7,8 +7,10 @@ namespace MongoDB\Laravel\Tests;
 use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Tests\Models\Book;
+use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\SqlBook;
+use MongoDB\Laravel\Tests\Models\SqlPhoto;
 use MongoDB\Laravel\Tests\Models\SqlRole;
 use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
@@ -29,6 +31,7 @@ class HybridRelationsTest extends TestCase
         SqlUser::executeSchema();
         SqlBook::executeSchema();
         SqlRole::executeSchema();
+        SqlPhoto::executeSchema();
     }
 
     public function tearDown(): void
@@ -36,6 +39,10 @@ class HybridRelationsTest extends TestCase
         SqlUser::truncate();
         SqlBook::truncate();
         SqlRole::truncate();
+        SqlPhoto::truncate();
+        Photo::truncate();
+        Book::truncate();
+        User::truncate();
     }
 
     public function testSqlRelations()
@@ -209,5 +216,64 @@ class HybridRelationsTest extends TestCase
             ->each(function ($user) {
                 $this->assertEquals($user->id, $user->books->count());
             });
+    }
+
+    public function testHybridMorphToMongoDB(): void
+    {
+        $user = SqlUser::create(['name' => 'John Doe']);
+
+        $photo = Photo::create(['url' => 'http://graph.facebook.com/john.doe/picture']);
+        $photo = $user->photos()->save($photo);
+
+        $this->assertEquals(1, $user->photos->count());
+        $this->assertEquals($photo->id, $user->photos->first()->id);
+
+        $user = SqlUser::find($user->id);
+        $this->assertEquals(1, $user->photos->count());
+        $this->assertEquals($photo->id, $user->photos->first()->id);
+
+        $book = SqlBook::create(['title' => 'Game of Thrones']);
+        $photo = Photo::create(['url' => 'http://graph.facebook.com/gameofthrones/picture']);
+        $book->photo()->save($photo);
+
+        $this->assertNotNull($book->photo);
+        $this->assertEquals($photo->id, $book->photo->id);
+
+        $book = SqlBook::where('title', $book->title)->get()->first();
+        $this->assertNotNull($book->photo);
+        $this->assertEquals($photo->id, $book->photo->id);
+
+        $photo = Photo::first();
+        $this->assertEquals($photo->hasImage->name, $user->name);
+    }
+
+    public function testHybridMorphToSql(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+
+        $photo = SqlPhoto::create(['url' => 'http://graph.facebook.com/john.doe/picture']);
+        $photo->save();
+        $photo = $user->photos()->save($photo);
+
+        $this->assertEquals(1, $user->photos->count());
+        $this->assertEquals($photo->id, $user->photos->first()->id);
+
+        $user = User::find($user->id);
+        $this->assertEquals(1, $user->photos->count());
+        $this->assertEquals($photo->id, $user->photos->first()->id);
+
+        $book = Book::create(['title' => 'Game of Thrones']);
+        $photo = SqlPhoto::create(['url' => 'http://graph.facebook.com/gameofthrones/picture']);
+        $book->photo()->save($photo);
+
+        $this->assertNotNull($book->photo);
+        $this->assertEquals($photo->id, $book->photo->id);
+
+        $book = Book::where('title', $book->title)->get()->first();
+        $this->assertNotNull($book->photo);
+        $this->assertEquals($photo->id, $book->photo->id);
+
+        $photo = SqlPhoto::first();
+        $this->assertEquals($photo->hasImage->name, $user->name);
     }
 }
