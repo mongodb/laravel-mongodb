@@ -11,11 +11,13 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany as EloquentMorphToMany;
 use Illuminate\Support\Arr;
 
 use function array_diff;
+use function array_filter;
 use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
 use function count;
+use function get_class;
 use function is_array;
 use function is_numeric;
 
@@ -79,7 +81,7 @@ class MorphToMany extends EloquentMorphToMany
             // parent -> Label
             // getForeignKey -> labelled_id -in-> User
             // relatedPivotKey -> label_ids
-            $ids = array_filter((array)$this->parent->{$this->table}, fn ($id) => $id !== get_class($this->related));
+            $ids = array_filter((array) $this->parent->{$this->table}, fn ($id) => $id !== get_class($this->related));
             $this->query->whereIn($this->relatedKey, $ids);
         } else {
             // query -> Label
@@ -231,7 +233,7 @@ class MorphToMany extends EloquentMorphToMany
                         $this->morphType => $this->related instanceof Model ? $this->related->getMorphClass() : null,
                     ], true);
                 }
-            }else{
+            } else {
                 $query->whereIn($this->relatedKey, (array) $id);
 
                 // Attach the new parent id to the related model.
