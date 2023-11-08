@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Eloquent;
 use Brick\Math\BigDecimal;
 use Brick\Math\Exception\MathException as BrickMathException;
 use Brick\Math\RoundingMode;
+use Carbon\CarbonInterface;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
@@ -27,6 +28,7 @@ use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use function abs;
 use function array_key_exists;
 use function array_keys;
+use function array_merge;
 use function array_unique;
 use function array_values;
 use function class_basename;
@@ -41,6 +43,7 @@ use function ltrim;
 use function method_exists;
 use function sprintf;
 use function str_contains;
+use function str_starts_with;
 use function strcmp;
 use function uniqid;
 
@@ -200,6 +203,36 @@ abstract class Model extends BaseModel
     }
 
     /** @inheritdoc */
+    protected function transformModelValue($key, $value)
+    {
+        $value = parent::transformModelValue($key, $value);
+        // Casting attributes to any of date types, will convert that attribute
+        // to a Carbon or CarbonImmutable instance.
+        // @see Model::setAttribute()
+        if ($this->hasCast($key) && $value instanceof CarbonInterface) {
+            $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
+
+            $castType = $this->getCasts()[$key];
+            if ($this->isCustomDateTimeCast($castType) && str_starts_with($castType, 'date:')) {
+                $value->startOfDay();
+            }
+        }
+
+        return $value;
+    }
+
+    /** @inheritdoc */
+    protected function getCastType($key)
+    {
+        $castType = $this->getCasts()[$key];
+        if ($this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType)) {
+            $this->setDateFormat(Str::after($castType, ':'));
+        }
+
+        return parent::getCastType($key);
+    }
+
+    /** @inheritdoc */
     protected function getAttributeFromArray($key)
     {
         $key = (string) $key;
@@ -217,7 +250,7 @@ abstract class Model extends BaseModel
     {
         $key = (string) $key;
 
-        //Add casts
+        // Add casts
         if ($this->hasCast($key)) {
             $value = $this->castAttribute($key, $value);
         }
@@ -268,6 +301,19 @@ abstract class Model extends BaseModel
         }
 
         return Json::decode($value ?? '', ! $asObject);
+    }
+
+    /** @inheritdoc */
+    protected function castAttribute($key, $value)
+    {
+        $castType = $this->getCastType($key);
+
+        return match ($castType) {
+            'immutable_custom_datetime','immutable_datetime' => str_starts_with($this->getCasts()[$key], 'immutable_date:') ?
+                $this->asDate($value)->toImmutable() :
+                $this->asDateTime($value)->toImmutable(),
+            default => parent::castAttribute($key, $value)
+        };
     }
 
     /** @inheritdoc */

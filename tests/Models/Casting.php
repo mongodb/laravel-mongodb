@@ -24,7 +24,14 @@ class Casting extends Eloquent
         'jsonValue',
         'collectionValue',
         'dateField',
+        'dateWithFormatField',
+        'immutableDateField',
+        'immutableDateWithFormatField',
         'datetimeField',
+        'dateWithFormatField',
+        'datetimeWithFormatField',
+        'immutableDatetimeField',
+        'immutableDatetimeWithFormatField',
     ];
 
     protected $casts = [
@@ -38,6 +45,12 @@ class Casting extends Eloquent
         'jsonValue' => 'json',
         'collectionValue' => 'collection',
         'dateField' => 'date',
+        'dateWithFormatField' => 'date:j.n.Y H:i',
+        'immutableDateField' => 'immutable_date',
+        'immutableDateWithFormatField' => 'immutable_date:j.n.Y H:i',
         'datetimeField' => 'datetime',
+        'datetimeWithFormatField' => 'datetime:j.n.Y H:i',
+        'immutableDatetimeField' => 'immutable_datetime',
+        'immutableDatetimeWithFormatField' => 'immutable_datetime:j.n.Y H:i',
     ];
 }
