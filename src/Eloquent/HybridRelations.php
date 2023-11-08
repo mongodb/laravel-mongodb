@@ -221,7 +221,7 @@ trait HybridRelations
                 $this->newQuery(),
                 $this,
                 $id,
-                $ownerKey,
+                $ownerKey ?: $this->getKeyName(),
                 $type,
                 $name,
             );
@@ -235,6 +235,11 @@ trait HybridRelations
         $instance = new $class();
 
         $ownerKey ??= $instance->getKeyName();
+
+        // Check if it is a relation with an original model.
+        if (! is_subclass_of($instance, MongoDBModel::class)) {
+            return parent::morphTo($name, $type, $id, $ownerKey);
+        }
 
         return new MorphTo(
             $instance->newQuery(),
