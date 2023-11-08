@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
@@ -510,6 +511,20 @@ class RelationsTest extends TestCase
         $this->assertContains($label->_id, $user->labels->pluck('_id'));
     }
 
+    public function testMorphToManyAttachEloquentCollection(): void
+    {
+        $client = Client::query()->create(['name' => 'Young Gerald']);
+
+        $label1  = Label::query()->create(['name' => "Make no mistake, it's the life that I was chosen for"]);
+        $label2  = Label::query()->create(['name' => 'All I prayed for was an open door']);
+
+        $client->labels()->attach(new Collection([$label1, $label2]));
+
+        $this->assertEquals(2, $client->labels->count());
+        $this->assertContains($label1->_id, $client->labels->pluck('_id'));
+        $this->assertContains($label2->_id, $client->labels->pluck('_id'));
+    }
+
     public function testMorphedByMany(): void
     {
         $user = User::query()->create(['name' => 'John Doe']);
@@ -526,6 +541,25 @@ class RelationsTest extends TestCase
         $this->assertEquals(1, $label->clients->count());
         $this->assertContains($client->_id, $label->clients->pluck('_id'));
     }
+
+    public function testMorphedByManyAttachEloquentCollection(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $extra = Client::query()->create(['name' => 'one more client']);
+
+        $label  = Label::query()->create(['name' => 'They want me to architect Rome, in a day']);
+
+        $label->clients()->attach(new Collection([$client1, $client2]));
+
+        $this->assertEquals(2, $label->clients->count());
+        $this->assertContains($client1->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clients->pluck('_id'));
+
+        $client1->refresh();
+        $this->assertEquals(1, $client1->labels->count());
+    }
+
 
     public function testHasManyHas(): void
     {
