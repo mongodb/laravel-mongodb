@@ -87,8 +87,7 @@ class MorphToMany extends EloquentMorphToMany
             // query -> Label
             // parent -> User
             // relatedPivotKey -> label_ids
-            $relatedModels = $this->parent->{$this->relatedPivotKey} ?? [];
-            $this->query->whereIn($this->relatedKey, $relatedModels);
+            $this->query->whereIn($this->relatedKey, (array) $this->parent->{$this->relatedPivotKey});
         }
 
         return $this;
@@ -256,7 +255,7 @@ class MorphToMany extends EloquentMorphToMany
     public function detach($ids = [], $touch = true)
     {
         if ($ids instanceof Model) {
-            $ids = (array) $ids->getKey();
+            $ids = $this->parseIds($ids);
         }
 
         $query = $this->newRelatedQuery();
@@ -267,19 +266,42 @@ class MorphToMany extends EloquentMorphToMany
         $ids = (array) $ids;
 
         // Detach all ids from the parent model.
-        $this->parent->pull($this->relatedPivotKey, $ids);
+        if ($this->getInverse()) {
+            // parent -> label
+            // related -> Client
+            // relatedPivotKey -> labelled_id
+            // foreignPivotKey -> label_ids
+            foreach ($ids as $item) {
+                $this->parent->pull($this->table, [
+                    $this->relatedPivotKey => $item,
+                    $this->morphType => $this->related->getMorphClass(),
+                ]);
+            }
 
-        // Prepare the query to select all related objects.
-        if (count($ids) > 0) {
-            $query->whereIn($this->related->getKeyName(), $ids);
+            // Prepare the query to select all related objects.
+            if (count($ids) > 0) {
+                $query->whereIn($this->relatedKey, $ids);
+            }
+
+            // Remove the relation to the parent.
+            $query->pull($this->foreignPivotKey, $this->parent->{$this->parentKey});
+        } else {
+            // parent -> Client
+            // related -> label
+            // relatedPivotKey -> label_ids
+            $this->parent->pull($this->relatedPivotKey, $ids);
+
+            // Prepare the query to select all related objects.
+            if (count($ids) > 0) {
+                $query->whereIn($this->relatedKey, $ids);
+            }
+
+            // Remove the relation to the parent.
+            $query->pull($this->table, [
+                $this->foreignPivotKey => $this->parent->{$this->parentKey},
+                $this->morphType => $this->parent->getMorphClass(),
+            ]);
         }
-
-        // Remove the relation to the parent.
-        // $query->pull($this->foreignPivotKey, $this->foreignPivotKey, $this->parent->getKey());
-        $query->pull($this->table, [
-            $this->foreignPivotKey => $this->parent->getKey(),
-            $this->morphType => $this->parent instanceof Model ? $this->parent->getMorphClass() : null,
-        ]);
 
         if ($touch) {
             $this->touchIfTouching();
