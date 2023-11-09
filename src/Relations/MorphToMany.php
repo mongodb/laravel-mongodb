@@ -142,7 +142,7 @@ class MorphToMany extends EloquentMorphToMany
             // table -> labelleds
             $current = $this->parent->{$this->table} ?: [];
             $current = array_filter($current, fn ($item) => $item !== get_class($this->related));
-        }else{
+        } else {
             // parent -> User, Client
             // relatedPivotKey -> label_ids
             $current = $this->parent->{$this->relatedPivotKey} ?: [];
@@ -228,6 +228,7 @@ class MorphToMany extends EloquentMorphToMany
             if ($id instanceof Collection) {
                 $id = $this->parseIds($id);
             }
+
             $id = (array) $id;
 
             $query = $this->newRelatedQuery();

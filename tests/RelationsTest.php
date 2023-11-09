@@ -741,7 +741,7 @@ class RelationsTest extends TestCase
 
         $label  = Label::query()->create(['name' => 'My test label']);
 
-        $label->clients()->sync(new Collection([$client1,$client2]));
+        $label->clients()->sync(new Collection([$client1, $client2]));
 
         $this->assertEquals(2, $label->clients->count());
         $this->assertContains($client1->_id, $label->clients->pluck('_id'));
@@ -758,7 +758,7 @@ class RelationsTest extends TestCase
 
         $label  = Label::query()->create(['name' => 'My test label']);
 
-        $label->clients()->sync([$client1->_id,$client2->_id]);
+        $label->clients()->sync([$client1->_id, $client2->_id]);
 
         $this->assertEquals(2, $label->clients->count());
         $this->assertContains($client1->_id, $label->clients->pluck('_id'));
