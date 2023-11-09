@@ -715,6 +715,25 @@ class RelationsTest extends TestCase
         $this->assertContains($client3->_id, $check->clients->pluck('_id'));
     }
 
+    public function testMorphedByManySyncing(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['name' => 'Austin Richard Post']);
+
+        $label  = Label::query()->create(['name' => 'My test label']);
+
+        $label->clients()->sync($client1);
+        $label->clients()->sync($client2, false);
+        $label->clients()->sync($client3, false);
+
+        $this->assertEquals(3, $label->clients->count());
+        $this->assertContains($client1->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client3->_id, $label->clients->pluck('_id'));
+    }
+
+
     public function testHasManyHas(): void
     {
         $author1 = User::create(['name' => 'George R. R. Martin']);
