@@ -556,6 +556,25 @@ class RelationsTest extends TestCase
         $this->assertContains($label2->_id, $client->labels->pluck('_id'));
     }
 
+    public function testMorphToManyDetachingMultipleIds(): void
+    {
+        $client = Client::query()->create(['name' => 'Young Gerald']);
+
+        $label1  = Label::query()->create(['name' => "Make no mistake, it's the life that I was chosen for"]);
+        $label2  = Label::query()->create(['name' => 'All I prayed for was an open door']);
+        $label3  = Label::query()->create(['name' => 'If it was easy, everyone would do it']);
+
+        $client->labels()->attach([$label1->_id, $label2->_id, $label3->_id]);
+
+        $this->assertEquals(3, $client->labels->count());
+
+        $client->labels()->detach([$label1->_id, $label2->_id]);
+        $check = $client->withoutRelations();
+
+        $this->assertEquals(1, $check->labels->count());
+        $this->assertContains($label3->_id, $client->labels->pluck('_id'));
+    }
+
     public function testMorphedByMany(): void
     {
         $user = User::query()->create(['name' => 'John Doe']);
@@ -626,6 +645,25 @@ class RelationsTest extends TestCase
 
         $this->assertEquals(1, $check->clients->count());
         $this->assertContains($client2->_id, $check->clients->pluck('_id'));
+    }
+
+    public function testMorphedByManyDetachingMultipleIds(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['name' => 'Austin Richard Post']);
+
+        $label  = Label::query()->create(['name' => 'They want me to architect Rome, in a day']);
+
+        $label->clients()->attach([$client1->_id, $client2->_id, $client3->_id]);
+
+        $this->assertEquals(3, $label->clients->count());
+
+        $label->clients()->detach([$client1->_id, $client2->_id]);
+        $check = $label->withoutRelations();
+
+        $this->assertEquals(1, $check->clients->count());
+        $this->assertContains($client3->_id, $check->clients->pluck('_id'));
     }
 
     public function testHasManyHas(): void
