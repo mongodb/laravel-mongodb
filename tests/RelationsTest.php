@@ -733,6 +733,21 @@ class RelationsTest extends TestCase
         $this->assertContains($client3->_id, $label->clients->pluck('_id'));
     }
 
+    public function testMorphedByManySyncingEloquentCollection(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['name' => 'Austin Richard Post']);
+
+        $label  = Label::query()->create(['name' => 'My test label']);
+
+        $label->clients()->sync(new Collection([$client1,$client2,$client3]));
+
+        $this->assertEquals(3, $label->clients->count());
+        $this->assertContains($client1->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client3->_id, $label->clients->pluck('_id'));
+    }
 
     public function testHasManyHas(): void
     {
