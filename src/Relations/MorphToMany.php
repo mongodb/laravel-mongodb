@@ -136,9 +136,17 @@ class MorphToMany extends EloquentMorphToMany
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
-        // parent -> User, Client
-        // relatedPivotKey -> label_ids
-        $current = $this->parent->{$this->relatedPivotKey} ?: [];
+        if ($this->getInverse()) {
+            // parent -> Label
+            // relatedPivotKey -> labelled_id
+            // table -> labelleds
+            $current = $this->parent->{$this->table} ?: [];
+            $current = array_filter($current, fn ($item) => $item !== get_class($this->related));
+        }else{
+            // parent -> User, Client
+            // relatedPivotKey -> label_ids
+            $current = $this->parent->{$this->relatedPivotKey} ?: [];
+        }
 
         // See issue #256.
         if ($current instanceof Collection) {
