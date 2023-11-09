@@ -128,17 +128,21 @@ class MorphToMany extends EloquentMorphToMany
         ];
 
         if ($ids instanceof Collection) {
-            $ids = $ids->modelKeys();
+            $ids = $this->parseIds($ids);
+        } elseif ($ids instanceof Model) {
+            $ids = $this->parseIds($ids);
         }
 
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
+        // parent -> User, Client
+        // relatedPivotKey -> label_ids
         $current = $this->parent->{$this->relatedPivotKey} ?: [];
 
         // See issue #256.
         if ($current instanceof Collection) {
-            $current = $ids->modelKeys();
+            $current = $this->parseIds($current);
         }
 
         $records = $this->formatSyncList($ids);
@@ -157,7 +161,7 @@ class MorphToMany extends EloquentMorphToMany
         if ($detaching && count($detach) > 0) {
             $this->detach($detach);
 
-            $changes['detached'] = (array) array_map(function ($v) {
+            $changes['detached'] = array_map(function ($v) {
                 return is_numeric($v) ? (int) $v : (string) $v;
             }, $detach);
         }
