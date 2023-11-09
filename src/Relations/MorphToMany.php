@@ -220,12 +220,12 @@ class MorphToMany extends EloquentMorphToMany
             if ($id instanceof Collection) {
                 $id = $this->parseIds($id);
             }
+            $id = (array) $id;
 
             $query = $this->newRelatedQuery();
+            $query->whereIn($this->relatedKey, $id);
 
             if ($this->getInverse()) {
-                $query->whereIn($this->relatedKey, (array) $id);
-
                 // Attach the new parent id to the related model.
                 $query->push($this->foreignPivotKey, $this->parent->{$this->parentKey});
 
@@ -237,8 +237,6 @@ class MorphToMany extends EloquentMorphToMany
                     ], true);
                 }
             } else {
-                $query->whereIn($this->relatedKey, (array) $id);
-
                 // Attach the new parent id to the related model.
                 $query->push($this->table, [
                     $this->foreignPivotKey => $this->parent->{$this->parentKey},
@@ -246,7 +244,7 @@ class MorphToMany extends EloquentMorphToMany
                 ], true);
 
                 // Attach the new ids to the parent model.
-                $this->parent->push($this->relatedPivotKey, (array) $id, true);
+                $this->parent->push($this->relatedPivotKey, $id, true);
             }
         }
 
