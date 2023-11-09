@@ -569,9 +569,9 @@ class RelationsTest extends TestCase
         $this->assertEquals(3, $client->labels->count());
 
         $client->labels()->detach([$label1->_id, $label2->_id]);
-        $check = $client->withoutRelations();
+        $client->refresh();
 
-        $this->assertEquals(1, $check->labels->count());
+        $this->assertEquals(1, $client->labels->count());
         $this->assertContains($label3->_id, $client->labels->pluck('_id'));
     }
 
@@ -628,6 +628,7 @@ class RelationsTest extends TestCase
     {
         $user = User::query()->create(['name' => 'John Doe']);
         $client = Client::query()->create(['name' => 'Hans Thomas']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
 
         $label  = Label::query()->create(['name' => 'My test label']);
 
@@ -709,10 +710,10 @@ class RelationsTest extends TestCase
         $this->assertEquals(3, $label->clients->count());
 
         $label->clients()->detach([$client1->_id, $client2->_id]);
-        $check = $label->withoutRelations();
+        $label->load('clients');
 
-        $this->assertEquals(1, $check->clients->count());
-        $this->assertContains($client3->_id, $check->clients->pluck('_id'));
+        $this->assertEquals(1, $label->clients->count());
+        $this->assertContains($client3->_id, $label->clients->pluck('_id'));
     }
 
     public function testMorphedByManySyncing(): void
