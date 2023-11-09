@@ -12,14 +12,18 @@ use Illuminate\Support\Arr;
 
 use function array_diff;
 use function array_filter;
+use function array_key_exists;
 use function array_keys;
 use function array_map;
 use function array_merge;
+use function array_reduce;
 use function array_values;
 use function count;
 use function get_class;
 use function is_array;
 use function is_numeric;
+use function is_string;
+use function str_contains;
 
 class MorphToMany extends EloquentMorphToMany
 {
@@ -69,6 +73,32 @@ class MorphToMany extends EloquentMorphToMany
         }
     }
 
+    /** @inheritdoc */
+    public function addEagerConstraints(array $models)
+    {
+        if ($this->getInverse()) {
+            // query -> Client
+            // related -> Client
+            // relatedPivotKey -> labelled_id
+            // table -> labelleds
+            $ids = $this->getKeys($models, $this->table);
+            $ids = array_reduce($ids[0] ?? [], function ($carry, $item) {
+                if (is_array($item) && array_key_exists($this->relatedPivotKey, $item)) {
+                    $carry[] = $item[$this->relatedPivotKey];
+                } elseif (is_string($item) && ! str_contains($item, '\\')) {
+                    $carry[] = $item;
+                }
+
+                return $carry;
+            }, []);
+            $this->query->whereIn($this->relatedKey, $ids);
+        } else {
+            parent::addEagerConstraints($models);
+
+            $this->query->where($this->qualifyPivotColumn($this->morphType), $this->morphClass);
+        }
+    }
+
     /**
      * Set the where clause for the relation query.
      *
@@ -81,7 +111,16 @@ class MorphToMany extends EloquentMorphToMany
             // parent -> Label
             // getForeignKey -> labelled_id -in-> User
             // relatedPivotKey -> label_ids
-            $ids = array_filter((array) $this->parent->{$this->table}, fn ($id) => $id !== get_class($this->related));
+            $ids = array_reduce((array) $this->parent->{$this->table}, function ($carry, $item) {
+                if (is_array($item) && array_key_exists($this->relatedPivotKey, $item)) {
+                    $carry[] = $item[$this->relatedPivotKey];
+                } elseif (is_string($item) && ! str_contains($item, '\\')) {
+                    $carry[] = $item;
+                }
+
+                return $carry;
+            }, []);
+
             $this->query->whereIn($this->relatedKey, $ids);
         } else {
             // query -> Label
@@ -332,8 +371,15 @@ class MorphToMany extends EloquentMorphToMany
         $dictionary = [];
 
         foreach ($results as $result) {
-            foreach ($result->$foreign as $item) {
-                $dictionary[$item][] = $result;
+            if ($this->getInverse()) {
+                foreach ($result->$foreign as $item) {
+                    $dictionary[$item][] = $result;
+                }
+            } else {
+                $items = array_reduce($result->{$this->table} ?? [], fn ($carry, $item) => array_merge($carry, [$item[$foreign]]), []);
+                foreach ($items as $item) {
+                    $dictionary[$item][] = $result;
+                }
             }
         }
 
@@ -357,16 +403,6 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /**
-     * Create a new query builder for the parent model.
-     *
-     * @return \Illuminate\Database\Query\Builder
-     */
-    public function newParentQuery()
-    {
-        return $this->parent->newQuery();
-    }
-
-    /**
      * Get the fully qualified foreign key for the relation.
      *
      * @return string
@@ -379,7 +415,9 @@ class MorphToMany extends EloquentMorphToMany
     /** @inheritdoc */
     public function getQualifiedForeignPivotKeyName()
     {
-        return $this->foreignPivotKey;
+        return str_contains($this->foreignPivotKey, '.')
+            ? $this->foreignPivotKey
+            : $this->table . '.' . $this->foreignPivotKey;
     }
 
     /** @inheritdoc */
