@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use BadMethodCallException;
 use DateTimeImmutable;
 use LogicException;
 use MongoDB\BSON\Regex;
@@ -532,6 +533,44 @@ class QueryTest extends TestCase
         $this->assertEquals(2, $results->count());
         $this->assertEquals(13, $results->first()->age);
         $this->assertNull($results->first()->title);
+    }
+
+    public function testPaginateGroup(): void
+    {
+        // First page
+        $results = User::groupBy('age')->paginate(2);
+        $this->assertEquals(2, $results->count());
+        $this->assertEquals(6, $results->total());
+        $this->assertEquals(3, $results->lastPage());
+        $this->assertEquals(1, $results->currentPage());
+        $this->assertCount(2, $results->items());
+        $this->assertArrayHasKey('age', $results->first()->getAttributes());
+
+        // Last page has fewer results
+        $results = User::groupBy('age')->paginate(4, page: 2);
+        $this->assertEquals(2, $results->count());
+        $this->assertEquals(6, $results->total());
+        $this->assertEquals(2, $results->lastPage());
+        $this->assertEquals(2, $results->currentPage());
+        $this->assertCount(2, $results->items());
+        $this->assertArrayHasKey('age', $results->first()->getAttributes());
+
+        // Using a filter
+        $results = User::where('title', 'admin')->groupBy('age')->paginate(4);
+        $this->assertEquals(2, $results->count());
+        $this->assertEquals(2, $results->total());
+        $this->assertEquals(1, $results->lastPage());
+        $this->assertEquals(1, $results->currentPage());
+        $this->assertCount(2, $results->items());
+        $this->assertArrayHasKey('age', $results->last()->getAttributes());
+    }
+
+    public function testPaginateDistinct(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Distinct queries cannot be used for pagination. Use GroupBy instead');
+
+        User::distinct('age')->paginate(2);
     }
 
     public function testUpdate(): void
