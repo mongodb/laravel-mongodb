@@ -34,7 +34,8 @@
         "phpunit/phpunit": "^10.3",
         "orchestra/testbench": "^8.0",
         "mockery/mockery": "^1.4.4",
-        "doctrine/coding-standard": "12.0.x-dev"
+        "doctrine/coding-standard": "12.0.x-dev",
+        "spatie/laravel-query-builder": "^5.6"
     },
     "replace": {
         "jenssegers/mongodb": "self.version"

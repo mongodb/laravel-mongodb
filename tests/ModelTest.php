@@ -25,6 +25,7 @@ use MongoDB\Laravel\Tests\Models\IdIsString;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\MemberStatus;
 use MongoDB\Laravel\Tests\Models\Soft;
+use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
 
 use function abs;
@@ -56,6 +57,17 @@ class ModelTest extends TestCase
         $this->assertFalse($user->exists);
         $this->assertEquals('users', $user->getTable());
         $this->assertEquals('_id', $user->getKeyName());
+    }
+
+    public function testQualifyColumn(): void
+    {
+        // Don't qualify field names in document models
+        $user = new User();
+        $this->assertEquals('name', $user->qualifyColumn('name'));
+
+        // Qualify column names in hybrid SQL models
+        $sqlUser = new SqlUser();
+        $this->assertEquals('users.name', $sqlUser->qualifyColumn('name'));
     }
 
     public function testInsert(): void
