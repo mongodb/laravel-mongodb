@@ -19,7 +19,6 @@ use function array_merge;
 use function array_reduce;
 use function array_values;
 use function count;
-use function get_class;
 use function is_array;
 use function is_numeric;
 use function is_string;
@@ -169,7 +168,7 @@ class MorphToMany extends EloquentMorphToMany
         // if they exist in the array of current ones, and if not we will insert.
         if ($this->getInverse()) {
             $current = $this->parent->{$this->table} ?: [];
-            $current = array_filter($current, fn ($item) => ! str_contains($item,'\\'));
+            $current = array_filter($current, fn ($item) => ! str_contains($item, '\\'));
         } else {
             $current = $this->parent->{$this->relatedPivotKey} ?: [];
         }
