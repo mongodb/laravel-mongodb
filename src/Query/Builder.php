@@ -910,6 +910,28 @@ class Builder extends BaseBuilder
         return new static($this->connection, $this->grammar, $this->processor);
     }
 
+    public function runPaginationCountQuery($columns = ['*'])
+    {
+        if ($this->distinct) {
+            throw new BadMethodCallException('Distinct queries cannot be used for pagination. Use GroupBy instead');
+        }
+
+        if ($this->groups || $this->havings) {
+            $without = $this->unions ? ['orders', 'limit', 'offset'] : ['columns', 'orders', 'limit', 'offset'];
+
+            $mql = $this->cloneWithout($without)
+                ->cloneWithoutBindings($this->unions ? ['order'] : ['select', 'order'])
+                ->toMql();
+
+            // Adds the $count stage to the pipeline
+            $mql['aggregate'][0][] = ['$count' => 'aggregate'];
+
+            return $this->collection->aggregate($mql['aggregate'][0], $mql['aggregate'][1])->toArray();
+        }
+
+        return parent::runPaginationCountQuery($columns);
+    }
+
     /**
      * Perform an update query.
      *
