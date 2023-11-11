@@ -626,10 +626,10 @@ class RelationsTest extends TestCase
 
     public function testMorphToManySyncingWithCustomKeys(): void
     {
-        $client = Client::query()->create(['cclient_id'=>(string)(new ObjectId()), 'name' => 'Hans Thomas']);
+        $client = Client::query()->create(['cclient_id' => (string) (new ObjectId()), 'name' => 'Hans Thomas']);
 
-        $label  = Label::query()->create(['clabel_id'=>(string)(new ObjectId()), 'name' => 'My test label']);
-        $label2  = Label::query()->create(['clabel_id'=>(string)(new ObjectId()), 'name' => 'My test label 2']);
+        $label  = Label::query()->create(['clabel_id' => (string) (new ObjectId()), 'name' => 'My test label']);
+        $label2  = Label::query()->create(['clabel_id' => (string) (new ObjectId()), 'name' => 'My test label 2']);
 
         $client->labelsWithCustomKeys()->sync([$label->clabel_id, $label2->clabel_id]);
 
@@ -819,11 +819,11 @@ class RelationsTest extends TestCase
 
     public function testMorphedByManySyncingWithCustomKeys(): void
     {
-        $client1 = Client::query()->create(['cclient_id'=>(string)(new ObjectId()), 'name' => 'Young Gerald']);
-        $client2 = Client::query()->create(['cclient_id'=>(string)(new ObjectId()), 'name' => 'Hans Thomas']);
-        $client3 = Client::query()->create(['cclient_id'=>(string)(new ObjectId()), 'name' => 'Austin Richard Post']);
+        $client1 = Client::query()->create(['cclient_id' => (string) (new ObjectId()), 'name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['cclient_id' => (string) (new ObjectId()), 'name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['cclient_id' => (string) (new ObjectId()), 'name' => 'Austin Richard Post']);
 
-        $label  = Label::query()->create(['clabel_id'=>(string)(new ObjectId()), 'name' => 'My test label']);
+        $label  = Label::query()->create(['clabel_id' => (string) (new ObjectId()), 'name' => 'My test label']);
 
         $label->clientsWithCustomKeys()->sync([$client1->cclient_id, $client2->cclient_id]);
 
@@ -851,7 +851,7 @@ class RelationsTest extends TestCase
 
         $label  = Label::query()->create(['name' => 'My test label']);
 
-        $label->clients()->sync(new Collection([$client1,$client2,$client3]));
+        $label->clients()->sync(new Collection([$client1, $client2, $client3]));
 
         $this->assertEquals(3, $label->clients->count());
 

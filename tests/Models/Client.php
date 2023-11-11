@@ -34,6 +34,7 @@ class Client extends Eloquent
     {
         return $this->morphToMany(Label::class, 'labelled');
     }
+
     public function labelsWithCustomKeys()
     {
         return $this->morphToMany(
