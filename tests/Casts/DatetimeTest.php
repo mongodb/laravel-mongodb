@@ -18,6 +18,7 @@ class DatetimeTest extends TestCase
     {
         parent::setUp();
 
+        Carbon::setTestNow(now());
         Casting::truncate();
     }
 
@@ -55,7 +56,7 @@ class DatetimeTest extends TestCase
 
     public function testDatetimeWithCustomFormat(): void
     {
-        $model = Casting::query()->create(['datetimeWithFormatField' => new DateTime()]);
+        $model = Casting::query()->create(['datetimeWithFormatField' => DateTime::createFromInterface(now())]);
 
         self::assertInstanceOf(Carbon::class, $model->datetimeWithFormatField);
         self::assertEquals(now()->format('j.n.Y H:i'), (string) $model->datetimeWithFormatField);
@@ -68,7 +69,7 @@ class DatetimeTest extends TestCase
 
     public function testImmutableDatetime(): void
     {
-        $model = Casting::query()->create(['immutableDatetimeField' => new DateTime()]);
+        $model = Casting::query()->create(['immutableDatetimeField' => DateTime::createFromInterface(now())]);
 
         self::assertInstanceOf(CarbonImmutable::class, $model->immutableDatetimeField);
         self::assertEquals(now()->format('Y-m-d H:i:s'), (string) $model->immutableDatetimeField);
@@ -89,7 +90,7 @@ class DatetimeTest extends TestCase
 
     public function testImmutableDatetimeWithCustomFormat(): void
     {
-        $model = Casting::query()->create(['immutableDatetimeWithFormatField' => new DateTime()]);
+        $model = Casting::query()->create(['immutableDatetimeWithFormatField' => DateTime::createFromInterface(now())]);
 
         self::assertInstanceOf(CarbonImmutable::class, $model->immutableDatetimeWithFormatField);
         self::assertEquals(now()->format('j.n.Y H:i'), (string) $model->immutableDatetimeWithFormatField);
