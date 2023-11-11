@@ -31,11 +31,20 @@ class Label extends Eloquent
         return $this->morphedByMany(User::class, 'labelled');
     }
 
-    /**
-     * Get all the videos that are assigned this tag.
-     */
     public function clients()
     {
         return $this->morphedByMany(Client::class, 'labelled');
+    }
+    public function clientsWithCustomKeys()
+    {
+        return $this->morphedByMany(
+            Client::class,
+            'clabelled',
+            'clabelleds',
+            'clabel_ids',
+            'cclabelled_id',
+            'clabel_id',
+            'cclient_id',
+        );
     }
 }
