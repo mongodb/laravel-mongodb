@@ -76,11 +76,10 @@ class MorphToMany extends EloquentMorphToMany
     /** @inheritdoc */
     public function addEagerConstraints(array $models)
     {
+        // To load relation's data, we act normally on MorphToMany relation,
+        // But on MorphedByMany relation, we collect related ids from pivot column
+        // and add to a whereIn condition
         if ($this->getInverse()) {
-            // query -> Client
-            // related -> Client
-            // relatedPivotKey -> labelled_id
-            // table -> labelleds
             $ids = $this->getKeys($models, $this->table);
             $ids = array_reduce($ids[0] ?? [], function ($carry, $item) {
                 if (is_array($item) && array_key_exists($this->relatedPivotKey, $item)) {
@@ -107,10 +106,6 @@ class MorphToMany extends EloquentMorphToMany
     protected function setWhere()
     {
         if ($this->getInverse()) {
-            // query -> User
-            // parent -> Label
-            // getForeignKey -> labelled_id -in-> User
-            // relatedPivotKey -> label_ids
             $ids = array_reduce((array) $this->parent->{$this->table}, function ($carry, $item) {
                 if (is_array($item) && array_key_exists($this->relatedPivotKey, $item)) {
                     $carry[] = $item[$this->relatedPivotKey];
@@ -123,9 +118,6 @@ class MorphToMany extends EloquentMorphToMany
 
             $this->query->whereIn($this->relatedKey, $ids);
         } else {
-            // query -> Label
-            // parent -> User
-            // relatedPivotKey -> label_ids
             $this->query->whereIn($this->relatedKey, (array) $this->parent->{$this->relatedPivotKey});
         }
 
@@ -176,14 +168,9 @@ class MorphToMany extends EloquentMorphToMany
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
         if ($this->getInverse()) {
-            // parent -> Label
-            // relatedPivotKey -> labelled_id
-            // table -> labelleds
             $current = $this->parent->{$this->table} ?: [];
-            $current = array_filter($current, fn ($item) => $item !== get_class($this->related));
+            $current = array_filter($current, fn ($item) => ! str_contains($item,'\\'));
         } else {
-            // parent -> User, Client
-            // relatedPivotKey -> label_ids
             $current = $this->parent->{$this->relatedPivotKey} ?: [];
         }
 
@@ -242,19 +229,17 @@ class MorphToMany extends EloquentMorphToMany
 
             $id = $this->parseId($model);
 
-            // Attach the new parent id to the related model.
             if ($this->getInverse()) {
-                // related -> User
-                // parent -> Label
-                // table -> labelleds
+                // Attach the new ids to the parent model.
                 $this->parent->push($this->table, [
                     $this->relatedPivotKey => $model->{$this->relatedKey},
                     $this->morphType => $model->getMorphClass(),
                 ], true);
 
-                // Attach the new ids to the parent model.
+                // Attach the new parent id to the related model.
                 $model->push($this->foreignPivotKey, $this->parseIds($this->parent), true);
             } else {
+                // Attach the new parent id to the related model.
                 $model->push($this->table, [
                     $this->foreignPivotKey => $this->parent->{$this->parentKey},
                     $this->morphType => $this->parent instanceof Model ? $this->parent->getMorphClass() : null,
@@ -317,10 +302,7 @@ class MorphToMany extends EloquentMorphToMany
 
         // Detach all ids from the parent model.
         if ($this->getInverse()) {
-            // parent -> label
-            // related -> Client
-            // relatedPivotKey -> labelled_id
-            // foreignPivotKey -> label_ids
+            // Remove the relation from the parent.
             foreach ($ids as $item) {
                 $this->parent->pull($this->table, [
                     $this->relatedPivotKey => $item,
@@ -333,12 +315,10 @@ class MorphToMany extends EloquentMorphToMany
                 $query->whereIn($this->relatedKey, $ids);
             }
 
-            // Remove the relation to the parent.
+            // Remove the relation from the related.
             $query->pull($this->foreignPivotKey, $this->parent->{$this->parentKey});
         } else {
-            // parent -> Client
-            // related -> label
-            // relatedPivotKey -> label_ids
+            // Remove the relation from the parent.
             $this->parent->pull($this->relatedPivotKey, $ids);
 
             // Prepare the query to select all related objects.
@@ -346,7 +326,7 @@ class MorphToMany extends EloquentMorphToMany
                 $query->whereIn($this->relatedKey, $ids);
             }
 
-            // Remove the relation to the parent.
+            // Remove the relation to the related.
             $query->pull($this->table, [
                 $this->foreignPivotKey => $this->parent->{$this->parentKey},
                 $this->morphType => $this->parent->getMorphClass(),
@@ -376,6 +356,7 @@ class MorphToMany extends EloquentMorphToMany
                     $dictionary[$item][] = $result;
                 }
             } else {
+                // Collect $foreign value from pivot column of result model
                 $items = array_reduce($result->{$this->table} ?? [], fn ($carry, $item) => array_merge($carry, [$item[$foreign]]), []);
                 foreach ($items as $item) {
                     $dictionary[$item][] = $result;
