@@ -789,6 +789,32 @@ class RelationsTest extends TestCase
         $this->assertNotContains($client3->_id, $label->clients->pluck('_id'));
     }
 
+    public function testMorphedByManySyncingWithCustomKeys(): void
+    {
+        $client1 = Client::query()->create(['cclient_id'=>(string)(new ObjectId()), 'name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['cclient_id'=>(string)(new ObjectId()), 'name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['cclient_id'=>(string)(new ObjectId()), 'name' => 'Austin Richard Post']);
+
+        $label  = Label::query()->create(['clabel_id'=>(string)(new ObjectId()), 'name' => 'My test label']);
+
+        $label->clientsWithCustomKeys()->sync([$client1->cclient_id, $client2->cclient_id]);
+
+        $this->assertEquals(2, $label->clientsWithCustomKeys->count());
+        $this->assertContains($client1->_id, $label->clientsWithCustomKeys->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clientsWithCustomKeys->pluck('_id'));
+
+        $this->assertNotContains($client3->_id, $label->clientsWithCustomKeys->pluck('_id'));
+
+        $label->clientsWithCustomKeys()->sync($client3);
+        $label->load('clientsWithCustomKeys');
+
+        $this->assertEquals(1, $label->clientsWithCustomKeys->count());
+        $this->assertNotContains($client1->_id, $label->clientsWithCustomKeys->pluck('_id'));
+        $this->assertNotContains($client2->_id, $label->clientsWithCustomKeys->pluck('_id'));
+
+        $this->assertContains($client3->_id, $label->clientsWithCustomKeys->pluck('_id'));
+    }
+
     public function testHasManyHas(): void
     {
         $author1 = User::create(['name' => 'George R. R. Martin']);
