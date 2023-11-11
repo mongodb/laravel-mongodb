@@ -845,6 +845,8 @@ class RelationsTest extends TestCase
 
     public function testMorphedByManyLoadAndRefreshing(): void
     {
+        $user = User::query()->create(['name' => 'Abel Tesfaye']);
+
         $client1 = Client::query()->create(['name' => 'Young Gerald']);
         $client2 = Client::query()->create(['name' => 'Hans Thomas']);
         $client3 = Client::query()->create(['name' => 'Austin Richard Post']);
@@ -852,16 +854,19 @@ class RelationsTest extends TestCase
         $label  = Label::query()->create(['name' => 'My test label']);
 
         $label->clients()->sync(new Collection([$client1, $client2, $client3]));
+        $label->users()->sync($user);
 
-        $this->assertEquals(3, $label->clients->count());
+        $check = Label::query()->find($label->_id);
 
-        $label->load('clients');
+        $this->assertEquals(3, $check->clients->count());
 
-        $this->assertEquals(3, $label->clients->count());
+        $check->load('clients');
 
-        $label->refresh();
+        $this->assertEquals(3, $check->clients->count());
 
-        $this->assertEquals(3, $label->clients->count());
+        $check->refresh();
+
+        $this->assertEquals(3, $check->clients->count());
 
         $check = Label::query()->find($label->_id);
 
