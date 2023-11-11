@@ -34,4 +34,16 @@ class Client extends Eloquent
     {
         return $this->morphToMany(Label::class, 'labelled');
     }
+    public function labelsWithCustomKeys()
+    {
+        return $this->morphToMany(
+            Label::class,
+            'clabelled',
+            'clabelleds',
+            'cclabelled_id',
+            'clabel_ids',
+            'cclient_id',
+            'clabel_id',
+        );
+    }
 }
