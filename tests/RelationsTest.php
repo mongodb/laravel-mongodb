@@ -843,6 +843,35 @@ class RelationsTest extends TestCase
         $this->assertContains($client3->_id, $label->clientsWithCustomKeys->pluck('_id'));
     }
 
+    public function testMorphedByManyLoadAndRefreshing(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['name' => 'Austin Richard Post']);
+
+        $label  = Label::query()->create(['name' => 'My test label']);
+
+        $label->clients()->sync(new Collection([$client1,$client2,$client3]));
+
+        $this->assertEquals(3, $label->clients->count());
+
+        $label->load('clients');
+
+        $this->assertEquals(3, $label->clients->count());
+
+        $label->refresh();
+
+        $this->assertEquals(3, $label->clients->count());
+
+        $check = Label::query()->find($label->_id);
+
+        $this->assertEquals(3, $check->clients->count());
+
+        $check = Label::query()->with('clients')->find($label->_id);
+
+        $this->assertEquals(3, $check->clients->count());
+    }
+
     public function testHasManyHas(): void
     {
         $author1 = User::create(['name' => 'George R. R. Martin']);
