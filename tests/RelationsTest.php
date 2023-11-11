@@ -624,6 +624,27 @@ class RelationsTest extends TestCase
         $this->assertContains($label2->_id, $client->labels->pluck('_id'));
     }
 
+    public function testMorphToManySyncingWithCustomKeys(): void
+    {
+        $client = Client::query()->create(['cclient_id'=>(string)(new ObjectId()), 'name' => 'Hans Thomas']);
+
+        $label  = Label::query()->create(['clabel_id'=>(string)(new ObjectId()), 'name' => 'My test label']);
+        $label2  = Label::query()->create(['clabel_id'=>(string)(new ObjectId()), 'name' => 'My test label 2']);
+
+        $client->labelsWithCustomKeys()->sync([$label->clabel_id, $label2->clabel_id]);
+
+        $this->assertEquals(2, $client->labelsWithCustomKeys->count());
+        $this->assertContains($label->_id, $client->labelsWithCustomKeys->pluck('_id'));
+        $this->assertContains($label2->_id, $client->labelsWithCustomKeys->pluck('_id'));
+
+        $client->labelsWithCustomKeys()->sync($label);
+        $client->load('labelsWithCustomKeys');
+
+        $this->assertEquals(1, $client->labelsWithCustomKeys->count());
+        $this->assertContains($label->_id, $client->labelsWithCustomKeys->pluck('_id'));
+        $this->assertNotContains($label2->_id, $client->labelsWithCustomKeys->pluck('_id'));
+    }
+
     public function testMorphedByMany(): void
     {
         $user = User::query()->create(['name' => 'John Doe']);
