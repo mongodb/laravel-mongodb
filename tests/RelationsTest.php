@@ -645,6 +645,34 @@ class RelationsTest extends TestCase
         $this->assertNotContains($label2->_id, $client->labelsWithCustomKeys->pluck('_id'));
     }
 
+    public function testMorphToManyLoadAndRefreshing(): void
+    {
+        $client = Client::query()->create(['name' => 'Hans Thomas']);
+
+        $label  = Label::query()->create(['name' => 'My test label']);
+        $label2  = Label::query()->create(['name' => 'My test label 2']);
+
+        $client->labels()->sync([$label->_id, $label2->_id]);
+
+        $this->assertEquals(2, $client->labels->count());
+
+        $client->load('labels');
+
+        $this->assertEquals(2, $client->labels->count());
+
+        $client->refresh();
+
+        $this->assertEquals(2, $client->labels->count());
+
+        $check = Client::query()->find($client->_id);
+
+        $this->assertEquals(2, $check->labels->count());
+
+        $check = Client::query()->with('labels')->find($client->_id);
+
+        $this->assertEquals(2, $check->labels->count());
+    }
+
     public function testMorphedByMany(): void
     {
         $user = User::query()->create(['name' => 'John Doe']);
