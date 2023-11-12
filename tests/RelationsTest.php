@@ -645,7 +645,6 @@ class RelationsTest extends TestCase
         $this->assertNotContains($label2->_id, $client->labelsWithCustomKeys->pluck('_id'));
     }
 
-    /** @group hans */
     public function testMorphToManyLoadAndRefreshing(): void
     {
         $user = User::query()->create(['name' => 'The Pretty Reckless']);
