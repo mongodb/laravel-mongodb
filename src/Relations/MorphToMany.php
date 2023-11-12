@@ -168,6 +168,15 @@ class MorphToMany extends EloquentMorphToMany
         // if they exist in the array of current ones, and if not we will insert.
         if ($this->getInverse()) {
             $current = $this->parent->{$this->table} ?: [];
+            $current = array_reduce($current, function ($carry, $item) {
+                if (is_array($item) && array_key_exists($this->relatedPivotKey, $item)) {
+                    $carry[] = $item[$this->relatedPivotKey];
+                } elseif (is_string($item) && ! str_contains($item, '\\')) {
+                    $carry[] = $item;
+                }
+
+                return $carry;
+            }, []);
             $current = array_filter($current, fn ($item) => ! str_contains($item, '\\'));
         } else {
             $current = $this->parent->{$this->relatedPivotKey} ?: [];
@@ -263,17 +272,17 @@ class MorphToMany extends EloquentMorphToMany
 
                 // Attach the new ids to the parent model.
                 foreach ($id as $item) {
-                    $this->parent->push($this->table, [
+                    $this->parent->push($this->table, [[
                         $this->relatedPivotKey => $item,
                         $this->morphType => $this->related instanceof Model ? $this->related->getMorphClass() : null,
-                    ], true);
+                    ]], true);
                 }
             } else {
                 // Attach the new parent id to the related model.
-                $query->push($this->table, [
+                $query->push($this->table, [[
                     $this->foreignPivotKey => $this->parent->{$this->parentKey},
                     $this->morphType => $this->parent instanceof Model ? $this->parent->getMorphClass() : null,
-                ], true);
+                ]], true);
 
                 // Attach the new ids to the parent model.
                 $this->parent->push($this->relatedPivotKey, $id, true);

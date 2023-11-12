@@ -645,6 +645,7 @@ class RelationsTest extends TestCase
         $this->assertNotContains($label2->_id, $client->labelsWithCustomKeys->pluck('_id'));
     }
 
+    /** @group hans */
     public function testMorphToManyLoadAndRefreshing(): void
     {
         $user = User::query()->create(['name' => 'The Pretty Reckless']);
@@ -859,17 +860,15 @@ class RelationsTest extends TestCase
         $label->clients()->sync(new Collection([$client1, $client2, $client3]));
         $label->users()->sync($user);
 
-        $check = Label::query()->find($label->_id);
+        $this->assertEquals(3, $label->clients->count());
 
-        $this->assertEquals(3, $check->clients->count());
+        $label->load('clients');
 
-        $check->load('clients');
+        $this->assertEquals(3, $label->clients->count());
 
-        $this->assertEquals(3, $check->clients->count());
+        $label->refresh();
 
-        $check->refresh();
-
-        $this->assertEquals(3, $check->clients->count());
+        $this->assertEquals(3, $label->clients->count());
 
         $check = Label::query()->find($label->_id);
 
