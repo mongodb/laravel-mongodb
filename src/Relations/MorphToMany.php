@@ -218,7 +218,7 @@ class MorphToMany extends EloquentMorphToMany
                     [
                         $this->relatedPivotKey => $model->{$this->relatedKey},
                         $this->morphType => $model->getMorphClass(),
-                    ]
+                    ],
                 ], true);
 
                 // Attach the new parent id to the related model.
@@ -439,15 +439,15 @@ class MorphToMany extends EloquentMorphToMany
     /**
      * Extract ids from given pivot table data
      *
-     * @param  array        $data
-     * @param  string|null  $relatedPivotKey
+     * @param  array       $data
+     * @param  string|null $relatedPivotKey
      *
      * @return mixed
      */
-    private function extractIds(array $data, string $relatedPivotKey = null)
+    private function extractIds(array $data, ?string $relatedPivotKey = null)
     {
         $relatedPivotKey = $relatedPivotKey ?: $this->relatedPivotKey;
-        return array_reduce($data, function ($carry, $item)use ($relatedPivotKey) {
+        return array_reduce($data, function ($carry, $item) use ($relatedPivotKey) {
             if (is_array($item) && array_key_exists($relatedPivotKey, $item)) {
                 $carry[] = $item[$relatedPivotKey];
             } elseif (is_string($item) && ! str_contains($item, '\\')) {
