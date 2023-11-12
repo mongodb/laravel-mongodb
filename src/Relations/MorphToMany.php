@@ -80,15 +80,7 @@ class MorphToMany extends EloquentMorphToMany
         // and add to a whereIn condition
         if ($this->getInverse()) {
             $ids = $this->getKeys($models, $this->table);
-            $ids = array_reduce($ids[0] ?? [], function ($carry, $item) {
-                if (is_array($item) && array_key_exists($this->relatedPivotKey, $item)) {
-                    $carry[] = $item[$this->relatedPivotKey];
-                } elseif (is_string($item) && ! str_contains($item, '\\')) {
-                    $carry[] = $item;
-                }
-
-                return $carry;
-            }, []);
+            $ids = $this->extractIds($ids[0] ?? []);
             $this->query->whereIn($this->relatedKey, $ids);
         } else {
             parent::addEagerConstraints($models);
@@ -105,15 +97,7 @@ class MorphToMany extends EloquentMorphToMany
     protected function setWhere()
     {
         if ($this->getInverse()) {
-            $ids = array_reduce((array) $this->parent->{$this->table}, function ($carry, $item) {
-                if (is_array($item) && array_key_exists($this->relatedPivotKey, $item)) {
-                    $carry[] = $item[$this->relatedPivotKey];
-                } elseif (is_string($item) && ! str_contains($item, '\\')) {
-                    $carry[] = $item;
-                }
-
-                return $carry;
-            }, []);
+            $ids = $this->extractIds((array) $this->parent->{$this->table});
 
             $this->query->whereIn($this->relatedKey, $ids);
         } else {
@@ -167,16 +151,7 @@ class MorphToMany extends EloquentMorphToMany
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
         if ($this->getInverse()) {
-            $current = $this->parent->{$this->table} ?: [];
-            $current = array_reduce($current, function ($carry, $item) {
-                if (is_array($item) && array_key_exists($this->relatedPivotKey, $item)) {
-                    $carry[] = $item[$this->relatedPivotKey];
-                } elseif (is_string($item) && ! str_contains($item, '\\')) {
-                    $carry[] = $item;
-                }
-
-                return $carry;
-            }, []);
+            $current = $this->extractIds($this->parent->{$this->table} ?: []);
             $current = array_filter($current, fn ($item) => ! str_contains($item, '\\'));
         } else {
             $current = $this->parent->{$this->relatedPivotKey} ?: [];
@@ -240,8 +215,10 @@ class MorphToMany extends EloquentMorphToMany
             if ($this->getInverse()) {
                 // Attach the new ids to the parent model.
                 $this->parent->push($this->table, [
-                    $this->relatedPivotKey => $model->{$this->relatedKey},
-                    $this->morphType => $model->getMorphClass(),
+                    [
+                        $this->relatedPivotKey => $model->{$this->relatedKey},
+                        $this->morphType => $model->getMorphClass(),
+                    ]
                 ], true);
 
                 // Attach the new parent id to the related model.
@@ -375,7 +352,7 @@ class MorphToMany extends EloquentMorphToMany
                 }
             } else {
                 // Collect $foreign value from pivot column of result model
-                $items = array_reduce($result->{$this->table} ?? [], fn ($carry, $item) => array_merge($carry, [$item[$foreign]]), []);
+                $items = $this->extractIds($result->{$this->table} ?? [], $foreign);
                 foreach ($items as $item) {
                     $dictionary[$item][] = $result;
                 }
@@ -457,5 +434,27 @@ class MorphToMany extends EloquentMorphToMany
     protected function whereInMethod(Model $model, $key)
     {
         return 'whereIn';
+    }
+
+    /**
+     * Extract ids from given pivot table data
+     *
+     * @param  array        $data
+     * @param  string|null  $relatedPivotKey
+     *
+     * @return mixed
+     */
+    private function extractIds(array $data, string $relatedPivotKey = null)
+    {
+        $relatedPivotKey = $relatedPivotKey ?: $this->relatedPivotKey;
+        return array_reduce($data, function ($carry, $item)use ($relatedPivotKey) {
+            if (is_array($item) && array_key_exists($relatedPivotKey, $item)) {
+                $carry[] = $item[$relatedPivotKey];
+            } elseif (is_string($item) && ! str_contains($item, '\\')) {
+                $carry[] = $item;
+            }
+
+            return $carry;
+        }, []);
     }
 }
