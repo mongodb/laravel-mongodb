@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany as EloquentMorphToMany;
 use Illuminate\Support\Arr;
 
 use function array_diff;
-use function array_filter;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
@@ -293,14 +292,17 @@ class MorphToMany extends EloquentMorphToMany
         // Detach all ids from the parent model.
         if ($this->getInverse()) {
             // Remove the relation from the parent.
+            $data = [];
             foreach ($ids as $item) {
-                $this->parent->pull($this->table, [
+                $data = array_merge($data, [
                     [
                         $this->relatedPivotKey => $item,
-                        $this->morphType => $this->related->getMorphClass(),
+                        $this->morphType       => $this->related->getMorphClass(),
                     ],
                 ]);
             }
+
+            $this->parent->pull($this->table, $data);
 
             // Prepare the query to select all related objects.
             if (count($ids) > 0) {
