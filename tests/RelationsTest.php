@@ -498,7 +498,7 @@ class RelationsTest extends TestCase
         $user = User::query()->create(['name' => 'Young Gerald']);
         $client = Client::query()->create(['name' => 'Hans Thomas']);
 
-        $label  = Label::query()->create(['name' => 'sincere']);
+        $label  = Label::query()->create(['name' => 'Had the world in my palms, I gave it to you']);
 
         $user->labels()->attach($label);
         $client->labels()->attach($label);
