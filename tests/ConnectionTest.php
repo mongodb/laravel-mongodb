@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use MongoDB\Client;
 use MongoDB\Database;
+use MongoDB\Driver\Exception\ConnectionTimeoutException;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
@@ -230,5 +231,30 @@ class ConnectionTest extends TestCase
     {
         $driver = DB::connection('mongodb')->getDriverName();
         $this->assertEquals('mongodb', $driver);
+    }
+
+    public function testPingMethod()
+    {
+        $config = [
+            'name'     => 'mongodb',
+            'driver'   => 'mongodb',
+            'dsn'      => 'mongodb://mongodb/',
+            'database' => 'unittest',
+            'options'  => [
+                'connectTimeoutMS'         => 100,
+                'serverSelectionTimeoutMS' => 250,
+            ],
+        ];
+
+        $instance = new Connection($config);
+        $instance->ping();
+
+        $this->expectException(ConnectionTimeoutException::class);
+        $this->expectExceptionMessage("No suitable servers found (`serverSelectionTryOnce` set): [Failed to resolve 'wrong-host']");
+
+        $config['dsn'] = 'mongodb://wrong-host/';
+
+        $instance = new Connection($config);
+        $instance->ping();
     }
 }
