@@ -196,12 +196,9 @@ class Connection extends BaseConnection
     /**
      * Check the connection to the defined MongoDB host
      *
-     * @return void
-     *
      * @throws ConnectionException if connection to the server fails (for reasons other than authentication).
      * @throws AuthenticationException if authentication is needed and fails.
      * @throws RuntimeException if a server matching the read preference could not be found.
-     * @throws \MongoDB\Driver\Exception\InvalidArgumentException on argument parsing errors.
      */
     public function ping(): void
     {
