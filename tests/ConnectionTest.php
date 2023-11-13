@@ -15,6 +15,7 @@ use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
 
+use function env;
 use function spl_object_hash;
 
 class ConnectionTest extends TestCase
@@ -238,7 +239,7 @@ class ConnectionTest extends TestCase
         $config = [
             'name'     => 'mongodb',
             'driver'   => 'mongodb',
-            'dsn'      => env('MONGODB_URI','mongodb://mongodb/'),
+            'dsn'      => env('MONGODB_URI', 'mongodb://mongodb/'),
             'database' => 'unittest',
             'options'  => [
                 'connectTimeoutMS'         => 100,
