@@ -578,6 +578,12 @@ abstract class Model extends BaseModel
     }
 
     /** @inheritdoc */
+    public function qualifyColumn($column)
+    {
+        return $column;
+    }
+
+    /** @inheritdoc */
     protected function newBaseQueryBuilder()
     {
         $connection = $this->getConnection();
