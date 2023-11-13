@@ -238,7 +238,7 @@ class ConnectionTest extends TestCase
         $config = [
             'name'     => 'mongodb',
             'driver'   => 'mongodb',
-            'dsn'      => 'mongodb://mongodb/',
+            'dsn'      => env('MONGODB_URI','mongodb://mongodb/'),
             'database' => 'unittest',
             'options'  => [
                 'connectTimeoutMS'         => 100,
