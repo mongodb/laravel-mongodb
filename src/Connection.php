@@ -194,7 +194,7 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Check the connection to the defined MongoDB host
+     * Check the connection to the MongoDB server
      *
      * @throws ConnectionException if connection to the server fails (for reasons other than authentication).
      * @throws AuthenticationException if authentication is needed and fails.
