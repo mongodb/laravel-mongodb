@@ -385,7 +385,7 @@ trait HybridRelations
         $instance = new $related();
 
         $foreignPivotKey = $foreignPivotKey ?: $name . '_id';
-        $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's';
+        $relatedPivotKey = $relatedPivotKey ?:  Str::plural($instance->getForeignKey());
 
         // Now we're ready to create a new query builder for the related model and
         // the relationship instances for this relation. This relation will set
@@ -433,7 +433,7 @@ trait HybridRelations
         $relatedKey = null,
         $relation = null,
     ) {
-        $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
+        $foreignPivotKey = $foreignPivotKey ?: Str::plural($this->getForeignKey());
 
         // For the inverse of the polymorphic many-to-many relations, we will change
         // the way we determine the foreign and other keys, as it is the opposite
