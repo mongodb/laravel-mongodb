@@ -384,8 +384,8 @@ trait HybridRelations
 
         $instance = new $related();
 
-        $foreignPivotKey = $foreignPivotKey ?: $name . '_id'; // labelled_id
-        $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's'; // label_ids
+        $foreignPivotKey = $foreignPivotKey ?: $name . '_id';
+        $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's';
 
         // Now we're ready to create a new query builder for the related model and
         // the relationship instances for this relation. This relation will set
