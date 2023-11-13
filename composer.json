@@ -57,6 +57,11 @@
             ]
         }
     },
+    "scripts": {
+        "test": "./vendor/bin/phpunit",
+        "test:group": "./vendor/bin/phpunit --group test",
+        "test:coverage": "./vendor/bin/phpunit --coverage-clover ./coverage.xml"
+    },
     "config": {
         "platform": {
             "php": "8.1"
