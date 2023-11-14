@@ -60,7 +60,9 @@
     "scripts": {
         "test": "./vendor/bin/phpunit",
         "test:group": "./vendor/bin/phpunit --group test",
-        "test:coverage": "./vendor/bin/phpunit --coverage-clover ./coverage.xml"
+        "test:coverage": "./vendor/bin/phpunit --coverage-clover ./coverage.xml",
+        "cs": "./vendor/bin/phpcs",
+        "cs:fix": "./vendor/bin/phpcbf"
     },
     "config": {
         "platform": {
