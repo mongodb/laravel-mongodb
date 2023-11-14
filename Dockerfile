@@ -9,4 +9,3 @@ RUN apt-get update && \
 
 # Install Composer
 RUN curl https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
-ENV COMPOSER_ALLOW_SUPERUSER=1
