@@ -80,8 +80,7 @@ jobs:
                     composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable')
 
             -   name: Run tests
-                run: |
-                    ./vendor/bin/phpunit --coverage-clover coverage.xml
+                run: composer test:coverage
                 env:
                     MONGODB_URI: 'mongodb://127.0.0.1/?replicaSet=rs'
 
