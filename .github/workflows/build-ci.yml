@@ -48,7 +48,7 @@ jobs:
                     if [ "${{ matrix.mongodb }}" = "4.4" ]; then MONGOSH_BIN="mongo"; else MONGOSH_BIN="mongosh"; fi
                     docker exec --tty mongodb $MONGOSH_BIN 127.0.0.1:27017 --eval "db.runCommand({ serverStatus: 1 })"
 
-            -   name: "Installing php"
+            -   name: Installing php
                 uses: shivammathur/setup-php@v2
                 with:
                     php-version: ${{ matrix.php }}
