@@ -54,6 +54,7 @@ jobs:
           composer-options: "--no-suggest"
 
       - name: "Format the code"
+        continue-on-error: true
         run: |
           mkdir .cache
           ./vendor/bin/phpcbf
