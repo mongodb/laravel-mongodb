@@ -32,7 +32,7 @@ class MorphToMany extends EloquentMorphToMany
      */
     public function getHasCompareKey()
     {
-        return $this->getForeignKey();
+        return $this->foreignPivotKey;
     }
 
     /** @inheritdoc */
@@ -367,16 +367,6 @@ class MorphToMany extends EloquentMorphToMany
     public function newRelatedQuery()
     {
         return $this->related->newQuery();
-    }
-
-    /**
-     * Get the fully qualified foreign key for the relation.
-     *
-     * @return string
-     */
-    public function getForeignKey()
-    {
-        return $this->foreignPivotKey;
     }
 
     /** @inheritdoc */
