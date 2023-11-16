@@ -208,6 +208,7 @@ class EmbedsMany extends EmbedsOneOrMany
     public function delete($id = null): int
     {
         throw_if($id !== null, new LogicException('The id parameter should not be used.'));
+
         // Overwrite the local key with an empty array.
         $result = $this->query->update([$this->localKey => []]);
 
