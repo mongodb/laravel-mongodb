@@ -401,8 +401,6 @@ class MorphToMany extends EloquentMorphToMany
         return array_reduce($data, function ($carry, $item) use ($relatedPivotKey) {
             if (is_array($item) && array_key_exists($relatedPivotKey, $item)) {
                 $carry[] = $item[$relatedPivotKey];
-            } elseif (is_string($item) && ! str_contains($item, '\\')) {
-                $carry[] = $item;
             }
 
             return $carry;
