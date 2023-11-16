@@ -269,21 +269,21 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * Create a related model instanced.
      *
-     * @param  array $attributes
+     * @param mixed $attributes
      *
-     * @return Model
+     * @return Model | null
      */
-    protected function toModel($attributes = [])
+    protected function toModel(mixed $attributes = []): Model|null
     {
         if ($attributes === null) {
-            return;
+            return null;
         }
 
         $connection = $this->related->getConnection();
 
         $model = $this->related->newFromBuilder(
             (array) $attributes,
-            $connection ? $connection->getName() : null,
+            $connection?->getName(),
         );
 
         $model->setParentRelation($this);
