@@ -380,14 +380,6 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
-    public function getQualifiedForeignPivotKeyName()
-    {
-        return str_contains($this->foreignPivotKey, '.')
-            ? $this->foreignPivotKey
-            : $this->table . '.' . $this->foreignPivotKey;
-    }
-
-    /** @inheritdoc */
     public function getQualifiedRelatedPivotKeyName()
     {
         return $this->relatedPivotKey;
