@@ -150,7 +150,7 @@ class MorphToMany extends EloquentMorphToMany
             $current = $this->parseIds($current);
         }
 
-        $records = $this->formatSyncList($ids);
+        $records = $this->formatRecordsList($ids);
 
         $current = Arr::wrap($current);
 
@@ -373,28 +373,6 @@ class MorphToMany extends EloquentMorphToMany
     public function getQualifiedRelatedPivotKeyName()
     {
         return $this->relatedPivotKey;
-    }
-
-    /**
-     * Format the sync list so that it is keyed by ID. (Legacy Support)
-     * The original function has been renamed to formatRecordsList since Laravel 5.3.
-     *
-     * @deprecated
-     *
-     * @return array
-     */
-    protected function formatSyncList(array $records)
-    {
-        $results = [];
-        foreach ($records as $id => $attributes) {
-            if (! is_array($attributes)) {
-                [$id, $attributes] = [$attributes, []];
-            }
-
-            $results[$id] = $attributes;
-        }
-
-        return $results;
     }
 
     /**
