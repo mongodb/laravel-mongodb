@@ -77,7 +77,7 @@ class EmbedsOne extends EmbedsOneOrMany
             return $this->parent->save();
         }
 
-        $values = $this->getUpdateValues($model->getDirty(), $this->localKey . '.');
+        $values = self::getUpdateValues($model->getDirty(), $this->localKey . '.');
 
         $result = $this->toBase()->update($values);
 

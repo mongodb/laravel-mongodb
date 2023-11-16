@@ -86,7 +86,7 @@ class EmbedsMany extends EmbedsOneOrMany
         // Get the correct foreign key value.
         $foreignKey = $this->getForeignKeyValue($model);
 
-        $values = $this->getUpdateValues($model->getDirty(), $this->localKey . '.$.');
+        $values = self::getUpdateValues($model->getDirty(), $this->localKey . '.$.');
 
         // Update document in database.
         $result = $this->toBase()->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)
