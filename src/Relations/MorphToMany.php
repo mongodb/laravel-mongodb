@@ -47,16 +47,6 @@ class MorphToMany extends EloquentMorphToMany
         // Do nothing.
     }
 
-    /**
-     * Set the select clause for the relation query.
-     *
-     * @return array
-     */
-    protected function getSelectColumns(array $columns = ['*'])
-    {
-        return $columns;
-    }
-
     /** @inheritdoc */
     protected function shouldSelect(array $columns = ['*'])
     {
