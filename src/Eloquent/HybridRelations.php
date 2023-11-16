@@ -453,20 +453,6 @@ trait HybridRelations
         );
     }
 
-    /**
-     * Get the relationship name of the belongs to many.
-     *
-     * @return string
-     */
-    protected function guessBelongsToManyRelation()
-    {
-        if (method_exists($this, 'getBelongsToManyCaller')) {
-            return $this->getBelongsToManyCaller();
-        }
-
-        return parent::guessBelongsToManyRelation();
-    }
-
     /** @inheritdoc */
     public function newEloquentBuilder($query)
     {
