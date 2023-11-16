@@ -21,7 +21,6 @@ use function array_pop;
 use function debug_backtrace;
 use function implode;
 use function is_subclass_of;
-use function method_exists;
 use function preg_split;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
