@@ -393,15 +393,17 @@ class MorphToMany extends EloquentMorphToMany
      *
      * @return mixed
      */
-    private function extractIds(array $data, ?string $relatedPivotKey = null)
+    public function extractIds(array $data, ?string $relatedPivotKey = null)
     {
         $relatedPivotKey = $relatedPivotKey ?: $this->relatedPivotKey;
-        return array_reduce($data, function ($carry, $item) use ($relatedPivotKey) {
+        $result = array_reduce($data, function ($carry, $item) use ($relatedPivotKey) {
             if (is_array($item) && array_key_exists($relatedPivotKey, $item)) {
                 $carry[] = $item[$relatedPivotKey];
             }
 
             return $carry;
         }, []);
+
+        return array_values(array_unique($result));
     }
 }
