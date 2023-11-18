@@ -23,15 +23,6 @@ use function is_numeric;
 
 class MorphToMany extends EloquentMorphToMany
 {
-    /**
-     * Get the key for comparing against the parent key in "has" query.
-     *
-     * @return string
-     */
-    public function getHasCompareKey()
-    {
-        return $this->relatedKey;
-    }
 
     /** @inheritdoc */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
