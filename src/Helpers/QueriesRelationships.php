@@ -152,7 +152,7 @@ trait QueriesRelationships
     private function handleMorphedByMany($hasQuery,$relation)
     {
         $hasQuery->whereNotNull($relation->getForeignPivotKeyName());
-        return $hasQuery->pluck($relation->getRelatedKeyName());
+        return $hasQuery->pluck($relation->getForeignPivotKeyName())->flatten(1);
     }
 
     /** @return string */
@@ -216,10 +216,6 @@ trait QueriesRelationships
 
         if ($relation instanceof BelongsTo) {
             return $relation->getForeignKeyName();
-        }
-
-        if ($relation instanceof MorphToMany && $relation->getInverse()) {
-            return $relation->getTable().'.'.$relation->getRelatedPivotKeyName();
         }
 
         if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation)) {
