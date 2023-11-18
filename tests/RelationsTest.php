@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
@@ -695,11 +694,11 @@ class RelationsTest extends TestCase
         $check = Client::query()->has('labels')->get();
         $this->assertCount(2, $check);
 
-        $check = Client::query()->has('labels','>',1)->get();
+        $check = Client::query()->has('labels', '>', 1)->get();
         $this->assertCount(1, $check);
         $this->assertContains($client->_id, $check->pluck('_id'));
 
-        $check = Client::query()->has('labels','<',2)->get();
+        $check = Client::query()->has('labels', '<', 2)->get();
         $this->assertCount(2, $check);
         $this->assertContains($client2->_id, $check->pluck('_id'));
         $this->assertContains($client3->_id, $check->pluck('_id'));
@@ -916,9 +915,9 @@ class RelationsTest extends TestCase
 
         $label  = Label::query()->create(['name' => "My star's back shining bright, I just polished it"]);
         $label2  = Label::query()->create(['name' => "Somethin' in my spirit woke back up like I just sat up"]);
-        $label3  = Label::query()->create(['name' => "How can I beam when you blocking my light?"]);
+        $label3  = Label::query()->create(['name' => 'How can I beam when you blocking my light?']);
 
-        $label->clients()->sync(new Collection([$client1,$client2]));
+        $label->clients()->sync(new Collection([$client1, $client2]));
         $label2->clients()->sync($client1);
         $label3->users()->sync($user);
 
@@ -926,16 +925,16 @@ class RelationsTest extends TestCase
 
         $check = Label::query()->has('clients')->get();
         $this->assertCount(2, $check);
-        $this->assertContains($label->_id,$check->pluck('_id'));
-        $this->assertContains($label2->_id,$check->pluck('_id'));
+        $this->assertContains($label->_id, $check->pluck('_id'));
+        $this->assertContains($label2->_id, $check->pluck('_id'));
 
         $check = Label::query()->has('users')->get();
         $this->assertCount(1, $check);
-        $this->assertContains($label3->_id,$check->pluck('_id'));
+        $this->assertContains($label3->_id, $check->pluck('_id'));
 
         $check = Label::query()->has('clients', '>', 1)->get();
         $this->assertCount(1, $check);
-        $this->assertContains($label->_id,$check->pluck('_id'));
+        $this->assertContains($label->_id, $check->pluck('_id'));
     }
 
     public function testHasManyHas(): void

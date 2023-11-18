@@ -13,13 +13,15 @@ use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use MongoDB\Laravel\Eloquent\Model;
-
 use MongoDB\Laravel\Relations\MorphToMany;
+
 use function array_count_values;
 use function array_filter;
 use function array_keys;
 use function array_map;
 use function class_basename;
+use function collect;
+use function get_class;
 use function in_array;
 use function is_array;
 use function is_string;
@@ -115,10 +117,10 @@ trait QueriesRelationships
             $not = ! $not;
         }
 
-        $relations = match (true){
-          $relation instanceof MorphToMany => $relation->getInverse() ?
-              $this->handleMorphedByMany($hasQuery,$relation):
-              $this->handleMorphToMany($hasQuery,$relation),
+        $relations = match (true) {
+            $relation instanceof MorphToMany => $relation->getInverse() ?
+              $this->handleMorphedByMany($hasQuery, $relation) :
+              $this->handleMorphToMany($hasQuery, $relation),
             default => $hasQuery->pluck($this->getHasCompareKey($relation))
         };
 
@@ -128,28 +130,28 @@ trait QueriesRelationships
     }
 
     /**
-     * @param Builder $hasQuery
+     * @param Builder  $hasQuery
      * @param Relation $relation
      *
      * @return Collection
      */
-    private function handleMorphToMany($hasQuery,$relation)
+    private function handleMorphToMany($hasQuery, $relation)
     {
         // First we select the parent models that have a relation to our related model,
         // Then extracts related model's ids from the pivot column
-        $hasQuery->where($relation->getTable().'.'.$relation->getMorphType(), get_class($relation->getParent()));
+        $hasQuery->where($relation->getTable() . '.' . $relation->getMorphType(), get_class($relation->getParent()));
         $relations = $hasQuery->pluck($relation->getTable());
-        $relations = $relation->extractIds($relations->flatten(1)->toArray(),$relation->getForeignPivotKeyName());
+        $relations = $relation->extractIds($relations->flatten(1)->toArray(), $relation->getForeignPivotKeyName());
         return collect($relations);
     }
 
     /**
-     * @param Builder $hasQuery
+     * @param Builder  $hasQuery
      * @param Relation $relation
      *
      * @return Collection
      */
-    private function handleMorphedByMany($hasQuery,$relation)
+    private function handleMorphedByMany($hasQuery, $relation)
     {
         $hasQuery->whereNotNull($relation->getForeignPivotKeyName());
         return $hasQuery->pluck($relation->getForeignPivotKeyName())->flatten(1);

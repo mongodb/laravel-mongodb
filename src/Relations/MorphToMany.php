@@ -23,7 +23,6 @@ use function is_numeric;
 
 class MorphToMany extends EloquentMorphToMany
 {
-
     /** @inheritdoc */
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
