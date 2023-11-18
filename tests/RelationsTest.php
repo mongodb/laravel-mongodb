@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
@@ -674,6 +675,22 @@ class RelationsTest extends TestCase
         $check = Client::query()->with('labels')->find($client->_id);
 
         $this->assertEquals(2, $check->labels->count());
+    }
+
+    public function testMorphToManyHasQuery(): void
+    {
+        $client = Client::query()->create(['name' => 'Ashley']);
+        $client2 = Client::query()->create(['name' => 'John Doe']);
+        $client3 = Client::query()->create(['name' => 'John Doe 2']);
+
+        $label  = Label::query()->create(['name' => "I've been digging myself down deeper"]);
+        $label2  = Label::query()->create(['name' => "I won't stop 'til I get where you are"]);
+
+        $client->labels()->sync([$label->_id, $label2->_id]);
+
+        $this->assertEquals(2, $client->labels->count());
+
+        $this->assertEquals(1, Client::query()->has('labels')->count());
     }
 
     public function testMorphedByMany(): void
