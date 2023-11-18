@@ -680,17 +680,29 @@ class RelationsTest extends TestCase
     public function testMorphToManyHasQuery(): void
     {
         $client = Client::query()->create(['name' => 'Ashley']);
-        $client2 = Client::query()->create(['name' => 'John Doe']);
+        $client2 = Client::query()->create(['name' => 'Halsey']);
         $client3 = Client::query()->create(['name' => 'John Doe 2']);
 
         $label  = Label::query()->create(['name' => "I've been digging myself down deeper"]);
         $label2  = Label::query()->create(['name' => "I won't stop 'til I get where you are"]);
 
         $client->labels()->sync([$label->_id, $label2->_id]);
+        $client2->labels()->sync($label);
 
         $this->assertEquals(2, $client->labels->count());
+        $this->assertEquals(1, $client2->labels->count());
 
-        $this->assertEquals(1, Client::query()->has('labels')->count());
+        $check = Client::query()->has('labels')->get();
+        $this->assertCount(2, $check);
+
+        $check = Client::query()->has('labels','>',1)->get();
+        $this->assertCount(1, $check);
+        $this->assertContains($client->_id, $check->pluck('_id'));
+
+        $check = Client::query()->has('labels','<',2)->get();
+        $this->assertCount(2, $check);
+        $this->assertContains($client2->_id, $check->pluck('_id'));
+        $this->assertContains($client3->_id, $check->pluck('_id'));
     }
 
     public function testMorphedByMany(): void
