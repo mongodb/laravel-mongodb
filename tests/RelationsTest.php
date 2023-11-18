@@ -895,6 +895,31 @@ class RelationsTest extends TestCase
         $this->assertEquals(3, $check->clients->count());
     }
 
+    public function testMorphedByManyHasQuery(): void
+    {
+        $user = User::query()->create(['name' => 'Austin Richard Post']);
+
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => "My star's back shining bright, I just polished it"]);
+        $label2  = Label::query()->create(['name' => "Somethin' in my spirit woke back up like I just sat up"]);
+        $label3  = Label::query()->create(['name' => "How can I beam when you blocking my light?"]);
+
+        $label->clients()->sync(new Collection([$client1,$client2]));
+        $label2->clients()->sync($client1);
+        $label3->users()->sync($user);
+
+        $this->assertEquals(2, $label->clients->count());
+
+        $this->assertEquals(2, Label::query()->has('clients')->count());
+        $this->assertContains($label->_id,Label::query()->has('clients')->pluck('_id'));
+        $this->assertContains($label2->_id,Label::query()->has('clients')->pluck('_id'));
+
+        $this->assertEquals(1, Label::query()->has('users')->count());
+        $this->assertContains($label3->_id,Label::query()->has('users')->pluck('_id'));
+    }
+
     public function testHasManyHas(): void
     {
         $author1 = User::create(['name' => 'George R. R. Martin']);
