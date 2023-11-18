@@ -30,7 +30,7 @@ class MorphToMany extends EloquentMorphToMany
      */
     public function getHasCompareKey()
     {
-        return $this->foreignPivotKey;
+        return $this->relatedKey;
     }
 
     /** @inheritdoc */
