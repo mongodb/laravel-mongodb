@@ -356,7 +356,7 @@ class SchemaTest extends TestCase
         $this->assertArrayNotHasKey('test', $check[2]);
         $this->assertArrayNotHasKey('newtest', $check[2]);
 
-        Schema::create('newcollection', function (Blueprint $collection) {
+        Schema::collection('newcollection', function (Blueprint $collection) {
             $collection->renameColumn('test', 'newtest');
         });
 
