@@ -368,7 +368,7 @@ trait HybridRelations
 
         // Check if it is a relation with an original model.
         if (! is_subclass_of($related, Model::class)) {
-            return parent::MorphToMany(
+            return parent::morphToMany(
                 $related,
                 $name,
                 $table,
