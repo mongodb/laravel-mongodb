@@ -69,6 +69,3 @@ jobs:
                 run: ./vendor/bin/phpunit --coverage-clover coverage.xml
                 env:
                     MONGODB_URI: 'mongodb://127.0.0.1/?replicaSet=rs'
-            -   uses: codecov/codecov-action@v3
-                with:
-                    token: ${{ secrets.CODECOV_TOKEN }}
