@@ -142,6 +142,7 @@ trait QueriesRelationships
         $hasQuery->where($relation->getTable() . '.' . $relation->getMorphType(), get_class($relation->getParent()));
         $relations = $hasQuery->pluck($relation->getTable());
         $relations = $relation->extractIds($relations->flatten(1)->toArray(), $relation->getForeignPivotKeyName());
+
         return collect($relations);
     }
 
