@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Schema;
 
 use Illuminate\Database\Connection;
+use Illuminate\Database\Schema\Blueprint as SchemaBlueprint;
 use MongoDB\Laravel\Collection;
 
 use function array_flip;
@@ -15,7 +16,7 @@ use function is_int;
 use function is_string;
 use function key;
 
-class Blueprint extends \Illuminate\Database\Schema\Blueprint
+class Blueprint extends SchemaBlueprint
 {
     /**
      * The MongoConnection object for this blueprint.
@@ -274,6 +275,14 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function drop()
     {
         $this->collection->drop();
+    }
+
+    /** @inheritdoc */
+    public function renameColumn($from, $to)
+    {
+        $this->collection->updateMany([$from => ['$exists' => true]], ['$rename' => [$from => $to]]);
+
+        return $this;
     }
 
     /** @inheritdoc */
