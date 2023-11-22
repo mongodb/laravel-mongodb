@@ -155,6 +155,7 @@ trait QueriesRelationships
     private function handleMorphedByMany($hasQuery, $relation)
     {
         $hasQuery->whereNotNull($relation->getForeignPivotKeyName());
+
         return $hasQuery->pluck($relation->getForeignPivotKeyName())->flatten(1);
     }
 
