@@ -947,10 +947,10 @@ class RelationsTest extends TestCase
         User::create(['name' => 'Anonymous author']);
         Book::create(['title' => 'Anonymous book', 'rating' => 1]);
 
-//        $authors = User::has('books')->get();
-//        $this->assertCount(2, $authors);
-//        $this->assertEquals('George R. R. Martin', $authors[0]->name);
-//        $this->assertEquals('John Doe', $authors[1]->name);
+        $authors = User::has('books')->get();
+        $this->assertCount(2, $authors);
+        $this->assertEquals('George R. R. Martin', $authors[0]->name);
+        $this->assertEquals('John Doe', $authors[1]->name);
 
         $authors = User::has('books', '>', 1)->get();
         $this->assertCount(1, $authors);
