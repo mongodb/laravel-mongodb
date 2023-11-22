@@ -11,7 +11,6 @@ use Illuminate\Pagination\Paginator;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\Exception\LogicException;
 use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
-use Throwable;
 
 use function array_key_exists;
 use function array_values;
@@ -200,8 +199,6 @@ class EmbedsMany extends EmbedsOneOrMany
      * Delete all embedded models.
      *
      * @param null $id
-     *
-     * @throws LogicException|Throwable
      *
      * @note The $id is not used to delete embedded models.
      */
