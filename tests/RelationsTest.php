@@ -13,6 +13,7 @@ use MongoDB\Laravel\Tests\Models\Client;
 use MongoDB\Laravel\Tests\Models\Experience;
 use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
+use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\Skill;
@@ -33,6 +34,7 @@ class RelationsTest extends TestCase
         Role::truncate();
         Group::truncate();
         Photo::truncate();
+        Label::truncate();
         Skill::truncate();
         Experience::truncate();
     }
@@ -489,6 +491,450 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(Client::class, $photo->hasImageWithCustomOwnerKey);
         $this->assertEquals($client->cclient_id, $photo->has_image_with_custom_owner_key_id);
         $this->assertEquals($client->_id, $photo->hasImageWithCustomOwnerKey->_id);
+    }
+
+    public function testMorphToMany(): void
+    {
+        $user = User::query()->create(['name' => 'Young Gerald']);
+        $client = Client::query()->create(['name' => 'Hans Thomas']);
+
+        $label  = Label::query()->create(['name' => 'Had the world in my palms, I gave it to you']);
+
+        $user->labels()->attach($label);
+        $client->labels()->attach($label);
+
+        $this->assertEquals(1, $user->labels->count());
+        $this->assertContains($label->_id, $user->labels->pluck('_id'));
+
+        $this->assertEquals(1, $client->labels->count());
+        $this->assertContains($label->_id, $user->labels->pluck('_id'));
+    }
+
+    public function testMorphToManyAttachEloquentCollection(): void
+    {
+        $client = Client::query()->create(['name' => 'Young Gerald']);
+
+        $label1  = Label::query()->create(['name' => "Make no mistake, it's the life that I was chosen for"]);
+        $label2  = Label::query()->create(['name' => 'All I prayed for was an open door']);
+
+        $client->labels()->attach(new Collection([$label1, $label2]));
+
+        $this->assertEquals(2, $client->labels->count());
+        $this->assertContains($label1->_id, $client->labels->pluck('_id'));
+        $this->assertContains($label2->_id, $client->labels->pluck('_id'));
+    }
+
+    public function testMorphToManyAttachMultipleIds(): void
+    {
+        $client = Client::query()->create(['name' => 'Young Gerald']);
+
+        $label1  = Label::query()->create(['name' => 'stayed solid i never fled']);
+        $label2  = Label::query()->create(['name' => "I've got a lane and I'm in gear"]);
+
+        $client->labels()->attach([$label1->_id, $label2->_id]);
+
+        $this->assertEquals(2, $client->labels->count());
+        $this->assertContains($label1->_id, $client->labels->pluck('_id'));
+        $this->assertContains($label2->_id, $client->labels->pluck('_id'));
+    }
+
+    public function testMorphToManyDetaching(): void
+    {
+        $client = Client::query()->create(['name' => 'Marshall Mathers']);
+
+        $label1  = Label::query()->create(['name' => "I'll never love again"]);
+        $label2  = Label::query()->create(['name' => 'The way I loved you']);
+
+        $client->labels()->attach([$label1->_id, $label2->_id]);
+
+        $this->assertEquals(2, $client->labels->count());
+
+        $client->labels()->detach($label1);
+        $check = $client->withoutRelations();
+
+        $this->assertEquals(1, $check->labels->count());
+        $this->assertContains($label2->_id, $client->labels->pluck('_id'));
+    }
+
+    public function testMorphToManyDetachingMultipleIds(): void
+    {
+        $client = Client::query()->create(['name' => 'Young Gerald']);
+
+        $label1  = Label::query()->create(['name' => "I make what I wanna make, but I won't make everyone happy"]);
+        $label2  = Label::query()->create(['name' => "My skin's thick, but I'm not bulletproof"]);
+        $label3  = Label::query()->create(['name' => 'All I can be is myself, go, and tell the truth']);
+
+        $client->labels()->attach([$label1->_id, $label2->_id, $label3->_id]);
+
+        $this->assertEquals(3, $client->labels->count());
+
+        $client->labels()->detach([$label1->_id, $label2->_id]);
+        $client->refresh();
+
+        $this->assertEquals(1, $client->labels->count());
+        $this->assertContains($label3->_id, $client->labels->pluck('_id'));
+    }
+
+    public function testMorphToManySyncing(): void
+    {
+        $user = User::query()->create(['name' => 'Young Gerald']);
+        $client = Client::query()->create(['name' => 'Hans Thomas']);
+
+        $label  = Label::query()->create(['name' => "Lesson learned, we weren't the perfect match"]);
+        $label2  = Label::query()->create(['name' => 'Future ref, not keeping personal and work attached']);
+
+        $user->labels()->sync($label);
+        $client->labels()->sync($label);
+        $client->labels()->sync($label2, false);
+
+        $this->assertEquals(1, $user->labels->count());
+        $this->assertContains($label->_id, $user->labels->pluck('_id'));
+        $this->assertNotContains($label2->_id, $user->labels->pluck('_id'));
+
+        $this->assertEquals(2, $client->labels->count());
+        $this->assertContains($label->_id, $client->labels->pluck('_id'));
+        $this->assertContains($label2->_id, $client->labels->pluck('_id'));
+    }
+
+    public function testMorphToManySyncingEloquentCollection(): void
+    {
+        $client = Client::query()->create(['name' => 'Young Gerald']);
+
+        $label  = Label::query()->create(['name' => 'Why the ones who love me most, the people I push away?']);
+        $label2  = Label::query()->create(['name' => 'Look in a mirror, this is you']);
+
+        $client->labels()->sync(new Collection([$label, $label2]));
+
+        $this->assertEquals(2, $client->labels->count());
+        $this->assertContains($label->_id, $client->labels->pluck('_id'));
+        $this->assertContains($label2->_id, $client->labels->pluck('_id'));
+    }
+
+    public function testMorphToManySyncingMultipleIds(): void
+    {
+        $client = Client::query()->create(['name' => 'Young Gerald']);
+
+        $label  = Label::query()->create(['name' => 'They all talk about karma, how it slowly comes']);
+        $label2  = Label::query()->create(['name' => "But life is short, enjoy it while you're young"]);
+
+        $client->labels()->sync([$label->_id, $label2->_id]);
+
+        $this->assertEquals(2, $client->labels->count());
+        $this->assertContains($label->_id, $client->labels->pluck('_id'));
+        $this->assertContains($label2->_id, $client->labels->pluck('_id'));
+    }
+
+    public function testMorphToManySyncingWithCustomKeys(): void
+    {
+        $client = Client::query()->create(['cclient_id' => (string) (new ObjectId()), 'name' => 'Young Gerald']);
+
+        $label  = Label::query()->create(['clabel_id' => (string) (new ObjectId()), 'name' => "Why do people do things that be bad for 'em?"]);
+        $label2  = Label::query()->create(['clabel_id' => (string) (new ObjectId()), 'name' => "Say we done with these things, then we ask for 'em"]);
+
+        $client->labelsWithCustomKeys()->sync([$label->clabel_id, $label2->clabel_id]);
+
+        $this->assertEquals(2, $client->labelsWithCustomKeys->count());
+        $this->assertContains($label->_id, $client->labelsWithCustomKeys->pluck('_id'));
+        $this->assertContains($label2->_id, $client->labelsWithCustomKeys->pluck('_id'));
+
+        $client->labelsWithCustomKeys()->sync($label);
+        $client->load('labelsWithCustomKeys');
+
+        $this->assertEquals(1, $client->labelsWithCustomKeys->count());
+        $this->assertContains($label->_id, $client->labelsWithCustomKeys->pluck('_id'));
+        $this->assertNotContains($label2->_id, $client->labelsWithCustomKeys->pluck('_id'));
+    }
+
+    public function testMorphToManyLoadAndRefreshing(): void
+    {
+        $user = User::query()->create(['name' => 'The Pretty Reckless']);
+
+        $client = Client::query()->create(['name' => 'Young Gerald']);
+
+        $label  = Label::query()->create(['name' => 'The greatest gift is knowledge itself']);
+        $label2  = Label::query()->create(['name' => "I made it here all by my lonely, no askin' for help"]);
+
+        $client->labels()->sync([$label->_id, $label2->_id]);
+        $client->users()->sync($user);
+
+        $this->assertEquals(2, $client->labels->count());
+
+        $client->load('labels');
+
+        $this->assertEquals(2, $client->labels->count());
+
+        $client->refresh();
+
+        $this->assertEquals(2, $client->labels->count());
+
+        $check = Client::query()->find($client->_id);
+
+        $this->assertEquals(2, $check->labels->count());
+
+        $check = Client::query()->with('labels')->find($client->_id);
+
+        $this->assertEquals(2, $check->labels->count());
+    }
+
+    public function testMorphToManyHasQuery(): void
+    {
+        $client = Client::query()->create(['name' => 'Ashley']);
+        $client2 = Client::query()->create(['name' => 'Halsey']);
+        $client3 = Client::query()->create(['name' => 'John Doe 2']);
+
+        $label  = Label::query()->create(['name' => "I've been digging myself down deeper"]);
+        $label2  = Label::query()->create(['name' => "I won't stop 'til I get where you are"]);
+
+        $client->labels()->sync([$label->_id, $label2->_id]);
+        $client2->labels()->sync($label);
+
+        $this->assertEquals(2, $client->labels->count());
+        $this->assertEquals(1, $client2->labels->count());
+
+        $check = Client::query()->has('labels')->get();
+        $this->assertCount(2, $check);
+
+        $check = Client::query()->has('labels', '>', 1)->get();
+        $this->assertCount(1, $check);
+        $this->assertContains($client->_id, $check->pluck('_id'));
+
+        $check = Client::query()->has('labels', '<', 2)->get();
+        $this->assertCount(2, $check);
+        $this->assertContains($client2->_id, $check->pluck('_id'));
+        $this->assertContains($client3->_id, $check->pluck('_id'));
+    }
+
+    public function testMorphedByMany(): void
+    {
+        $user = User::query()->create(['name' => 'Young Gerald']);
+        $client = Client::query()->create(['name' => 'Hans Thomas']);
+        $extra = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => 'Never finished, tryna search for more']);
+
+        $label->users()->attach($user);
+        $label->clients()->attach($client);
+
+        $this->assertEquals(1, $label->users->count());
+        $this->assertContains($user->_id, $label->users->pluck('_id'));
+
+        $this->assertEquals(1, $label->clients->count());
+        $this->assertContains($client->_id, $label->clients->pluck('_id'));
+    }
+
+    public function testMorphedByManyAttachEloquentCollection(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $extra = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => 'They want me to architect Rome, in a day']);
+
+        $label->clients()->attach(new Collection([$client1, $client2]));
+
+        $this->assertEquals(2, $label->clients->count());
+        $this->assertContains($client1->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clients->pluck('_id'));
+
+        $client1->refresh();
+        $this->assertEquals(1, $client1->labels->count());
+    }
+
+    public function testMorphedByManyAttachMultipleIds(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Austin Richard Post']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $extra = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => 'Always in the game and never played by the rules']);
+
+        $label->clients()->attach([$client1->_id, $client2->_id]);
+
+        $this->assertEquals(2, $label->clients->count());
+        $this->assertContains($client1->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clients->pluck('_id'));
+
+        $client1->refresh();
+        $this->assertEquals(1, $client1->labels->count());
+    }
+
+    public function testMorphedByManyDetaching(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Austin Richard Post']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $extra = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => 'Seasons change and our love went cold']);
+
+        $label->clients()->attach([$client1->_id, $client2->_id]);
+
+        $this->assertEquals(2, $label->clients->count());
+
+        $label->clients()->detach($client1->_id);
+        $check = $label->withoutRelations();
+
+        $this->assertEquals(1, $check->clients->count());
+        $this->assertContains($client2->_id, $check->clients->pluck('_id'));
+    }
+
+    public function testMorphedByManyDetachingMultipleIds(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Austin Richard Post']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => "Run away, but we're running in circles"]);
+
+        $label->clients()->attach([$client1->_id, $client2->_id, $client3->_id]);
+
+        $this->assertEquals(3, $label->clients->count());
+
+        $label->clients()->detach([$client1->_id, $client2->_id]);
+        $label->load('clients');
+
+        $this->assertEquals(1, $label->clients->count());
+        $this->assertContains($client3->_id, $label->clients->pluck('_id'));
+    }
+
+    public function testMorphedByManySyncing(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Austin Richard Post']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => "Was scared of losin' somethin' that we never found"]);
+
+        $label->clients()->sync($client1);
+        $label->clients()->sync($client2, false);
+        $label->clients()->sync($client3, false);
+
+        $this->assertEquals(3, $label->clients->count());
+        $this->assertContains($client1->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client3->_id, $label->clients->pluck('_id'));
+    }
+
+    public function testMorphedByManySyncingEloquentCollection(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Austin Richard Post']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $extra = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => "I'm goin' hard 'til I'm gone. Can you feel it?"]);
+
+        $label->clients()->sync(new Collection([$client1, $client2]));
+
+        $this->assertEquals(2, $label->clients->count());
+        $this->assertContains($client1->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clients->pluck('_id'));
+
+        $this->assertNotContains($extra->_id, $label->clients->pluck('_id'));
+    }
+
+    public function testMorphedByManySyncingMultipleIds(): void
+    {
+        $client1 = Client::query()->create(['name' => 'Dorothy']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $extra = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => "Love ain't patient, it's not kind. true love waits to rob you blind"]);
+
+        $label->clients()->sync([$client1->_id, $client2->_id]);
+
+        $this->assertEquals(2, $label->clients->count());
+        $this->assertContains($client1->_id, $label->clients->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clients->pluck('_id'));
+
+        $this->assertNotContains($extra->_id, $label->clients->pluck('_id'));
+    }
+
+    public function testMorphedByManySyncingWithCustomKeys(): void
+    {
+        $client1 = Client::query()->create(['cclient_id' => (string) (new ObjectId()), 'name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['cclient_id' => (string) (new ObjectId()), 'name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['cclient_id' => (string) (new ObjectId()), 'name' => 'John Doe']);
+
+        $label  = Label::query()->create(['clabel_id' => (string) (new ObjectId()), 'name' => "I'm in my own lane, so what do I have to hurry for?"]);
+
+        $label->clientsWithCustomKeys()->sync([$client1->cclient_id, $client2->cclient_id]);
+
+        $this->assertEquals(2, $label->clientsWithCustomKeys->count());
+        $this->assertContains($client1->_id, $label->clientsWithCustomKeys->pluck('_id'));
+        $this->assertContains($client2->_id, $label->clientsWithCustomKeys->pluck('_id'));
+
+        $this->assertNotContains($client3->_id, $label->clientsWithCustomKeys->pluck('_id'));
+
+        $label->clientsWithCustomKeys()->sync($client3);
+        $label->load('clientsWithCustomKeys');
+
+        $this->assertEquals(1, $label->clientsWithCustomKeys->count());
+        $this->assertNotContains($client1->_id, $label->clientsWithCustomKeys->pluck('_id'));
+        $this->assertNotContains($client2->_id, $label->clientsWithCustomKeys->pluck('_id'));
+
+        $this->assertContains($client3->_id, $label->clientsWithCustomKeys->pluck('_id'));
+    }
+
+    public function testMorphedByManyLoadAndRefreshing(): void
+    {
+        $user = User::query()->create(['name' => 'Abel Tesfaye']);
+
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'Hans Thomas']);
+        $client3 = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => "but don't think I don't think about you just cause I ain't spoken about you"]);
+
+        $label->clients()->sync(new Collection([$client1, $client2, $client3]));
+        $label->users()->sync($user);
+
+        $this->assertEquals(3, $label->clients->count());
+
+        $label->load('clients');
+
+        $this->assertEquals(3, $label->clients->count());
+
+        $label->refresh();
+
+        $this->assertEquals(3, $label->clients->count());
+
+        $check = Label::query()->find($label->_id);
+
+        $this->assertEquals(3, $check->clients->count());
+
+        $check = Label::query()->with('clients')->find($label->_id);
+
+        $this->assertEquals(3, $check->clients->count());
+    }
+
+    public function testMorphedByManyHasQuery(): void
+    {
+        $user = User::query()->create(['name' => 'Austin Richard Post']);
+
+        $client1 = Client::query()->create(['name' => 'Young Gerald']);
+        $client2 = Client::query()->create(['name' => 'John Doe']);
+
+        $label  = Label::query()->create(['name' => "My star's back shining bright, I just polished it"]);
+        $label2  = Label::query()->create(['name' => "Somethin' in my spirit woke back up like I just sat up"]);
+        $label3  = Label::query()->create(['name' => 'How can I beam when you blocking my light?']);
+
+        $label->clients()->sync(new Collection([$client1, $client2]));
+        $label2->clients()->sync($client1);
+        $label3->users()->sync($user);
+
+        $this->assertEquals(2, $label->clients->count());
+
+        $check = Label::query()->has('clients')->get();
+        $this->assertCount(2, $check);
+        $this->assertContains($label->_id, $check->pluck('_id'));
+        $this->assertContains($label2->_id, $check->pluck('_id'));
+
+        $check = Label::query()->has('users')->get();
+        $this->assertCount(1, $check);
+        $this->assertContains($label3->_id, $check->pluck('_id'));
+
+        $check = Label::query()->has('clients', '>', 1)->get();
+        $this->assertCount(1, $check);
+        $this->assertContains($label->_id, $check->pluck('_id'));
     }
 
     public function testHasManyHas(): void
