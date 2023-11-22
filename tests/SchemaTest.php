@@ -343,6 +343,19 @@ class SchemaTest extends TestCase
         DB::connection()->collection('newcollection')->insert(['test' => 'value 2']);
         DB::connection()->collection('newcollection')->insert(['column' => 'column value']);
 
+        $check = DB::connection()->collection('newcollection')->get();
+        $this->assertCount(3, $check);
+
+        $this->assertArrayHasKey('test', $check[0]);
+        $this->assertArrayNotHasKey('newtest', $check[0]);
+
+        $this->assertArrayHasKey('test', $check[1]);
+        $this->assertArrayNotHasKey('newtest', $check[1]);
+
+        $this->assertArrayHasKey('column', $check[2]);
+        $this->assertArrayNotHasKey('test', $check[2]);
+        $this->assertArrayNotHasKey('newtest', $check[2]);
+
         Schema::collection('newcollection', function (Blueprint $collection) {
             $collection->renameColumn('test', 'newtest');
         });
