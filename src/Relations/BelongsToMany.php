@@ -17,7 +17,6 @@ use function array_merge;
 use function array_values;
 use function assert;
 use function count;
-use function is_array;
 use function is_numeric;
 
 class BelongsToMany extends EloquentBelongsToMany
@@ -132,7 +131,7 @@ class BelongsToMany extends EloquentBelongsToMany
             $current = $ids->modelKeys();
         }
 
-        $records = $this->formatSyncList($ids);
+        $records = $this->formatRecordsList($ids);
 
         $current = Arr::wrap($current);
 
@@ -297,28 +296,6 @@ class BelongsToMany extends EloquentBelongsToMany
     public function getQualifiedRelatedPivotKeyName()
     {
         return $this->relatedPivotKey;
-    }
-
-    /**
-     * Format the sync list so that it is keyed by ID. (Legacy Support)
-     * The original function has been renamed to formatRecordsList since Laravel 5.3.
-     *
-     * @deprecated
-     *
-     * @return array
-     */
-    protected function formatSyncList(array $records)
-    {
-        $results = [];
-        foreach ($records as $id => $attributes) {
-            if (! is_array($attributes)) {
-                [$id, $attributes] = [$attributes, []];
-            }
-
-            $results[$id] = $attributes;
-        }
-
-        return $results;
     }
 
     /**
