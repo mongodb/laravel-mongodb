@@ -15,6 +15,7 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
+use function assert;
 use function count;
 use function is_array;
 use function is_numeric;
@@ -230,6 +231,8 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Remove the relation to the parent.
+        assert($this->parent instanceof \MongoDB\Laravel\Eloquent\Model);
+        assert($query instanceof \MongoDB\Laravel\Eloquent\Model);
         $query->pull($this->foreignPivotKey, $this->parent->getKey());
 
         if ($touch) {
