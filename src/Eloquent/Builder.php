@@ -8,16 +8,15 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use MongoDB\Driver\Cursor;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
-use MongoDB\Laravel\Query\Builder as MongoDBQueryBuilder;
 use MongoDB\Model\BSONDocument;
 
 use function array_key_exists;
 use function array_merge;
-use function assert;
 use function collect;
 use function is_array;
 use function iterator_to_array;
 
+/** @method \MongoDB\Laravel\Query\Builder toBase() */
 class Builder extends EloquentBuilder
 {
     use QueriesRelationships;
@@ -64,10 +63,7 @@ class Builder extends EloquentBuilder
             return 1;
         }
 
-        $builder = $this->toBase();
-        assert($builder instanceof MongoDBQueryBuilder);
-
-        return $builder->update($this->addUpdatedAtColumn($values), $options);
+        return $this->toBase()->update($this->addUpdatedAtColumn($values), $options);
     }
 
     /** @inheritdoc */
