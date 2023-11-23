@@ -1,6 +1,16 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.0.3] - unreleased
+
+
+## [4.0.2] - 2023-11-03
+
+- Fix compatibility with Laravel 10.30 [#2661](https://github.com/mongodb/laravel-mongodb/pull/2661) by [@Treggats](https://github.com/Treggats)
+- PHPORM-101 Allow empty insert batch for consistency with Eloquent SQL [#2661](https://github.com/mongodb/laravel-mongodb/pull/2645) by [@GromNaN](https://github.com/GromNaN)
+
+*4.0.1 skipped due to a mistake in the release process.*
+
 ## [4.0.0] - 2023-09-28
 
 - Rename package to `mongodb/laravel-mongodb`
