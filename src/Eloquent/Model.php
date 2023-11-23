@@ -297,10 +297,10 @@ abstract class Model extends BaseModel
     public function fromJson($value, $asObject = false)
     {
         if (! is_string($value)) {
-            $value = Json::encode($value ?? '');
+            $value = Json::encode($value);
         }
 
-        return Json::decode($value ?? '', ! $asObject);
+        return Json::decode($value, ! $asObject);
     }
 
     /** @inheritdoc */

@@ -1,0 +1,16 @@
+parameters:
+	ignoreErrors:
+		-
+			message: "#^Method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:push\\(\\) invoked with 3 parameters, 0 required\\.$#"
+			count: 3
+			path: src/Relations/BelongsToMany.php
+
+		-
+			message: "#^Method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:push\\(\\) invoked with 3 parameters, 0 required\\.$#"
+			count: 6
+			path: src/Relations/MorphToMany.php
+
+		-
+			message: "#^Method Illuminate\\\\Database\\\\Schema\\\\Blueprint\\:\\:create\\(\\) invoked with 1 parameter, 0 required\\.$#"
+			count: 1
+			path: src/Schema/Builder.php

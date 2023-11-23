@@ -85,11 +85,11 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
-    public function save(Model $model, array $joining = [], $touch = true)
+    public function save(Model $model, array $pivotAttributes = [], $touch = true)
     {
         $model->save(['touch' => false]);
 
-        $this->attach($model, $joining, $touch);
+        $this->attach($model, $pivotAttributes, $touch);
 
         return $model;
     }
@@ -133,11 +133,6 @@ class MorphToMany extends EloquentMorphToMany
             $current = $this->parent->{$this->relatedPivotKey} ?: [];
         }
 
-        // See issue #256.
-        if ($current instanceof Collection) {
-            $current = $this->parseIds($current);
-        }
-
         $records = $this->formatRecordsList($ids);
 
         $current = Arr::wrap($current);
@@ -175,7 +170,7 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
-    public function updateExistingPivot($id, array $attributes, $touch = true)
+    public function updateExistingPivot($id, array $attributes, $touch = true): void
     {
         // Do nothing, we have no pivot table.
     }
@@ -272,12 +267,13 @@ class MorphToMany extends EloquentMorphToMany
             // Remove the relation from the parent.
             $data = [];
             foreach ($ids as $item) {
-                $data = array_merge($data, [
+                $data = [
+                    ...$data,
                     [
                         $this->relatedPivotKey => $item,
-                        $this->morphType       => $this->related->getMorphClass(),
+                        $this->morphType => $this->related->getMorphClass(),
                     ],
-                ]);
+                ];
             }
 
             $this->parent->pull($this->table, $data);
@@ -378,8 +374,8 @@ class MorphToMany extends EloquentMorphToMany
     /**
      * Extract ids from given pivot table data
      *
-     * @param  array       $data
-     * @param  string|null $relatedPivotKey
+     * @param array       $data
+     * @param string|null $relatedPivotKey
      *
      * @return mixed
      */

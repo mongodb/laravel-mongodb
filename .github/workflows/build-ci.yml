@@ -2,8 +2,6 @@ name: CI
 
 on:
     push:
-        branches:
-        tags:
     pull_request:
 
 jobs:
@@ -55,7 +53,7 @@ jobs:
             -   name: Show Docker version
                 run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
                 env:
-                    DEBUG: ${{secrets.DEBUG}}
+                    DEBUG: ${{ secrets.DEBUG }}
             -   name: Download Composer cache dependencies from cache
                 id: composer-cache
                 run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -66,14 +64,8 @@ jobs:
                     key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
                     restore-keys: ${{ matrix.os }}-composer-
             -   name: Install dependencies
-                run: |
-                    composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable')
+                run: composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable')
             -   name: Run tests
-                run: |
-                    ./vendor/bin/phpunit --coverage-clover coverage.xml
+                run: ./vendor/bin/phpunit --coverage-clover coverage.xml
                 env:
                     MONGODB_URI: 'mongodb://127.0.0.1/?replicaSet=rs'
-            -   uses: codecov/codecov-action@v3
-                with:
-                    token: ${{ secrets.CODECOV_TOKEN }}
-                    fail_ci_if_error: false

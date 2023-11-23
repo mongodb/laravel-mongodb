@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.4/phpunit.xsd"
-         backupGlobals="false"
          bootstrap="vendor/autoload.php"
-         colors="true"
-         processIsolation="false"
-         stopOnFailure="false"
-         cacheDirectory=".phpunit.cache"
-         backupStaticProperties="false"
->
-    <coverage/>
+         cacheDirectory=".cache/phpunit"
+         executionOrder="depends,defects"
+         beStrictAboutCoverageMetadata="true"
+         beStrictAboutOutputDuringTests="true"
+         failOnRisky="true"
+         failOnWarning="true">
     <testsuites>
         <testsuite name="Test Suite">
             <directory>tests/</directory>
@@ -20,10 +18,15 @@
         <env name="MONGODB_DATABASE" value="unittest"/>
         <env name="SQLITE_DATABASE" value=":memory:"/>
         <env name="QUEUE_CONNECTION" value="database"/>
+
+        <ini name="memory_limit" value="-1"/>
     </php>
-    <source>
+
+    <source restrictDeprecations="true"
+        restrictNotices="true"
+        restrictWarnings="true">
         <include>
-            <directory suffix=".php">./src</directory>
+            <directory>./src</directory>
         </include>
     </source>
 </phpunit>

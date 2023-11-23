@@ -44,9 +44,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /** @inheritdoc */
-    public function hasTable($collection)
+    public function hasTable($table)
     {
-        return $this->hasCollection($collection);
+        return $this->hasCollection($table);
     }
 
     /**
@@ -66,15 +66,15 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /** @inheritdoc */
-    public function table($collection, Closure $callback)
+    public function table($table, Closure $callback)
     {
-        $this->collection($collection, $callback);
+        $this->collection($table, $callback);
     }
 
     /** @inheritdoc */
-    public function create($collection, ?Closure $callback = null, array $options = [])
+    public function create($table, ?Closure $callback = null, array $options = [])
     {
-        $blueprint = $this->createBlueprint($collection);
+        $blueprint = $this->createBlueprint($table);
 
         $blueprint->create($options);
 
@@ -84,17 +84,17 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /** @inheritdoc */
-    public function dropIfExists($collection)
+    public function dropIfExists($table)
     {
-        if ($this->hasCollection($collection)) {
-            $this->drop($collection);
+        if ($this->hasCollection($table)) {
+            $this->drop($table);
         }
     }
 
     /** @inheritdoc */
-    public function drop($collection)
+    public function drop($table)
     {
-        $blueprint = $this->createBlueprint($collection);
+        $blueprint = $this->createBlueprint($table);
 
         $blueprint->drop();
     }
@@ -108,9 +108,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /** @inheritdoc */
-    protected function createBlueprint($collection, ?Closure $callback = null)
+    protected function createBlueprint($table, ?Closure $callback = null)
     {
-        return new Blueprint($this->connection, $collection);
+        return new Blueprint($this->connection, $table);
     }
 
     /**

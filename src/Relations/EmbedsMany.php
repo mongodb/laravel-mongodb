@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use MongoDB\BSON\ObjectID;
+use MongoDB\Driver\Exception\LogicException;
+use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 
 use function array_key_exists;
 use function array_values;
@@ -16,6 +18,7 @@ use function count;
 use function in_array;
 use function is_array;
 use function method_exists;
+use function throw_if;
 
 class EmbedsMany extends EmbedsOneOrMany
 {
@@ -82,7 +85,7 @@ class EmbedsMany extends EmbedsOneOrMany
         // Get the correct foreign key value.
         $foreignKey = $this->getForeignKeyValue($model);
 
-        $values = $this->getUpdateValues($model->getDirty(), $this->localKey . '.$.');
+        $values = self::getUpdateValues($model->getDirty(), $this->localKey . '.$.');
 
         // Update document in database.
         $result = $this->toBase()->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)
@@ -195,10 +198,14 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Delete all embedded models.
      *
-     * @return int
+     * @param null $id
+     *
+     * @note The $id is not used to delete embedded models.
      */
-    public function delete()
+    public function delete($id = null): int
     {
+        throw_if($id !== null, new LogicException('The id parameter should not be used.'));
+
         // Overwrite the local key with an empty array.
         $result = $this->query->update([$this->localKey => []]);
 
@@ -224,9 +231,9 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Save alias.
      *
-     * @return Model
+     * @return MongoDBModel
      */
-    public function attach(Model $model)
+    public function attach(MongoDBModel $model)
     {
         return $this->save($model);
     }
@@ -322,13 +329,13 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /** @inheritdoc */
-    protected function setEmbedded($models)
+    protected function setEmbedded($records)
     {
-        if (! is_array($models)) {
-            $models = [$models];
+        if (! is_array($records)) {
+            $records = [$records];
         }
 
-        return parent::setEmbedded(array_values($models));
+        return parent::setEmbedded(array_values($records));
     }
 
     /** @inheritdoc */
