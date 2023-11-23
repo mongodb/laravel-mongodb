@@ -526,28 +526,48 @@ $user->push('messages', [
 
 **Pull**
 
-Remove an item from an array.
+Remove a value form items array.
 
 ```php
-DB::collection('users')
-    ->where('name', 'John')
-    ->pull('items', 'boots');
+// items: ['boots', 'hat', 'jeans']
 
-$user->pull('items', 'boots');
+DB::collection('users')
+  ->where('name', 'John')
+    // Pull a single value
+  ->pull('items', 'boots'); // items: ['hat', 'jeans']
+
+// Or pull multiple values
+
+$user->pull('items', ['boots', 'jeans']);  // items: ['hat']
 ```
 
+Also, you can pull an array value from the items array.
+
 ```php
+// messages: [ ['from' => 'Jane Doe', 'message' => 'Hi John'], ['from' => 'Jess Doe', 'message' => 'Hi John'] ]
+
 DB::collection('users')
-    ->where('name', 'John')
-    ->pull('messages', [
-        'from' => 'Jane Doe',
-        'message' => 'Hi John',
-    ]);
+  ->where('name', 'John')
+    // It will search for the exact array and pulls it
+  ->pull('messages', [
+      [
+          'from' => 'Jane Doe',
+          'message' => 'Hi John',
+      ]
+  ]); // messages: [ ['from' => 'Jess Doe', 'message' => 'Hi John'] ]
+
+// Or pull multiple array
 
 $user->pull('messages', [
-    'from' => 'Jane Doe',
-    'message' => 'Hi John',
-]);
+    [
+        'from' => 'Jane Doe',
+        'message' => 'Hi John',
+    ],
+    [
+        'from' => 'Jess Doe',
+        'message' => 'Hi John',
+    ]
+]); // messages: [ ]
 ```
 
 **Unset**
