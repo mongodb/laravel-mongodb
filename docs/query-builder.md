@@ -541,7 +541,7 @@ DB::collection('users')
 $user->pull('items', ['boots', 'jeans']);  // items: ['hat']
 ```
 
-Also, you can pull an array value from the items array.
+Also, you can pull an array value from the messages array.
 
 ```php
 // messages: [ ['from' => 'Jane Doe', 'message' => 'Hi John'], ['from' => 'Jess Doe', 'message' => 'Hi John'] ]
