@@ -469,7 +469,7 @@ $user->push('items', 'boots');
 $user->push('items', ['hat', 'jeans']);
 ```
 
-To add an array to the items array.
+To add an array to the messages array.
 
 ```php
 DB::collection('users')
