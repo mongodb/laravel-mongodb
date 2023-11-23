@@ -231,7 +231,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Remove the relation to the parent.
         assert($this->parent instanceof \MongoDB\Laravel\Eloquent\Model);
-        assert($query instanceof \MongoDB\Laravel\Eloquent\Model);
+        assert($query instanceof \MongoDB\Laravel\Eloquent\Builder);
         $query->pull($this->foreignPivotKey, $this->parent->getKey());
 
         if ($touch) {
