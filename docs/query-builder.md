@@ -448,7 +448,7 @@ DB::collection('items')
 
 **Push**
 
-Add one or more values to the items array.
+Add one or multiple values to the items array.
 
 ```php
 // Push the value to the matched documents
@@ -492,7 +492,7 @@ $user->push('messages', [
 ]);
 ```
 
-If you **DON'T** want duplicate items, set the third parameter to `true`:
+If you **DON'T** want duplicate values, set the third parameter to `true`:
 
 ```php
 DB::collection('users')
@@ -526,7 +526,7 @@ $user->push('messages', [
 
 **Pull**
 
-Remove a value form items array.
+Remove one or multiple values form items array.
 
 ```php
 // items: ['boots', 'hat', 'jeans']
