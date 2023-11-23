@@ -1,11 +1,6 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Cannot call method modelKeys\\(\\) on array\\|Illuminate\\\\Support\\\\Collection\\.$#"
-			count: 1
-			path: src/Relations/BelongsToMany.php
-
-		-
 			message: "#^Method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:push\\(\\) invoked with 3 parameters, 0 required\\.$#"
 			count: 3
 			path: src/Relations/BelongsToMany.php

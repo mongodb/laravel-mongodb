@@ -126,11 +126,6 @@ class BelongsToMany extends EloquentBelongsToMany
         // if they exist in the array of current ones, and if not we will insert.
         $current = $this->parent->{$this->relatedPivotKey} ?: [];
 
-        // See issue #256.
-        if ($current instanceof Collection) {
-            $current = $ids->modelKeys();
-        }
-
         $records = $this->formatRecordsList($ids);
 
         $current = Arr::wrap($current);
