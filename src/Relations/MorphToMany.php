@@ -133,11 +133,6 @@ class MorphToMany extends EloquentMorphToMany
             $current = $this->parent->{$this->relatedPivotKey} ?: [];
         }
 
-        // See issue #256.
-        if ($current instanceof Collection) {
-            $current = $this->parseIds($current);
-        }
-
         $records = $this->formatRecordsList($ids);
 
         $current = Arr::wrap($current);
