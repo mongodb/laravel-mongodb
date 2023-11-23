@@ -464,7 +464,7 @@ DB::collection('users')
 
 // Or
 
-// Push the value to exact document
+// Push the value to an exact document
 $user->push('items', 'boots');
 $user->push('items', ['hat', 'jeans']);
 ```
