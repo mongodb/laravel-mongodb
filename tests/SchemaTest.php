@@ -337,6 +337,46 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['unique']);
     }
 
+    public function testRenameColumn(): void
+    {
+        DB::connection()->collection('newcollection')->insert(['test' => 'value']);
+        DB::connection()->collection('newcollection')->insert(['test' => 'value 2']);
+        DB::connection()->collection('newcollection')->insert(['column' => 'column value']);
+
+        $check = DB::connection()->collection('newcollection')->get();
+        $this->assertCount(3, $check);
+
+        $this->assertArrayHasKey('test', $check[0]);
+        $this->assertArrayNotHasKey('newtest', $check[0]);
+
+        $this->assertArrayHasKey('test', $check[1]);
+        $this->assertArrayNotHasKey('newtest', $check[1]);
+
+        $this->assertArrayHasKey('column', $check[2]);
+        $this->assertArrayNotHasKey('test', $check[2]);
+        $this->assertArrayNotHasKey('newtest', $check[2]);
+
+        Schema::collection('newcollection', function (Blueprint $collection) {
+            $collection->renameColumn('test', 'newtest');
+        });
+
+        $check2 = DB::connection()->collection('newcollection')->get();
+        $this->assertCount(3, $check2);
+
+        $this->assertArrayHasKey('newtest', $check2[0]);
+        $this->assertArrayNotHasKey('test', $check2[0]);
+        $this->assertSame($check[0]['test'], $check2[0]['newtest']);
+
+        $this->assertArrayHasKey('newtest', $check2[1]);
+        $this->assertArrayNotHasKey('test', $check2[1]);
+        $this->assertSame($check[1]['test'], $check2[1]['newtest']);
+
+        $this->assertArrayHasKey('column', $check2[2]);
+        $this->assertArrayNotHasKey('test', $check2[2]);
+        $this->assertArrayNotHasKey('newtest', $check2[2]);
+        $this->assertSame($check[2]['column'], $check2[2]['column']);
+    }
+
     protected function getIndex(string $collection, string $name)
     {
         $collection = DB::getCollection($collection);

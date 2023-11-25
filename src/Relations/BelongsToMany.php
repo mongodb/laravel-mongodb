@@ -15,8 +15,8 @@ use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_values;
+use function assert;
 use function count;
-use function is_array;
 use function is_numeric;
 
 class BelongsToMany extends EloquentBelongsToMany
@@ -82,11 +82,11 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /** @inheritdoc */
-    public function save(Model $model, array $joining = [], $touch = true)
+    public function save(Model $model, array $pivotAttributes = [], $touch = true)
     {
         $model->save(['touch' => false]);
 
-        $this->attach($model, $joining, $touch);
+        $this->attach($model, $pivotAttributes, $touch);
 
         return $model;
     }
@@ -126,12 +126,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // if they exist in the array of current ones, and if not we will insert.
         $current = $this->parent->{$this->relatedPivotKey} ?: [];
 
-        // See issue #256.
-        if ($current instanceof Collection) {
-            $current = $ids->modelKeys();
-        }
-
-        $records = $this->formatSyncList($ids);
+        $records = $this->formatRecordsList($ids);
 
         $current = Arr::wrap($current);
 
@@ -171,6 +166,7 @@ class BelongsToMany extends EloquentBelongsToMany
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
         // Do nothing, we have no pivot table.
+        return $this;
     }
 
     /** @inheritdoc */
@@ -229,6 +225,8 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Remove the relation to the parent.
+        assert($this->parent instanceof \MongoDB\Laravel\Eloquent\Model);
+        assert($query instanceof \MongoDB\Laravel\Eloquent\Builder);
         $query->pull($this->foreignPivotKey, $this->parent->getKey());
 
         if ($touch) {
@@ -266,7 +264,7 @@ class BelongsToMany extends EloquentBelongsToMany
     /**
      * Create a new query builder for the related model.
      *
-     * @return \Illuminate\Database\Query\Builder
+     * @return Builder|Model
      */
     public function newRelatedQuery()
     {
@@ -293,28 +291,6 @@ class BelongsToMany extends EloquentBelongsToMany
     public function getQualifiedRelatedPivotKeyName()
     {
         return $this->relatedPivotKey;
-    }
-
-    /**
-     * Format the sync list so that it is keyed by ID. (Legacy Support)
-     * The original function has been renamed to formatRecordsList since Laravel 5.3.
-     *
-     * @deprecated
-     *
-     * @return array
-     */
-    protected function formatSyncList(array $records)
-    {
-        $results = [];
-        foreach ($records as $id => $attributes) {
-            if (! is_array($attributes)) {
-                [$id, $attributes] = [$attributes, []];
-            }
-
-            $results[$id] = $attributes;
-        }
-
-        return $results;
     }
 
     /**

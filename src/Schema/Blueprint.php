@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Schema;
 
 use Illuminate\Database\Connection;
+use Illuminate\Database\Schema\Blueprint as SchemaBlueprint;
 use MongoDB\Laravel\Collection;
 
 use function array_flip;
@@ -15,7 +16,7 @@ use function is_int;
 use function is_string;
 use function key;
 
-class Blueprint extends \Illuminate\Database\Schema\Blueprint
+class Blueprint extends SchemaBlueprint
 {
     /**
      * The MongoConnection object for this blueprint.
@@ -43,6 +44,8 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      */
     public function __construct(Connection $connection, string $collection)
     {
+        parent::__construct($collection);
+
         $this->connection = $connection;
 
         $this->collection = $this->connection->getCollection($collection);
@@ -81,11 +84,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     }
 
     /** @inheritdoc */
-    public function dropIndex($indexOrColumns = null)
+    public function dropIndex($index = null)
     {
-        $indexOrColumns = $this->transformColumns($indexOrColumns);
+        $index = $this->transformColumns($index);
 
-        $this->collection->dropIndex($indexOrColumns);
+        $this->collection->dropIndex($index);
 
         return $this;
     }
@@ -274,6 +277,16 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
     public function drop()
     {
         $this->collection->drop();
+
+        return $this;
+    }
+
+    /** @inheritdoc */
+    public function renameColumn($from, $to)
+    {
+        $this->collection->updateMany([$from => ['$exists' => true]], ['$rename' => [$from => $to]]);
+
+        return $this;
     }
 
     /** @inheritdoc */
@@ -330,11 +343,11 @@ class Blueprint extends \Illuminate\Database\Schema\Blueprint
      * Allows the use of unsupported schema methods.
      *
      * @param string $method
-     * @param array  $args
+     * @param array  $parameters
      *
      * @return Blueprint
      */
-    public function __call($method, $args)
+    public function __call($method, $parameters)
     {
         // Dummy.
         return $this;

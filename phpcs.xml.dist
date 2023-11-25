@@ -3,7 +3,7 @@
     <arg name="basepath" value="." />
     <arg name="extensions" value="php" />
     <arg name="parallel" value="80" />
-    <arg name="cache" value=".phpcs-cache" />
+    <arg name="cache" value=".cache/phpcs" />
     <arg name="colors" />
 
     <!-- Ignore warnings (n), show progress of the run (p), and show sniff names (s) -->

@@ -15,11 +15,16 @@ use MongoDB\Laravel\Relations\HasMany;
 use MongoDB\Laravel\Relations\HasOne;
 use MongoDB\Laravel\Relations\MorphMany;
 use MongoDB\Laravel\Relations\MorphTo;
+use MongoDB\Laravel\Relations\MorphToMany;
 
+use function array_pop;
 use function debug_backtrace;
+use function implode;
 use function is_subclass_of;
+use function preg_split;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
+use const PREG_SPLIT_DELIM_CAPTURE;
 
 /**
  * Cross-database relationships between SQL and MongoDB.
@@ -325,6 +330,125 @@ trait HybridRelations
             $parentKey ?: $this->getKeyName(),
             $relatedKey ?: $instance->getKeyName(),
             $relation,
+        );
+    }
+
+    /**
+     * Define a morph-to-many relationship.
+     *
+     * @param  string $related
+     * @param    string $name
+     * @param  null   $table
+     * @param  null   $foreignPivotKey
+     * @param  null   $relatedPivotKey
+     * @param  null   $parentKey
+     * @param  null   $relatedKey
+     * @param  null   $relation
+     * @param  bool   $inverse
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     */
+    public function morphToMany(
+        $related,
+        $name,
+        $table = null,
+        $foreignPivotKey = null,
+        $relatedPivotKey = null,
+        $parentKey = null,
+        $relatedKey = null,
+        $relation = null,
+        $inverse = false,
+    ) {
+        // If no relationship name was passed, we will pull backtraces to get the
+        // name of the calling function. We will use that function name as the
+        // title of this relation since that is a great convention to apply.
+        if ($relation === null) {
+            $relation = $this->guessBelongsToManyRelation();
+        }
+
+        // Check if it is a relation with an original model.
+        if (! is_subclass_of($related, Model::class)) {
+            return parent::morphToMany(
+                $related,
+                $name,
+                $table,
+                $foreignPivotKey,
+                $relatedPivotKey,
+                $parentKey,
+                $relatedKey,
+                $relation,
+                $inverse,
+            );
+        }
+
+        $instance = new $related();
+
+        $foreignPivotKey = $foreignPivotKey ?: $name . '_id';
+        $relatedPivotKey = $relatedPivotKey ?:  Str::plural($instance->getForeignKey());
+
+        // Now we're ready to create a new query builder for the related model and
+        // the relationship instances for this relation. This relation will set
+        // appropriate query constraints then entirely manage the hydration.
+        if (! $table) {
+            $words = preg_split('/(_)/u', $name, -1, PREG_SPLIT_DELIM_CAPTURE);
+            $lastWord = array_pop($words);
+            $table = implode('', $words) . Str::plural($lastWord);
+        }
+
+        return new MorphToMany(
+            $instance->newQuery(),
+            $this,
+            $name,
+            $table,
+            $foreignPivotKey,
+            $relatedPivotKey,
+            $parentKey ?: $this->getKeyName(),
+            $relatedKey ?: $instance->getKeyName(),
+            $relation,
+            $inverse,
+        );
+    }
+
+    /**
+     * Define a polymorphic, inverse many-to-many relationship.
+     *
+     * @param  string $related
+     * @param  string $name
+     * @param  null   $table
+     * @param  null   $foreignPivotKey
+     * @param  null   $relatedPivotKey
+     * @param  null   $parentKey
+     * @param  null   $relatedKey
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     */
+    public function morphedByMany(
+        $related,
+        $name,
+        $table = null,
+        $foreignPivotKey = null,
+        $relatedPivotKey = null,
+        $parentKey = null,
+        $relatedKey = null,
+        $relation = null,
+    ) {
+        $foreignPivotKey = $foreignPivotKey ?: Str::plural($this->getForeignKey());
+
+        // For the inverse of the polymorphic many-to-many relations, we will change
+        // the way we determine the foreign and other keys, as it is the opposite
+        // of the morph-to-many method since we're figuring out these inverses.
+        $relatedPivotKey = $relatedPivotKey ?: $name . '_id';
+
+        return $this->morphToMany(
+            $related,
+            $name,
+            $table,
+            $foreignPivotKey,
+            $relatedPivotKey,
+            $parentKey,
+            $relatedKey,
+            $relatedKey,
+            true,
         );
     }
 

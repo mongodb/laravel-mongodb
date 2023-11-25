@@ -9,6 +9,10 @@ use Illuminate\Database\Connection as BaseConnection;
 use InvalidArgumentException;
 use MongoDB\Client;
 use MongoDB\Database;
+use MongoDB\Driver\Exception\AuthenticationException;
+use MongoDB\Driver\Exception\ConnectionException;
+use MongoDB\Driver\Exception\RuntimeException;
+use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Concerns\ManagesTransactions;
 use Throwable;
 
@@ -187,6 +191,18 @@ class Connection extends BaseConnection
         }
 
         return new Client($dsn, $options, $driverOptions);
+    }
+
+    /**
+     * Check the connection to the MongoDB server
+     *
+     * @throws ConnectionException if connection to the server fails (for reasons other than authentication).
+     * @throws AuthenticationException if authentication is needed and fails.
+     * @throws RuntimeException if a server matching the read preference could not be found.
+     */
+    public function ping(): void
+    {
+        $this->getMongoClient()->getManager()->selectServer(new ReadPreference(ReadPreference::PRIMARY_PREFERRED));
     }
 
     /** @inheritdoc */

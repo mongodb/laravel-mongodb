@@ -2,8 +2,6 @@ name: "CI"
 
 on:
     push:
-        branches:
-        tags:
     pull_request:
 
 jobs:
@@ -76,15 +74,9 @@ jobs:
                     restore-keys: "${{ matrix.os }}-composer-"
 
             -   name: "Install dependencies"
-                run: |
-                    composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable')
+                run: composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable')
 
             -   name: "Run tests"
-                run: "composer test:coverage"
+                run: "./vendor/bin/phpunit --coverage-clover coverage.xml"
                 env:
                     MONGODB_URI: 'mongodb://127.0.0.1/?replicaSet=rs'
-
-            -   uses: "codecov/codecov-action@v3"
-                with:
-                    token: ${{ secrets.CODECOV_TOKEN }}
-                    fail_ci_if_error: "false"

@@ -3,9 +3,9 @@
 *.sublime-workspace
 .DS_Store
 .idea/
-.phpunit.cache/
-.phpcs-cache
 /vendor
 composer.lock
 composer.phar
 phpunit.xml
+phpstan.neon
+/.cache/

@@ -16,6 +16,7 @@ use function collect;
 use function is_array;
 use function iterator_to_array;
 
+/** @method \MongoDB\Laravel\Query\Builder toBase() */
 class Builder extends EloquentBuilder
 {
     use QueriesRelationships;
@@ -219,16 +220,15 @@ class Builder extends EloquentBuilder
         }
 
         if ($shouldReverse) {
-            $this->query->orders = collect($this->query->orders)->map(function ($direction) {
-                return $direction === 1 ? -1 : 1;
-            })->toArray();
+            $this->query->orders = collect($this->query->orders)
+                ->map(static fn (int $direction) => $direction === 1 ? -1 : 1)
+                ->toArray();
         }
 
-        return collect($this->query->orders)->map(function ($direction, $column) {
-            return [
+        return collect($this->query->orders)
+            ->map(static fn ($direction, $column) => [
                 'column' => $column,
                 'direction' => $direction === 1 ? 'asc' : 'desc',
-            ];
-        })->values();
+            ])->values();
     }
 }

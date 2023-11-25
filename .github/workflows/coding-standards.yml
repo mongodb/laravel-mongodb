@@ -2,8 +2,6 @@ name: "Coding Standards"
 
 on:
   push:
-    branches:
-    tags:
   pull_request:
 
 env:
@@ -14,6 +12,11 @@ jobs:
   phpcs:
     name: "phpcs"
     runs-on: "ubuntu-22.04"
+
+    permissions:
+      # Give the default GITHUB_TOKEN write permission to commit and push the
+      # added or changed files to the repository.
+      contents: write
 
     steps:
       - name: "Checkout"
@@ -50,6 +53,67 @@ jobs:
         with:
           composer-options: "--no-suggest"
 
+      - name: "Format the code"
+        continue-on-error: true
+        run: |
+          mkdir .cache
+          ./vendor/bin/phpcbf
+
       # The -q option is required until phpcs v4 is released
       - name: "Run PHP_CodeSniffer"
         run: "vendor/bin/phpcs -q --no-colors --report=checkstyle | cs2pr"
+
+      - name: "Commit the changes"
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "apply phpcbf formatting"
+
+  analysis:
+    runs-on: "ubuntu-22.04"
+    continue-on-error: true
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+          - '8.2'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, mbstring
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache dependencies
+        id: composer-cache
+        uses: actions/cache@v3
+        with:
+          path: ./vendor
+          key: composer-${{ hashFiles('**/composer.lock') }}
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Restore cache PHPStan results
+        id: phpstan-cache-restore
+        uses: actions/cache/restore@v3
+        with:
+          path: .cache
+          key: "phpstan-result-cache-${{ github.run_id }}"
+          restore-keys: |
+            phpstan-result-cache-
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi
+
+      - name: Save cache PHPStan results
+        id: phpstan-cache-save
+        if: always()
+        uses: actions/cache/save@v3
+        with:
+          path: .cache
+          key: ${{ steps.phpstan-cache-restore.outputs.cache-primary-key }}
