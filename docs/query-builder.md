@@ -454,13 +454,17 @@ Add one or multiple values to the items array.
 // Push the value to the matched documents
 DB::collection('users')
   ->where('name', 'John')
-    // Push a single value to the items array
-  ->push('items', 'boots'); // items: ['boots']
+  // Push a single value to the items array
+  ->push('items', 'boots');
+// Result:
+// items: ['boots']
 
 DB::collection('users')
   ->where('name', 'John')
-    // Push multiple values to the items array
-  ->push('items', ['hat', 'jeans']); // items: ['boots', 'hat', 'jeans']
+  // Push multiple values to the items array
+  ->push('items', ['hat', 'jeans']);
+// Result:
+// items: ['boots', 'hat', 'jeans']
 
 // Or
 
@@ -481,7 +485,11 @@ DB::collection('users')
           'from'    => 'Jane Doe',
           'message' => 'Hi John',
       ],
-  ]); // messages: [ ['from' => 'Jane Doe', 'message' => 'Hi John'] ]
+  ]);
+// Result:
+// messages: [
+//      { 'from' => 'Jane Doe', 'message' => 'Hi John' }
+//  ]
 
 // Or
 
@@ -498,11 +506,15 @@ If you **DON'T** want duplicate values, set the third parameter to `true`:
 ```php
 DB::collection('users')
   ->where('name', 'John')
-  ->push('items', 'boots'); // items: ['boots']
+  ->push('items', 'boots');
+// Result:
+// items: ['boots']
 
 DB::collection('users')
   ->where('name', 'John')
-  ->push('items', ['hat', 'boots', 'jeans'], true); // items: ['boots', 'hat', 'jeans']
+  ->push('items', ['hat', 'boots', 'jeans'], true);
+// Result:
+// items: ['boots', 'hat', 'jeans']
 
 // Or
 
@@ -511,18 +523,27 @@ $user->push('messages', [
         'from'    => 'Jane Doe',
         'message' => 'Hi John',
     ],
-]); // messages: [ ['from' => 'Jane Doe', 'message' => 'Hi John'] ]
+]);
+// Result:
+// messages: [
+//      { 'from' => 'Jane Doe', 'message' => 'Hi John' }
+//  ]
 
 $user->push('messages', [
     [
         'from'    => 'Jess Doe',
-        'message' => 'Hi John',
+        'message' => 'Hi',
     ],
     [
         'from'    => 'Jane Doe',
         'message' => 'Hi John',
     ],
-], true);  // messages: [ ['from' => 'Jane Doe', 'message' => 'Hi John'], ['from' => 'Jess Doe', 'message' => 'Hi John'] ]
+], true);
+// Result:
+// messages: [
+//      { 'from' => 'Jane Doe', 'message' => 'Hi John' }
+//      { 'from' => 'Jess Doe', 'message' => 'Hi' }
+//  ]
 ```
 
 **Pull**
