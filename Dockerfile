@@ -8,7 +8,7 @@ RUN apt-get update && \
     docker-php-ext-install -j$(nproc) zip
 
 # Increase memory limit
-RUN cp /usr/local/etc/php/php.ini-development /usr/local/etc/php/php.ini && \
+RUN cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
     echo "memory_limit=-1" >> /usr/local/etc/php/php.ini
 
 # Enable coverage mode in xdebug
