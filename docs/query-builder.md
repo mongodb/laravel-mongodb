@@ -555,18 +555,25 @@ Remove one or multiple values form items array.
 
 DB::collection('users')
   ->where('name', 'John')
-    // Pull a single value
-  ->pull('items', 'boots'); // items: ['hat', 'jeans']
+  ->pull('items', 'boots'); // Pull a single value
+// Result:
+// items: ['hat', 'jeans']
 
 // Or pull multiple values
 
-$user->pull('items', ['boots', 'jeans']);  // items: ['hat']
+$user->pull('items', ['boots', 'jeans']);
+// Result:
+// items: ['hat']
 ```
 
 Also, you can pull an array value from the messages array.
 
 ```php
-// messages: [ ['from' => 'Jane Doe', 'message' => 'Hi John'], ['from' => 'Jess Doe', 'message' => 'Hi John'] ]
+// Latest state:
+// messages: [
+//      { 'from' => 'Jane Doe', 'message' => 'Hi John' }
+//      { 'from' => 'Jess Doe', 'message' => 'Hi' }
+//  ]
 
 DB::collection('users')
   ->where('name', 'John')
@@ -576,7 +583,11 @@ DB::collection('users')
           'from' => 'Jane Doe',
           'message' => 'Hi John',
       ]
-  ]); // messages: [ ['from' => 'Jess Doe', 'message' => 'Hi John'] ]
+  ]);
+// Result:
+// messages: [
+//      { 'from' => 'Jess Doe', 'message' => 'Hi' }
+//  ]
 
 // Or pull multiple array
 
@@ -587,9 +598,11 @@ $user->pull('messages', [
     ],
     [
         'from' => 'Jess Doe',
-        'message' => 'Hi John',
+        'message' => 'Hi',
     ]
-]); // messages: [ ]
+]);
+// Result:
+// messages: [ ]
 ```
 
 **Unset**
