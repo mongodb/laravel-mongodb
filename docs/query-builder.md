@@ -469,7 +469,8 @@ $user->push('items', 'boots');
 $user->push('items', ['hat', 'jeans']);
 ```
 
-To add an array to the messages array.
+To add an array as a value to the messages array. value arrays must be nested into a list array, otherwise they are
+interpreted as a list of scalar values.
 
 ```php
 DB::collection('users')
