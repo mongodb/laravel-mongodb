@@ -488,7 +488,7 @@ DB::collection('users')
   ]);
 // Result:
 // messages: [
-//      { 'from' => 'Jane Doe', 'message' => 'Hi John' }
+//      { from: "Jane Doe", message: "Hi John" }
 //  ]
 
 // Or
@@ -526,7 +526,7 @@ $user->push('messages', [
 ]);
 // Result:
 // messages: [
-//      { 'from' => 'Jane Doe', 'message' => 'Hi John' }
+//      { from: "Jane Doe", message: "Hi John" }
 //  ]
 
 $user->push('messages', [
@@ -541,8 +541,8 @@ $user->push('messages', [
 ], true);
 // Result:
 // messages: [
-//      { 'from' => 'Jane Doe', 'message' => 'Hi John' }
-//      { 'from' => 'Jess Doe', 'message' => 'Hi' }
+//      { from: "Jane Doe", message: "Hi John" }
+//      { from: "Jess Doe", message: "Hi" }
 //  ]
 ```
 
@@ -571,8 +571,8 @@ Also, you can pull an array value from the messages array.
 ```php
 // Latest state:
 // messages: [
-//      { 'from' => 'Jane Doe', 'message' => 'Hi John' }
-//      { 'from' => 'Jess Doe', 'message' => 'Hi' }
+//      { from: "Jane Doe", message: "Hi John" }
+//      { from: "Jess Doe", message: "Hi" }
 //  ]
 
 DB::collection('users')
@@ -586,7 +586,7 @@ DB::collection('users')
   ]);
 // Result:
 // messages: [
-//      { 'from' => 'Jess Doe', 'message' => 'Hi' }
+//      { from: "Jess Doe", message: "Hi" }
 //  ]
 
 // Or pull multiple array
