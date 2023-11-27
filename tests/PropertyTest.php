@@ -7,7 +7,6 @@ namespace MongoDB\Laravel\Tests\Eloquent;
 use MongoDB\Laravel\Tests\Models\Animal;
 use MongoDB\Laravel\Tests\Models\HiddenAnimal;
 use MongoDB\Laravel\Tests\TestCase;
-use PHPUnit\Framework\Attributes\Test;
 
 use function assert;
 
@@ -21,8 +20,7 @@ final class PropertyTest extends TestCase
         HiddenAnimal::truncate();
     }
 
-    #[Test]
-    public function canHideCertainProperties(): void
+    public function testCanHideCertainProperties(): void
     {
         Animal::create([
             'name' => 'Lion',
