@@ -7,12 +7,10 @@ RUN apt-get update && \
     pecl install xdebug && docker-php-ext-enable xdebug && \
     docker-php-ext-install -j$(nproc) zip
 
-# Increase memory limit
+# Create php.ini and enable coverage mode in xdebug
 RUN cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
-    echo "memory_limit=-1" >> /usr/local/etc/php/php.ini
+    echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/xdebug.ini
 
-# Enable coverage mode in xdebug
-RUN echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/xdebug.ini
 
 # Install Composer
 RUN curl https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
