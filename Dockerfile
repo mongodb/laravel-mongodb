@@ -11,6 +11,5 @@ RUN apt-get update && \
 RUN cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
     echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/xdebug.ini
 
-
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer
