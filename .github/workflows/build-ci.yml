@@ -55,12 +55,12 @@ jobs:
                     tools: "composer"
 
             -   name: "Show PHP version"
+                if: ${{ secrets.DEBUG == 'true' }}
                 run: "php -v && composer -V"
 
             -   name: "Show Docker version"
-                run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
-                env:
-                    DEBUG: ${{ secrets.DEBUG }}
+                if: ${{ secrets.DEBUG == 'true' }}
+                run: "docker version && env"
 
             -   name: "Download Composer cache dependencies from cache"
                 id: "composer-cache"
