@@ -216,7 +216,7 @@ class HybridRelationsTest extends TestCase
     public function testHybridSync()
     {
         $user = new SqlUser();
-        $user2 = new SqlUser;
+        $user2 = new SqlUser();
         $this->assertInstanceOf(SqlUser::class, $user);
         $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
         $this->assertInstanceOf(SqlUser::class, $user2);
