@@ -23,7 +23,7 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "ext-mongodb": "^1.15",
+        "ext-mongodb": "^1.11",
         "illuminate/support": "^10.0",
         "illuminate/container": "^10.0",
         "illuminate/database": "^10.30",
