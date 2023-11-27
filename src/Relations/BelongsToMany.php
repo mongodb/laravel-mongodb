@@ -125,6 +125,10 @@ class BelongsToMany extends EloquentBelongsToMany
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
         $current = $this->parent->{$this->relatedPivotKey} ?: [];
+        // Hybrid relationships support
+        if ($current instanceof Collection) {
+            $current = $this->parseIds($current);
+        }
 
         $records = $this->formatRecordsList($ids);
 
@@ -216,8 +220,10 @@ class BelongsToMany extends EloquentBelongsToMany
         // We'll return the numbers of affected rows when we do the deletes.
         $ids = (array) $ids;
 
-        // Detach all ids from the parent model.
-        $this->parent->pull($this->relatedPivotKey, $ids);
+        if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+            // Detach all ids from the parent model.
+            $this->parent->pull($this->relatedPivotKey, $ids);
+        }
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
@@ -225,7 +231,7 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Remove the relation to the parent.
-        assert($this->parent instanceof \MongoDB\Laravel\Eloquent\Model);
+        assert($this->parent instanceof Model);
         assert($query instanceof \MongoDB\Laravel\Eloquent\Builder);
         $query->pull($this->foreignPivotKey, $this->parent->getKey());
 
