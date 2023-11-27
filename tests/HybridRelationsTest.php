@@ -229,7 +229,7 @@ class HybridRelationsTest extends TestCase
         $user2->fill(['name' => 'Maria Doe'])->save();
         $user2 = SqlUser::query()->find($user2->id);
 
-        // Create Mongodb Clients
+        // Create Mongodb Skills
         $skill = Skill::query()->create(['name' => 'Laravel']);
         $skill2 = Skill::query()->create(['name' => 'MongoDB']);
 
