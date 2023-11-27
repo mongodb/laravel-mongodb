@@ -213,7 +213,7 @@ class HybridRelationsTest extends TestCase
             });
     }
 
-    public function testHybridSync()
+    public function testHybridBelongsToMany()
     {
         $user = new SqlUser();
         $user2 = new SqlUser();
