@@ -8,6 +8,7 @@ use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Role;
+use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\SqlBook;
 use MongoDB\Laravel\Tests\Models\SqlRole;
 use MongoDB\Laravel\Tests\Models\SqlUser;
@@ -36,6 +37,7 @@ class HybridRelationsTest extends TestCase
         SqlUser::truncate();
         SqlBook::truncate();
         SqlRole::truncate();
+        Skill::truncate();
     }
 
     public function testSqlRelations()
@@ -209,5 +211,46 @@ class HybridRelationsTest extends TestCase
             ->each(function ($user) {
                 $this->assertEquals($user->id, $user->books->count());
             });
+    }
+
+    public function testHybridSync()
+    {
+        $user = new SqlUser();
+        $user2 = new SqlUser;
+        $this->assertInstanceOf(SqlUser::class, $user);
+        $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
+        $this->assertInstanceOf(SqlUser::class, $user2);
+        $this->assertInstanceOf(SQLiteConnection::class, $user2->getConnection());
+
+        // Create Mysql Users
+        $user->fill(['name' => 'John Doe'])->save();
+        $user = SqlUser::query()->find($user->id);
+
+        $user2->fill(['name' => 'Maria Doe'])->save();
+        $user2 = SqlUser::query()->find($user2->id);
+
+        // Create Mongodb Clients
+        $skill = Skill::query()->create(['name' => 'Laravel']);
+        $skill2 = Skill::query()->create(['name' => 'MongoDB']);
+
+        // sync (pivot is empty)
+        $skill->sqlUsers()->sync([$user->id, $user2->id]);
+        $skill = Skill::query()->find($skill->_id);
+        $this->assertEquals(2, $skill->sqlUsers->count());
+
+        // sync (pivot is not empty)
+        $skill->sqlUsers()->sync($user);
+        $skill = Skill::query()->find($skill->_id);
+        $this->assertEquals(1, $skill->sqlUsers->count());
+
+        // sync (pivot is empty)
+        $user->skills()->sync([$skill->_id, $skill2->_id]);
+        $user = SqlUser::find($user->id);
+        $this->assertEquals(2, $user->skills->count());
+
+        // sync (pivot is not empty)
+        $user->skills()->sync($skill);
+        $user = SqlUser::find($user->id);
+        $this->assertEquals(1, $user->skills->count());
     }
 }

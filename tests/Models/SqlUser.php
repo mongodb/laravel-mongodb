@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Schema\Blueprint;
@@ -32,6 +33,11 @@ class SqlUser extends EloquentModel
         return $this->hasOne(Role::class);
     }
 
+    public function skills(): BelongsToMany
+    {
+        return $this->belongsToMany(Skill::class, relatedPivotKey: 'skills');
+    }
+
     public function sqlBooks(): HasMany
     {
         return $this->hasMany(SqlBook::class);
@@ -51,5 +57,12 @@ class SqlUser extends EloquentModel
             $table->string('name');
             $table->timestamps();
         });
+        if (! $schema->hasTable('skill_sql_user')) {
+            $schema->create('skill_sql_user', function (Blueprint $table) {
+                $table->foreignIdFor(self::class)->constrained()->cascadeOnDelete();
+                $table->string((new Skill())->getForeignKey());
+                $table->primary([(new self())->getForeignKey(), (new Skill())->getForeignKey()]);
+            });
+        }
     }
 }
