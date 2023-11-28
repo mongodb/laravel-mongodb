@@ -138,8 +138,6 @@ class MorphToMany extends EloquentMorphToMany
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
         if ($this->getInverse()) {
-//            $current = $this->extractIds($this->parent->{$this->table} ?: []);
-
             $current = match($this->parent instanceof \MongoDB\Laravel\Eloquent\Model){
                 true => $this->parent->{$this->table} ?: [],
                 false => $this->parent->{$this->relationName} ?: [],
