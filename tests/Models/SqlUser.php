@@ -66,5 +66,11 @@ class SqlUser extends EloquentModel
             $table->string('name');
             $table->timestamps();
         });
+        if (!$schema->hasTable('skilleds')){
+            $schema->create('skilleds',function (Blueprint $table){
+                $table->foreignIdFor(self::class)->constrained()->cascadeOnDelete();
+                $table->morphs('skilled');
+            });
+        }
     }
 }
