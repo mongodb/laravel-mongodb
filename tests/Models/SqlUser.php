@@ -68,8 +68,9 @@ class SqlUser extends EloquentModel
                 $table->morphs('skilled');
             });
         }
-        if (!$schema->hasTable('experienceds')){
-            $schema->create('experienceds',function (Blueprint $table){
+
+        if (! $schema->hasTable('experienceds')) {
+            $schema->create('experienceds', function (Blueprint $table) {
                 $table->foreignIdFor(self::class)->constrained()->cascadeOnDelete();
                 $table->morphs('experienced');
             });
