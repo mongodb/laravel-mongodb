@@ -17,9 +17,4 @@ class Skill extends Eloquent
     {
         return $this->morphedByMany(SqlUser::class, 'skilled');
     }
-
-    public function sqlBooks(): MorphToMany
-    {
-        return $this->morphedByMany(SqlBook::class, 'skilled');
-    }
 }

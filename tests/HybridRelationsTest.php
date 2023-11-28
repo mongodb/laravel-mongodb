@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Tests;
 use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Tests\Models\Book;
+use MongoDB\Laravel\Tests\Models\Experience;
 use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\SqlBook;
@@ -38,6 +39,7 @@ class HybridRelationsTest extends TestCase
         SqlBook::truncate();
         SqlRole::truncate();
         Skill::truncate();
+        Experience::truncate();
     }
 
     public function testSqlRelations()
@@ -253,5 +255,47 @@ class HybridRelationsTest extends TestCase
         $skill->sqlUsers()->sync([$user->id, $user2->id]);
         $check = Skill::query()->find($skill->_id);
         $this->assertEquals(2,$check->sqlUsers->count());
+    }
+
+    public function testHybridMorphToManyMongoModelToSqlModel()
+    {
+        // MongoModel -> MorphToMany -> SqlModel
+        $user      = new SqlUser();
+        $user2 = new SqlUser();
+        $this->assertInstanceOf(SqlUser::class, $user);
+        $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
+        $this->assertInstanceOf(SqlUser::class, $user2);
+        $this->assertInstanceOf(SQLiteConnection::class, $user2->getConnection());
+
+        // Create Mysql Users
+        $user->fill(['name' => 'John Doe'])->save();
+        $user = SqlUser::query()->find($user->id);
+
+        $user2->fill(['name' => 'Maria Doe'])->save();
+        $user2 = SqlUser::query()->find($user2->id);
+
+        // Create Mongodb experiences
+        $experience = Experience::query()->create(['title' => 'DB expert']);
+        $experience2 = Experience::query()->create(['title' => 'MongoDB']);
+
+        // MorphToMany (pivot is empty)
+        $experience->sqlUsers()->sync([$user->id, $user2->id]);
+        $check = Experience::query()->find($experience->_id);
+        $this->assertEquals(2,$check->sqlUsers->count());
+
+        // MorphToMany (pivot is not empty)
+        $experience->sqlUsers()->sync([$user->id]);
+        $check = Experience::query()->find($experience->_id);
+        $this->assertEquals(1,$check->sqlUsers->count());
+
+        // Inverse MorphToMany (pivot is empty)
+        $user->experiences()->sync([$experience->_id, $experience2->_id]);
+        $check = SqlUser::query()->find($user->id);
+        $this->assertEquals(2,$check->experiences->count());
+
+        // Inverse MorphToMany (pivot is not empty)
+        $user->experiences()->sync([$experience->_id]);
+        $check = SqlUser::query()->find($user->id);
+        $this->assertEquals(1,$check->experiences->count());
     }
 }

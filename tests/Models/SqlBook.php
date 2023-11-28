@@ -11,7 +11,6 @@ use Illuminate\Database\Schema\SQLiteBuilder;
 use Illuminate\Support\Facades\Schema;
 use MongoDB\Laravel\Eloquent\HybridRelations;
 
-use MongoDB\Laravel\Relations\MorphToMany;
 use function assert;
 
 class SqlBook extends EloquentModel
@@ -26,11 +25,6 @@ class SqlBook extends EloquentModel
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');
-    }
-
-    public function skills(): MorphToMany
-    {
-        return $this->morphToMany(Skill::class, 'skilled');
     }
 
     /**
