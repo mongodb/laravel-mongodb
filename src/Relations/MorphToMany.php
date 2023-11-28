@@ -17,6 +17,7 @@ use function array_map;
 use function array_merge;
 use function array_reduce;
 use function array_values;
+use function collect;
 use function count;
 use function is_array;
 use function is_numeric;
@@ -151,7 +152,7 @@ class MorphToMany extends EloquentMorphToMany
             }
 
         } else {
-            $current = match($this->parent instanceof \MongoDB\Laravel\Eloquent\Model){
+            $current = match ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
                 true => $this->parent->{$this->relatedPivotKey} ?: [],
                 false => $this->parent->{$this->relationName} ?: [],
             };
@@ -264,7 +265,6 @@ class MorphToMany extends EloquentMorphToMany
                         $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance));
                     }
                 }
-
             } else {
                 // Attach the new parent id to the related model.
                 $query->push($this->table, [
@@ -277,9 +277,9 @@ class MorphToMany extends EloquentMorphToMany
                 // Attach the new ids to the parent model.
                 if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
                     $this->parent->push($this->relatedPivotKey, $id, true);
-                }else{
+                } else {
                     foreach ($id as $item) {
-                        $instance = new $this->related;
+                        $instance = new $this->related();
                         $instance->forceFill([$this->relatedKey => $item]);
                         $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance));
                     }
