@@ -432,12 +432,17 @@ trait HybridRelations
         $relatedKey = null,
         $relation = null,
     ) {
-        $foreignPivotKey = $foreignPivotKey ?: Str::plural($this->getForeignKey());
+        // If the related model is an instance of eloquent model class, leave pivot keys
+        // as default. It's necessary for supporting hybrid relationship
+        if ( is_subclass_of($related, Model::class)) {
+            // For the inverse of the polymorphic many-to-many relations, we will change
+            // the way we determine the foreign and other keys, as it is the opposite
+            // of the morph-to-many method since we're figuring out these inverses.
+            $foreignPivotKey = $foreignPivotKey ?: Str::plural($this->getForeignKey());
 
-        // For the inverse of the polymorphic many-to-many relations, we will change
-        // the way we determine the foreign and other keys, as it is the opposite
-        // of the morph-to-many method since we're figuring out these inverses.
-        $relatedPivotKey = $relatedPivotKey ?: $name . '_id';
+            $relatedPivotKey = $relatedPivotKey ?: $name . '_id';
+
+        }
 
         return $this->morphToMany(
             $related,
