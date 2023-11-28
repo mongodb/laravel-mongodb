@@ -213,8 +213,9 @@ class HybridRelationsTest extends TestCase
             });
     }
 
-    public function testHybridMorphToMany()
+    public function testHybridMorphToManySqlModelToMongoModel()
     {
+        // SqlModel -> MorphToMany -> MongoModel
         $user      = new SqlUser();
         $user2 = new SqlUser();
         $this->assertInstanceOf(SqlUser::class, $user);
@@ -229,7 +230,7 @@ class HybridRelationsTest extends TestCase
         $user2->fill(['name' => 'Maria Doe'])->save();
         $user2 = SqlUser::query()->find($user2->id);
 
-        // Create Mongodb Clients
+        // Create Mongodb skills
         $skill = Skill::query()->create(['name' => 'Laravel']);
         $skill2 = Skill::query()->create(['name' => 'MongoDB']);
 
