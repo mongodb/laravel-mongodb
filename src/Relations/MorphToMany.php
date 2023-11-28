@@ -78,7 +78,11 @@ class MorphToMany extends EloquentMorphToMany
 
             $this->query->whereIn($this->relatedKey, $ids);
         } else {
-            $this->query->whereIn($this->relatedKey, (array) $this->parent->{$this->relatedPivotKey});
+            match ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+                true => $this->query->whereIn($this->relatedKey, (array) $this->parent->{$this->relatedPivotKey}),
+                false => $this->query
+                    ->whereIn($this->getQualifiedForeignPivotKeyName(), (array) $this->parent->{$this->parentKey}),
+            };
         }
 
         return $this;
@@ -130,7 +134,13 @@ class MorphToMany extends EloquentMorphToMany
         if ($this->getInverse()) {
             $current = $this->extractIds($this->parent->{$this->table} ?: []);
         } else {
-            $current = $this->parent->{$this->relatedPivotKey} ?: [];
+            $current = match($this->parent instanceof \MongoDB\Laravel\Eloquent\Model){
+                true => $this->parent->{$this->relatedPivotKey} ?: [],
+                false => $this->parent->{$this->relationName} ?: [],
+            };
+            if ($current instanceof Collection) {
+                $current = collect($this->parseIds($current))->flatten()->toArray();
+            }
         }
 
         $records = $this->formatRecordsList($ids);
@@ -239,7 +249,13 @@ class MorphToMany extends EloquentMorphToMany
                 ], true);
 
                 // Attach the new ids to the parent model.
-                $this->parent->push($this->relatedPivotKey, $id, true);
+                if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+                    $this->parent->push($this->relatedPivotKey, $id, true);
+                }else{
+                    $instance = new $this->related;
+                    $instance->forceFill([$this->relatedKey => $id]);
+                    $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance));
+                }
             }
         }
 
@@ -287,7 +303,9 @@ class MorphToMany extends EloquentMorphToMany
             $query->pull($this->foreignPivotKey, $this->parent->{$this->parentKey});
         } else {
             // Remove the relation from the parent.
-            $this->parent->pull($this->relatedPivotKey, $ids);
+            if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+                $this->parent->pull($this->relatedPivotKey, $ids);
+            }
 
             // Prepare the query to select all related objects.
             if (count($ids) > 0) {
