@@ -230,7 +230,13 @@ class MorphToMany extends EloquentMorphToMany
                 ], true);
 
                 // Attach the new ids to the parent model.
-                $this->parent->push($this->relatedPivotKey, (array) $id, true);
+                if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+                    $this->parent->push($this->relatedPivotKey, (array) $id, true);
+                }else{
+                    $instance = new $this->related();
+                    $instance->forceFill([$this->relatedKey => $id]);
+                    $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance));
+                }
             }
         } else {
             if ($id instanceof Collection) {

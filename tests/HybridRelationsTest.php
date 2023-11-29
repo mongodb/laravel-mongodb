@@ -246,6 +246,14 @@ class HybridRelationsTest extends TestCase
         $check = SqlUser::query()->find($user->id);
         $this->assertEquals(1, $check->skills->count());
 
+        // Attach MorphToMany
+        $user->skills()->sync([]);
+        $check = SqlUser::query()->find($user->id);
+        $this->assertEquals(0, $check->skills->count());
+        $user->skills()->attach($skill);
+        $check = SqlUser::query()->find($user->id);
+        $this->assertEquals(1, $check->skills->count());
+
         // Inverse MorphToMany (pivot is empty)
         $skill->sqlUsers()->sync([$user->id, $user2->id]);
         $check = Skill::query()->find($skill->_id);
