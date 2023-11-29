@@ -9,8 +9,8 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany as EloquentMorphToMany;
 use Illuminate\Support\Arr;
-
 use MongoDB\BSON\ObjectId;
+
 use function array_diff;
 use function array_key_exists;
 use function array_keys;
@@ -219,7 +219,7 @@ class MorphToMany extends EloquentMorphToMany
                             $this->morphType => $model->getMorphClass(),
                         ],
                     ], true);
-                }else{
+                } else {
                     $this->addIdToParentRelationData($id);
                 }
 
@@ -237,7 +237,7 @@ class MorphToMany extends EloquentMorphToMany
                 // Attach the new ids to the parent model.
                 if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
                     $this->parent->push($this->relatedPivotKey, (array) $id, true);
-                }else{
+                } else {
                     $this->addIdToParentRelationData($id);
                 }
             }
@@ -449,7 +449,6 @@ class MorphToMany extends EloquentMorphToMany
             return $carry;
         }, []);
     }
-
 
     /**
      * Add the given id to the relation's data of the current parent instance.
