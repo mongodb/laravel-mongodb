@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany as EloquentMorphToMany;
 use Illuminate\Support\Arr;
 
+use MongoDB\BSON\ObjectId;
 use function array_diff;
 use function array_key_exists;
 use function array_keys;
@@ -219,9 +220,7 @@ class MorphToMany extends EloquentMorphToMany
                         ],
                     ], true);
                 }else{
-                    $instance = new $this->related();
-                    $instance->forceFill([$this->relatedKey => $id]);
-                    $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance)->unique($this->relatedKey));
+                    $this->addIdToParentRelationData($id);
                 }
 
                 // Attach the new parent id to the related model.
@@ -239,9 +238,7 @@ class MorphToMany extends EloquentMorphToMany
                 if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
                     $this->parent->push($this->relatedPivotKey, (array) $id, true);
                 }else{
-                    $instance = new $this->related();
-                    $instance->forceFill([$this->relatedKey => $id]);
-                    $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance));
+                    $this->addIdToParentRelationData($id);
                 }
             }
         } else {
@@ -270,9 +267,7 @@ class MorphToMany extends EloquentMorphToMany
                     }
                 } else {
                     foreach ($id as $item) {
-                        $instance = new $this->related();
-                        $instance->forceFill([$this->relatedKey => $item]);
-                        $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance));
+                        $this->addIdToParentRelationData($item);
                     }
                 }
             } else {
@@ -289,9 +284,7 @@ class MorphToMany extends EloquentMorphToMany
                     $this->parent->push($this->relatedPivotKey, $id, true);
                 } else {
                     foreach ($id as $item) {
-                        $instance = new $this->related();
-                        $instance->forceFill([$this->relatedKey => $item]);
-                        $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance));
+                        $this->addIdToParentRelationData($item);
                     }
                 }
             }
@@ -455,5 +448,22 @@ class MorphToMany extends EloquentMorphToMany
 
             return $carry;
         }, []);
+    }
+
+
+    /**
+     * Add the given id to the relation's data of the current parent instance.
+     * It helps to keep up-to-date the sql model instances in hybrid relationships.
+     *
+     * @param ObjectId|string|int $id
+     *
+     * @return void
+     */
+    private function addIdToParentRelationData($id)
+    {
+        $instance = new $this->related();
+        $instance->forceFill([$this->relatedKey => $id]);
+        $relationData = $this->parent->{$this->relationName}->push($instance)->unique($this->relatedKey);
+        $this->parent->setRelation($this->relationName, $relationData);
     }
 }
