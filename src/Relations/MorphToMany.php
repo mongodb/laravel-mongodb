@@ -155,8 +155,9 @@ class MorphToMany extends EloquentMorphToMany
                 true => $this->parent->{$this->relatedPivotKey} ?: [],
                 false => $this->parent->{$this->relationName} ?: [],
             };
+            
             if ($current instanceof Collection) {
-                $current = collect($this->parseIds($current))->flatten()->toArray();
+                $current = $this->parseIds($current);
             }
         }
 
