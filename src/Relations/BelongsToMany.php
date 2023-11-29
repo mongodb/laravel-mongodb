@@ -17,6 +17,7 @@ use function array_merge;
 use function array_values;
 use function assert;
 use function count;
+use function in_array;
 use function is_numeric;
 
 class BelongsToMany extends EloquentBelongsToMany
@@ -200,9 +201,9 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Attach the new ids to the parent model.
-        if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) { 
+        if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
             $this->parent->push($this->relatedPivotKey, (array) $id, true);
-        }else{
+        } else {
             $instance = new $this->related();
             $instance->forceFill([$this->relatedKey => $id]);
             $relationData = $this->parent->{$this->relationName}->push($instance)->unique($this->relatedKey);
@@ -233,7 +234,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // Detach all ids from the parent model.
         if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
             $this->parent->pull($this->relatedPivotKey, $ids);
-        }else{
+        } else {
             $value = $this->parent->{$this->relationName}
                 ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $ids));
             $this->parent->setRelation($this->relationName, $value);
