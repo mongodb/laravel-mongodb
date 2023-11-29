@@ -235,22 +235,30 @@ class HybridRelationsTest extends TestCase
 
         // sync (pivot is empty)
         $skill->sqlUsers()->sync([$user->id, $user2->id]);
-        $skill = Skill::query()->find($skill->_id);
-        $this->assertEquals(2, $skill->sqlUsers->count());
+        $check = Skill::query()->find($skill->_id);
+        $this->assertEquals(2, $check->sqlUsers->count());
 
         // sync (pivot is not empty)
         $skill->sqlUsers()->sync($user);
-        $skill = Skill::query()->find($skill->_id);
-        $this->assertEquals(1, $skill->sqlUsers->count());
+        $check = Skill::query()->find($skill->_id);
+        $this->assertEquals(1, $check->sqlUsers->count());
 
-        // sync (pivot is empty)
+        // Inverse sync (pivot is empty)
         $user->skills()->sync([$skill->_id, $skill2->_id]);
-        $user = SqlUser::find($user->id);
-        $this->assertEquals(2, $user->skills->count());
+        $check = SqlUser::find($user->id);
+        $this->assertEquals(2, $check->skills->count());
 
-        // sync (pivot is not empty)
+        // Inverse sync (pivot is not empty)
         $user->skills()->sync($skill);
-        $user = SqlUser::find($user->id);
-        $this->assertEquals(1, $user->skills->count());
+        $check = SqlUser::find($user->id);
+        $this->assertEquals(1, $check->skills->count());
+
+        // Inverse attach
+        $user->skills()->sync([]);
+        $check = SqlUser::find($user->id);
+        $this->assertEquals(0, $check->skills->count());
+        $user->skills()->attach($skill);
+        $check = SqlUser::find($user->id);
+        $this->assertEquals(1, $check->skills->count());
     }
 }

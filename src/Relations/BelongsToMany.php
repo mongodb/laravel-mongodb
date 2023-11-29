@@ -124,8 +124,11 @@ class BelongsToMany extends EloquentBelongsToMany
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
-        $current = $this->parent->{$this->relatedPivotKey} ?: [];
-        // Hybrid relationships support
+        $current = match ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+            true => $this->parent->{$this->relatedPivotKey} ?: [],
+            false => $this->parent->{$this->relationName} ?: [],
+        };
+
         if ($current instanceof Collection) {
             $current = $this->parseIds($current);
         }
@@ -197,7 +200,14 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Attach the new ids to the parent model.
-        $this->parent->push($this->relatedPivotKey, (array) $id, true);
+        if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) { 
+            $this->parent->push($this->relatedPivotKey, (array) $id, true);
+        }else{
+            $instance = new $this->related();
+            $instance->forceFill([$this->relatedKey => $id]);
+            $relationData = $this->parent->{$this->relationName}->push($instance)->unique($this->relatedKey);
+            $this->parent->setRelation($this->relationName, $relationData);
+        }
 
         if (! $touch) {
             return;
@@ -220,9 +230,13 @@ class BelongsToMany extends EloquentBelongsToMany
         // We'll return the numbers of affected rows when we do the deletes.
         $ids = (array) $ids;
 
+        // Detach all ids from the parent model.
         if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
-            // Detach all ids from the parent model.
             $this->parent->pull($this->relatedPivotKey, $ids);
+        }else{
+            $value = $this->parent->{$this->relationName}
+                ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $ids));
+            $this->parent->setRelation($this->relationName, $value);
         }
 
         // Prepare the query to select all related objects.
