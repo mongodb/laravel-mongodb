@@ -211,15 +211,21 @@ class MorphToMany extends EloquentMorphToMany
 
             if ($this->getInverse()) {
                 // Attach the new ids to the parent model.
-                $this->parent->push($this->table, [
-                    [
-                        $this->relatedPivotKey => $model->{$this->relatedKey},
-                        $this->morphType => $model->getMorphClass(),
-                    ],
-                ], true);
+                if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+                    $this->parent->push($this->table, [
+                        [
+                            $this->relatedPivotKey => $model->{$this->relatedKey},
+                            $this->morphType => $model->getMorphClass(),
+                        ],
+                    ], true);
+                }else{
+                    $instance = new $this->related();
+                    $instance->forceFill([$this->relatedKey => $id]);
+                    $this->parent->setRelation($this->relationName, $this->parent->{$this->relationName}->push($instance)->unique($this->relatedKey));
+                }
 
                 // Attach the new parent id to the related model.
-                $model->push($this->foreignPivotKey, $this->parseIds($this->parent), true);
+                $model->push($this->foreignPivotKey, (array) $this->parent->{$this->parentKey}, true);
             } else {
                 // Attach the new parent id to the related model.
                 $model->push($this->table, [
