@@ -448,7 +448,7 @@ DB::collection('items')
 
 **Push**
 
-Add one or multiple values to the items array.
+Add one or multiple values to the `items` array.
 
 ```php
 // Push the value to the matched documents
@@ -468,23 +468,19 @@ DB::collection('users')
 
 // Or
 
-// Push the value to an exact document
+// Push the values directly to a model object
 $user->push('items', 'boots');
 $user->push('items', ['hat', 'jeans']);
 ```
 
-To add an array as a value to the messages array. value arrays must be nested into a list array, otherwise they are
-interpreted as a list of scalar values.
+To add embedded document or array values to the `messages` array, those values must be specified within a list array.
 
 ```php
 DB::collection('users')
   ->where('name', 'John')
-    // Push an array as a value to the items array
+    // Push an embedded document as a value to the messages array
   ->push('messages', [
-      [
-          'from'    => 'Jane Doe',
-          'message' => 'Hi John',
-      ],
+      [ 'from'    => 'Jane Doe', 'message' => 'Hi John' ]
   ]);
 // Result:
 // messages: [
@@ -494,10 +490,7 @@ DB::collection('users')
 // Or
 
 $user->push('messages', [
-    [
-        'from'    => 'Jane Doe',
-        'message' => 'Hi John',
-    ],
+    [ 'from'    => 'Jane Doe', 'message' => 'Hi John' ]
 ]);
 ```
 
@@ -519,10 +512,7 @@ DB::collection('users')
 // Or
 
 $user->push('messages', [
-    [
-        'from'    => 'Jane Doe',
-        'message' => 'Hi John',
-    ],
+    [ 'from'    => 'Jane Doe', 'message' => 'Hi John' ]
 ]);
 // Result:
 // messages: [
@@ -530,14 +520,8 @@ $user->push('messages', [
 //  ]
 
 $user->push('messages', [
-    [
-        'from'    => 'Jess Doe',
-        'message' => 'Hi',
-    ],
-    [
-        'from'    => 'Jane Doe',
-        'message' => 'Hi John',
-    ],
+    [ 'from'    => 'Jess Doe', 'message' => 'Hi' ],
+    [ 'from'    => 'Jane Doe', 'message' => 'Hi John' ],
 ], true);
 // Result:
 // messages: [
@@ -548,7 +532,7 @@ $user->push('messages', [
 
 **Pull**
 
-Remove one or multiple values form items array.
+Remove one or multiple values from the `items` array.
 
 ```php
 // items: ['boots', 'hat', 'jeans']
@@ -566,7 +550,7 @@ $user->pull('items', ['boots', 'jeans']);
 // items: ['hat']
 ```
 
-Also, you can pull an array value from the messages array.
+Embedded document and arrays values can also be pulled from the `messages` array.
 
 ```php
 // Latest state:
@@ -579,10 +563,7 @@ DB::collection('users')
   ->where('name', 'John')
     // It will search for the exact array and pulls it
   ->pull('messages', [
-      [
-          'from' => 'Jane Doe',
-          'message' => 'Hi John',
-      ]
+      [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
   ]);
 // Result:
 // messages: [
@@ -592,14 +573,8 @@ DB::collection('users')
 // Or pull multiple array
 
 $user->pull('messages', [
-    [
-        'from' => 'Jane Doe',
-        'message' => 'Hi John',
-    ],
-    [
-        'from' => 'Jess Doe',
-        'message' => 'Hi',
-    ]
+    [ 'from' => 'Jane Doe', 'message' => 'Hi John' ],
+    [ 'from' => 'Jess Doe', 'message' => 'Hi' ]
 ]);
 // Result:
 // messages: [ ]
