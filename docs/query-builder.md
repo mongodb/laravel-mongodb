@@ -480,7 +480,7 @@ DB::collection('users')
   ->where('name', 'John')
     // Push an embedded document as a value to the messages array
   ->push('messages', [
-      [ 'from'    => 'Jane Doe', 'message' => 'Hi John' ]
+      [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
   ]);
 // Result:
 // messages: [
@@ -490,7 +490,7 @@ DB::collection('users')
 // Or
 
 $user->push('messages', [
-    [ 'from'    => 'Jane Doe', 'message' => 'Hi John' ]
+    [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
 ]);
 ```
 
@@ -512,7 +512,7 @@ DB::collection('users')
 // Or
 
 $user->push('messages', [
-    [ 'from'    => 'Jane Doe', 'message' => 'Hi John' ]
+    [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
 ]);
 // Result:
 // messages: [
@@ -520,8 +520,8 @@ $user->push('messages', [
 //  ]
 
 $user->push('messages', [
-    [ 'from'    => 'Jess Doe', 'message' => 'Hi' ],
-    [ 'from'    => 'Jane Doe', 'message' => 'Hi John' ],
+    [ 'from' => 'Jess Doe', 'message' => 'Hi' ],
+    [ 'from' => 'Jane Doe', 'message' => 'Hi John' ],
 ], true);
 // Result:
 // messages: [
@@ -550,7 +550,7 @@ $user->pull('items', ['boots', 'jeans']);
 // items: ['hat']
 ```
 
-Embedded document and arrays values can also be pulled from the `messages` array.
+Embedded document and arrays values can also be removed from the `messages` array.
 
 ```php
 // Latest state:
@@ -561,7 +561,7 @@ Embedded document and arrays values can also be pulled from the `messages` array
 
 DB::collection('users')
   ->where('name', 'John')
-    // It will search for the exact array and pulls it
+    // Pull an embedded document from the array
   ->pull('messages', [
       [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
   ]);
@@ -570,7 +570,7 @@ DB::collection('users')
 //      { from: "Jess Doe", message: "Hi" }
 //  ]
 
-// Or pull multiple array
+// Or pull multiple embedded documents
 
 $user->pull('messages', [
     [ 'from' => 'Jane Doe', 'message' => 'Hi John' ],
