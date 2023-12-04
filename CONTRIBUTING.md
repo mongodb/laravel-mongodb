@@ -38,27 +38,27 @@ Before submitting a pull request:
 
 ## Run Tests
 
-The full test suite requires PHP cli with mongodb extension, a running MongoDB server and a running MySQL server.
+The full test suite requires PHP cli with mongodb extension, a running MongoDB server.
 Duplicate the `phpunit.xml.dist` file to `phpunit.xml` and edit the environment variables to match your setup.
 
 ```bash
-$ docker-compose up -d mongodb
-$ docker-compose run tests
+$ docker-compose run app
 ```
 
-Docker can be slow to start. You can run the command `php vendor/bin/phpunit --testdox` locally or in a docker container.
+Docker can be slow to start. You can run the command `composer run test` locally or in a docker container.
 
 ```bash
 $ docker-compose run -it tests bash
 # Inside the container
 $ composer install
-$ vendor/bin/phpunit --testdox
+$ composer run test
 ```
 
-For fixing style issues, you can run the PHP Code Beautifier and Fixer:
+For fixing style issues, you can run the PHP Code Beautifier and Fixer, some issues can't be fixed automatically:
 
 ```bash
-$ php vendor/bin/phpcbf
+$ composer run cs:fix
+$ composer run cs
 ```
 
 ## Requirements
