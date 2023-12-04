@@ -1,4 +1,4 @@
-name: CI
+name: "CI"
 
 on:
     push:
@@ -6,29 +6,32 @@ on:
 
 jobs:
     build:
-        runs-on: ${{ matrix.os }}
-        name: PHP v${{ matrix.php }} with MongoDB ${{ matrix.mongodb }} ${{ matrix.mode }}
+        runs-on: "${{ matrix.os }}"
+
+        name: "PHP v${{ matrix.php }} with MongoDB ${{ matrix.mongodb }} ${{ matrix.mode }}"
+
         strategy:
             matrix:
                 os:
-                    - ubuntu-latest
+                    - "ubuntu-latest"
                 mongodb:
-                    - '4.4'
-                    - '5.0'
-                    - '6.0'
-                    - '7.0'
+                    - "4.4"
+                    - "5.0"
+                    - "6.0"
+                    - "7.0"
                 php:
-                    - '8.1'
-                    - '8.2'
-                    - '8.3'
+                    - "8.1"
+                    - "8.2"
+                    - "8.3"
                 include:
-                    - php: '8.1'
-                      mongodb: '5.0'
-                      mode: 'low-deps'
+                    - php: "8.1"
+                      mongodb: "5.0"
+                      mode: "low-deps"
 
         steps:
-            -   uses: actions/checkout@v4
-            -   name: Create MongoDB Replica Set
+            -   uses: "actions/checkout@v4"
+
+            -   name: "Create MongoDB Replica Set"
                 run: |
                     docker run --name mongodb -p 27017:27017 -e MONGO_INITDB_DATABASE=unittest --detach mongo:${{ matrix.mongodb }} mongod --replSet rs --setParameter transactionLifetimeLimitSeconds=5
 
@@ -37,35 +40,43 @@ jobs:
                     sleep 1
                     done
                     sudo docker exec --tty mongodb $MONGOSH_BIN 127.0.0.1:27017 --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1:27017\" }]})"
-            -   name: Show MongoDB server status
+
+            -   name: "Show MongoDB server status"
                 run: |
                     if [ "${{ matrix.mongodb }}" = "4.4" ]; then MONGOSH_BIN="mongo"; else MONGOSH_BIN="mongosh"; fi
                     docker exec --tty mongodb $MONGOSH_BIN 127.0.0.1:27017 --eval "db.runCommand({ serverStatus: 1 })"
+
             -   name: "Installing php"
-                uses: shivammathur/setup-php@v2
+                uses: "shivammathur/setup-php@v2"
                 with:
                     php-version: ${{ matrix.php }}
-                    extensions: curl,mbstring,xdebug
-                    coverage: xdebug
-                    tools: composer
-            -   name: Show PHP version
-                run: php -v && composer -V
-            -   name: Show Docker version
-                run: if [[ "$DEBUG" == "true" ]]; then docker version && env; fi
-                env:
-                    DEBUG: ${{ secrets.DEBUG }}
-            -   name: Download Composer cache dependencies from cache
-                id: composer-cache
+                    extensions: "curl,mbstring,xdebug"
+                    coverage: "xdebug"
+                    tools: "composer"
+
+            -   name: "Show PHP version"
+                if: ${{ secrets.DEBUG == 'true' }}
+                run: "php -v && composer -V"
+
+            -   name: "Show Docker version"
+                if: ${{ secrets.DEBUG == 'true' }}
+                run: "docker version && env"
+
+            -   name: "Download Composer cache dependencies from cache"
+                id: "composer-cache"
                 run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
-            -   name: Cache Composer dependencies
-                uses: actions/cache@v3
+
+            -   name: "Cache Composer dependencies"
+                uses: "actions/cache@v3"
                 with:
                     path: ${{ steps.composer-cache.outputs.dir }}
-                    key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}
-                    restore-keys: ${{ matrix.os }}-composer-
-            -   name: Install dependencies
+                    key: "${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}"
+                    restore-keys: "${{ matrix.os }}-composer-"
+
+            -   name: "Install dependencies"
                 run: composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable')
-            -   name: Run tests
-                run: ./vendor/bin/phpunit --coverage-clover coverage.xml
+
+            -   name: "Run tests"
+                run: "./vendor/bin/phpunit --coverage-clover coverage.xml"
                 env:
                     MONGODB_URI: 'mongodb://127.0.0.1/?replicaSet=rs'
