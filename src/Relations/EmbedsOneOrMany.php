@@ -8,11 +8,15 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Database\Query\Expression;
+use MongoDB\Driver\Exception\LogicException;
 use MongoDB\Laravel\Eloquent\Model;
+use Throwable;
 
 use function array_merge;
 use function count;
 use function is_array;
+use function throw_if;
 
 abstract class EmbedsOneOrMany extends Relation
 {
@@ -42,8 +46,8 @@ abstract class EmbedsOneOrMany extends Relation
      */
     public function __construct(Builder $query, Model $parent, Model $related, string $localKey, string $foreignKey, string $relation)
     {
-        $this->query      = $query;
-        $this->parent     = $parent;
+        parent::__construct($query, $parent);
+
         $this->related    = $related;
         $this->localKey   = $localKey;
         $this->foreignKey = $foreignKey;
@@ -54,8 +58,6 @@ abstract class EmbedsOneOrMany extends Relation
         if ($parentRelation) {
             $this->query = $parentRelation->getQuery();
         }
-
-        $this->addConstraints();
     }
 
     /** @inheritdoc */
@@ -101,10 +103,16 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * Get the number of embedded models.
      *
-     * @return int
+     * @param Expression|string $columns
+     *
+     * @throws LogicException|Throwable
+     *
+     * @note The $column parameter is not used to count embedded models.
      */
-    public function count()
+    public function count($columns = '*'): int
     {
+        throw_if($columns !== '*', new LogicException('The columns parameter should not be used.'));
+
         return count($this->getEmbedded());
     }
 
@@ -261,21 +269,21 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * Create a related model instanced.
      *
-     * @param  array $attributes
+     * @param mixed $attributes
      *
-     * @return Model
+     * @return Model | null
      */
-    protected function toModel($attributes = [])
+    protected function toModel(mixed $attributes = []): Model|null
     {
         if ($attributes === null) {
-            return;
+            return null;
         }
 
         $connection = $this->related->getConnection();
 
         $model = $this->related->newFromBuilder(
             (array) $attributes,
-            $connection ? $connection->getName() : null,
+            $connection?->getName(),
         );
 
         $model->setParentRelation($this);
@@ -394,8 +402,8 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * Get the name of the "where in" method for eager loading.
      *
-     * @param  \Illuminate\Database\Eloquent\Model $model
-     * @param  string                              $key
+     * @param EloquentModel $model
+     * @param  string        $key
      *
      * @return string
      */
