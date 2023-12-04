@@ -448,64 +448,136 @@ DB::collection('items')
 
 **Push**
 
-Add items to an array.
+Add one or multiple values to the `items` array.
 
 ```php
+// Push the value to the matched documents
 DB::collection('users')
-    ->where('name', 'John')
-    ->push('items', 'boots');
+  ->where('name', 'John')
+  // Push a single value to the items array
+  ->push('items', 'boots');
+// Result:
+// items: ['boots']
 
+DB::collection('users')
+  ->where('name', 'John')
+  // Push multiple values to the items array
+  ->push('items', ['hat', 'jeans']);
+// Result:
+// items: ['boots', 'hat', 'jeans']
+
+// Or
+
+// Push the values directly to a model object
 $user->push('items', 'boots');
+$user->push('items', ['hat', 'jeans']);
 ```
 
+To add embedded document or array values to the `messages` array, those values must be specified within a list array.
+
 ```php
 DB::collection('users')
-    ->where('name', 'John')
-    ->push('messages', [
-        'from' => 'Jane Doe',
-        'message' => 'Hi John',
-    ]);
+  ->where('name', 'John')
+    // Push an embedded document as a value to the messages array
+  ->push('messages', [
+      [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
+  ]);
+// Result:
+// messages: [
+//      { from: "Jane Doe", message: "Hi John" }
+//  ]
+
+// Or
 
 $user->push('messages', [
-    'from' => 'Jane Doe',
-    'message' => 'Hi John',
+    [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
 ]);
 ```
 
-If you **DON'T** want duplicate items, set the third parameter to `true`:
+If you **DON'T** want duplicate values, set the third parameter to `true`:
 
 ```php
 DB::collection('users')
-    ->where('name', 'John')
-    ->push('items', 'boots', true);
+  ->where('name', 'John')
+  ->push('items', 'boots');
+// Result:
+// items: ['boots']
 
-$user->push('items', 'boots', true);
+DB::collection('users')
+  ->where('name', 'John')
+  ->push('items', ['hat', 'boots', 'jeans'], true);
+// Result:
+// items: ['boots', 'hat', 'jeans']
+
+// Or
+
+$user->push('messages', [
+    [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
+]);
+// Result:
+// messages: [
+//      { from: "Jane Doe", message: "Hi John" }
+//  ]
+
+$user->push('messages', [
+    [ 'from' => 'Jess Doe', 'message' => 'Hi' ],
+    [ 'from' => 'Jane Doe', 'message' => 'Hi John' ],
+], true);
+// Result:
+// messages: [
+//      { from: "Jane Doe", message: "Hi John" }
+//      { from: "Jess Doe", message: "Hi" }
+//  ]
 ```
 
 **Pull**
 
-Remove an item from an array.
+Remove one or multiple values from the `items` array.
 
 ```php
-DB::collection('users')
-    ->where('name', 'John')
-    ->pull('items', 'boots');
+// items: ['boots', 'hat', 'jeans']
 
-$user->pull('items', 'boots');
+DB::collection('users')
+  ->where('name', 'John')
+  ->pull('items', 'boots'); // Pull a single value
+// Result:
+// items: ['hat', 'jeans']
+
+// Or pull multiple values
+
+$user->pull('items', ['boots', 'jeans']);
+// Result:
+// items: ['hat']
 ```
 
+Embedded document and arrays values can also be removed from the `messages` array.
+
 ```php
+// Latest state:
+// messages: [
+//      { from: "Jane Doe", message: "Hi John" }
+//      { from: "Jess Doe", message: "Hi" }
+//  ]
+
 DB::collection('users')
-    ->where('name', 'John')
-    ->pull('messages', [
-        'from' => 'Jane Doe',
-        'message' => 'Hi John',
-    ]);
+  ->where('name', 'John')
+    // Pull an embedded document from the array
+  ->pull('messages', [
+      [ 'from' => 'Jane Doe', 'message' => 'Hi John' ]
+  ]);
+// Result:
+// messages: [
+//      { from: "Jess Doe", message: "Hi" }
+//  ]
+
+// Or pull multiple embedded documents
 
 $user->pull('messages', [
-    'from' => 'Jane Doe',
-    'message' => 'Hi John',
+    [ 'from' => 'Jane Doe', 'message' => 'Hi John' ],
+    [ 'from' => 'Jess Doe', 'message' => 'Hi' ]
 ]);
+// Result:
+// messages: [ ]
 ```
 
 **Unset**
