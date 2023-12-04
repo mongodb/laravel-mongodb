@@ -1,4 +1,6 @@
-FROM php:8.1-cli
+ARG PHP_VERSION=8.1
+
+FROM php:${PHP_VERSION}-cli
 
 # Install extensions
 RUN apt-get update && \
@@ -7,9 +9,8 @@ RUN apt-get update && \
     pecl install xdebug && docker-php-ext-enable xdebug && \
     docker-php-ext-install -j$(nproc) zip
 
-# Create php.ini and enable coverage mode in xdebug
-RUN cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
-    echo "xdebug.mode=coverage" >> /usr/local/etc/php/conf.d/xdebug.ini
+# Create php.ini
+RUN cp "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini"
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/local/bin/composer

@@ -60,10 +60,10 @@
         }
     },
     "scripts": {
-        "test": "./vendor/bin/phpunit",
-        "test:coverage": "./vendor/bin/phpunit --coverage-clover ./coverage.xml",
-        "cs": "./vendor/bin/phpcs",
-        "cs:fix": "./vendor/bin/phpcbf"
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-clover ./coverage.xml",
+        "cs": "phpcs",
+        "cs:fix": "phpcbf"
     },
     "config": {
         "platform": {
