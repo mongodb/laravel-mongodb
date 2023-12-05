@@ -54,10 +54,6 @@ jobs:
                     coverage: "xdebug"
                     tools: "composer"
 
-            -   name: "Show PHP version"
-                if: ${{ runner.debug }}
-                run: "php -v && composer -V"
-
             -   name: "Show Docker version"
                 if: ${{ runner.debug }}
                 run: "docker version && env"
