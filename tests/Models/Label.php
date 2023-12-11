@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 /**
@@ -23,12 +24,14 @@ class Label extends Eloquent
         'chapters',
     ];
 
-    /**
-     * Get all the posts that are assigned this tag.
-     */
     public function users()
     {
         return $this->morphedByMany(User::class, 'labelled');
+    }
+
+    public function sqlUsers(): MorphToMany
+    {
+        return $this->morphedByMany(SqlUser::class, 'labeled');
     }
 
     public function clients()

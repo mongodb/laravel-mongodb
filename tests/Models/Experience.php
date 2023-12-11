@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class Experience extends Eloquent
@@ -22,5 +23,10 @@ class Experience extends Eloquent
     public function skillsWithCustomParentKey()
     {
         return $this->belongsToMany(Skill::class, parentKey: 'cexperience_id');
+    }
+
+    public function sqlUsers(): MorphToMany
+    {
+        return $this->morphToMany(SqlUser::class, 'experienced');
     }
 }
