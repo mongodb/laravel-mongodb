@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 
 * PHPORM-100 Support query on numerical field names by [@GromNaN](https://github.com/GromNaN) in [#2642](https://github.com/mongodb/laravel-mongodb/pull/2642)
 * Fix casting issue by [@hans-thomas](https://github.com/hans-thomas) in [#2653](https://github.com/mongodb/laravel-mongodb/pull/2653)
-* Upgrage minimum Laravel version to 10.30 by [@GromNaN](https://github.com/GromNaN) in [#2665](https://github.com/mongodb/laravel-mongodb/pull/2665)
+* Upgrade minimum Laravel version to 10.30 by [@GromNaN](https://github.com/GromNaN) in [#2665](https://github.com/mongodb/laravel-mongodb/pull/2665)
 * Handling single model in sync method by [@hans-thomas](https://github.com/hans-thomas) in [#2648](https://github.com/mongodb/laravel-mongodb/pull/2648)
 * BelongsToMany sync does't use configured keys by [@hans-thomas](https://github.com/hans-thomas) in [#2667](https://github.com/mongodb/laravel-mongodb/pull/2667)
 * morphTo relationship by [@hans-thomas](https://github.com/hans-thomas) in [#2669](https://github.com/mongodb/laravel-mongodb/pull/2669)
