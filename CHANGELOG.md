@@ -12,7 +12,7 @@ All notable changes to this project will be documented in this file.
 * Datetime casting with custom format by [@hans-thomas](https://github.com/hans-thomas) in [#2658](https://github.com/mongodb/laravel-mongodb/pull/2658)
 * PHPORM-106 Implement pagination for groupBy queries by [@GromNaN](https://github.com/GromNaN) in [#2672](https://github.com/mongodb/laravel-mongodb/pull/2672)
 * Add method `Connection::ping()` to check server connection by [@hans-thomas](https://github.com/hans-thomas) in [#2677](https://github.com/mongodb/laravel-mongodb/pull/2677)
-* PHPORM-119 Fix integration with Spacie Query Builder - Don't qualify field names in document models by [@GromNaN](https://github.com/GromNaN) in [#2676](https://github.com/mongodb/laravel-mongodb/pull/2676)
+* PHPORM-119 Fix integration with Spatie Query Builder - Don't qualify field names in document models by [@GromNaN](https://github.com/GromNaN) in [#2676](https://github.com/mongodb/laravel-mongodb/pull/2676)
 * Support renaming columns in migrations by [@hans-thomas](https://github.com/hans-thomas) in [#2682](https://github.com/mongodb/laravel-mongodb/pull/2682)
 * Add MorphToMany support by [@hans-thomas](https://github.com/hans-thomas) in [#2670](https://github.com/mongodb/laravel-mongodb/pull/2670)
 * PHPORM-6 Fix doc Builder::timeout applies to find query, not the cursor by [@GromNaN](https://github.com/GromNaN) in [#2681](https://github.com/mongodb/laravel-mongodb/pull/2681)
