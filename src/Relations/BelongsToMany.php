@@ -17,6 +17,7 @@ use function array_merge;
 use function array_values;
 use function assert;
 use function count;
+use function in_array;
 use function is_numeric;
 
 class BelongsToMany extends EloquentBelongsToMany
@@ -124,7 +125,14 @@ class BelongsToMany extends EloquentBelongsToMany
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
-        $current = $this->parent->{$this->relatedPivotKey} ?: [];
+        $current = match ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+            true => $this->parent->{$this->relatedPivotKey} ?: [],
+            false => $this->parent->{$this->relationName} ?: [],
+        };
+
+        if ($current instanceof Collection) {
+            $current = $this->parseIds($current);
+        }
 
         $records = $this->formatRecordsList($ids);
 
@@ -193,7 +201,14 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Attach the new ids to the parent model.
-        $this->parent->push($this->relatedPivotKey, (array) $id, true);
+        if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+            $this->parent->push($this->relatedPivotKey, (array) $id, true);
+        } else {
+            $instance = new $this->related();
+            $instance->forceFill([$this->relatedKey => $id]);
+            $relationData = $this->parent->{$this->relationName}->push($instance)->unique($this->relatedKey);
+            $this->parent->setRelation($this->relationName, $relationData);
+        }
 
         if (! $touch) {
             return;
@@ -217,7 +232,13 @@ class BelongsToMany extends EloquentBelongsToMany
         $ids = (array) $ids;
 
         // Detach all ids from the parent model.
-        $this->parent->pull($this->relatedPivotKey, $ids);
+        if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+            $this->parent->pull($this->relatedPivotKey, $ids);
+        } else {
+            $value = $this->parent->{$this->relationName}
+                ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $ids));
+            $this->parent->setRelation($this->relationName, $value);
+        }
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
@@ -225,7 +246,7 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Remove the relation to the parent.
-        assert($this->parent instanceof \MongoDB\Laravel\Eloquent\Model);
+        assert($this->parent instanceof Model);
         assert($query instanceof \MongoDB\Laravel\Eloquent\Builder);
         $query->pull($this->foreignPivotKey, $this->parent->getKey());
 
