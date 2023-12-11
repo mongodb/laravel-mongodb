@@ -59,6 +59,12 @@
             ]
         }
     },
+    "scripts": {
+        "test": "phpunit",
+        "test:coverage": "phpunit --coverage-clover ./coverage.xml",
+        "cs": "phpcs",
+        "cs:fix": "phpcbf"
+    },
     "config": {
         "platform": {
             "php": "8.1"
