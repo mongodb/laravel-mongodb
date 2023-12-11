@@ -8,6 +8,7 @@ use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Experience;
+use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\SqlBook;
@@ -40,6 +41,7 @@ class HybridRelationsTest extends TestCase
         SqlRole::truncate();
         Skill::truncate();
         Experience::truncate();
+        Label::truncate();
     }
 
     public function testSqlRelations()
@@ -282,36 +284,36 @@ class HybridRelationsTest extends TestCase
         $user2 = SqlUser::query()->find($user2->id);
 
         // Create Mongodb skills
-        $skill = Skill::query()->create(['name' => 'Laravel']);
-        $skill2 = Skill::query()->create(['name' => 'MongoDB']);
+        $label = Label::query()->create(['name' => 'Laravel']);
+        $label2 = Label::query()->create(['name' => 'MongoDB']);
 
         // MorphToMany (pivot is empty)
-        $user->skills()->sync([$skill->_id, $skill2->_id]);
+        $user->labels()->sync([$label->_id, $label2->_id]);
         $check = SqlUser::query()->find($user->id);
-        $this->assertEquals(2, $check->skills->count());
+        $this->assertEquals(2, $check->labels->count());
 
         // MorphToMany (pivot is not empty)
-        $user->skills()->sync($skill);
+        $user->labels()->sync($label);
         $check = SqlUser::query()->find($user->id);
-        $this->assertEquals(1, $check->skills->count());
+        $this->assertEquals(1, $check->labels->count());
 
         // Attach MorphToMany
-        $user->skills()->sync([]);
+        $user->labels()->sync([]);
         $check = SqlUser::query()->find($user->id);
-        $this->assertEquals(0, $check->skills->count());
-        $user->skills()->attach($skill);
-        $user->skills()->attach($skill); // ignore duplicates
+        $this->assertEquals(0, $check->labels->count());
+        $user->labels()->attach($label);
+        $user->labels()->attach($label); // ignore duplicates
         $check = SqlUser::query()->find($user->id);
-        $this->assertEquals(1, $check->skills->count());
+        $this->assertEquals(1, $check->labels->count());
 
         // Inverse MorphToMany (pivot is empty)
-        $skill->sqlUsers()->sync([$user->id, $user2->id]);
-        $check = Skill::query()->find($skill->_id);
+        $label->sqlUsers()->sync([$user->id, $user2->id]);
+        $check = Label::query()->find($label->_id);
         $this->assertEquals(2, $check->sqlUsers->count());
 
         // Inverse MorphToMany (pivot is empty)
-        $skill->sqlUsers()->sync([$user->id, $user2->id]);
-        $check = Skill::query()->find($skill->_id);
+        $label->sqlUsers()->sync([$user->id, $user2->id]);
+        $check = Label::query()->find($label->_id);
         $this->assertEquals(2, $check->sqlUsers->count());
     }
 

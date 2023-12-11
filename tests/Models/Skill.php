@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Models;
 
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 class Skill extends Eloquent
@@ -17,10 +16,5 @@ class Skill extends Eloquent
     public function sqlUsers(): BelongsToMany
     {
         return $this->belongsToMany(SqlUser::class);
-    }
-
-    public function sqlUsers(): MorphToMany
-    {
-        return $this->morphedByMany(SqlUser::class, 'skilled');
     }
 }

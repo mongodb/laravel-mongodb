@@ -44,9 +44,9 @@ class SqlUser extends EloquentModel
         return $this->hasMany(SqlBook::class);
     }
 
-    public function skills(): MorphToMany
+    public function labels(): MorphToMany
     {
-        return $this->morphToMany(Skill::class, 'skilled');
+        return $this->morphToMany(Label::class, 'labeled');
     }
 
     public function experiences(): MorphToMany
@@ -68,6 +68,8 @@ class SqlUser extends EloquentModel
             $table->string('name');
             $table->timestamps();
         });
+
+        // Pivot table for BelongsToMany relationship with Skill
         if (! $schema->hasTable('skill_sql_user')) {
             $schema->create('skill_sql_user', function (Blueprint $table) {
                 $table->foreignIdFor(self::class)->constrained()->cascadeOnDelete();
@@ -75,13 +77,16 @@ class SqlUser extends EloquentModel
                 $table->primary([(new self())->getForeignKey(), (new Skill())->getForeignKey()]);
             });
         }
-        if (! $schema->hasTable('skilleds')) {
-            $schema->create('skilleds', function (Blueprint $table) {
+
+        // Pivot table for MorphToMany relationship with Label
+        if (! $schema->hasTable('labeleds')) {
+            $schema->create('labeleds', function (Blueprint $table) {
                 $table->foreignIdFor(self::class)->constrained()->cascadeOnDelete();
-                $table->morphs('skilled');
+                $table->morphs('labeled');
             });
         }
 
+        // Pivot table for MorphedByMany relationship with Experience
         if (! $schema->hasTable('experienceds')) {
             $schema->create('experienceds', function (Blueprint $table) {
                 $table->foreignIdFor(self::class)->constrained()->cascadeOnDelete();
