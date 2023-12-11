@@ -545,7 +545,7 @@ class Builder extends BaseBuilder
     /** @inheritdoc */
     public function exists()
     {
-        return $this->first() !== null;
+        return $this->first(['_id']) !== null;
     }
 
     /** @inheritdoc */
