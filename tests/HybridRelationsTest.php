@@ -215,6 +215,55 @@ class HybridRelationsTest extends TestCase
             });
     }
 
+    public function testHybridBelongsToMany()
+    {
+        $user = new SqlUser();
+        $user2 = new SqlUser();
+        $this->assertInstanceOf(SqlUser::class, $user);
+        $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
+        $this->assertInstanceOf(SqlUser::class, $user2);
+        $this->assertInstanceOf(SQLiteConnection::class, $user2->getConnection());
+
+        // Create Mysql Users
+        $user->fill(['name' => 'John Doe'])->save();
+        $user = SqlUser::query()->find($user->id);
+
+        $user2->fill(['name' => 'Maria Doe'])->save();
+        $user2 = SqlUser::query()->find($user2->id);
+
+        // Create Mongodb Skills
+        $skill = Skill::query()->create(['name' => 'Laravel']);
+        $skill2 = Skill::query()->create(['name' => 'MongoDB']);
+
+        // sync (pivot is empty)
+        $skill->sqlUsers()->sync([$user->id, $user2->id]);
+        $check = Skill::query()->find($skill->_id);
+        $this->assertEquals(2, $check->sqlUsers->count());
+
+        // sync (pivot is not empty)
+        $skill->sqlUsers()->sync($user);
+        $check = Skill::query()->find($skill->_id);
+        $this->assertEquals(1, $check->sqlUsers->count());
+
+        // Inverse sync (pivot is empty)
+        $user->skills()->sync([$skill->_id, $skill2->_id]);
+        $check = SqlUser::find($user->id);
+        $this->assertEquals(2, $check->skills->count());
+
+        // Inverse sync (pivot is not empty)
+        $user->skills()->sync($skill);
+        $check = SqlUser::find($user->id);
+        $this->assertEquals(1, $check->skills->count());
+
+        // Inverse attach
+        $user->skills()->sync([]);
+        $check = SqlUser::find($user->id);
+        $this->assertEquals(0, $check->skills->count());
+        $user->skills()->attach($skill);
+        $check = SqlUser::find($user->id);
+        $this->assertEquals(1, $check->skills->count());
+    }
+
     public function testHybridMorphToManySqlModelToMongoModel()
     {
         // SqlModel -> MorphToMany -> MongoModel

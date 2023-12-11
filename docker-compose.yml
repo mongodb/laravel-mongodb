@@ -1,17 +1,15 @@
 version: '3.5'
 
 services:
-    tests:
-        container_name: tests
+    app:
         tty: true
-        build:
-            context: .
-            dockerfile: Dockerfile
-        volumes:
-            - .:/code
-        working_dir: /code
+        build: .
+        working_dir: /var/www/laravel-mongodb
+        command: "bash -c 'composer install && composer run test'"
         environment:
             MONGODB_URI: 'mongodb://mongodb/'
+        volumes:
+            - .:/var/www/laravel-mongodb
         depends_on:
             mongodb:
                 condition: service_healthy

@@ -22,16 +22,16 @@ jobs:
       - name: "Checkout"
         uses: "actions/checkout@v4"
 
-      - name: Setup cache environment
-        id: extcache
-        uses: shivammathur/cache-extensions@v1
+      - name: "Setup cache environment"
+        id: "extcache"
+        uses: "shivammathur/cache-extensions@v1"
         with:
           php-version: ${{ env.PHP_VERSION }}
           extensions: "mongodb-${{ env.DRIVER_VERSION }}"
           key: "extcache-v1"
 
-      - name: Cache extensions
-        uses: actions/cache@v3
+      - name: "Cache extensions"
+        uses: "actions/cache@v3"
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -42,7 +42,7 @@ jobs:
         with:
           coverage: "none"
           extensions: "mongodb-${{ env.DRIVER_VERSION }}"
-          php-version: "${{ env.PHP_VERSION }}"
+          php-version: ${{ env.PHP_VERSION }}
           tools: "cs2pr"
 
       - name: "Show driver information"
