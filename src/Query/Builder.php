@@ -83,7 +83,7 @@ class Builder extends BaseBuilder
     public $projections;
 
     /**
-     * The cursor timeout value.
+     * The maximum amount of seconds to allow the query to run.
      *
      * @var int
      */
@@ -192,7 +192,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Set the cursor timeout in seconds.
+     * The maximum amount of seconds to allow the query to run.
      *
      * @param  int $seconds
      *

@@ -1,6 +1,34 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.1.0] - 2023-12-11
+
+* PHPORM-100 Support query on numerical field names by [@GromNaN](https://github.com/GromNaN) in [#2642](https://github.com/mongodb/laravel-mongodb/pull/2642)
+* Fix casting issue by [@hans-thomas](https://github.com/hans-thomas) in [#2653](https://github.com/mongodb/laravel-mongodb/pull/2653)
+* Upgrade minimum Laravel version to 10.30 by [@GromNaN](https://github.com/GromNaN) in [#2665](https://github.com/mongodb/laravel-mongodb/pull/2665)
+* Handling single model in sync method by [@hans-thomas](https://github.com/hans-thomas) in [#2648](https://github.com/mongodb/laravel-mongodb/pull/2648)
+* BelongsToMany sync does't use configured keys by [@hans-thomas](https://github.com/hans-thomas) in [#2667](https://github.com/mongodb/laravel-mongodb/pull/2667)
+* morphTo relationship by [@hans-thomas](https://github.com/hans-thomas) in [#2669](https://github.com/mongodb/laravel-mongodb/pull/2669)
+* Datetime casting with custom format by [@hans-thomas](https://github.com/hans-thomas) in [#2658](https://github.com/mongodb/laravel-mongodb/pull/2658)
+* PHPORM-106 Implement pagination for groupBy queries by [@GromNaN](https://github.com/GromNaN) in [#2672](https://github.com/mongodb/laravel-mongodb/pull/2672)
+* Add method `Connection::ping()` to check server connection by [@hans-thomas](https://github.com/hans-thomas) in [#2677](https://github.com/mongodb/laravel-mongodb/pull/2677)
+* PHPORM-119 Fix integration with Spatie Query Builder - Don't qualify field names in document models by [@GromNaN](https://github.com/GromNaN) in [#2676](https://github.com/mongodb/laravel-mongodb/pull/2676)
+* Support renaming columns in migrations by [@hans-thomas](https://github.com/hans-thomas) in [#2682](https://github.com/mongodb/laravel-mongodb/pull/2682)
+* Add MorphToMany support by [@hans-thomas](https://github.com/hans-thomas) in [#2670](https://github.com/mongodb/laravel-mongodb/pull/2670)
+* PHPORM-6 Fix doc Builder::timeout applies to find query, not the cursor by [@GromNaN](https://github.com/GromNaN) in [#2681](https://github.com/mongodb/laravel-mongodb/pull/2681)
+* Add test for the `$hidden` property by [@Treggats](https://github.com/Treggats) in [#2687](https://github.com/mongodb/laravel-mongodb/pull/2687)
+* Update `push` and `pull` docs by [@hans-thomas](https://github.com/hans-thomas) in [#2685](https://github.com/mongodb/laravel-mongodb/pull/2685)
+* Hybrid support for BelongsToMany relationship by [@hans-thomas](https://github.com/hans-thomas) in [#2688](https://github.com/mongodb/laravel-mongodb/pull/2688)
+* Avoid unnecessary data fetch for exists method by [@andersonls](https://github.com/andersonls) in [#2692](https://github.com/mongodb/laravel-mongodb/pull/2692)
+* Hybrid support for MorphToMany relationship by [@hans-thomas](https://github.com/hans-thomas) in [#2690](https://github.com/mongodb/laravel-mongodb/pull/2690)
+
+## [4.0.2] - 2023-11-03
+
+- Fix compatibility with Laravel 10.30 [#2661](https://github.com/mongodb/laravel-mongodb/pull/2661) by [@Treggats](https://github.com/Treggats)
+- PHPORM-101 Allow empty insert batch for consistency with Eloquent SQL [#2661](https://github.com/mongodb/laravel-mongodb/pull/2645) by [@GromNaN](https://github.com/GromNaN)
+
+*4.0.1 skipped due to a mistake in the release process.*
+
 ## [4.0.0] - 2023-09-28
 
 - Rename package to `mongodb/laravel-mongodb`
