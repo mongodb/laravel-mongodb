@@ -15,16 +15,6 @@ class Experience extends Eloquent
 
     protected $casts = ['years' => 'int'];
 
-    public function skillsWithCustomRelatedKey()
-    {
-        return $this->belongsToMany(Skill::class, relatedKey: 'cskill_id');
-    }
-
-    public function skillsWithCustomParentKey()
-    {
-        return $this->belongsToMany(Skill::class, parentKey: 'cexperience_id');
-    }
-
     public function sqlUsers(): MorphToMany
     {
         return $this->morphToMany(SqlUser::class, 'experienced');
