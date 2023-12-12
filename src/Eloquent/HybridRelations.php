@@ -303,11 +303,11 @@ trait HybridRelations
         // First, we'll need to determine the foreign key and "other key" for the
         // relationship. Once we have determined the keys we'll make the query
         // instances as well as the relationship instances we need for this.
-        $foreignPivotKey = $foreignPivotKey ?: $this->getForeignKey() . 's';
+        $foreignPivotKey = $foreignPivotKey ?: Str::plural($this->getForeignKey());
 
         $instance = new $related();
 
-        $relatedPivotKey = $relatedPivotKey ?: $instance->getForeignKey() . 's';
+        $relatedPivotKey = $relatedPivotKey ?: Str::plural($instance->getForeignKey());
 
         // If no table name was provided, we can guess it by concatenating the two
         // models using underscores in alphabetical order. The two model names
