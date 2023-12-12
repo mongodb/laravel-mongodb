@@ -27,7 +27,7 @@ class Client extends Eloquent
             foreignPivotKey: 'cclient_ids',
             relatedPivotKey: 'cskill_ids',
             parentKey: 'cclient_id',
-            relatedKey: 'cskill_id'
+            relatedKey: 'cskill_id',
         );
     }
 
