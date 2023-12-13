@@ -183,13 +183,13 @@ class BelongsToMany extends EloquentBelongsToMany
         if ($id instanceof Model) {
             $model = $id;
 
-            $id = $model->getKey();
+            $id = $this->parseId($model);
 
             // Attach the new parent id to the related model.
-            $model->push($this->foreignPivotKey, $this->parent->getKey(), true);
+            $model->push($this->foreignPivotKey, $this->parent->{$this->parentKey}, true);
         } else {
             if ($id instanceof Collection) {
-                $id = $id->modelKeys();
+                $id = $this->parseIds($id);
             }
 
             $query = $this->newRelatedQuery();
@@ -221,7 +221,7 @@ class BelongsToMany extends EloquentBelongsToMany
     public function detach($ids = [], $touch = true)
     {
         if ($ids instanceof Model) {
-            $ids = (array) $ids->getKey();
+            $ids = $this->parseIds($ids);
         }
 
         $query = $this->newRelatedQuery();
@@ -242,13 +242,13 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Prepare the query to select all related objects.
         if (count($ids) > 0) {
-            $query->whereIn($this->related->getKeyName(), $ids);
+            $query->whereIn($this->relatedKey, $ids);
         }
 
         // Remove the relation to the parent.
         assert($this->parent instanceof Model);
         assert($query instanceof \MongoDB\Laravel\Eloquent\Builder);
-        $query->pull($this->foreignPivotKey, $this->parent->getKey());
+        $query->pull($this->foreignPivotKey, $this->parent->{$this->parentKey});
 
         if ($touch) {
             $this->touchIfTouching();

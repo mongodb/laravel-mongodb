@@ -10,7 +10,6 @@ use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
-use MongoDB\Laravel\Tests\Models\Experience;
 use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Label;
@@ -36,7 +35,6 @@ class RelationsTest extends TestCase
         Photo::truncate();
         Label::truncate();
         Skill::truncate();
-        Experience::truncate();
     }
 
     public function testHasMany(): void
@@ -350,48 +348,226 @@ class RelationsTest extends TestCase
         $this->assertCount(2, $user->clients);
     }
 
-    public function testBelongsToManySyncEloquentCollectionWithCustomRelatedKey(): void
+    public function testBelongsToManySyncWithCustomKeys(): void
     {
-        $experience = Experience::create(['years' => '5']);
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
+
+        $client = Client::query()->find($client->_id);
+        $client->skillsWithCustomKeys()->sync([$skill1->cskill_id, $skill2->cskill_id]);
+        $this->assertCount(2, $client->skillsWithCustomKeys);
+
+        self::assertIsString($skill1->cskill_id);
+        self::assertContains($skill1->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill1->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        self::assertIsString($skill2->cskill_id);
+        self::assertContains($skill2->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill2->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill1->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill2->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+    }
+
+    public function testBelongsToManySyncModelWithCustomKeys(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+
+        $client = Client::query()->find($client->_id);
+        $client->skillsWithCustomKeys()->sync($skill1);
+        $this->assertCount(1, $client->skillsWithCustomKeys);
+
+        self::assertIsString($skill1->cskill_id);
+        self::assertContains($skill1->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill1->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill1->_id);
+        self::assertIsString($check->_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+    }
+
+    public function testBelongsToManySyncEloquentCollectionWithCustomKeys(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
         $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
         $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
         $collection = new Collection([$skill1, $skill2]);
 
-        $experience = Experience::query()->find($experience->id);
-        $experience->skillsWithCustomRelatedKey()->sync($collection);
-        $this->assertCount(2, $experience->skillsWithCustomRelatedKey);
+        $client = Client::query()->find($client->_id);
+        $client->skillsWithCustomKeys()->sync($collection);
+        $this->assertCount(2, $client->skillsWithCustomKeys);
 
         self::assertIsString($skill1->cskill_id);
-        self::assertContains($skill1->cskill_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
+        self::assertContains($skill1->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill1->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
 
         self::assertIsString($skill2->cskill_id);
-        self::assertContains($skill2->cskill_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
+        self::assertContains($skill2->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill2->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
 
-        $skill1->refresh();
-        self::assertIsString($skill1->_id);
-        self::assertNotContains($skill1->_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
+        $check = Skill::query()->find($skill1->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
 
-        $skill2->refresh();
-        self::assertIsString($skill2->_id);
-        self::assertNotContains($skill2->_id, $experience->skillsWithCustomRelatedKey->pluck('cskill_id'));
+        $check = Skill::query()->find($skill2->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
     }
 
-    public function testBelongsToManySyncEloquentCollectionWithCustomParentKey(): void
+    public function testBelongsToManyAttachWithCustomKeys(): void
     {
-        $experience = Experience::create(['cexperience_id' => (string) (new ObjectId()), 'years' => '5']);
-        $skill1    = Skill::create(['name' => 'PHP']);
-        $skill2    = Skill::create(['name' => 'Laravel']);
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
+
+        $client = Client::query()->find($client->_id);
+        $client->skillsWithCustomKeys()->attach([$skill1->cskill_id, $skill2->cskill_id]);
+        $this->assertCount(2, $client->skillsWithCustomKeys);
+
+        self::assertIsString($skill1->cskill_id);
+        self::assertContains($skill1->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill1->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        self::assertIsString($skill2->cskill_id);
+        self::assertContains($skill2->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill2->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill1->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill2->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+    }
+
+    public function testBelongsToManyAttachModelWithCustomKeys(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+
+        $client = Client::query()->find($client->_id);
+        $client->skillsWithCustomKeys()->attach($skill1);
+        $this->assertCount(1, $client->skillsWithCustomKeys);
+
+        self::assertIsString($skill1->cskill_id);
+        self::assertContains($skill1->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill1->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill1->_id);
+        self::assertIsString($check->_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+    }
+
+    public function testBelongsToManyAttachEloquentCollectionWithCustomKeys(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
         $collection = new Collection([$skill1, $skill2]);
 
-        $experience = Experience::query()->find($experience->id);
-        $experience->skillsWithCustomParentKey()->sync($collection);
-        $this->assertCount(2, $experience->skillsWithCustomParentKey);
+        $client = Client::query()->find($client->_id);
+        $client->skillsWithCustomKeys()->attach($collection);
+        $this->assertCount(2, $client->skillsWithCustomKeys);
 
-        self::assertIsString($skill1->_id);
-        self::assertContains($skill1->_id, $experience->skillsWithCustomParentKey->pluck('_id'));
+        self::assertIsString($skill1->cskill_id);
+        self::assertContains($skill1->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill1->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
 
-        self::assertIsString($skill2->_id);
-        self::assertContains($skill2->_id, $experience->skillsWithCustomParentKey->pluck('_id'));
+        self::assertIsString($skill2->cskill_id);
+        self::assertContains($skill2->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill2->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill1->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill2->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+    }
+
+    public function testBelongsToManyDetachWithCustomKeys(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
+
+        $client = Client::query()->find($client->_id);
+        $client->skillsWithCustomKeys()->sync([$skill1->cskill_id, $skill2->cskill_id]);
+        $this->assertCount(2, $client->skillsWithCustomKeys);
+
+        $client->skillsWithCustomKeys()->detach($skill1->cskill_id);
+        $client->load('skillsWithCustomKeys'); // Reload the relationship based on the latest pivot column's data
+        $this->assertCount(1, $client->skillsWithCustomKeys);
+
+        self::assertIsString($skill1->cskill_id);
+        self::assertNotContains($skill1->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill1->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        self::assertIsString($skill2->cskill_id);
+        self::assertContains($skill2->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill2->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill1->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertNotContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill2->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+    }
+
+    public function testBelongsToManyDetachModelWithCustomKeys(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $skill1    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $skill2    = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
+
+        $client = Client::query()->find($client->_id);
+        $client->skillsWithCustomKeys()->sync([$skill1->cskill_id, $skill2->cskill_id]);
+        $this->assertCount(2, $client->skillsWithCustomKeys);
+
+        $client->skillsWithCustomKeys()->detach($skill1);
+        $client->load('skillsWithCustomKeys'); // Reload the relationship based on the latest pivot column's data
+        $this->assertCount(1, $client->skillsWithCustomKeys);
+
+        self::assertIsString($skill1->cskill_id);
+        self::assertNotContains($skill1->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill1->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        self::assertIsString($skill2->cskill_id);
+        self::assertContains($skill2->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($skill2->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill1->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertNotContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+
+        $check = Skill::query()->find($skill2->_id);
+        self::assertIsString($check->cskill_id);
+        self::assertContains($check->cskill_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
+        self::assertNotContains($check->_id, $client->skillsWithCustomKeys->pluck('cskill_id'));
     }
 
     public function testBelongsToManySyncAlreadyPresent(): void

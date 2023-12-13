@@ -20,6 +20,17 @@ class Client extends Eloquent
         return $this->belongsToMany(User::class);
     }
 
+    public function skillsWithCustomKeys()
+    {
+        return $this->belongsToMany(
+            Skill::class,
+            foreignPivotKey: 'cclient_ids',
+            relatedPivotKey: 'cskill_ids',
+            parentKey: 'cclient_id',
+            relatedKey: 'cskill_id',
+        );
+    }
+
     public function photo(): MorphOne
     {
         return $this->morphOne(Photo::class, 'has_image');
