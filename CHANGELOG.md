@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [4.1.0] - 2023-12-11
+## [4.1.0] - 2023-12-14
 
 * PHPORM-100 Support query on numerical field names by [@GromNaN](https://github.com/GromNaN) in [#2642](https://github.com/mongodb/laravel-mongodb/pull/2642)
 * Fix casting issue by [@hans-thomas](https://github.com/hans-thomas) in [#2653](https://github.com/mongodb/laravel-mongodb/pull/2653)
