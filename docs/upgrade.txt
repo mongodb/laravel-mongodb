@@ -22,7 +22,7 @@ Upgrading from version 3 to 4
 - Change dependency name in your composer.json to ``"mongodb/laravel-mongodb": "^4.0"``
   and run ``composer update``
 
-- Change namespace from ``Jenssegers\Mongodb\`` to ``MongoDB\Laravel\``
+- Change namespace from ``Jenssegers\Mongodb\\`` to ``MongoDB\Laravel\\``
   in your models and config
 
 - Remove support for non-Laravel projects

@@ -5,7 +5,6 @@ Query Builder
 =============
 
 .. facet::
-
    :name: genre
    :values: tutorial
 
@@ -158,7 +157,7 @@ Distinct requires a field for which to return the distinct values.
    // Equivalent to:
    $users = User::distinct('name')->get();
 
-Distinct can be combined with **where**\ :
+Distinct can be combined with **where**:
 
 .. code-block:: php
 
@@ -185,7 +184,7 @@ Distinct can be combined with **where**\ :
    $price = Product::avg('price');
    $total = Product::sum('price');
 
-Aggregations can be combined with **where**\ :
+Aggregations can be combined with **where**:
 
 .. code-block:: php
 
@@ -511,7 +510,7 @@ Add items to an array.
        'message' => 'Hi John',
    ]);
 
-If you **DON'T** want duplicate items, set the third parameter to ``true``\ :
+If you **DON'T** want duplicate items, set the third parameter to ``true``:
 
 .. code-block:: php
 

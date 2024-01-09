@@ -17,7 +17,7 @@ define models for corresponding collections.
 Extending the base model
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-To get started, create a new model class in your ``app\Models\`` directory.
+To get started, create a new model class in your ``app\Models\\`` directory.
 
 .. code-block:: php
 
@@ -31,7 +31,7 @@ To get started, create a new model class in your ``app\Models\`` directory.
    }
 
 Just like a regular model, the MongoDB model class will know which collection
-to use based on the model name. For ``Book``\ , the collection ``books`` will
+to use based on the model name. For ``Book``, the collection ``books`` will
 be used.
 
 To change the collection, pass the ``$collection`` property:
@@ -346,7 +346,7 @@ You can access the embedded models through the dynamic property:
        //
    }
 
-The inverse relation is auto\ *magically* available. You can omit the reverse
+The inverse relation is auto *magically* available. You can omit the reverse
 relation definition.
 
 .. code-block:: php
@@ -485,7 +485,7 @@ based on the type of the related model.
 If you want this functionality to work both ways, your SQL-models will need 
 to use the ``MongoDB\Laravel\Eloquent\HybridRelations`` trait.
 
-**This functionality only works for ``hasOne``\ , ``hasMany`` and ``belongsTo``.**
+**This functionality only works for ``hasOne``, ``hasMany`` and ``belongsTo``.**
 
 The SQL model must use the ``HybridRelations`` trait:
 
