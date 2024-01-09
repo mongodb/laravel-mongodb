@@ -1,0 +1,569 @@
+.. _laravel-query-builder:
+
+=============
+Query Builder
+=============
+
+.. facet::
+
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example
+
+The database driver plugs right into the original query builder.
+
+When using MongoDB connections, you will be able to build fluent queries to 
+perform database operations.
+
+For your convenience, there is a ``collection`` alias for ``table`` and
+other MongoDB specific operators/operations.
+
+.. code-block:: php
+
+   $books = DB::collection('books')->get();
+
+   $hungerGames =
+       DB::collection('books')
+           ->where('name', 'Hunger Games')
+           ->first();
+
+If you are familiar with `Eloquent Queries <http://laravel.com/docs/queries>`__,
+there is the same functionality.
+
+Available operations
+--------------------
+
+**Retrieving all models**
+
+.. code-block:: php
+
+   $users = User::all();
+
+**Retrieving a record by primary key**
+
+.. code-block:: php
+
+   $user = User::find('517c43667db388101e00000f');
+
+**Where**
+
+.. code-block:: php
+
+   $posts =
+       Post::where('author.name', 'John')
+           ->take(10)
+           ->get();
+
+**OR Statements**
+
+.. code-block:: php
+
+   $posts =
+       Post::where('votes', '>', 0)
+           ->orWhere('is_approved', true)
+           ->get();
+
+**AND statements**
+
+.. code-block:: php
+
+   $users =
+       User::where('age', '>', 18)
+           ->where('name', '!=', 'John')
+           ->get();
+
+**NOT statements**
+
+.. code-block:: php
+
+   $users = User::whereNot('age', '>', 18)->get();
+
+**whereIn**
+
+.. code-block:: php
+
+   $users = User::whereIn('age', [16, 18, 20])->get();
+
+When using ``whereNotIn`` objects will be returned if the field is 
+non-existent. Combine with ``whereNotNull('age')`` to omit those documents.
+
+**whereBetween**
+
+.. code-block:: php
+
+   $posts = Post::whereBetween('votes', [1, 100])->get();
+
+**whereNull**
+
+.. code-block:: php
+
+   $users = User::whereNull('age')->get();
+
+**whereDate**
+
+.. code-block:: php
+
+   $users = User::whereDate('birthday', '2021-5-12')->get();
+
+The usage is the same as ``whereMonth`` / ``whereDay`` / ``whereYear`` / ``whereTime``
+
+**Advanced wheres**
+
+.. code-block:: php
+
+   $users =
+       User::where('name', 'John')
+           ->orWhere(function ($query) {
+               return $query
+                   ->where('votes', '>', 100)
+                   ->where('title', '<>', 'Admin');
+           })->get();
+
+**orderBy**
+
+.. code-block:: php
+
+   $users = User::orderBy('age', 'desc')->get();
+
+**Offset & Limit (skip & take)**
+
+.. code-block:: php
+
+   $users =
+       User::skip(10)
+           ->take(5)
+           ->get();
+
+**groupBy**
+
+Selected columns that are not grouped will be aggregated with the ``$last`` 
+function.
+
+.. code-block:: php
+
+   $users =
+       Users::groupBy('title')
+           ->get(['title', 'name']);
+
+**Distinct**
+
+Distinct requires a field for which to return the distinct values.
+
+.. code-block:: php
+
+   $users = User::distinct()->get(['name']);
+
+   // Equivalent to:
+   $users = User::distinct('name')->get();
+
+Distinct can be combined with **where**\ :
+
+.. code-block:: php
+
+   $users =
+       User::where('active', true)
+           ->distinct('name')
+           ->get();
+
+**Like**
+
+.. code-block:: php
+
+   $spamComments = Comment::where('body', 'like', '%spam%')->get();
+
+**Aggregation**
+
+**Aggregations are only available for MongoDB versions greater than 2.2.x**
+
+.. code-block:: php
+
+   $total = Product::count();
+   $price = Product::max('price');
+   $price = Product::min('price');
+   $price = Product::avg('price');
+   $total = Product::sum('price');
+
+Aggregations can be combined with **where**\ :
+
+.. code-block:: php
+
+   $sold = Orders::where('sold', true)->sum('price');
+
+Aggregations can be also used on sub-documents:
+
+.. code-block:: php
+
+   $total = Order::max('suborder.price');
+
+.. note::
+
+   This aggregation only works with single sub-documents (like ``EmbedsOne``)
+   not subdocument arrays (like ``EmbedsMany``).
+
+**Incrementing/Decrementing the value of a column**
+
+Perform increments or decrements (default 1) on specified attributes:
+
+.. code-block:: php
+
+   Cat::where('name', 'Kitty')->increment('age');
+
+   Car::where('name', 'Toyota')->decrement('weight', 50);
+
+The number of updated objects is returned:
+
+.. code-block:: php
+
+   $count = User::increment('age');
+
+You may also specify more columns to update:
+
+.. code-block:: php
+
+   Cat::where('age', 3)
+       ->increment('age', 1, ['group' => 'Kitty Club']);
+
+   Car::where('weight', 300)
+       ->decrement('weight', 100, ['latest_change' => 'carbon fiber']);
+
+MongoDB-specific operators
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In addition to the Laravel Eloquent operators, all available MongoDB query 
+operators can be used with ``where``:
+
+.. code-block:: php
+
+   User::where($fieldName, $operator, $value)->get();
+
+It generates the following MongoDB filter:
+
+.. code-block:: ts
+
+   { $fieldName: { $operator: $value } }
+
+**Exists**
+
+Matches documents that have the specified field.
+
+.. code-block:: php
+
+   User::where('age', 'exists', true)->get();
+
+**All**
+
+Matches arrays that contain all elements specified in the query.
+
+.. code-block:: php
+
+   User::where('roles', 'all', ['moderator', 'author'])->get();
+
+**Size**
+
+Selects documents if the array field is a specified size.
+
+.. code-block:: php
+
+   Post::where('tags', 'size', 3)->get();
+
+**Regex**
+
+Selects documents where values match a specified regular expression.
+
+.. code-block:: php
+
+   use MongoDB\BSON\Regex;
+
+   User::where('name', 'regex', new Regex('.*doe', 'i'))->get();
+
+.. note::
+
+   You can also use the Laravel regexp operations. These will automatically 
+   convert your regular expression string to a ``MongoDB\BSON\Regex`` object.
+
+.. code-block:: php
+
+   User::where('name', 'regexp', '/.*doe/i')->get();
+
+The inverse of regexp:
+
+.. code-block:: php
+
+   User::where('name', 'not regexp', '/.*doe/i')->get();
+
+**Type**
+
+Selects documents if a field is of the specified type. For more information 
+check: :manual:`$type </reference/operator/query/type/#op._S_type/>` in the
+MongoDB Server documentation.
+
+.. code-block:: php
+
+   User::where('age', 'type', 2)->get();
+
+**Mod**
+
+Performs a modulo operation on the value of a field and selects documents with 
+a specified result.
+
+.. code-block:: php
+
+   User::where('age', 'mod', [10, 0])->get();
+
+MongoDB-specific Geo operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Near**
+
+.. code-block:: php
+
+   $bars = Bar::where('location', 'near', [
+       '$geometry' => [
+           'type' => 'Point',
+           'coordinates' => [
+               -0.1367563, // longitude
+               51.5100913, // latitude
+           ],
+       ],
+       '$maxDistance' => 50,
+   ])->get();
+
+**GeoWithin**
+
+.. code-block:: php
+
+   $bars = Bar::where('location', 'geoWithin', [
+       '$geometry' => [
+           'type' => 'Polygon',
+           'coordinates' => [
+               [
+                   [-0.1450383, 51.5069158],
+                   [-0.1367563, 51.5100913],
+                   [-0.1270247, 51.5013233],
+                   [-0.1450383, 51.5069158],
+               ],
+           ],
+       ],
+   ])->get();
+
+**GeoIntersects**
+
+.. code-block:: php
+
+   $bars = Bar::where('location', 'geoIntersects', [
+       '$geometry' => [
+           'type' => 'LineString',
+           'coordinates' => [
+               [-0.144044, 51.515215],
+               [-0.129545, 51.507864],
+           ],
+       ],
+   ])->get();
+
+**GeoNear**
+
+You can make a ``geoNear`` query on MongoDB.
+You can omit specifying the automatic fields on the model.
+The returned instance is a collection, so you can call the `Collection <https://laravel.com/docs/9.x/collections>`__ operations.
+Make sure that your model has a ``location`` field, and a 
+`2ndSphereIndex <https://www.mongodb.com/docs/manual/core/2dsphere>`__.
+The data in the ``location`` field must be saved as `GeoJSON <https://www.mongodb.com/docs/manual/reference/geojson/>`__.
+The ``location`` points must be saved as `WGS84 <https://www.mongodb.com/docs/manual/reference/glossary/#std-term-WGS84>`__ 
+reference system for geometry calculation. That means that you must
+save ``longitude and latitude``, in that order specifically, and to find near
+with calculated distance, you ``must do the same way``.
+
+.. code-block::
+
+   Bar::find("63a0cd574d08564f330ceae2")->update(
+       [
+           'location' => [
+               'type' => 'Point',
+               'coordinates' => [
+                   -0.1367563,
+                   51.5100913
+               ]
+           ]
+       ]
+   );
+   $bars = Bar::raw(function ($collection) {
+       return $collection->aggregate([
+           [
+               '$geoNear' => [
+                   "near" => [ "type" =>  "Point", "coordinates" =>  [-0.132239, 51.511874] ],
+                   "distanceField" =>  "dist.calculated",
+                   "minDistance" =>  0,
+                   "maxDistance" =>  6000,
+                   "includeLocs" =>  "dist.location",
+                   "spherical" =>  true,
+               ]
+           ]
+       ]);
+   });
+
+Inserts, updates and deletes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Inserting, updating and deleting records works just like the original Eloquent. 
+Please check `Laravel Docs' Eloquent section <https://laravel.com/docs/6.x/eloquent>`__.
+
+Here, only the MongoDB-specific operations are specified.
+
+MongoDB specific operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**Raw Expressions**
+
+These expressions will be injected directly into the query.
+
+.. code-block:: php
+
+   User::whereRaw([
+       'age' => ['$gt' => 30, '$lt' => 40],
+   ])->get();
+
+   User::whereRaw([
+       '$where' => '/.*123.*/.test(this.field)',
+   ])->get();
+
+   User::whereRaw([
+       '$where' => '/.*123.*/.test(this["hyphenated-field"])',
+   ])->get();
+
+You can also perform raw expressions on the internal MongoCollection object. 
+If this is executed on the model class, it will return a collection of models.
+
+If this is executed on the query builder, it will return the original response.
+
+**Cursor timeout**
+
+To prevent ``MongoCursorTimeout`` exceptions, you can manually set a timeout 
+value that will be applied to the cursor:
+
+.. code-block:: php
+
+   DB::collection('users')->timeout(-1)->get();
+
+**Upsert**
+
+Update or insert a document. Other options for the update method can be
+passed directly to the native update method.
+
+.. code-block:: php
+
+   // Query Builder
+   DB::collection('users')
+       ->where('name', 'John')
+       ->update($data, ['upsert' => true]);
+
+   // Eloquent
+   $user->update($data, ['upsert' => true]);
+
+**Projections**
+
+You can apply projections to your queries using the ``project`` method.
+
+.. code-block:: php
+
+   DB::collection('items')
+       ->project(['tags' => ['$slice' => 1]])
+       ->get();
+
+   DB::collection('items')
+       ->project(['tags' => ['$slice' => [3, 7]]])
+       ->get();
+
+**Projections with Pagination**
+
+.. code-block:: php
+
+   $limit = 25;
+   $projections = ['id', 'name'];
+
+   DB::collection('items')
+       ->paginate($limit, $projections);
+
+**Push**
+
+Add items to an array.
+
+.. code-block:: php
+
+   DB::collection('users')
+       ->where('name', 'John')
+       ->push('items', 'boots');
+
+   $user->push('items', 'boots');
+
+.. code-block:: php
+
+   DB::collection('users')
+       ->where('name', 'John')
+       ->push('messages', [
+           'from' => 'Jane Doe',
+           'message' => 'Hi John',
+       ]);
+
+   $user->push('messages', [
+       'from' => 'Jane Doe',
+       'message' => 'Hi John',
+   ]);
+
+If you **DON'T** want duplicate items, set the third parameter to ``true``\ :
+
+.. code-block:: php
+
+   DB::collection('users')
+       ->where('name', 'John')
+       ->push('items', 'boots', true);
+
+   $user->push('items', 'boots', true);
+
+**Pull**
+
+Remove an item from an array.
+
+.. code-block:: php
+
+   DB::collection('users')
+       ->where('name', 'John')
+       ->pull('items', 'boots');
+
+   $user->pull('items', 'boots');
+
+.. code-block:: php
+
+   DB::collection('users')
+       ->where('name', 'John')
+       ->pull('messages', [
+           'from' => 'Jane Doe',
+           'message' => 'Hi John',
+       ]);
+
+   $user->pull('messages', [
+       'from' => 'Jane Doe',
+       'message' => 'Hi John',
+   ]);
+
+**Unset**
+
+Remove one or more fields from a document.
+
+.. code-block:: php
+
+   DB::collection('users')
+       ->where('name', 'John')
+       ->unset('note');
+
+   $user->unset('note');
+
+   $user->save();
+
+Using the native ``unset`` on models will work as well:
+
+.. code-block:: php
+
+   unset($user['note']);
+   unset($user->node);
