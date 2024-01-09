@@ -237,9 +237,16 @@ abstract class Model extends BaseModel
     {
         $key = (string) $key;
 
-        // Add casts
-        if ($this->hasCast($key)) {
-            $value = $this->castAttribute($key, $value);
+        $casts = $this->getCasts();
+        if (array_key_exists($key, $casts)) {
+            $castType = $this->getCastType($key);
+            $castOptions = Str::after($casts[$key], ':');
+
+            // Can add more native mongo type casts here.
+            $value = match (true) {
+                $castType === 'decimal' => $this->fromDecimal($value, $castOptions),
+                default                 => $value,
+            };
         }
 
         // Convert _id to ObjectID.
@@ -277,6 +284,19 @@ abstract class Model extends BaseModel
         }
 
         return parent::asDecimal($value, $decimals);
+    }
+
+    /**
+     * Change to mongo native for decimal cast.
+     *
+     * @param mixed $value
+     * @param int   $decimals
+     *
+     * @return Decimal128
+     */
+    protected function fromDecimal($value, $decimals)
+    {
+        return new Decimal128($this->asDecimal($value, $decimals));
     }
 
     /** @inheritdoc */
