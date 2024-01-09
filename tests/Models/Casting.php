@@ -35,7 +35,7 @@ class Casting extends Eloquent
         'encryptedString',
         'encryptedArray',
         'encryptedObject',
-        'encryptedCollection'
+        'encryptedCollection',
     ];
 
     protected $casts = [

@@ -10,6 +10,9 @@ use Illuminate\Support\Collection;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 
+use function app;
+use function collect;
+
 class EncryptionTest extends TestCase
 {
     protected function setUp(): void
@@ -23,7 +26,7 @@ class EncryptionTest extends TestCase
     {
         return app()->make(Encrypter::class)
             ->decryptString(
-                $model->getRawOriginal($key)
+                $model->getRawOriginal($key),
             );
     }
 

@@ -7,6 +7,8 @@ namespace MongoDB\Laravel\Tests\Casts;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 
+use function now;
+
 class StringTest extends TestCase
 {
     protected function setUp(): void
