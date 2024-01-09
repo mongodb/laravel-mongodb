@@ -25,7 +25,6 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 
-use function abs;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -41,7 +40,6 @@ use function is_numeric;
 use function is_string;
 use function ltrim;
 use function method_exists;
-use function sprintf;
 use function str_contains;
 use function str_starts_with;
 use function strcmp;
@@ -139,15 +137,9 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     protected function asDateTime($value)
     {
-        // Convert UTCDateTime instances.
+        // Convert UTCDateTime instances to Carbon.
         if ($value instanceof UTCDateTime) {
-            $date = $value->toDateTime();
-
-            $seconds      = $date->format('U');
-            $milliseconds = abs((int) $date->format('v'));
-            $timestampMs  = sprintf('%d%03d', $seconds, $milliseconds);
-
-            return Date::createFromTimestampMs($timestampMs);
+            return Date::instance($value->toDateTime());
         }
 
         return parent::asDateTime($value);
