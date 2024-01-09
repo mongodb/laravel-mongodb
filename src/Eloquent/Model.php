@@ -4,9 +4,6 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
-use Brick\Math\BigDecimal;
-use Brick\Math\Exception\MathException as BrickMathException;
-use Brick\Math\RoundingMode;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\QueueableCollection;
@@ -15,7 +12,6 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Exceptions\MathException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use MongoDB\BSON\Binary;
@@ -275,13 +271,12 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     protected function asDecimal($value, $decimals)
     {
-        try {
-            $value = (string) BigDecimal::of((string) $value)->toScale((int) $decimals, RoundingMode::HALF_UP);
-
-            return new Decimal128($value);
-        } catch (BrickMathException $e) {
-            throw new MathException('Unable to cast value to a decimal.', previous: $e);
+        if ($value instanceof Decimal128) {
+            // Convert it to a string to round, want to make it act exactly like we expect.
+            $value = (string) $value;
         }
+
+        return parent::asDecimal($value, $decimals);
     }
 
     /** @inheritdoc */
