@@ -17,7 +17,7 @@ define models for corresponding collections.
 Extending the base model
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
-To get started, create a new model class in your ``app\Models\\`` directory.
+To get started, create a new model class in your ``app\Models\`` directory.
 
 .. code-block:: php
 
