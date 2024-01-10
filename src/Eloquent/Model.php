@@ -243,9 +243,9 @@ abstract class Model extends BaseModel
             $castOptions = Str::after($casts[$key], ':');
 
             // Can add more native mongo type casts here.
-            $value = match (true) {
-                $castType === 'decimal' => $this->fromDecimal($value, $castOptions),
-                default                 => $value,
+            $value = match ($castType) {
+                'decimal' => $this->fromDecimal($value, $castOptions),
+                default   => $value,
             };
         }
 
