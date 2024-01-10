@@ -60,8 +60,8 @@ Make sure you have the MongoDB PHP driver installed. You can find installation i
 
 | Laravel | Package        | Maintained         |
 | :------ | :------------- | :----------------- |
-| 9.x     | 3.9.x          | :white_check_mark: |
-| 8.x     | 3.8.x          | :white_check_mark: |
+| 9.x     | 3.9.x          | :x:                |
+| 8.x     | 3.8.x          | :x:                |
 | 7.x     | 3.7.x          | :x:                |
 | 6.x     | 3.6.x          | :x:                |
 | 5.8.x   | 3.5.x          | :x:                |
