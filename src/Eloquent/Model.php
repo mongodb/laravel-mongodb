@@ -12,13 +12,16 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Exceptions\MathException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\Decimal128;
 use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
+use Stringable;
 
 use function array_key_exists;
 use function array_keys;
@@ -275,12 +278,22 @@ abstract class Model extends BaseModel
         return parent::setAttribute($key, $value);
     }
 
-    /** @inheritdoc */
+    /**
+     * @param mixed $value
+     *
+     * @inheritdoc
+     */
     protected function asDecimal($value, $decimals)
     {
-        if ($value instanceof Decimal128) {
-            // Convert it to a string to round, want to make it act exactly like we expect.
-            $value = (string) $value;
+        // Convert BSON to string.
+        if ($this->isBSON($value)) {
+            if ($value instanceof Binary) {
+                $value = $value->getData();
+            } elseif ($value instanceof Stringable) {
+                $value = (string) $value;
+            } else {
+                throw new MathException('BSON type ' . $value::class . ' cannot be converted to string');
+            }
         }
 
         return parent::asDecimal($value, $decimals);
@@ -702,5 +715,17 @@ abstract class Model extends BaseModel
         }
 
         return $attributes;
+    }
+
+    /**
+     * Is a value a BSON type?
+     *
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    protected function isBSON(mixed $value): bool
+    {
+        return $value instanceof Type;
     }
 }
