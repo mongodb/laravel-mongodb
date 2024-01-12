@@ -12,13 +12,13 @@ This package was renamed to `mongodb/laravel-mongodb` because of a transfer of o
 It is compatible with Laravel 10.x. For older versions of Laravel, please refer to the
 [old versions](https://github.com/mongodb/laravel-mongodb/tree/3.9#laravel-version-compatibility).
 
-- [Installation](docs/install.md)
-- [Eloquent Models](docs/eloquent-models.md)
-- [Query Builder](docs/query-builder.md)
-- [Transactions](docs/transactions.md)
-- [User Authentication](docs/user-authentication.md)
-- [Queues](docs/queues.md)
-- [Upgrading](docs/upgrade.md)
+- [Installation](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/install/)
+- [Eloquent Models](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/eloquent-models/)
+- [Query Builder](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/query-builder/)
+- [Transactions](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/transactions/)
+- [User Authentication](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/user-authentication/)
+- [Queues](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/queues/)
+- [Upgrading](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/upgrade/)
 
 ## Reporting Issues
 

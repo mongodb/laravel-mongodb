@@ -1,0 +1,24 @@
+.. _laravel-user-authentication:
+
+===================
+User authentication
+===================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example
+
+If you want to use Laravel's native Auth functionality, register this included
+service provider:
+
+.. code-block:: php
+
+   MongoDB\Laravel\Auth\PasswordResetServiceProvider::class,
+
+This service provider will slightly modify the internal ``DatabaseReminderRepository``
+to add support for MongoDB based password reminders.
+
+If you don't use password reminders, you can omit this service provider.
