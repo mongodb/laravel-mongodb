@@ -614,4 +614,36 @@ abstract class Model extends BaseModel
 
         return $attributes;
     }
+
+    /**
+     * Overrides the parent save() function to clear unset fields on save
+     *
+     * @param array $options
+     *
+     * @return bool
+     */
+    public function save(array $options = [])
+    {
+        $saved = parent::save($options);
+
+        // Clear list of unset fields
+        $this->unset = [];
+
+        return $saved;
+    }
+
+    /**
+     * Overrides the parent refresh() function to clear unset fields on refresh
+     *
+     * @return $this
+     */
+    public function refresh()
+    {
+        parent::refresh();
+
+        // Clear list of unset fields
+        $this->unset = [];
+
+        return $this;
+    }
 }
