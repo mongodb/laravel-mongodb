@@ -3,6 +3,10 @@ All notable changes to this project will be documented in this file.
 
 * Move documentation to the mongodb.com domain at [https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/)
 
+## [4.1.1]
+
+* Fix casting issues by [@stubbo](https://github.com/stubbo) in [#2705](https://github.com/mongodb/laravel-mongodb/pull/2705)
+
 ## [4.1.0] - 2023-12-14
 
 * PHPORM-100 Support query on numerical field names by [@GromNaN](https://github.com/GromNaN) in [#2642](https://github.com/mongodb/laravel-mongodb/pull/2642)
