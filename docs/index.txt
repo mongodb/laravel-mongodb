@@ -1,0 +1,70 @@
+===============
+Laravel MongoDB
+===============
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: php framework, odm
+
+This package adds functionalities to the Eloquent model and Query builder for
+MongoDB, using the original Laravel API.
+*This library extends the original Laravel classes, so it uses exactly the
+same methods.*
+
+This package was renamed to ``mongodb/laravel-mongodb`` because of a transfer
+of ownership to MongoDB, Inc. It is compatible with Laravel 10.x. For older
+versions of Laravel, please see the `old versions <https://github.com/mongodb/laravel-mongodb/tree/3.9#laravel-version-compatibility>`__.
+
+- :ref:`laravel-install`
+- :ref:`laravel-eloquent-models`
+- :ref:`laravel-query-builder`
+- :ref:`laravel-user-authentication`
+- :ref:`laravel-queues`
+- :ref:`laravel-transactions`
+- :ref:`laravel-upgrading`
+
+Reporting Issues
+----------------
+
+Think you’ve found a bug in the library? Want to see a new feature? Please open a case in our issue management tool, JIRA:
+
+- `Create an account and login <https://jira.mongodb.org/>`__
+- Navigate to the `PHPORM <https://jira.mongodb.org/browse/PHPORM>`__ project.
+- Click Create
+- Please provide as much information as possible about the issue type and how to reproduce it.
+
+Note: All reported issues in JIRA project are public.
+
+For general questions and support requests, please use one of MongoDB's 
+:manual:`Technical Support </support/>` channels.
+
+Security Vulnerabilities
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+If you've identified a security vulnerability in a driver or any other MongoDB 
+project, please report it according to the instructions in 
+:manual:`Create a Vulnerability Report </tutorial/create-a-vulnerability-report>`.
+
+
+Development
+-----------
+
+Development is tracked in the `PHPORM <https://jira.mongodb.org/projects/PHPORM/summary>`__
+project in MongoDB's JIRA. Documentation for contributing to this project may 
+be found in `CONTRIBUTING.md <https://github.com/mongodb/laravel-mongodb/blob/4.1/CONTRIBUTING.md>`__.
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   /install
+   /eloquent-models
+   /query-builder
+   /user-authentication
+   /queues
+   /transactions
+   /upgrade
+
