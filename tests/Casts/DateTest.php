@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Tests\Casts;
 use Carbon\CarbonImmutable;
 use DateTime;
 use Illuminate\Support\Carbon;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 
@@ -31,17 +32,26 @@ class DateTest extends TestCase
         $model->update(['dateField' => now()->subDay()]);
 
         self::assertInstanceOf(Carbon::class, $model->dateField);
+        self::assertInstanceOf(UTCDateTime::class, $model->getRawOriginal('dateField'));
         self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
 
         $model->update(['dateField' => new DateTime()]);
 
         self::assertInstanceOf(Carbon::class, $model->dateField);
+        self::assertInstanceOf(UTCDateTime::class, $model->getRawOriginal('dateField'));
         self::assertEquals(now()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
 
         $model->update(['dateField' => (new DateTime())->modify('-1 day')]);
 
         self::assertInstanceOf(Carbon::class, $model->dateField);
+        self::assertInstanceOf(UTCDateTime::class, $model->getRawOriginal('dateField'));
         self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $model->dateField);
+
+        $refetchedModel = Casting::query()->find($model->getKey());
+
+        self::assertInstanceOf(Carbon::class, $refetchedModel->dateField);
+        self::assertInstanceOf(UTCDateTime::class, $model->getRawOriginal('dateField'));
+        self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $refetchedModel->dateField);
     }
 
     public function testDateAsString(): void

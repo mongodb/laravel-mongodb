@@ -50,5 +50,42 @@ class BooleanTest extends TestCase
 
         self::assertIsBool($model->booleanValue);
         self::assertSame(false, $model->booleanValue);
+
+        $model->update(['booleanValue' => 'false']);
+
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(true, $model->booleanValue);
+
+        $model->update(['booleanValue' => '0.0']);
+
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(true, $model->booleanValue);
+
+        $model->update(['booleanValue' => 'true']);
+
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(true, $model->booleanValue);
+    }
+
+    public function testBoolAsNumber(): void
+    {
+        $model = Casting::query()->create(['booleanValue' => 1]);
+
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(true, $model->booleanValue);
+
+        $model->update(['booleanValue' => 0]);
+
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(false, $model->booleanValue);
+
+        $model->update(['booleanValue' => 1.79]);
+
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(true, $model->booleanValue);
+
+        $model->update(['booleanValue' => 0.0]);
+        self::assertIsBool($model->booleanValue);
+        self::assertSame(false, $model->booleanValue);
     }
 }

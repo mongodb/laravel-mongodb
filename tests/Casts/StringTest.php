@@ -7,6 +7,8 @@ namespace MongoDB\Laravel\Tests\Casts;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 
+use function now;
+
 class StringTest extends TestCase
 {
     protected function setUp(): void
@@ -27,5 +29,11 @@ class StringTest extends TestCase
 
         self::assertIsString($model->stringContent);
         self::assertEquals("Losing hope, don't mean I'm hopeless And maybe all I need is time", $model->stringContent);
+
+        $now = now();
+        $model->update(['stringContent' => $now]);
+
+        self::assertIsString($model->stringContent);
+        self::assertEquals((string) $now, $model->stringContent);
     }
 }

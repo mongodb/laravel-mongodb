@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
-use Brick\Math\BigDecimal;
-use Brick\Math\Exception\MathException as BrickMathException;
-use Brick\Math\RoundingMode;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Database\Eloquent\Model as BaseModel;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -22,10 +18,11 @@ use Illuminate\Support\Str;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\Decimal128;
 use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
+use Stringable;
 
-use function abs;
 use function array_key_exists;
 use function array_keys;
 use function array_merge;
@@ -41,7 +38,6 @@ use function is_numeric;
 use function is_string;
 use function ltrim;
 use function method_exists;
-use function sprintf;
 use function str_contains;
 use function str_starts_with;
 use function strcmp;
@@ -139,15 +135,9 @@ abstract class Model extends BaseModel
     /** @inheritdoc */
     protected function asDateTime($value)
     {
-        // Convert UTCDateTime instances.
+        // Convert UTCDateTime instances to Carbon.
         if ($value instanceof UTCDateTime) {
-            $date = $value->toDateTime();
-
-            $seconds      = $date->format('U');
-            $milliseconds = abs((int) $date->format('v'));
-            $timestampMs  = sprintf('%d%03d', $seconds, $milliseconds);
-
-            return Date::createFromTimestampMs($timestampMs);
+            return Date::instance($value->toDateTime());
         }
 
         return parent::asDateTime($value);
@@ -250,9 +240,16 @@ abstract class Model extends BaseModel
     {
         $key = (string) $key;
 
-        // Add casts
-        if ($this->hasCast($key)) {
-            $value = $this->castAttribute($key, $value);
+        $casts = $this->getCasts();
+        if (array_key_exists($key, $casts)) {
+            $castType = $this->getCastType($key);
+            $castOptions = Str::after($casts[$key], ':');
+
+            // Can add more native mongo type casts here.
+            $value = match ($castType) {
+                'decimal' => $this->fromDecimal($value, $castOptions),
+                default   => $value,
+            };
         }
 
         // Convert _id to ObjectID.
@@ -281,26 +278,38 @@ abstract class Model extends BaseModel
         return parent::setAttribute($key, $value);
     }
 
-    /** @inheritdoc */
+    /**
+     * @param mixed $value
+     *
+     * @inheritdoc
+     */
     protected function asDecimal($value, $decimals)
     {
-        try {
-            $value = (string) BigDecimal::of((string) $value)->toScale((int) $decimals, RoundingMode::HALF_UP);
-
-            return new Decimal128($value);
-        } catch (BrickMathException $e) {
-            throw new MathException('Unable to cast value to a decimal.', previous: $e);
+        // Convert BSON to string.
+        if ($this->isBSON($value)) {
+            if ($value instanceof Binary) {
+                $value = $value->getData();
+            } elseif ($value instanceof Stringable) {
+                $value = (string) $value;
+            } else {
+                throw new MathException('BSON type ' . $value::class . ' cannot be converted to string');
+            }
         }
+
+        return parent::asDecimal($value, $decimals);
     }
 
-    /** @inheritdoc */
-    public function fromJson($value, $asObject = false)
+    /**
+     * Change to mongo native for decimal cast.
+     *
+     * @param mixed $value
+     * @param int   $decimals
+     *
+     * @return Decimal128
+     */
+    protected function fromDecimal($value, $decimals)
     {
-        if (! is_string($value)) {
-            $value = Json::encode($value);
-        }
-
-        return Json::decode($value, ! $asObject);
+        return new Decimal128($this->asDecimal($value, $decimals));
     }
 
     /** @inheritdoc */
@@ -706,5 +715,17 @@ abstract class Model extends BaseModel
         }
 
         return $attributes;
+    }
+
+    /**
+     * Is a value a BSON type?
+     *
+     * @param mixed $value
+     *
+     * @return bool
+     */
+    protected function isBSON(mixed $value): bool
+    {
+        return $value instanceof Type;
     }
 }

@@ -24,11 +24,19 @@ class CollectionTest extends TestCase
         $model = Casting::query()->create(['collectionValue' => ['g' => 'G-Eazy']]);
 
         self::assertInstanceOf(Collection::class, $model->collectionValue);
+        self::assertIsString($model->getRawOriginal('collectionValue'));
         self::assertEquals(collect(['g' => 'G-Eazy']), $model->collectionValue);
 
         $model->update(['collectionValue' => ['Dont let me go' => 'Even the longest of nights turn days']]);
 
         self::assertInstanceOf(Collection::class, $model->collectionValue);
+        self::assertIsString($model->getRawOriginal('collectionValue'));
         self::assertEquals(collect(['Dont let me go' => 'Even the longest of nights turn days']), $model->collectionValue);
+
+        $model->update(['collectionValue' => [['Dont let me go' => 'Even the longest of nights turn days']]]);
+
+        self::assertInstanceOf(Collection::class, $model->collectionValue);
+        self::assertIsString($model->getRawOriginal('collectionValue'));
+        self::assertEquals(collect([['Dont let me go' => 'Even the longest of nights turn days']]), $model->collectionValue);
     }
 }

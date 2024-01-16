@@ -27,6 +27,8 @@ class QueueTest extends TestCase
         // Always start with a clean slate
         Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->truncate();
         Queue::getDatabase()->table(Config::get('queue.failed.table'))->truncate();
+
+        Carbon::setTestNow(Carbon::now());
     }
 
     public function testQueueJobLifeCycle(): void
@@ -147,7 +149,6 @@ class QueueTest extends TestCase
 
     public function testQueueRelease(): void
     {
-        Carbon::setTestNow();
         $queue = 'test';
         $delay = 123;
         Queue::push($queue, ['action' => 'QueueRelease'], 'test');

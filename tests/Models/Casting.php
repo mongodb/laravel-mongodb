@@ -32,6 +32,10 @@ class Casting extends Eloquent
         'datetimeWithFormatField',
         'immutableDatetimeField',
         'immutableDatetimeWithFormatField',
+        'encryptedString',
+        'encryptedArray',
+        'encryptedObject',
+        'encryptedCollection',
     ];
 
     protected $casts = [
@@ -52,5 +56,9 @@ class Casting extends Eloquent
         'datetimeWithFormatField' => 'datetime:j.n.Y H:i',
         'immutableDatetimeField' => 'immutable_datetime',
         'immutableDatetimeWithFormatField' => 'immutable_datetime:j.n.Y H:i',
+        'encryptedString' => 'encrypted',
+        'encryptedArray' => 'encrypted:array',
+        'encryptedObject' => 'encrypted:object',
+        'encryptedCollection' => 'encrypted:collection',
     ];
 }
