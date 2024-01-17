@@ -728,4 +728,30 @@ abstract class Model extends BaseModel
     {
         return $value instanceof Type;
     }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function save(array $options = [])
+    {
+        $saved = parent::save($options);
+
+        // Clear list of unset fields
+        $this->unset = [];
+
+        return $saved;
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function refresh()
+    {
+        parent::refresh();
+
+        // Clear list of unset fields
+        $this->unset = [];
+
+        return $this;
+    }
 }

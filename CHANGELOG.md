@@ -1,11 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-* Move documentation to the mongodb.com domain at [https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/)
 
 ## [4.1.1]
 
 * Fix casting issues by [@stubbo](https://github.com/stubbo) in [#2705](https://github.com/mongodb/laravel-mongodb/pull/2705)
+* Move documentation to the mongodb.com domain at [https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/)
 
 ## [4.1.0] - 2023-12-14
 
@@ -27,6 +27,10 @@ All notable changes to this project will be documented in this file.
 * Hybrid support for BelongsToMany relationship by [@hans-thomas](https://github.com/hans-thomas) in [#2688](https://github.com/mongodb/laravel-mongodb/pull/2688)
 * Avoid unnecessary data fetch for exists method by [@andersonls](https://github.com/andersonls) in [#2692](https://github.com/mongodb/laravel-mongodb/pull/2692)
 * Hybrid support for MorphToMany relationship by [@hans-thomas](https://github.com/hans-thomas) in [#2690](https://github.com/mongodb/laravel-mongodb/pull/2690)
+
+## [4.0.3] - 2024-01-17
+
+- Reset `Model::$unset` when a model is saved or refreshed [#2709](https://github.com/mongodb/laravel-mongodb/pull/2709) by [@richardfila](https://github.com/richardfila)
 
 ## [4.0.2] - 2023-11-03
 
