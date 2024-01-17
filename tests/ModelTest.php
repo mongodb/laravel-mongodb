@@ -496,8 +496,10 @@ class ModelTest extends TestCase
         $user1->unset('note1');
 
         $this->assertFalse(isset($user1->note1));
+        $this->assertTrue($user1->isDirty());
 
         $user1->save();
+        $this->assertFalse($user1->isDirty());
 
         $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
@@ -524,6 +526,19 @@ class ModelTest extends TestCase
 
         $this->assertFalse(isset($user2->note1));
         $this->assertFalse(isset($user2->note2));
+    }
+
+    public function testUnsetRefresh(): void
+    {
+        $user = User::create(['name' => 'John Doe', 'note' => 'ABC']);
+        $user->save();
+        $user->unset('note');
+        $this->assertTrue($user->isDirty());
+
+        $user->refresh();
+
+        $this->assertSame('ABC', $user->note);
+        $this->assertFalse($user->isDirty());
     }
 
     public function testUnsetAndSet(): void

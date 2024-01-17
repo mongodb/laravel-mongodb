@@ -616,11 +616,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Overrides the parent save() function to clear unset fields on save
-     *
-     * @param array $options
-     *
-     * @return bool
+     * {@inheritDoc}
      */
     public function save(array $options = [])
     {
@@ -633,9 +629,7 @@ abstract class Model extends BaseModel
     }
 
     /**
-     * Overrides the parent refresh() function to clear unset fields on refresh
-     *
-     * @return $this
+     * {@inheritDoc}
      */
     public function refresh()
     {
