@@ -1,8 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [4.0.3] - unreleased
+## [4.0.3] - 2024-01-17
 
+- Reset `Model::$unset` when a model is saved or refreshed [#2709](https://github.com/mongodb/laravel-mongodb/pull/2709) by [@richardfila](https://github.com/richardfila)
 
 ## [4.0.2] - 2023-11-03
 
