@@ -7,7 +7,7 @@ Laravel MongoDB
    :values: reference
 
 .. meta::
-   :keywords: php framework, odm
+   :keywords: php framework, odm, eloquent, query builder
 
 .. toctree::
    :titlesonly:
@@ -25,10 +25,9 @@ Introduction
 ------------
 
 Welcome to the documentation site for the official {+odm-long+}.
-This package extends methods in the PHP Laravel API to enable you to configure
-your Laravel app to work with MongoDB as a datastore. {+odm-short+} allows you
-to use Laravel's Eloquent syntax and Query Builder to work with your MongoDB
-data.
+This package extends methods in the PHP Laravel API to work with MongoDB as
+a datastore in your Laravel application.  {+odm-short+} allows you to use
+Laravel Eloquent and Query Builder syntax to work with your MongoDB data.
 
 .. note::
 
@@ -47,34 +46,6 @@ Getting Started
 Learn how to install and configure your app to MongoDB by using the
 {+odm-short+} in the :ref:`laravel-install` section.
 
-..
-   Quick Start
-   -----------
-
-..
-   TODO: this section should replace the Getting Started section once the
-   content is authored.
-
-..
-   Learn how to install and configure Laravel MongoDB to connect to MongoDB
-   Atlas and work with data in the :ref:`laravel-install` section.
-
-..
-   Quick Reference
-   ---------------
-
-..
-   See syntax examples of common MongoDB operations in the
-   :ref:`Quick Reference <laravel-quick-reference>` section.
-
-..
-   Usage Examples
-   --------------
-
-..
-   For runnable code examples and explanations of common MongoDB operations,
-   see :ref:`laravel-usage-examples`.
-
 Fundamentals
 ------------
 
@@ -92,56 +63,6 @@ Upgrade Versions
 
 Learn what changes you might need to make to your application to upgrade
 versions in the :ref:`laravel-upgrading` section.
-
-..
-   FAQ
-   ---
-
-..
-   To learn about solutions to commonly asked questions about the {+odm-short+},
-   see the :ref:`laravel-faq` section.
-
-..
-   Connection Troubleshooting
-   --------------------------
-
-..
-   To learn how to solve issues you might have when connecting to MongoDB, see
-   :ref:`laravel-connection-troubleshooting`.
-
-..
-   Error Handling
-   --------------
-
-..
-   To learn about errors you might encounter when you use {+odm-short+}
-   to perform MongoDB operations, see :ref:`laravel-error-handling`.
-
-..
-   Issues & Help
-   -------------
-
-..
-   Learn how to report bugs, contribute to {+odm-short+}, and find
-   additional resources for asking questions in the
-   :ref:`laravel-issues-and-help` section.
-
-..
-   Compatibility
-   -------------
-
-..
-   To learn about compatibility between {+odm-short+} and the following
-   components, see :ref:`laravel-compatibility`:
-
-..
-   - MongoDB (TBD)
-   - Laravel
-   - Laravel Eloquent features
-
-..
-   TODO: Move the content in "Reporting Issues", "Security Vulnerabilities",
-   and "Development" to "Issues & Help".
 
 Reporting Issues
 ----------------
