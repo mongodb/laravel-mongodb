@@ -31,7 +31,7 @@ jobs:
           key: "extcache-v1"
 
       - name: "Cache extensions"
-        uses: "actions/cache@v3"
+        uses: "actions/cache@v4"
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
@@ -90,7 +90,7 @@ jobs:
 
       - name: Cache dependencies
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./vendor
           key: composer-${{ hashFiles('**/composer.lock') }}
@@ -100,7 +100,7 @@ jobs:
 
       - name: Restore cache PHPStan results
         id: phpstan-cache-restore
-        uses: actions/cache/restore@v3
+        uses: actions/cache/restore@v4
         with:
           path: .cache
           key: "phpstan-result-cache-${{ github.run_id }}"
@@ -113,7 +113,7 @@ jobs:
       - name: Save cache PHPStan results
         id: phpstan-cache-save
         if: always()
-        uses: actions/cache/save@v3
+        uses: actions/cache/save@v4
         with:
           path: .cache
           key: ${{ steps.phpstan-cache-restore.outputs.cache-primary-key }}
