@@ -48,37 +48,30 @@ Learn how to install and configure your app to MongoDB by using the
 {+odm-short+} in the :ref:`laravel-install` section.
 
 ..
-
    Quick Start
    -----------
 
 ..
-
    TODO: this section should replace the Getting Started section once the
    content is authored.
 
 ..
-
    Learn how to install and configure Laravel MongoDB to connect to MongoDB
    Atlas and work with data in the :ref:`laravel-install` section.
 
 ..
-
    Quick Reference
    ---------------
 
 ..
-
    See syntax examples of common MongoDB operations in the
    :ref:`Quick Reference <laravel-quick-reference>` section.
 
 ..
-
    Usage Examples
    --------------
 
 ..
-
    For runnable code examples and explanations of common MongoDB operations,
    see :ref:`laravel-usage-examples`.
 
@@ -101,64 +94,52 @@ Learn what changes you might need to make to your application to upgrade
 versions in the :ref:`laravel-upgrading` section.
 
 ..
-
    FAQ
    ---
 
 ..
-
    To learn about solutions to commonly asked questions about the {+odm-short+},
    see the :ref:`laravel-faq` section.
 
 ..
-
    Connection Troubleshooting
    --------------------------
 
 ..
-
    To learn how to solve issues you might have when connecting to MongoDB, see
    :ref:`laravel-connection-troubleshooting`.
 
 ..
-
    Error Handling
    --------------
 
 ..
-
    To learn about errors you might encounter when you use {+odm-short+}
    to perform MongoDB operations, see :ref:`laravel-error-handling`.
 
 ..
-
    Issues & Help
    -------------
 
 ..
-
    Learn how to report bugs, contribute to {+odm-short+}, and find
    additional resources for asking questions in the
    :ref:`laravel-issues-and-help` section.
 
 ..
-
    Compatibility
    -------------
 
 ..
-
    To learn about compatibility between {+odm-short+} and the following
    components, see :ref:`laravel-compatibility`:
 
 ..
-
    - MongoDB (TBD)
    - Laravel
    - Laravel Eloquent features
 
 ..
-
    TODO: Move the content in "Reporting Issues", "Security Vulnerabilities",
    and "Development" to "Issues & Help".
 
@@ -210,5 +191,5 @@ MongoDB JIRA project.
 
 To learn more about contributing to this project, see the
 `CONTRIBUTING.md <https://github.com/mongodb/laravel-mongodb/blob/4.1/CONTRIBUTING.md>`__
-guide on GitHub..
+guide on GitHub.
 
