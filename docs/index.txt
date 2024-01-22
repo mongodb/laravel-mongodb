@@ -9,53 +9,6 @@ Laravel MongoDB
 .. meta::
    :keywords: php framework, odm
 
-This package adds functionalities to the Eloquent model and Query builder for
-MongoDB, using the original Laravel API.
-*This library extends the original Laravel classes, so it uses exactly the
-same methods.*
-
-This package was renamed to ``mongodb/laravel-mongodb`` because of a transfer
-of ownership to MongoDB, Inc. It is compatible with Laravel 10.x. For older
-versions of Laravel, please see the `old versions <https://github.com/mongodb/laravel-mongodb/tree/3.9#laravel-version-compatibility>`__.
-
-- :ref:`laravel-install`
-- :ref:`laravel-eloquent-models`
-- :ref:`laravel-query-builder`
-- :ref:`laravel-user-authentication`
-- :ref:`laravel-queues`
-- :ref:`laravel-transactions`
-- :ref:`laravel-upgrading`
-
-Reporting Issues
-----------------
-
-Think you’ve found a bug in the library? Want to see a new feature? Please open a case in our issue management tool, JIRA:
-
-- `Create an account and login <https://jira.mongodb.org/>`__
-- Navigate to the `PHPORM <https://jira.mongodb.org/browse/PHPORM>`__ project.
-- Click Create
-- Please provide as much information as possible about the issue type and how to reproduce it.
-
-Note: All reported issues in JIRA project are public.
-
-For general questions and support requests, please use one of MongoDB's 
-:manual:`Technical Support </support/>` channels.
-
-Security Vulnerabilities
-~~~~~~~~~~~~~~~~~~~~~~~~
-
-If you've identified a security vulnerability in a driver or any other MongoDB 
-project, please report it according to the instructions in 
-:manual:`Create a Vulnerability Report </tutorial/create-a-vulnerability-report>`.
-
-
-Development
------------
-
-Development is tracked in the `PHPORM <https://jira.mongodb.org/projects/PHPORM/summary>`__
-project in MongoDB's JIRA. Documentation for contributing to this project may 
-be found in `CONTRIBUTING.md <https://github.com/mongodb/laravel-mongodb/blob/4.1/CONTRIBUTING.md>`__.
-
 .. toctree::
    :titlesonly:
    :maxdepth: 1
@@ -67,4 +20,161 @@ be found in `CONTRIBUTING.md <https://github.com/mongodb/laravel-mongodb/blob/4.
    /queues
    /transactions
    /upgrade
+
+Introduction
+------------
+
+Welcome to the documentation site for the official {+odm-long+}.
+This package extends methods in the PHP Laravel API to enable you to configure
+your Laravel app to work with MongoDB as a datastore. {+odm-short+} allows you
+to use Laravel's Eloquent syntax and Query Builder to work with your MongoDB
+data.
+
+.. note::
+
+   This documentation describes the ``mongodb/laravel-mongodb`` package,
+   formerly named ``jenssegers/mongodb``. This package is now owned and
+   maintained by MongoDB, Inc. and is compatible with Laravel 10.x and
+   later.
+
+   To find versions of the package compatible with older versions of Laravel,
+   see the `Laravel Version Compatibility <https://github.com/mongodb/laravel-mongodb/tree/3.9#laravel-version-compatibility>`__
+   table.
+
+Getting Started
+---------------
+
+Learn how to install and configure your app to MongoDB by using the
+{+odm-short+} in the :ref:`laravel-install` section.
+
+..
+
+   Quick Start
+   -----------
+
+   TODO: this section should replace the Getting Started section once the
+   content is authored.
+
+   Learn how to install and configure Laravel MongoDB to connect to MongoDB
+   Atlas and work with data in the :ref:`laravel-install` section.
+
+   Quick Reference
+   ---------------
+
+   See syntax examples of common MongoDB operations in the
+   :ref:`Quick Reference <laravel-quick-reference>` section.
+
+   Usage Examples
+   --------------
+
+   For runnable code examples and explanations of common MongoDB operations,
+   see :ref:`laravel-usage-examples`.
+
+Fundamentals
+------------
+
+To learn how to perform the following tasks by using the {+odm-short+},
+see the following content:
+
+- :ref:`laravel-eloquent-models`
+- :ref:`laravel-query-builder`
+- :ref:`laravel-user-authentication`
+- :ref:`laravel-queues`
+- :ref:`laravel-transactions`
+
+Upgrade Versions
+----------------
+
+Learn what changes you might need to make to your application to upgrade
+versions in the :ref:`laravel-upgrading` section.
+
+..
+
+   FAQ
+   ---
+
+   To learn about solutions to commonly asked questions about the {+odm-short+},
+   see the :ref:`laravel-faq` section.
+
+   Connection Troubleshooting
+   --------------------------
+
+   To learn how to solve issues you might have when connecting to MongoDB, see
+   :ref:`laravel-connection-troubleshooting`.
+
+   Error Handling
+   --------------
+
+   To learn about errors you might encounter when you use {+odm-short+}
+   to perform MongoDB operations, see :ref:`laravel-error-handling`.
+
+   Issues & Help
+   -------------
+
+   Learn how to report bugs, contribute to {+odm-short+}, and find
+   additional resources for asking questions in the
+   :ref:`laravel-issues-and-help` section.
+
+   Compatibility
+   -------------
+
+   To learn about compatibility between {+odm-short+} and the following
+   components, see :ref:`laravel-compatibility`:
+
+   - MongoDB (TBD)
+   - Laravel
+   - Laravel Eloquent features
+
+   TODO: Move the content in "Reporting Issues", "Security Vulnerabilities",
+   and "Development" to "Issues & Help".
+
+Reporting Issues
+----------------
+
+We are lucky to have a vibrant PHP community that includes users of varying
+experience with MongoDB PHP Library and {+odm-short+}. To get support for
+general questions, search or post in the
+`MongoDB Community Forums <https://www.mongodb.com/community/forums/>`__.
+
+To learn more about MongoDB support options, see the
+`Technical Support <https://www.mongodb.org/about/support>`__ page.
+
+
+Bugs / Feature Requests
+-----------------------
+
+If you think you've found a bug or want to see a new feature in {+odm-short+},
+please open a case in our issue management tool, JIRA, by performing the
+following steps:
+
+1. Visit the `MongoDB JIRA issue tracker <https://jira.mongodb.org/>`__ and click the
+   `signup link <https://account.mongodb.com/account/register>`__.
+   Create an account, and then log in to JIRA.
+#. Navigate to the `PHPORM <https://jira.mongodb.org/browse/PHPORM>`__ project.
+#. Click :guilabel:`Create` to create a ticket. Please provide as much
+   information as possible about the issue or request in the ticket.
+
+.. note::
+
+   Bug reports in the PHPORM JIRA project are publicly viewable.
+
+If you’ve identified a security vulnerability in any official MongoDB
+product, please report it according to the instructions found in the
+:manual:`Create a Vulnerability Report page </tutorial/create-a-vulnerability-report>`.
+Note: All reported issues in JIRA project are public.
+
+For general questions and support requests, please use one of MongoDB's
+:manual:`Technical Support </support/>` channels.
+
+Pull Requests
+-------------
+
+We are happy to accept contributions to help improve the {+odm-short+}.
+
+We track current development in `PHPORM <https://jira.mongodb.org/projects/PHPORM/summary>`__
+MongoDB JIRA project.
+
+To learn more about contributing to this project, see the
+`CONTRIBUTING.md <https://github.com/mongodb/laravel-mongodb/blob/4.1/CONTRIBUTING.md>`__
+guide on GitHub..
 
