@@ -90,13 +90,13 @@ To report a bug or request a new feature, perform the following steps:
    section and search for any similar issues or bugs.
 #. If you find a matching issue, you can reply to the thread to report that
    you have a similar issue or request.
-#. If you cannot find a matching issue, click the :guilabel:`New issue`
-   button and select the appropriate issue type.
+#. If you cannot find a matching issue, click :guilabel:`New issue` and select
+   the appropriate issue type.
 #. If you selected "Bug report" or "Feature request", please provide as much
-   information as possible about the issue. Click the
-   :guilabel:`Submit new issue` button to complete your submission.
+   information as possible about the issue. Click :guilabel:`Submit new issue`
+   to complete your submission.
 
-If you’ve identified a security vulnerability in any official MongoDB
+If you've identified a security vulnerability in any official MongoDB
 product, please report it according to the instructions found in the
 :manual:`Create a Vulnerability Report page </tutorial/create-a-vulnerability-report>`.
 
