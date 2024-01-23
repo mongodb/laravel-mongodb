@@ -26,7 +26,7 @@ Introduction
 
 Welcome to the documentation site for the official {+odm-long+}.
 This package extends methods in the PHP Laravel API to work with MongoDB as
-a datastore in your Laravel application.  {+odm-short+} allows you to use
+a datastore in your Laravel application. {+odm-short+} allows you to use
 Laravel Eloquent and Query Builder syntax to work with your MongoDB data.
 
 .. note::
@@ -79,25 +79,26 @@ To learn more about MongoDB support options, see the
 Bugs / Feature Requests
 -----------------------
 
-If you think you've found a bug or want to see a new feature in {+odm-short+},
-please open a case in our issue management tool, JIRA, by performing the
-following steps:
+If you've found a bug or want to see a new feature in {+odm-short+},
+please report it in the GitHub issues section of the
+`mongodb/laravel-mongodb <https://github.com/mongodb/laravel-mongodb>`__
+repository.
 
-1. Visit the `MongoDB JIRA issue tracker <https://jira.mongodb.org/>`__ and click the
-   `signup link <https://account.mongodb.com/account/register>`__.
-   Create an account, and then log in to JIRA.
-#. Navigate to the `PHPORM <https://jira.mongodb.org/browse/PHPORM>`__ project.
-#. Click :guilabel:`Create` to create a ticket. Please provide as much
-   information as possible about the issue or request in the ticket.
+To report a bug or request a new feature, perform the following steps:
 
-.. note::
-
-   Bug reports in the PHPORM JIRA project are publicly viewable.
+1. Visit the `GitHub issues <https://github.com/mongodb/laravel-mongodb/issues>`__
+   section and search for any similar issues or bugs.
+#. If you find a matching issue, you can reply to the thread to report that
+   you have a similar issue or request.
+#. If you cannot find a matching issue, click the :guilabel:`New issue`
+   button and select the appropriate issue type.
+#. If you selected "Bug report" or "Feature request", please provide as much
+   information as possible about the issue. Click the
+   :guilabel:`Submit new issue` button to complete your submission.
 
 If you’ve identified a security vulnerability in any official MongoDB
 product, please report it according to the instructions found in the
 :manual:`Create a Vulnerability Report page </tutorial/create-a-vulnerability-report>`.
-Note: All reported issues in JIRA project are public.
 
 For general questions and support requests, please use one of MongoDB's
 :manual:`Technical Support </support/>` channels.
