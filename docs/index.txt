@@ -84,6 +84,9 @@ please report it in the GitHub issues section of the
 `mongodb/laravel-mongodb <https://github.com/mongodb/laravel-mongodb>`__
 repository.
 
+If you want to contribute code, see the following section for instructions on
+submitting pull requests.
+
 To report a bug or request a new feature, perform the following steps:
 
 1. Visit the `GitHub issues <https://github.com/mongodb/laravel-mongodb/issues>`__
