@@ -13,7 +13,7 @@ It is compatible with Laravel 10.x. For older versions of Laravel, please refer 
 [old versions](https://github.com/mongodb/laravel-mongodb/tree/3.9#laravel-version-compatibility).
 
 ## Documentation
-Reference documentation for the Laravel MongoDB package is available [here](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/).
+Read the reference documentation for the Laravel MongoDB package [on MongoDB website](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/).
 
 ## Reporting Issues
 
