@@ -37,8 +37,8 @@ Laravel Eloquent and Query Builder syntax to work with your MongoDB data.
    later.
 
    To find versions of the package compatible with older versions of Laravel,
-   see the `Laravel Version Compatibility <https://github.com/mongodb/laravel-mongodb/tree/3.9#laravel-version-compatibility>`__
-   table.
+   see `Laravel Version Compatibility <https://github.com/mongodb/laravel-mongodb/blob/3.9/README.md#installation>`__
+   on GitHub.
 
 Getting Started
 ---------------
