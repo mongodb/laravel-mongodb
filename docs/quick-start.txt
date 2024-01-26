@@ -27,7 +27,7 @@ database from a command line-based development environment.
 .. tip::
 
    If you prefer to use GitHub Codespaces or Docker as your development
-   environment, see the code repository linked in the
+   environment, see the linked code repository in the
    `How to Build a Laravel + MongoDB Back End Service <https://www.mongodb.com/developer/languages/php/laravel-mongodb-tutorial/>`__
    MongoDB Developer Center tutorial.
 
