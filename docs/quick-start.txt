@@ -22,11 +22,18 @@ Overview
 
 This guide shows you how to create and configure Laravel web application
 and the {+odm-long+} to use a MongoDB cluster hosted on MongoDB Atlas as the
-database.
+database from a command line-based development environment.
 
-If you prefer to connect to MongoDB by using the PHP Library, see
-`Connecting to MongoDB <https://www.mongodb.com/docs/php-library/current/tutorial/connecting/>`__
-in the PHP Library documentation.
+.. tip::
+
+   If you prefer to use GitHub Codespaces or Docker as your development
+   environment, see the code repository linked in the
+   `How to Build a Laravel + MongoDB Back End Service <https://www.mongodb.com/developer/languages/php/laravel-mongodb-tutorial/>`__
+   MongoDB Developer Center tutorial.
+
+   If you prefer to connect to MongoDB by using the PHP Library driver without
+   Laravel, see `Connecting to MongoDB <https://www.mongodb.com/docs/php-library/current/tutorial/connecting/>`__
+   in the PHP Library documentation.
 
 {+odm-short+} extends the Laravel Eloquent and Query Builder syntax to
 store and retrieve data from MongoDB.
