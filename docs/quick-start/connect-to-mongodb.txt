@@ -1,0 +1,36 @@
+.. _laravelt-quick-start-connect-to-mongodb:
+
+==================
+Connect to MongoDB
+==================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: test connection, runnable, code example
+
+.. procedure::
+   :style: connected
+
+   .. step:: Create your Laravel Application
+
+   .. step:: Assign the Connection String
+
+      Replace the ``<connection string>`` placeholder with the connection
+      string that you copied from the :ref:`laravel-quick-start-connection-string`
+      step of this guide.
+
+   .. step:: Run your Laravel Application
+
+      TODO
+
+After you complete these steps, you have a Laravel web application that
+uses the {+odm-long+} to connect to your MongoDB deployment, run a query on
+the sample data, and render a retrieved result.
+
+.. include:: /includes/quick-start/troubleshoot.rst
+
+.. button:: Next Steps
+   :uri: /quick-start/next-steps/

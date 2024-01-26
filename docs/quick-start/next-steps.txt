@@ -1,0 +1,26 @@
+.. _laravel-quick-start-next-steps:
+
+==========
+Next Steps
+==========
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: learn more
+
+Congratulations on completing the quick start tutorial!
+
+In this tutorial, you created a Laravel web application that performs
+read and write database operations on a MongoDB deployment hostted on
+MongoDB Atlas.
+
+Learn more about {+odm-short+} features from the following resources:
+
+- :ref:`laravel-eloquent-models`: use Eloquent model classes to work
+  with MongoDB data.
+
+- :ref:`laravel-query-builder`: use the query builder to specify MongoDB
+  queries and aggregations.

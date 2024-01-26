@@ -1,0 +1,34 @@
+.. _laravel-quick-start-download-and-install:
+
+====================
+Download and Install
+=====================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example
+
+Prerequisites
+-------------
+
+This guide assumes that you have the following software installed:
+
+- `PHP <https://www.php.net/downloads>`__
+- `Composer <https://getcomposer.org/>`__
+
+.. procedure::
+   :style: connected
+
+   .. step:: Install the MongoDB PHP Driver
+
+   .. step:: Install Laravel
+
+   .. step:: Add the {+odm-short+} Dependency
+
+.. include:: /includes/quick-start/troubleshoot.rst
+
+.. button:: Create a Deployment
+   :uri: /quick-start/create-a-deployment/

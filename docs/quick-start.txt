@@ -1,0 +1,51 @@
+.. _laravel-quickstart:
+
+===========
+Quick Start
+===========
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+Overview
+--------
+
+This guide shows you how to create and configure Laravel web application
+and the {+odm-long+} to use a MongoDB cluster hosted on MongoDB Atlas as the
+database.
+
+If you prefer to connect to MongoDB by using the PHP Library, see
+`Connecting to MongoDB <https://www.mongodb.com/docs/php-library/current/tutorial/connecting/>`__
+in the PHP Library documentation.
+
+{+odm-short+} extends the Laravel Eloquent and Query Builder syntax to
+store and retrieve data from MongoDB.
+
+MongoDB Atlas is a fully managed cloud database service that hosts your
+MongoDB deployments. You can create your own free (no credit card
+required) MongoDB Atlas deployment by following the steps in this guide.
+
+Follow the steps in this guide to create a sample Laravel web application
+that connects to a MongoDB deployment.
+
+.. button:: Next: Download and Install
+   :uri: /quick-start/download-and-install/
+
+.. toctree::
+
+   /quick-start/download-and-install/
+   /quick-start/create-a-deployment/
+   /quick-start/create-a-connection-string/
+   /quick-start/connect-to-mongodb/
+   /quick-start/next-steps/
+
