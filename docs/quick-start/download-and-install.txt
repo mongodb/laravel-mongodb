@@ -2,7 +2,7 @@
 
 ====================
 Download and Install
-=====================
+====================
 
 .. facet::
    :name: genre
@@ -19,14 +19,23 @@ This guide assumes that you have the following software installed:
 - `PHP <https://www.php.net/downloads>`__
 - `Composer <https://getcomposer.org/>`__
 
+Complete the following steps to download and install the components you
+need to create a Laravel web application and set up {+odm-short+}.
+
 .. procedure::
    :style: connected
 
    .. step:: Install the MongoDB PHP Driver
 
+      TODO
+
    .. step:: Install Laravel
 
+      TODO
+
    .. step:: Add the {+odm-short+} Dependency
+
+      TODO
 
 .. include:: /includes/quick-start/troubleshoot.rst
 

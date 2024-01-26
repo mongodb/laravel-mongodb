@@ -14,7 +14,7 @@ Next Steps
 Congratulations on completing the quick start tutorial!
 
 In this tutorial, you created a Laravel web application that performs
-read and write database operations on a MongoDB deployment hostted on
+read and write database operations on a MongoDB deployment hosted on
 MongoDB Atlas.
 
 Learn more about {+odm-short+} features from the following resources:

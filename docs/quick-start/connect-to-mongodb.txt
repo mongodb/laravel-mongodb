@@ -14,17 +14,32 @@ Connect to MongoDB
 .. procedure::
    :style: connected
 
-   .. step:: Create your Laravel Application
-
-   .. step:: Assign the Connection String
+   .. step:: Set the Connection String in the Database Configuration
 
       Replace the ``<connection string>`` placeholder with the connection
       string that you copied from the :ref:`laravel-quick-start-connection-string`
       step of this guide.
 
-   .. step:: Run your Laravel Application
+   .. step:: Create a Sample Model, View, and Controller
 
       TODO
+
+   .. step:: Create a Sample API Controller to Store Data
+
+      TODO:
+
+   .. step:: Start your Laravel Application
+
+      TODO
+
+   .. step:: Write Sample Data to the API Controller
+
+      TODO
+
+   .. step:: Render Database Data in a View
+
+      TODO
+
 
 After you complete these steps, you have a Laravel web application that
 uses the {+odm-long+} to connect to your MongoDB deployment, run a query on
