@@ -14,11 +14,11 @@ Download and Install
 Prerequisites
 -------------
 
-- This guide assumes that you have the following software installed:
+To create the quick start application, you need the following software
+installed in your development environment:
 
-  - `PHP <https://www.php.net/downloads>`__
-  - `Composer <https://getcomposer.org/doc/00-intro.md>`__
-
+- `PHP <https://www.php.net/downloads>`__
+- `Composer <https://getcomposer.org/doc/00-intro.md>`__
 - A terminal app and shell. For MacOS users, use Terminal or a similar app.
   For Windows users, use PowerShell.
 
@@ -31,11 +31,10 @@ to a Laravel web application.
 .. procedure::
    :style: connected
 
-   .. step:: Install the {+php-extension}
+   .. step:: Install the {+php-extension+}
 
       The {+odm-short+} requires the {+php-extension+} to manage MongoDB
       connections and commands.
-
 
       Use the ``pecl`` extension manager to install {+php-extension+}.
 
@@ -49,6 +48,7 @@ to a Laravel web application.
       following output:
 
       .. code-block:: none
+         :copyable: false
 
          install ok: channel://pecl.php.net/mongodb-<version number>
          Extension mongodb enabled in php.ini
@@ -67,13 +67,14 @@ to a Laravel web application.
       following output:
 
       .. code-block:: none
+         :copyable: false
 
          Using version ^<version number> for laravel/installer
 
-   .. step:: Create a Laravel App
+   .. step:: Create a Laravel Application
 
          Run the following command to generate a new Laravel web application
-         called {+quickstart-app-name+}:
+         called ``{+quickstart-app-name+}``:
 
          .. code-block:: bash
 
@@ -83,6 +84,7 @@ to a Laravel web application.
          following output:
 
          .. code-block:: none
+            :copyable: false
 
             INFO  Application ready in [{+quickstart-app-name+}]. You can start your local development using:
 
@@ -108,7 +110,7 @@ to a Laravel web application.
          composer require "mongodb/laravel-mongodb"
 
       When the installation successfully completes, you should see the
-      following in your ``composer.json`` file:
+      following in your ``composer.json`` file in the application directory:
 
       .. code-block:: json
 
