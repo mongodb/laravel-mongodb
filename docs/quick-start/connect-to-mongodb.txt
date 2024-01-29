@@ -1,4 +1,4 @@
-.. _laravelt-quick-start-connect-to-mongodb:
+.. _laravel-quick-start-connect-to-mongodb:
 
 ==================
 Connect to MongoDB
@@ -21,6 +21,10 @@ Connect to MongoDB
       step of this guide.
 
    .. step:: Create a Sample Model, View, and Controller
+
+      .. code-block:: bash
+
+         php artisan make:model User -mcr
 
       TODO
 
