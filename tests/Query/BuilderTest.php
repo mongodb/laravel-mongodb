@@ -1127,6 +1127,31 @@ class BuilderTest extends TestCase
             ],
             fn (Builder $builder) => $builder->groupBy('foo'),
         ];
+
+        yield 'sub-query' => [
+            [
+                'find' => [
+                    [
+                        'filters' => [
+                            '$elemMatch' => [
+                                '$and' => [
+                                    ['search_by' => 'by search'],
+                                    ['value' => 'foo'],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder->where(
+                'filters',
+                'elemMatch',
+                function (Builder $elemMatchQuery): void {
+                    $elemMatchQuery->where([ 'search_by' => 'by search', 'value' => 'foo' ]);
+                },
+            ),
+        ];
     }
 
     /** @dataProvider provideExceptions */
