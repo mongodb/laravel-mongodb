@@ -19,6 +19,7 @@ Laravel MongoDB
    /user-authentication
    /queues
    /transactions
+   /compatibility
    /upgrade
 
 Introduction
@@ -35,10 +36,6 @@ Laravel Eloquent and Query Builder syntax to work with your MongoDB data.
    formerly named ``jenssegers/mongodb``. This package is now owned and
    maintained by MongoDB, Inc. and is compatible with Laravel 10.x and
    later.
-
-   To find versions of the package compatible with older versions of Laravel,
-   see `Laravel Version Compatibility <https://github.com/mongodb/laravel-mongodb/blob/3.9/README.md#installation>`__
-   on GitHub.
 
 Getting Started
 ---------------
@@ -57,6 +54,12 @@ see the following content:
 - :ref:`laravel-user-authentication`
 - :ref:`laravel-queues`
 - :ref:`laravel-transactions`
+
+Compatibility
+-------------
+
+To learn more about which versions of the {+odm-long+} and Laravel are
+compatible, see the :ref:`laravel-compatibility` section.
 
 Upgrade Versions
 ----------------
