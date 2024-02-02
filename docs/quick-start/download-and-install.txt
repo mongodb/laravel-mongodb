@@ -57,11 +57,15 @@ to a Laravel web application.
    .. step:: Install Laravel
 
       Ensure that the version of Laravel you install is compatible with the
-      version of {+odm-short+}.
+      version of {+odm-short+}. 
+
+
+      Then run the following command to install
+      Laravel.
 
       .. code-block:: bash
 
-         composer global require "laravel/installer"
+         composer global require laravel/installer
 
       When the installation successfully completes, you should see the
       following output:
@@ -107,18 +111,18 @@ to a Laravel web application.
 
       .. code-block:: bash
 
-         composer require "mongodb/laravel-mongodb"
+         composer require mongodb/laravel-mongodb:^{+package-version+}
 
       When the installation successfully completes, you should see the
-      following in your ``composer.json`` file in the application directory:
+      following line in the ``require`` object in your ``composer.json`` file:
 
       .. code-block:: json
+         :copyable: false
 
-         {
-             "require": {
-                 "mongodb/laravel-mongodb": "^{+package-version+}"
-             }
-         }
+         "mongodb/laravel-mongodb": "^{+package-version+}"
+
+      After you complete these steps, you should have a new Laravel project
+      with the {+odm-short+} dependencies installed.
 
 .. include:: /includes/quick-start/troubleshoot.rst
 

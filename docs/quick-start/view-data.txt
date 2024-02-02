@@ -1,0 +1,174 @@
+.. laravel-quick-start-view-data:
+
+========================
+View Sample MongoDB Data
+========================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: test connection, runnable, code example
+
+Follow the steps in this section to create the 
+To create a webpage that displays data from your database, you need
+to create a model, view, and controller.
+
+.. procedure::
+   :style: connected
+
+   .. step:: Create a Sample Model and Controller
+
+      Create a model called ``Movie`` to access data from the sample ``movies``
+      collection in your MongoDB databse. You can create the model with a
+      corresponding resource controller by running the following command:
+
+      .. code-block:: bash
+
+         php artisan make:model Movie -cr
+
+     When the command successfully completes, you should see the following
+     output:
+
+     .. code-block:: none
+        :copyable: false
+
+        INFO  Model [app/Models/Movie.php] created successfully.
+
+        INFO  Controller [app/Http/Controllers/MovieController.php] created successfully.
+
+   .. step:: Edit the Model to use {+odm-short+}
+
+      Navigate to the ``app/Models`` directory and open the ``Movie.php`` file.
+      Edit the following information in the file:
+
+      - Replace the ``Illuminate\Database\Eloquent\Model`` import with ``MongoDB\Laravel\Eloquent\Model``
+      - Specify ``mongodb`` in the ``$connection`` field
+  
+      
+      Your ``Movie.php`` file should contain the following code:
+      
+       .. code-block:: php
+
+          <?php
+
+            namespace App\Models;
+
+            use MongoDB\Laravel\Eloquent\Model;
+
+            class Movie extends Model
+            {
+               protected $connection = 'mongodb';
+            }
+
+   .. step:: Add a Controller Function
+      
+      Navigate to the ``app/Http/Controllers`` directory and open the 
+      ``MovieController.php`` file. Replace the ``show()`` function
+      with the following code to retrieve results that match a
+      database query and render it in the view:
+      
+      .. code-block:: php
+
+         public function show()
+         {
+           return view('browse_movies', [
+             'movies' => Movie::where('runtime', '<', 60)
+                ->where('imdb.rating', '>', 8.5)
+                ->orderBy('imdb.rating', 'desc')
+                ->take(10)
+                ->get()
+           ]);
+         }
+
+   .. step:: Add a Web Route
+
+      Navigate to the ``routes`` directory and open the ``web.php`` file.
+      Add an import for the ``MovieController`` and a route called
+     ``browse_movies`` as shown in the following code:
+     
+      .. code-block:: php
+
+         <?php 
+         
+         // ...
+         use App\Http\Controllers\MovieController;
+
+         Route::get('/browse_movies/', [MovieController::class, 'show']);
+
+   .. step:: Generate a View
+
+      Navigate to the application root directory and run the following
+      command to create a view that displays movie data:
+
+      .. code-block:: bash
+
+         php artisan make:view browse_movies
+
+      .. code-block:: none
+         :copyable: false
+
+         INFO  View [resources/views/browse_movie.blade.php] created successfully.
+
+     Navigate to the ``resources/views`` directory and open the
+     ``browse_movie.blade.php`` file. Replace the contents with the
+     following code:
+
+     .. code-block:: bash
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+           <title>Browse Movies</title>
+        </head>
+        <body>
+        <h2>Movies</h2>
+
+        @forelse ($movies as $movie)
+          <p>
+            Title: {{ $movie->title }}<br>
+            Year: {{ $movie->year }}<br>
+            Runtime: {{ $movie->runtime }}<br>
+            IMDB Rating: {{ $movie->imdb['rating'] }}<br>
+            IMDB Votes: {{ $movie->imdb['votes'] }}<br>
+            Plot: {{ $movie->plot }}<br>
+          </p>
+        @empty
+            <p>No results</p>
+        @endforelse
+
+        </body>
+        </html>
+
+  .. step:: Start your Laravel Application
+
+      Navigate to the application root directory and run the following command
+      to start your PHP built-in web server:
+      
+      .. code-block:: bash
+      
+         php artisan serve
+
+      If the server starts successfully, you should see the following message:
+
+      .. code-block: none
+
+         INFO  Server running on [http://127.0.0.1:8000].
+
+         Press Ctrl+C to stop the server
+
+.. step:: View the Movie Data
+
+   Open http://127.0.0.1:8000/browse_movies in your web browser. If it runs
+   successuflly, you should see a list of movies and details about each of them.
+
+   .. tip::
+
+      You can run the ``php artisan route:list`` command from your application
+      root directory to view a list of available routes.
+
+.. include:: /includes/quick-start/troubleshoot.rst
+
+.. button:: Write Data
+   :uri: /quick-start/write-data/

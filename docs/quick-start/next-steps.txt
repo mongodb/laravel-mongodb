@@ -13,8 +13,13 @@ Next Steps
 
 Congratulations on completing the quick start tutorial!
 
-In this tutorial, you created a Laravel web application that performs
-read and write database operations on a MongoDB deployment hosted on
+After you complete these steps, you have a Laravel web application that
+uses the {+odm-long+} to connect to your MongoDB deployment, run a query on
+the sample data, and render a retrieved result.
+
+In this tutorial, you created a Laravel web application that uses the
+{+odm-long+} to connect to your MongoDB deployment, render the result
+of a query, and write data to a MongoDB deployment hosted on
 MongoDB Atlas.
 
 Learn more about {+odm-short+} features from the following resources:

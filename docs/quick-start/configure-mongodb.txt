@@ -1,0 +1,47 @@
+.. _laravel-quick-start-connect-to-mongodb:
+
+==================================
+Confingure Your MongoDB Connection
+==================================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: test connection, runnable, code example
+
+.. procedure::
+   :style: connected
+
+   .. step:: Set the Connection String in the Database Configuration
+
+      Navigate to the ``config`` directory from your application root directory.
+      Open the ``database.php`` file and set the default database connection
+      to ``mongodb`` as shown in the following line:
+
+      .. code-block:: php
+
+         'default' => env('DB_CONNECTION', 'mongodb'),
+
+      Add the following highlighted ``mongodb`` entry to the ``connections`` array
+      in the same file. Replace the ``<connection string>`` placeholder with the
+      connection string that you copied from the :ref:`laravel-quick-start-connection-string`
+      step of this guide.
+
+      .. code-block:: php
+         :emphasize-lines: 2-6
+
+         'connections' => [
+           'mongodb' => [
+             'driver' => 'mongodb',
+             'dsn' => env('DB_URI', '<connection string>'),
+             'database' => 'sample_mflix',
+           ],
+
+         // ...
+
+.. include:: /includes/quick-start/troubleshoot.rst
+
+.. button:: View Sample MongoDB Data
+   :uri: /quick-start/view-data/

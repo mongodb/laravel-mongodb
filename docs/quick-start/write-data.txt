@@ -1,0 +1,69 @@
+.. _laravel-quick-start-write-data:
+
+=================================
+Post an API Request to Write Data
+=================================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: test connection, runnable, code example
+
+.. procedure::
+   :style: connected
+
+   .. step:: Add a Function to Store Data
+
+      Navigate to your MovieController.php
+
+      .. code-block:: php
+
+         public function store(Request $request)
+         {
+             $data = $request->all();
+             $movie = new Movie();
+             $movie->fill($data);
+             $movie->save();
+         }
+
+   .. step:: Add a Route for the Controller Function
+
+      In routes/api.php
+
+      .. code-block:: php
+
+         use App\Http\Controllers\MovieController;
+
+         // ...
+
+         Route::resource('movies', MovieController::class)->only([
+           'store'
+         ]);
+
+
+   .. step:: Update the Movie Model
+      
+      Add the movie detail fields to the ``$fillable`` array
+      of the ``Movie`` model.
+      Update the ``Movie`` class at ``app/Models/Movie.php``
+
+      
+      .. code-block:: php
+         :emphasize-lines: 4
+
+         class Movie extends Model
+         {
+            protected $connection = 'mongodb';
+            protected $fillable = ['title', 'year', 'runtime', 'imdb', 'plot'];
+         }
+
+   .. step:: Post a Request to the API
+
+      TODO:
+
+.. include:: /includes/quick-start/troubleshoot.rst
+
+.. button:: Next Steps
+   :uri: /quick-start/next-steps/
