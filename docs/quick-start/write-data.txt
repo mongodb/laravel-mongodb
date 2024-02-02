@@ -14,9 +14,11 @@ Post an API Request to Write Data
 .. procedure::
    :style: connected
 
-   .. step:: Add a Function to Store Data
+   .. step:: Create the Function to Store Data
 
-      Navigate to your MovieController.php
+      Add logic to save the data from a request in the ``MovieController.php``
+      file in the ``app/Http/Controllers/`` directory. Replace the existing
+      placeholder ``store()`` method with the following code:
 
       .. code-block:: php
 
@@ -30,7 +32,8 @@ Post an API Request to Write Data
 
    .. step:: Add a Route for the Controller Function
 
-      In routes/api.php
+      Add the API route to map to the ``store()`` method in the
+      ``routes/api.php`` file.
 
       .. code-block:: php
 
@@ -44,12 +47,12 @@ Post an API Request to Write Data
 
 
    .. step:: Update the Movie Model
-      
+
       Add the movie detail fields to the ``$fillable`` array
       of the ``Movie`` model.
       Update the ``Movie`` class at ``app/Models/Movie.php``
 
-      
+
       .. code-block:: php
          :emphasize-lines: 4
 
@@ -61,7 +64,32 @@ Post an API Request to Write Data
 
    .. step:: Post a Request to the API
 
-      TODO:
+      Create a file called ``movie.json`` and insert the following data:
+
+      .. code-block:: json
+
+         {
+           "title": "The Laravel MongoDB Quick Start",
+           "year": 2024,
+           "runtime": 15,
+           "imdb": {
+             "rating": 9.5,
+             "votes": 1
+           },
+           "plot": "This movie entry was created by running through the Laravel MongoDB Quick Start tutorial."
+         }
+
+      Send the payload to the endpoint by running the following command in your shell:
+
+      .. code-block:: bash
+
+         curl -H "Content-Type: application/json" --data @movie.json http://localhost:8000/api/movies
+
+   .. step:: View the Data
+
+      Open ``http://127.0.0.1:8000/browse_movies`` in your web browser to view 
+      the movie information that you submitted. It should appear at the top of 
+      the results.
 
 .. include:: /includes/quick-start/troubleshoot.rst
 

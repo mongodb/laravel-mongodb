@@ -11,10 +11,6 @@ View Sample MongoDB Data
 .. meta::
    :keywords: test connection, runnable, code example
 
-Follow the steps in this section to create the 
-To create a webpage that displays data from your database, you need
-to create a model, view, and controller.
-
 .. procedure::
    :style: connected
 
@@ -45,10 +41,10 @@ to create a model, view, and controller.
 
       - Replace the ``Illuminate\Database\Eloquent\Model`` import with ``MongoDB\Laravel\Eloquent\Model``
       - Specify ``mongodb`` in the ``$connection`` field
-  
-      
+
+
       Your ``Movie.php`` file should contain the following code:
-      
+
        .. code-block:: php
 
           <?php
@@ -63,12 +59,12 @@ to create a model, view, and controller.
             }
 
    .. step:: Add a Controller Function
-      
-      Navigate to the ``app/Http/Controllers`` directory and open the 
+
+      Navigate to the ``app/Http/Controllers`` directory and open the
       ``MovieController.php`` file. Replace the ``show()`` function
       with the following code to retrieve results that match a
       database query and render it in the view:
-      
+
       .. code-block:: php
 
          public function show()
@@ -87,11 +83,11 @@ to create a model, view, and controller.
       Navigate to the ``routes`` directory and open the ``web.php`` file.
       Add an import for the ``MovieController`` and a route called
      ``browse_movies`` as shown in the following code:
-     
+
       .. code-block:: php
 
-         <?php 
-         
+         <?php
+
          // ...
          use App\Http\Controllers\MovieController;
 
@@ -145,9 +141,9 @@ to create a model, view, and controller.
 
       Navigate to the application root directory and run the following command
       to start your PHP built-in web server:
-      
+
       .. code-block:: bash
-      
+
          php artisan serve
 
       If the server starts successfully, you should see the following message:
