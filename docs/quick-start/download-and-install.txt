@@ -35,24 +35,8 @@ to a Laravel web application.
 
       The {+odm-short+} requires the {+php-extension+} to manage MongoDB
       connections and commands.
-
-      Use the ``pecl`` extension manager to install {+php-extension+}.
-
-      .. code-block:: bash
-
-         pecl install mongodb
-
-      You can use select the default responses when prompted.
-
-      When the installation successfully completes, you should see the
-      following output:
-
-      .. code-block:: none
-         :copyable: false
-
-         install ok: channel://pecl.php.net/mongodb-<version number>
-         Extension mongodb enabled in php.ini
-
+      Follow the `Installing the MongoDB PHP Driver with PECL <https://www.php.net/manual/en/mongodb.installation.pecl.php>`__
+      guide to install {+php-extension+}.
 
    .. step:: Install Laravel
 

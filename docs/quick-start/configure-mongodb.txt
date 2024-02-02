@@ -1,8 +1,8 @@
 .. _laravel-quick-start-connect-to-mongodb:
 
-==================================
-Confingure Your MongoDB Connection
-==================================
+=================================
+Configure Your MongoDB Connection
+=================================
 
 .. facet::
    :name: genre
@@ -41,7 +41,18 @@ Confingure Your MongoDB Connection
 
          // ...
 
+
+      .. step:: Add the Laravel MongoDB Provider
+
+
+         From the ``config`` directory, open the ``app.php`` file and add
+         the following entry into the ``providers`` array:
+
+         .. code-block::
+
+            MongoDB\Laravel\MongoDBServiceProvider::class,
+
 .. include:: /includes/quick-start/troubleshoot.rst
 
-.. button:: View Sample MongoDB Data
+.. button:: Next: View Sample MongoDB Data
    :uri: /quick-start/view-data/

@@ -57,5 +57,5 @@ contains your database username and password.
 
 .. include:: /includes/quick-start/troubleshoot.rst
 
-.. button:: Next: Connect to MongoDB
-   :uri: /quick-start/connect-to-mongodb/
+.. button:: Next: Configure Your MongoDB Connection
+   :uri: /quick-start/configure-mongodb/

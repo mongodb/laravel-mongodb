@@ -153,22 +153,23 @@ to create a model, view, and controller.
       If the server starts successfully, you should see the following message:
 
       .. code-block: none
+         :copyable: false
 
          INFO  Server running on [http://127.0.0.1:8000].
 
          Press Ctrl+C to stop the server
 
-.. step:: View the Movie Data
+  .. step:: View the Movie Data
 
-   Open http://127.0.0.1:8000/browse_movies in your web browser. If it runs
-   successuflly, you should see a list of movies and details about each of them.
+     Open http://127.0.0.1:8000/browse_movies in your web browser. If it runs
+     successuflly, you should see a list of movies and details about each of them.
 
-   .. tip::
+     .. tip::
 
-      You can run the ``php artisan route:list`` command from your application
-      root directory to view a list of available routes.
+        You can run the ``php artisan route:list`` command from your application
+        root directory to view a list of available routes.
 
-.. include:: /includes/quick-start/troubleshoot.rst
+  .. include:: /includes/quick-start/troubleshoot.rst
 
-.. button:: Write Data
-   :uri: /quick-start/write-data/
+  .. button:: Next: Write Data
+     :uri: /quick-start/write-data/
