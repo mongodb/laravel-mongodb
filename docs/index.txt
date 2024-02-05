@@ -14,6 +14,7 @@ Laravel MongoDB
    :maxdepth: 1
 
    /install
+   /retrieve
    /eloquent-models
    /query-builder
    /user-authentication
@@ -52,6 +53,7 @@ Fundamentals
 To learn how to perform the following tasks by using the {+odm-short+},
 see the following content:
 
+- :ref:`laravel-retrieve`
 - :ref:`laravel-eloquent-models`
 - :ref:`laravel-query-builder`
 - :ref:`laravel-user-authentication`

@@ -1,0 +1,248 @@
+.. _laravel-retrieve:
+
+==============
+Retrieve Data
+==============
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: find one, find many, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+In this guide, you can learn how to retrieve data from your MongoDB
+collections using **find operations**. Find operations are commands that
+retrieve documents from the server.
+
+This guide includes the following sections:
+
+- :ref:`laravel-find-setup`
+- :ref:`laravel-find-all`
+- :ref:`laravel-find-one`
+- :ref:`laravel-modify-find`
+- :ref:`laravel-addtl-info`
+
+.. _laravel-find-setup:
+
+Prerequisites
+-------------
+
+.. TODO: link to Quick Start once it's published
+
+The examples in this guide use the ``movies`` collection in the ``sample_mflix`` database,
+which is included in the MongoDB Atlas sample dataset. For instructions on loading the sample
+dataset into your database, see the Quick Start or the :atlas:`Get Started with Atlas Guide
+</getting-started/#atlas-getting-started>`.
+
+Before running the examples in this guide, you must create the following classes:
+
+- Model class to represent the ``movies`` collection
+- Controller class to store and run the find operations
+- View class to display the results of the find operations
+
+For instructions on creating these classes, see the Quick Start.
+
+.. _laravel-find-all:
+
+Find All Documents
+------------------
+
+To retrieve all documents in a collection, use the ``all()`` method.
+
+To retrieve all documents that match a set of criteria, use the ``where()`` method.
+Pass the field name and value for which you are querying as parameters to ``where()``.
+
+You can also pass a comparison operator as the ``where()`` method's second parameter,
+such as the ``>`` operator. If you do not include a comparison operator parameter,
+the find operation queries for documents whose field values are equal to the specified
+value.
+
+To apply multiple sets of criteria to the find operation, you can chain a series
+of ``where()`` methods together.
+
+Find All Documents in a Collection Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example retrieves all documents in the ``movies`` collection:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+
+      $movies = Movie::all();
+
+   .. output::
+      :language: none
+      :visible: false
+
+      // Results are truncated
+
+      ...
+
+      Title: Dracula
+      Year: 1931
+      Runtime: 85
+      IMDB Rating: 7.6
+      IMDB Votes: 30184
+      Plot: The ancient vampire Count Dracula arrives in England and begins to prey
+      upon the virtuous young Mina.
+
+      ...
+
+Find All Matching Documents Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This example chains two ``where()`` methods together to retrieve documents that meet
+the following criteria:
+
+- ``year`` field has a value of ``2010``
+- ``imdb.rating`` nested field has a value greater than ``8.5``
+
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+
+      $movies =
+         Movie::where('year', 2010)
+            ->where('imdb.rating', '>', 8.5)
+            ->get();
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: Inception
+      Year: 2010
+      Runtime: 148
+      IMDB Rating: 8.8
+      IMDB Votes: 1294646
+      Plot: A thief who steals corporate secrets through use of dream-sharing
+      technology is given the inverse task of planting an idea into the mind of a CEO.
+
+      Title: Senna
+      Year: 2010
+      Runtime: 106
+      IMDB Rating: 8.6
+      IMDB Votes: 41904
+      Plot: A documentary on Brazilian Formula One racing driver Ayrton Senna, who won the
+      F1 world championship three times before his death at age 34.
+
+.. _laravel-find-one:
+
+Find One Document
+-----------------
+
+To retrieve one document that matches a set of criteria, use the ``where()`` method
+followed by the ``first()`` method. 
+
+For more information about the ``where()`` method and its parameters, see the
+:ref:`laravel-find-all` section of this guide.
+
+Find One Example
+~~~~~~~~~~~~~~~~
+
+The following example returns one document in which the value of the ``title`` field
+is ``"The Parent Trap"``:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+
+      $movie =
+         Movie::where('title', 'The Parent Trap')
+            ->first();
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: The Parent Trap
+      Year: 1961
+      Runtime: 129
+      IMDB Rating: 7.1
+      IMDB Votes: 12768
+      Plot: Teenage twin girls swap places and scheme to reunite their divorced parents.
+
+.. _laravel-modify-find:
+
+Modify Behavior
+---------------
+
+You can modify the results of a find operation by chaining the following methods
+to ``where()``:
+
+- ``skip()``: sets the number of documents to skip when returning results
+- ``take()``: sets the total number of documents to return
+
+The ``skip()`` and ``take()`` methods both accept an integer value as a parameter.
+
+Modify Find Operation Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example queries for documents in which the ``year`` value is ``1999``.
+The operation skips the first ``2`` matching documents and outputs a total of ``3``
+documents:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+
+      $movies =
+         Movie::where('year', 1999)
+            ->skip(2)
+            ->take(3)
+            ->get();
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: Three Kings
+      Year: 1999
+      Runtime: 114
+      IMDB Rating: 7.2
+      IMDB Votes: 130677
+      Plot: In the aftermath of the Persian Gulf War, 4 soldiers set out to steal gold
+      that was stolen from Kuwait, but they discover people who desperately need their help.
+
+      Title: Toy Story 2
+      Year: 1999
+      Runtime: 92
+      IMDB Rating: 7.9
+      IMDB Votes: 346655
+      Plot: When Woody is stolen by a toy collector, Buzz and his friends vow to rescue him,
+      but Woody finds the idea of immortality in a museum tempting.
+
+      Title: Beowulf
+      Year: 1999
+      Runtime: 95
+      IMDB Rating: 4
+      IMDB Votes: 9296
+      Plot: A sci-fi update of the famous 6th Century poem. In a beseiged land, Beowulf must
+      battle against the hideous creature Grendel and his vengeance seeking mother.
+
+.. _laravel-addtl-info:
+
+Additional Information
+----------------------
+
+To learn more about the methods mentioned in this guide, see the 
+:ref:`laravel-query-builder` page.
