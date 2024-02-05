@@ -16,9 +16,10 @@ View Sample MongoDB Data
 
    .. step:: Create a Sample Model and Controller
 
-      Create a model called ``Movie`` to access data from the sample ``movies``
-      collection in your MongoDB databse. You can create the model with a
-      corresponding resource controller by running the following command:
+      Create a model called ``Movie`` to represent data from the sample
+      ``movies`` collection in your MongoDB database. You can create the
+      model with a corresponding resource controller by running the
+      following command:
 
       .. code-block:: bash
 
@@ -36,12 +37,11 @@ View Sample MongoDB Data
 
    .. step:: Edit the Model to use {+odm-short+}
 
-      Navigate to the ``app/Models`` directory and open the ``Movie.php`` file.
-      Edit the following information in the file:
+      Open the ``Movie.php`` model in your ``app/Models`` directory and
+      make the following edits:
 
       - Replace the ``Illuminate\Database\Eloquent\Model`` import with ``MongoDB\Laravel\Eloquent\Model``
       - Specify ``mongodb`` in the ``$connection`` field
-
 
       Your ``Movie.php`` file should contain the following code:
 
@@ -55,14 +55,14 @@ View Sample MongoDB Data
 
             class Movie extends Model
             {
-               protected $connection = 'mongodb';
+                protected $connection = 'mongodb';
             }
 
    .. step:: Add a Controller Function
 
-      Navigate to the ``app/Http/Controllers`` directory and open the
-      ``MovieController.php`` file. Replace the ``show()`` function
-      with the following code to retrieve results that match a
+      Open the ``MovieController.php`` file in your ``app/Http/Controllers``
+      directory. Replace the ``show()`` function with the
+      following code to retrieve results that match a
       database query and render it in the view:
 
       .. code-block:: php
@@ -80,7 +80,7 @@ View Sample MongoDB Data
 
    .. step:: Add a Web Route
 
-      Navigate to the ``routes`` directory and open the ``web.php`` file.
+      Open the ``web.php`` file in the ``routes`` directory.
       Add an import for the ``MovieController`` and a route called
      ``browse_movies`` as shown in the following code:
 
@@ -95,8 +95,8 @@ View Sample MongoDB Data
 
    .. step:: Generate a View
 
-      Navigate to the application root directory and run the following
-      command to create a view that displays movie data:
+      Run the following command from the application root directory
+      to create a view that displays movie data:
 
       .. code-block:: bash
 
@@ -107,9 +107,8 @@ View Sample MongoDB Data
 
          INFO  View [resources/views/browse_movie.blade.php] created successfully.
 
-     Navigate to the ``resources/views`` directory and open the
-     ``browse_movie.blade.php`` file. Replace the contents with the
-     following code:
+     Open the ``browse_movie.blade.php`` view file in the ``resources/views``
+     directory. Replace the contents with the following code:
 
      .. code-block:: bash
 
@@ -139,7 +138,7 @@ View Sample MongoDB Data
 
   .. step:: Start your Laravel Application
 
-      Navigate to the application root directory and run the following command
+      Run the following command from the application root directory
       to start your PHP built-in web server:
 
       .. code-block:: bash
@@ -158,7 +157,7 @@ View Sample MongoDB Data
   .. step:: View the Movie Data
 
      Open http://127.0.0.1:8000/browse_movies in your web browser. If it runs
-     successuflly, you should see a list of movies and details about each of them.
+     successfully, you should see a list of movies and details about each of them.
 
      .. tip::
 

@@ -45,6 +45,12 @@ required) MongoDB Atlas deployment by following the steps in this guide.
 Follow the steps in this guide to create a sample Laravel web application
 that connects to a MongoDB deployment.
 
+.. tip::
+
+   You can download the complete web application project by cloning the
+   `laravel-quickstart <https://github.com/mongodb-university/laravel-quickstart>`__
+   GitHub repository.
+
 .. button:: Next: Download and Install
    :uri: /quick-start/download-and-install/
 

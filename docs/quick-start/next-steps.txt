@@ -22,6 +22,10 @@ In this tutorial, you created a Laravel web application that uses the
 of a query, and write data to a MongoDB deployment hosted on
 MongoDB Atlas.
 
+You can download the web application project by cloning the
+`laravel-quickstart <https://github.com/mongodb-university/laravel-quickstart>`__
+GitHub repository.
+
 Learn more about {+odm-short+} features from the following resources:
 
 - :ref:`laravel-eloquent-models`: use Eloquent model classes to work

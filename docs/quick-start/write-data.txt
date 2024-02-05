@@ -49,9 +49,9 @@ Post an API Request to Write Data
    .. step:: Update the Movie Model
 
       Add the movie detail fields to the ``$fillable`` array
-      of the ``Movie`` model.
-      Update the ``Movie`` class at ``app/Models/Movie.php``
-
+      of the ``Movie`` model. After adding them, the ``Movie``
+      class at ``app/Models/Movie.php`` should contain the
+      following code:
 
       .. code-block:: php
          :emphasize-lines: 4
