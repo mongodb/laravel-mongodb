@@ -14,7 +14,7 @@ Download and Install
 Prerequisites
 -------------
 
-To create the quick start application, you need the following software
+To create the Quick Start application, you need the following software
 installed in your development environment:
 
 - `PHP <https://www.php.net/downloads>`__
@@ -51,7 +51,7 @@ to a Laravel web application.
 
          composer global require laravel/installer
 
-      When the installation successfully completes, you should see the
+      When the installation completes, you should see the
       following output:
 
       .. code-block:: none
@@ -68,7 +68,7 @@ to a Laravel web application.
 
             laravel new {+quickstart-app-name+}
 
-         When the installation successfully completes, you should see the
+         When the installation completes, you should see the
          following output:
 
          .. code-block:: none
@@ -97,7 +97,7 @@ to a Laravel web application.
 
          composer require mongodb/laravel-mongodb:^{+package-version+}
 
-      When the installation successfully completes, you should see the
+      When the installation completes, you should see the
       following line in the ``require`` object in your ``composer.json`` file:
 
       .. code-block:: json

@@ -25,7 +25,7 @@ View Sample MongoDB Data
 
          php artisan make:model Movie -cr
 
-      When the command successfully completes, you should see the following
+      When the command completes, you should see the following
       output:
 
       .. code-block:: none

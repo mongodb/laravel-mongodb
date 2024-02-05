@@ -48,7 +48,7 @@ manual.
 
    .. step:: Update the Placeholders
 
-      Paste this connection string into a a file in your preferred text editor
+      Paste this connection string into a file in your preferred text editor
       and replace the ``<username>`` and ``<password>`` placeholders with
       your database user's username and password.
 
