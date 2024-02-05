@@ -46,13 +46,7 @@ Quick Start
 
 Learn how to create and configure a Laravel web application to connect to
 MongoDB hosted on MongoDB Atlas by using {+odm-short+} and begin working
-with data in the :ref:`laravel-quck-start` section.
-
-Getting Started
----------------
-
-Learn how to install and configure your app to MongoDB by using the
-{+odm-short+} in the :ref:`laravel-install` section.
+with data in the :ref:`laravel-quick-start` section.
 
 Fundamentals
 ------------
@@ -78,7 +72,7 @@ Reporting Issues
 We are lucky to have a vibrant PHP community that includes users of varying
 experience with MongoDB PHP Library and {+odm-short+}. To get support for
 general questions, search or post in the
-:community-forum:`MongoDB Community Forums <>`__.
+:community-forum:`MongoDB Community Forums <>`.
 
 To learn more about MongoDB support options, see the
 `Technical Support <https://www.mongodb.org/about/support>`__ page.

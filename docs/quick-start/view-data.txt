@@ -45,18 +45,18 @@ View Sample MongoDB Data
 
       Your ``Movie.php`` file should contain the following code:
 
-       .. code-block:: php
+      .. code-block:: php
 
-          <?php
+         <?php
 
-            namespace App\Models;
+           namespace App\Models;
 
-            use MongoDB\Laravel\Eloquent\Model;
+           use MongoDB\Laravel\Eloquent\Model;
 
-            class Movie extends Model
-            {
-                protected $connection = 'mongodb';
-            }
+           class Movie extends Model
+           {
+               protected $connection = 'mongodb';
+           }
 
    .. step:: Add a Controller Function
 
@@ -82,7 +82,7 @@ View Sample MongoDB Data
 
       Open the ``web.php`` file in the ``routes`` directory.
       Add an import for the ``MovieController`` and a route called
-     ``browse_movies`` as shown in the following code:
+      ``browse_movies`` as shown in the following code:
 
       .. code-block:: php
 
@@ -107,36 +107,36 @@ View Sample MongoDB Data
 
          INFO  View [resources/views/browse_movie.blade.php] created successfully.
 
-     Open the ``browse_movie.blade.php`` view file in the ``resources/views``
-     directory. Replace the contents with the following code:
+      Open the ``browse_movie.blade.php`` view file in the ``resources/views``
+      directory. Replace the contents with the following code:
 
-     .. code-block:: bash
+      .. code-block:: bash
 
-        <!DOCTYPE html>
-        <html>
-        <head>
-           <title>Browse Movies</title>
-        </head>
-        <body>
-        <h2>Movies</h2>
+         <!DOCTYPE html>
+         <html>
+         <head>
+            <title>Browse Movies</title>
+         </head>
+         <body>
+         <h2>Movies</h2>
 
-        @forelse ($movies as $movie)
-          <p>
-            Title: {{ $movie->title }}<br>
-            Year: {{ $movie->year }}<br>
-            Runtime: {{ $movie->runtime }}<br>
-            IMDB Rating: {{ $movie->imdb['rating'] }}<br>
-            IMDB Votes: {{ $movie->imdb['votes'] }}<br>
-            Plot: {{ $movie->plot }}<br>
-          </p>
-        @empty
-            <p>No results</p>
-        @endforelse
+         @forelse ($movies as $movie)
+           <p>
+             Title: {{ $movie->title }}<br>
+             Year: {{ $movie->year }}<br>
+             Runtime: {{ $movie->runtime }}<br>
+             IMDB Rating: {{ $movie->imdb['rating'] }}<br>
+             IMDB Votes: {{ $movie->imdb['votes'] }}<br>
+             Plot: {{ $movie->plot }}<br>
+           </p>
+         @empty
+             <p>No results</p>
+         @endforelse
 
-        </body>
-        </html>
+         </body>
+         </html>
 
-  .. step:: Start your Laravel Application
+   .. step:: Start your Laravel Application
 
       Run the following command from the application root directory
       to start your PHP built-in web server:
@@ -154,17 +154,17 @@ View Sample MongoDB Data
 
          Press Ctrl+C to stop the server
 
-  .. step:: View the Movie Data
+   .. step:: View the Movie Data
 
-     Open http://127.0.0.1:8000/browse_movies in your web browser. If it runs
-     successfully, you should see a list of movies and details about each of them.
+      Open http://127.0.0.1:8000/browse_movies in your web browser. If it runs
+      successfully, you should see a list of movies and details about each of them.
 
-     .. tip::
+      .. tip::
 
-        You can run the ``php artisan route:list`` command from your application
-        root directory to view a list of available routes.
+         You can run the ``php artisan route:list`` command from your application
+         root directory to view a list of available routes.
 
-  .. include:: /includes/quick-start/troubleshoot.rst
+.. include:: /includes/quick-start/troubleshoot.rst
 
-  .. button:: Next: Write Data
-     :uri: /quick-start/write-data/
+.. button:: Next: Write Data
+   :uri: /quick-start/write-data/
