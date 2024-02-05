@@ -14,7 +14,6 @@ Laravel MongoDB
    :maxdepth: 1
 
    /quick-start
-   /install
    /eloquent-models
    /query-builder
    /user-authentication
@@ -44,9 +43,9 @@ Laravel Eloquent and Query Builder syntax to work with your MongoDB data.
 Quick Start
 -----------
 
-Learn how to create and configure a Laravel web application to connect to
-MongoDB hosted on MongoDB Atlas by using {+odm-short+} and begin working
-with data in the :ref:`laravel-quick-start` section.
+Learn how to add {+odm-short+} to a Laravel web application, connect to
+MongoDB hosted on MongoDB Atlas, and begin working with data in the
+:ref:`laravel-quick-start` section.
 
 Fundamentals
 ------------

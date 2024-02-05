@@ -1,4 +1,4 @@
-.. _laravel-quickstart:
+.. _laravel-quick-start:
 
 ===========
 Quick Start

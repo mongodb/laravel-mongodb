@@ -25,15 +25,15 @@ View Sample MongoDB Data
 
          php artisan make:model Movie -cr
 
-     When the command successfully completes, you should see the following
-     output:
+      When the command successfully completes, you should see the following
+      output:
 
-     .. code-block:: none
-        :copyable: false
+      .. code-block:: none
+         :copyable: false
 
-        INFO  Model [app/Models/Movie.php] created successfully.
+         INFO  Model [app/Models/Movie.php] created successfully.
 
-        INFO  Controller [app/Http/Controllers/MovieController.php] created successfully.
+         INFO  Controller [app/Http/Controllers/MovieController.php] created successfully.
 
    .. step:: Edit the Model to use {+odm-short+}
 
