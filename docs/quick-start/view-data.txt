@@ -24,8 +24,7 @@ View MongoDB Data
 
          php artisan make:model Movie -cr
 
-      When the command completes, you should see the following
-      output:
+      When the command completes, it outputs the following message:
 
       .. code-block:: none
          :copyable: false
@@ -42,7 +41,7 @@ View MongoDB Data
       - Replace the ``Illuminate\Database\Eloquent\Model`` import with ``MongoDB\Laravel\Eloquent\Model``
       - Specify ``mongodb`` in the ``$connection`` field
 
-      Your ``Movie.php`` file should contain the following code:
+      The edited ``Movie.php`` file contains the following code:
 
       .. code-block:: php
 
@@ -101,7 +100,7 @@ View MongoDB Data
 
          php artisan make:view browse_movies
 
-      After you run the command, you should see the following message:
+      After you run the command, it outputs the following message:
 
       .. code-block:: none
          :copyable: false
@@ -147,7 +146,7 @@ View MongoDB Data
 
          php artisan serve
 
-      After the server starts, you should see the following message:
+      After the server starts, it outputs the following message:
 
       .. code-block:: none
          :copyable: false
@@ -159,7 +158,7 @@ View MongoDB Data
    .. step:: View the Movie Data
 
       Open the URL http://127.0.0.1:8000/browse_movies in your web browser.
-      You should see a list of movies and details about each of them.
+      The page shows a list of movies and details about each of them.
 
       .. tip::
 

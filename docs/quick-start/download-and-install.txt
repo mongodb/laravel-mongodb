@@ -50,7 +50,7 @@ to a Laravel web application.
 
          composer global require laravel/installer
 
-      When the installation completes, you should see the following output:
+      When the installation completes, the command outputs the following message:
 
       .. code-block:: none
          :copyable: false
@@ -66,7 +66,7 @@ to a Laravel web application.
 
          laravel new {+quickstart-app-name+}
 
-      When the installation completes, you should see the following output:
+      When the installation completes, the command outputs the following message:
 
       .. code-block:: none
          :copyable: false
@@ -102,8 +102,8 @@ to a Laravel web application.
 
          composer require mongodb/laravel-mongodb:^{+package-version+}
 
-      When the installation completes, you should see the
-      following line in the ``require`` object in your ``composer.json`` file:
+      When the installation completes, verify that the ``composer.json`` file
+      includes the following line in the ``require`` object:
 
       .. code-block:: json
          :copyable: false
