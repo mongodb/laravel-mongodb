@@ -1,8 +1,8 @@
 .. laravel-quick-start-view-data:
 
-========================
-View Sample MongoDB Data
-========================
+=================
+View MongoDB Data
+=================
 
 .. facet::
    :name: genre

@@ -22,9 +22,8 @@ your MongoDB database in the cloud.
       After you create your database user, save that user's
       username and password to a safe location for use in an upcoming step.
 
-After you complete these steps, you have a new free tier MongoDB
-deployment on Atlas, database user credentials, and sample data loaded
-into your database.
+After completing these steps, you have a new free tier MongoDB deployment on
+Atlas, database user credentials, and sample data loaded into your database.
 
 .. note::
 

@@ -1,8 +1,8 @@
 .. _laravel-quick-start-write-data:
 
-=================================
-Post an API Request to Write Data
-=================================
+=====================
+Write Data to MongoDB
+=====================
 
 .. facet::
    :name: genre
@@ -30,10 +30,10 @@ Post an API Request to Write Data
              $movie->save();
          }
 
-   .. step:: Add a Route for the Controller Function
+   .. step:: Add an API Route that Calls the Controller Function
 
-      Add the following API route to map to the ``store()`` method and the
-      corresponding import in the ``routes/api.php`` file:
+      Import the controller and add an API route that calls the ``store()``
+      method in the ``routes/api.php`` file:
 
       .. code-block:: php
 
@@ -49,7 +49,7 @@ Post an API Request to Write Data
    .. step:: Update the Model Fields
 
       Update the ``Movie`` model in the ``app/Models`` directory to
-      specify fields that the ``fill()`` method populates as shown in the
+      specify the fields that the ``fill()`` method populates as shown in the
       following code:
 
       .. code-block:: php
@@ -78,7 +78,8 @@ Post an API Request to Write Data
            "plot": "This movie entry was created by running through the Laravel MongoDB Quick Start tutorial."
          }
 
-      Send the payload to the endpoint by running the following command in your shell:
+      Send the JSON payload to the endpoint as a ``POST`` request by running
+      the following command in your shell:
 
       .. code-block:: bash
 

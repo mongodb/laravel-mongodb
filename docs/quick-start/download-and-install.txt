@@ -50,8 +50,7 @@ to a Laravel web application.
 
          composer global require laravel/installer
 
-      When the installation completes, you should see the
-      following output:
+      When the installation completes, you should see the following output:
 
       .. code-block:: none
          :copyable: false
@@ -67,8 +66,7 @@ to a Laravel web application.
 
          laravel new {+quickstart-app-name+}
 
-      When the installation completes, you should see the
-      following output:
+      When the installation completes, you should see the following output:
 
       .. code-block:: none
          :copyable: false
@@ -83,7 +81,7 @@ to a Laravel web application.
    .. step:: Add a Laravel Application Encryption Key
 
       Run the following command to add the Laravel application encryption
-      key which is required to encrypt cookies:
+      key, which is required to encrypt cookies:
 
       .. code-block:: bash
 
@@ -112,8 +110,8 @@ to a Laravel web application.
 
          "mongodb/laravel-mongodb": "^{+package-version+}"
 
-      After you complete these steps, you should have a new Laravel project
-      with the {+odm-short+} dependencies installed.
+      After completing these steps, you have a new Laravel project with the
+      {+odm-short+} dependencies installed.
 
 .. include:: /includes/quick-start/troubleshoot.rst
 
