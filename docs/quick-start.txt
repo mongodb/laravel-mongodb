@@ -20,8 +20,8 @@ Quick Start
 Overview
 --------
 
-This guide shows you how to add {+odm-long+} to a new Laravel web application,
-connect to a MongoDB cluster hosted on MongoDB Atlas, and how to perform
+This guide shows you how to add the {+odm-long+} to a new Laravel web
+application, connect to a MongoDB cluster hosted on MongoDB Atlas, and perform
 read and write operations on the data.
 
 .. tip::
@@ -32,7 +32,7 @@ read and write operations on the data.
    MongoDB Developer Center tutorial.
 
    You can learn how to set up a local Laravel development environment
-   and perform CRUD operations by taking the
+   and perform CRUD operations by viewing the
    :mdbu-course:`Getting Started with Laravel and MongoDB </getting-started-with-laravel-and-mongodb>`
    MongoDB University Learning Byte.
 

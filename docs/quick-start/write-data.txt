@@ -14,11 +14,11 @@ Post an API Request to Write Data
 .. procedure::
    :style: connected
 
-   .. step:: Create the Function to Store Data
+   .. step:: Create the Function to Insert Data
 
-      Add logic to save the data from a request in the ``MovieController.php``
-      file in the ``app/Http/Controllers/`` directory. Replace the existing
-      placeholder ``store()`` method with the following code:
+      Update the ``store()`` method ``MovieController.php``, located in
+      the ``app/Http/Controllers`` directory to insert request data
+      into the database as shown in the following code:
 
       .. code-block:: php
 
@@ -32,8 +32,8 @@ Post an API Request to Write Data
 
    .. step:: Add a Route for the Controller Function
 
-      Add the API route to map to the ``store()`` method in the
-      ``routes/api.php`` file.
+      Add the following API route to map to the ``store()`` method and the
+      corresponding import in the ``routes/api.php`` file:
 
       .. code-block:: php
 
@@ -46,11 +46,10 @@ Post an API Request to Write Data
          ]);
 
 
-   .. step:: Update the Movie Model
+   .. step:: Update the Model Fields
 
-      Add the movie detail fields to the ``$fillable`` array
-      of the ``Movie`` model. After adding them, the ``Movie``
-      class at ``app/Models/Movie.php`` should contain the
+      Update the ``Movie`` model in the ``app/Models`` directory to
+      specify fields that the ``fill()`` method populates as shown in the
       following code:
 
       .. code-block:: php
@@ -87,8 +86,8 @@ Post an API Request to Write Data
 
    .. step:: View the Data
 
-      Open ``http://127.0.0.1:8000/browse_movies`` in your web browser to view 
-      the movie information that you submitted. It should appear at the top of 
+      Open ``http://127.0.0.1:8000/browse_movies`` in your web browser to view
+      the movie information that you submitted. It should appear at the top of
       the results.
 
 .. include:: /includes/quick-start/troubleshoot.rst

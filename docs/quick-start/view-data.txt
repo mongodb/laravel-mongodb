@@ -14,12 +14,11 @@ View Sample MongoDB Data
 .. procedure::
    :style: connected
 
-   .. step:: Create a Sample Model and Controller
+   .. step:: Create a Model and Controller
 
       Create a model called ``Movie`` to represent data from the sample
-      ``movies`` collection in your MongoDB database. You can create the
-      model with a corresponding resource controller by running the
-      following command:
+      ``movies`` collection in your MongoDB database and the corresponding
+      resource controller by running the following command:
 
       .. code-block:: bash
 
@@ -110,9 +109,10 @@ View Sample MongoDB Data
          INFO  View [resources/views/browse_movie.blade.php] created successfully.
 
       Open the ``browse_movie.blade.php`` view file in the ``resources/views``
-      directory. Replace the contents with the following code:
+      directory. Replace the contents with the following code and save the
+      changes:
 
-      .. code-block:: bash
+      .. code-block:: html
 
          <!DOCTYPE html>
          <html>

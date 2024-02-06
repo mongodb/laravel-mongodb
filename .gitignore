@@ -9,3 +9,4 @@ composer.phar
 phpunit.xml
 phpstan.neon
 /.cache/
+docs/.vscode

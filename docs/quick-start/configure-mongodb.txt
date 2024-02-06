@@ -41,14 +41,14 @@ Configure Your MongoDB Connection
 
          // ...
 
-      .. step:: Add the Laravel MongoDB Provider
+   .. step:: Add the Laravel MongoDB Provider
 
-         Open the ``app.php`` in the ``config`` directory and
-         add the following entry into the ``providers`` array:
+      Open the ``app.php`` file in the ``config`` directory and
+      add the following entry into the ``providers`` array:
 
-         .. code-block::
+      .. code-block::
 
-            MongoDB\Laravel\MongoDBServiceProvider::class,
+         MongoDB\Laravel\MongoDBServiceProvider::class,
 
 .. include:: /includes/quick-start/troubleshoot.rst
 
