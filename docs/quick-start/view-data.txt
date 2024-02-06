@@ -49,14 +49,14 @@ View Sample MongoDB Data
 
          <?php
 
-           namespace App\Models;
+         namespace App\Models;
 
-           use MongoDB\Laravel\Eloquent\Model;
+         use MongoDB\Laravel\Eloquent\Model;
 
-           class Movie extends Model
-           {
-               protected $connection = 'mongodb';
-           }
+         class Movie extends Model
+         {
+             protected $connection = 'mongodb';
+         }
 
    .. step:: Add a Controller Function
 
@@ -102,6 +102,8 @@ View Sample MongoDB Data
 
          php artisan make:view browse_movies
 
+      After you run the command, you should see the following message:
+
       .. code-block:: none
          :copyable: false
 
@@ -145,9 +147,9 @@ View Sample MongoDB Data
 
          php artisan serve
 
-      If the server starts successfully, you should see the following message:
+      After the server starts, you should see the following message:
 
-      .. code-block: none
+      .. code-block:: none
          :copyable: false
 
          INFO  Server running on [http://127.0.0.1:8000].
@@ -156,8 +158,8 @@ View Sample MongoDB Data
 
    .. step:: View the Movie Data
 
-      Open http://127.0.0.1:8000/browse_movies in your web browser. If it runs
-      successfully, you should see a list of movies and details about each of them.
+      Open the URL http://127.0.0.1:8000/browse_movies in your web browser.
+      You should see a list of movies and details about each of them.
 
       .. tip::
 
