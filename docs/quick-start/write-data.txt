@@ -14,11 +14,11 @@ Write Data to MongoDB
 .. procedure::
    :style: connected
 
-   .. step:: Create the Function to Insert Data
+   .. step:: Implement the function to insert data
 
-      Update the ``store()`` method ``MovieController.php``, located in
-      the ``app/Http/Controllers`` directory to insert request data
-      into the database as shown in the following code:
+      Replace the ``store()`` method in the ``MovieController.php`` file,
+      located in the ``app/Http/Controllers`` directory with the following
+      code:
 
       .. code-block:: php
 
@@ -30,7 +30,7 @@ Write Data to MongoDB
              $movie->save();
          }
 
-   .. step:: Add an API Route that Calls the Controller Function
+   .. step:: Add an API route that calls the controller function
 
       Import the controller and add an API route that calls the ``store()``
       method in the ``routes/api.php`` file:
@@ -46,7 +46,7 @@ Write Data to MongoDB
          ]);
 
 
-   .. step:: Update the Model Fields
+   .. step:: Update the model fields
 
       Update the ``Movie`` model in the ``app/Models`` directory to
       specify the fields that the ``fill()`` method populates as shown in the
@@ -61,7 +61,7 @@ Write Data to MongoDB
             protected $fillable = ['title', 'year', 'runtime', 'imdb', 'plot'];
          }
 
-   .. step:: Post a Request to the API
+   .. step:: Post a request to the API
 
       Create a file called ``movie.json`` and insert the following data:
 
@@ -85,7 +85,7 @@ Write Data to MongoDB
 
          curl -H "Content-Type: application/json" --data @movie.json http://localhost:8000/api/movies
 
-   .. step:: View the Data
+   .. step:: View the data
 
       Open http://127.0.0.1:8000/browse_movies in your web browser to view
       the movie information that you submitted. The inserted movie appears at
