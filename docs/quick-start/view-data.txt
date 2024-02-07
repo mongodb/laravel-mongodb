@@ -14,7 +14,7 @@ View MongoDB Data
 .. procedure::
    :style: connected
 
-   .. step:: Create a Model and Controller
+   .. step:: Create a model and controller
 
       Create a model called ``Movie`` to represent data from the sample
       ``movies`` collection in your MongoDB database and the corresponding
@@ -33,7 +33,7 @@ View MongoDB Data
 
          INFO  Controller [app/Http/Controllers/MovieController.php] created successfully.
 
-   .. step:: Edit the Model to use {+odm-short+}
+   .. step:: Edit the model to use {+odm-short+}
 
       Open the ``Movie.php`` model in your ``app/Models`` directory and
       make the following edits:
@@ -56,7 +56,7 @@ View MongoDB Data
              protected $connection = 'mongodb';
          }
 
-   .. step:: Add a Controller Function
+   .. step:: Add a controller function
 
       Open the ``MovieController.php`` file in your ``app/Http/Controllers``
       directory. Replace the ``show()`` function with the
@@ -76,7 +76,7 @@ View MongoDB Data
            ]);
          }
 
-   .. step:: Add a Web Route
+   .. step:: Add a web route
 
       Open the ``web.php`` file in the ``routes`` directory.
       Add an import for the ``MovieController`` and a route called
@@ -91,7 +91,7 @@ View MongoDB Data
 
          Route::get('/browse_movies/', [MovieController::class, 'show']);
 
-   .. step:: Generate a View
+   .. step:: Generate a view
 
       Run the following command from the application root directory
       to create a view that displays movie data:
@@ -137,7 +137,7 @@ View MongoDB Data
          </body>
          </html>
 
-   .. step:: Start your Laravel Application
+   .. step:: Start your Laravel application
 
       Run the following command from the application root directory
       to start your PHP built-in web server:
@@ -155,7 +155,7 @@ View MongoDB Data
 
          Press Ctrl+C to stop the server
 
-   .. step:: View the Movie Data
+   .. step:: View the movie data
 
       Open the URL http://127.0.0.1:8000/browse_movies in your web browser.
       The page shows a list of movies and details about each of them.

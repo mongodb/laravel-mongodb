@@ -57,7 +57,7 @@ to a Laravel web application.
 
          Using version ^<version number> for laravel/installer
 
-   .. step:: Create a Laravel Application
+   .. step:: Create a Laravel application
 
       Run the following command to generate a new Laravel web application
       called ``{+quickstart-app-name+}``:
@@ -78,7 +78,13 @@ to a Laravel web application.
 
          New to Laravel? Check out our bootcamp and documentation. Build something amazing!
 
-   .. step:: Add a Laravel Application Encryption Key
+   .. step:: Add a Laravel application encryption key
+
+      Navigate to the application directory you created in the previous step:
+
+      .. code-block:: bash
+
+         cd {+quickstart-app-name+}
 
       Run the following command to add the Laravel application encryption
       key, which is required to encrypt cookies:
@@ -87,13 +93,7 @@ to a Laravel web application.
 
          php artisan key:generate
 
-   .. step:: Add {+odm-short+} to the Dependencies
-
-      Navigate to the application directory you created in the previous step:
-
-      .. code-block:: bash
-
-         cd {+quickstart-app-name+}
+   .. step:: Add {+odm-short+} to the dependencies
 
       Run the following command to add the {+odm-short+} dependency to
       your application:

@@ -87,7 +87,7 @@ Write Data to MongoDB
 
    .. step:: View the Data
 
-      Open ``http://127.0.0.1:8000/browse_movies`` in your web browser to view
+      Open http://127.0.0.1:8000/browse_movies in your web browser to view
       the movie information that you submitted. The inserted movie appears at
       the top of the results.
 

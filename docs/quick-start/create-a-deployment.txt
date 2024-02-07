@@ -11,13 +11,13 @@ your MongoDB database in the cloud.
 .. procedure::
    :style: connected
 
-   .. step:: Create a Free MongoDB deployment on Atlas
+   .. step:: Create a free MongoDB deployment on Atlas
 
       Complete the :atlas:`Get Started with Atlas </getting-started?tck=docs_driver_laravel>`
       guide to set up a new Atlas account and load sample data into a new free
       tier MongoDB deployment.
 
-   .. step:: Save your Credentials
+   .. step:: Save your credentials
 
       After you create your database user, save that user's
       username and password to a safe location for use in an upcoming step.
@@ -25,12 +25,7 @@ your MongoDB database in the cloud.
 After completing these steps, you have a new free tier MongoDB deployment on
 Atlas, database user credentials, and sample data loaded into your database.
 
-.. note::
-
-   If you run into issues on this step, ask for help in the
-   :community-forum:`MongoDB Community Forums <>`
-   or submit feedback by using the :guilabel:`Share Feedback`
-   tab on the right or bottom right side of this page.
+.. include:: /includes/quick-start/troubleshoot.rst
 
 .. button:: Next: Create a Connection String
    :uri: /quick-start/create-a-connection-string/

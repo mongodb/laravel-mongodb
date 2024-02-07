@@ -20,7 +20,7 @@ manual.
 .. procedure::
    :style: connected
 
-   .. step:: Find your MongoDB Atlas Connection String
+   .. step:: Find your MongoDB Atlas connection string
 
       To retrieve your connection string for the deployment that
       you created in the :ref:`previous step <laravel-quick-start-create-deployment>`,
@@ -31,7 +31,7 @@ manual.
       .. figure:: /includes/figures/atlas_connection_select_cluster.png
          :alt: The connect button in the clusters section of the Atlas UI
 
-      Proceed to the :guilabel:`Connect your application` section and select
+      Proceed to the :guilabel:`Connect your application` section. Select
       "PHP" from the :guilabel:`Driver` selection menu and the version
       that best matches the version you installed from the :guilabel:`Version`
       selection menu.
@@ -41,12 +41,12 @@ manual.
       Deselect the :guilabel:`Include full driver code example` option to view
       the connection string.
 
-   .. step:: Copy your Connection String
+   .. step:: Copy your connection string
 
       Click the button on the right of the connection string to copy it
       to your clipboard.
 
-   .. step:: Update the Placeholders
+   .. step:: Update the placeholders
 
       Paste this connection string into a file in your preferred text editor
       and replace the ``<username>`` and ``<password>`` placeholders with

@@ -14,7 +14,7 @@ Configure Your MongoDB Connection
 .. procedure::
    :style: connected
 
-   .. step:: Set the Connection String in the Database Configuration
+   .. step:: Set the connection string in the database configuration
 
       Open the ``database.php`` file in the ``config`` directory and
       set the default database connection to ``mongodb`` as shown
@@ -41,7 +41,7 @@ Configure Your MongoDB Connection
 
          // ...
 
-   .. step:: Add the Laravel MongoDB Provider
+   .. step:: Add the Laravel MongoDB provider
 
       Open the ``app.php`` file in the ``config`` directory and
       add the following entry into the ``providers`` array:
