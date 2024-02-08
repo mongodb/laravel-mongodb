@@ -1,0 +1,119 @@
+.. _laravel-quick-start-download-and-install:
+
+====================
+Download and Install
+====================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example
+
+Prerequisites
+-------------
+
+To create the Quick Start application, you need the following software
+installed in your development environment:
+
+- `PHP <https://www.php.net/downloads>`__
+- `Composer <https://getcomposer.org/doc/00-intro.md>`__
+- A terminal app and shell. For MacOS users, use Terminal or a similar app.
+  For Windows users, use PowerShell.
+
+Download and Install the Dependencies
+-------------------------------------
+
+Complete the following steps to install and add the {+odm-short+} dependencies
+to a Laravel web application.
+
+.. procedure::
+   :style: connected
+
+   .. step:: Install the {+php-extension+}
+
+      {+odm-short+} requires the {+php-extension+} to manage MongoDB
+      connections and commands.
+      Follow the `Installing the MongoDB PHP Driver with PECL <https://www.php.net/manual/en/mongodb.installation.pecl.php>`__
+      guide to install the {+php-extension+}.
+
+   .. step:: Install Laravel
+
+      Ensure that the version of Laravel you install is compatible with the
+      version of {+odm-short+}. To learn which versions are compatible,
+      see the :ref:`laravel-compatibility` page.
+
+      Run the following command to install Laravel:
+
+      .. code-block:: bash
+
+         composer global require laravel/installer
+
+      When the installation completes, the command outputs the following message:
+
+      .. code-block:: none
+         :copyable: false
+
+         Using version ^<version number> for laravel/installer
+
+   .. step:: Create a Laravel application
+
+      Run the following command to generate a new Laravel web application
+      called ``{+quickstart-app-name+}``:
+
+      .. code-block:: bash
+
+         laravel new {+quickstart-app-name+}
+
+      When the installation completes, the command outputs the following message:
+
+      .. code-block:: none
+         :copyable: false
+
+         INFO  Application ready in [{+quickstart-app-name+}]. You can start your local development using:
+
+         ➜ cd {+quickstart-app-name+}
+         ➜ php artisan serve
+
+         New to Laravel? Check out our bootcamp and documentation. Build something amazing!
+
+   .. step:: Add a Laravel application encryption key
+
+      Navigate to the application directory you created in the previous step:
+
+      .. code-block:: bash
+
+         cd {+quickstart-app-name+}
+
+      Run the following command to add the Laravel application encryption
+      key, which is required to encrypt cookies:
+
+      .. code-block:: bash
+
+         php artisan key:generate
+
+   .. step:: Add {+odm-short+} to the dependencies
+
+      Run the following command to add the {+odm-short+} dependency to
+      your application:
+
+      .. code-block:: bash
+
+         composer require mongodb/laravel-mongodb:^{+package-version+}
+
+      When the installation completes, verify that the ``composer.json`` file
+      includes the following line in the ``require`` object:
+
+      .. code-block:: json
+         :copyable: false
+
+         "mongodb/laravel-mongodb": "^{+package-version+}"
+
+      After completing these steps, you have a new Laravel project with the
+      {+odm-short+} dependencies installed.
+
+.. include:: /includes/quick-start/troubleshoot.rst
+
+.. button:: Create a MongoDB Deployment
+   :uri: /quick-start/create-a-deployment/

@@ -13,7 +13,7 @@ Laravel MongoDB
    :titlesonly:
    :maxdepth: 1
 
-   /install
+   /quick-start
    /eloquent-models
    /query-builder
    /user-authentication
@@ -37,11 +37,12 @@ Laravel Eloquent and Query Builder syntax to work with your MongoDB data.
    maintained by MongoDB, Inc. and is compatible with Laravel 10.x and
    later.
 
-Getting Started
----------------
+Quick Start
+-----------
 
-Learn how to install and configure your app to MongoDB by using the
-{+odm-short+} in the :ref:`laravel-install` section.
+Learn how to add {+odm-short+} to a Laravel web application, connect to
+MongoDB hosted on MongoDB Atlas, and begin working with data in the
+:ref:`laravel-quick-start` section.
 
 Fundamentals
 ------------
@@ -73,7 +74,7 @@ Reporting Issues
 We are lucky to have a vibrant PHP community that includes users of varying
 experience with MongoDB PHP Library and {+odm-short+}. To get support for
 general questions, search or post in the
-`MongoDB Community Forums <https://www.mongodb.com/community/forums/>`__.
+:community-forum:`MongoDB Community Forums <>`.
 
 To learn more about MongoDB support options, see the
 `Technical Support <https://www.mongodb.org/about/support>`__ page.

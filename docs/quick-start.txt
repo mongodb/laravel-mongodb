@@ -1,0 +1,71 @@
+.. _laravel-quick-start:
+
+===========
+Quick Start
+===========
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+Overview
+--------
+
+This guide shows you how to add the {+odm-long+} to a new Laravel web
+application, connect to a MongoDB cluster hosted on MongoDB Atlas, and perform
+read and write operations on the data.
+
+.. tip::
+
+   If you prefer to set up your development environment in GitHub Codespaces
+   or Docker, see the linked code repository in the
+   `How to Build a Laravel + MongoDB Back End Service <https://www.mongodb.com/developer/languages/php/laravel-mongodb-tutorial/>`__
+   MongoDB Developer Center tutorial.
+
+   You can learn how to set up a local Laravel development environment
+   and perform CRUD operations by viewing the
+   :mdbu-course:`Getting Started with Laravel and MongoDB </getting-started-with-laravel-and-mongodb>`
+   MongoDB University Learning Byte.
+
+   If you prefer to connect to MongoDB by using the PHP Library driver without
+   Laravel, see `Connecting to MongoDB <https://www.mongodb.com/docs/php-library/current/tutorial/connecting/>`__
+   in the PHP Library documentation.
+
+{+odm-short+} extends the Laravel Eloquent and Query Builder syntax to
+store and retrieve data from MongoDB.
+
+MongoDB Atlas is a fully managed cloud database service that hosts your
+MongoDB deployments. You can create your own free (no credit card
+required) MongoDB Atlas deployment by following the steps in this guide.
+
+Follow the steps in this guide to create a sample Laravel web application
+that connects to a MongoDB deployment.
+
+.. tip::
+
+   You can download the complete web application project by cloning the
+   `laravel-quickstart <https://github.com/mongodb-university/laravel-quickstart>`__
+   GitHub repository.
+
+.. button:: Next: Download and Install
+   :uri: /quick-start/download-and-install/
+
+.. toctree::
+
+   /quick-start/download-and-install/
+   /quick-start/create-a-deployment/
+   /quick-start/create-a-connection-string/
+   /quick-start/configure-mongodb/
+   /quick-start/view-data/
+   /quick-start/write-data/
+   /quick-start/next-steps/
+
