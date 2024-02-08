@@ -1,0 +1,30 @@
+.. _laravel-quick-start-next-steps:
+
+==========
+Next Steps
+==========
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: learn more
+
+Congratulations on completing the Quick Start tutorial!
+
+After you complete these steps, you have a Laravel web application that
+uses the {+odm-long+} to connect to your MongoDB deployment, run a query on
+the sample data, and render a retrieved result.
+
+You can download the web application project by cloning the
+`laravel-quickstart <https://github.com/mongodb-university/laravel-quickstart>`__
+GitHub repository.
+
+Learn more about {+odm-short+} features from the following resources:
+
+- :ref:`laravel-eloquent-models`: use Eloquent model classes to work
+  with MongoDB data.
+
+- :ref:`laravel-query-builder`: use the query builder to specify MongoDB
+  queries and aggregations.
