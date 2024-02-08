@@ -13,7 +13,7 @@ Query Builder
 
 The database driver plugs right into the original query builder.
 
-When using MongoDB connections, you will be able to build fluent queries to 
+When using MongoDB connections, you will be able to build fluent queries to
 perform database operations.
 
 For your convenience, there is a ``collection`` alias for ``table`` and
@@ -85,7 +85,7 @@ Available operations
 
    $users = User::whereIn('age', [16, 18, 20])->get();
 
-When using ``whereNotIn`` objects will be returned if the field is 
+When using ``whereNotIn`` objects will be returned if the field is
 non-existent. Combine with ``whereNotNull('age')`` to omit those documents.
 
 **whereBetween**
@@ -137,7 +137,7 @@ The usage is the same as ``whereMonth`` / ``whereDay`` / ``whereYear`` / ``where
 
 **groupBy**
 
-Selected columns that are not grouped will be aggregated with the ``$last`` 
+Selected columns that are not grouped will be aggregated with the ``$last``
 function.
 
 .. code-block:: php
@@ -230,7 +230,7 @@ You may also specify more columns to update:
 MongoDB-specific operators
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In addition to the Laravel Eloquent operators, all available MongoDB query 
+In addition to the Laravel Eloquent operators, all available MongoDB query
 operators can be used with ``where``:
 
 .. code-block:: php
@@ -279,7 +279,7 @@ Selects documents where values match a specified regular expression.
 
 .. note::
 
-   You can also use the Laravel regexp operations. These will automatically 
+   You can also use the Laravel regexp operations. These will automatically
    convert your regular expression string to a ``MongoDB\BSON\Regex`` object.
 
 .. code-block:: php
@@ -292,9 +292,37 @@ The inverse of regexp:
 
    User::where('name', 'not regexp', '/.*doe/i')->get();
 
+**ElemMatch**
+
+The :manual:`$elemMatch </reference/operator/query/elemMatch//>` operator
+matches documents that contain an array field with at least one element that
+matches all the specified query criteria.
+
+The following query matches only those documents where the results array
+contains at least one element that is both greater than or equal to 80 and
+is less than 85:
+
+.. code-block:: php
+
+   User::where('results', 'elemMatch', ['gte' => 80, 'lt' => 85])->get();
+
+A closure can be used to create more complex sub-queries.
+
+The following query matches only those documents where the results array
+contains at least one element with both product equal to "xyz" and score
+greater than or equal to 8:
+
+.. code-block:: php
+
+   User::where('results', 'elemMatch', function (Builder $builder) {
+       $builder
+           ->where('product', 'xyz')
+           ->andWhere('score', '>', 50);
+   })->get();
+
 **Type**
 
-Selects documents if a field is of the specified type. For more information 
+Selects documents if a field is of the specified type. For more information
 check: :manual:`$type </reference/operator/query/type/#op._S_type/>` in the
 MongoDB Server documentation.
 
@@ -304,7 +332,7 @@ MongoDB Server documentation.
 
 **Mod**
 
-Performs a modulo operation on the value of a field and selects documents with 
+Performs a modulo operation on the value of a field and selects documents with
 a specified result.
 
 .. code-block:: php
@@ -366,10 +394,10 @@ MongoDB-specific Geo operations
 You can make a ``geoNear`` query on MongoDB.
 You can omit specifying the automatic fields on the model.
 The returned instance is a collection, so you can call the `Collection <https://laravel.com/docs/9.x/collections>`__ operations.
-Make sure that your model has a ``location`` field, and a 
+Make sure that your model has a ``location`` field, and a
 `2ndSphereIndex <https://www.mongodb.com/docs/manual/core/2dsphere>`__.
 The data in the ``location`` field must be saved as `GeoJSON <https://www.mongodb.com/docs/manual/reference/geojson/>`__.
-The ``location`` points must be saved as `WGS84 <https://www.mongodb.com/docs/manual/reference/glossary/#std-term-WGS84>`__ 
+The ``location`` points must be saved as `WGS84 <https://www.mongodb.com/docs/manual/reference/glossary/#std-term-WGS84>`__
 reference system for geometry calculation. That means that you must
 save ``longitude and latitude``, in that order specifically, and to find near
 with calculated distance, you ``must do the same way``.
@@ -405,7 +433,7 @@ with calculated distance, you ``must do the same way``.
 Inserts, updates and deletes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Inserting, updating and deleting records works just like the original Eloquent. 
+Inserting, updating and deleting records works just like the original Eloquent.
 Please check `Laravel Docs' Eloquent section <https://laravel.com/docs/6.x/eloquent>`__.
 
 Here, only the MongoDB-specific operations are specified.
@@ -431,14 +459,14 @@ These expressions will be injected directly into the query.
        '$where' => '/.*123.*/.test(this["hyphenated-field"])',
    ])->get();
 
-You can also perform raw expressions on the internal MongoCollection object. 
+You can also perform raw expressions on the internal MongoCollection object.
 If this is executed on the model class, it will return a collection of models.
 
 If this is executed on the query builder, it will return the original response.
 
 **Cursor timeout**
 
-To prevent ``MongoCursorTimeout`` exceptions, you can manually set a timeout 
+To prevent ``MongoCursorTimeout`` exceptions, you can manually set a timeout
 value that will be applied to the cursor:
 
 .. code-block:: php

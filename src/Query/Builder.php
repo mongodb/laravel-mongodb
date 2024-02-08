@@ -1363,6 +1363,13 @@ class Builder extends BaseBuilder
         return $where['sql'];
     }
 
+    protected function compileWhereSub(array $where): mixed
+    {
+        $where['value'] = $where['query']->compileWheres();
+
+        return $this->compileWhereBasic($where);
+    }
+
     /**
      * Set custom options for the query.
      *
