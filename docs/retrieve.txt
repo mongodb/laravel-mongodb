@@ -57,9 +57,9 @@ a code example.
 Retrieve Matching Documents
 ---------------------------
 
-To retrieve documents that match a set of criteria, or a query filter, call the ``where()``
-method on your collection. Pass the field name and value for which you are querying
-as parameters to ``where()``.
+To retrieve documents that match a set of criteria, call the ``where()`` method on a model
+instance that represents your collection. Pass the field name and value for which you are
+querying as parameters to ``where()``.
 
 You can also pass a comparison operator as the ``where()`` method's second parameter,
 such as the ``>`` operator to perform a "greater than" comparison. If you do not include
@@ -146,7 +146,7 @@ document according to the sorted order.
 
 To learn more about sorting, see the following resources:
 
-- :manual:`natural order </reference/glossary/#std-term-natural-order>`
+- :manual:`Natural order </reference/glossary/#std-term-natural-order>`
   in the Server manual glossary
 - `Ordering, Grouping, Limit and Offset
   <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
