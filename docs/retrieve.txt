@@ -21,88 +21,56 @@ Overview
 --------
 
 In this guide, you can learn how to retrieve data from your MongoDB
-collections using **find operations**. Find operations are commands that
+collections by using **find operations**. Find operations are commands that
 retrieve documents from the server.
 
 This guide includes the following sections:
 
-- :ref:`laravel-find-setup`
-- :ref:`laravel-find-all`
-- :ref:`laravel-find-one`
+- :ref:`laravel-retrieve-setup`
+- :ref:`laravel-retrieve-matching`
 - :ref:`laravel-modify-find`
 - :ref:`laravel-addtl-info`
 
-.. _laravel-find-setup:
+.. _laravel-retrieve-setup:
 
 Prerequisites
 -------------
 
-.. TODO: link to Quick Start once it's published
+Complete the :ref:`laravel-quick-start` tutorial before running the examples in this
+guide.
 
-The examples in this guide use the ``movies`` collection in the ``sample_mflix`` database,
-which is included in the MongoDB Atlas sample dataset. For instructions on loading the sample
-dataset into your database, see the Quick Start or the :atlas:`Get Started with Atlas Guide
-</getting-started/#atlas-getting-started>`.
+After completing the Quick Start, your MongoDB deployment and ``my-app`` Laravel application
+should satisfy the following requirements:
 
-Before running the examples in this guide, you must create the following classes:
+- Atlas MongoDB deployment stores the Atlas sample data
+- ``Movie.php`` file contains a ``Movie`` model to represent the ``movies`` collection
+- ``MovieController.php`` file contains a ``show()`` function to run database operations
+- ``browse_movies.blade.php`` file contains HTML code to display the results of database
+  operations
 
-- Model class to represent the ``movies`` collection
-- Controller class to store and run the find operations
-- View class to display the results of the find operations
+You must edit some files in your ``my-app`` directory to run the code examples in this
+guide. You can find information on required file changes in each section that contains
+a code example.
 
-For instructions on creating these classes, see the Quick Start.
+.. _laravel-retrieve-matching:
 
-.. _laravel-find-all:
+Retrieve Matching Documents
+---------------------------
 
-Find All Documents
-------------------
-
-To retrieve all documents in a collection, use the ``all()`` method.
-
-To retrieve all documents that match a set of criteria, use the ``where()`` method.
-Pass the field name and value for which you are querying as parameters to ``where()``.
+To retrieve documents that match a set of criteria, or a query filter, call the ``where()``
+method on your collection. Pass the field name and value for which you are querying
+as parameters to ``where()``.
 
 You can also pass a comparison operator as the ``where()`` method's second parameter,
-such as the ``>`` operator. If you do not include a comparison operator parameter,
-the find operation queries for documents whose field values are equal to the specified
-value.
+such as the ``>`` operator to perform a "greater than" comparison. If you do not include
+a comparison operator parameter, the find operation queries for documents whose field
+values are equal to the specified value.
 
 To apply multiple sets of criteria to the find operation, you can chain a series
 of ``where()`` methods together.
 
-Find All Documents in a Collection Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The following example retrieves all documents in the ``movies`` collection:
-
-.. io-code-block::
-   :copyable: true
-
-   .. input::
-      :language: php
-
-      $movies = Movie::all();
-
-   .. output::
-      :language: none
-      :visible: false
-
-      // Results are truncated
-
-      ...
-
-      Title: Dracula
-      Year: 1931
-      Runtime: 85
-      IMDB Rating: 7.6
-      IMDB Votes: 30184
-      Plot: The ancient vampire Count Dracula arrives in England and begins to prey
-      upon the virtuous young Mina.
-
-      ...
-
-Find All Matching Documents Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve All Matching Documents
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This example chains two ``where()`` methods together to retrieve documents that meet
 the following criteria:
@@ -116,10 +84,11 @@ the following criteria:
    .. input::
       :language: php
 
-      $movies =
-         Movie::where('year', 2010)
+      return view('browse_movies', [
+         'movies' => Movie::where('year', 2010)
             ->where('imdb.rating', '>', 8.5)
-            ->get();
+            ->get()
+      ]);
 
    .. output::
       :language: none
@@ -141,20 +110,50 @@ the following criteria:
       Plot: A documentary on Brazilian Formula One racing driver Ayrton Senna, who won the
       F1 world championship three times before his death at age 34.
 
-.. _laravel-find-one:
+.. important:: Required File Changes
 
-Find One Document
------------------
+   To run the preceding code example, you must edit the ``MovieController.php`` file in your
+   ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
+   any existing code inside this function.
 
-To retrieve one document that matches a set of criteria, use the ``where()`` method
-followed by the ``first()`` method. 
+Retrieve All Documents
+~~~~~~~~~~~~~~~~~~~~~~
 
-For more information about the ``where()`` method and its parameters, see the
-:ref:`laravel-find-all` section of this guide.
+You can perform a find operation without specifying a query filter, which retrieves all
+documents in a collection. Use the following syntax to run a find operation that matches all
+documents:
 
-Find One Example
-~~~~~~~~~~~~~~~~
+.. code-block::
+   :language: php
+   
+   $movies = Movie::get();
 
+Alternatively, use the ``get()`` method's alias ``all()`` to retrieve all documents.
+
+.. warning::
+
+   The ``movies`` collection in the Atlas sample dataset stores a large amount of data.
+   Retrieving and displaying all documents in this collection may cause your web 
+   application to time out.
+
+Retrieve One Matching Document
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To retrieve only one document that matches a set of criteria, use the ``where()`` method
+followed by the ``first()`` method. By default, the ``first()`` method returns the first
+matching document according to the documents' natural order, or as they appear in the
+database. If you apply a sort to the find operation, ``first()`` returns the first matching
+document according to the sorted order. 
+
+.. tip::
+
+   To learn more about natural order, see :manual:`natural order </reference/glossary/#std-term-natural-order>`
+   in the Server manual glossary.
+   
+   To learn more about sorting, see `Ordering, Grouping, Limit and Offset
+   <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
+   documentation.
+   
 The following example returns one document in which the value of the ``title`` field
 is ``"The Parent Trap"``:
 
@@ -163,10 +162,11 @@ is ``"The Parent Trap"``:
 
    .. input::
       :language: php
-
-      $movie =
-         Movie::where('title', 'The Parent Trap')
-            ->first();
+      
+      return view('browse_movies', [
+         'movies' => Movie::where('title', 'The Parent Trap')
+            ->first()
+      ]);
 
    .. output::
       :language: none
@@ -178,6 +178,98 @@ is ``"The Parent Trap"``:
       IMDB Rating: 7.1
       IMDB Votes: 12768
       Plot: Teenage twin girls swap places and scheme to reunite their divorced parents.
+
+Without chaining the ``first()`` method to the ``where()`` method, the preceding example returns
+two documents in which the ``title`` value is ``"The Parent Trap"``.
+
+.. important:: Required File Changes
+
+   To run the preceding code example, you must edit the ``MovieController.php`` file in your
+   ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
+   any existing code inside this function.
+
+Use Laravel Queries to Retrieve Documents
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Rather than on a model, you can run find operations on a query builder instance that
+represents your collection. To construct a query builder instance, import the ``DB``
+facade into your controller file and use Laravel's database query builder syntax.
+
+The following example uses Laravel's query builder to retrieve documents in which the value
+of the ``imdb.votes`` nested field is greater than ``1300000``:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+
+      $movies =
+         DB::collection('movies')
+               ->where('imdb.votes', '>', 1300000)
+               ->get();
+
+      return view('browse_movies', [
+         'movies' => $movies
+      ]);
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: The Shawshank Redemption
+      Year: 1994
+      Runtime: 142
+      IMDB Rating: 9.3
+      IMDB Votes: 1513145
+      Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption
+      through acts of common decency.
+
+      Title: The Dark Knight
+      Year: 2008
+      Runtime: 152
+      IMDB Rating: 9
+      IMDB Votes: 1495351
+      Plot: When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the
+      caped crusader must come to terms with one of the greatest psychological tests of his ability to
+      fight injustice.
+
+.. important:: Required File Changes
+
+   To run the preceding code example, you must make the following changes to your ``my-app``
+   application:
+
+   - Copy the code example and paste it into the ``show()`` function in your ``MovieController.php`` file
+   - Add the ``use Illuminate\Support\Facades\DB`` use statement to your ``MovieController.php``
+   file
+   - Replace ``DB_CONNECTION=mysql`` with ``DB_CONNECTION=mongodb`` in your ``.env`` file
+   - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
+
+   .. code-block:: php
+
+      <!DOCTYPE html>
+      <html>
+      <head>
+         <title>Browse Movies</title>
+      </head>
+      <body>
+      <h2>Movies</h2>
+
+      @forelse ($movies as $movie)
+      <p>
+         Title: {{ $movie['title'] }}<br>
+         Year: {{ $movie['year'] }}<br>
+         Runtime: {{ $movie['runtime'] }}<br>
+         IMDB Rating: {{ $movie['imdb']['rating'] }}<br>
+         IMDB Votes: {{ $movie['imdb']['votes'] }}<br>
+         Plot: {{ $movie['plot'] }}<br>
+      </p>
+      @empty
+         <p>No results</p>
+      @endforelse
+
+      </body>
+      </html>
 
 .. _laravel-modify-find:
 
@@ -205,11 +297,12 @@ documents:
    .. input::
       :language: php
 
-      $movies =
-         Movie::where('year', 1999)
+      return view('browse_movies', [
+         'movies' => Movie::where('year', 1999)
             ->skip(2)
             ->take(3)
-            ->get();
+            ->get()
+      ]);
 
    .. output::
       :language: none
@@ -239,6 +332,12 @@ documents:
       Plot: A sci-fi update of the famous 6th Century poem. In a beseiged land, Beowulf must
       battle against the hideous creature Grendel and his vengeance seeking mother.
 
+.. important:: Required File Changes
+
+   To run the preceding code example, you must edit the ``MovieController.php`` file in your
+   ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
+   any existing code inside this function.
+   
 .. _laravel-addtl-info:
 
 Additional Information
