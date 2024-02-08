@@ -36,7 +36,7 @@ This guide includes the following sections:
 Prerequisites
 -------------
 
-Complete the :ref:`laravel-quick-start` tutorial before running the examples in this
+Complete the :ref:`Quick Start <laravel-quick-start>` tutorial before running the examples in this
 guide.
 
 After completing the Quick Start, your MongoDB deployment and ``my-app`` Laravel application
@@ -123,9 +123,8 @@ You can perform a find operation without specifying a query filter, which retrie
 documents in a collection. Use the following syntax to run a find operation that matches all
 documents:
 
-.. code-block::
-   :language: php
-   
+.. code-block:: php
+
    $movies = Movie::get();
 
 Alternatively, use the ``get()`` method's alias ``all()`` to retrieve all documents.
@@ -145,14 +144,13 @@ matching document according to the documents' natural order, or as they appear i
 database. If you apply a sort to the find operation, ``first()`` returns the first matching
 document according to the sorted order. 
 
-.. tip::
+To learn more about sorting, see the following resources:
 
-   To learn more about natural order, see :manual:`natural order </reference/glossary/#std-term-natural-order>`
-   in the Server manual glossary.
-   
-   To learn more about sorting, see `Ordering, Grouping, Limit and Offset
-   <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
-   documentation.
+- :manual:`natural order </reference/glossary/#std-term-natural-order>`
+  in the Server manual glossary
+- `Ordering, Grouping, Limit and Offset
+  <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
+  documentation
    
 The following example returns one document in which the value of the ``title`` field
 is ``"The Parent Trap"``:
@@ -204,13 +202,10 @@ of the ``imdb.votes`` nested field is greater than ``1300000``:
    .. input::
       :language: php
 
-      $movies =
-         DB::collection('movies')
-               ->where('imdb.votes', '>', 1300000)
-               ->get();
-
       return view('browse_movies', [
-         'movies' => $movies
+         'movies' => DB::collection('movies')
+               ->where('imdb.votes', '>', 1300000)
+               ->get()
       ]);
 
    .. output::
@@ -241,7 +236,7 @@ of the ``imdb.votes`` nested field is greater than ``1300000``:
 
    - Copy the code example and paste it into the ``show()`` function in your ``MovieController.php`` file
    - Add the ``use Illuminate\Support\Facades\DB`` use statement to your ``MovieController.php``
-   file
+     file
    - Replace ``DB_CONNECTION=mysql`` with ``DB_CONNECTION=mongodb`` in your ``.env`` file
    - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
 
@@ -337,7 +332,7 @@ documents:
    To run the preceding code example, you must edit the ``MovieController.php`` file in your
    ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
    any existing code inside this function.
-   
+
 .. _laravel-addtl-info:
 
 Additional Information
