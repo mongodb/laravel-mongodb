@@ -24,15 +24,11 @@ In this guide, you can learn how to use the Laravel package to perform **find op
 on your MongoDB collections. Find operations allow you to retrieve documents based on
 criteria that you specify.
 
-This guide shows you how to perform the following operations:
+This guide shows you how to perform the following tasks:
 
-- :ref:`Retrieve documents that match a query <laravel-retrieve-all-matching>`
-- :ref:`Retrieve all documents in a collection <laravel-retrieve-all>`
-- :ref:`Retrieve the first document that matches a query <laravel-retrieve-one>`
-- :ref:`Retrieve data without using an Eloquent model <laravel-retrieve-query-builder>`
-- :ref:`Modify the behavior of the query <laravel-retrieve-all-matching>`
-
-.. _laravel-retrieve-setup:
+- :ref:`laravel-retrieve-matching`
+- :ref:`laravel-retrieve-all`
+- :ref:`Modify Find Operation Behavior <laravel-modify-find>`
 
 Prerequisites
 -------------
@@ -57,10 +53,10 @@ the code examples and view the expected output.
 Retrieve Documents that Match a Query
 -------------------------------------
 
-To retrieve documents that match a set of criteria, pass a query filter to the ``where()``
+You can retrieve documents that match a set of criteria by passing a query filter to the ``where()``
 method. A query filter specifies field value requirements and instructs the find operation
-to only return documents that meet these requirements. To run the find operation, call the
-``where()`` method on an Eloquent model that represents your collection.
+to only return documents that meet these requirements. To run the query, call the ``where()``
+method on an Eloquent model or query builder that represents your collection.
 
 You can pass the following types of query filters to the ``where()`` method:
 
@@ -83,6 +79,8 @@ the following criteria:
 
 - ``year`` field has a value of ``2010``
 - ``imdb.rating`` nested field has a value greater than ``8.5``
+
+Then, the example calls the ``where()`` method on the ``Movie`` Eloquent model.
 
 .. important:: Required File Changes
 
@@ -127,9 +125,9 @@ the following criteria:
 Use Laravel Queries to Retrieve Documents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can run find operations on a query builder instance that represents your collection
-instead of running them on models. To construct a query builder instance, import the ``DB``
-facade into your controller file and use Laravel's database query builder syntax.
+You can use Laravel's database query builder to run find operations instead of using Eloquent
+models. To run the database query, import the ``DB`` facade into your controller file and use
+Laravel's query builder syntax.
 
 The following example uses Laravel's query builder to retrieve documents in which the value
 of the ``imdb.votes`` nested field is greater than ``1300000``.
@@ -209,7 +207,7 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
 Retrieve All Documents in a Collection
 --------------------------------------
 
-You can perform a find operation without specifying a query filter, which retrieves all
+You can retrieve documents without specifying a query filter, which returns all
 documents in a collection.
 
 To retrieve all documents, call the ``get()`` method on an Eloquent model that represents
@@ -245,8 +243,8 @@ to ``where()``:
 - ``take()``: sets the total number of documents to return
 - ``first()``: returns the first document that matches the query filter
 
-Modify Find Operation Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Skip and Limit Results
+~~~~~~~~~~~~~~~~~~~~~~
 
 The following example queries for documents in which the ``year`` value is ``1999``.
 The operation skips the first ``2`` matching documents and outputs a total of ``3``
@@ -255,8 +253,8 @@ documents.
 .. important:: Required File Changes
 
    To run the code example, you must edit the ``MovieController.php`` file in your
-   ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
-   any existing code inside this function.
+   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
+   function, replacing any existing code inside this function.
 
 .. io-code-block::
    :copyable: true
@@ -301,8 +299,8 @@ documents.
 
 .. _laravel-retrieve-one:
 
-Retrieve One Matching Document
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Retrieve Only One Result
+~~~~~~~~~~~~~~~~~~~~~~~~
 
 To retrieve only one document that matches a set of criteria, use the ``where()`` method
 followed by the ``first()`` method. By default, the ``first()`` method returns the first
@@ -316,8 +314,8 @@ is ``30``.
 .. important:: Required File Changes
 
    To run the code example, you must edit the ``MovieController.php`` file in your
-   ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
-   any existing code inside this function.
+   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
+   function, replacing any existing code inside this function.
 
 .. io-code-block::
    :copyable: true
