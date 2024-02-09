@@ -1,4 +1,4 @@
-.. _laravel-retrieve:
+.. _laravel-fundamentals-retrieve:
 
 ==============
 Retrieve Data
@@ -6,7 +6,7 @@ Retrieve Data
 
 .. facet::
    :name: genre
-   :values: reference
+   :values: tutorial
 
 .. meta::
    :keywords: find one, find many, code example
@@ -20,16 +20,17 @@ Retrieve Data
 Overview
 --------
 
-In this guide, you can learn how to retrieve data from your MongoDB
-collections by using **find operations**. Find operations are commands that
-retrieve documents from the server.
+In this guide, you can learn how to use the Laravel package to perform **find operations**
+on your MongoDB collections. Find operations allow you to retrieve documents based on
+criteria that you specify.
 
-This guide includes the following sections:
+This guide shows you how to perform the following operations:
 
-- :ref:`laravel-retrieve-setup`
-- :ref:`laravel-retrieve-matching`
-- :ref:`laravel-modify-find`
-- :ref:`laravel-addtl-info`
+- :ref:`Retrieve documents that match a query <laravel-retrieve-all-matching>`
+- :ref:`Retrieve all documents in a collection <laravel-retrieve-all>`
+- :ref:`Retrieve the first document that matches a query <laravel-retrieve-one>`
+- :ref:`Retrieve data without using an Eloquent model <laravel-retrieve-query-builder>`
+- :ref:`Modify the behavior of the query <laravel-retrieve-all-matching>`
 
 .. _laravel-retrieve-setup:
 
@@ -39,35 +40,40 @@ Prerequisites
 Complete the :ref:`Quick Start <laravel-quick-start>` tutorial before running the examples in this
 guide.
 
-After completing the Quick Start, your MongoDB deployment and ``my-app`` Laravel application
-should satisfy the following requirements:
+After completing the Quick Start, ensure that your MongoDB deployment and Laravel application
+satisfy the following requirements:
 
-- Atlas MongoDB deployment stores the Atlas sample data
+- Your Atlas MongoDB deployment contains the Atlas sample data
 - ``Movie.php`` file contains a ``Movie`` model to represent the ``movies`` collection
 - ``MovieController.php`` file contains a ``show()`` function to run database operations
 - ``browse_movies.blade.php`` file contains HTML code to display the results of database
   operations
 
-You must edit some files in your ``my-app`` directory to run the code examples in this
-guide. You can find information on required file changes in each section that contains
-a code example.
+The following sections describe how to edit the files in your Laravel application to run 
+the code examples and view the expected output.
 
 .. _laravel-retrieve-matching:
 
-Retrieve Matching Documents
----------------------------
+Retrieve Documents that Match a Query
+-------------------------------------
 
-To retrieve documents that match a set of criteria, call the ``where()`` method on a model
-instance that represents your collection. Pass the field name and value for which you are
-querying as parameters to ``where()``.
+To retrieve documents that match a set of criteria, pass a query filter to the ``where()``
+method. A query filter specifies field value requirements and instructs the find operation
+to only return documents that meet these requirements. To run the find operation, call the
+``where()`` method on an Eloquent model that represents your collection.
 
-You can also pass a comparison operator as the ``where()`` method's second parameter,
-such as the ``>`` operator to perform a "greater than" comparison. If you do not include
-a comparison operator parameter, the find operation queries for documents whose field
-values are equal to the specified value.
+You can pass the following types of query filters to the ``where()`` method:
+
+- ``where('<field name>', <value>)``: instructs MongoDB to return documents that match
+  the exact value for the specified field name
+
+- ``where('<field name>', '<comparison operator>', <value>)``: instructs MongoDB to
+  return documents in which the field values meet the comparison criteria
 
 To apply multiple sets of criteria to the find operation, you can chain a series
 of ``where()`` methods together.
+
+.. _laravel-retrieve-all-matching:
 
 Retrieve All Matching Documents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,6 +83,12 @@ the following criteria:
 
 - ``year`` field has a value of ``2010``
 - ``imdb.rating`` nested field has a value greater than ``8.5``
+
+.. important:: Required File Changes
+
+   To run the code example, you must edit the ``MovieController.php`` file in your
+   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
+   function, replacing any existing code inside this function.
 
 .. io-code-block::
    :copyable: true
@@ -110,128 +122,21 @@ the following criteria:
       Plot: A documentary on Brazilian Formula One racing driver Ayrton Senna, who won the
       F1 world championship three times before his death at age 34.
 
-.. important:: Required File Changes
-
-   To run the preceding code example, you must edit the ``MovieController.php`` file in your
-   ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
-   any existing code inside this function.
-
-Retrieve All Documents
-~~~~~~~~~~~~~~~~~~~~~~
-
-You can perform a find operation without specifying a query filter, which retrieves all
-documents in a collection. Use the following syntax to run a find operation that matches all
-documents:
-
-.. code-block:: php
-
-   $movies = Movie::get();
-
-Alternatively, use the ``get()`` method's alias ``all()`` to retrieve all documents.
-
-.. warning::
-
-   The ``movies`` collection in the Atlas sample dataset stores a large amount of data.
-   Retrieving and displaying all documents in this collection may cause your web 
-   application to time out.
-
-Retrieve One Matching Document
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-To retrieve only one document that matches a set of criteria, use the ``where()`` method
-followed by the ``first()`` method. By default, the ``first()`` method returns the first
-matching document according to the documents' natural order, or as they appear in the
-database. If you apply a sort to the find operation, ``first()`` returns the first matching
-document according to the sorted order. 
-
-To learn more about sorting, see the following resources:
-
-- :manual:`Natural order </reference/glossary/#std-term-natural-order>`
-  in the Server manual glossary
-- `Ordering, Grouping, Limit and Offset
-  <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
-  documentation
-   
-The following example returns one document in which the value of the ``title`` field
-is ``"The Parent Trap"``:
-
-.. io-code-block::
-   :copyable: true
-
-   .. input::
-      :language: php
-      
-      return view('browse_movies', [
-         'movies' => Movie::where('title', 'The Parent Trap')
-            ->first()
-      ]);
-
-   .. output::
-      :language: none
-      :visible: false
-
-      Title: The Parent Trap
-      Year: 1961
-      Runtime: 129
-      IMDB Rating: 7.1
-      IMDB Votes: 12768
-      Plot: Teenage twin girls swap places and scheme to reunite their divorced parents.
-
-Without chaining the ``first()`` method to the ``where()`` method, the preceding example returns
-two documents in which the ``title`` value is ``"The Parent Trap"``.
-
-.. important:: Required File Changes
-
-   To run the preceding code example, you must edit the ``MovieController.php`` file in your
-   ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
-   any existing code inside this function.
+.. _laravel-retrieve-query-builder:
 
 Use Laravel Queries to Retrieve Documents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Rather than on a model, you can run find operations on a query builder instance that
-represents your collection. To construct a query builder instance, import the ``DB``
+You can run find operations on a query builder instance that represents your collection
+instead of running them on models. To construct a query builder instance, import the ``DB``
 facade into your controller file and use Laravel's database query builder syntax.
 
 The following example uses Laravel's query builder to retrieve documents in which the value
-of the ``imdb.votes`` nested field is greater than ``1300000``:
-
-.. io-code-block::
-   :copyable: true
-
-   .. input::
-      :language: php
-
-      return view('browse_movies', [
-         'movies' => DB::collection('movies')
-               ->where('imdb.votes', '>', 1300000)
-               ->get()
-      ]);
-
-   .. output::
-      :language: none
-      :visible: false
-
-      Title: The Shawshank Redemption
-      Year: 1994
-      Runtime: 142
-      IMDB Rating: 9.3
-      IMDB Votes: 1513145
-      Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption
-      through acts of common decency.
-
-      Title: The Dark Knight
-      Year: 2008
-      Runtime: 152
-      IMDB Rating: 9
-      IMDB Votes: 1495351
-      Plot: When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the
-      caped crusader must come to terms with one of the greatest psychological tests of his ability to
-      fight injustice.
+of the ``imdb.votes`` nested field is greater than ``1300000``.
 
 .. important:: Required File Changes
 
-   To run the preceding code example, you must make the following changes to your ``my-app``
+   To run the code example, you must make the following changes to your Laravel Quick Start
    application:
 
    - Copy the code example and paste it into the ``show()`` function in your ``MovieController.php`` file
@@ -266,6 +171,68 @@ of the ``imdb.votes`` nested field is greater than ``1300000``:
       </body>
       </html>
 
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+
+      return view('browse_movies', [
+         'movies' => DB::collection('movies')
+               ->where('imdb.votes', '>', 1300000)
+               ->get()
+      ]);
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: The Shawshank Redemption
+      Year: 1994
+      Runtime: 142
+      IMDB Rating: 9.3
+      IMDB Votes: 1513145
+      Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption
+      through acts of common decency.
+
+      Title: The Dark Knight
+      Year: 2008
+      Runtime: 152
+      IMDB Rating: 9
+      IMDB Votes: 1495351
+      Plot: When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the
+      caped crusader must come to terms with one of the greatest psychological tests of his ability to
+      fight injustice.
+
+.. _laravel-retrieve-all:
+
+Retrieve All Documents in a Collection
+--------------------------------------
+
+You can perform a find operation without specifying a query filter, which retrieves all
+documents in a collection.
+
+To retrieve all documents, call the ``get()`` method on an Eloquent model that represents
+your collection. Alternatively, you can use the ``get()`` method's alias ``all()`` to perform
+the same operation.
+
+.. _laravel-retrieve-all-example:
+
+Retrieve All Documents
+~~~~~~~~~~~~~~~~~~~~~~
+
+Use the following syntax to run a find operation that matches all documents:
+
+.. code-block:: php
+
+   $movies = Movie::get();
+
+.. warning::
+
+   The ``movies`` collection in the Atlas sample dataset contains a large amount of data.
+   Retrieving and displaying all documents in this collection might cause your web 
+   application to time out.
+
 .. _laravel-modify-find:
 
 Modify Behavior
@@ -276,15 +243,20 @@ to ``where()``:
 
 - ``skip()``: sets the number of documents to skip when returning results
 - ``take()``: sets the total number of documents to return
-
-The ``skip()`` and ``take()`` methods both accept an integer value as a parameter.
+- ``first()``: returns the first document that matches the query filter
 
 Modify Find Operation Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example queries for documents in which the ``year`` value is ``1999``.
 The operation skips the first ``2`` matching documents and outputs a total of ``3``
-documents:
+documents.
+
+.. important:: Required File Changes
+
+   To run the code example, you must edit the ``MovieController.php`` file in your
+   ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
+   any existing code inside this function.
 
 .. io-code-block::
    :copyable: true
@@ -327,16 +299,62 @@ documents:
       Plot: A sci-fi update of the famous 6th Century poem. In a beseiged land, Beowulf must
       battle against the hideous creature Grendel and his vengeance seeking mother.
 
+.. _laravel-retrieve-one:
+
+Retrieve One Matching Document
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To retrieve only one document that matches a set of criteria, use the ``where()`` method
+followed by the ``first()`` method. By default, the ``first()`` method returns the first
+matching document according to the documents' natural order, or as they appear in the
+database. If you apply a sort to the find operation, ``first()`` returns the first matching
+document according to the sorted order. 
+   
+The following example returns one document in which the value of the ``runtime`` field
+is ``30``.
+
 .. important:: Required File Changes
 
-   To run the preceding code example, you must edit the ``MovieController.php`` file in your
+   To run the code example, you must edit the ``MovieController.php`` file in your
    ``my-app`` application. Copy the code example and paste it into the ``show()`` function, replacing
    any existing code inside this function.
+
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+      
+      return view('browse_movies', [
+         'movies' => Movie::where('runtime', 30)
+            ->first()
+      ]);
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: Statues also Die
+      Year: 1953
+      Runtime: 30
+      IMDB Rating: 7.6
+      IMDB Votes: 620
+      Plot: A documentary of black art.
+
+.. tip:: 
+
+   To learn more about sorting, see the following resources:
+
+   - :manual:`Natural order </reference/glossary/#std-term-natural-order>`
+     in the Server manual glossary
+   - `Ordering, Grouping, Limit and Offset
+     <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
+     documentation
 
 .. _laravel-addtl-info:
 
 Additional Information
 ----------------------
 
-To learn more about the methods mentioned in this guide, see the 
-:ref:`laravel-query-builder` page.
+To learn more about other query methods in {+odm-short+}, see the :ref:`laravel-query-builder`
+page.
