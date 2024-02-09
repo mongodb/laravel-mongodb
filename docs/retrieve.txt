@@ -74,13 +74,11 @@ of ``where()`` methods together.
 Retrieve All Matching Documents
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This example chains two ``where()`` methods together to retrieve documents that meet
-the following criteria:
+This example calls two ``where()`` methods on the ``Movie`` Eloquent model to retrieve
+documents that meet the following criteria:
 
 - ``year`` field has a value of ``2010``
 - ``imdb.rating`` nested field has a value greater than ``8.5``
-
-Then, the example calls the ``where()`` method on the ``Movie`` Eloquent model.
 
 .. important:: Required File Changes
 
@@ -143,31 +141,31 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
    - Replace ``DB_CONNECTION=mysql`` with ``DB_CONNECTION=mongodb`` in your ``.env`` file
    - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
 
-   .. code-block:: php
+      .. code-block:: php
 
-      <!DOCTYPE html>
-      <html>
-      <head>
-         <title>Browse Movies</title>
-      </head>
-      <body>
-      <h2>Movies</h2>
+         <!DOCTYPE html>
+         <html>
+         <head>
+            <title>Browse Movies</title>
+         </head>
+         <body>
+         <h2>Movies</h2>
 
-      @forelse ($movies as $movie)
-      <p>
-         Title: {{ $movie['title'] }}<br>
-         Year: {{ $movie['year'] }}<br>
-         Runtime: {{ $movie['runtime'] }}<br>
-         IMDB Rating: {{ $movie['imdb']['rating'] }}<br>
-         IMDB Votes: {{ $movie['imdb']['votes'] }}<br>
-         Plot: {{ $movie['plot'] }}<br>
-      </p>
-      @empty
-         <p>No results</p>
-      @endforelse
+         @forelse ($movies as $movie)
+         <p>
+            Title: {{ $movie['title'] }}<br>
+            Year: {{ $movie['year'] }}<br>
+            Runtime: {{ $movie['runtime'] }}<br>
+            IMDB Rating: {{ $movie['imdb']['rating'] }}<br>
+            IMDB Votes: {{ $movie['imdb']['votes'] }}<br>
+            Plot: {{ $movie['plot'] }}<br>
+         </p>
+         @empty
+            <p>No results</p>
+         @endforelse
 
-      </body>
-      </html>
+         </body>
+         </html>
 
 .. io-code-block::
    :copyable: true
