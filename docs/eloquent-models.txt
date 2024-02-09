@@ -17,3 +17,7 @@ models with the {+odm-long+}.
 .. toctree::
 
    /eloquent-models/extend-base-model/
+   /eloquent-models/schema-builder/
+   /eloquent-models/relationships/
+   /eloquent-models/geo-index/
+

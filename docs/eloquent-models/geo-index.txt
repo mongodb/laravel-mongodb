@@ -1,0 +1,32 @@
+.. _laravel-eloquent-model-geospatial-index:
+
+==================
+Geospatial Indexes
+==================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example
+
+Geospatial indexes can improve query performance of location-based documents.
+
+They come in two forms: ``2d`` and ``2dsphere``. Use the schema builder to add
+these to a collection.
+
+.. code-block:: php
+
+   Schema::create('bars', function ($collection) {
+       $collection->geospatial('location', '2d');
+   });
+
+To add a ``2dsphere`` index:
+
+.. code-block:: php
+
+   Schema::create('bars', function ($collection) {
+       $collection->geospatial('location', '2dsphere');
+   });
+
