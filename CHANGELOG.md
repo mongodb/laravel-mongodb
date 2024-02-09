@@ -1,8 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.1.2]
 
-## [4.1.1]
+* Fix support for subqueries using the query builder by @GromNaN in [#2717](https://github.com/mongodb/laravel-mongodb/pull/2717)
+
+## [4.1.1] - 2024-01-17
 
 * Fix casting issues by [@stubbo](https://github.com/stubbo) in [#2705](https://github.com/mongodb/laravel-mongodb/pull/2705)
 * Move documentation to the mongodb.com domain at [https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/](https://www.mongodb.com/docs/drivers/php/laravel-mongodb/current/)
