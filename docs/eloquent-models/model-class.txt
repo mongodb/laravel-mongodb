@@ -1,0 +1,24 @@
+.. _laravel-eloquent-model-class:
+
+=====================
+Eloquent Model Class
+====================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example
+
+Overview
+--------
+
+The {+odm-long+} lets you work with MongoDB by using the Laravel Eloquent
+object-relational mapper (ORM).
+
+This page will show how to extend a model, specify a custom collection,
+specify fillable, casts,  soft deletes, and prunable.
+
+It will also show how to extend an authenticatable model, but this content
+may be moved to the Fundamentals > Authentication page in the future.

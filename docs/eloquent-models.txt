@@ -6,18 +6,25 @@ Eloquent Models
 
 .. facet::
    :name: genre
-   :values: tutorial
+   :values: reference
 
 .. meta::
-   :keywords: php framework, odm, code example
+   :keywords: php framework, odm
 
-This section contains information on how you can use the Laravel Eleoquent
-models with the {+odm-long+}.
+This landing page will briefly describe Eloquent models and how
+Laravel MongoDB extends it. This will be a landing page that identifies where
+users can find information on a particular Eloquent model topic.
+
+Learn how to use Laravel Eloquent models in the {+odm-long+} to work with
+MongoDB in the following sections:
+
+- :ref:`laravel-eloquent-model-class`
+- :ref:`laravel-eloquent-model-schema-builder`
+- :ref:`laravel-eloquent-model-relationships`
 
 .. toctree::
 
-   /eloquent-models/extend-base-model/
+   /eloquent-models/model-class/
    /eloquent-models/schema-builder/
    /eloquent-models/relationships/
-   /eloquent-models/geo-index/
 
