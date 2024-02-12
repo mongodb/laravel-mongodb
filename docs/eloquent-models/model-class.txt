@@ -1,6 +1,6 @@
 .. _laravel-eloquent-model-class:
 
-=====================
+====================
 Eloquent Model Class
 ====================
 
