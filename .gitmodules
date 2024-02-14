@@ -1,0 +1,3 @@
+[submodule "laravel-mongodb"]
+	url = https://github.com/norareidy/laravel-mongodb.git
+	branch = DOCSP-35957-retrieve-guide

@@ -60,14 +60,19 @@ method on an Eloquent model or query builder that represents your collection.
 
 You can pass the following types of query filters to the ``where()`` method:
 
-- ``where('<field name>', <value>)``: instructs MongoDB to return documents that match
+- ``Model::where('<field name>', <value>)``: instructs MongoDB to return documents that match
   the exact value for the specified field name
 
-- ``where('<field name>', '<comparison operator>', <value>)``: instructs MongoDB to
+- ``Model::where('<field name>', '<comparison operator>', <value>)``: instructs MongoDB to
   return documents in which the field values meet the comparison criteria
 
 To apply multiple sets of criteria to the find operation, you can chain a series
 of ``where()`` methods together.
+
+.. tip:: 
+
+   To learn more about other query methods in {+odm-short+}, see the :ref:`laravel-query-builder`
+   page.
 
 .. _laravel-retrieve-eloquent:
 
@@ -84,22 +89,18 @@ documents that meet the following criteria:
 - ``year`` field has a value of ``2010``
 - ``imdb.rating`` nested field has a value greater than ``8.5``
 
-.. important:: Required File Changes
-
-   To run the code example, you must edit the ``MovieController.php`` file in your
-   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
-   function, replacing any existing code inside this function.
-
 .. io-code-block::
    :copyable: true
 
    .. input::
       :language: php
 
+      $movies = Movie::where('year', 2010)
+         ->where('imdb.rating', '>', 8.5)
+         ->get();
+
       return view('browse_movies', [
-         'movies' => Movie::where('year', 2010)
-            ->where('imdb.rating', '>', 8.5)
-            ->get()
+         'movies' => $movies,
       ]);
 
    .. output::
@@ -122,6 +123,12 @@ documents that meet the following criteria:
       Plot: A documentary on Brazilian Formula One racing driver Ayrton Senna, who won the
       F1 world championship three times before his death at age 34.
 
+.. important:: Required File Changes
+
+   To run the code example, you must edit the ``MovieController.php`` file in your
+   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
+   function, replacing any existing code inside this function.
+
 .. _laravel-retrieve-query-builder:
 
 Use Laravel Queries to Retrieve Documents
@@ -132,7 +139,43 @@ models. To run the database query, import the ``DB`` facade into your controller
 Laravel's query builder syntax.
 
 The following example uses Laravel's query builder to retrieve documents in which the value
-of the ``imdb.votes`` nested field is greater than ``1300000``.
+of the ``imdb.votes`` nested field is greater than ``1300000``:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+
+      $movies = DB::connection('mongodb')
+            ->collection('movies')
+            ->where('imdb.votes', '>', 1300000)
+            ->get();
+
+      return view('browse_movies', [
+         'movies' => $movies,
+      ]);
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: The Shawshank Redemption
+      Year: 1994
+      Runtime: 142
+      IMDB Rating: 9.3
+      IMDB Votes: 1513145
+      Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption
+      through acts of common decency.
+
+      Title: The Dark Knight
+      Year: 2008
+      Runtime: 152
+      IMDB Rating: 9
+      IMDB Votes: 1495351
+      Plot: When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the
+      caped crusader must come to terms with one of the greatest psychological tests of his ability to
+      fight injustice.
 
 .. important:: Required File Changes
 
@@ -142,7 +185,6 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
    - Copy the code example and paste it into the ``show()`` function in your ``MovieController.php`` file
    - Add the ``use Illuminate\Support\Facades\DB`` use statement to your ``MovieController.php``
      file
-   - Replace ``DB_CONNECTION=mysql`` with ``DB_CONNECTION=mongodb`` in your ``.env`` file
    - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
 
       .. code-block:: php
@@ -171,38 +213,9 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
          </body>
          </html>
 
-.. io-code-block::
-   :copyable: true
-
-   .. input::
-      :language: php
-
-      return view('browse_movies', [
-         'movies' => DB::collection('movies')
-               ->where('imdb.votes', '>', 1300000)
-               ->get()
-      ]);
-
-   .. output::
-      :language: none
-      :visible: false
-
-      Title: The Shawshank Redemption
-      Year: 1994
-      Runtime: 142
-      IMDB Rating: 9.3
-      IMDB Votes: 1513145
-      Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption
-      through acts of common decency.
-
-      Title: The Dark Knight
-      Year: 2008
-      Runtime: 152
-      IMDB Rating: 9
-      IMDB Votes: 1495351
-      Plot: When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the
-      caped crusader must come to terms with one of the greatest psychological tests of his ability to
-      fight injustice.
+      This change is necessary because you cannot use the ``->`` object operator to access document fields in this
+      example. Since the example uses the query builder syntax, the find operation returns data as an array rather
+      than as instances of the Eloquent model class.
 
 .. _laravel-retrieve-all:
 
@@ -231,7 +244,11 @@ Use the following syntax to run a find operation that matches all documents:
 
    The ``movies`` collection in the Atlas sample dataset contains a large amount of data.
    Retrieving and displaying all documents in this collection might cause your web 
-   application to time out.
+   application to time out. 
+   
+   To avoid this issue, specify a document limit by using the ``take()`` method. For 
+   more information about ``take()``, see the :ref:`laravel-modify-find` section of this
+   guide.
 
 .. _laravel-modify-find:
 
@@ -250,13 +267,7 @@ Skip and Limit Results
 
 The following example queries for documents in which the ``year`` value is ``1999``.
 The operation skips the first ``2`` matching documents and outputs a total of ``3``
-documents.
-
-.. important:: Required File Changes
-
-   To run the code example, you must edit the ``MovieController.php`` file in your
-   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
-   function, replacing any existing code inside this function.
+documents:
 
 .. io-code-block::
    :copyable: true
@@ -264,11 +275,13 @@ documents.
    .. input::
       :language: php
 
-      return view('browse_movies', [
-         'movies' => Movie::where('year', 1999)
+      $movies = Movie::where('year', 1999)
             ->skip(2)
             ->take(3)
             ->get()
+
+      return view('browse_movies', [
+         'movies' => $movies,
       ]);
 
    .. output::
@@ -299,6 +312,12 @@ documents.
       Plot: A sci-fi update of the famous 6th Century poem. In a beseiged land, Beowulf must
       battle against the hideous creature Grendel and his vengeance seeking mother.
 
+.. important:: Required File Changes
+
+   To run the code example, you must edit the ``MovieController.php`` file in your
+   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
+   function, replacing any existing code inside this function.
+
 .. _laravel-retrieve-one:
 
 Retrieve Only One Result
@@ -311,13 +330,7 @@ database. If you apply a sort to the find operation, ``first()`` returns the fir
 document according to the sorted order. 
    
 The following example returns one document in which the value of the ``runtime`` field
-is ``30``.
-
-.. important:: Required File Changes
-
-   To run the code example, you must edit the ``MovieController.php`` file in your
-   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
-   function, replacing any existing code inside this function.
+is ``30``:
 
 .. io-code-block::
    :copyable: true
@@ -325,9 +338,12 @@ is ``30``.
    .. input::
       :language: php
       
+      $movies = Movie::where('runtime', 30)
+            ->orderBy('_id')
+            ->first();
+
       return view('browse_movies', [
-         'movies' => Movie::where('runtime', 30)
-            ->first()
+         'movies' => $movies,
       ]);
 
    .. output::
@@ -341,20 +357,17 @@ is ``30``.
       IMDB Votes: 620
       Plot: A documentary of black art.
 
-.. tip:: 
+.. important:: Required File Changes
 
-   To learn more about sorting, see the following resources:
+   To run the code example, you must edit the ``MovieController.php`` file in your
+   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
+   function, replacing any existing code inside this function.
 
-   - :manual:`Natural order </reference/glossary/#std-term-natural-order>`
-     in the Server manual glossary
-   - `Ordering, Grouping, Limit and Offset
-     <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
-     documentation
+To learn more about sorting, see the following resources:
 
-.. _laravel-addtl-info:
+- :manual:`Natural order </reference/glossary/#std-term-natural-order>`
+   in the Server manual glossary
+- `Ordering, Grouping, Limit and Offset
+   <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
+   documentation
 
-Additional Information
-----------------------
-
-To learn more about other query methods in {+odm-short+}, see the :ref:`laravel-query-builder`
-page.
