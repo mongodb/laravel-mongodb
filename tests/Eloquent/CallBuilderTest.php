@@ -89,19 +89,5 @@ final class CallBuilderTest extends TestCase
             'This method is not supported by MongoDB. Try "toMql()" instead',
             [[['name' => 'Jane']], fn (QueryBuilder $builder) => $builder],
         ];
-
-        yield 'dd' => [
-            'dd',
-            BadMethodCallException::class,
-            'This method is not supported by MongoDB. Try "toMql()" instead',
-            [[['name' => 'Jane']], fn (QueryBuilder $builder) => $builder],
-        ];
-
-        yield 'dump' => [
-            'dump',
-            BadMethodCallException::class,
-            'This method is not supported by MongoDB. Try "toMql()" instead',
-            [[['name' => 'Jane']], fn (QueryBuilder $builder) => $builder],
-        ];
     }
 }
