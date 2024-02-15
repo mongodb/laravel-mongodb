@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [unreleased]
+
+* Fix `Query\Builder::dump` and `dd` methods to dump the MongoDB query by @GromNaN in [#2727](https://github.com/mongodb/laravel-mongodb/pull/2727)
+
 ## [4.1.2]
 
 * Fix support for subqueries using the query builder by @GromNaN in [#2717](https://github.com/mongodb/laravel-mongodb/pull/2717)
