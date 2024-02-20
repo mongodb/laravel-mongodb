@@ -213,9 +213,9 @@ of the ``imdb.votes`` nested field is greater than ``1300000``:
          </body>
          </html>
 
-      This change is necessary because you cannot use the ``->`` object operator to access document fields in this
-      example. Since the example uses the query builder syntax, the find operation returns data as an array rather
-      than as instances of the Eloquent model class.
+      This change is necessary because you cannot use the ``->`` object operator to access document fields in the
+      :ref:`Laravel Queries <laravel-retrieve-query-builder>` example. Since the example uses the query builder
+      syntax, the find operation returns data as an array rather than as instances of the Eloquent model class.
 
 .. _laravel-retrieve-all:
 
