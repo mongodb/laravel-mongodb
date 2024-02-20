@@ -267,12 +267,14 @@ class Builder extends BaseBuilder
     /**
      * Dump the current MongoDB query
      *
+     * @param mixed ...$args
+     *
      * @return $this
      */
     #[Override]
-    public function dump()
+    public function dump(mixed ...$args)
     {
-        dump($this->toMql());
+        dump($this->toMql(), ...$args);
 
         return $this;
     }
