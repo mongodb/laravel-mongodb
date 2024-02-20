@@ -89,45 +89,59 @@ documents that meet the following criteria:
 - ``year`` field has a value of ``2010``
 - ``imdb.rating`` nested field has a value greater than ``8.5``
 
-.. io-code-block::
-   :copyable: true
+.. tabs::
 
-   .. input::
-      :language: php
+   .. tab:: Query Syntax
+      :tabid: query-syntax
 
-      $movies = Movie::where('year', 2010)
-         ->where('imdb.rating', '>', 8.5)
-         ->get();
+      The following example shows the syntax required to specify the query:
 
-      return view('browse_movies', [
-         'movies' => $movies,
-      ]);
+      .. code-block:: go
+         :emphasize-lines: 1
 
-   .. output::
-      :language: none
-      :visible: false
+         $movies = Movie::where('year', 2010)
+            ->where('imdb.rating', '>', 8.5)
+            ->get();
 
-      Title: Inception
-      Year: 2010
-      Runtime: 148
-      IMDB Rating: 8.8
-      IMDB Votes: 1294646
-      Plot: A thief who steals corporate secrets through use of dream-sharing
-      technology is given the inverse task of planting an idea into the mind of a CEO.
+   .. tab:: Run the Query
+      :tabid: query-run
 
-      Title: Senna
-      Year: 2010
-      Runtime: 106
-      IMDB Rating: 8.6
-      IMDB Votes: 41904
-      Plot: A documentary on Brazilian Formula One racing driver Ayrton Senna, who won the
-      F1 world championship three times before his death at age 34.
+      To run the find operation and view the results, replace the contents of the ``show()``
+      function in the ``MovieController.php`` file with the following code:
 
-.. important:: Required File Changes
+      .. io-code-block::
+         :copyable: true
 
-   To run the code example, you must edit the ``MovieController.php`` file in your
-   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
-   function, replacing any existing code inside this function.
+         .. input::
+            :language: php
+
+            $movies = Movie::where('year', 2010)
+               ->where('imdb.rating', '>', 8.5)
+               ->get();
+
+            return view('browse_movies', [
+               'movies' => $movies,
+            ]);
+
+         .. output::
+            :language: none
+            :visible: false
+
+            Title: Inception
+            Year: 2010
+            Runtime: 148
+            IMDB Rating: 8.8
+            IMDB Votes: 1294646
+            Plot: A thief who steals corporate secrets through use of dream-sharing
+            technology is given the inverse task of planting an idea into the mind of a CEO.
+
+            Title: Senna
+            Year: 2010
+            Runtime: 106
+            IMDB Rating: 8.6
+            IMDB Votes: 41904
+            Plot: A documentary on Brazilian Formula One racing driver Ayrton Senna, who won the
+            F1 world championship three times before his death at age 34.
 
 .. _laravel-retrieve-query-builder:
 
