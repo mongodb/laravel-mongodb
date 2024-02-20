@@ -97,7 +97,6 @@ documents that meet the following criteria:
       The following example shows the syntax required to specify the query:
 
       .. code-block:: go
-         :emphasize-lines: 1
 
          $movies = Movie::where('year', 2010)
             ->where('imdb.rating', '>', 8.5)
