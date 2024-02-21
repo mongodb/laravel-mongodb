@@ -80,7 +80,7 @@ This section shows how to perform the following Eloquent model customizations:
 
 - :ref:`laravel-model-customize-collection-name`
 - :ref:`laravel-model-customize-primary-key`
-- :ref:`laravel-model-soft-delete:`
+- :ref:`laravel-model-soft-delete`
 - :ref:`laravel-model-cast-data-types`
 - :ref:`laravel-model-mass-assignment`
 
