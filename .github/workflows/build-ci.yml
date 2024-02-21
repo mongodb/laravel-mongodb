@@ -12,8 +12,6 @@ jobs:
 
         strategy:
             matrix:
-                mode:
-                    - "stable"
                 os:
                     - "ubuntu-latest"
                 mongodb:
@@ -77,8 +75,8 @@ jobs:
             -   name: "Install dependencies"
                 run: |
                   composer update --no-interaction \
-                  $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable') \
-                  $([[ "${{ matrix.mode }}" == stable ]] && echo ' --prefer-stable')
+                  $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest') \
+                  $([[ "${{ matrix.mode }}" != dev ]] && echo ' --prefer-stable')
             -   name: "Run tests"
                 run: "./vendor/bin/phpunit --coverage-clover coverage.xml"
                 env:
