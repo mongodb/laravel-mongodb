@@ -8,5 +8,5 @@ class Planet extends Model
 {
     protected $casts = [
         'discovery_dt' => 'datetime',
-    ]
+    ];
 }
