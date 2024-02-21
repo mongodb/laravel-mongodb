@@ -60,7 +60,7 @@ Extend the Authenticatable Model
 --------------------------------
 
 To configure MongoDB as the Laravel user provider, you can extend the
-{+odm-short+} `MongoDB\Laravel\Auth\User`` class. The following code example
+{+odm-short+} ``MongoDB\Laravel\Auth\User`` class. The following code example
 shows how to extend this class:
 
 .. literalinclude:: /includes/eloquent-models/AuthenticatableUser.php
@@ -239,7 +239,7 @@ To learn how to change the behavior when attempting to fill a field omitted
 from the ``$fillable`` array, see `Mass Assignment Exceptions <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#mass-assignment-exceptions>`__
 in the Laravel docs.
 
-.. _laravel-model-pruning
+.. _laravel-model-pruning:
 
 Specify Pruning Behavior
 ------------------------
@@ -265,7 +265,7 @@ Prunable Example
 
 The following example model shows how to perform a prune which calls the
 ``pruning()`` method before deleting a model that matches the query in the
-``prunable()`` method::
+``prunable()`` method:
 
 .. literalinclude:: /includes/eloquent-models/PlanetPrune.php
    :language: php
