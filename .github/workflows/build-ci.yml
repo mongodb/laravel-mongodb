@@ -12,6 +12,8 @@ jobs:
 
         strategy:
             matrix:
+                mode:
+                    - "stable"
                 os:
                     - "ubuntu-latest"
                 mongodb:
@@ -27,7 +29,10 @@ jobs:
                     - php: "8.1"
                       mongodb: "5.0"
                       mode: "low-deps"
-
+                    # Laravel 11
+                    - php: "8.3"
+                      mongodb: "7.0"
+                      mode: "dev"
         steps:
             -   uses: "actions/checkout@v4"
 
@@ -70,8 +75,10 @@ jobs:
                     restore-keys: "${{ matrix.os }}-composer-"
 
             -   name: "Install dependencies"
-                run: composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable')
-
+                run: |
+                  composer update --no-interaction \
+                  $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable') \
+                  $([[ "${{ matrix.mode }}" == stable ]] && echo ' --prefer-stable')
             -   name: "Run tests"
                 run: "./vendor/bin/phpunit --coverage-clover coverage.xml"
                 env:
