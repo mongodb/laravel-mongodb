@@ -11,6 +11,12 @@ Eloquent Model Class
 .. meta::
    :keywords: php framework, odm, code example, authentication, laravel
 
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
 Overview
 --------
 
@@ -25,8 +31,8 @@ to {+odm-short+} models:
 - :ref:`laravel-authenticatable-model` shows how to set MongoDB as the
   authentication user provider.
 - :ref:`laravel-model-customize` explains several model class customizations
-- :ref:`laravel-model-pruning` shows how to remove models that you no longer
-  need periodically.
+- :ref:`laravel-model-pruning` shows how to periodically remove models that
+  you no longer need.
 
 .. _laravel-model-define:
 
@@ -247,8 +253,8 @@ in the Laravel docs.
 Specify Pruning Behavior
 ------------------------
 
-Eloquent lets you specify criteria to delete model data that you no longer
-need automatically.  When you schedule or run the ``model:prune`` command,
+Eloquent lets you specify criteria to periodically delete model data that you
+no longer need.  When you schedule or run the ``model:prune`` command,
 Laravel calls the ``prunable()`` method on all models that import the
 ``Prunable`` and ``MassPrunable`` traits to match the models for deletion.
 

@@ -7,7 +7,7 @@ use MongoDB\Laravel\Eloquent\Model;
 class Planet extends Model
 {
     /**
-     * The attributes that are mass assignable.
+     * The mass assignable attributes.
      *
      * @var array
      */
