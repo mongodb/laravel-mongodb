@@ -6,5 +6,15 @@ use MongoDB\Laravel\Eloquent\Model;
 
 class Planet extends Model
 {
-      $fillable = ['name', 'gravitational_force', 'diameter', 'moons'];
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array
+     */
+    protected $fillable = [
+        'name',
+        'gravitational_force',
+        'diameter',
+        'moons',
+    ];
 }
