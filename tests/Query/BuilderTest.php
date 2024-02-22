@@ -13,6 +13,7 @@ use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
 use LogicException;
 use Mockery as m;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Connection;
@@ -24,7 +25,6 @@ use stdClass;
 
 use function collect;
 use function now;
-use function var_export;
 
 class BuilderTest extends TestCase
 {
@@ -36,16 +36,19 @@ class BuilderTest extends TestCase
         $mql = $builder->toMql();
 
         // Operations that return a Cursor expect a "typeMap" option.
-        if (isset($expected['find'][1])) {
+        if (isset($expected['find'])) {
             $expected['find'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
         }
 
-        if (isset($expected['aggregate'][1])) {
+        if (isset($expected['aggregate'])) {
             $expected['aggregate'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
         }
 
+        $expected = Document::fromPHP($expected)->toCanonicalExtendedJSON();
+        $mql = Document::fromPHP($mql)->toCanonicalExtendedJSON();
+
         // Compare with assertEquals because the query can contain BSON objects.
-        $this->assertEquals($expected, $mql, var_export($mql, true));
+        $this->assertJsonStringEqualsJsonString($expected, $mql);
     }
 
     public static function provideQueryBuilderToMql(): iterable
@@ -57,18 +60,39 @@ class BuilderTest extends TestCase
         $date = new DateTimeImmutable('2016-07-12 15:30:00');
 
         yield 'select replaces previous select' => [
-            ['aggregate' => ['$match' => [[], ['projection' => ['bar' => 1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$project' => ['bar' => true]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->select('foo')->select('bar'),
         ];
 
         yield 'select array' => [
-            ['aggregate' => ['$match' => [[], ['projection' => ['foo' => 1, 'bar' => 1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$project' => ['foo' => true, 'bar' => true]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->select(['foo', 'bar']),
         ];
 
         /** @see DatabaseQueryBuilderTest::testAddingSelects */
         yield 'addSelect' => [
-            ['aggregate' => ['$match' => [[], ['projection' => ['foo' => 1, 'bar' => 1, 'baz' => 1, 'boom' => 1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$project' => ['foo' => true, 'bar' => true, 'baz' => true, 'boom' => true]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->select('foo')
                 ->addSelect('bar')
                 ->addSelect(['baz', 'boom'])
@@ -76,68 +100,123 @@ class BuilderTest extends TestCase
         ];
 
         yield 'select all' => [
-            ['aggregate' => ['$match' => [[], []]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->select('*'),
         ];
 
         yield 'find all with select' => [
-            ['aggregate' => ['$match' => [[], ['projection' => ['foo' => 1, 'bar' => 1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$project' => ['foo' => true, 'bar' => true]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->select('foo', 'bar'),
         ];
 
         yield 'find equals' => [
-            ['aggregate' => ['$match' => [['foo' => 'bar'], []]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['foo' => 'bar']],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->where('foo', 'bar'),
         ];
 
         yield 'find with numeric field name' => [
-            ['aggregate' => ['$match' => [['123' => 'bar'], []]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['123' => 'bar']],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->where(123, 'bar'),
         ];
 
         yield 'where with single array of conditions' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$and' => [
-                            ['foo' => 1],
-                            ['bar' => 2],
+                        [
+                            '$match' => [
+                                '$and' => [
+                                    ['foo' => 1],
+                                    ['bar' => 2],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder->where(['foo' => 1, 'bar' => 2]),
         ];
 
         yield 'find > date' => [
-            ['aggregate' => ['$match' => [['foo' => ['$gt' => new UTCDateTime($date)]], []]]],
+            [
+                'aggregate' => [
+                    [
+                        [
+                            '$match' => ['foo' => ['$gt' => new UTCDateTime($date)]],
+                        ],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->where('foo', '>', $date),
         ];
 
         /** @see DatabaseQueryBuilderTest::testBasicWhereIns */
         yield 'whereIn' => [
-            ['aggregate' => ['$match' => [['foo' => ['$in' => ['bar', 'baz']]], []]]],
+            [
+                'aggregate' => [
+                    [
+                        [
+                            '$match' => ['foo' => ['$in' => ['bar', 'baz']]],
+                        ],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereIn('foo', ['bar', 'baz']),
         ];
 
         // Nested array are not flattened like in the Eloquent builder. MongoDB can compare objects.
         $array = [['issue' => 45582], ['id' => 2], [3]];
         yield 'whereIn nested array' => [
-            ['aggregate' => ['$match' => [['id' => ['$in' => $array]], []]]],
+            [
+                'aggregate' => [
+                    [
+                        [
+                            '$match' => ['id' => ['$in' => $array]],
+                        ],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereIn('id', $array),
         ];
 
         yield 'orWhereIn' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$in' => [1, 2, 3]]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['id' => 1],
+                                    ['id' => ['$in' => [1, 2, 3]]],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder->where('id', '=', 1)
@@ -146,20 +225,31 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testBasicWhereNotIns */
         yield 'whereNotIn' => [
-            ['aggregate' => ['$match' => [['id' => ['$nin' => [1, 2, 3]]], []]]],
+            [
+                'aggregate' => [
+                    [
+                        [
+                            '$match' => ['id' => ['$nin' => [1, 2, 3]]],
+                        ],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereNotIn('id', [1, 2, 3]),
         ];
 
         yield 'orWhereNotIn' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$nin' => [1, 2, 3]]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['id' => 1],
+                                    ['id' => ['$nin' => [1, 2, 3]]],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder->where('id', '=', 1)
@@ -168,25 +258,45 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testEmptyWhereIns */
         yield 'whereIn empty array' => [
-            ['aggregate' => ['$match' => [['id' => ['$in' => []]], []]]],
+            [
+                'aggregate' => [
+                    [
+                        [
+                            '$match' => ['id' => ['$in' => []]],
+                        ],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->whereIn('id', []),
         ];
 
         yield 'find limit offset select' => [
-            ['aggregate' => ['$match' => [[], ['limit' => 10, 'skip' => 5, 'projection' => ['foo' => 1, 'bar' => 1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$skip' => 5],
+                        ['$limit' => 10],
+                        ['$project' => ['foo' => true, 'bar' => true]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->limit(10)->offset(5)->select('foo', 'bar'),
         ];
 
         yield 'where accepts $ in operators' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['foo' => ['$type' => 2]],
-                            ['foo' => ['$type' => 4]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['foo' => ['$type' => 2]],
+                                    ['foo' => ['$type' => 4]],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -197,14 +307,17 @@ class BuilderTest extends TestCase
         /** @see DatabaseQueryBuilderTest::testBasicWhereNot() */
         yield 'whereNot (multiple)' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$and' => [
-                            ['$nor' => [['name' => 'foo']]],
-                            ['$nor' => [['name' => ['$ne' => 'bar']]]],
+                        [
+                            '$match' => [
+                                '$and' => [
+                                    ['$nor' => [['name' => 'foo']]],
+                                    ['$nor' => [['name' => ['$ne' => 'bar']]]],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -215,14 +328,17 @@ class BuilderTest extends TestCase
         /** @see DatabaseQueryBuilderTest::testBasicOrWheres() */
         yield 'where orWhere' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            ['email' => 'foo'],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['id' => 1],
+                                    ['email' => 'foo'],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -233,14 +349,17 @@ class BuilderTest extends TestCase
         /** @see DatabaseQueryBuilderTest::testBasicOrWhereNot() */
         yield 'orWhereNot' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['$nor' => [['name' => 'foo']]],
-                            ['$nor' => [['name' => ['$ne' => 'bar']]]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['$nor' => [['name' => 'foo']]],
+                                    ['$nor' => [['name' => ['$ne' => 'bar']]]],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -250,14 +369,17 @@ class BuilderTest extends TestCase
 
         yield 'whereNot orWhere' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['$nor' => [['name' => 'foo']]],
-                            ['name' => ['$ne' => 'bar']],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['$nor' => [['name' => 'foo']]],
+                                    ['name' => ['$ne' => 'bar']],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -268,9 +390,12 @@ class BuilderTest extends TestCase
         /** @see DatabaseQueryBuilderTest::testWhereNot() */
         yield 'whereNot callable' => [
             [
-                'find' => [
-                    ['$nor' => [['name' => 'foo']]],
-                    [], // options
+                'aggregate' => [
+                    [
+                        [
+                            '$match' => ['$nor' => [['name' => 'foo']]],
+                        ],
+                    ],
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -279,14 +404,17 @@ class BuilderTest extends TestCase
 
         yield 'where whereNot' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$and' => [
-                            ['name' => 'bar'],
-                            ['$nor' => [['email' => 'foo']]],
+                        [
+                            '$match' => [
+                                '$and' => [
+                                    ['name' => 'bar'],
+                                    ['$nor' => [['email' => 'foo']]],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -298,18 +426,21 @@ class BuilderTest extends TestCase
 
         yield 'whereNot (nested)' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$nor' => [
-                            [
-                                '$and' => [
-                                    ['name' => 'foo'],
-                                    ['$nor' => [['email' => ['$ne' => 'bar']]]],
+                        [
+                            '$match' => [
+                                '$nor' => [
+                                    [
+                                        '$and' => [
+                                            ['name' => 'foo'],
+                                            ['$nor' => [['email' => ['$ne' => 'bar']]]],
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -321,14 +452,17 @@ class BuilderTest extends TestCase
 
         yield 'orWhere orWhereNot' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['name' => 'bar'],
-                            ['$nor' => [['email' => 'foo']]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['name' => 'bar'],
+                                    ['$nor' => [['email' => 'foo']]],
+                                ],
+                            ],
                         ],
                     ],
-                    [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
@@ -340,11 +474,15 @@ class BuilderTest extends TestCase
 
         yield 'where orWhereNot' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['name' => 'bar'],
-                            ['$nor' => [['email' => 'foo']]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['name' => 'bar'],
+                                    ['$nor' => [['email' => 'foo']]],
+                                ],
+                            ],
                         ],
                     ],
                     [], // options
@@ -358,13 +496,17 @@ class BuilderTest extends TestCase
         /** @see DatabaseQueryBuilderTest::testWhereNotWithArrayConditions() */
         yield 'whereNot with arrays of single condition' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$nor' => [
-                            [
-                                '$and' => [
-                                    ['foo' => 1],
-                                    ['bar' => 2],
+                        [
+                            '$match' => [
+                                '$nor' => [
+                                    [
+                                        '$and' => [
+                                            ['foo' => 1],
+                                            ['bar' => 2],
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
@@ -378,13 +520,17 @@ class BuilderTest extends TestCase
 
         yield 'whereNot with single array of conditions' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$nor' => [
-                            [
-                                '$and' => [
-                                    ['foo' => 1],
-                                    ['bar' => 2],
+                        [
+                            '$match' => [
+                                '$nor' => [
+                                    [
+                                        '$and' => [
+                                            ['foo' => 1],
+                                            ['bar' => 2],
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
@@ -398,13 +544,17 @@ class BuilderTest extends TestCase
 
         yield 'whereNot with arrays of single condition with operator' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$nor' => [
-                            [
-                                '$and' => [
-                                    ['foo' => 1],
-                                    ['bar' => ['$lt' => 2]],
+                        [
+                            '$match' => [
+                                '$nor' => [
+                                    [
+                                        '$and' => [
+                                            ['foo' => 1],
+                                            ['bar' => ['$lt' => 2]],
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
@@ -420,22 +570,25 @@ class BuilderTest extends TestCase
         ];
 
         yield 'where all' => [
-            ['aggregate' => ['$match' => [['tags' => ['$all' => ['ssl', 'security']]], []]]],
+            ['aggregate' => [[['$match' => ['tags' => ['$all' => ['ssl', 'security']]]]], []]],
             fn (Builder $builder) => $builder->where('tags', 'all', ['ssl', 'security']),
         ];
 
         yield 'where all nested operators' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'tags' => [
-                            '$all' => [
-                                ['$elemMatch' => ['size' => 'M', 'num' => ['$gt' => 50]]],
-                                ['$elemMatch' => ['num' => 100, 'color' => 'green']],
+                        [
+                            '$match' => [
+                                'tags' => [
+                                    '$all' => [
+                                        ['$elemMatch' => ['size' => 'M', 'num' => ['$gt' => 50]]],
+                                        ['$elemMatch' => ['num' => 100, 'color' => 'green']],
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->where('tags', 'all', [
@@ -446,57 +599,88 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testForPage() */
         yield 'forPage' => [
-            ['aggregate' => ['$match' => [[], ['limit' => 20, 'skip' => 40]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$skip' => 40],
+                        ['$limit' => 20],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->forPage(3, 20),
         ];
 
         /** @see DatabaseQueryBuilderTest::testLimitsAndOffsets() */
         yield 'offset limit' => [
-            ['aggregate' => ['$match' => [[], ['skip' => 5, 'limit' => 10]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$skip' => 5],
+                        ['$limit' => 10],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->offset(5)->limit(10),
         ];
 
         yield 'offset limit zero (unset)' => [
-            ['aggregate' => ['$match' => [[], []]]],
+            ['aggregate' => [[['$match' => new stdClass()]]]],
             fn (Builder $builder) => $builder
                 ->offset(0)->limit(0),
         ];
 
         yield 'offset limit zero (reset)' => [
-            ['aggregate' => ['$match' => [[], []]]],
+            ['aggregate' => [[['$match' => new stdClass()]]]],
             fn (Builder $builder) => $builder
                 ->offset(5)->limit(10)
                 ->offset(0)->limit(0),
         ];
 
         yield 'offset limit negative (unset)' => [
-            ['aggregate' => ['$match' => [[], []]]],
+            ['aggregate' => [[['$match' => new stdClass()]]]],
             fn (Builder $builder) => $builder
                 ->offset(-5)->limit(-10),
         ];
 
         yield 'offset limit null (reset)' => [
-            ['aggregate' => ['$match' => [[], []]]],
+            ['aggregate' => [[['$match' => new stdClass()]]]],
             fn (Builder $builder) => $builder
                 ->offset(5)->limit(10)
                 ->offset(null)->limit(null),
         ];
 
         yield 'skip take (aliases)' => [
-            ['aggregate' => ['$match' => [[], ['skip' => 5, 'limit' => 10]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$skip' => 5],
+                        ['$limit' => 10],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->skip(5)->limit(10),
         ];
 
         /** @see DatabaseQueryBuilderTest::testOrderBys() */
         yield 'orderBy multiple columns' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['email' => 1, 'age' => -1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['email' => 1, 'age' => -1]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->orderBy('email')
                 ->orderBy('age', 'desc'),
         ];
 
         yield 'orders = null' => [
-            ['aggregate' => ['$match' => [[], []]]],
+            ['aggregate' => [[['$match' => new stdClass()]]]],
             function (Builder $builder) {
                 $builder->orders = null;
 
@@ -505,7 +689,7 @@ class BuilderTest extends TestCase
         ];
 
         yield 'orders = []' => [
-            ['aggregate' => ['$match' => [[], []]]],
+            ['aggregate' => [[['$match' => new stdClass()]]]],
             function (Builder $builder) {
                 $builder->orders = [];
 
@@ -514,35 +698,56 @@ class BuilderTest extends TestCase
         ];
 
         yield 'multiple orders with direction' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['email' => -1, 'age' => 1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['email' => -1, 'age' => 1]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder
                 ->orderBy('email', -1)
                 ->orderBy('age', 1),
         ];
 
         yield 'orderByDesc' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['email' => -1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['email' => -1]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->orderByDesc('email'),
         ];
 
         /** @see DatabaseQueryBuilderTest::testReorder() */
         yield 'reorder reset' => [
-            ['aggregate' => ['$match' => [[], []]]],
+            ['aggregate' => [[['$match' => new stdClass()]]]],
             fn (Builder $builder) => $builder->orderBy('name')->reorder(),
         ];
 
         yield 'reorder column' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['name' => -1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['name' => -1]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->orderBy('name')->reorder('name', 'desc'),
         ];
 
         /** @link https://www.mongodb.com/docs/manual/reference/method/cursor.sort/#text-score-metadata-sort */
         yield 'orderBy array meta' => [
             [
-                'find' => [
-                    ['$text' => ['$search' => 'operating']],
-                    ['sort' => ['score' => ['$meta' => 'textScore']]],
-                ],
+                'aggregate' => [[
+                    ['$match' => ['$text' => ['$search' => 'operating']]],
+                    ['$sort' => ['score' => ['$meta' => 'textScore']]],
+                ]],
             ],
             fn (Builder $builder) => $builder
                 ->where('$text', ['$search' => 'operating'])
@@ -551,23 +756,27 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testWhereBetweens() */
         yield 'whereBetween array of numbers' => [
-            ['aggregate' => ['$match' => [['id' => ['$gte' => 1, '$lte' => 2]], []]]],
+            ['aggregate' => [[['$match' => ['id' => ['$gte' => 1, '$lte' => 2]]]]]],
             fn (Builder $builder) => $builder->whereBetween('id', [1, 2]),
         ];
 
         yield 'whereBetween nested array of numbers' => [
-            ['aggregate' => ['$match' => [['id' => ['$gte' => [1], '$lte' => [2, 3]]], []]]],
+            ['aggregate' => [[['$match' => ['id' => ['$gte' => [1], '$lte' => [2, 3]]]]]]],
             fn (Builder $builder) => $builder->whereBetween('id', [[1], [2, 3]]),
         ];
 
         $period = now()->toPeriod(now()->addMonth());
         yield 'whereBetween CarbonPeriod' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'created_at' => [
-                            '$gte' => new UTCDateTime($period->getStartDate()),
-                            '$lte' => new UTCDateTime($period->getEndDate()),
+                        [
+                            '$match' => [
+                                'created_at' => [
+                                    '$gte' => new UTCDateTime($period->getStartDate()),
+                                    '$lte' => new UTCDateTime($period->getEndDate()),
+                                ],
+                            ],
                         ],
                     ],
                     [], // options
@@ -577,18 +786,22 @@ class BuilderTest extends TestCase
         ];
 
         yield 'whereBetween collection' => [
-            ['aggregate' => ['$match' => [['id' => ['$gte' => 1, '$lte' => 2]], []]]],
+            ['aggregate' => [[['$match' => ['id' => ['$gte' => 1, '$lte' => 2]]]]]],
             fn (Builder $builder) => $builder->whereBetween('id', collect([1, 2])),
         ];
 
         /** @see DatabaseQueryBuilderTest::testOrWhereBetween() */
         yield 'orWhereBetween array of numbers' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => 3, '$lte' => 5]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['id' => 1],
+                                    ['id' => ['$gte' => 3, '$lte' => 5]],
+                                ],
+                            ],
                         ],
                     ],
                     [], // options
@@ -602,11 +815,15 @@ class BuilderTest extends TestCase
         /** @link https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order/#arrays */
         yield 'orWhereBetween nested array of numbers' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => [4], '$lte' => [6, 8]]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['id' => 1],
+                                    ['id' => ['$gte' => [4], '$lte' => [6, 8]]],
+                                ],
+                            ],
                         ],
                     ],
                     [], // options
@@ -619,11 +836,15 @@ class BuilderTest extends TestCase
 
         yield 'orWhereBetween collection' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => 3, '$lte' => 4]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['id' => 1],
+                                    ['id' => ['$gte' => 3, '$lte' => 4]],
+                                ],
+                            ],
                         ],
                     ],
                     [], // options
@@ -636,11 +857,15 @@ class BuilderTest extends TestCase
 
         yield 'whereNotBetween array of numbers' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => ['$lte' => 1]],
-                            ['id' => ['$gte' => 2]],
+                        [
+                            '$match' => [
+                                '$or' => [
+                                    ['id' => ['$lte' => 1]],
+                                    ['id' => ['$gte' => 2]],
+                                ],
+                            ],
                         ],
                     ],
                     [], // options
@@ -652,14 +877,18 @@ class BuilderTest extends TestCase
         /** @see DatabaseQueryBuilderTest::testOrWhereNotBetween() */
         yield 'orWhereNotBetween array of numbers' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            [
+                        [
+                            '$match' => [
                                 '$or' => [
-                                    ['id' => ['$lte' => 3]],
-                                    ['id' => ['$gte' => 5]],
+                                    ['id' => 1],
+                                    [
+                                        '$or' => [
+                                            ['id' => ['$lte' => 3]],
+                                            ['id' => ['$gte' => 5]],
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
@@ -674,14 +903,18 @@ class BuilderTest extends TestCase
 
         yield 'orWhereNotBetween nested array of numbers' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            [
+                        [
+                            '$match' => [
                                 '$or' => [
-                                    ['id' => ['$lte' => [2, 3]]],
-                                    ['id' => ['$gte' => [5]]],
+                                    ['id' => 1],
+                                    [
+                                        '$or' => [
+                                            ['id' => ['$lte' => [2, 3]]],
+                                            ['id' => ['$gte' => [5]]],
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
@@ -696,14 +929,18 @@ class BuilderTest extends TestCase
 
         yield 'orWhereNotBetween collection' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$or' => [
-                            ['id' => 1],
-                            [
+                        [
+                            '$match' => [
                                 '$or' => [
-                                    ['id' => ['$lte' => 3]],
-                                    ['id' => ['$gte' => 4]],
+                                    ['id' => 1],
+                                    [
+                                        '$or' => [
+                                            ['id' => ['$lte' => 3]],
+                                            ['id' => ['$gte' => 4]],
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
@@ -717,81 +954,84 @@ class BuilderTest extends TestCase
         ];
 
         yield 'where like' => [
-            ['aggregate' => ['$match' => [['name' => new Regex('^acme$', 'i')], []]]],
+            ['aggregate' => [[['$match' => ['name' => new Regex('^acme$', 'i')]]]]],
             fn (Builder $builder) => $builder->where('name', 'like', 'acme'),
         ];
 
         yield 'where ilike' => [ // Alias for like
-            ['aggregate' => ['$match' => [['name' => new Regex('^acme$', 'i')], []]]],
+            ['aggregate' => [[['$match' => ['name' => new Regex('^acme$', 'i')]]]]],
             fn (Builder $builder) => $builder->where('name', 'ilike', 'acme'),
         ];
 
         yield 'where like escape' => [
-            ['aggregate' => ['$match' => [['name' => new Regex('^\^ac\.me\$$', 'i')], []]]],
+            ['aggregate' => [[['$match' => ['name' => new Regex('^\^ac\.me\$$', 'i')]]]]],
             fn (Builder $builder) => $builder->where('name', 'like', '^ac.me$'),
         ];
 
         yield 'where like unescaped \% \_' => [
-            ['aggregate' => ['$match' => [['name' => new Regex('^a%cm_e$', 'i')], []]]],
+            ['aggregate' => [[['$match' => ['name' => new Regex('^a%cm_e$', 'i')]]]]],
             fn (Builder $builder) => $builder->where('name', 'like', 'a\%cm\_e'),
         ];
 
         yield 'where like %' => [
-            ['aggregate' => ['$match' => [['name' => new Regex('^.*ac.*me.*$', 'i')], []]]],
+            ['aggregate' => [[['$match' => ['name' => new Regex('^.*ac.*me.*$', 'i')]]]]],
             fn (Builder $builder) => $builder->where('name', 'like', '%ac%%me%'),
         ];
 
         yield 'where like _' => [
-            ['aggregate' => ['$match' => [['name' => new Regex('^.ac..me.$', 'i')], []]]],
+            ['aggregate' => [[['$match' => ['name' => new Regex('^.ac..me.$', 'i')]]]]],
             fn (Builder $builder) => $builder->where('name', 'like', '_ac__me_'),
         ];
 
         $regex = new Regex('^acme$', 'si');
         yield 'where BSON\Regex' => [
-            ['aggregate' => ['$match' => [['name' => $regex], []]]],
+            ['aggregate' => [[['$match' => ['name' => $regex]]]]],
             fn (Builder $builder) => $builder->where('name', 'regex', $regex),
         ];
 
         yield 'where regexp' => [ // Alias for regex
-            ['aggregate' => ['$match' => [['name' => $regex], []]]],
+            ['aggregate' => [[['$match' => ['name' => $regex]]]]],
             fn (Builder $builder) => $builder->where('name', 'regex', '/^acme$/si'),
         ];
 
         yield 'where regex delimiter /' => [
-            ['aggregate' => ['$match' => [['name' => $regex], []]]],
+            ['aggregate' => [[['$match' => ['name' => $regex]]]]],
             fn (Builder $builder) => $builder->where('name', 'regex', '/^acme$/si'),
         ];
 
         yield 'where regex delimiter #' => [
-            ['aggregate' => ['$match' => [['name' => $regex], []]]],
+            ['aggregate' => [[['$match' => ['name' => $regex]]]]],
             fn (Builder $builder) => $builder->where('name', 'regex', '#^acme$#si'),
         ];
 
         yield 'where regex delimiter ~' => [
-            ['aggregate' => ['$match' => [['name' => $regex], []]]],
+            ['aggregate' => [[['$match' => ['name' => $regex]]]]],
             fn (Builder $builder) => $builder->where('name', 'regex', '#^acme$#si'),
         ];
 
         yield 'where regex with escaped characters' => [
-            ['aggregate' => ['$match' => [['name' => new Regex('a\.c\/m\+e', '')], []]]],
+            ['aggregate' => [[['$match' => ['name' => new Regex('a\.c\/m\+e', '')]]]]],
             fn (Builder $builder) => $builder->where('name', 'regex', '/a\.c\/m\+e/'),
         ];
 
         yield 'where not regex' => [
-            ['aggregate' => ['$match' => [['name' => ['$not' => $regex]], []]]],
+            ['aggregate' => [[['$match' => ['name' => ['$not' => $regex]]]]]],
             fn (Builder $builder) => $builder->where('name', 'not regex', '/^acme$/si'),
         ];
 
         yield 'where date' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'created_at' => [
-                            '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
-                            '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        [
+                            '$match' => [
+                                'created_at' => [
+                                    '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                                    '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                                ],
+                            ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDate('created_at', '2018-09-30'),
@@ -799,14 +1039,17 @@ class BuilderTest extends TestCase
 
         yield 'where date DateTimeImmutable' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'created_at' => [
-                            '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
-                            '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        [
+                            '$match' => [
+                                'created_at' => [
+                                    '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                                    '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                                ],
+                            ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDate('created_at', '=', new DateTimeImmutable('2018-09-30 15:00:00 +02:00')),
@@ -814,16 +1057,19 @@ class BuilderTest extends TestCase
 
         yield 'where date !=' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'created_at' => [
-                            '$not' => [
-                                '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
-                                '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        [
+                            '$match' => [
+                                'created_at' => [
+                                    '$not' => [
+                                        '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                                        '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDate('created_at', '!=', '2018-09-30'),
@@ -831,13 +1077,16 @@ class BuilderTest extends TestCase
 
         yield 'where date <' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'created_at' => [
-                            '$lt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                        [
+                            '$match' => [
+                                'created_at' => [
+                                    '$lt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                                ],
+                            ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDate('created_at', '<', '2018-09-30'),
@@ -845,13 +1094,16 @@ class BuilderTest extends TestCase
 
         yield 'where date >=' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'created_at' => [
-                            '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                        [
+                            '$match' => [
+                                'created_at' => [
+                                    '$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00')),
+                                ],
+                            ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDate('created_at', '>=', '2018-09-30'),
@@ -859,13 +1111,16 @@ class BuilderTest extends TestCase
 
         yield 'where date >' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'created_at' => [
-                            '$gt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        [
+                            '$match' => [
+                                'created_at' => [
+                                    '$gt' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                                ],
+                            ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDate('created_at', '>', '2018-09-30'),
@@ -873,13 +1128,16 @@ class BuilderTest extends TestCase
 
         yield 'where date <=' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'created_at' => [
-                            '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                        [
+                            '$match' => [
+                                'created_at' => [
+                                    '$lte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 23:59:59.999 +00:00')),
+                                ],
+                            ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDate('created_at', '<=', '2018-09-30'),
@@ -887,16 +1145,19 @@ class BuilderTest extends TestCase
 
         yield 'where day' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$eq' => [
-                                ['$dayOfMonth' => '$created_at'],
-                                5,
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$eq' => [
+                                        ['$dayOfMonth' => '$created_at'],
+                                        5,
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDay('created_at', 5),
@@ -904,16 +1165,19 @@ class BuilderTest extends TestCase
 
         yield 'where day > string' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$gt' => [
-                                ['$dayOfMonth' => '$created_at'],
-                                5,
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$gt' => [
+                                        ['$dayOfMonth' => '$created_at'],
+                                        5,
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereDay('created_at', '>', '05'),
@@ -921,16 +1185,19 @@ class BuilderTest extends TestCase
 
         yield 'where month' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$eq' => [
-                                ['$month' => '$created_at'],
-                                10,
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$eq' => [
+                                        ['$month' => '$created_at'],
+                                        10,
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereMonth('created_at', 10),
@@ -938,16 +1205,19 @@ class BuilderTest extends TestCase
 
         yield 'where month > string' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$gt' => [
-                                ['$month' => '$created_at'],
-                                5,
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$gt' => [
+                                        ['$month' => '$created_at'],
+                                        5,
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereMonth('created_at', '>', '05'),
@@ -955,16 +1225,19 @@ class BuilderTest extends TestCase
 
         yield 'where year' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$eq' => [
-                                ['$year' => '$created_at'],
-                                2023,
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$eq' => [
+                                        ['$year' => '$created_at'],
+                                        2023,
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereYear('created_at', 2023),
@@ -972,16 +1245,19 @@ class BuilderTest extends TestCase
 
         yield 'where year > string' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$gt' => [
-                                ['$year' => '$created_at'],
-                                2023,
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$gt' => [
+                                        ['$year' => '$created_at'],
+                                        2023,
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereYear('created_at', '>', '2023'),
@@ -989,16 +1265,19 @@ class BuilderTest extends TestCase
 
         yield 'where time HH:MM:SS' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$eq' => [
-                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
-                                '10:11:12',
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$eq' => [
+                                        ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                                        '10:11:12',
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereTime('created_at', '10:11:12'),
@@ -1006,16 +1285,19 @@ class BuilderTest extends TestCase
 
         yield 'where time HH:MM' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$eq' => [
-                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M']],
-                                '10:11',
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$eq' => [
+                                        ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M']],
+                                        '10:11',
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereTime('created_at', '10:11'),
@@ -1023,16 +1305,19 @@ class BuilderTest extends TestCase
 
         yield 'where time HH' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$eq' => [
-                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H']],
-                                '10',
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$eq' => [
+                                        ['$dateToString' => ['date' => '$created_at', 'format' => '%H']],
+                                        '10',
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereTime('created_at', '10'),
@@ -1040,16 +1325,19 @@ class BuilderTest extends TestCase
 
         yield 'where time DateTime' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$eq' => [
-                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
-                                '10:11:12',
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$eq' => [
+                                        ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                                        '10:11:12',
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereTime('created_at', new DateTimeImmutable('2023-08-22 10:11:12')),
@@ -1057,22 +1345,26 @@ class BuilderTest extends TestCase
 
         yield 'where time >' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        '$expr' => [
-                            '$gt' => [
-                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
-                                '10:11:12',
+                        [
+                            '$match' => [
+                                '$expr' => [
+                                    '$gt' => [
+                                        ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                                        '10:11:12',
+                                    ],
+                                ],
                             ],
                         ],
                     ],
-                    [],
                 ],
             ],
             fn (Builder $builder) => $builder->whereTime('created_at', '>', '10:11:12'),
         ];
 
         /** @see DatabaseQueryBuilderTest::testBasicSelectDistinct */
+        /** @todo implement distinct using agg pipeline
         yield 'distinct' => [
             ['distinct' => ['foo', [], []]],
             fn (Builder $builder) => $builder->distinct('foo'),
@@ -1084,42 +1376,86 @@ class BuilderTest extends TestCase
                 ->distinct(),
         ];
 
-        /** @see DatabaseQueryBuilderTest::testBasicSelectDistinctOnColumns */
         yield 'select distinct on' => [
             ['distinct' => ['foo', [], []]],
             fn (Builder $builder) => $builder->distinct('foo')
                 ->select('foo', 'bar'),
         ];
+        */
 
         /** @see DatabaseQueryBuilderTest::testLatest() */
         yield 'latest' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['created_at' => -1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['created_at' => -1]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->latest(),
         ];
 
         yield 'latest limit' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['created_at' => -1], 'limit' => 1]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['created_at' => -1]],
+                        ['$limit' => 1],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->latest()->limit(1),
         ];
 
         yield 'latest custom field' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['updated_at' => -1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['updated_at' => -1]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->latest('updated_at'),
         ];
 
         /** @see DatabaseQueryBuilderTest::testOldest() */
         yield 'oldest' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['created_at' => 1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['created_at' => 1]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->oldest(),
         ];
 
         yield 'oldest limit' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['created_at' => 1], 'limit' => 1]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['created_at' => 1]],
+                        ['$limit' => 1],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->oldest()->limit(1),
         ];
 
         yield 'oldest custom field' => [
-            ['aggregate' => ['$match' => [[], ['sort' => ['updated_at' => 1]]]]],
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => new stdClass()],
+                        ['$sort' => ['updated_at' => 1]],
+                    ],
+                ],
+            ],
             fn (Builder $builder) => $builder->oldest('updated_at'),
         ];
 
@@ -1135,13 +1471,17 @@ class BuilderTest extends TestCase
 
         yield 'sub-query' => [
             [
-                'find' => [
+                'aggregate' => [
                     [
-                        'filters' => [
-                            '$elemMatch' => [
-                                '$and' => [
-                                    ['search_by' => 'by search'],
-                                    ['value' => 'foo'],
+                        [
+                            '$match' => [
+                                'filters' => [
+                                    '$elemMatch' => [
+                                        '$and' => [
+                                            ['search_by' => 'by search'],
+                                            ['value' => 'foo'],
+                                        ],
+                                    ],
                                 ],
                             ],
                         ],
