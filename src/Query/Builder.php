@@ -28,6 +28,7 @@ use MongoDB\Builder\Pipeline;
 use MongoDB\Builder\Stage\GroupStage;
 use MongoDB\Builder\Stage\LimitStage;
 use MongoDB\Builder\Stage\MatchStage;
+use MongoDB\Builder\Stage\ProjectStage;
 use MongoDB\Builder\Stage\ReplaceRootStage;
 use MongoDB\Builder\Stage\SkipStage;
 use MongoDB\Builder\Stage\SortStage;
@@ -440,15 +441,8 @@ class Builder extends BaseBuilder
             $projection = array_merge($projection, $this->projections);
         }
 
-        $options = [];
-
-        // Apply order, offset, limit and projection
-        if ($this->timeout) {
-            $options['maxTimeMS'] = $this->timeout * 1000;
-        }
-
         if ($this->orders) {
-            $pipeline[] = new SortStage($this->orders);
+            $pipeline[] = new SortStage(...$this->orders);
         }
 
         if ($this->offset) {
@@ -459,22 +453,21 @@ class Builder extends BaseBuilder
             $pipeline[] = new LimitStage($this->limit);
         }
 
+        if ($projection) {
+            $pipeline[] = new ProjectStage(...$projection);
+        }
+
+        $options = ['typeMap' => ['root' => 'array', 'document' => 'array']];
+
+        if ($this->timeout) {
+            $options['maxTimeMS'] = $this->timeout * 1000;
+        }
+
         if ($this->hint) {
-            // @todo
             $options['hint'] = $this->hint;
         }
 
-        if ($projection) {
-            $options['projection'] = $projection;
-        }
-
-        // Fix for legacy support, converts the results to arrays instead of objects.
-        $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
-
-        // Add custom query options
-        if (count($this->options)) {
-            $options = array_merge($options, $this->options);
-        }
+        $options = array_merge($options, $this->options);
 
         $options = $this->inheritConnectionOptions($options);
 
