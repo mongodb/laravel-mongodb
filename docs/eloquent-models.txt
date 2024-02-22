@@ -168,7 +168,7 @@ Keep in mind guarding still works, but you may experience unexpected behavior.
 Schema
 ------
 
-The database driver also has (limited) schema builder support. You can 
+The database driver also has (limited) schema builder support. You can
 conveniently manipulate collections and set indexes.
 
 Basic Usage
@@ -351,7 +351,7 @@ relation definition.
 
 .. code-block:: php
 
-   $book = Book::first();
+   $book = User::first()->books()->first();
 
    $user = $book->user;
 
@@ -455,7 +455,7 @@ Inserting and updating embedded models works similar to the ``hasOne`` relation:
        $book->author()
             ->create(['name' => 'John Doe']);
 
-You can update the embedded model using the ``save`` method (available since 
+You can update the embedded model using the ``save`` method (available since
 release 2.0.0):
 
 .. code-block:: php
@@ -476,13 +476,13 @@ You can replace the embedded model with a new model like this:
 Cross-Database Relationships
 ----------------------------
 
-If you're using a hybrid MongoDB and SQL setup, you can define relationships 
+If you're using a hybrid MongoDB and SQL setup, you can define relationships
 across them.
 
-The model will automatically return a MongoDB-related or SQL-related relation 
+The model will automatically return a MongoDB-related or SQL-related relation
 based on the type of the related model.
 
-If you want this functionality to work both ways, your SQL-models will need 
+If you want this functionality to work both ways, your SQL-models will need
 to use the ``MongoDB\Laravel\Eloquent\HybridRelations`` trait.
 
 **This functionality only works for ``hasOne``, ``hasMany`` and ``belongsTo``.**

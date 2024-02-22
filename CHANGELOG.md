@@ -4,11 +4,11 @@ All notable changes to this project will be documented in this file.
 ## [unreleased]
 
 * Add support for Laravel 11 by @GromNaN in [#2735](https://github.com/mongodb/laravel-mongodb/pull/2735)
-* Fix `Query\Builder::dump` and `dd` methods to dump the MongoDB query by @GromNaN in [#2727](https://github.com/mongodb/laravel-mongodb/pull/2727) and [#2730](https://github.com/mongodb/laravel-mongodb/pull/2730)
 
-## [4.1.2]
+## [4.1.2] - 2024-02-22
 
 * Fix support for subqueries using the query builder by @GromNaN in [#2717](https://github.com/mongodb/laravel-mongodb/pull/2717)
+* Fix `Query\Builder::dump` and `dd` methods to dump the MongoDB query by @GromNaN in [#2727](https://github.com/mongodb/laravel-mongodb/pull/2727) and [#2730](https://github.com/mongodb/laravel-mongodb/pull/2730)
 
 ## [4.1.1] - 2024-01-17
 
