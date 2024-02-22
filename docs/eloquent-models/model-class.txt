@@ -30,7 +30,7 @@ to {+odm-short+} models:
 - :ref:`laravel-model-define` demonstrates how to create a model class.
 - :ref:`laravel-authenticatable-model` shows how to set MongoDB as the
   authentication user provider.
-- :ref:`laravel-model-customize` explains several model class customizations
+- :ref:`laravel-model-customize` explains several model class customizations.
 - :ref:`laravel-model-pruning` shows how to periodically remove models that
   you no longer need.
 
@@ -227,7 +227,7 @@ by using the ``$fillable`` attribute:
 
 .. literalinclude:: /includes/eloquent-models/PlanetMassAssignment.php
    :language: php
-   :emphasize-lines: 9
+   :emphasize-lines: 14-19
    :dedent:
 
 The following code example shows mass assignment of the ``Planet`` model:
