@@ -1,8 +1,3 @@
-.. _laravel-eloquent-model-class:
-
-====================
-Eloquent Model Class
-====================
 
 .. facet::
    :name: genre
@@ -42,19 +37,31 @@ Define an Eloquent Model Class
 Eloquent models are classes that represent your data. They include methods
 that perform database operations such as inserts, updates, and deletes.
 
-To declare a {+odm-short+} model class, create a file in your Laravel
-application ``app/Models`` directory. Add the import for the
-``MongoDB\Laravel\Eloquent\Model`` package and extend the ``Model`` class as
-shown in the following code example:
+To declare a {+odm-short+} model, create a class in the ``app/Models``
+directory of your Laravel application that extends
+``MongoDB\Laravel\Eloquent\Model`` as shown in the following code example:
 
 .. literalinclude:: /includes/eloquent-models/Planet.php
    :language: php
+   :emphasize-lines: 3,5,7
    :dedent:
 
-Alternatively, use the ``artisan`` console to generate the model class and
-change the ``Illuminate\Database\Eloquent\Model`` import to ``MongoDB\Laravel\Eloquent\Model``.
-To learn more about the ``artisan`` console, see `Artisan Console <https://laravel.com/docs/{+laravel-docs-version+}/artisan>`__
-in the Laravel docs.
+By default, the model uses the MongoDB database name set in your Laravel
+application's ``config/database.php`` setting and the snake case plural
+form of your model class name for the collection.
+
+This model is stored in the ``planets`` MongoDB collection.
+
+.. tip::
+
+   Alternatively, use the ``artisan`` console to generate the model class and
+   change the ``Illuminate\Database\Eloquent\Model`` import to ``MongoDB\Laravel\Eloquent\Model``.
+   To learn more about the ``artisan`` console, see `Artisan Console <https://laravel.com/docs/{+laravel-docs-version+}/artisan>`__
+   in the Laravel docs.
+
+To learn how to specify the database name that your Laravel application uses,
+:ref:`laravel-quick-start-connect-to-mongodb`.
+
 
 .. _laravel-authenticatable-model:
 
@@ -92,13 +99,15 @@ customizations:
 Change the Model Collection Name
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To customize the name of the collection the model uses to retrieve and save
-data in MongoDB, override the ``$collection`` property of the model
+By default, the model uses the snake case plural form of your model
+class name. To change the name of the collection the model uses to retrieve
+and save data in MongoDB, override the ``$collection`` property of the model
 class.
 
-By default, the model uses the MongoDB database name set in your Laravel
-application's ``config/database.php`` setting and the snake case plural form of
-your model class name for the collection.
+.. note::
+
+   We recommend using the default collection naming behavior to keep
+   the associations between models and collections straightforward.
 
 The following example specifies the custom MongoDB collection name,
 ``celestial_body``, for the ``Planet`` class:
@@ -108,6 +117,10 @@ The following example specifies the custom MongoDB collection name,
    :emphasize-lines: 9
    :dedent:
 
+Without overriding the ``$collection`` property, this model maps to the
+``planets`` collection. With the overridden property, the example class stores
+the model in the ``celestial_body`` collection.
+
 .. _laravel-model-customize-primary-key:
 
 Change the Primary Key Field
@@ -116,8 +129,8 @@ Change the Primary Key Field
 To customize the model's primary key field that uniquely identify a MongoDB
 document, override the ``$primaryKey`` property of the model class.
 
-By default, the model uses the PHP MongoDB driver to generate unique IDs for
-each document your Laravel application inserts.
+By default, the model uses the PHP MongoDB driver to generate unique ObjectIDs
+for each document your Laravel application inserts.
 
 The following example specifies the ``name`` field as the primary key for
 the ``Planet`` class:
@@ -131,8 +144,8 @@ To learn more about primary key behavior and customization options, see
 `Eloquent Primary Keys <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#primary-keys>`__
 in the Laravel docs.
 
-To learn more about the ``_id`` field and the MongoDB document structure, see
-:manual:`Documents </core/document>` in the MongoDB server docs.
+To learn more about the ``_id`` field, ObjectIDs, and the MongoDB document
+structure, see :manual:`Documents </core/document>` in the MongoDB server docs.
 
 .. _laravel-model-soft-delete:
 
@@ -142,12 +155,11 @@ Enable Soft Deletes
 Eloquent includes a soft delete feature that changes the behavior of the
 ``delete()`` method on a model. When soft delete is enabled on a model, the
 ``delete()`` method marks a document as deleted instead of removing it from the
-database.  It sets a timestamp on the ``deleted_at`` field to exclude it from
+database. It sets a timestamp on the ``deleted_at`` field to exclude it from
 retrieve operations automatically.
 
-To enable soft deletes on a class, import the ``MongoDB\Laravel\Eloquent\SoftDeletes``
-package and add the trait to the class definition as shown in the following
-code example:
+To enable soft deletes on a class, add the ``MongoDB\Laravel\Eloquent\SoftDeletes``
+trait as shown in the following code example:
 
 .. literalinclude:: /includes/eloquent-models/PlanetSoftDelete.php
    :language: php
@@ -206,8 +218,8 @@ an array of data to the ``create()`` model method. This process of inserting
 multiple models is called mass assignment.
 
 Mass assignment can be an efficient way to create multiple models. However, it
-can be expose an exploitable security vulnerability. The data in the fields
-could contain updates that could lead to unauthorized permissions or access.
+can expose an exploitable security vulnerability. The data in the fields
+might contain updates that lead to unauthorized permissions or access.
 
 Eloquent provides the following traits to protect your data from mass
 assignment vulnerabilities:
@@ -227,7 +239,7 @@ by using the ``$fillable`` attribute:
 
 .. literalinclude:: /includes/eloquent-models/PlanetMassAssignment.php
    :language: php
-   :emphasize-lines: 14-19
+   :emphasize-lines: 9-14
    :dedent:
 
 The following code example shows mass assignment of the ``Planet`` model:
@@ -254,7 +266,7 @@ Specify Pruning Behavior
 ------------------------
 
 Eloquent lets you specify criteria to periodically delete model data that you
-no longer need.  When you schedule or run the ``model:prune`` command,
+no longer need. When you schedule or run the ``model:prune`` command,
 Laravel calls the ``prunable()`` method on all models that import the
 ``Prunable`` and ``MassPrunable`` traits to match the models for deletion.
 
@@ -266,15 +278,24 @@ appropriate import to your model:
 - ``MongoDB\Laravel\Eloquent\MassPrunable`` deletes models that match the
   criteria without fetching the model data
 
+.. note::
+
+   When enabling soft deletes on a mass prunable model, you must import both
+   of the following {+odm-short+} packages:
+
+   - ``MongoDB\Laravel\Eloquent\SoftDeletes``
+   - ``MongoDB\Laravel\Eloquent\MassPrunable``
+
+
 To learn more about the pruning feature, see `Pruning Models <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#pruning-models>`__
 in the Laravel docs.
 
 Prunable Example
 ~~~~~~~~~~~~~~~~
 
-The following example model shows how to perform a prune that calls the
-``pruning()`` method before deleting a model that matches the query in the
-``prunable()`` method:
+The following prunable class includes a ``prunable()`` method that matches
+models that the prune action deletes and a ``pruning()`` method that runs
+before deleting a matching model:
 
 .. literalinclude:: /includes/eloquent-models/PlanetPrune.php
    :language: php
@@ -283,8 +304,8 @@ The following example model shows how to perform a prune that calls the
 Mass Prunable Example
 ~~~~~~~~~~~~~~~~~~~~~
 
-The following example model shows how to perform a "mass prune" which deletes
-all models that match the query in the ``prunable()`` method:
+The following mass prunable class includes a ``prunable()`` method that matches
+models that the prune action deletes:
 
 .. literalinclude:: /includes/eloquent-models/PlanetMassPrune.php
    :language: php
