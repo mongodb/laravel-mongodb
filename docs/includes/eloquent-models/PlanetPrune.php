@@ -17,7 +17,6 @@ class Planet extends Model
 
     protected function pruning()
     {
-        // Add cleanup actions such as deleting photo assets of this
-        // model or printing the Planet 'name' attribute to a log file
+        // Add cleanup actions, such as logging the Planet 'name' attribute
     }
 }
