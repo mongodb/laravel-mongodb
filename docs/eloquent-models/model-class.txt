@@ -316,6 +316,6 @@ models that the prune action deletes:
 
 .. literalinclude:: /includes/eloquent-models/PlanetMassPrune.php
    :language: php
-   :emphasize-lines: 6,10,12
+   :emphasize-lines: 5,10,12
    :dedent:
 
