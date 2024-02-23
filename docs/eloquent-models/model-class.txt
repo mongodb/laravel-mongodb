@@ -1,3 +1,8 @@
+.. _laravel-eloquent-model-class:
+
+====================
+Eloquent Model Class
+====================
 
 .. facet::
    :name: genre
@@ -74,6 +79,7 @@ shows how to extend this class:
 
 .. literalinclude:: /includes/eloquent-models/AuthenticatableUser.php
    :language: php
+   :emphasize-lines: 3,5,7
    :dedent:
 
 To learn more about customizing a Laravel authentication user provider,
@@ -299,6 +305,7 @@ before deleting a matching model:
 
 .. literalinclude:: /includes/eloquent-models/PlanetPrune.php
    :language: php
+   :emphasize-lines: 6,10,12,18
    :dedent:
 
 Mass Prunable Example
@@ -309,5 +316,6 @@ models that the prune action deletes:
 
 .. literalinclude:: /includes/eloquent-models/PlanetMassPrune.php
    :language: php
+   :emphasize-lines: 6,10,12
    :dedent:
 
