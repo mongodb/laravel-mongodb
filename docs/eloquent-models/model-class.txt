@@ -286,8 +286,8 @@ appropriate import to your model:
 
 .. note::
 
-   When enabling soft deletes on a mass prunable model, you must import both
-   of the following {+odm-short+} packages:
+   When enabling soft deletes on a mass prunable model, you must import the
+   following {+odm-short+} packages:
 
    - ``MongoDB\Laravel\Eloquent\SoftDeletes``
    - ``MongoDB\Laravel\Eloquent\MassPrunable``
