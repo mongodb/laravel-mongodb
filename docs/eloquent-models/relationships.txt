@@ -1,0 +1,38 @@
+.. _laravel-eloquent-model-relationships:
+
+============================
+Eloquent Model Relationships
+============================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example
+
+Relationships
+-------------
+
+This section describes each of the Laravel Eloquent and MongoDB-specific 
+relationships that you can use and provides examples for hasOne, hasMany, 
+belongsTo, belongsToMany, embedsOne, and embedsMany.
+
+
+{+odm-short+} supports the following Eloquent relationships:
+
+- hasOne
+- hasMany
+- belongsTo
+- belongsToMany
+
+
+It also supports the following 
+
+
+
+Each example will show, when applicable,  how to define the relationships, 
+access the related models, save/create, destroy/delete, and associate/disassociate.
+
+
+
