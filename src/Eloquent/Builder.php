@@ -56,6 +56,13 @@ class Builder extends EloquentBuilder
         'tomql',
     ];
 
+    public function aggregate($function = null, $columns = ['*'])
+    {
+        $result = $this->toBase()->aggregate($function, $columns);
+
+        return $result ?? $this;
+    }
+
     /** @inheritdoc */
     public function update(array $values, array $options = [])
     {

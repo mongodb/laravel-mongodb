@@ -32,6 +32,8 @@ use MongoDB\Builder\Stage\ProjectStage;
 use MongoDB\Builder\Stage\ReplaceRootStage;
 use MongoDB\Builder\Stage\SkipStage;
 use MongoDB\Builder\Stage\SortStage;
+use MongoDB\Builder\Stage\UnwindStage;
+use MongoDB\Builder\Type\StageInterface;
 use MongoDB\Builder\Variable;
 use MongoDB\Driver\Cursor;
 use Override;
@@ -291,14 +293,8 @@ class Builder extends BaseBuilder
         return $this;
     }
 
-    /**
-     * Return the MongoDB query to be run in the form of an element array like ['method' => [arguments]].
-     *
-     * Example: ['find' => [['name' => 'John Doe'], ['projection' => ['birthday' => 1]]]]
-     *
-     * @return array<string, mixed[]>
-     */
-    public function toMql(): array
+    /** @return StageInterface[] */
+    protected function getPipeline(): array
     {
         $columns = $this->columns ?? [];
 
@@ -373,33 +369,33 @@ class Builder extends BaseBuilder
             // Build the aggregation pipeline.
             $pipeline = [];
             if ($wheres) {
-                $pipeline[] = ['$match' => $wheres];
+                $pipeline[] = new MatchStage(...$wheres);
             }
 
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
-                $pipeline[] = ['$unwind' => '$' . $unwind];
+                $pipeline[] = new UnwindStage($unwind);
             }
 
             if ($group) {
-                $pipeline[] = ['$group' => $group];
+                $pipeline[] = new GroupStage(...$group);
             }
 
             // Apply order and limit
             if ($this->orders) {
-                $pipeline[] = ['$sort' => $this->orders];
+                $pipeline[] = new SortStage($this->orders);
             }
 
             if ($this->offset) {
-                $pipeline[] = ['$skip' => $this->offset];
+                $pipeline[] = new SkipStage($this->offset);
             }
 
             if ($this->limit) {
-                $pipeline[] = ['$limit' => $this->limit];
+                $pipeline[] = new LimitStage($this->limit);
             }
 
             if ($this->projections) {
-                $pipeline[] = ['$project' => $this->projections];
+                $pipeline[] = new ProjectStage(...$this->projections);
             }
 
             $options = [
@@ -457,6 +453,22 @@ class Builder extends BaseBuilder
             $pipeline[] = new ProjectStage(...$projection);
         }
 
+        return $pipeline;
+    }
+
+    /**
+     * Return the MongoDB query to be run in the form of an element array like ['method' => [arguments]].
+     *
+     * Example: ['find' => [['name' => 'John Doe'], ['projection' => ['birthday' => 1]]]]
+     *
+     * @return array<string, mixed[]>
+     */
+    public function toMql(): array
+    {
+        $pipeline = $this->getPipeline();
+        $encoder = new BuilderEncoder();
+        $pipeline = $encoder->encode(new Pipeline(...$pipeline));
+
         $options = ['typeMap' => ['root' => 'array', 'document' => 'array']];
 
         if ($this->timeout) {
@@ -468,11 +480,7 @@ class Builder extends BaseBuilder
         }
 
         $options = array_merge($options, $this->options);
-
         $options = $this->inheritConnectionOptions($options);
-
-        $encoder = new BuilderEncoder();
-        $pipeline = $encoder->encode(new Pipeline(...$pipeline));
 
         return ['aggregate' => [$pipeline, $options]];
     }
@@ -554,9 +562,16 @@ class Builder extends BaseBuilder
         return md5(serialize(array_values($key)));
     }
 
-    /** @inheritdoc */
-    public function aggregate($function, $columns = [])
+    /**
+     * @return self|PipelineBuilder
+     * @psalm-return $function === null ? PipelineBuilder : self
+     */
+    public function aggregate($function = null, $columns = [])
     {
+        if ($function === null) {
+            return new PipelineBuilder($this->getPipeline());
+        }
+
         $this->aggregate = [
             'function' => $function,
             'columns' => $columns,
