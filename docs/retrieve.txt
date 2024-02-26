@@ -118,11 +118,9 @@ documents that meet the following criteria:
             {
                public function show()
                {
-                  $movies = Movie::where('runtime', '<', 60)
-                        ->where('imdb.rating', '>', 8.5)
-                        ->orderBy('imdb.rating', 'desc')
-                        ->take(10)
-                        ->get();
+                  $movies = Movie::where('year', 2010)
+                     ->where('imdb.rating', '>', 8.5)
+                     ->get();
                   
                   return view('browse_movies', [
                         'movies' => $movies
