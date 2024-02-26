@@ -198,7 +198,7 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
                         ->get();
 
                   return view('browse_movies', [
-                     'movies' => $movies,
+                     'movies' => $movies
                   ]);
                }
             }
