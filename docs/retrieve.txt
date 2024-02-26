@@ -230,37 +230,37 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
         file
       - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
 
-         .. code-block:: php
+        .. code-block:: php
 
-            <!DOCTYPE html>
-            <html>
-            <head>
-               <title>Browse Movies</title>
-            </head>
-            <body>
-            <h2>Movies</h2>
+           <!DOCTYPE html>
+           <html>
+           <head>
+              <title>Browse Movies</title>
+           </head>
+           <body>
+           <h2>Movies</h2>
 
-            @forelse ($movies as $movie)
-            <p>
-               Title: {{ $movie['title'] }}<br>
-               Year: {{ $movie['year'] }}<br>
-               Runtime: {{ $movie['runtime'] }}<br>
-               IMDB Rating: {{ $movie['imdb']['rating'] }}<br>
-               IMDB Votes: {{ $movie['imdb']['votes'] }}<br>
-               Plot: {{ $movie['plot'] }}<br>
-            </p>
-            @empty
-               <p>No results</p>
-            @endforelse
+           @forelse ($movies as $movie)
+           <p>
+              Title: {{ $movie['title'] }}<br>
+              Year: {{ $movie['year'] }}<br>
+              Runtime: {{ $movie['runtime'] }}<br>
+              IMDB Rating: {{ $movie['imdb']['rating'] }}<br>
+              IMDB Votes: {{ $movie['imdb']['votes'] }}<br>
+              Plot: {{ $movie['plot'] }}<br>
+           </p>
+           @empty
+              <p>No results</p>
+           @endforelse
 
-            </body>
-            </html>
+           </body>
+           </html>
 
-         .. note::
+        .. note::
 
-            This change is necessary because you cannot use the ``->`` object operator to access document fields in the
-            :ref:`Laravel Queries <laravel-retrieve-query-builder>` example. Since the example uses the query builder
-            syntax, the find operation returns data as an array rather than as instances of the Eloquent model class.
+           This change is necessary because you cannot use the ``->`` object operator to access document fields in the
+           :ref:`Laravel Queries <laravel-retrieve-query-builder>` example. Since the example uses the query builder
+           syntax, the find operation returns data as an array rather than as instances of the Eloquent model class.
 
 .. _laravel-retrieve-all:
 
@@ -452,8 +452,7 @@ is ``30``.
    To learn more about sorting, see the following resources:
 
    - :manual:`Natural order </reference/glossary/#std-term-natural-order>`
-      in the Server manual glossary
-   - `Ordering, Grouping, Limit and Offset
-      <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
-      documentation
+     in the Server manual glossary
+   - `Ordering, Grouping, Limit and Offset <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__
+     in the Laravel documentation
 
