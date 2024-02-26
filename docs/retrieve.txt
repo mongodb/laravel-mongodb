@@ -105,8 +105,8 @@ documents that meet the following criteria:
    .. tab:: Run the Query
       :tabid: query-run
 
-      To run the find operation and view the results, replace the contents of the ``show()``
-      function in the ``MovieController.php`` file with the following code:
+      To run the find operation and view the results, edit the ``show()`` function
+      in the ``MovieController.php`` file to resemble the following code:
 
       .. io-code-block::
          :copyable: true
@@ -114,13 +114,21 @@ documents that meet the following criteria:
          .. input::
             :language: php
 
-            $movies = Movie::where('year', 2010)
-               ->where('imdb.rating', '>', 8.5)
-               ->get();
-
-            return view('browse_movies', [
-               'movies' => $movies,
-            ]);
+            class MovieController
+            {
+               public function show()
+               {
+                  $movies = Movie::where('runtime', '<', 60)
+                        ->where('imdb.rating', '>', 8.5)
+                        ->orderBy('imdb.rating', 'desc')
+                        ->take(10)
+                        ->get();
+                  
+                  return view('browse_movies', [
+                        'movies' => $movies
+                  ]);
+               }
+            }
 
          .. output::
             :language: none
@@ -151,84 +159,108 @@ You can use Laravel's database query builder to run find operations instead of u
 models. To run the database query, import the ``DB`` facade into your controller file and use
 Laravel's query builder syntax.
 
-The following example uses Laravel's query builder to retrieve documents in which the value
-of the ``imdb.votes`` nested field is greater than ``1300000``:
+This example uses Laravel's query builder to retrieve documents in which the value
+of the ``imdb.votes`` nested field is greater than ``1300000``.
 
-.. io-code-block::
-   :copyable: true
+.. tabs::
 
-   .. input::
-      :language: php
+   .. tab:: Query Syntax
+      :tabid: query-syntax
 
-      $movies = DB::connection('mongodb')
-            ->collection('movies')
-            ->where('imdb.votes', '>', 1300000)
-            ->get();
+      The following example shows the syntax required to specify the query:
 
-      return view('browse_movies', [
-         'movies' => $movies,
-      ]);
+      .. code-block:: go
 
-   .. output::
-      :language: none
-      :visible: false
+         $movies = DB::connection('mongodb')
+               ->collection('movies')
+               ->where('imdb.votes', '>', 1300000)
+               ->get();
 
-      Title: The Shawshank Redemption
-      Year: 1994
-      Runtime: 142
-      IMDB Rating: 9.3
-      IMDB Votes: 1513145
-      Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption
-      through acts of common decency.
+   .. tab:: Run the Query
+      :tabid: query-run
 
-      Title: The Dark Knight
-      Year: 2008
-      Runtime: 152
-      IMDB Rating: 9
-      IMDB Votes: 1495351
-      Plot: When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the
-      caped crusader must come to terms with one of the greatest psychological tests of his ability to
-      fight injustice.
+      To run the find operation and view the results, edit the ``show()`` function
+      in the ``MovieController.php`` file to resemble the following code:
 
-.. important:: Required File Changes
+      .. io-code-block::
+         :copyable: true
 
-   To run the code example, you must make the following changes to your Laravel Quick Start
-   application:
+         .. input::
+            :language: php
 
-   - Copy the code example and paste it into the ``show()`` function in your ``MovieController.php`` file
-   - Add the ``use Illuminate\Support\Facades\DB`` use statement to your ``MovieController.php``
-     file
-   - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
+            class MovieController
+            {
+               public function show()
+               {
+                  $movies = DB::connection('mongodb')
+                        ->collection('movies')
+                        ->where('imdb.votes', '>', 1300000)
+                        ->get();
 
-      .. code-block:: php
+                  return view('browse_movies', [
+                     'movies' => $movies,
+                  ]);
+               }
+            }
 
-         <!DOCTYPE html>
-         <html>
-         <head>
-            <title>Browse Movies</title>
-         </head>
-         <body>
-         <h2>Movies</h2>
+         .. output::
+            :language: none
+            :visible: false
 
-         @forelse ($movies as $movie)
-         <p>
-            Title: {{ $movie['title'] }}<br>
-            Year: {{ $movie['year'] }}<br>
-            Runtime: {{ $movie['runtime'] }}<br>
-            IMDB Rating: {{ $movie['imdb']['rating'] }}<br>
-            IMDB Votes: {{ $movie['imdb']['votes'] }}<br>
-            Plot: {{ $movie['plot'] }}<br>
-         </p>
-         @empty
-            <p>No results</p>
-         @endforelse
+            Title: The Shawshank Redemption
+            Year: 1994
+            Runtime: 142
+            IMDB Rating: 9.3
+            IMDB Votes: 1513145
+            Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption
+            through acts of common decency.
 
-         </body>
-         </html>
+            Title: The Dark Knight
+            Year: 2008
+            Runtime: 152
+            IMDB Rating: 9
+            IMDB Votes: 1495351
+            Plot: When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the
+            caped crusader must come to terms with one of the greatest psychological tests of his ability to
+            fight injustice.
 
-      This change is necessary because you cannot use the ``->`` object operator to access document fields in the
-      :ref:`Laravel Queries <laravel-retrieve-query-builder>` example. Since the example uses the query builder
-      syntax, the find operation returns data as an array rather than as instances of the Eloquent model class.
+      Then, make the following changes to your Laravel Quick Start application:
+
+      - Add the ``use Illuminate\Support\Facades\DB`` use statement to your ``MovieController.php``
+        file
+      - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
+
+         .. code-block:: php
+
+            <!DOCTYPE html>
+            <html>
+            <head>
+               <title>Browse Movies</title>
+            </head>
+            <body>
+            <h2>Movies</h2>
+
+            @forelse ($movies as $movie)
+            <p>
+               Title: {{ $movie['title'] }}<br>
+               Year: {{ $movie['year'] }}<br>
+               Runtime: {{ $movie['runtime'] }}<br>
+               IMDB Rating: {{ $movie['imdb']['rating'] }}<br>
+               IMDB Votes: {{ $movie['imdb']['votes'] }}<br>
+               Plot: {{ $movie['plot'] }}<br>
+            </p>
+            @empty
+               <p>No results</p>
+            @endforelse
+
+            </body>
+            </html>
+
+         .. note::
+
+            This change is necessary because you cannot use the ``->`` object operator to access document fields in the
+            :ref:`Laravel Queries <laravel-retrieve-query-builder>` example. Since the example uses the query builder
+            syntax, the find operation returns data as an array rather than as instances of the Eloquent model class.
 
 .. _laravel-retrieve-all:
 
@@ -278,58 +310,78 @@ to ``where()``:
 Skip and Limit Results
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The following example queries for documents in which the ``year`` value is ``1999``.
+This example queries for documents in which the ``year`` value is ``1999``.
 The operation skips the first ``2`` matching documents and outputs a total of ``3``
-documents:
+documents.
 
-.. io-code-block::
-   :copyable: true
+.. tabs::
 
-   .. input::
-      :language: php
+   .. tab:: Query Syntax
+      :tabid: query-syntax
 
-      $movies = Movie::where('year', 1999)
-            ->skip(2)
-            ->take(3)
-            ->get()
+      The following example shows the syntax required to specify the query:
 
-      return view('browse_movies', [
-         'movies' => $movies,
-      ]);
+      .. code-block:: go
 
-   .. output::
-      :language: none
-      :visible: false
+         $movies = Movie::where('year', 1999)
+               ->skip(2)
+               ->take(3)
+               ->get()
 
-      Title: Three Kings
-      Year: 1999
-      Runtime: 114
-      IMDB Rating: 7.2
-      IMDB Votes: 130677
-      Plot: In the aftermath of the Persian Gulf War, 4 soldiers set out to steal gold
-      that was stolen from Kuwait, but they discover people who desperately need their help.
+   .. tab:: Run the Query
+      :tabid: query-run
 
-      Title: Toy Story 2
-      Year: 1999
-      Runtime: 92
-      IMDB Rating: 7.9
-      IMDB Votes: 346655
-      Plot: When Woody is stolen by a toy collector, Buzz and his friends vow to rescue him,
-      but Woody finds the idea of immortality in a museum tempting.
+      To run the find operation and view the results, edit the ``show()`` function
+      in the ``MovieController.php`` file to resemble the following code:
 
-      Title: Beowulf
-      Year: 1999
-      Runtime: 95
-      IMDB Rating: 4
-      IMDB Votes: 9296
-      Plot: A sci-fi update of the famous 6th Century poem. In a beseiged land, Beowulf must
-      battle against the hideous creature Grendel and his vengeance seeking mother.
+      .. io-code-block::
+         :copyable: true
 
-.. important:: Required File Changes
+         .. input::
+            :language: php
 
-   To run the code example, you must edit the ``MovieController.php`` file in your
-   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
-   function, replacing any existing code inside this function.
+            class MovieController
+            {
+               public function show()
+               {
+                  $movies = Movie::where('year', 1999)
+                        ->skip(2)
+                        ->take(3)
+                        ->get();
+
+                  return view('browse_movies', [
+                     'movies' => $movies
+                  ]);
+               }
+            }
+
+         .. output::
+            :language: none
+            :visible: false
+
+            Title: Three Kings
+            Year: 1999
+            Runtime: 114
+            IMDB Rating: 7.2
+            IMDB Votes: 130677
+            Plot: In the aftermath of the Persian Gulf War, 4 soldiers set out to steal gold
+            that was stolen from Kuwait, but they discover people who desperately need their help.
+
+            Title: Toy Story 2
+            Year: 1999
+            Runtime: 92
+            IMDB Rating: 7.9
+            IMDB Votes: 346655
+            Plot: When Woody is stolen by a toy collector, Buzz and his friends vow to rescue him,
+            but Woody finds the idea of immortality in a museum tempting.
+
+            Title: Beowulf
+            Year: 1999
+            Runtime: 95
+            IMDB Rating: 4
+            IMDB Votes: 9296
+            Plot: A sci-fi update of the famous 6th Century poem. In a beseiged land, Beowulf must
+            battle against the hideous creature Grendel and his vengeance seeking mother.
 
 .. _laravel-retrieve-one:
 
@@ -342,45 +394,66 @@ matching document according to the documents' natural order, or as they appear i
 database. If you apply a sort to the find operation, ``first()`` returns the first matching
 document according to the sorted order. 
    
-The following example returns one document in which the value of the ``runtime`` field
-is ``30``:
+This example returns one document in which the value of the ``runtime`` field
+is ``30``.
 
-.. io-code-block::
-   :copyable: true
+.. tabs::
 
-   .. input::
-      :language: php
-      
-      $movies = Movie::where('runtime', 30)
-            ->orderBy('_id')
-            ->first();
+   .. tab:: Query Syntax
+      :tabid: query-syntax
 
-      return view('browse_movies', [
-         'movies' => $movies,
-      ]);
+      The following example shows the syntax required to specify the query:
 
-   .. output::
-      :language: none
-      :visible: false
+      .. code-block:: go
 
-      Title: Statues also Die
-      Year: 1953
-      Runtime: 30
-      IMDB Rating: 7.6
-      IMDB Votes: 620
-      Plot: A documentary of black art.
+         $movies = Movie::where('runtime', 30)
+               ->orderBy('_id')
+               ->first();
 
-.. important:: Required File Changes
+   .. tab:: Run the Query
+      :tabid: query-run
 
-   To run the code example, you must edit the ``MovieController.php`` file in your
-   Laravel Quick Start application. Copy the code example and paste it into the ``show()``
-   function, replacing any existing code inside this function.
+      To run the find operation and view the results, edit the ``show()`` function
+      in the ``MovieController.php`` file to resemble the following code:
 
-To learn more about sorting, see the following resources:
+      .. io-code-block::
+         :copyable: true
 
-- :manual:`Natural order </reference/glossary/#std-term-natural-order>`
-   in the Server manual glossary
-- `Ordering, Grouping, Limit and Offset
-   <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
-   documentation
+         .. input::
+            :language: php
+
+            class MovieController
+            {
+               public function show()
+               {
+                  $movies = Movie::where('runtime', 30)
+                        ->orderBy('_id')
+                        ->first();
+
+                  return view('browse_movies', [
+                     'movies' => $movies
+                  ]);
+               }
+            }
+
+         .. output::
+            :language: none
+            :visible: false
+
+            Title: Statues also Die
+            Year: 1953
+            Runtime: 30
+            IMDB Rating: 7.6
+            IMDB Votes: 620
+            Plot: A documentary of black art.
+
+.. tip:: 
+
+   To learn more about sorting, see the following resources:
+
+   - :manual:`Natural order </reference/glossary/#std-term-natural-order>`
+      in the Server manual glossary
+   - `Ordering, Grouping, Limit and Offset
+      <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__ in the Laravel
+      documentation
 
