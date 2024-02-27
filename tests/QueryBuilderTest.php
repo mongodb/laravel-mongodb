@@ -15,6 +15,7 @@ use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Builder\Expression;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
@@ -848,7 +849,9 @@ class QueryBuilderTest extends TestCase
             ['name' => 'spoon', 'tags' => ['round', 'bowl']],
         ]);
 
-        $results = DB::collection('items')->project(['tags' => ['$slice' => 1]])->get();
+        $results = DB::collection('items')
+            ->project(['tags' => Expression::slice(Expression::arrayFieldPath('tags'), 1)])
+            ->get();
 
         foreach ($results as $result) {
             $this->assertEquals(1, count($result['tags']));

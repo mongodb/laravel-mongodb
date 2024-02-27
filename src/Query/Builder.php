@@ -25,6 +25,8 @@ use MongoDB\Builder\Accumulator\FirstAccumulator;
 use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Expression\FieldPath;
 use MongoDB\Builder\Pipeline;
+use MongoDB\Builder\Stage;
+use MongoDB\Builder\Stage\CountStage;
 use MongoDB\Builder\Stage\GroupStage;
 use MongoDB\Builder\Stage\LimitStage;
 use MongoDB\Builder\Stage\MatchStage;
@@ -303,9 +305,12 @@ class Builder extends BaseBuilder
             $columns = [];
         }
 
+        $pipeline = [];
         $wheres = $this->compileWheres();
 
-        $pipeline = [new MatchStage($wheres)];
+        if (count($wheres)) {
+            $pipeline[] = new MatchStage($wheres);
+        }
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups || $this->aggregate) {
@@ -369,7 +374,7 @@ class Builder extends BaseBuilder
             // Build the aggregation pipeline.
             $pipeline = [];
             if ($wheres) {
-                $pipeline[] = new MatchStage(...$wheres);
+                $pipeline[] = Stage::match(...$wheres);
             }
 
             // apply unwinds for subdocument array aggregation
@@ -398,26 +403,13 @@ class Builder extends BaseBuilder
                 $pipeline[] = new ProjectStage(...$this->projections);
             }
 
-            $options = [
-                'typeMap' => ['root' => 'array', 'document' => 'array'],
-            ];
-
-            // Add custom query options
-            if (count($this->options)) {
-                $options = array_merge($options, $this->options);
-            }
-
-            $options = $this->inheritConnectionOptions($options);
-
-            return ['aggregate' => [$pipeline, $options]];
+            return $pipeline;
         }
 
         // Distinct query
         if ($this->distinct) {
             // Return distinct results directly
             $column = $columns[0] ?? '_id';
-
-            $options = $this->inheritConnectionOptions();
 
             $pipeline[] = new GroupStage(
                 _id: new FieldPath($column),
@@ -562,10 +554,7 @@ class Builder extends BaseBuilder
         return md5(serialize(array_values($key)));
     }
 
-    /**
-     * @return self|PipelineBuilder
-     * @psalm-return $function === null ? PipelineBuilder : self
-     */
+    /** @return ($function === null ? PipelineBuilder : self) */
     public function aggregate($function = null, $columns = [])
     {
         if ($function === null) {
@@ -600,6 +589,19 @@ class Builder extends BaseBuilder
 
             return $result['aggregate'];
         }
+    }
+
+    public function count($columns = '*'): int
+    {
+        if ($columns !== '*') {
+            // @todo trigger warning, $columns is ignored
+        }
+
+        return $this
+            ->aggregate()
+            ->count('aggregate')
+            ->get()
+            ->value('aggregate', 0);
     }
 
     /** @inheritdoc */
@@ -980,7 +982,7 @@ class Builder extends BaseBuilder
                 ->toMql();
 
             // Adds the $count stage to the pipeline
-            $mql['aggregate'][0][] = ['$count' => 'aggregate'];
+            $mql['aggregate'][0][] = new CountStage('aggregate');
 
             return $this->collection->aggregate($mql['aggregate'][0], $mql['aggregate'][1])->toArray();
         }
