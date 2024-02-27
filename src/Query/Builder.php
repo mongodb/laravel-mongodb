@@ -88,7 +88,7 @@ class Builder extends BaseBuilder
     /**
      * The database collection.
      *
-     * @var \MongoDB\Collection
+     * @var \MongoDB\Laravel\Collection
      */
     protected $collection;
 
@@ -569,7 +569,7 @@ class Builder extends BaseBuilder
     public function aggregate($function = null, $columns = [])
     {
         if ($function === null) {
-            return new PipelineBuilder($this->getPipeline());
+            return new PipelineBuilder($this->getPipeline(), $this->collection, $this->options);
         }
 
         $this->aggregate = [
