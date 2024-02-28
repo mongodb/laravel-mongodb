@@ -11,28 +11,102 @@ Eloquent Model Relationships
 .. meta::
    :keywords: php framework, odm, code example
 
-Relationships
--------------
+Overview
+--------
 
-This section describes each of the Laravel Eloquent and MongoDB-specific 
-relationships that you can use and provides examples for hasOne, hasMany, 
-belongsTo, belongsToMany, embedsOne, and embedsMany.
+This section describes the following Laravel Eloquent and MongoDB-specific
+relationships available in {+odm-short+} and shows examples on how to define
+and use them:
+
+- :ref:`One to one relationship <laravel-eloquent-relationship-one-to-one>`,
+  created by using the ``hasOne()`` method and its inverse, ``belongsTo()``
+- :ref:`One to many relationship <laravel-eloquent-relationship-one-to-many>`,
+  created by using the ``hasMany()`` and its inverse, ``belongsTo()``
+- :ref:`Many to many relationship <laravel-eloquent-relationship-many-to-many>`,
+  created by using the ``belongsToMany()`` method
+- :ref:`Embedded document pattern <laravel-embedded-document-pattern>`,
+  specific to MongoDB, which can represent a one
+  to one or one to many relationship by using the ``embedsOne()`` or
+  ``embedsMany()`` method
 
 
-{+odm-short+} supports the following Eloquent relationships:
-
-- hasOne
-- hasMany
-- belongsTo
-- belongsToMany
-
-
-It also supports the following 
-
-
-
-Each example will show, when applicable,  how to define the relationships, 
+TODO:
+Each example will show, when applicable,  how to define the relationships,
 access the related models, save/create, destroy/delete, and associate/disassociate.
+
+.. _laravel-eloquent-relationship-one-to-one:
+
+One to One Relationship
+-----------------------
+
+In data modeling, a one to one relationship between models means that one model
+record is related to exactly one other type of model record. In {+odm-short+},
+this is represented by storing the value of the ID of the related model.
+
+TODO
+
+To establish a one to one relationship, define a method that returns a
+``hasOne`` function and calls the ``hasOne()`` method. Pass it the class of
+the related model.
+
+To define the inverse of the relationship on the related model and call the
+``belongsTo()`` method on it.
+
+https://laravel.com/docs/10.x/eloquent-relationships#one-to-one
+
+
+One to One Example
+~~~~~~~~~~~~~~~~~~
+
+The following classes shows a one to one relationship between a ``Planet``
+and ``Orbit`` model.
+
+.. literalinclude:: /includes/eloquent-models/relationships/PlanetOneToOne.php
+   :language: php
+   :dedent:
+
+.. literalinclude:: /includes/eloquent-models/relationships/OrbitOneToOne.php
+   :language: php
+   :dedent:
+
+The following sample code shows how you can create a model and ould in
+To create a Planet and corresponding Orbit,
+
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController
+   :language: php
+   :dedent:
+   :starts-after: begin one-to-one save
+   :ends-before: end one-to-one save
+
+
+MongoDB documents:
+
+
+
+
+
+
+
+
+
+
+.. _laravel-eloquent-relationship-one-to-many:
+
+One to Many Relationship
+------------------------
+
+.. _laravel-eloquent-relationship-many-to-many:
+
+Many to Many Relationship
+-------------------------
+
+
+.. _laravel-embedded-document-pattern:
+
+Embedded Document Pattern
+-------------------------
+
 
 
 
