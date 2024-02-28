@@ -55,15 +55,13 @@ class PlanetController extends Controller
     public function show()
     {
 
-      // begin planet-to-orbit
+      // begin dynamic property example
       $planet = Planet::first();
       $related_orbit = $planet->orbit;
-      // end planet-to-orbit 
 
-      // begin orbit-to-planet
       $orbit = Orbit::first();
       $related_planet = $orbit->planet;
-      // end orbit-to-planet
+      // end dynamic property example
 
       return view('browse_planets', [
         'planets' => Planet::take(10)

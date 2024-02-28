@@ -9,7 +9,7 @@ Eloquent Model Relationships
    :values: tutorial
 
 .. meta::
-   :keywords: php framework, odm, code example
+   :keywords: php framework, odm, code example, entity relationship, eloquent
 
 Overview
 --------
@@ -29,67 +29,96 @@ and use them:
   to one or one to many relationship by using the ``embedsOne()`` or
   ``embedsMany()`` method
 
-
-TODO:
-Each example will show, when applicable,  how to define the relationships,
-access the related models, save/create, destroy/delete, and associate/disassociate.
+To establish a relationship, add an Eloquent **dynamic property** to access the
+related model. The dynamic property lets you access the relational method by
+using the same syntax as you use to access a property on the model.
 
 .. _laravel-eloquent-relationship-one-to-one:
 
 One to One Relationship
 -----------------------
 
-In data modeling, a one to one relationship between models means that one model
-record is related to exactly one other type of model record. In {+odm-short+},
-this is represented by storing the value of the ID of the related model.
+A one to one relationship between models consists of a model record that
+is related to exactly one other type of model record. In MongoDB, a record
+is represented as a document and different model types exist in separate
+collections.
 
-TODO
+In {+odm-short+}, you can define a one to one relationship by using the
+``hasOne()`` method or ``belongsTo()`` method.
 
-To establish a one to one relationship, define a method that returns a
-``hasOne`` function and calls the ``hasOne()`` method. Pass it the class of
-the related model.
+When you establish a one to one relationship by using the ``hasOne()`` method,
+Eloquent lets you access the model by using a dynamic property and stores the
+model's ID on the related model.
 
-To define the inverse of the relationship on the related model and call the
-``belongsTo()`` method on it.
+When you establish the inverse of the relationship by using the ``belongsTo()``
+method, Eloquent lets you access the model by using a dynamic property, but
+does not add any fields.
 
-https://laravel.com/docs/10.x/eloquent-relationships#one-to-one
+The following section shows an example of how to create one to one
+relationships.
 
+To learn more about one to one relationships, see
+`One to One <https://laravel.com/docs/10.x/eloquent-relationships#one-to-one>`__
+in the Laravel docs.
 
 One to One Example
 ~~~~~~~~~~~~~~~~~~
 
-The following classes shows a one to one relationship between a ``Planet``
-and ``Orbit`` model.
+The following example class shows how to define a ``HasOne`` one to one
+relationship between a ``Planet`` and ``Orbit`` model.
 
 .. literalinclude:: /includes/eloquent-models/relationships/PlanetOneToOne.php
    :language: php
    :dedent:
 
+To define the inverse of the relationship on ``Orbit``, add the dynamic
+property and call the ``belongsTo()`` method on it as shown in the following
+example class:
+
 .. literalinclude:: /includes/eloquent-models/relationships/OrbitOneToOne.php
    :language: php
    :dedent:
 
-The following sample code shows how you can create a model and ould in
-To create a Planet and corresponding Orbit,
+The following sample code shows how you can create a model for each class
+and add the relationship between them:
 
-
-.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
    :language: php
    :dedent:
    :starts-after: begin one-to-one save
    :ends-before: end one-to-one save
 
+The following sample code shows how you can access the related models by using
+the dynamic properties as defined in the example classes:
 
-MongoDB documents:
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :starts-after: begin dynamic property example
+   :ends-before: end dynamic property example
 
+The models created in the prior examples resemble the following documents
+in MongoDB:
 
+.. code-block:: javascript
+   :copyable: false
 
+   // Document in the "planets" collection
+   {
+     _id: ObjectId('65de67fb2e59d63e6d07f8b8'),
+     name: 'Earth',
+     diameter_km: 12742,
+     // ...
+   }
 
-
-
-
-
-
+   // Document in the "orbits" collection
+   {
+     _id: ObjectId('65de67fb2e59d63e6d07f8b9'),
+     period: 365.26,
+     direction: 'counterclockwise',
+     planet_id: '65de67fb2e59d63e6d07f8b8',
+     // ...
+   }
 
 .. _laravel-eloquent-relationship-one-to-many:
 
