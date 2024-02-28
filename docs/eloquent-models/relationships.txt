@@ -219,6 +219,95 @@ in MongoDB:
 Many to Many Relationship
 -------------------------
 
+A many to many relationship consists of a relationship between two different
+model types in which each model record can be related to multiple records
+of the other type.
+
+In {+odm-short+}, you can define a many to many relationship by using the
+``belongsToMany()`` method.
+
+When you add a many to many relationship by using the ``belongsTo()`` method,
+Eloquent lets you access the model by using a dynamic property and stores the
+parent model's document ID on each of the child model documents.
+
+When you add the inverse of the relationship by using the ``belongsTo()``
+method, Eloquent lets you access the parent model by using a dynamic property,
+but does not add any fields.
+
+The following section shows an example of how to create one to many
+relationships.
+
+To learn more about one to many relationships, see
+`One to Many <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-relationships#one-to-many>`__
+in the Laravel docs.
+
+One to Many Example
+~~~~~~~~~~~~~~~~~~~
+
+The following example class shows how to define a ``HasMany`` one to many
+relationship between a ``Planet`` parent model  and ``Moon`` child model.
+
+.. literalinclude:: /includes/eloquent-models/relationships/PlanetOneToMany.php
+   :language: php
+   :dedent:
+
+To define the inverse of the relationship on ``Moon``, add the dynamic
+property and call the ``belongsTo()`` method on it as shown in the following
+example class:
+
+.. literalinclude:: /includes/eloquent-models/relationships/MoonOneToMany.php
+   :language: php
+   :dedent:
+
+The following sample code shows how you can create a model for each class
+and add the relationship between them:
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :start-after: begin one-to-many save
+   :end-before: end one-to-many save
+
+The following sample code shows how you can access the related models by using
+the dynamic properties as defined in the example classes:
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :start-after: begin planet moons dynamic property example
+   :end-before: end planet moons dynamic property example
+
+The models created in the prior examples resemble the following documents
+in MongoDB:
+
+.. code-block:: javascript
+   :copyable: false
+
+   // Parent document in the "planets" collection
+   {
+     _id: ObjectId('65dfb0050e323bbef800f7b2'),
+     name: 'Jupiter',
+     diameter_km: 142984,
+     // ...
+   }
+
+   // Child documents in the "moons" collection
+   [
+     {
+       _id: ObjectId('65dfb0050e323bbef800f7b3'),
+       name: 'Ganymede',
+       orbital_period: 7.15,
+       planet_id: '65dfb0050e323bbef800f7b2',
+       // ...
+     },
+     {
+       _id: ObjectId('65dfb0050e323bbef800f7b4'),
+       name: 'Europa',
+       orbital_period: 3.55,
+       planet_id: '65dfb0050e323bbef800f7b2',
+       // ...
+     }
+   ]
 
 .. _laravel-embedded-document-pattern:
 
