@@ -132,7 +132,7 @@ the model in the ``celestial_body`` collection.
 Change the Primary Key Field
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To customize the model's primary key field that uniquely identify a MongoDB
+To customize the model's primary key field that uniquely identifies a MongoDB
 document, override the ``$primaryKey`` property of the model class.
 
 By default, the model uses the PHP MongoDB driver to generate unique ObjectIDs
