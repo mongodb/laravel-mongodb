@@ -25,4 +25,3 @@ This section contains guidance on how to use Eloquent models in
 .. toctree::
 
    /eloquent-models/model-class/
-
