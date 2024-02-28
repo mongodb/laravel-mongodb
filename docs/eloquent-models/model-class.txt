@@ -202,11 +202,7 @@ less than three years ago:
 
 .. code-block:: php
 
-   Planet::where(
-       'discovery_dt', '>',
-       new DateTime('-3 years')
-   )->get();
-
+   Planet::where( 'discovery_dt', '>', new DateTime('-3 years'))->get();
 
 To learn more about MongoDB's data types, see :manual:`BSON Types </reference/bson-types/>`
 in the MongoDB server docs.
