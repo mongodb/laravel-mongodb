@@ -20,7 +20,7 @@ Retrieve Data
 Overview
 --------
 
-In this guide, you can learn how to use the Laravel package to perform **find operations**
+In this guide, you can learn how to use the {+odm-short+} to perform **find operations**
 on your MongoDB collections. Find operations allow you to retrieve documents based on
 criteria that you specify.
 
@@ -30,19 +30,16 @@ This guide shows you how to perform the following tasks:
 - :ref:`laravel-retrieve-all`
 - :ref:`Modify Find Operation Behavior <laravel-modify-find>`
 
-Prerequisites
--------------
+Before You Get Started
+----------------------
 
-Complete the :ref:`Quick Start <laravel-quick-start>` tutorial before running the examples in this
-guide.
+To run the code examples in this guide, complete the :ref:`Quick Start <laravel-quick-start>`
+tutorial. This tutorial provides instructions on setting up a MongoDB Atlas instance with
+sample data and creating the following files in your Laravel web application:
 
-After completing the Quick Start, ensure that your MongoDB deployment and Laravel application
-satisfy the following requirements:
-
-- Your Atlas MongoDB deployment contains the Atlas sample data
-- ``Movie.php`` file contains a ``Movie`` model to represent the ``movies`` collection
-- ``MovieController.php`` file contains a ``show()`` function to run database operations
-- ``browse_movies.blade.php`` file contains HTML code to display the results of database
+- ``Movie.php`` file, which contains a ``Movie`` model to represent the ``movies`` collection
+- ``MovieController.php`` file, which contains a ``show()`` function to run database operations
+- ``browse_movies.blade.php`` file, which contains HTML code to display the results of database
   operations
 
 The following sections describe how to edit the files in your Laravel application to run 
@@ -58,13 +55,16 @@ method. A query filter specifies field value requirements and instructs the find
 to only return documents that meet these requirements. To run the query, call the ``where()``
 method on an Eloquent model or query builder that represents your collection.
 
-You can pass the following types of query filters to the ``where()`` method:
+You can use one of the following ``where()`` method calls to build a query:
 
-- ``Model::where('<field name>', <value>)``: instructs MongoDB to return documents that match
-  the exact value for the specified field name
+- ``where('<field name>', <value>)``: builds a query that matches documents in which the
+  target field has the exact specified value
 
-- ``Model::where('<field name>', '<comparison operator>', <value>)``: instructs MongoDB to
-  return documents in which the field values meet the comparison criteria
+- ``where('<field name>', '<comparison operator>', <value>)``: builds a query that matches
+  documents in which the target field's value meets the comparison criteria
+
+After building your query with the ``where()`` method, use the ``get()`` method to
+retrieve the query results.
 
 To apply multiple sets of criteria to the find operation, you can chain a series
 of ``where()`` methods together.
@@ -96,16 +96,16 @@ documents that meet the following criteria:
 
       Use the following syntax to specify the query:
 
-      .. code-block:: go
+      .. code-block:: php
 
          $movies = Movie::where('year', 2010)
             ->where('imdb.rating', '>', 8.5)
             ->get();
 
-   .. tab:: Run the Query
-      :tabid: query-run
+   .. tab:: Controller Method
+      :tabid: controller
 
-      To run the find operation and view the results, edit the ``show()`` function
+      To see the query results in the ``browse_movies`` view, edit the ``show()`` function
       in the ``MovieController.php`` file to resemble the following code:
 
       .. io-code-block::
@@ -158,7 +158,7 @@ models. To run the database query, import the ``DB`` facade into your controller
 Laravel's query builder syntax.
 
 This example uses Laravel's query builder to retrieve documents in which the value
-of the ``imdb.votes`` nested field is greater than ``1300000``.
+of the ``imdb.votes`` nested field is ``350``.
 
 .. tabs::
 
@@ -167,17 +167,17 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
 
       Use the following syntax to specify the query:
 
-      .. code-block:: go
+      .. code-block:: php
 
          $movies = DB::connection('mongodb')
                ->collection('movies')
-               ->where('imdb.votes', '>', 1300000)
+               ->where('imdb.votes', 350)
                ->get();
 
-   .. tab:: Run the Query
-      :tabid: query-run
+   .. tab:: Controller Method
+      :tabid: controller
 
-      To run the find operation and view the results, edit the ``show()`` function
+      To see the query results in the ``browse_movies`` view, edit the ``show()`` function
       in the ``MovieController.php`` file to resemble the following code:
 
       .. io-code-block::
@@ -192,7 +192,7 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
                {
                   $movies = DB::connection('mongodb')
                         ->collection('movies')
-                        ->where('imdb.votes', '>', 1300000)
+                        ->where('imdb.votes', 350)
                         ->get();
 
                   return view('browse_movies', [
@@ -205,27 +205,43 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
             :language: none
             :visible: false
 
-            Title: The Shawshank Redemption
-            Year: 1994
-            Runtime: 142
-            IMDB Rating: 9.3
-            IMDB Votes: 1513145
-            Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption
-            through acts of common decency.
-
-            Title: The Dark Knight
-            Year: 2008
-            Runtime: 152
-            IMDB Rating: 9
-            IMDB Votes: 1495351
-            Plot: When the menace known as the Joker wreaks havoc and chaos on the people of Gotham, the
-            caped crusader must come to terms with one of the greatest psychological tests of his ability to
-            fight injustice.
+            Title: Murder in New Hampshire: The Pamela Wojas Smart Story
+            Year: 1991
+            Runtime: 100
+            IMDB Rating: 5.9
+            IMDB Votes: 350
+            Plot: Pamela Smart knows exactly what she wants and is willing to do
+            anything to get it. She is fed up with teaching, and her marriage offers
+            little excitement. Looking for a way out she applies ...
+            
+            Title: Ah Fu
+            Year: 2000
+            Runtime: 105
+            IMDB Rating: 6.6
+            IMDB Votes: 350
+            Plot: After a 13-year imprisonment in Hong Kong, a kickboxer challenges the
+            current champion in order to restore his honor.
+            
+            Title: Bandage
+            Year: 2010
+            Runtime: 119
+            IMDB Rating: 7
+            IMDB Votes: 350
+            Plot: Four boys have their friendship and musical talents tested in the ever
+            changing worlds of the music industry and real life in 1990s Japan.
+            
+            Title: Great Migrations
+            Year: 2010
+            Runtime: 45
+            IMDB Rating: 8.2
+            IMDB Votes: 350
+            Plot: Great Migrations takes viewers on the epic journeys animals undertake to
+            ensure the survival of their species.
 
       Then, make the following changes to your Laravel Quick Start application:
 
-      - Add the ``use Illuminate\Support\Facades\DB`` use statement to your ``MovieController.php``
-        file
+      - Import the ``DB`` facade into your ``MovieController.php`` file by adding the
+        ``use Illuminate\Support\Facades\DB`` use statement 
       - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
 
         .. code-block:: php
@@ -256,26 +272,18 @@ of the ``imdb.votes`` nested field is greater than ``1300000``.
 
         .. note::
 
-           This change is necessary because you cannot use the ``->`` object operator to access document fields when running
-           the :ref:`Laravel Queries <laravel-retrieve-query-builder>` example. Since the example uses the query builder
-           syntax, the find operation returns data as an array rather than as instances of the Eloquent model class.
+           Since the Laravel query builder returns data as an array rather than as instances of the Eloquent model class,
+           the view accesses the fields by using the array syntax instead of the ``->`` object operator.
 
 .. _laravel-retrieve-all:
 
 Retrieve All Documents in a Collection
 --------------------------------------
 
-You can retrieve documents without specifying a query filter, which returns all
-documents in a collection.
-
-To retrieve all documents, call the ``get()`` method on an Eloquent model that represents
-your collection. Alternatively, you can use the ``get()`` method's alias ``all()`` to perform
-the same operation.
-
-.. _laravel-retrieve-all-example:
-
-Retrieve All Documents
-~~~~~~~~~~~~~~~~~~~~~~
+You can retrieve all documents in a collection by omitting the query filter.
+To return the documents, call the ``get()`` method on an Eloquent model that
+represents your collection. Alternatively, you can use the ``get()`` method's
+alias ``all()`` to perform the same operation.
 
 Use the following syntax to run a find operation that matches all documents:
 
@@ -298,12 +306,18 @@ Use the following syntax to run a find operation that matches all documents:
 Modify Behavior
 ---------------
 
-You can modify the results of a find operation by chaining the following methods
-to ``where()``:
+You can modify the results of a find operation by chaining additional methods
+to ``where()``.
 
-- ``skip()``: sets the number of documents to skip when returning results
-- ``take()``: sets the total number of documents to return
-- ``first()``: returns the first document that matches the query filter
+The following sections demonstrate how to modify the behavior of the ``where()``
+method:
+
+- :ref:`laravel-skip-limit` uses the ``skip()`` method to set the number of documents
+  to skip and the ``take()`` method to set the total number of documents to return
+- :ref:`laravel-retrieve-one` uses the ``first()`` method to return the first document
+  that matches the query filter
+
+.. _laravel-skip-limit:
 
 Skip and Limit Results
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -319,17 +333,17 @@ documents.
 
       Use the following syntax to specify the query:
 
-      .. code-block:: go
+      .. code-block:: php
 
          $movies = Movie::where('year', 1999)
                ->skip(2)
                ->take(3)
                ->get()
 
-   .. tab:: Run the Query
-      :tabid: query-run
+   .. tab:: Controller Method
+      :tabid: controller
 
-      To run the find operation and view the results, edit the ``show()`` function
+      To see the query results in the ``browse_movies`` view, edit the ``show()`` function
       in the ``MovieController.php`` file to resemble the following code:
 
       .. io-code-block::
@@ -383,15 +397,16 @@ documents.
 
 .. _laravel-retrieve-one:
 
-Retrieve Only One Result
-~~~~~~~~~~~~~~~~~~~~~~~~
+Return the First Result
+~~~~~~~~~~~~~~~~~~~~~~~
 
-To retrieve only one document that matches a set of criteria, use the ``where()`` method
-followed by the ``first()`` method. By default, the ``first()`` method returns the first
-matching document according to the documents' natural order, or as they appear in the
-database. If you apply a sort to the find operation, ``first()`` returns the first matching
-document according to the sorted order. 
-   
+To retrieve the first document that matches a set of criteria, use the ``where()`` method
+followed by the ``first()`` method.
+
+Chain the ``orderBy()`` method to ``first()`` to get consistent results when you query on a unique
+value. If you omit the ``orderBy()`` method, MongoDB returns the matching documents according to
+the documents' natural order, or as they appear in the database.
+
 This example returns one document in which the value of the ``runtime`` field
 is ``30``.
 
@@ -408,10 +423,10 @@ is ``30``.
                ->orderBy('_id')
                ->first();
 
-   .. tab:: Run the Query
-      :tabid: query-run
+   .. tab:: Controller Method
+      :tabid: controller
 
-      To run the find operation and view the results, edit the ``show()`` function
+      To see the query results in the ``browse_movies`` view, edit the ``show()`` function
       in the ``MovieController.php`` file to resemble the following code:
 
       .. io-code-block::
