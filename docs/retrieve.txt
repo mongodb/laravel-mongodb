@@ -20,7 +20,7 @@ Retrieve Data
 Overview
 --------
 
-In this guide, you can learn how to use the {+odm-short+} to perform **find operations**
+In this guide, you can learn how to use {+odm-short+} to perform **find operations**
 on your MongoDB collections. Find operations allow you to retrieve documents based on
 criteria that you specify.
 
