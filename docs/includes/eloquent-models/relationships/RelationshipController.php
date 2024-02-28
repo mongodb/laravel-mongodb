@@ -8,28 +8,9 @@ use Illuminate\Http\Request;
 
 class PlanetController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    private function oneToOne()
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-
         // begin one-to-one save
         $planet = new Planet();
         $planet->name = 'Earth';
@@ -42,31 +23,72 @@ class PlanetController extends Controller
 
         $planet->orbit()->save($orbit);
         // end one-to-one save
+    }
 
+    private function oneToMany()
+    {
+        // begin one-to-many save
+        $planet = new Planet();
+        $planet->name = 'Jupiter';
+        $planet->diameter_km = 142984;
+        $planet->save();
 
+        $moon_1 = new Moon();
+        $moon_1->name = 'Ganymede';
+        $moon_1->orbital_period = 7.15;
+
+        $moon_2 = new Moon();
+        $moon_2->name = 'Europa';
+        $moon_2->orbital_period = 3.55;
+
+        $planet->moons()->save($moon_1);
+        $planet->moons()->save($moon_2);
+        // end one-to-many save
+    }
+
+    private function planetOrbitDynamic()
+    {
+        // begin planet orbit dynamic property example
+        $planet = Planet::first();
+        $related_orbit = $planet->orbit;
+
+        $orbit = Orbit::first();
+        $related_planet = $orbit->planet;
+        // end planet orbit dynamic property example
+    }
+
+    private function planetMoonsDynamic()
+    {
+        // begin planet moons dynamic property example
+        $planet = Planet::first();
+        $related_moons = $planet->moons;
+
+        $moon = Moon::first();
+        $related_planet = $moon->planet;
+        // end planet moons dynamic property example
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request)
+    {
+        oneToMany();
 
         return;
     }
 
+
+
     /**
      * Display the specified resource.
      */
-
     public function show()
     {
-
-      // begin dynamic property example
-      $planet = Planet::first();
-      $related_orbit = $planet->orbit;
-
-      $orbit = Orbit::first();
-      $related_planet = $orbit->planet;
-      // end dynamic property example
-
-      return view('browse_planets', [
-        'planets' => Planet::take(10)
-           ->get()
-      ]);
+        return view('browse_planets', [
+          'planets' => Planet::take(10)
+             ->get()
+        ]);
     }
 
     /**
