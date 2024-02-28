@@ -14,8 +14,8 @@ Laravel MongoDB
    :maxdepth: 1
 
    /install
-   /retrieve
    /quick-start
+   /retrieve
    /eloquent-models
    /query-builder
    /user-authentication
