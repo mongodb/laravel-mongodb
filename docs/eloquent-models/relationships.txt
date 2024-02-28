@@ -58,7 +58,7 @@ The following section shows an example of how to create one to one
 relationships.
 
 To learn more about one to one relationships, see
-`One to One <https://laravel.com/docs/10.x/eloquent-relationships#one-to-one>`__
+`One to One <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-relationships#one-to-one>`__
 in the Laravel docs.
 
 One to One Example
@@ -85,8 +85,8 @@ and add the relationship between them:
 .. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
    :language: php
    :dedent:
-   :starts-after: begin one-to-one save
-   :ends-before: end one-to-one save
+   :start-after: begin one-to-one save
+   :end-before: end one-to-one save
 
 The following sample code shows how you can access the related models by using
 the dynamic properties as defined in the example classes:
@@ -94,8 +94,8 @@ the dynamic properties as defined in the example classes:
 .. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
    :language: php
    :dedent:
-   :starts-after: begin dynamic property example
-   :ends-before: end dynamic property example
+   :start-after: begin dynamic property example
+   :end-before: end dynamic property example
 
 The models created in the prior examples resemble the following documents
 in MongoDB:
