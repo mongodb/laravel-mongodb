@@ -100,8 +100,8 @@ documents that meet the following criteria:
       .. code-block:: php
 
          $movies = Movie::where('year', 2010)
-            ->where('imdb.rating', '>', 8.5)
-            ->get();
+             ->where('imdb.rating', '>', 8.5)
+             ->get();
 
    .. tab:: Controller Method
       :tabid: controller
@@ -117,16 +117,16 @@ documents that meet the following criteria:
 
             class MovieController
             {
-               public function show()
-               {
-                  $movies = Movie::where('year', 2010)
-                     ->where('imdb.rating', '>', 8.5)
-                     ->get();
+                public function show()
+                {
+                     $movies = Movie::where('year', 2010)
+                         ->where('imdb.rating', '>', 8.5)
+                         ->get();
                   
-                  return view('browse_movies', [
-                        'movies' => $movies
-                  ]);
-               }
+                     return view('browse_movies', [
+                         'movies' => $movies
+                     ]);
+                }
             }
 
          .. output::
@@ -171,9 +171,9 @@ of the ``imdb.votes`` nested field is ``350``.
       .. code-block:: php
 
          $movies = DB::connection('mongodb')
-               ->collection('movies')
-               ->where('imdb.votes', 350)
-               ->get();
+             ->collection('movies')
+             ->where('imdb.votes', 350)
+             ->get();
 
    .. tab:: Controller Method
       :tabid: controller
@@ -189,17 +189,17 @@ of the ``imdb.votes`` nested field is ``350``.
 
             class MovieController
             {
-               public function show()
-               {
-                  $movies = DB::connection('mongodb')
-                        ->collection('movies')
-                        ->where('imdb.votes', 350)
-                        ->get();
+                public function show()
+                {
+                     $movies = DB::connection('mongodb')
+                         ->collection('movies')
+                         ->where('imdb.votes', 350)
+                         ->get();
 
-                  return view('browse_movies', [
-                     'movies' => $movies
-                  ]);
-               }
+                     return view('browse_movies', [
+                         'movies' => $movies
+                     ]);
+                }
             }
 
          .. output::
@@ -337,9 +337,9 @@ documents.
       .. code-block:: php
 
          $movies = Movie::where('year', 1999)
-               ->skip(2)
-               ->take(3)
-               ->get()
+             ->skip(2)
+             ->take(3)
+             ->get()
 
    .. tab:: Controller Method
       :tabid: controller
@@ -355,17 +355,17 @@ documents.
 
             class MovieController
             {
-               public function show()
-               {
-                  $movies = Movie::where('year', 1999)
-                        ->skip(2)
-                        ->take(3)
-                        ->get();
+                public function show()
+                {
+                     $movies = Movie::where('year', 1999)
+                         ->skip(2)
+                         ->take(3)
+                         ->get();
 
-                  return view('browse_movies', [
-                     'movies' => $movies
-                  ]);
-               }
+                     return view('browse_movies', [
+                         'movies' => $movies
+                     ]);
+                }
             }
 
          .. output::
@@ -419,11 +419,11 @@ field.
 
       Use the following syntax to specify the query:
 
-      .. code-block:: go
+      .. code-block:: php
 
          $movies = Movie::where('runtime', 30)
-               ->orderBy('_id')
-               ->first();
+             ->orderBy('_id')
+             ->first();
 
    .. tab:: Controller Method
       :tabid: controller
@@ -439,16 +439,16 @@ field.
 
             class MovieController
             {
-               public function show()
-               {
-                  $movies = Movie::where('runtime', 30)
+                public function show()
+                {
+                    $movies = Movie::where('runtime', 30)
                         ->orderBy('_id')
                         ->first();
 
-                  return view('browse_movies', [
-                     'movies' => $movies
-                  ]);
-               }
+                    return view('browse_movies', [
+                        'movies' => $movies
+                    ]);
+                }
             }
 
          .. output::
