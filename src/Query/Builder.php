@@ -22,6 +22,7 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\Cursor;
+use Override;
 use RuntimeException;
 
 use function array_fill_keys;
@@ -37,6 +38,8 @@ use function call_user_func;
 use function call_user_func_array;
 use function count;
 use function ctype_xdigit;
+use function dd;
+use function dump;
 use function end;
 use function explode;
 use function func_get_args;
@@ -248,6 +251,32 @@ class Builder extends BaseBuilder
         }
 
         throw new RuntimeException('Query not compatible with cursor');
+    }
+
+    /**
+     * Die and dump the current MongoDB query
+     *
+     * @return never-return
+     */
+    #[Override]
+    public function dd()
+    {
+        dd($this->toMql());
+    }
+
+    /**
+     * Dump the current MongoDB query
+     *
+     * @param mixed ...$args
+     *
+     * @return $this
+     */
+    #[Override]
+    public function dump(mixed ...$args)
+    {
+        dump($this->toMql(), ...$args);
+
+        return $this;
     }
 
     /**
