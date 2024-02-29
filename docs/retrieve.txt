@@ -339,7 +339,7 @@ documents.
          $movies = Movie::where('year', 1999)
              ->skip(2)
              ->take(3)
-             ->get()
+             ->get();
 
    .. tab:: Controller Method
       :tabid: controller
