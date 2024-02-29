@@ -37,13 +37,14 @@ To run the code examples in this guide, complete the :ref:`Quick Start <laravel-
 tutorial. This tutorial provides instructions on setting up a MongoDB Atlas instance with
 sample data and creating the following files in your Laravel web application:
 
-- ``Movie.php`` file, which contains a ``Movie`` model to represent the ``movies`` collection
+- ``Movie.php`` file, which contains a ``Movie`` model to represent documents in the ``movies``
+  collection
 - ``MovieController.php`` file, which contains a ``show()`` function to run database operations
 - ``browse_movies.blade.php`` file, which contains HTML code to display the results of database
   operations
 
 The following sections describe how to edit the files in your Laravel application to run 
-the code examples and view the expected output.
+the find operation code examples and view the expected output.
 
 .. _laravel-retrieve-matching:
 
@@ -405,10 +406,11 @@ followed by the ``first()`` method.
 
 Chain the ``orderBy()`` method to ``first()`` to get consistent results when you query on a unique
 value. If you omit the ``orderBy()`` method, MongoDB returns the matching documents according to
-the documents' natural order, or as they appear in the database.
+the documents' natural order, or as they appear in the collection.
 
-This example returns one document in which the value of the ``runtime`` field
-is ``30``.
+This example queries for documents in which the value of the ``runtime`` field is
+``30`` and returns the first matching document according to the value of the ``_id``
+field.
 
 .. tabs::
 
