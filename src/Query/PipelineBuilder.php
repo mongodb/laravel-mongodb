@@ -23,6 +23,17 @@ final class PipelineBuilder extends FluentFactory
     }
 
     /**
+     * Add a stage without using the builder. Necessary if the stage is built
+     * outside the builder, or it is not yet supported by the library.
+     */
+    public function addRawStage(string $operator, mixed $value): static
+    {
+        $this->pipeline[] = [$operator => $value];
+
+        return $this;
+    }
+
+    /**
      * Execute the aggregation pipeline and return the results.
      */
     public function get(): LaravelCollection
