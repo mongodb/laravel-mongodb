@@ -115,10 +115,12 @@ class DateTest extends TestCase
 
     public function testImmutableDateWithCustomFormat(): void
     {
+        // With a custom format, "date" cast behave like "datetime". The time is not reset to the start of the day.
+        // https://github.com/laravel/framework/blob/v10.46.0/src/Illuminate/Database/Eloquent/Concerns/HasAttributes.php#L866-L869
         $model = Casting::query()->create(['immutableDateWithFormatField' => new DateTime()]);
 
         self::assertInstanceOf(CarbonImmutable::class, $model->immutableDateWithFormatField);
-        self::assertEquals(now()->startOfDay()->format('j.n.Y H:i'), (string) $model->immutableDateWithFormatField);
+        self::assertEquals(now()->format('j.n.Y H:i'), (string) $model->immutableDateWithFormatField);
 
         $model->update(['immutableDateWithFormatField' => now()->startOfDay()->subDay()]);
 
