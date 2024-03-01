@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Eloquent;
 
 use Carbon\CarbonInterface;
 use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
@@ -30,6 +31,7 @@ use function array_unique;
 use function array_values;
 use function class_basename;
 use function count;
+use function date_default_timezone_get;
 use function explode;
 use function func_get_args;
 use function in_array;
@@ -137,7 +139,8 @@ abstract class Model extends BaseModel
     {
         // Convert UTCDateTime instances to Carbon.
         if ($value instanceof UTCDateTime) {
-            return Date::instance($value->toDateTime());
+            return Date::instance($value->toDateTime())
+                ->setTimezone(new DateTimeZone(date_default_timezone_get()));
         }
 
         return parent::asDateTime($value);
