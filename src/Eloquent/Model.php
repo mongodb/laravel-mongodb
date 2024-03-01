@@ -205,9 +205,10 @@ abstract class Model extends BaseModel
         if ($this->hasCast($key) && $value instanceof CarbonInterface) {
             $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
 
+            // "date" cast resets the time to 00:00:00.
             $castType = $this->getCasts()[$key];
-            if ($this->isCustomDateTimeCast($castType) && str_starts_with($castType, 'date:')) {
-                $value->startOfDay();
+            if (str_starts_with($castType, 'date:') || str_starts_with($castType, 'immutable_date:')) {
+                $value = $value->startOfDay();
             }
         }
 

@@ -1,10 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [4.1.3] - 2024-03-01
+## [4.1.3] - 2024-03-04
 
-* Fix the timezone of `datetime` fields when they are read from the database by @GromNaN in [#2739](https://github.com/mongodb/laravel-mongodb/pull/2739)
-* Fix support for null values in `datetime` fields by @GromNaN in [#2741](https://github.com/mongodb/laravel-mongodb/pull/2741)
+* Fix the timezone of `datetime` fields when they are read from the database. By @GromNaN in [#2739](https://github.com/mongodb/laravel-mongodb/pull/2739)
+* Fix support for null values in `datetime` and reset `date` fields with custom format to the start of the day. By @GromNaN in [#2741](https://github.com/mongodb/laravel-mongodb/pull/2741)
 
 ## [4.1.2] - 2024-02-22
 
