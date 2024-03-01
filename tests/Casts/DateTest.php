@@ -52,6 +52,12 @@ class DateTest extends TestCase
         self::assertInstanceOf(Carbon::class, $refetchedModel->dateField);
         self::assertInstanceOf(UTCDateTime::class, $model->getRawOriginal('dateField'));
         self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $refetchedModel->dateField);
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->dateField);
+
+        $model->update(['dateField' => null]);
+        $this->assertNull($model->dateField);
     }
 
     public function testDateAsString(): void
@@ -126,5 +132,11 @@ class DateTest extends TestCase
             Carbon::createFromTimestamp(1698577443)->subDay()->startOfDay()->format('j.n.Y H:i'),
             (string) $model->immutableDateWithFormatField,
         );
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->immutableDateField);
+
+        $model->update(['immutableDateField' => null]);
+        $this->assertNull($model->immutableDateField);
     }
 }
