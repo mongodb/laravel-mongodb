@@ -45,7 +45,7 @@ class ModelTest extends TestCase
 {
     public function tearDown(): void
     {
-        User::truncate();
+        User::raw(fn(Collection $collection) => $collection->drop());
         Soft::truncate();
         Book::truncate();
         Item::truncate();
@@ -1043,5 +1043,44 @@ class ModelTest extends TestCase
         $found = User::where('2.3', 'two.three')->first();
         $this->assertInstanceOf(User::class, $found);
         $this->assertEquals([3 => 'two.three'], $found[2]);
+    }
+
+    public function testCreateOrFirst()
+    {
+        // Create index unique on "email" and "name"
+        User::raw(fn (Collection $collection) => $collection->createIndex(['email' => 1], ['unique' => true]));
+        User::raw(fn (Collection $collection) => $collection->createIndex(['name' => 1], ['unique' => true]));
+
+        $user1 = User::createOrFirst(['email' => 'taylorotwell@gmail.com']);
+
+        $this->assertSame('taylorotwell@gmail.com', $user1->email);
+        $this->assertNull($user1->name);
+
+        $user2 = User::createOrFirst(
+            ['email' => 'taylorotwell@gmail.com'],
+            ['name' => 'Taylor Otwell', 'birthday' => new DateTime('1987-05-28')],
+        );
+
+        $this->assertEquals($user1->id, $user2->id);
+        $this->assertSame('taylorotwell@gmail.com', $user2->email);
+        $this->assertNull($user2->name);
+        $this->assertNull($user2->birthday);
+
+        $user3 = User::createOrFirst(
+            ['email' => 'abigailotwell@gmail.com'],
+            ['name' => 'Abigail Otwell', 'birthday' => new DateTime('1987-05-28')],
+        );
+
+        $this->assertNotEquals($user3->id, $user1->id);
+        $this->assertSame('abigailotwell@gmail.com', $user3->email);
+        $this->assertSame('Abigail Otwell', $user3->name);
+        $this->assertEquals(new DateTime('1987-05-28'), $user3->birthday);
+
+        $user4 = User::createOrFirst(
+            ['name' => 'Dries Vints'],
+            ['name' => 'Nuno Maduro', 'email' => 'nuno@laravel.com'],
+        );
+
+        $this->assertSame('Nuno Maduro', $user4->name);
     }
 }

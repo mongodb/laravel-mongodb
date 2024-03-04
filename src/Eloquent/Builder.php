@@ -7,9 +7,11 @@ namespace MongoDB\Laravel\Eloquent;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use MongoDB\Driver\Cursor;
+use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Model\BSONDocument;
 
+use function array_intersect_key;
 use function array_key_exists;
 use function array_merge;
 use function collect;
@@ -181,6 +183,22 @@ class Builder extends EloquentBuilder
         }
 
         return $results;
+    }
+
+    public function createOrFirst(array $attributes = [], array $values = [])
+    {
+        // Apply casting and default values to the attributes
+        $instance = $this->newModelInstance($values + $attributes);
+        $values = $instance->getAttributes();
+        $attributes = array_intersect_key($attributes, $values);
+
+        return $this->raw(function (Collection $collection) use ($attributes, $values) {
+            return $collection->findOneAndUpdate(
+                $attributes,
+                ['$setOnInsert' => $values],
+                ['upsert' => true, 'new' => true],
+            );
+        });
     }
 
     /**
