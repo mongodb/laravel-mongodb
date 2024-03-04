@@ -1,0 +1,55 @@
+.. _laravel-issues-and-help:
+
+=============
+Issues & Help
+=============
+
+We are lucky to have a vibrant PHP community that includes users of varying
+experience with MongoDB PHP Library and {+odm-short+}. To get support for
+general questions, search or post in the
+:community-forum:`MongoDB Community Forums <>`.
+
+To learn more about MongoDB support options, see the
+`Technical Support <https://www.mongodb.org/about/support>`__ page.
+
+Bugs / Feature Requests
+-----------------------
+
+If you've found a bug or want to see a new feature in {+odm-short+},
+please report it in the GitHub issues section of the
+`mongodb/laravel-mongodb <https://github.com/mongodb/laravel-mongodb>`__
+repository.
+
+If you want to contribute code, see the following section for instructions on
+submitting pull requests.
+
+To report a bug or request a new feature, perform the following steps:
+
+1. Visit the `GitHub issues <https://github.com/mongodb/laravel-mongodb/issues>`__
+   section and search for any similar issues or bugs.
+#. If you find a matching issue, you can reply to the thread to report that
+   you have a similar issue or request.
+#. If you cannot find a matching issue, click :guilabel:`New issue` and select
+   the appropriate issue type.
+#. If you selected "Bug report" or "Feature request", please provide as much
+   information as possible about the issue. Click :guilabel:`Submit new issue`
+   to complete your submission.
+
+If you've identified a security vulnerability in any official MongoDB
+product, please report it according to the instructions found in the
+:manual:`Create a Vulnerability Report page </tutorial/create-a-vulnerability-report>`.
+
+For general questions and support requests, please use one of MongoDB's
+:manual:`Technical Support </support/>` channels.
+
+Pull Requests
+-------------
+
+We are happy to accept contributions to help improve the {+odm-short+}.
+
+We track current development in `PHPORM <https://jira.mongodb.org/projects/PHPORM/summary>`__
+MongoDB JIRA project.
+
+To learn more about contributing to this project, see the
+`CONTRIBUTING.md <https://github.com/mongodb/laravel-mongodb/blob/4.1/CONTRIBUTING.md>`__
+guide on GitHub.
