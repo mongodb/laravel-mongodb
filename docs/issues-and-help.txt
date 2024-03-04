@@ -45,7 +45,7 @@ For general questions and support requests, please use one of MongoDB's
 Pull Requests
 -------------
 
-We are happy to accept contributions to help improve the {+odm-short+}.
+We are happy to accept contributions to help improve {+odm-short+}.
 
 We track current development in `PHPORM <https://jira.mongodb.org/projects/PHPORM/summary>`__
 MongoDB JIRA project.
