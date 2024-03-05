@@ -52,6 +52,12 @@ class DateTest extends TestCase
         self::assertInstanceOf(Carbon::class, $refetchedModel->dateField);
         self::assertInstanceOf(UTCDateTime::class, $model->getRawOriginal('dateField'));
         self::assertEquals(now()->subDay()->startOfDay()->format('Y-m-d H:i:s'), (string) $refetchedModel->dateField);
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->dateField);
+
+        $model->update(['dateField' => null]);
+        $this->assertNull($model->dateField);
     }
 
     public function testDateAsString(): void
@@ -84,6 +90,12 @@ class DateTest extends TestCase
 
         self::assertInstanceOf(Carbon::class, $model->dateWithFormatField);
         self::assertEquals(now()->startOfDay()->subDay()->format('j.n.Y H:i'), (string) $model->dateWithFormatField);
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->dateWithFormatField);
+
+        $model->update(['dateWithFormatField' => null]);
+        $this->assertNull($model->dateWithFormatField);
     }
 
     public function testImmutableDate(): void
@@ -105,6 +117,12 @@ class DateTest extends TestCase
             Carbon::createFromTimestamp(1698577443)->subDay()->startOfDay()->format('Y-m-d H:i:s'),
             (string) $model->immutableDateField,
         );
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->immutableDateField);
+
+        $model->update(['immutableDateField' => null]);
+        $this->assertNull($model->immutableDateField);
     }
 
     public function testImmutableDateWithCustomFormat(): void
@@ -126,5 +144,11 @@ class DateTest extends TestCase
             Carbon::createFromTimestamp(1698577443)->subDay()->startOfDay()->format('j.n.Y H:i'),
             (string) $model->immutableDateWithFormatField,
         );
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->immutableDateWithFormatField);
+
+        $model->update(['immutableDateWithFormatField' => null]);
+        $this->assertNull($model->immutableDateWithFormatField);
     }
 }
