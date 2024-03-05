@@ -287,8 +287,8 @@ the code:
    .. input:: /includes/eloquent-models/relationships/RelationshipController.php
       :language: php
       :dedent:
-      :start-after: begin many to many dynamic property example
-      :end-before: end many to many dynamic property example
+      :start-after: begin many to many save
+      :end-before: end many to many save
 
    .. output::
       :language: json
@@ -416,27 +416,26 @@ created by running the code:
 
       // Document in the "space_ships" collection
       {
-          _id: ObjectId('65e207b9aa167d29a3048853'),
-          name: 'The Millenium Falcon',
-          // ...
-          cargo: [
-            {
-              name: 'spice',
-              weight: 50,
-              // ...
-              _id: ObjectId('65e207b9aa167d29a3048854')
-            },
-            {
-              name: 'hyperdrive',
-              weight: 25,
-              // ...
-              _id: ObjectId('65e207b9aa167d29a3048855')
-            }
-          ]
+         _id: ObjectId('65e207b9aa167d29a3048853'),
+         name: 'The Millenium Falcon',
+         // ...
+         cargo: [
+           {
+             name: 'spice',
+             weight: 50,
+             // ...
+             _id: ObjectId('65e207b9aa167d29a3048854')
+           },
+           {
+             name: 'hyperdrive',
+             weight: 25,
+             // ...
+             _id: ObjectId('65e207b9aa167d29a3048855')
+           }
+         ]
       }
 
-
-.. _laravel-relationship-cross-database
+.. _laravel-relationship-cross-database:
 
 Cross-Database Relationships
 ----------------------------
@@ -474,21 +473,7 @@ stored in a MongoDB database:
 The ``Passenger`` model defines a ``BelongsToMany`` relationship with
 ``SpaceShip`` as shown in the following example class:
 
-.. literalinclude:: /includes/eloquent-models/relationships/SpaceShipManyToMany.php
-   :language: php
-   :dedent:
-
-The following sample code shows how you can instantiate a model for each class
-and add the relationship between them:
-
 .. literalinclude:: /includes/eloquent-models/relationships/PassengerCrossBelongsTo.php
-   :language: php
-   :dedent:
-
-The embedded model class omits the relationship definition as shown in the
-following example class:
-
-.. literalinclude:: /includes/eloquent-models/relationships/CargoEmbedsMany.php
    :language: php
    :dedent:
 
@@ -514,5 +499,4 @@ see sample MongoDB documents created by running the code:
       +------+----------+
       | 1234 | Nostromo |
       +------+----------+
- 
 
