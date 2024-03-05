@@ -85,9 +85,10 @@ as shown in the following example class:
 
 The following sample code shows how you can instantiate a model for each class
 and add the relationship between them. Click the :guilabel:`Output` button to
-see sample MongoDB documents created by running the code::
+see sample MongoDB documents created by running the code:
 
 .. io-code-block::
+
    .. input:: /includes/eloquent-models/relationships/RelationshipController.php
       :language: php
       :dedent:
@@ -157,7 +158,7 @@ One to Many Example
 The following example class shows how to define a ``HasMany`` one to many
 relationship between a ``Planet`` parent model and ``Moon`` child model.
 
-.. literalinclude:: includes/eloquent-models/relationships/PlanetOneToMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/PlanetOneToMany.php
    :language: php
    :dedent:
 
@@ -165,7 +166,7 @@ To define the inverse of the relationship on ``Moon``, add the dynamic
 property and call the ``belongsTo()`` method on it as shown in the following
 example class:
 
-.. literalinclude:: includes/eloquent-models/relationships/MoonOneToMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/MoonOneToMany.php
    :language: php
    :dedent:
 
