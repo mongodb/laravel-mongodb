@@ -36,6 +36,12 @@ class DatetimeTest extends TestCase
         self::assertInstanceOf(Carbon::class, $model->datetimeField);
         self::assertInstanceOf(UTCDateTime::class, $model->getRawOriginal('datetimeField'));
         self::assertEquals(now()->subDay()->format('Y-m-d H:i:s'), (string) $model->datetimeField);
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->datetimeField);
+
+        $model->update(['datetimeField' => null]);
+        $this->assertNull($model->datetimeField);
     }
 
     public function testDatetimeAsString(): void
@@ -70,6 +76,12 @@ class DatetimeTest extends TestCase
 
         self::assertInstanceOf(Carbon::class, $model->datetimeWithFormatField);
         self::assertEquals(now()->subDay()->format('j.n.Y H:i'), (string) $model->datetimeWithFormatField);
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->datetimeWithFormatField);
+
+        $model->update(['datetimeWithFormatField' => null]);
+        $this->assertNull($model->datetimeWithFormatField);
     }
 
     public function testImmutableDatetime(): void
@@ -92,6 +104,12 @@ class DatetimeTest extends TestCase
             Carbon::createFromTimestamp(1698577443)->subDay()->format('Y-m-d H:i:s'),
             (string) $model->immutableDatetimeField,
         );
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->immutableDatetimeField);
+
+        $model->update(['immutableDatetimeField' => null]);
+        $this->assertNull($model->immutableDatetimeField);
     }
 
     public function testImmutableDatetimeWithCustomFormat(): void
@@ -113,5 +131,11 @@ class DatetimeTest extends TestCase
             Carbon::createFromTimestamp(1698577443)->subDay()->format('j.n.Y H:i'),
             (string) $model->immutableDatetimeWithFormatField,
         );
+
+        $model = Casting::query()->create();
+        $this->assertNull($model->immutableDatetimeWithFormatField);
+
+        $model->update(['immutableDatetimeWithFormatField' => null]);
+        $this->assertNull($model->immutableDatetimeWithFormatField);
     }
 }

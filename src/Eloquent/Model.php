@@ -205,9 +205,10 @@ abstract class Model extends BaseModel
         if ($this->hasCast($key) && $value instanceof CarbonInterface) {
             $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
 
+            // "date" cast resets the time to 00:00:00.
             $castType = $this->getCasts()[$key];
-            if ($this->isCustomDateTimeCast($castType) && str_starts_with($castType, 'date:')) {
-                $value->startOfDay();
+            if (str_starts_with($castType, 'date:') || str_starts_with($castType, 'immutable_date:')) {
+                $value = $value->startOfDay();
             }
         }
 
@@ -313,19 +314,6 @@ abstract class Model extends BaseModel
     protected function fromDecimal($value, $decimals)
     {
         return new Decimal128($this->asDecimal($value, $decimals));
-    }
-
-    /** @inheritdoc */
-    protected function castAttribute($key, $value)
-    {
-        $castType = $this->getCastType($key);
-
-        return match ($castType) {
-            'immutable_custom_datetime','immutable_datetime' => str_starts_with($this->getCasts()[$key], 'immutable_date:') ?
-                $this->asDate($value)->toImmutable() :
-                $this->asDateTime($value)->toImmutable(),
-            default => parent::castAttribute($key, $value)
-        };
     }
 
     /** @inheritdoc */
