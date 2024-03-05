@@ -13,7 +13,6 @@ Laravel MongoDB
    :titlesonly:
    :maxdepth: 1
 
-   /install
    /quick-start
    /retrieve
    /eloquent-models
