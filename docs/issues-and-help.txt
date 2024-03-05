@@ -7,7 +7,7 @@ Issues & Help
 We are lucky to have a vibrant PHP community that includes users of varying
 experience with MongoDB PHP Library and {+odm-short+}. To get support for
 general questions, search or post in the
-:community-forum:`MongoDB Community Forums </tag/php>`.
+:community-forum:`MongoDB PHP Community Forums </tag/php>`.
 
 To learn more about MongoDB support options, see the
 `Technical Support <https://www.mongodb.org/about/support>`__ page.
@@ -25,7 +25,7 @@ for instructions on submitting pull requests.
 To report a bug or request a new feature, perform the following steps:
 
 1. Review the `GitHub issues list <https://github.com/mongodb/laravel-mongodb/issues>`__
-	in the source repository and search for any existing issues that address your concern.
+   in the source repository and search for any existing issues that address your concern.
 #. If you find a matching issue, you can reply to the thread to report that
    you have a similar issue or request.
 #. If you cannot find a matching issue, click :guilabel:`New issue` and select
