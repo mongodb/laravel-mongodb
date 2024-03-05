@@ -264,7 +264,7 @@ many relationship with  and a ``SpaceExplorer`` model.
 The ``SpaceExplorer`` model defines a ``BelongsToMany`` many to many
 relationship with ``Planet`` as shown in the following example class:
 
-.. literalinclude:: /includes/eloquent-models/relationships/SpaceShipManyToMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/SpaceExplorerManyToMany.php
    :language: php
    :dedent:
 
@@ -433,7 +433,7 @@ created by running the code:
               _id: ObjectId('65e207b9aa167d29a3048855')
             }
           ]
-        }
+      }
 
 
 .. _laravel-relationship-cross-database
@@ -509,10 +509,10 @@ see sample MongoDB documents created by running the code:
       :language: none
       :visible: false
 
-     +------+----------+
-     | id   | name     |
-     +------+----------+
-     | 1234 | Nostromo |
-     +------+----------+
-
+      +------+----------+
+      | id   | name     |
+      +------+----------+
+      | 1234 | Nostromo |
+      +------+----------+
+ 
 
