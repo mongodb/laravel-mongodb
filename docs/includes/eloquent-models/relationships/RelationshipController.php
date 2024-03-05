@@ -103,8 +103,19 @@ class PlanetController extends Controller
         $explorer_jeanluc->planetsVisited()->attach($planet_mars);
         $explorer_jeanluc->planetsVisited()->attach($planet_jupiter);
         // end many-to-many save
-
     }
+
+    private function manyToManyDynamic()
+    {
+        // begin many-to-many dynamic property example
+        $planet = Planet::first();
+        $explorers = $planet->visitors;
+
+        $space_explorer = SpaceExplorer:first();
+        $planets_visited = $space_explorer->planetsVisited;
+        // end many-to-many dynamic property example
+    }
+
     private function embedsMany()
     {
         // begin embedsMany save

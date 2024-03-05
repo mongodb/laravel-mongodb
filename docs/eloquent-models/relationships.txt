@@ -84,17 +84,8 @@ as shown in the following example class:
    :dedent:
 
 The following sample code shows how you can instantiate a model for each class
-and add the relationship between them:
-
-.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
-   :language: php
-   :dedent:
-   :start-after: begin one-to-one save
-   :end-before: end one-to-one save
-
-The following sample code shows how you can access the related models by using
-the dynamic properties as defined in the example classes:
-
+and add the relationship between them. Click the :guilabel:`Output` button to
+see sample MongoDB documents created by running the code::
 
 .. io-code-block::
    .. input:: /includes/eloquent-models/relationships/RelationshipController.php
@@ -123,6 +114,15 @@ the dynamic properties as defined in the example classes:
         planet_id: '65de67fb2e59d63e6d07f8b8',
         // ...
       }
+
+The following sample code shows how you can access the related models by using
+the dynamic properties as defined in the example classes:
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :start-after: begin planet orbit dynamic property example
+   :end-before: end planet orbit dynamic property example
 
 .. _laravel-eloquent-relationship-one-to-many:
 
@@ -170,26 +170,16 @@ example class:
    :dedent:
 
 The following sample code shows how you can instantiate a model for each class
-and add the relationship between them:
-
-.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
-   :language: php
-   :dedent:
-   :start-after: begin one-to-many save
-   :end-before: end one-to-many save
-
-The following sample code shows how you can access the related models by using
-the dynamic properties as defined in the example classes. Click the
-:guilabel:`Output` button to see sample MongoDB documents created by running
-the code:
+and add the relationship between them.  Click the :guilabel:`Output` button to
+see sample MongoDB documents created by running the code:
 
 .. io-code-block::
 
    .. input:: /includes/eloquent-models/relationships/RelationshipController.php
       :language: php
       :dedent:
-      :start-after: begin planet moons dynamic property example
-      :end-before: end planet moons dynamic property example
+      :start-after: begin one-to-many save
+      :end-before: end one-to-many save
 
    .. output::
       :language: json
@@ -220,6 +210,16 @@ the code:
           // ...
         }
       ]
+
+The following sample code shows how you can access the related models by using
+the dynamic properties as defined in the example classes.
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :start-after: begin planet moons dynamic property example
+   :end-before: end planet moons dynamic property example
+
 
 .. _laravel-eloquent-relationship-many-to-many:
 
@@ -269,26 +269,16 @@ relationship with ``Planet`` as shown in the following example class:
    :dedent:
 
 The following sample code shows how you can instantiate a model for each class
-and add the relationship between them:
-
-.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
-   :language: php
-   :dedent:
-   :start-after: begin many-to-many save
-   :end-before: end many-to-many save
-
-The following sample code shows how you can access the related models by using
-the dynamic properties as defined in the example classes. Click the
-:guilabel:`Output` button to see sample MongoDB documents created by running
-the code:
+and add the relationship between them. Click the :guilabel:`Output` button to
+see sample MongoDB documents created by running the code:
 
 .. io-code-block::
 
    .. input:: /includes/eloquent-models/relationships/RelationshipController.php
       :language: php
       :dedent:
-      :start-after: begin many to many save
-      :end-before: end many to many save
+      :start-after: begin many-to-many save
+      :end-before: end many-to-many save
 
    .. output::
       :language: json
@@ -346,6 +336,16 @@ the code:
           ]
         }
       ]
+
+The following sample code shows how you can access the related models by using
+the dynamic properties as defined in the example classes.
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :start-after: begin many-to-many dynamic property example
+   :end-before: end many-to-many dynamic property example
+
 
 .. _laravel-embedded-document-pattern:
 
