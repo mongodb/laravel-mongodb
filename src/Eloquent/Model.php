@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Eloquent;
 
 use Carbon\CarbonInterface;
 use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
@@ -30,6 +31,7 @@ use function array_unique;
 use function array_values;
 use function class_basename;
 use function count;
+use function date_default_timezone_get;
 use function explode;
 use function func_get_args;
 use function in_array;
@@ -137,7 +139,8 @@ abstract class Model extends BaseModel
     {
         // Convert UTCDateTime instances to Carbon.
         if ($value instanceof UTCDateTime) {
-            return Date::instance($value->toDateTime());
+            return Date::instance($value->toDateTime())
+                ->setTimezone(new DateTimeZone(date_default_timezone_get()));
         }
 
         return parent::asDateTime($value);
@@ -202,9 +205,10 @@ abstract class Model extends BaseModel
         if ($this->hasCast($key) && $value instanceof CarbonInterface) {
             $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
 
+            // "date" cast resets the time to 00:00:00.
             $castType = $this->getCasts()[$key];
-            if ($this->isCustomDateTimeCast($castType) && str_starts_with($castType, 'date:')) {
-                $value->startOfDay();
+            if (str_starts_with($castType, 'date:') || str_starts_with($castType, 'immutable_date:')) {
+                $value = $value->startOfDay();
             }
         }
 
@@ -310,19 +314,6 @@ abstract class Model extends BaseModel
     protected function fromDecimal($value, $decimals)
     {
         return new Decimal128($this->asDecimal($value, $decimals));
-    }
-
-    /** @inheritdoc */
-    protected function castAttribute($key, $value)
-    {
-        $castType = $this->getCastType($key);
-
-        return match ($castType) {
-            'immutable_custom_datetime','immutable_datetime' => str_starts_with($this->getCasts()[$key], 'immutable_date:') ?
-                $this->asDate($value)->toImmutable() :
-                $this->asDateTime($value)->toImmutable(),
-            default => parent::castAttribute($key, $value)
-        };
     }
 
     /** @inheritdoc */
