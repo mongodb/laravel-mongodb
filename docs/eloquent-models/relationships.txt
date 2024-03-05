@@ -79,8 +79,8 @@ as shown in the following example class:
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them. Click the :guilabel:`View Output` button to
-see sample MongoDB documents created by running the code:
+and add the relationship between them. Click the :guilabel:`View Output` 
+button to see the data created by running the code:
 
 .. io-code-block::
 
@@ -163,8 +163,8 @@ example class:
    :dedent:
 
 The following sample code shows how ton instantiate a model for each class
-and add the relationship between them.  Click the :guilabel:`View Output` button to
-see sample MongoDB documents created by running the code:
+and add the relationship between them.  Click the :guilabel:`View Output` 
+button to see the data created by running the code:
 
 .. io-code-block::
 
@@ -262,8 +262,8 @@ relationship with ``Planet`` as shown in the following example class:
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them. Click the :guilabel:`View Output` button to
-see sample MongoDB documents created by running the code:
+and add the relationship between them. Click the :guilabel:`View Output` 
+button to see the data created by running the code:
 
 .. io-code-block::
 
@@ -393,8 +393,8 @@ following example class:
 
 The following sample code shows how to create a ``SpaceShip`` model and
 embed multiple ``Cargo`` models and the MongoDB document created by running the
-code. Click the :guilabel:`View Output` button to see sample MongoDB documents
-created by running the code:
+code. Click the :guilabel:`View Output` button to see the data created by 
+running the code:
 
 .. io-code-block::
 
@@ -473,8 +473,8 @@ The ``Passenger`` model defines a ``BelongsToMany`` relationship with
 
 The following sample code shows how to create a ``SpaceShip`` model in
 a MySQL database and related ``Passenger`` models in a MongoDB database and
-the data created by running the code. Click the :guilabel:`View Output` button to
-see sample MongoDB documents created by running the code:
+the data created by running the code. Click the :guilabel:`View Output` button 
+to see the data created by running the code:
 
 .. io-code-block::
 

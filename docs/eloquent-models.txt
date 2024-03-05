@@ -24,6 +24,6 @@ This section contains guidance on how to use Eloquent models in
 
 .. toctree::
 
-   /eloquent-models/relationships
+   :doc:`Relationships </eloquent-models/relationships>`
 
 
