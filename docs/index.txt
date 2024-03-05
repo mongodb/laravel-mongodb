@@ -63,9 +63,8 @@ see the following content:
 Issues & Help
 -------------
 
-Learn how to report bugs, contribute to the driver, and find
-more resources for asking questions in the
-:ref:`laravel-issues-and-help` section.
+Learn how to report bugs, contribute to the library, and find
+more resources in the :ref:`laravel-issues-and-help` section.
 
 Compatibility
 -------------

@@ -7,7 +7,7 @@ Issues & Help
 We are lucky to have a vibrant PHP community that includes users of varying
 experience with MongoDB PHP Library and {+odm-short+}. To get support for
 general questions, search or post in the
-:community-forum:`MongoDB Community Forums <>`.
+:community-forum:`MongoDB Community Forums </tag/php>`.
 
 To learn more about MongoDB support options, see the
 `Technical Support <https://www.mongodb.org/about/support>`__ page.
@@ -15,18 +15,17 @@ To learn more about MongoDB support options, see the
 Bugs / Feature Requests
 -----------------------
 
-If you've found a bug or want to see a new feature in {+odm-short+},
-please report it in the GitHub issues section of the
-`mongodb/laravel-mongodb <https://github.com/mongodb/laravel-mongodb>`__
-repository.
+If you find a bug or want to see a new feature in {+odm-short+},
+please report it as a GitHub issue in the `mongodb/laravel-mongodb
+<https://github.com/mongodb/laravel-mongodb>`__ repository.
 
-If you want to contribute code, see the following section for instructions on
-submitting pull requests.
+If you want to contribute code, see the :ref:`laravel-pull-requests` section
+for instructions on submitting pull requests.
 
 To report a bug or request a new feature, perform the following steps:
 
-1. Visit the `GitHub issues <https://github.com/mongodb/laravel-mongodb/issues>`__
-   section and search for any similar issues or bugs.
+1. Review the `GitHub issues list <https://github.com/mongodb/laravel-mongodb/issues>`__
+	in the source repository and search for any existing issues that address your concern.
 #. If you find a matching issue, you can reply to the thread to report that
    you have a similar issue or request.
 #. If you cannot find a matching issue, click :guilabel:`New issue` and select
@@ -41,6 +40,8 @@ product, please report it according to the instructions found in the
 
 For general questions and support requests, please use one of MongoDB's
 :manual:`Technical Support </support/>` channels.
+
+.. _laravel-pull-requests:
 
 Pull Requests
 -------------
