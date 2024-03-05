@@ -17,21 +17,21 @@ Bugs / Feature Requests
 
 If you find a bug or want to see a new feature in {+odm-short+},
 please report it as a GitHub issue in the `mongodb/laravel-mongodb
-<https://github.com/mongodb/laravel-mongodb>`__ repository.
+<{+mongodb-laravel-gh+}>`__ repository.
 
 If you want to contribute code, see the :ref:`laravel-pull-requests` section
 for instructions on submitting pull requests.
 
 To report a bug or request a new feature, perform the following steps:
 
-1. Review the `GitHub issues list <https://github.com/mongodb/laravel-mongodb/issues>`__
+1. Review the `GitHub issues list <{+mongodb-laravel-gh+}/issues>`__
    in the source repository and search for any existing issues that address your concern.
 #. If you find a matching issue, you can reply to the thread to report that
    you have a similar issue or request.
 #. If you cannot find a matching issue, click :guilabel:`New issue` and select
    the appropriate issue type.
-#. If you selected "Bug report" or "Feature request", please provide as much
-   information as possible about the issue. Click :guilabel:`Submit new issue`
+#. If you select "Bug report" or "Feature request" as the issue type, please provide as
+   much information as possible about the issue. Click :guilabel:`Submit new issue`
    to complete your submission.
 
 If you've identified a security vulnerability in any official MongoDB
@@ -52,5 +52,5 @@ We track current development in `PHPORM <https://jira.mongodb.org/projects/PHPOR
 MongoDB JIRA project.
 
 To learn more about contributing to this project, see the
-`CONTRIBUTING.md <https://github.com/mongodb/laravel-mongodb/blob/4.1/CONTRIBUTING.md>`__
+`CONTRIBUTING.md <{+mongodb-laravel-gh+}/blob/{+package-version+}/CONTRIBUTING.md>`__
 guide on GitHub.
