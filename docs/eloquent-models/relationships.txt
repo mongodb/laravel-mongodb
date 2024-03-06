@@ -14,6 +14,17 @@ Eloquent Model Relationships
 Overview
 --------
 
+When you use a relational database, the Eloquent ORM stores models as rows
+in tables that correspond to the model classes.  When you use MongoDB, the
+{+odm-short+} stores models as documents in collections that correspond to the
+model classes.
+
+To define a relationship, add a function to the model class that calls the
+appropriate relationship method. This function allows you to access the related
+model as a **dynamic property**. A dynamic property lets you access the
+related model by using the same syntax as you use to access a property on the
+model.
+
 This page describes the following Laravel Eloquent and MongoDB-specific
 relationships available in {+odm-short+} and shows examples of how to define
 and use them:
@@ -30,24 +41,19 @@ and use them:
 - :ref:`Cross-database relationships <laravel-relationship-cross-database>`,
   required when you want to create relationships between MongoDB and SQL models
 
-Add a function to the model class that calls the appropriate relationship method
-to establish a relationship. This function allows you to access the related
-model as a **dynamic property**. A dynamic property lets you access the
-related model by using the same syntax as you use to access a property on the
-model.
-
 .. _laravel-eloquent-relationship-one-to-one:
 
 One to One Relationship
 -----------------------
 
 A one to one relationship between models consists of a model record related to
-exactly one other type of model record. In MongoDB, a record is represented as
+exactly one other type of model record.
+
 a document, and different model types exist in separate collections.
 
-When you add a one to one relationship by using the method, Eloquent lets you
-access the model by using a dynamic property and stores the model's document
-ID on the related model.
+When you add a one to one relationship, Eloquent lets you access the model by
+using a dynamic property and stores the model's document ID on the related
+model.
 
 In {+odm-short+}, you can define a one to one relationship by using the
 ``hasOne()`` method or ``belongsTo()`` method.
@@ -58,7 +64,7 @@ does not add any fields.
 
 To learn more about one to one relationships, see
 `One to One <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-relationships#one-to-one>`__
-in the Laravel docs.
+in the Laravel documentation.
 
 One to One Example
 ~~~~~~~~~~~~~~~~~~
@@ -70,16 +76,15 @@ relationship between a ``Planet`` and ``Orbit`` model.
    :language: php
    :dedent:
 
-The following example class uses a dynamic property and calls the
-``belongsTo()`` method to define the inverse of the relationship on ``Orbit``
-as shown in the following example class:
+The following example class shows how to define the inverse relationship with
+``Orbit`` by using the  ``belongsTo()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/OrbitOneToOne.php
    :language: php
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them. Click the :guilabel:`View Output` 
+and add the relationship between them. Click the :guilabel:`View Output`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -142,7 +147,7 @@ without adding any fields.
 
 To learn more about one to many relationships, see
 `One to Many <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-relationships#one-to-many>`__
-in the Laravel docs.
+in the Laravel documentation.
 
 One to Many Example
 ~~~~~~~~~~~~~~~~~~~
@@ -163,7 +168,7 @@ example class:
    :dedent:
 
 The following sample code shows how ton instantiate a model for each class
-and add the relationship between them.  Click the :guilabel:`View Output` 
+and add the relationship between them.  Click the :guilabel:`View Output`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -213,7 +218,6 @@ the dynamic properties as defined in the example classes.
    :start-after: begin planet moons dynamic property example
    :end-before: end planet moons dynamic property example
 
-
 .. _laravel-eloquent-relationship-many-to-many:
 
 Many to Many Relationship
@@ -239,7 +243,7 @@ document field, derived from the related model class name.
 
 To learn more about many to many relationships in Laravel, see
 `Many to Many <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-relationships#many-to-many>`__
-in the Laravel docs.
+in the Laravel documentation.
 
 The following section shows an example of how to create a many to many
 relationship between model classes.
@@ -262,7 +266,7 @@ relationship with ``Planet`` as shown in the following example class:
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them. Click the :guilabel:`View Output` 
+and add the relationship between them. Click the :guilabel:`View Output`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -339,20 +343,19 @@ the dynamic properties as defined in the example classes.
    :start-after: begin many-to-many dynamic property example
    :end-before: end many-to-many dynamic property example
 
-
 .. _laravel-embedded-document-pattern:
 
 Embedded Document Pattern
 -------------------------
 
 In MongoDB, the embedded document pattern adds the related model's data into
-the parent model instead of keeping foreign key references. This pattern
-when you must optimize for one or more of the following requirements:
+the parent model instead of keeping foreign key references. Use this pattern
+to meet one or more of the following requirements:
 
-- Keep associated data together in a single collection
-- Perform atomic updates on multiple fields of the document and the associated
+- Keeping associated data together in a single collection
+- Performing atomic updates on multiple fields of the document and the associated
   data
-- Reduce the number of reads required to fetch the data
+- Reducing the number of reads required to fetch the data
 
 In {+odm-short+}, you can define embedded documents by using one of the
 following dynamic property methods:
@@ -393,7 +396,7 @@ following example class:
 
 The following sample code shows how to create a ``SpaceShip`` model and
 embed multiple ``Cargo`` models and the MongoDB document created by running the
-code. Click the :guilabel:`View Output` button to see the data created by 
+code. Click the :guilabel:`View Output` button to see the data created by
 running the code:
 
 .. io-code-block::
@@ -473,7 +476,7 @@ The ``Passenger`` model defines a ``BelongsToMany`` relationship with
 
 The following sample code shows how to create a ``SpaceShip`` model in
 a MySQL database and related ``Passenger`` models in a MongoDB database and
-the data created by running the code. Click the :guilabel:`View Output` button 
+the data created by running the code. Click the :guilabel:`View Output` button
 to see the data created by running the code:
 
 .. io-code-block::
