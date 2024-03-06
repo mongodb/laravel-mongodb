@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -8,12 +10,12 @@ use MongoDB\Laravel\Eloquent\HybridRelations;
 
 class SpaceShip extends Model
 {
-  protected $connection = 'mysql';
+    use HybridRelations;
 
-  public $primaryKey = 'id';
-  public function passengers(): HasMany
-  {
-      return $this->hasMany(Passenger::class);
-  }
+    protected $connection = 'sqlite';
 
+    public function passengers(): HasMany
+    {
+        return $this->hasMany(Passenger::class);
+    }
 }

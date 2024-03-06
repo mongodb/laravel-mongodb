@@ -1,14 +1,17 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers;
 
-use App\Models\Planet;
 use App\Models\Orbit;
+use App\Models\Planet;
 use Illuminate\Http\Request;
+
+use function view;
 
 class PlanetController extends Controller
 {
-
     private function oneToOne()
     {
         // begin one-to-one save
@@ -79,7 +82,7 @@ class PlanetController extends Controller
         $planet_mars->name = 'Mars';
         $planet_mars->save();
 
-        $planet_jupiter= new Planet();
+        $planet_jupiter = new Planet();
         $planet_jupiter->name = 'Jupiter';
         $planet_jupiter->save();
 
@@ -124,18 +127,17 @@ class PlanetController extends Controller
         $spaceship->save();
 
         $cargo_spice = new Cargo();
-        $cargo_spice->name = "spice";
+        $cargo_spice->name = 'spice';
         $cargo_spice->weight = 50;
 
         $cargo_hyperdrive = new Cargo();
-        $cargo_hyperdrive->name = "hyperdrive";
+        $cargo_hyperdrive->name = 'hyperdrive';
         $cargo_hyperdrive->weight = 25;
 
         $spaceship->cargo()->attach($cargo_spice);
         $spaceship->cargo()->attach($cargo_hyperdrive);
         // end embedsMany save
     }
-
 
     private function crossDatabase()
     {
@@ -156,7 +158,6 @@ class PlanetController extends Controller
         // end cross-database save
     }
 
-
     /**
      * Store a newly created resource in storage.
      */
@@ -167,16 +168,14 @@ class PlanetController extends Controller
         return;
     }
 
-
-
     /**
      * Display the specified resource.
      */
     public function show()
     {
         return view('browse_planets', [
-          'planets' => Planet::take(10)
-             ->get()
+            'planets' => Planet::take(10)
+             ->get(),
         ]);
     }
 
@@ -185,7 +184,6 @@ class PlanetController extends Controller
      */
     public function edit(Planet $planet)
     {
-        //
     }
 
     /**
@@ -193,7 +191,6 @@ class PlanetController extends Controller
      */
     public function update(Request $request, Planet $planet)
     {
-        //
     }
 
     /**
@@ -201,6 +198,5 @@ class PlanetController extends Controller
      */
     public function destroy(Planet $planet)
     {
-        //
     }
 }
