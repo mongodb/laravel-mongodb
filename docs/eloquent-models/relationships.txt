@@ -49,8 +49,6 @@ One to One Relationship
 A one to one relationship between models consists of a model record related to
 exactly one other type of model record.
 
-a document, and different model types exist in separate collections.
-
 When you add a one to one relationship, Eloquent lets you access the model by
 using a dynamic property and stores the model's document ID on the related
 model.
