@@ -458,7 +458,7 @@ Cross-Database Relationship Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example class creates a ``hasMany`` relationship between a
-``SpaceShip`` model stored in a MySQL database and a ``Passenger`` model
+``SpaceShip`` model stored in a relational database and a ``Passenger`` model
 stored in a MongoDB database:
 
 .. literalinclude:: /includes/eloquent-models/relationships/SpaceShipCrossHasMany.php
@@ -471,6 +471,16 @@ The ``Passenger`` model defines a ``BelongsToMany`` relationship with
 .. literalinclude:: /includes/eloquent-models/relationships/PassengerCrossBelongsTo.php
    :language: php
    :dedent:
+
+.. tip::
+
+   Make sure that your primary key defined in your relational database table
+   schema matches the one that your model uses. To learn more about Laravel
+   primary keys and schema definitions, see the following pages in the Laravel
+   documentation:
+
+   - `Primary Keys <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#primary-keys>`__
+   - `Database: Migrations <https://laravel.com/docs/{+laravel-docs-version+}/migrations>`__
 
 The following sample code shows how to create a ``SpaceShip`` model in
 a MySQL database and related ``Passenger`` models in a MongoDB database and
