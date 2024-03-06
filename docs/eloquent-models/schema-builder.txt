@@ -1,0 +1,43 @@
+.. _laravel-eloquent-schema-builder:
+
+==============
+Schema Builder
+==============
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example, entity relationship, eloquent
+
+Overview
+--------
+
+This page describes how to use schema builder functions in {+odm-short+} to
+manage MongoDB collection indexes.
+
+
+
+Creation options
+
+https://www.mongodb.com/docs/manual/reference/method/db.collection.createIndex/#options-for-all-index-types
+
+
+
+
+This page will show how to use Laravel Schemas to manage indexes and show
+examples of each of the following:
+
+- create and drop (is this different from index and dropIndex?)
+- collection (what does this method do?)
+- determining column existence
+
+It will also provide info on the MongoDB specific operations and
+geospatial indexes.
+
+- background - what is this? Hasn't this been replaced by index behavior in 4.2?
+- sparse https://www.mongodb.com/docs/manual/core/index-sparse/
+- expire is this a ttl index? https://www.mongodb.com/docs/manual/core/index-ttl/
+- geospatial https://www.mongodb.com/docs/manual/core/indexes/index-types/index-geospatial/
+
