@@ -11,6 +11,12 @@ Eloquent Model Relationships
 .. meta::
    :keywords: php framework, odm, code example, entity relationship, eloquent
 
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
 Overview
 --------
 
@@ -25,7 +31,7 @@ model as a **dynamic property**. A dynamic property lets you access the
 related model by using the same syntax as you use to access a property on the
 model.
 
-This page describes the following Laravel Eloquent and MongoDB-specific
+The following sections describe the Laravel Eloquent and MongoDB-specific
 relationships available in {+odm-short+} and shows examples of how to define
 and use them:
 
