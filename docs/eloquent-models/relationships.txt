@@ -76,14 +76,14 @@ One to One Example
 The following example class shows how to define a ``HasOne`` one to one
 relationship between a ``Planet`` and ``Orbit`` model.
 
-.. literalinclude:: /includes/eloquent-models/relationships/PlanetOneToOne.php
+.. literalinclude:: /includes/eloquent-models/relationships/one-to-one/Planet.php
    :language: php
    :dedent:
 
 The following example class shows how to define the inverse relationship with
 ``Orbit`` by using the  ``belongsTo()`` method:
 
-.. literalinclude:: /includes/eloquent-models/relationships/OrbitOneToOne.php
+.. literalinclude:: /includes/eloquent-models/relationships/one-to-one/Orbit.php
    :language: php
    :dedent:
 
@@ -159,7 +159,7 @@ One to Many Example
 The following example class shows how to define a ``HasMany`` one to many
 relationship between a ``Planet`` parent model and ``Moon`` child model.
 
-.. literalinclude:: /includes/eloquent-models/relationships/PlanetOneToMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/one-to-many/Planet.php
    :language: php
    :dedent:
 
@@ -167,7 +167,7 @@ To define the inverse of the relationship on ``Moon``, add the dynamic
 property and call the ``belongsTo()`` method on it, as shown in the following
 example class:
 
-.. literalinclude:: /includes/eloquent-models/relationships/MoonOneToMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/one-to-many/Moon.php
    :language: php
    :dedent:
 
@@ -258,14 +258,14 @@ Many to Many Example
 The following ``Planet`` class shows how to define a ``BelongsToMany`` many to
 many relationship with  and a ``SpaceExplorer`` model.
 
-.. literalinclude:: /includes/eloquent-models/relationships/PlanetManyToMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/many-to-many/Planet.php
    :language: php
    :dedent:
 
 The ``SpaceExplorer`` model defines a ``BelongsToMany`` many to many
 relationship with ``Planet`` as shown in the following example class:
 
-.. literalinclude:: /includes/eloquent-models/relationships/SpaceExplorerManyToMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/many-to-many/SpaceExplorer.php
    :language: php
    :dedent:
 
@@ -387,14 +387,14 @@ Embedded Document Example
 The following example class shows how to define an ``embedsMany`` one to many
 relationship between a ``SpaceShip`` and ``Cargo`` model:
 
-.. literalinclude:: /includes/eloquent-models/relationships/SpaceShipEmbedsMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/embeds/SpaceShip.php
    :language: php
    :dedent:
 
 The embedded model class omits the relationship definition as shown in the
 following example class:
 
-.. literalinclude:: /includes/eloquent-models/relationships/CargoEmbedsMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/embeds/Cargo.php
    :language: php
    :dedent:
 
@@ -444,8 +444,8 @@ Cross-Database Relationships
 A cross-database relationship in {+odm-short+} is a relationship between models
 stored in a SQL relational database and models stored in a MongoDB database.
 
-When you add a cross-database relationship, Eloquent lets you access a
-related model by using a dynamic property.
+When you add a cross-database relationship, Eloquent lets you access the
+related models by using a dynamic property.
 
 {+odm-short+} supports the following cross-database relationship methods:
 
@@ -467,14 +467,14 @@ The following example class creates a ``hasMany`` relationship between a
 ``SpaceShip`` model stored in a relational database and a ``Passenger`` model
 stored in a MongoDB database:
 
-.. literalinclude:: /includes/eloquent-models/relationships/SpaceShipCrossHasMany.php
+.. literalinclude:: /includes/eloquent-models/relationships/cross-db/SpaceShip.php
    :language: php
    :dedent:
 
 The ``Passenger`` model defines a ``BelongsToMany`` relationship with
 ``SpaceShip`` as shown in the following example class:
 
-.. literalinclude:: /includes/eloquent-models/relationships/PassengerCrossBelongsTo.php
+.. literalinclude:: /includes/eloquent-models/relationships/cross-db/Passenger.php
    :language: php
    :dedent:
 

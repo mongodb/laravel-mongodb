@@ -8,9 +8,7 @@ use App\Models\Orbit;
 use App\Models\Planet;
 use Illuminate\Http\Request;
 
-use function view;
-
-class PlanetController extends Controller
+class RelationshipController extends Controller
 {
     private function oneToOne()
     {
@@ -36,16 +34,16 @@ class PlanetController extends Controller
         $planet->diameter_km = 142984;
         $planet->save();
 
-        $moon_1 = new Moon();
-        $moon_1->name = 'Ganymede';
-        $moon_1->orbital_period = 7.15;
+        $moon1 = new Moon();
+        $moon1->name = 'Ganymede';
+        $moon1->orbital_period = 7.15;
 
-        $moon_2 = new Moon();
-        $moon_2->name = 'Europa';
-        $moon_2->orbital_period = 3.55;
+        $moon2 = new Moon();
+        $moon2->name = 'Europa';
+        $moon2->orbital_period = 3.55;
 
-        $planet->moons()->save($moon_1);
-        $planet->moons()->save($moon_2);
+        $planet->moons()->save($moon1);
+        $planet->moons()->save($moon2);
         // end one-to-many save
     }
 
@@ -53,10 +51,10 @@ class PlanetController extends Controller
     {
         // begin planet orbit dynamic property example
         $planet = Planet::first();
-        $related_orbit = $planet->orbit;
+        $relatedOrbit = $planet->orbit;
 
         $orbit = Orbit::first();
-        $related_planet = $orbit->planet;
+        $relatedPlanet = $orbit->planet;
         // end planet orbit dynamic property example
     }
 
@@ -64,47 +62,47 @@ class PlanetController extends Controller
     {
         // begin planet moons dynamic property example
         $planet = Planet::first();
-        $related_moons = $planet->moons;
+        $relatedMoons = $planet->moons;
 
         $moon = Moon::first();
-        $related_planet = $moon->planet;
+        $relatedPlanet = $moon->planet;
         // end planet moons dynamic property example
     }
 
     private function manyToMany()
     {
         // begin many-to-many save
-        $planet_earth = new Planet();
-        $planet_earth->name = 'Earth';
-        $planet_earth->save();
+        $planetEarth = new Planet();
+        $planetEarth->name = 'Earth';
+        $planetEarth->save();
 
-        $planet_mars = new Planet();
-        $planet_mars->name = 'Mars';
-        $planet_mars->save();
+        $planetMars = new Planet();
+        $planetMars->name = 'Mars';
+        $planetMars->save();
 
-        $planet_jupiter = new Planet();
-        $planet_jupiter->name = 'Jupiter';
-        $planet_jupiter->save();
+        $planetJupiter = new Planet();
+        $planetJupiter->name = 'Jupiter';
+        $planetJupiter->save();
 
-        $explorer_tanya = new SpaceExplorer();
-        $explorer_tanya->name = 'Tanya Kirbuk';
-        $explorer_tanya->save();
+        $explorerTanya = new SpaceExplorer();
+        $explorerTanya->name = 'Tanya Kirbuk';
+        $explorerTanya->save();
 
-        $explorer_mark = new SpaceExplorer();
-        $explorer_mark->name = 'Mark Watney';
-        $explorer_mark->save();
+        $explorerMark = new SpaceExplorer();
+        $explorerMark->name = 'Mark Watney';
+        $explorerMark->save();
 
-        $explorer_jeanluc = new SpaceExplorer();
-        $explorer_jeanluc->name = 'Jean-Luc Picard';
-        $explorer_jeanluc->save();
+        $explorerJeanluc = new SpaceExplorer();
+        $explorerJeanluc->name = 'Jean-Luc Picard';
+        $explorerJeanluc->save();
 
-        $explorer_tanya->planetsVisited()->attach($planet_earth);
-        $explorer_tanya->planetsVisited()->attach($planet_jupiter);
-        $explorer_mark->planetsVisited()->attach($planet_earth);
-        $explorer_mark->planetsVisited()->attach($planet_mars);
-        $explorer_jeanluc->planetsVisited()->attach($planet_earth);
-        $explorer_jeanluc->planetsVisited()->attach($planet_mars);
-        $explorer_jeanluc->planetsVisited()->attach($planet_jupiter);
+        $explorerTanya->planetsVisited()->attach($planetEarth);
+        $explorerTanya->planetsVisited()->attach($planetJupiter);
+        $explorerMark->planetsVisited()->attach($planetEarth);
+        $explorerMark->planetsVisited()->attach($planetMars);
+        $explorerJeanluc->planetsVisited()->attach($planetEarth);
+        $explorerJeanluc->planetsVisited()->attach($planetMars);
+        $explorerJeanluc->planetsVisited()->attach($planetJupiter);
         // end many-to-many save
     }
 
@@ -114,8 +112,8 @@ class PlanetController extends Controller
         $planet = Planet::first();
         $explorers = $planet->visitors;
 
-        $space_explorer = SpaceExplorer:first();
-        $planets_visited = $space_explorer->planetsVisited;
+        $spaceExplorer = SpaceExplorer:first();
+        $explored = $spaceExplorer->planetsVisited;
         // end many-to-many dynamic property example
     }
 
@@ -126,16 +124,16 @@ class PlanetController extends Controller
         $spaceship->name = 'The Millenium Falcon';
         $spaceship->save();
 
-        $cargo_spice = new Cargo();
-        $cargo_spice->name = 'spice';
-        $cargo_spice->weight = 50;
+        $cargoSpice = new Cargo();
+        $cargoSpice->name = 'spice';
+        $cargoSpice->weight = 50;
 
-        $cargo_hyperdrive = new Cargo();
-        $cargo_hyperdrive->name = 'hyperdrive';
-        $cargo_hyperdrive->weight = 25;
+        $cargoHyperdrive = new Cargo();
+        $cargoHyperdrive->name = 'hyperdrive';
+        $cargoHyperdrive->weight = 25;
 
-        $spaceship->cargo()->attach($cargo_spice);
-        $spaceship->cargo()->attach($cargo_hyperdrive);
+        $spaceship->cargo()->attach($cargoSpice);
+        $spaceship->cargo()->attach($cargoHyperdrive);
         // end embedsMany save
     }
 
@@ -147,14 +145,14 @@ class PlanetController extends Controller
         $spaceship->name = 'Nostromo';
         $spaceship->save();
 
-        $passenger_ellen = new Passenger();
-        $passenger_ellen->name = 'Ellen Ripley';
+        $passengerEllen = new Passenger();
+        $passengerEllen->name = 'Ellen Ripley';
 
-        $passenger_dwayne = new Passenger();
-        $passenger_dwayne->name = 'Dwayne Hicks';
+        $passengerDwayne = new Passenger();
+        $passengerDwayne->name = 'Dwayne Hicks';
 
-        $spaceship->passengers()->save($passenger_ellen);
-        $spaceship->passengers()->save($passenger_dwayne);
+        $spaceship->passengers()->save($passengerEllen);
+        $spaceship->passengers()->save($passengerDwayne);
         // end cross-database save
     }
 
@@ -163,9 +161,6 @@ class PlanetController extends Controller
      */
     public function store(Request $request)
     {
-        oneToMany();
-
-        return;
     }
 
     /**
@@ -173,10 +168,7 @@ class PlanetController extends Controller
      */
     public function show()
     {
-        return view('browse_planets', [
-            'planets' => Planet::take(10)
-             ->get(),
-        ]);
+        return 'ok';
     }
 
     /**
