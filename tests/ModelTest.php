@@ -1055,6 +1055,7 @@ class ModelTest extends TestCase
 
         $this->assertSame('taylorotwell@gmail.com', $user1->email);
         $this->assertNull($user1->name);
+        $this->assertTrue($user1->wasRecentlyCreated);
 
         $user2 = User::createOrFirst(
             ['email' => 'taylorotwell@gmail.com'],
@@ -1065,6 +1066,7 @@ class ModelTest extends TestCase
         $this->assertSame('taylorotwell@gmail.com', $user2->email);
         $this->assertNull($user2->name);
         $this->assertNull($user2->birthday);
+        $this->assertFalse($user2->wasRecentlyCreated);
 
         $user3 = User::createOrFirst(
             ['email' => 'abigailotwell@gmail.com'],
@@ -1075,6 +1077,7 @@ class ModelTest extends TestCase
         $this->assertSame('abigailotwell@gmail.com', $user3->email);
         $this->assertSame('Abigail Otwell', $user3->name);
         $this->assertEquals(new DateTime('1987-05-28'), $user3->birthday);
+        $this->assertTrue($user3->wasRecentlyCreated);
 
         $user4 = User::createOrFirst(
             ['name' => 'Dries Vints'],
@@ -1082,5 +1085,6 @@ class ModelTest extends TestCase
         );
 
         $this->assertSame('Nuno Maduro', $user4->name);
+        $this->assertTrue($user4->wasRecentlyCreated);
     }
 }
