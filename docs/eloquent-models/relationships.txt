@@ -87,8 +87,8 @@ button to see the data created by running the code:
    .. input:: /includes/eloquent-models/relationships/RelationshipController.php
       :language: php
       :dedent:
-      :start-after: begin planet orbit dynamic property example
-      :end-before: end planet orbit dynamic property example
+      :start-after: begin one-to-one save
+      :end-before: end one-to-one save
 
    .. output::
       :language: json
