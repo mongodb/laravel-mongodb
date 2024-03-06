@@ -1,8 +1,8 @@
 .. _laravel-upgrading:
 
-=========
-Upgrading
-=========
+===================
+Upgrade ODM Version
+===================
 
 .. facet::
    :name: genre
@@ -11,11 +11,67 @@ Upgrading
 .. meta::
    :keywords: php framework, odm, code example
 
+Overview
+--------
+
+On this page, you can learn how to upgrade {+odm-short+} to a new version. This page also 
+includes the changes you must make to your application to upgrade your ODM version 
+without losing functionality, if applicable.
+
 The PHP library uses `semantic versioning <https://semver.org/>`__. Upgrading
 to a new major version may require changes to your application.
 
-Upgrading from version 3 to 4
------------------------------
+How to Upgrade
+--------------
+
+Before you upgrade, perform the following actions:
+
+- Ensure the new driver version is compatible with the {+mdb-server+} version
+  your application connects to and the version of Node.js that your
+  application runs on. See the :ref:`<node-compatibility>`
+  page for this information.
+- Address any breaking changes between the version of the driver
+  your application currently uses and your planned upgrade version in the
+  :ref:`<node-breaking-changes>` section of this guide. To learn
+  more about the {+mdb-server+} release compatibility changes, see the 
+  :ref:`<node-server-support-changes>` section.
+
+.. tip::
+
+   You can minimize the amount of changes that you need to make to your
+   application when upgrading driver versions by using the
+   :ref:`{+stable-api+} <nodejs-stable-api>`.
+
+To upgrade your driver version, run the following command in your application's 
+directory:
+
+.. code-block:: bash
+   
+    npm install mongodb@{+version+}
+
+To upgrade to a different version of the driver, replace the information after the
+``@`` symbol with your preferred version number. For more information about the
+``npm install`` command, see the `npm-install <https://docs.npmjs.com/cli/v10/commands/npm-install?v=true>`__ 
+npm documentation.
+
+.. _laravel-breaking-changes:
+
+Breaking Changes
+----------------
+
+A breaking change is a modification in a convention or behavior in
+a specific version of {+odm-short+} that may prevent your application from
+working as expected.
+
+The breaking changes in this section are categorized by the major
+version releases that introduced them. When upgrading ODM versions,
+address all the breaking changes between your current version and the
+planned upgrade version.
+
+.. _laravel-breaking-changes-v4.x:
+
+Version 4.x Breaking Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 - Laravel 10.x is required
 
