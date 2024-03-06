@@ -312,7 +312,6 @@ button to see the data created by running the code:
       ]
 
       // Documents in the "space_explorers" collection
-
       [
         {
           _id: ObjectId('65e1043b5265269a03078ad3'),
@@ -511,7 +510,6 @@ to see the data created by running the code:
       +------+----------+
       | 1234 | Nostromo |
       +------+----------+
-
 
       // Document in the "passengers" collection
       [
