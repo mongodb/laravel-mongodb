@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [unreleased]
 
 * Add support for Laravel 11 by @GromNaN in [#2735](https://github.com/mongodb/laravel-mongodb/pull/2735)
+* Implement Model::createOrFirst() using findOneAndUpdate operation by @GromNaN in [#2742](https://github.com/mongodb/laravel-mongodb/pull/2742)
 
 ## [4.1.3] - 2024-03-05
 

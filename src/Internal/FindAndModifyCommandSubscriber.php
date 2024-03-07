@@ -15,7 +15,7 @@ use MongoDB\Driver\Monitoring\CommandSucceededEvent;
  *
  * @internal
  */
-class FindAndModifyCommandSubscriber implements CommandSubscriber
+final class FindAndModifyCommandSubscriber implements CommandSubscriber
 {
     public bool $created;
 
