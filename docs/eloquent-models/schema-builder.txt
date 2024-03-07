@@ -14,30 +14,62 @@ Schema Builder
 Overview
 --------
 
-This page describes how to use schema builder functions in {+odm-short+} to
-manage MongoDB collection indexes.
+Laravel provides a **facade** to access the schema builder, which lets you
+create and modify tables. Facades are static interfaces to classes that make
+the syntax more concise and improve testability.
 
+Info here about how to use it
+
+Although schemas are not required by MongoDB collections, you can use the
+schema builder to manage collections and indexes.
+
+The following sections describe the Laravel schema builder and
+MongoDB-specific functionality available in {+odm-short+} and shows
+examples of how to use them:
+
+List of sections here
+
+- create and drop (is this different from index and dropIndex?)
+    Schema::create(<collection name>, function ($collection) {
+      $collection->index(<>);
+      $collection->unique(<>);
+    Geospatial index
+
+- collection (what does this method do?)
+    Schema::hasCollection(<collection name>); check whether a collection exists
+
+- determining column existence
+- drop collection     public function dropIfExists($table)
+    {
+        if ($this->hasCollection($table)) {
+            $this->drop($table);
+        }
+    }
+
+index($columns = null, $name = null, $algorithm = null, $options = [])
+dropIndex($index = null)
+public function dropIndexIfExists($indexOrColumns = null)\
+ public function hasIndex($indexOrColumns = null)
+
+ public function unique($columns = null, $name = null, $algorithm = null, $options = [])
 
 
 Creation options
 
 https://www.mongodb.com/docs/manual/reference/method/db.collection.createIndex/#options-for-all-index-types
 
-
-
-
-This page will show how to use Laravel Schemas to manage indexes and show
-examples of each of the following:
-
-- create and drop (is this different from index and dropIndex?)
-- collection (what does this method do?)
-- determining column existence
-
-It will also provide info on the MongoDB specific operations and
-geospatial indexes.
-
 - background - what is this? Hasn't this been replaced by index behavior in 4.2?
 - sparse https://www.mongodb.com/docs/manual/core/index-sparse/
 - expire is this a ttl index? https://www.mongodb.com/docs/manual/core/index-ttl/
 - geospatial https://www.mongodb.com/docs/manual/core/indexes/index-types/index-geospatial/
+
+.. note::
+
+   Although MongoDB collections can be schemaless, you can provide
+   schemas for data validation. The {+odm-short+} schema builder does not
+   currently offer methods to
+-
+
+
+
 
