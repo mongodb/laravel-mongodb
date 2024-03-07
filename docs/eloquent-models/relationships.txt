@@ -32,7 +32,7 @@ related model by using the same syntax as you use to access a property on the
 model.
 
 The following sections describe the Laravel Eloquent and MongoDB-specific
-relationships available in {+odm-short+} and shows examples of how to define
+relationships available in {+odm-short+} and show examples of how to define
 and use them:
 
 - :ref:`One to one relationship <laravel-eloquent-relationship-one-to-one>`,
@@ -141,9 +141,9 @@ the parent and one or more related child model records.
 
 When you add a one to many relationship method, Eloquent lets you access the
 model by using a dynamic property and stores the parent model's document ID
-on each of the child model documents.
+on each child model document.
 
-In {+odm-short+}, you can define a one to many relationship by using the
+In {+odm-short+}, you can define a one to many relationship by adding the
 ``hasMany()`` method on the parent class and, optionally, the ``belongsTo()``
 method on the child class.
 
@@ -240,7 +240,7 @@ In {+odm-short+}, you can define a many to many relationship by adding the
 When you define a many to many relationship in a relational database, Laravel
 creates a pivot table to track the relationships. When you use {+odm-short+},
 it omits the pivot table creation and adds the related document IDs to a
-document field, derived from the related model class name.
+document field derived from the related model class name.
 
 .. tip::
 
@@ -259,7 +259,7 @@ Many to Many Example
 ~~~~~~~~~~~~~~~~~~~~
 
 The following example class shows how to define a ``BelongsToMany`` many to
-many relationship between a ``Planet`` and ``SpaceExporer`` model by using
+many relationship between a ``Planet`` and ``SpaceExplorer`` model by using
 the ``belongsToMany()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/many-to-many/Planet.php
@@ -365,8 +365,8 @@ to meet one or more of the following requirements:
   data
 - Reducing the number of reads required to fetch the data
 
-In {+odm-short+}, you can define embedded documents by using one of the
-following dynamic property methods:
+In {+odm-short+}, you can define embedded documents by adding one of the
+following methods:
 
 - ``embedsOne()`` to embed a single document
 - ``embedsMany()`` to embed multiple documents
@@ -388,8 +388,9 @@ pattern.
 Embedded Document Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following example class shows how to define an ``embedsMany`` one to many
-relationship between a ``SpaceShip`` and ``Cargo`` model:
+The following example class shows how to define an ``EmbedsMany`` one to many
+relationship between a ``SpaceShip`` and ``Cargo`` model by using the
+``embedsMany()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/embeds/SpaceShip.php
    :language: php
@@ -446,7 +447,7 @@ Cross-Database Relationships
 ----------------------------
 
 A cross-database relationship in {+odm-short+} is a relationship between models
-stored in a SQL relational database and models stored in a MongoDB database.
+stored in a relational database and models stored in a MongoDB database.
 
 When you add a cross-database relationship, Eloquent lets you access the
 related models by using a dynamic property.
@@ -485,7 +486,7 @@ model by using the ``belongsTo()`` method:
 
 .. tip::
 
-   Make sure that your primary key defined in your relational database table
+   Make sure that the primary key defined in your relational database table
    schema matches the one that your model uses. To learn more about Laravel
    primary keys and schema definitions, see the following pages in the Laravel
    documentation:
@@ -494,8 +495,8 @@ model by using the ``belongsTo()`` method:
    - `Database: Migrations <https://laravel.com/docs/{+laravel-docs-version+}/migrations>`__
 
 The following sample code shows how to create a ``SpaceShip`` model in
-a MySQL database and related ``Passenger`` models in a MongoDB database and
-the data created by running the code. Click the :guilabel:`VIEW OUTPUT` button
+a MySQL database and related ``Passenger`` models in a MongoDB database as well
+as the data created by running the code. Click the :guilabel:`VIEW OUTPUT` button
 to see the data created by running the code:
 
 .. io-code-block::
