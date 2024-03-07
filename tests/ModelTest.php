@@ -45,7 +45,7 @@ class ModelTest extends TestCase
 {
     public function tearDown(): void
     {
-        User::raw(fn(Collection $collection) => $collection->drop());
+        User::truncate();
         Soft::truncate();
         Book::truncate();
         Item::truncate();
@@ -1047,10 +1047,6 @@ class ModelTest extends TestCase
 
     public function testCreateOrFirst()
     {
-        // Create index unique on "email" and "name"
-        User::raw(fn (Collection $collection) => $collection->createIndex(['email' => 1], ['unique' => true]));
-        User::raw(fn (Collection $collection) => $collection->createIndex(['name' => 1], ['unique' => true]));
-
         $user1 = User::createOrFirst(['email' => 'taylorotwell@gmail.com']);
 
         $this->assertSame('taylorotwell@gmail.com', $user1->email);
