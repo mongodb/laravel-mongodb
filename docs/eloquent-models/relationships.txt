@@ -21,7 +21,7 @@ Overview
 --------
 
 When you use a relational database, the Eloquent ORM stores models as rows
-in tables that correspond to the model classes.  When you use MongoDB, the
+in tables that correspond to the model classes. When you use MongoDB, the
 {+odm-short+} stores models as documents in collections that correspond to the
 model classes.
 
@@ -74,21 +74,23 @@ One to One Example
 ~~~~~~~~~~~~~~~~~~
 
 The following example class shows how to define a ``HasOne`` one to one
-relationship between a ``Planet`` and ``Orbit`` model.
+relationship between a ``Planet`` and ``Orbit`` model by using the
+``hasOne()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/one-to-one/Planet.php
    :language: php
    :dedent:
 
-The following example class shows how to define the inverse relationship with
-``Orbit`` by using the  ``belongsTo()`` method:
+The following example class shows how to define the inverse ``BelongsTo``
+relationship between ``Orbit`` and ``Planet`` by using the ``belongsTo()``
+method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/one-to-one/Orbit.php
    :language: php
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them. Click the :guilabel:`View Output`
+and add the relationship between them. Click the :guilabel:`VIEW OUTPUT`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -157,22 +159,23 @@ One to Many Example
 ~~~~~~~~~~~~~~~~~~~
 
 The following example class shows how to define a ``HasMany`` one to many
-relationship between a ``Planet`` parent model and ``Moon`` child model.
+relationship between a ``Planet`` parent model and ``Moon`` child model by
+using the ``hasMany()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/one-to-many/Planet.php
    :language: php
    :dedent:
 
-To define the inverse of the relationship on ``Moon``, add the dynamic
-property and call the ``belongsTo()`` method on it, as shown in the following
-example class:
+The following example class shows how to define the inverse ``BelongsTo``
+relationship between a ``Moon`` child model and the and the ``Planet`` parent
+model by using the ``belongsTo()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/one-to-many/Moon.php
    :language: php
    :dedent:
 
-The following sample code shows how ton instantiate a model for each class
-and add the relationship between them.  Click the :guilabel:`View Output`
+The following sample code shows how to instantiate a model for each class
+and add the relationship between them.  Click the :guilabel:`VIEW OUTPUT`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -228,8 +231,8 @@ Many to Many Relationship
 -------------------------
 
 A many to many relationship consists of a relationship between two different
-model types in which one type of model record can be related to multiple
-records of the other type.
+model types in which, for each type of model, an instance of the model can
+be related to multiple instances of the other type.
 
 In {+odm-short+}, you can define a many to many relationship by adding the
 ``belongsToMany()`` method to both related classes.
@@ -255,22 +258,24 @@ relationship between model classes.
 Many to Many Example
 ~~~~~~~~~~~~~~~~~~~~
 
-The following ``Planet`` class shows how to define a ``BelongsToMany`` many to
-many relationship with  and a ``SpaceExplorer`` model.
+The following example class shows how to define a ``BelongsToMany`` many to
+many relationship between a ``Planet`` and ``SpaceExporer`` model by using
+the ``belongsToMany()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/many-to-many/Planet.php
    :language: php
    :dedent:
 
-The ``SpaceExplorer`` model defines a ``BelongsToMany`` many to many
-relationship with ``Planet`` as shown in the following example class:
+The following example class shows how to define the inverse ``BelongsToMany``
+many to many relationship between a ``SpaceExplorer`` and ``Planet`` model by
+using the ``belongsToMany()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/many-to-many/SpaceExplorer.php
    :language: php
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them. Click the :guilabel:`View Output`
+and add the relationship between them. Click the :guilabel:`VIEW OUTPUT`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -391,7 +396,7 @@ relationship between a ``SpaceShip`` and ``Cargo`` model:
    :dedent:
 
 The embedded model class omits the relationship definition as shown in the
-following example class:
+following ``Cargo`` model class:
 
 .. literalinclude:: /includes/eloquent-models/relationships/embeds/Cargo.php
    :language: php
@@ -399,7 +404,7 @@ following example class:
 
 The following sample code shows how to create a ``SpaceShip`` model and
 embed multiple ``Cargo`` models and the MongoDB document created by running the
-code. Click the :guilabel:`View Output` button to see the data created by
+code. Click the :guilabel:`VIEW OUTPUT` button to see the data created by
 running the code:
 
 .. io-code-block::
@@ -462,16 +467,17 @@ relationship.
 Cross-Database Relationship Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following example class creates a ``hasMany`` relationship between a
-``SpaceShip`` model stored in a relational database and a ``Passenger`` model
-stored in a MongoDB database:
+The following example class shows how to define a ``HasMany`` relationship
+between a ``SpaceShip`` model stored in a relational database and a
+``Passenger`` model stored in a MongoDB database:
 
 .. literalinclude:: /includes/eloquent-models/relationships/cross-db/SpaceShip.php
    :language: php
    :dedent:
 
-The ``Passenger`` model defines a ``BelongsToMany`` relationship with
-``SpaceShip`` as shown in the following example class:
+The following example class shows how to define the inverse ``BelongsTo``
+relationship between a ``Passenger`` model and the and the ``Spaceship``
+model by using the ``belongsTo()`` method:
 
 .. literalinclude:: /includes/eloquent-models/relationships/cross-db/Passenger.php
    :language: php
@@ -489,7 +495,7 @@ The ``Passenger`` model defines a ``BelongsToMany`` relationship with
 
 The following sample code shows how to create a ``SpaceShip`` model in
 a MySQL database and related ``Passenger`` models in a MongoDB database and
-the data created by running the code. Click the :guilabel:`View Output` button
+the data created by running the code. Click the :guilabel:`VIEW OUTPUT` button
 to see the data created by running the code:
 
 .. io-code-block::
