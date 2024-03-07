@@ -23,7 +23,7 @@ How to Upgrade
 
 Before you upgrade, perform the following actions:
 
-- Ensure the new ODM version is compatible with the {+mdb-server+} version
+- Ensure the new ODM version is compatible with the MongoDB Server version
   your application connects to and the version of Laravel that your
   application runs on. See the :ref:`<laravel-compatibility>`
   page for this information.
