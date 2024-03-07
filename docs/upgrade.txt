@@ -36,7 +36,7 @@ directory:
 
 .. code-block:: bash
    
-    composer require mongodb/laravel-mongodb:{+version+}
+    composer require mongodb/laravel-mongodb:{+package-version+}
 
 To upgrade to a different version of the ODM, replace the information after
 ``laravel-mongodb:`` with your preferred version number.
