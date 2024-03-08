@@ -36,7 +36,7 @@ final class PipelineBuilder extends FluentFactory
     /**
      * Execute the aggregation pipeline and return the results.
      */
-    public function get(): LaravelCollection
+    public function get(array $options = []): LaravelCollection
     {
         $encoder = new BuilderEncoder();
         $pipeline = $encoder->encode($this->getPipeline());
@@ -44,6 +44,7 @@ final class PipelineBuilder extends FluentFactory
         $options = array_replace(
             ['typeMap' => ['root' => 'array', 'document' => 'array']],
             $this->options,
+            $options,
         );
 
         return collect($this->collection->aggregate($pipeline, $options)->toArray());
