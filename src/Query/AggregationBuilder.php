@@ -12,7 +12,7 @@ use MongoDB\Laravel\Collection;
 use function array_replace;
 use function collect;
 
-final class PipelineBuilder extends FluentFactory
+final class AggregationBuilder extends FluentFactory
 {
     public function __construct(
         array $pipeline,

@@ -282,14 +282,14 @@ class Builder extends BaseBuilder
         return $this;
     }
 
-    private function getPipelineBuilder(): PipelineBuilder
+    private function getAggregationBuilder(): AggregationBuilder
     {
-        $pipelineBuilder = new PipelineBuilder([], $this->collection, $this->options);
+        $agg = new AggregationBuilder([], $this->collection, $this->options);
 
         $wheres = $this->compileWheres();
 
         if (count($wheres)) {
-            $pipelineBuilder->match(...$wheres);
+            $agg->match(...$wheres);
         }
 
         // Distinct query
@@ -297,25 +297,25 @@ class Builder extends BaseBuilder
             // Return distinct results directly
             $column = $columns[0] ?? '_id';
 
-            $pipelineBuilder->group(
+            $agg->group(
                 _id: \MongoDB\Builder\Expression::fieldPath($column),
                 _document: Accumulator::first(Variable::root()),
             );
-            $pipelineBuilder->replaceRoot(
+            $agg->replaceRoot(
                 newRoot: new FieldPath('_document'),
             );
         }
 
         if ($this->orders) {
-            $pipelineBuilder->sort(...$this->orders);
+            $agg->sort(...$this->orders);
         }
 
         if ($this->offset) {
-            $pipelineBuilder->skip($this->offset);
+            $agg->skip($this->offset);
         }
 
         if ($this->limit) {
-            $pipelineBuilder->limit($this->limit);
+            $agg->limit($this->limit);
         }
 
         // Normal query
@@ -324,11 +324,11 @@ class Builder extends BaseBuilder
             $columns = in_array('*', $this->columns) ? [] : $this->columns;
             $projection = array_fill_keys($columns, true) + $this->projections;
             if ($projection) {
-                $pipelineBuilder->project(...$projection);
+                $agg->project(...$projection);
             }
         }
 
-        return $pipelineBuilder;
+        return $agg;
     }
 
     /**
@@ -594,7 +594,7 @@ class Builder extends BaseBuilder
     public function aggregate($function = null, $columns = [])
     {
         if ($function === null) {
-            return $this->getPipelineBuilder();
+            return $this->getAggregationBuilder();
         }
 
         $this->aggregate = [

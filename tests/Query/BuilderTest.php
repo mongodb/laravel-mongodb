@@ -17,9 +17,9 @@ use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Query\Grammar;
-use MongoDB\Laravel\Query\PipelineBuilder;
 use MongoDB\Laravel\Query\Processor;
 use PHPUnit\Framework\TestCase;
 use stdClass;
@@ -68,7 +68,7 @@ class BuilderTest extends TestCase
         $this->assertInstanceOf(Builder::class, $builder);
         $encoder = new BuilderEncoder();
         $pipelineBuilder = $builder->aggregate();
-        $this->assertInstanceOf(PipelineBuilder::class, $pipelineBuilder);
+        $this->assertInstanceOf(AggregationBuilder::class, $pipelineBuilder);
         $pipeline = $encoder->encode($pipelineBuilder->getPipeline());
 
         $expected = Document::fromPHP($expectedPipeline)->toCanonicalExtendedJSON();

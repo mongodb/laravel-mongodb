@@ -14,13 +14,13 @@ use MongoDB\Builder\Expression;
 use MongoDB\Builder\Type\Sort;
 use MongoDB\Builder\Type\TimeUnit;
 use MongoDB\Builder\Variable;
-use MongoDB\Laravel\Query\PipelineBuilder;
+use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function assert;
 
-class PipelineBuilderTest extends TestCase
+class AggregationBuilderTest extends TestCase
 {
     public function tearDown(): void
     {
@@ -35,8 +35,11 @@ class PipelineBuilderTest extends TestCase
         ]);
 
         // Create the aggregation pipeline from the query builder
-        $pipeline = User::where('name', 'John Doe')->aggregate();
-        assert($pipeline instanceof PipelineBuilder);
+        $pipeline = User::where('name', 'John Doe')
+            ->limit(10)
+            ->offset(0)
+            ->aggregate();
+        assert($pipeline instanceof AggregationBuilder);
         $pipeline
             ->addFields(
                 age: Expression::dateDiff(
@@ -57,9 +60,8 @@ class PipelineBuilderTest extends TestCase
         // Compare with the expected pipeline
         $expected = Document::fromPHP([
             'pipeline' => [
-                [
-                    '$match' => ['name' => 'John Doe'],
-                ],
+                ['$match' => ['name' => 'John Doe']],
+                ['$limit' => 10],
                 [
                     '$addFields' => [
                         'age' => [
@@ -71,12 +73,8 @@ class PipelineBuilderTest extends TestCase
                         ],
                     ],
                 ],
-                [
-                    '$sort' => ['age' => -1, 'name' => 1],
-                ],
-                [
-                    '$unset' => ['birthday'],
-                ],
+                ['$sort' => ['age' => -1, 'name' => 1]],
+                ['$unset' => ['birthday']],
             ],
         ])->toCanonicalExtendedJSON();
 
