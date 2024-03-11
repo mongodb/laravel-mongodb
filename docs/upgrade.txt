@@ -11,6 +11,12 @@ Upgrade ODM Version
 .. meta::
    :keywords: php framework, odm, code example
 
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
 Overview
 --------
 
@@ -47,8 +53,8 @@ Breaking Changes
 ----------------
 
 A breaking change is a modification in a convention or behavior in
-a specific version of {+odm-short+} that may prevent your application from
-working as expected.
+a specific version of {+odm-short+} that might prevent your application
+from working as expected.
 
 The breaking changes in this section are categorized by the major
 version releases that introduced them. When upgrading ODM versions,
@@ -84,8 +90,8 @@ This ODM version introduces the following breaking changes:
 - Removes the ``Query\Builder::whereAll($column, $values)`` method. Ensure that you replace all calls
   to ``Query\Builder::whereAll($column, $values)`` with ``Query\Builder::where($column, 'all', $values)``.
 
-- ``Query\Builder::delete()`` can only delete one or all documents. Ensure that you only pass a value 
-  of ``1`` or ``null`` to ``limit()``.
+- ``Query\Builder::delete()`` can delete one or all documents. Ensure that you pass only the values
+  ``1`` or ``null`` to ``limit()``.
 
 - ``whereDate()``, ``whereDay()``, ``whereMonth()``, ``whereYear()``, and ``whereTime()`` methods
   now use MongoDB operators on date fields.
@@ -94,9 +100,20 @@ This ODM version introduces the following breaking changes:
   ``Illuminate\Database\Eloquent\MassPrunable`` with ``MongoDB\Laravel\Eloquent\MassPrunable``
   in your models.
 
-- Removes support for the ``Query\Builder``: ``toSql``,
-  ``toRawSql``, ``whereColumn``, ``whereFullText``, ``groupByRaw``,
-  ``orderByRaw``, ``unionAll``, ``union``, ``having``, ``havingRaw``,
-  ``havingBetween``, ``whereIntegerInRaw``, ``orWhereIntegerInRaw``,
-  ``whereIntegerNotInRaw``, and ``orWhereIntegerNotInRaw`` methods. Ensure that you remove 
-  all calls to these methods.
+- Removes support for the following ``Query\Builder`` methods:
+  
+  - ``toSql()``
+  - ``toRawSql()``
+  - ``whereColumn()``
+  - ``whereFullText()``
+  - ``groupByRaw()``
+  - ``orderByRaw()``
+  - ``unionAll()``
+  - ``union()``
+  - ``having()``
+  - ``havingRaw()``
+  - ``havingBetween()``
+  - ``whereIntegerInRaw()``
+  - ``orWhereIntegerInRaw()``
+  - ``whereIntegerNotInRaw()``
+  - ``orWhereIntegerNotInRaw()``
