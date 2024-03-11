@@ -1044,4 +1044,43 @@ class ModelTest extends TestCase
         $this->assertInstanceOf(User::class, $found);
         $this->assertEquals([3 => 'two.three'], $found[2]);
     }
+
+    public function testCreateOrFirst()
+    {
+        $user1 = User::createOrFirst(['email' => 'taylorotwell@gmail.com']);
+
+        $this->assertSame('taylorotwell@gmail.com', $user1->email);
+        $this->assertNull($user1->name);
+        $this->assertTrue($user1->wasRecentlyCreated);
+
+        $user2 = User::createOrFirst(
+            ['email' => 'taylorotwell@gmail.com'],
+            ['name' => 'Taylor Otwell', 'birthday' => new DateTime('1987-05-28')],
+        );
+
+        $this->assertEquals($user1->id, $user2->id);
+        $this->assertSame('taylorotwell@gmail.com', $user2->email);
+        $this->assertNull($user2->name);
+        $this->assertNull($user2->birthday);
+        $this->assertFalse($user2->wasRecentlyCreated);
+
+        $user3 = User::createOrFirst(
+            ['email' => 'abigailotwell@gmail.com'],
+            ['name' => 'Abigail Otwell', 'birthday' => new DateTime('1987-05-28')],
+        );
+
+        $this->assertNotEquals($user3->id, $user1->id);
+        $this->assertSame('abigailotwell@gmail.com', $user3->email);
+        $this->assertSame('Abigail Otwell', $user3->name);
+        $this->assertEquals(new DateTime('1987-05-28'), $user3->birthday);
+        $this->assertTrue($user3->wasRecentlyCreated);
+
+        $user4 = User::createOrFirst(
+            ['name' => 'Dries Vints'],
+            ['name' => 'Nuno Maduro', 'email' => 'nuno@laravel.com'],
+        );
+
+        $this->assertSame('Nuno Maduro', $user4->name);
+        $this->assertTrue($user4->wasRecentlyCreated);
+    }
 }
