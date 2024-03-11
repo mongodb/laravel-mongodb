@@ -1037,7 +1037,6 @@ class ModelTest extends TestCase
         $user->{2} = ['3' => 'two.three'];
         $user->save();
 
-        // Test failure: 1 is transformed into 0 by array unpacking and variadic arguments
         $found = User::where(1, 'one')->first();
         $this->assertInstanceOf(User::class, $found);
         $this->assertEquals('one', $found[1]);

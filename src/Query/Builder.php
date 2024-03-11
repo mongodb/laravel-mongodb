@@ -22,7 +22,6 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\Accumulator;
-use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Expression\FieldPath;
 use MongoDB\Builder\Variable;
 use MongoDB\Driver\Cursor;
@@ -87,7 +86,7 @@ class Builder extends BaseBuilder
      *
      * @var array
      */
-    public $projections;
+    public $projections = [];
 
     /**
      * The maximum amount of seconds to allow the query to run.
@@ -283,11 +282,65 @@ class Builder extends BaseBuilder
         return $this;
     }
 
-    protected function getPipelineBuilder(): PipelineBuilder
+    private function getPipelineBuilder(): PipelineBuilder
+    {
+        $pipelineBuilder = new PipelineBuilder([], $this->collection, $this->options);
+
+        $wheres = $this->compileWheres();
+
+        if (count($wheres)) {
+            $pipelineBuilder->match(...$wheres);
+        }
+
+        // Distinct query
+        if ($this->distinct) {
+            // Return distinct results directly
+            $column = $columns[0] ?? '_id';
+
+            $pipelineBuilder->group(
+                _id: \MongoDB\Builder\Expression::fieldPath($column),
+                _document: Accumulator::first(Variable::root()),
+            );
+            $pipelineBuilder->replaceRoot(
+                newRoot: new FieldPath('_document'),
+            );
+        }
+
+        if ($this->orders) {
+            $pipelineBuilder->sort(...$this->orders);
+        }
+
+        if ($this->offset) {
+            $pipelineBuilder->skip($this->offset);
+        }
+
+        if ($this->limit) {
+            $pipelineBuilder->limit($this->limit);
+        }
+
+        // Normal query
+        // Add custom projections.
+        if ($this->projections || $this->columns) {
+            $columns = in_array('*', $this->columns) ? [] : $this->columns;
+            $projection = array_fill_keys($columns, true) + $this->projections;
+            if ($projection) {
+                $pipelineBuilder->project(...$projection);
+            }
+        }
+
+        return $pipelineBuilder;
+    }
+
+    /**
+     * Return the MongoDB query to be run in the form of an element array like ['method' => [arguments]].
+     *
+     * Example: ['find' => [['name' => 'John Doe'], ['projection' => ['birthday' => 1]]]]
+     *
+     * @return array<string, mixed[]>
+     */
+    public function toMql(): array
     {
         $columns = $this->columns ?? [];
-
-        $pipelineBuilder = new PipelineBuilder([], $this->collection, $this->options);
 
         // Drop all columns if * is present, MongoDB does not work this way.
         if (in_array('*', $columns)) {
@@ -295,10 +348,6 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
-
-        if (count($wheres)) {
-            $pipelineBuilder->match(...$wheres);
-        }
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups || $this->aggregate) {
@@ -359,33 +408,50 @@ class Builder extends BaseBuilder
                 $group['_id'] = null;
             }
 
+            // Build the aggregation pipeline.
+            $pipeline = [];
+            if ($wheres) {
+                $pipeline[] = ['$match' => $wheres];
+            }
+
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
-                $pipelineBuilder->unwind($unwind);
+                $pipeline[] = ['$unwind' => '$' . $unwind];
             }
 
             if ($group) {
-                $pipelineBuilder->group(...$group);
+                $pipeline[] = ['$group' => $group];
             }
 
             // Apply order and limit
             if ($this->orders) {
-                $pipelineBuilder->sort($this->orders);
+                $pipeline[] = ['$sort' => $this->orders];
             }
 
             if ($this->offset) {
-                $pipelineBuilder->skip($this->offset);
+                $pipeline[] = ['$skip' => $this->offset];
             }
 
             if ($this->limit) {
-                $pipelineBuilder->limit($this->limit);
+                $pipeline[] = ['$limit' => $this->limit];
             }
 
             if ($this->projections) {
-                $pipelineBuilder->project(...$this->projections);
+                $pipeline[] = ['$project' => $this->projections];
             }
 
-            return $pipelineBuilder;
+            $options = [
+                'typeMap' => ['root' => 'array', 'document' => 'array'],
+            ];
+
+            // Add custom query options
+            if (count($this->options)) {
+                $options = array_merge($options, $this->options);
+            }
+
+            $options = $this->inheritConnectionOptions($options);
+
+            return ['aggregate' => [$pipeline, $options]];
         }
 
         // Distinct query
@@ -393,25 +459,9 @@ class Builder extends BaseBuilder
             // Return distinct results directly
             $column = $columns[0] ?? '_id';
 
-            $pipelineBuilder->group(
-                _id: \MongoDB\Builder\Expression::fieldPath($column),
-                _document: Accumulator::first(Variable::root()),
-            );
-            $pipelineBuilder->replaceRoot(
-                newRoot: new FieldPath('_document'),
-            );
-        }
+            $options = $this->inheritConnectionOptions();
 
-        if ($this->orders) {
-            $pipelineBuilder->sort(...$this->orders);
-        }
-
-        if ($this->offset) {
-            $pipelineBuilder->skip($this->offset);
-        }
-
-        if ($this->limit) {
-            $pipelineBuilder->limit($this->limit);
+            return ['distinct' => [$column, $wheres, $options]];
         }
 
         // Normal query
@@ -423,39 +473,44 @@ class Builder extends BaseBuilder
             $projection = array_merge($projection, $this->projections);
         }
 
-        if ($projection) {
-            $pipelineBuilder->project(...$projection);
-        }
+        $options = [];
 
-        return $pipelineBuilder;
-    }
-
-    /**
-     * Return the MongoDB query to be run in the form of an element array like ['method' => [arguments]].
-     *
-     * Example: ['find' => [['name' => 'John Doe'], ['projection' => ['birthday' => 1]]]]
-     *
-     * @return array<string, mixed[]>
-     */
-    public function toMql(): array
-    {
-        $encoder = new BuilderEncoder();
-        $pipeline = $encoder->encode($this->getPipelineBuilder()->getPipeline());
-
-        $options = ['typeMap' => ['root' => 'array', 'document' => 'array']];
-
+        // Apply order, offset, limit and projection
         if ($this->timeout) {
             $options['maxTimeMS'] = $this->timeout * 1000;
+        }
+
+        if ($this->orders) {
+            $options['sort'] = $this->orders;
+        }
+
+        if ($this->offset) {
+            $options['skip'] = $this->offset;
+        }
+
+        if ($this->limit) {
+            $options['limit'] = $this->limit;
         }
 
         if ($this->hint) {
             $options['hint'] = $this->hint;
         }
 
-        $options = array_merge($options, $this->options);
+        if ($projection) {
+            $options['projection'] = $projection;
+        }
+
+        // Fix for legacy support, converts the results to arrays instead of objects.
+        $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
+
+        // Add custom query options
+        if (count($this->options)) {
+            $options = array_merge($options, $this->options);
+        }
+
         $options = $this->inheritConnectionOptions($options);
 
-        return ['aggregate' => [$pipeline, $options]];
+        return ['find' => [$wheres, $options]];
     }
 
     /**
@@ -538,56 +593,38 @@ class Builder extends BaseBuilder
     /** @return ($function === null ? PipelineBuilder : self) */
     public function aggregate($function = null, $columns = [])
     {
-        $builder = $this->getPipelineBuilder();
-
         if ($function === null) {
-            return $builder;
+            return $this->getPipelineBuilder();
         }
 
-        match ($function) {
-            'count' => $builder->group(
-                _id: null,
-                aggregate: Accumulator::sum(1),
-            ),
-            'sum' => $builder->group(
-                _id: null,
-                aggregate: Accumulator::sum(\MongoDB\Builder\Expression::fieldPath($columns[0])),
-            ),
-            'avg' => $builder->group(
-                _id: null,
-                aggregate: Accumulator::avg(\MongoDB\Builder\Expression::fieldPath($columns[0])),
-            ),
-            'min' => $builder->group(
-                _id: null,
-                aggregate: Accumulator::min(\MongoDB\Builder\Expression::fieldPath($columns[0])),
-            ),
-            'max' => $builder->group(
-                _id: null,
-                aggregate: Accumulator::max(\MongoDB\Builder\Expression::fieldPath($columns[0])),
-            ),
-            default => throw new InvalidArgumentException('Unknown aggregate function: ' . $function),
-        };
+        $this->aggregate = [
+            'function' => $function,
+            'columns' => $columns,
+        ];
 
-        $results = $builder->get();
+        $previousColumns = $this->columns;
+
+        // We will also back up the select bindings since the select clause will be
+        // removed when performing the aggregate function. Once the query is run
+        // we will add the bindings back onto this query so they can get used.
+        $previousSelectBindings = $this->bindings['select'];
+
+        $this->bindings['select'] = [];
+
+        $results = $this->get($columns);
+
+        // Once we have executed the query, we will reset the aggregate property so
+        // that more select queries can be executed against the database without
+        // the aggregate value getting in the way when the grammar builds it.
+        $this->aggregate          = null;
+        $this->columns            = $previousColumns;
+        $this->bindings['select'] = $previousSelectBindings;
 
         if (isset($results[0])) {
             $result = (array) $results[0];
 
             return $result['aggregate'];
         }
-    }
-
-    public function count($columns = '*'): int
-    {
-        if ($columns !== '*') {
-            // @todo trigger warning, $columns is ignored
-        }
-
-        return $this
-            ->aggregate()
-            ->count('aggregate')
-            ->get()
-            ->value('aggregate', 0);
     }
 
     /** @inheritdoc */
@@ -963,14 +1000,14 @@ class Builder extends BaseBuilder
         if ($this->groups || $this->havings) {
             $without = $this->unions ? ['orders', 'limit', 'offset'] : ['columns', 'orders', 'limit', 'offset'];
 
-            $pipelienBuilder = $this->cloneWithout($without)
+            $mql = $this->cloneWithout($without)
                 ->cloneWithoutBindings($this->unions ? ['order'] : ['select', 'order'])
-                ->getPipelineBuilder();
+                ->toMql();
 
             // Adds the $count stage to the pipeline
-            $pipelienBuilder->count('aggregate');
+            $mql['aggregate'][0][] = ['$count' => 'aggregate'];
 
-            return $pipelienBuilder->get();
+            return $this->collection->aggregate($mql['aggregate'][0], $mql['aggregate'][1])->toArray();
         }
 
         return parent::runPaginationCountQuery($columns);

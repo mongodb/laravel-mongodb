@@ -11,6 +11,7 @@ use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Expression;
+use MongoDB\Builder\Type\Sort;
 use MongoDB\Builder\Type\TimeUnit;
 use MongoDB\Builder\Variable;
 use MongoDB\Laravel\Query\PipelineBuilder;
@@ -29,7 +30,6 @@ class PipelineBuilderTest extends TestCase
     public function testCreateFromQueryBuilder(): void
     {
         User::insert([
-            // @todo apply cast to mass insert?
             ['name' => 'John Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1989-01-01'))],
             ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1990-01-01'))],
         ]);
@@ -45,6 +45,7 @@ class PipelineBuilderTest extends TestCase
                     unit: TimeUnit::Year,
                 ),
             )
+            ->sort(age: Sort::Desc, name: Sort::Asc)
             ->unset('birthday');
 
         // The encoder is used to convert the pipeline to a BSON document
@@ -69,6 +70,9 @@ class PipelineBuilderTest extends TestCase
                             ],
                         ],
                     ],
+                ],
+                [
+                    '$sort' => ['age' => -1, 'name' => 1],
                 ],
                 [
                     '$unset' => ['birthday'],
