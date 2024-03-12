@@ -1,0 +1,94 @@
+.. _laravel-usage-examples:
+
+==============
+Usage Examples
+==============
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: set up, runnable, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+.. TODO: add usage examples to TOC as they're made
+   .. toctree::
+
+
+Overview
+--------
+
+Usage examples show runnable code examples to demonstrate frequently used MongoDB
+operations. Each usage example includes the following:
+
+- Description of the MongoDB operation
+- Code example that runs the MongoDB operation, which you can paste into your controller file
+- Code example that specifies a view, which you can paste into your view file
+- Output returned by the view
+
+How to Use the Usage Examples
+-----------------------------
+
+The usage examples are designed to run operations on a MongoDB deployment that contains
+the Atlas sample datasets. When you run the example code without the sample data, the output
+might not match. 
+
+Follow this tutorial to set up your MongoDB deployment with the sample data and run the
+example code in your development environment. Before performing the following actions,
+ensure that you create an Atlas account and deploy a cluster. For information about setting
+up an account and a cluster, see the :atlas:`Get Started with Atlas Guide
+</getting-started/#atlas-getting-started>`.
+
+.. procedure::
+   :style: connected
+
+   .. step:: Create a Laravel Application
+      
+      Follow the instructions in the :ref:`laravel-quick-start` guide to set up
+      a Laravel application.
+      
+      After completing the Quick Start, ensure that your application meets the following
+      requirements:
+      
+      - Connects to the ``movies`` collection in the Atlas sample datasets
+      - Contains the ``MovieController.php`` and ``browse_movies.blade.php`` files
+
+   .. step:: Add the Usage Example Code to Your Application
+
+      Copy the example code from the :guilabel:`Controller File Code` tab on the usage example
+      page and paste it into the ``MovieController.php`` file.
+      
+      Then, copy the example code from the :guilabel:`View File Code` tab and paste it into the
+      ``browse_movies.blade.php`` file.
+
+   .. step:: Run the Usage Example Code
+
+      Run the following command to start your Laravel application and run the MongoDB operation:
+
+      .. code-block:: bash
+
+         php artisan serve
+
+After completing these steps, you can see the output described in the **Expected Output** section
+of the corresponding usage example.
+
+Available Usage Examples
+------------------------
+
+.. TODO: add usage examples to list as they're made
+  - :ref:`Find a Document <rust-find-one-usage>`
+  - :ref:`Find Multiple Documents <rust-find-usage>`
+  - :ref:`Insert a Document <rust-insert-one-usage>`
+  - :ref:`Insert Multiple Documents <rust-insert-many-usage>`
+  - :ref:`Update a Document <rust-update-one-usage>`
+  - :ref:`Update Multiple Documents <rust-update-many-usage>`
+  - :ref:`Delete a Document <rust-delete-one-usage>`
+  - :ref:`Delete Multiple Documents <rust-delete-many-usage>`
+  - :ref:`Count Documents <rust-count-usage>`
+  - :ref:`Retrieve Distinct Field Values <laravel-distinct-usage>`
