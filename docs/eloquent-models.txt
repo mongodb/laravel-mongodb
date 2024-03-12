@@ -19,8 +19,6 @@ syntax to work with MongoDB as a database.
 This section contains guidance on how to use Eloquent models in
 {+odm-short+} to work with MongoDB in the following ways:
 
-- :ref:`laravel-eloquent-model-relationships` shows how to add relationships
-  between models
 - :ref:`laravel-schema-builder` shows how to manage indexes on your MongoDB
   collections
 

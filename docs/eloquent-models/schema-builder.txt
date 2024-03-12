@@ -1,4 +1,4 @@
-.. _laravel-eloquent-schema-builder:
+.. _laravel-schema-builder:
 
 ==============
 Schema Builder
@@ -14,14 +14,14 @@ Schema Builder
 Overview
 --------
 
-Laravel provides a ``Schema`` **facade** to access the schema builder, which
-lets you create and modify tables. Facades are static interfaces to classes
-that make the syntax more concise and improve testability.
+Laravel provides a **facade** to access the schema builder class ``Schema``,
+which lets you create and modify tables. Facades are static interfaces to
+classes that make the syntax more concise and improve testability.
 
-{+odm-short+} supports index and collection management methods of the
-Laravel ``Schema`` facade.
+{+odm-short+} supports a subset of the index and collection management methods
+in the Laravel ``Schema`` facade.
 
-To learn more about Laravel Facades, see `Facades <https://laravel.com/docs/{+laravel-docs-version+}/facades>`__
+To learn more about facades, see `Facades <https://laravel.com/docs/{+laravel-docs-version+}/facades>`__
 in the Laravel documentation.
 
 The following sections describe the Laravel schema builder and functionality
@@ -37,15 +37,19 @@ available in {+odm-short+} and show examples of how to use them:
 Perform Laravel Migrations
 --------------------------
 
-Laravel lets you create and make modifications to your database schema by
-running methods that call the ``Schema`` facade. The process of running this
-logic is called a migration.
+Laravel migrations let you programmatically create, modify, and delete
+your database schema by running methods included in the ``Schema`` facade.
+The following sections explain how to author a migration class when you use
+a MongoDB database and how to run them.
 
-You can generate the migration class files by using the ``php artisan make:migration``
-command. Make the following changes to the generated files to perform the
-migration on your MongoDB database:
+Create a Migration Class
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-- Replace the ``Illuminate\Database\Schema\Blueprint`` import with 
+You can create migration classes manually or generate them by using the
+``php artisan make:migration`` command. If you generate them, you must make the
+following changes to perform the schema changes on your MongoDB database:
+
+- Replace the ``Illuminate\Database\Schema\Blueprint`` import with
   ``MongoDB\Laravel\Schema\Blueprint``
 - Specify ``mongodb`` in the ``$connection`` field
 - Use only commands and syntax supported by {+odm-short+}
@@ -55,6 +59,15 @@ migration on your MongoDB database:
    Make sure you set ``DB_CONNECTION=mongodb`` in your ``.env`` configuration
    file so that PHP artisan performs the migration on the correct database.
 
+The following example migration class file that creates a collection and
+index when you run the migration and drops it when you roll back the migration:
+
+.. literalinclude:: /includes/schema-builder/astronauts_migration.php
+   :language: php
+
+Run or Roll Back a Migration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 To run the database migration from a class file, run the following PHP artisan
 command:
 
@@ -62,7 +75,7 @@ command:
 
    php artisan migrate --path=<path to your migration class file>
 
-This artisan command runs the ``up()`` method in the class file to create
+This artisan command runs the ``up()`` function in the class file to create
 the collection and index in the database specified in the ``config/database.php``
 file.
 
@@ -72,14 +85,12 @@ To roll back the migration, run the following PHP artisan command:
 
    php artisan migrate:rollback --path=<path to your migration class file>
 
-This command runs the ``down()`` method in the class file to drop the
+This command runs the ``down()`` function in the class file to drop the
 collection and related indexes.
 
-The following example migration class file that creates a collection and
-index when you run the migration and drops it when you roll back the migration:
-
-.. literalinclude:: /includes/schema-builder/astronauts_migration.php
-   :language: php
+To learn more about Laravel migrations, see
+`Database: Migrations <https://laravel.com/docs/{+laravel-docs-version+}/migrations>`__
+in the Laravel documentation.
 
 .. _laravel-eloquent-indexes:
 
@@ -94,6 +105,9 @@ Manage Collections
 ------------------
 
 TODO
+
+Note that creating a collection is a noop unless it also creates an index
+since MongoDB automatically creates collections when you first write to them.
 
 .. _laravel-eloquent-customize-collection:
 
