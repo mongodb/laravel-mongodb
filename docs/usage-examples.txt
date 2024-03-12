@@ -78,10 +78,9 @@ up an account and a cluster, see the :atlas:`Get Started with Atlas Guide
 After completing these steps, you can see the output described in the **Expected Output** section
 of the corresponding usage example.
 
-Available Usage Examples
-------------------------
-
 .. TODO: add usage examples to list as they're made
+   Available Usage Examples
+   ------------------------
   - :ref:`Find a Document <laravel-find-one-usage>`
   - :ref:`Find Multiple Documents <laravel-find-usage>`
   - :ref:`Insert a Document <laravel-insert-one-usage>`
