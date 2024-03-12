@@ -214,6 +214,8 @@ class Builder extends EloquentBuilder
             try {
                 $document = $collection->findOneAndUpdate(
                     $attributes,
+                    // Before MongoDB 5.0, the $setOnInsert does support empty document,
+                    // so the filter value are added to avoid an error.
                     ['$setOnInsert' => (object) $values],
                     [
                         'upsert' => true,
