@@ -1,0 +1,93 @@
+.. _laravel-find-one-usage:
+
+===============
+Find a Document
+===============
+
+You can retrieve a single document from a collection by calling the ``where()`` and
+``first()`` methods on an Eloquent model or a query builder.
+
+Pass a query filter to the ``where()`` method and call the ``first()`` method to return
+one document in the collection that matches the filter. If multiple documents match the
+query filter, this method returns the first matching document according to their
+:term:`natural order` in the database or according to the sort order specified by the
+``orderBy()`` method.
+
+To learn more about retrieving documents, see the :ref:`laravel-fundamentals-retrieve` guide.
+
+Example
+-------
+
+This example retrieves a document that matches a query filter from the ``movies``
+collection in the ``sample_mflix`` database. The example uses the ``Movie`` Eloquent model
+to represent the ``movies`` collection.
+
+This example uses a query filter that matches documents in which the value of the
+``directors`` field is ``"Rob Reiner"``. MongoDB retrieves the first document that
+matches the query filter, according to the sort order specified by the ``orderBy()`` method.
+
+Select the :guilabel:`Controller File Code` tab and paste the code example into the
+``MovieController.php`` file. This tab contains the find operation code.
+
+Then, select the :guilabel:`View File Code` tab and paste the code example into
+``browse_movies.blade.php``. This tab contains the view code to generate the expected output,
+which you can see by visiting http://127.0.0.1:8000/browse_movies. 
+
+.. tabs::
+
+   .. tab:: Controller File Code
+      :tabid: find-one-controller
+
+      .. code-block:: php
+
+         class MovieController
+         {
+             public function show()
+             {
+                 $movies = Movie::where('directors', 'Rob Reiner')
+                     ->orderBy('_id')
+                     ->first();
+
+                 return view('browse_movies', [
+                     'movies' => $movies
+                 ]);
+             }
+         }
+
+   .. tab:: View File Code
+      :tabid: find-oneview
+
+      .. io-code-block::
+         :copyable: true
+
+         .. input::
+            :language: php
+            
+            <!DOCTYPE html>
+            <html>
+            <head>
+            <title>Browse Movies</title>
+            </head>
+            <body>
+            <h2>Movies</h2>
+            <p>
+                Title: {{ $movies->title }}<br>
+                Year: {{ $movies->year }}<br>
+                Runtime: {{ $movies->runtime }}<br>
+                Director: {{ $movies->directors[0] }}<br>
+                Plot: {{ $movies->plot }}<br>
+            </p>
+            </body>
+            </html>
+
+         .. output::
+            :language: console
+            :visible: false
+
+            Title: This Is Spinal Tap
+            Year: 1984
+            Runtime: 82
+            Director: Rob Reiner
+            Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
+            Marty DeBergi on what proves to be a fateful tour.
+
