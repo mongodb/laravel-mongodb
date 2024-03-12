@@ -82,13 +82,13 @@ Available Usage Examples
 ------------------------
 
 .. TODO: add usage examples to list as they're made
-  - :ref:`Find a Document <rust-find-one-usage>`
-  - :ref:`Find Multiple Documents <rust-find-usage>`
-  - :ref:`Insert a Document <rust-insert-one-usage>`
-  - :ref:`Insert Multiple Documents <rust-insert-many-usage>`
-  - :ref:`Update a Document <rust-update-one-usage>`
-  - :ref:`Update Multiple Documents <rust-update-many-usage>`
-  - :ref:`Delete a Document <rust-delete-one-usage>`
-  - :ref:`Delete Multiple Documents <rust-delete-many-usage>`
-  - :ref:`Count Documents <rust-count-usage>`
+  - :ref:`Find a Document <laravel-find-one-usage>`
+  - :ref:`Find Multiple Documents <laravel-find-usage>`
+  - :ref:`Insert a Document <laravel-insert-one-usage>`
+  - :ref:`Insert Multiple Documents <laravel-insert-many-usage>`
+  - :ref:`Update a Document <laravel-update-one-usage>`
+  - :ref:`Update Multiple Documents <laravel-update-many-usage>`
+  - :ref:`Delete a Document <laravel-delete-one-usage>`
+  - :ref:`Delete Multiple Documents <laravel-delete-many-usage>`
+  - :ref:`Count Documents <laravel-count-usage>`
   - :ref:`Retrieve Distinct Field Values <laravel-distinct-usage>`
