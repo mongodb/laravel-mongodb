@@ -1154,11 +1154,6 @@ class Builder extends BaseBuilder
         return $compiled;
     }
 
-    /**
-     * @param  array $where
-     *
-     * @return array
-     */
     protected function compileWhereBasic(array $where): array
     {
         $column   = $where['column'];
