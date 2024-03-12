@@ -1,8 +1,8 @@
 .. _laravel-upgrading:
 
-===================
-Upgrade ODM Version
-===================
+=======================
+Upgrade Library Version
+=======================
 
 .. facet::
    :name: genre
@@ -29,7 +29,7 @@ How to Upgrade
 
 Before you upgrade, perform the following actions:
 
-- Ensure the new ODM version is compatible with the MongoDB Server version
+- Ensure the new library version is compatible with the MongoDB Server version
   your application connects to and the version of Laravel that your
   application runs on. See the :ref:`<laravel-compatibility>`
   page for this information.
@@ -37,14 +37,14 @@ Before you upgrade, perform the following actions:
   your application currently uses and your planned upgrade version in the
   :ref:`<laravel-breaking-changes>` section of this guide.
 
-To upgrade your ODM version, run the following command in your application's 
+To upgrade your library version, run the following command in your application's 
 directory:
 
 .. code-block:: bash
    
     composer require mongodb/laravel-mongodb:{+package-version+}
 
-To upgrade to a different version of the ODM, replace the information after
+To upgrade to a different version of the library, replace the information after
 ``laravel-mongodb:`` with your preferred version number.
 
 .. _laravel-breaking-changes:
@@ -57,7 +57,7 @@ a specific version of {+odm-short+} that might prevent your application
 from working as expected.
 
 The breaking changes in this section are categorized by the major
-version releases that introduced them. When upgrading ODM versions,
+version releases that introduced them. When upgrading library versions,
 address all the breaking changes between your current version and the
 planned upgrade version.
 
@@ -66,7 +66,7 @@ planned upgrade version.
 Version 4.x Breaking Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This ODM version introduces the following breaking changes:
+This library version introduces the following breaking changes:
 
 - Minimum Laravel version is now 10.0. For instructions on upgrading your Laravel version,
   see the `Upgrade Guide <https://laravel.com/docs/10.x/upgrade>`__ in the Laravel
