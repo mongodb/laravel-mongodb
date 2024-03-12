@@ -14,6 +14,7 @@ Laravel MongoDB
    :maxdepth: 1
 
    /quick-start
+   /usage-examples
    /retrieve
    /eloquent-models
    /query-builder
@@ -46,10 +47,16 @@ Learn how to add {+odm-short+} to a Laravel web application, connect to
 MongoDB hosted on MongoDB Atlas, and begin working with data in the
 :ref:`laravel-quick-start` section.
 
+Usage Examples
+--------------
+
+See fully runnable code examples and explanations of common
+MongoDB operations in the :ref:`laravel-usage-examples` section.
+
 Fundamentals
 ------------
 
-To learn how to perform the following tasks by using the {+odm-short+},
+To learn how to perform the following tasks by using {+odm-short+},
 see the following content:
 
 - :ref:`laravel-fundamentals-retrieve`
