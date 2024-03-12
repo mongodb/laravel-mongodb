@@ -12,6 +12,7 @@ use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Internal\FindAndModifyCommandSubscriber;
 use MongoDB\Model\BSONDocument;
+use MongoDB\Operation\FindOneAndUpdate;
 
 use function array_intersect_key;
 use function array_key_exists;
@@ -201,6 +202,7 @@ class Builder extends EloquentBuilder
         }
 
         // Apply casting and default values to the attributes
+        // In case of duplicate key between the attributes and the values, the values have priority
         $instance = $this->newModelInstance($values + $attributes);
         $values = $instance->getAttributes();
         $attributes = array_intersect_key($attributes, $values);
@@ -212,8 +214,12 @@ class Builder extends EloquentBuilder
             try {
                 $document = $collection->findOneAndUpdate(
                     $attributes,
-                    ['$setOnInsert' => $values],
-                    ['upsert' => true, 'new' => true, 'typeMap' => ['root' => 'array', 'document' => 'array']],
+                    ['$setOnInsert' => (object) $values],
+                    [
+                        'upsert' => true,
+                        'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+                        'typeMap' => ['root' => 'array', 'document' => 'array'],
+                    ],
                 );
             } finally {
                 $collection->getManager()->removeSubscriber($listener);
