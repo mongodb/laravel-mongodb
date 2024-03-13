@@ -564,7 +564,12 @@ class BuilderTest extends TestCase
         yield 'whereBetween CarbonPeriod' => [
             [
                 'find' => [
-                    ['created_at' => ['$gte' => new UTCDateTime($period->start), '$lte' => new UTCDateTime($period->end)]],
+                    [
+                        'created_at' => [
+                            '$gte' => new UTCDateTime($period->getStartDate()),
+                            '$lte' => new UTCDateTime($period->getEndDate()),
+                        ],
+                    ],
                     [], // options
                 ],
             ],
