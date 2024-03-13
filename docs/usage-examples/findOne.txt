@@ -9,7 +9,7 @@ You can retrieve a single document from a collection by calling the ``where()`` 
 
 Pass a query filter to the ``where()`` method and call the ``first()`` method to return
 one document in the collection that matches the filter. If multiple documents match the
-query filter, this method returns the first matching document according to their
+query filter, ``first()`` returns the first matching document according to the documents'
 :term:`natural order` in the database or according to the sort order specified by the
 ``orderBy()`` method.
 
@@ -37,24 +37,39 @@ the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
    .. tab:: Controller File Code
       :tabid: find-one-controller
 
-      .. code-block:: php
+      .. io-code-block::
+         :copyable: true
 
-         class MovieController
-         {
-             public function show()
-             {
-                 $movies = Movie::where('directors', 'Rob Reiner')
-                     ->orderBy('_id')
-                     ->first();
+         .. input::
+            :language: php
+            
+            class MovieController
+            {
+                public function show()
+                {
+                    $movie = Movie::where('directors', 'Rob Reiner')
+                        ->orderBy('_id')
+                        ->first();
 
-                 return view('browse_movies', [
-                     'movies' => $movies
-                 ]);
-             }
-         }
+                    return view('browse_movies', [
+                        'movie' => $movie
+                    ]);
+                }
+            }
+
+         .. output::
+            :language: console
+            :visible: false
+
+            Title: This Is Spinal Tap
+            Year: 1984
+            Runtime: 82
+            Director: Rob Reiner
+            Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
+            Marty DeBergi on what proves to be a fateful tour.
 
    .. tab:: View File Code
-      :tabid: find-oneview
+      :tabid: find-one-view
 
       .. io-code-block::
          :copyable: true
@@ -70,11 +85,11 @@ the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
             <body>
             <h2>Movies</h2>
             <p>
-                Title: {{ $movies->title }}<br>
-                Year: {{ $movies->year }}<br>
-                Runtime: {{ $movies->runtime }}<br>
-                Director: {{ $movies->directors[0] }}<br>
-                Plot: {{ $movies->plot }}<br>
+                Title: {{ $movie->title }}<br>
+                Year: {{ $movie->year }}<br>
+                Runtime: {{ $movie->runtime }}<br>
+                Director: {{ $movie->directors[0] }}<br>
+                Plot: {{ $movie->plot }}<br>
             </p>
             </body>
             </html>
@@ -90,4 +105,11 @@ the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
             Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
             Marty DeBergi on what proves to be a fateful tour.
 
-To see the expected output, open the URL http://127.0.0.1:8000/browse_movies in your web browser.
+To perform the find operation, start your Laravel application by running the following command:
+
+.. code-block:: bash
+
+   php artisan serve
+
+Then, open the URL http://127.0.0.1:8000/browse_movies in your web browser to view the expected
+output.
