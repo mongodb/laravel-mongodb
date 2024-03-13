@@ -6,11 +6,13 @@ namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use InvalidArgumentException;
 use MongoDB\Driver\Cursor;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Internal\FindAndModifyCommandSubscriber;
 use MongoDB\Model\BSONDocument;
+use MongoDB\Operation\FindOneAndUpdate;
 
 use function array_intersect_key;
 use function array_key_exists;
@@ -195,7 +197,12 @@ class Builder extends EloquentBuilder
      */
     public function createOrFirst(array $attributes = [], array $values = []): Model
     {
+        if ($attributes === []) {
+            throw new InvalidArgumentException('You must provide attributes to check for duplicates');
+        }
+
         // Apply casting and default values to the attributes
+        // In case of duplicate key between the attributes and the values, the values have priority
         $instance = $this->newModelInstance($values + $attributes);
         $values = $instance->getAttributes();
         $attributes = array_intersect_key($attributes, $values);
@@ -207,8 +214,14 @@ class Builder extends EloquentBuilder
             try {
                 $document = $collection->findOneAndUpdate(
                     $attributes,
-                    ['$setOnInsert' => $values],
-                    ['upsert' => true, 'new' => true, 'typeMap' => ['root' => 'array', 'document' => 'array']],
+                    // Before MongoDB 5.0, $setOnInsert requires a non-empty document.
+                    // This is should not be an issue as $values includes the query filter.
+                    ['$setOnInsert' => (object) $values],
+                    [
+                        'upsert' => true,
+                        'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+                        'typeMap' => ['root' => 'array', 'document' => 'array'],
+                    ],
                 );
             } finally {
                 $collection->getManager()->removeSubscriber($listener);
