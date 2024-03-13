@@ -31,6 +31,10 @@ operations. Each usage example includes the following components:
 How to Run the Usage Examples
 -----------------------------
 
+The usage examples are designed to run operations on a MongoDB deployment that contains
+the MongoDB Atlas sample datasets. When you run the example code without this sample data,
+the output might not match. 
+
 You can run the usage examples from the Laravel web application and MongoDB Atlas cluster that you
 set up in the :ref:`laravel-quick-start`` guide. After completing the Quick Start, ensure that your
 application meets the following requirements:
