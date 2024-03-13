@@ -46,7 +46,6 @@ which you can see by visiting http://127.0.0.1:8000/browse_movies.
    more about ``$fillable``, see the `Mass Assignment <https://laravel.com/docs/4.2/eloquent#mass-assignment>`__
    section of the Laravel documentation.
    
-
 .. tabs::
 
    .. tab:: Controller File Code
