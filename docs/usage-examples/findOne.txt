@@ -18,20 +18,19 @@ To learn more about retrieving documents, see the :ref:`laravel-fundamentals-ret
 Example
 -------
 
-This example retrieves a document that matches a query filter from the ``movies``
+This usage example retrieves a document that matches a query filter from the ``movies``
 collection in the ``sample_mflix`` database. The example uses the ``Movie`` Eloquent model
 to represent the ``movies`` collection.
 
-This example uses a query filter that matches documents in which the value of the
-``directors`` field is ``"Rob Reiner"``. MongoDB retrieves the first document that
-matches the query filter, according to the sort order specified by the ``orderBy()`` method.
+This example performs the following actions:
 
-Select the :guilabel:`Controller File Code` tab and paste the code example into the
-``MovieController.php`` file. This tab contains the find operation code.
+- Defines a query filter that matches documents in which the value of the ``directors`` field
+  is ``"Rob Reiner"``
+- Instructs MongoDB to retrieve the first document that matches the query filter, according to
+  the sort order specified by the ``orderBy()`` method
 
-Then, select the :guilabel:`View File Code` tab and paste the code example into
-``browse_movies.blade.php``. This tab contains the view code to generate the expected output,
-which you can see by visiting http://127.0.0.1:8000/browse_movies. 
+To see the find operation code, select the :guilabel:`Controller File Code` tab. To see
+the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
 
 .. tabs::
 
@@ -91,3 +90,4 @@ which you can see by visiting http://127.0.0.1:8000/browse_movies.
             Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
             Marty DeBergi on what proves to be a fateful tour.
 
+To see the expected output, open the URL http://127.0.0.1:8000/browse_movies in your web browser.
