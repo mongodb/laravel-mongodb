@@ -6,14 +6,16 @@ namespace MongoDB\Laravel\Query;
 
 use Illuminate\Support\Collection as LaravelCollection;
 use MongoDB\Builder\BuilderEncoder;
-use MongoDB\Builder\Stage\FluentFactory;
+use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Laravel\Collection;
 
 use function array_replace;
 use function collect;
 
-final class AggregationBuilder extends FluentFactory
+final class AggregationBuilder
 {
+    use FluentFactoryTrait;
+
     public function __construct(
         array $pipeline,
         private Collection $collection,
