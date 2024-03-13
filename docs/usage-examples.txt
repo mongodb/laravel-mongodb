@@ -36,7 +36,7 @@ the MongoDB Atlas sample datasets. When you run the example code without this sa
 the output might not match. 
 
 You can run the usage examples from the Laravel web application and MongoDB Atlas cluster that you
-set up in the :ref:`laravel-quick-start`` guide. After completing the Quick Start, ensure that your
+set up in the :ref:`laravel-quick-start` guide. After completing the Quick Start, ensure that your
 application meets the following requirements:
 
 - Connects to the ``movies`` collection in the Atlas sample datasets
