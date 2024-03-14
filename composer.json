@@ -14,9 +14,6 @@
         "issues": "https://www.mongodb.com/support",
         "security": "https://www.mongodb.com/security"
     },
-    "repositories": [
-        { "type": "vcs", "url": "https://github.com/GromNaN/mongo-php-builder.git" }
-    ],
     "authors": [
         { "name": "Andreas Braun", "email": "andreas.braun@mongodb.com", "role": "Leader" },
         { "name": "Jérôme Tamarelle", "email": "jerome.tamarelle@mongodb.com", "role": "Maintainer" },
@@ -34,7 +31,7 @@
         "mongodb/mongodb": "^1.15"
     },
     "require-dev": {
-        "mongodb/builder": "dev-laravel-fluent",
+        "mongodb/builder": "^0.2",
         "phpunit/phpunit": "^10.3",
         "orchestra/testbench": "^8.0|^9.0",
         "mockery/mockery": "^1.4.4",

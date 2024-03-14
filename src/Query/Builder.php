@@ -23,6 +23,7 @@ use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\Accumulator;
 use MongoDB\Builder\Expression\FieldPath;
+use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Builder\Variable;
 use MongoDB\Driver\Cursor;
 use Override;
@@ -68,6 +69,7 @@ use function str_starts_with;
 use function strlen;
 use function strtolower;
 use function substr;
+use function trait_exists;
 use function var_export;
 
 class Builder extends BaseBuilder
@@ -284,6 +286,10 @@ class Builder extends BaseBuilder
 
     private function getAggregationBuilder(): AggregationBuilder
     {
+        if (! trait_exists(FluentFactoryTrait::class)) {
+            throw new BadMethodCallException('Aggregation builder requires package mongodb/builder 0.2+');
+        }
+
         $agg = new AggregationBuilder([], $this->collection, $this->options);
 
         $wheres = $this->compileWheres();
