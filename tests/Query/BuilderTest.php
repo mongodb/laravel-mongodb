@@ -1661,65 +1661,57 @@ class BuilderTest extends TestCase
         if (method_exists(Builder::class, 'whereAll')) {
             /** @see DatabaseQueryBuilderTest::testWhereAll */
             yield 'whereAll' => [
-                [
-                    'find' => [
-                        ['$and' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
-                        [], // options
-                    ],
+                'find' => [
+                    ['$and' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
                 ],
+                'aggregate' => null,
                 fn(Builder $builder) => $builder->whereAll(['last_name', 'email'], 'Doe'),
             ];
 
             yield 'whereAll operator' => [
-                [
-                    'find' => [
-                        [
-                            '$and' => [
-                                ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                            ],
+                'find' => [
+                    [
+                        '$and' => [
+                            ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
+                            ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
                         ],
-                        [], // options
                     ],
                 ],
+                'aggregate' => null,
                 fn(Builder $builder) => $builder->whereAll(['last_name', 'email'], 'not like', '%Doe%'),
             ];
 
             /** @see DatabaseQueryBuilderTest::testOrWhereAll */
             yield 'orWhereAll' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['first_name' => 'John'],
-                                ['$and' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
-                            ],
+                'find' => [
+                    [
+                        '$or' => [
+                            ['first_name' => 'John'],
+                            ['$and' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
                         ],
-                        [], // options
                     ],
                 ],
+                'aggregate' => null,
                 fn(Builder $builder) => $builder
                     ->where('first_name', 'John')
                     ->orWhereAll(['last_name', 'email'], 'Doe'),
             ];
 
             yield 'orWhereAll operator' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['first_name' => new Regex('^.*John.*$', 'i')],
-                                [
-                                    '$and' => [
-                                        ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                        ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                    ],
+                'find' => [
+                    [
+                        '$or' => [
+                            ['first_name' => new Regex('^.*John.*$', 'i')],
+                            [
+                                '$and' => [
+                                    ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
+                                    ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
                                 ],
                             ],
                         ],
-                        [], // options
                     ],
                 ],
+                'aggregate' => null,
                 fn(Builder $builder) => $builder
                     ->where('first_name', 'like', '%John%')
                     ->orWhereAll(['last_name', 'email'], 'not like', '%Doe%'),
@@ -1730,65 +1722,57 @@ class BuilderTest extends TestCase
         if (method_exists(Builder::class, 'whereAny')) {
             /** @see DatabaseQueryBuilderTest::testWhereAny */
             yield 'whereAny' => [
-                [
-                    'find' => [
-                        ['$or' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
-                        [], // options
-                    ],
+                'find' => [
+                    ['$or' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
                 ],
+                'aggregate' => null,
                 fn(Builder $builder) => $builder->whereAny(['last_name', 'email'], 'Doe'),
             ];
 
             yield 'whereAny operator' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                            ],
+                'find' => [
+                    [
+                        '$or' => [
+                            ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
+                            ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
                         ],
-                        [], // options
                     ],
                 ],
+                'aggregate' => null,
                 fn(Builder $builder) => $builder->whereAny(['last_name', 'email'], 'not like', '%Doe%'),
             ];
 
             /** @see DatabaseQueryBuilderTest::testOrWhereAny */
             yield 'orWhereAny' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['first_name' => 'John'],
-                                ['$or' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
-                            ],
+                'find' => [
+                    [
+                        '$or' => [
+                            ['first_name' => 'John'],
+                            ['$or' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
                         ],
-                        [], // options
                     ],
                 ],
+                'aggregate' => null,
                 fn(Builder $builder) => $builder
                     ->where('first_name', 'John')
                     ->orWhereAny(['last_name', 'email'], 'Doe'),
             ];
 
             yield 'orWhereAny operator' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['first_name' => new Regex('^.*John.*$', 'i')],
-                                [
-                                    '$or' => [
-                                        ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                        ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                    ],
+                'find' => [
+                    [
+                        '$or' => [
+                            ['first_name' => new Regex('^.*John.*$', 'i')],
+                            [
+                                '$or' => [
+                                    ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
+                                    ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
                                 ],
                             ],
                         ],
-                        [], // options
                     ],
                 ],
+                'aggregate' => null,
                 fn(Builder $builder) => $builder
                     ->where('first_name', 'like', '%John%')
                     ->orWhereAny(['last_name', 'email'], 'not like', '%Doe%'),
