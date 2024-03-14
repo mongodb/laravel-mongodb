@@ -15,6 +15,7 @@ Laravel MongoDB
 
    /quick-start
    /usage-examples
+   Release Notes <https://github.com/mongodb/laravel-mongodb/releases/>
    /retrieve
    /eloquent-models
    /query-builder
