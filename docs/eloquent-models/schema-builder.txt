@@ -11,6 +11,12 @@ Schema Builder
 .. meta::
    :keywords: php framework, odm, code example, schema facade, php artisan, eloquent, blueprint, artisan, migrate
 
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
 Overview
 --------
 
@@ -24,8 +30,8 @@ in the Laravel ``Schema`` facade.
 To learn more about facades, see `Facades <https://laravel.com/docs/{+laravel-docs-version+}/facades>`__
 in the Laravel documentation.
 
-The following sections describe the Laravel schema builder and functionality
-available in {+odm-short+} and show examples of how to use them:
+The following sections describe the Laravel schema builder features available
+in {+odm-short+} and show examples of how to use them:
 
 - :ref:`<laravel-eloquent-migrations>`
 - :ref:`<laravel-eloquent-collection-exists>`
@@ -66,9 +72,10 @@ following changes to perform the schema changes on your MongoDB database:
    file so that PHP artisan performs the migration on the correct database.
 
 The following example migration creates a collection and index when you run
-the migration and drops it when you roll back the migration:
+the migration and drops them when you roll back the migration:
 
 .. literalinclude:: /includes/schema-builder/astronauts_migration.php
+   :dedent:
    :language: php
    :emphasize-lines: 4, 10
 
@@ -76,7 +83,7 @@ Run or Roll Back a Migration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To run the database migration from a class file, run the following PHP artisan
-command:
+command after replacing the placeholder:
 
 .. code-block:: bash
 
@@ -86,7 +93,8 @@ This artisan command runs the ``up()`` function in the class file to create
 the collection and index in the database specified in the ``config/database.php``
 file.
 
-To roll back the migration, run the following PHP artisan command:
+To roll back the migration, run the following PHP artisan command after
+replacing the placeholder:
 
 .. code-block:: bash
 
@@ -113,6 +121,7 @@ named ``telescopes`` exists:
 
 .. literalinclude:: /includes/schema-builder/stars_migration.php
    :language: php
+   :dedent:
    :start-after: begin conditional create
    :end-before: end conditional create
 
@@ -372,6 +381,7 @@ from the ``flights`` collection:
 
 .. literalinclude:: /includes/schema-builder/flights_migration.php
    :language: php
+   :dedent:
    :start-after: begin drop index
    :end-before: end drop index
 

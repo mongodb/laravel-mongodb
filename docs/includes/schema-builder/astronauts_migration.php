@@ -14,7 +14,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-      Schema::create('astronauts', function ($collection) {
+      Schema::create('astronauts', function (Blueprint $collection) {
           $collection->index('name');
       });
     }
