@@ -31,21 +31,31 @@ operations. Each usage example includes the following components:
 How to Run the Usage Examples
 -----------------------------
 
+To learn how to set up your application and run the usage examples, see the following
+sections:
+
+- :ref:`before-start`
+- :ref:`run-usage-examples`
+
+.. _before-start:
+
+Before You Get Started
+~~~~~~~~~~~~~~~~~~~~~~
+
 The usage examples are designed to run operations on a MongoDB deployment that contains
 the MongoDB Atlas sample datasets. When you run the example code without this sample data,
 the output might not match. 
 
-Before You Begin
-~~~~~~~~~~~~~~~~
-
-You can run the usage examples from the Laravel web application and MongoDB Atlas cluster that you
-set up in the :ref:`laravel-quick-start` guide. After completing the Quick Start, ensure that your
-application meets the following requirements:
+You can run the usage examples from the Laravel web application and MongoDB Atlas cluster that
+you set up in the :ref:`laravel-quick-start` guide. After completing the Quick Start, ensure
+that your application meets the following requirements:
 
 - Configuration to use an Atlas cluster that contains the sample datasets
 - ``Movie`` model configured to use the MongoDB database
 - ``Movie`` view that lists the results
 - HTTP and API controller endpoints for displaying and storing ``Movie`` data
+
+.. _run-usage-examples:
 
 Run the Examples
 ~~~~~~~~~~~~~~~~
