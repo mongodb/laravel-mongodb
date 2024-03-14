@@ -14,9 +14,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-      Schema::create('astronauts', function ($collection) {
-          $collection->index('name');
-      });
+        // begin create geospatial index
+        Schema::create('spaceports', function (Blueprint $collection) {
+            $collection->geospatial('launchpad_location', '2dsphere');
+            $collection->geospatial('runway_location', '2d');
+        });
+        // end create geospatial index
     }
 
     /**
@@ -24,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::drop('astronauts');
+        Schema::drop('spaceports');
     }
 };

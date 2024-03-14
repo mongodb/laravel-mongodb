@@ -9,21 +9,18 @@ return new class extends Migration
 
     protected $connect = 'mongodb';
 
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-      Schema::create('astronauts', function ($collection) {
-          $collection->index('name');
-      });
+        // begin index helpers
+        Schema::create('planets', function (Blueprint $collection) {
+            $collection->sparse('rings');
+            $collection->expire('last_visible_dt', 86400);
+        });
+        // end index helpers
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::drop('astronauts');
+        Schema::drop('planets');
     }
 };
