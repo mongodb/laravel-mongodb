@@ -26,8 +26,8 @@ This example performs the following actions:
 
 - Defines a query filter that matches documents in which the value of the ``directors`` field
   is ``"Rob Reiner"``
-- Instructs MongoDB to retrieve the first document that matches the query filter, according to
-  the sort order specified by the ``orderBy()`` method
+- Retrieves the first document that matches the query filter, according to the sort order
+  specified by the ``orderBy()`` method
 
 To see the find operation code, select the :guilabel:`Controller File Code` tab. To see
 the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
@@ -45,16 +45,16 @@ the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
             
             class MovieController
             {
-                public function show()
-                {
-                    $movie = Movie::where('directors', 'Rob Reiner')
-                        ->orderBy('_id')
-                        ->first();
+                 public function show()
+                 {
+                      $movie = Movie::where('directors', 'Rob Reiner')
+                          ->orderBy('_id')
+                          ->first();
 
-                    return view('browse_movies', [
-                        'movie' => $movie
-                    ]);
-                }
+                      return view('browse_movies', [
+                          'movie' => $movie
+                      ]);
+                  }
             }
 
          .. output::
