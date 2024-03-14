@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use MongoDB\Laravel\Eloquent\Model;
-use MongoDB\Laravel\Relations\BelongsTo;
 
 class Passenger extends Model
 {
