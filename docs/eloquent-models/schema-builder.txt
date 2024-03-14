@@ -201,7 +201,7 @@ field:
       :start-after: begin index options
       :end-before: end index options
 
-   .. output:
+   .. output::
       :language: json
       :visible: false
 

@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use MongoDB\Laravel\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
- 
+
 return new class extends Migration
 {
 
@@ -11,9 +11,9 @@ return new class extends Migration
 
     public function up(): void
     {
-        // start conditional create
+        // begin conditional create
         $hasCollection = Schema::hasCollection('stars');
-        
+
         if ($hasCollection) {
             Schema::create('telescopes');
         }
