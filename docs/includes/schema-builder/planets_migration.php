@@ -1,12 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
-use MongoDB\Laravel\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
- 
+use MongoDB\Laravel\Schema\Blueprint;
+
 return new class extends Migration
 {
-
     protected $connect = 'mongodb';
 
     public function up(): void
@@ -20,7 +21,7 @@ return new class extends Migration
 
         // begin multi index helpers
         Schema::create('planet_systems', function (Blueprint $collection) {
-            $collection->index('last_visible_dt', null, null, [ 'sparse' => true, 'expireAfterSeconds' => 3600, 'unique' => true]);  
+            $collection->index('last_visible_dt', null, null, ['sparse' => true, 'expireAfterSeconds' => 3600, 'unique' => true]);
         });
         // end multi index helpers
     }

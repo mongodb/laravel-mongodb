@@ -77,7 +77,7 @@ the migration and drops them when you roll back the migration:
 .. literalinclude:: /includes/schema-builder/astronauts_migration.php
    :dedent:
    :language: php
-   :emphasize-lines: 4, 10
+   :emphasize-lines: 6, 11
 
 Run or Roll Back a Migration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
