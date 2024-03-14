@@ -9,7 +9,7 @@ Schema Builder
    :values: tutorial
 
 .. meta::
-   :keywords: php framework, odm, code example, schema facade, php artisan, eloquent
+   :keywords: php framework, odm, code example, schema facade, php artisan, eloquent, blueprint, artisan, migrate
 
 Overview
 --------
@@ -28,8 +28,15 @@ The following sections describe the Laravel schema builder and functionality
 available in {+odm-short+} and show examples of how to use them:
 
 - :ref:`<laravel-eloquent-migrations>`
+- :ref:`<laravel-eloquent-collection-exists>`
 - :ref:`<laravel-eloquent-indexes>`
-- :ref:`<laravel-eloquent-collections>`
+
+.. note::
+
+   {+odm-short+} supports managing indexes and collection, but
+   excludes support for MongoDB JSON schemas for data validation. To learn
+   more about JSON schema validation, see :manual:`Schema Validation </core/schema-validation/>`
+   in the MongoDB server manual.
 
 .. _laravel-eloquent-migrations:
 
@@ -58,9 +65,8 @@ following changes to perform the schema changes on your MongoDB database:
    Make sure you set ``DB_CONNECTION=mongodb`` in your ``.env`` configuration
    file so that PHP artisan performs the migration on the correct database.
 
-The following example migration class file that creates a collection and
-index when you run the migration and drops it when you reverse, or roll back
-the migration:
+The following example migration creates a collection and index when you run
+the migration and drops it when you roll back the migration:
 
 .. literalinclude:: /includes/schema-builder/astronauts_migration.php
    :language: php
@@ -93,18 +99,35 @@ To learn more about Laravel migrations, see
 `Database: Migrations <https://laravel.com/docs/{+laravel-docs-version+}/migrations>`__
 in the Laravel documentation.
 
+.. _laravel-eloquent-collection-exists:
+
+Check Whether a Collection Exists
+---------------------------------
+
+To check whether a collection exists, call the ``hasCollection()`` method on
+the ``Schema`` facade in your migration file. You can use this to
+perform migration logic conditionally.
+
+The following example migration creates a ``stars`` collection if a collection
+named ``telescopes`` exists:
+
+.. literalinclude:: /includes/schema-builder/stars_migration.php
+   :language: php
+   :start-after: begin conditional create
+   :end-before: end conditional create
+
 .. _laravel-eloquent-indexes:
 
 Manage Indexes
 --------------
 
 MongoDB indexes are data structures that improve query efficiency by reducing
-the number of documents needed to retrieve results of a query. Indexes such as
-geospatial indexes extend the ways in which you can query the data.
+the number of documents needed to retrieve query results. Indexes such as
+geospatial indexes extend how you can query the data.
 
-To improve query performance by using an index, make sure the query is
-covered by the index. To learn more about indexes and query optimization, see
-the following MongoDB server manual pages:
+To improve query performance by using an index, make sure the index covers
+the query.  To learn more about indexes and query optimization, see the
+following MongoDB server manual entries:
 
 - :manual:`Indexes </indexes>`
 - :manual:`Query Optimization </core/query-optimization/>`
@@ -203,7 +226,6 @@ field:
         }
       ]
 
-
 To learn more about index options, see :manual:`Options for All Index Types </reference/method/db.collection.createIndex/#options-for-all-index-types>`
 in the MongoDB server manual.
 
@@ -213,10 +235,10 @@ Create Sparse, TTL, and Unique Indexes
 You can use {+odm-short+} helper methods to create the following types of
 indexes:
 
-- Sparse indexes which allow index entries only for documents that contain the
+- Sparse indexes, which allow index entries only for documents that contain the
   specified field
-- Time-to-live (TTL) indexes which expire after a set amount of time
-- Unique indexes which prevent inserting documents that contain duplicate
+- Time-to-live (TTL) indexes, which expire after a set amount of time
+- Unique indexes, which prevent inserting documents that contain duplicate
   values for the indexed field
 
 To create these index types, call the ``create()`` method on the ``Schema`` facade
@@ -225,7 +247,7 @@ method with a ``MongoDB\Laravel\Schema\Blueprint`` parameter. Call the
 appropriate helper method on the ``Blueprint`` instance and pass the
 index creation details.
 
-The following migration code shows how to create a sparse index and TTL index
+The following migration code shows how to create a sparse and TTL index
 by using the index helpers. Click the :guilabel:`VIEW OUTPUT` button to see
 the indexes created by running the migration, including the default index on
 the ``_id`` field:
@@ -253,8 +275,8 @@ the ``_id`` field:
         }
       ]
 
-You can specify sparse, TTL, and unique indexes on a single field or compound
-index by specifying them in the index options.
+You can specify sparse, TTL, and unique indexes on either a single field or
+compound index by specifying them in the index options.
 
 The following migration code shows how to create all three types of indexes
 on a single field. Click the :guilabel:`VIEW OUTPUT` button to see the indexes
@@ -353,41 +375,4 @@ from the ``flights`` collection:
    :start-after: begin drop index
    :end-before: end drop index
 
-.. _laravel-eloquent-collections:
-
-Manage Collections
-------------------
-
-Check if a collection exists: Schema::hasCollection(<collection name>)
-
-TODO
-
-Note that creating a collection is a noop unless it also creates an index
-since MongoDB automatically creates collections when you first write to them.
-
-Notes:
-
-- collection (what does this method do?)
-  Schema::hasCollection(<collection name>); check whether a collection exists
-
-- determining column existence
-- drop collection     public function dropIfExists($table)
-  {
-  if ($this->hasCollection($table)) {
-  $this->drop($table);
-  }
-  }
-
-index($columns = null, $name = null, $algorithm = null, $options = [])
-dropIndex($index = null)
-public function dropIndexIfExists($indexOrColumns = null)\
-public function hasIndex($indexOrColumns = null)
-
-.. note::
-
-   Although MongoDB collections can be schemaless, they can use JSON schemas
-   for data validation. The {+odm-short+} schema builder does not offer methods
-   for data validation schemas. To learn more about JSON schema validation,
-   see :manual:`Schema Validation </core/schema-validation/>` in the
-   MongoDB server documentation.
 
