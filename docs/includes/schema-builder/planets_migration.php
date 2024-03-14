@@ -17,6 +17,12 @@ return new class extends Migration
             $collection->expire('last_visible_dt', 86400);
         });
         // end index helpers
+
+        // begin multi index helpers
+        Schema::create('planet_systems', function (Blueprint $collection) {
+            $collection->index('last_visible_dt', null, null, [ 'sparse' => true, 'expireAfterSeconds' => 3600, 'unique' => true]);  
+        });
+        // end multi index helpers
     }
 
     public function down(): void

@@ -3,7 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use MongoDB\Laravel\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
- 
+
 return new class extends Migration
 {
 
@@ -19,7 +19,7 @@ return new class extends Migration
       });
       // end create index
     }
-    
+
     public function down(): void
     {
         // begin drop index

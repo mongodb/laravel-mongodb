@@ -102,7 +102,7 @@ MongoDB indexes are data structures that improve query efficiency by reducing
 the number of documents needed to retrieve results of a query. Indexes such as
 geospatial indexes extend the ways in which you can query the data.
 
- To improve query performance by using an index, make sure the query is
+To improve query performance by using an index, make sure the query is
 covered by the index. To learn more about indexes and query optimization, see
 the following MongoDB server manual pages:
 
@@ -116,7 +116,7 @@ Create an Index
 ~~~~~~~~~~~~~~~
 
 To create indexes, call the ``create()`` method on the ``Schema`` facade
-in your migration file. Pass ``create()`` the collection name and a callback
+in your migration file. Pass it the collection name and a callback
 method with a ``MongoDB\Laravel\Schema\Blueprint`` parameter. Specify the
 index creation details on the ``Blueprint`` instance.
 
@@ -130,7 +130,6 @@ fields:
 Click the :guilabel:`VIEW OUTPUT` button to see the indexes created by running
 the migration, including the default index on the ``_id`` field:
 
-
 .. io-code-block::
 
    .. input:: /includes/schema-builder/flights_migration.php
@@ -139,26 +138,25 @@ the migration, including the default index on the ``_id`` field:
       :start-after: begin create index
       :end-before: end create index
 
-  .. output::
-     :language: json
-     :visible: false
+   .. output::
+      :language: json
+      :visible: false
 
-     [
-       { v: 2, key: { _id: 1 }, name: '_id_' },
-       { v: 2, key: { mission_type: 1 }, name: 'mission_type_1' },
-       {
-         v: 2,
-         key: { launch_location: 1, launch_date: -1 },
-         name: 'launch_location_1_launch_date_-1'
-       },
-       {
-         v: 2,
-         key: { mission_id: 1 },
-         name: 'unique_mission_id_idx',
-         unique: true
-       }
-     ]
-
+      [
+        { v: 2, key: { _id: 1 }, name: '_id_' },
+        { v: 2, key: { mission_type: 1 }, name: 'mission_type_1' },
+        {
+          v: 2,
+          key: { launch_location: 1, launch_date: -1 },
+          name: 'launch_location_1_launch_date_-1'
+        },
+        {
+          v: 2,
+          key: { mission_id: 1 },
+          name: 'unique_mission_id_idx',
+          unique: true
+        }
+      ]
 
 Specify Index Options
 ~~~~~~~~~~~~~~~~~~~~~
@@ -177,8 +175,8 @@ field:
    .. input:: /includes/schema-builder/passengers_migration.php
       :language: php
       :dedent:
-      :start-after: begin create index
-      :end-before: end create index
+      :start-after: begin index options
+      :end-before: end index options
 
    .. output:
       :language: json
@@ -287,7 +285,6 @@ field:
         }
       ]
 
-
 To learn more about these indexes, see :manual:`Index Properties </core/indexes/index-properties/>`
 in the MongoDB server manual.
 
@@ -303,12 +300,32 @@ method with a ``MongoDB\Laravel\Schema\Blueprint`` parameter. Specify the
 geospatial index creation details on the ``Blueprint`` instance.
 
 The following example migration creates a ``2d`` and ``2dsphere`` geospatial
-index on the ``spaceports`` collection:
+index on the ``spaceports`` collection. Click the :guilabel:`VIEW OUTPUT`
+button to see the indexes created by running the migration, including the
+default index on the ``_id`` field:
 
-.. literalinclude:: /includes/schema-builder/spaceports_migration.php
-   :language: php
-   :start-after: begin create geospatial index
-   :end-before: end create geospatial index
+.. io-code-block::
+   .. input:: /includes/schema-builder/spaceports_migration.php
+      :language: php
+      :dedent:
+      :start-after: begin create geospatial index
+      :end-before: end create geospatial index
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        { v: 2, key: { _id: 1 }, name: '_id_' },
+        {
+          v: 2,
+          key: { launchpad_location: '2dsphere' },
+          name: 'launchpad_location_2dsphere',
+          '2dsphereIndexVersion': 3
+        },
+        { v: 2, key: { runway_location: '2d' }, name: 'runway_location_2d' }
+      ]
+
 
 To learn more about geospatial indexes, see
 :manual:`Geospatial Indexes </core/indexes/index-types/index-geospatial/>` in
@@ -317,17 +334,16 @@ the MongoDB Server manual.
 Drop an Index
 ~~~~~~~~~~~~~
 
-You can drop indexes from a collection when you no longer need them.
+To drop indexes from a collection, call the ``table()`` method on the
+``Schema`` facade in your migration file. Pass it the table name and a
+callback method with a ``MongoDB\Laravel\Schema\Blueprint`` parameter.
+Call the ``dropIndex()`` method with the index name on the ``Blueprint``
+instance.
 
-When you no longer use an index, you can drop them
+.. note::
 
-When you drop a collection, MongoDB automatically drops all the indexes
-associated with it.
-
-To drop an index, call the ``table()`` method on the ``Schema`` facade in your
-migration file.
-
-you must reference it by name.
+   If you drop a collection, MongoDB automatically drops all the indexes
+   associated with it.
 
 The following example migration drops an index called ``unique_mission_id_idx``
 from the ``flights`` collection:
