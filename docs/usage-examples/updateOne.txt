@@ -4,8 +4,8 @@
 Update a Document
 =================
 
-You can update a document in a collection by calling the ``where()``, ``first()``,
-and ``update()`` methods on an Eloquent model or a query builder.
+You can update a document in a collection by chaining the ``where()``, ``first()``,
+and ``update()`` methods to an Eloquent model or a query builder.
 
 Pass a query filter to the ``where()`` method and call the ``first()`` method to match 
 only one document. Then, pass the document changes to the ``update()`` method to update
@@ -17,21 +17,21 @@ To learn more about updating data with {+odm-short+}, see the `Updates
 Example
 -------
 
-This example updates a document that matches a query filter from the ``movies``
+This usage example updates a document that matches a query filter from the ``movies``
 collection in the ``sample_mflix`` database. The example uses the ``Movie`` Eloquent model
 to represent the ``movies`` collection.
 
-This example uses a query filter that matches documents in which the value of the
-``title`` field is ``'Carol'``. Then, the ``first()`` method MongoDB retrieves the first document that
-matches the query filter, according to the sort order specified by the ``orderBy()`` method. The
-``update()`` method updates the value of the ``metacritic`` field from ``98`` to ``94``.
+This example performs the following actions:
 
-Select the :guilabel:`Controller File Code` tab and paste the code example into the
-``MovieController.php`` file. This tab contains the find operation code.
+- Defines a query filter to match documents in which the value of the ``title`` field
+  is ``'Carol'``
+- Calls the ``first()`` method to retrieve the first document that matches the query filter,
+  according to the sort order specified by the ``orderBy()`` method
+- Calls the ``update()`` method to update the value of the ``metacritic`` field from ``98``
+  to ``94``
 
-Then, select the :guilabel:`View File Code` tab and paste the code example into
-``browse_movies.blade.php``. This tab contains the view code to generate the expected output,
-which you can see by visiting http://127.0.0.1:8000/browse_movies. 
+To see the update operation code, select the :guilabel:`Controller File Code` tab. To see
+the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
 
 .. important:: 
 
@@ -95,3 +95,15 @@ which you can see by visiting http://127.0.0.1:8000/browse_movies.
             :visible: false
 
             Updated documents: 1
+
+To perform the update operation, start your Laravel application by running the following command:
+
+.. code-block:: bash
+
+   php artisan serve
+
+Then, open the following URL in your web browser to view the expected output:
+
+.. code-block:: none
+
+   http://127.0.0.1:8000/browse_movies
