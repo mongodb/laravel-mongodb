@@ -39,10 +39,10 @@ in {+odm-short+} and show examples of how to use them:
 
 .. note::
 
-   {+odm-short+} supports managing indexes and collection, but
+   {+odm-short+} supports managing indexes and collections, but
    excludes support for MongoDB JSON schemas for data validation. To learn
    more about JSON schema validation, see :manual:`Schema Validation </core/schema-validation/>`
-   in the MongoDB server manual.
+   in the {+server-docs-name+}.
 
 .. _laravel-eloquent-migrations:
 
@@ -131,12 +131,12 @@ Manage Indexes
 --------------
 
 MongoDB indexes are data structures that improve query efficiency by reducing
-the number of documents needed to retrieve query results. Indexes such as
-geospatial indexes extend how you can query the data.
+the number of documents needed to retrieve query results. Certain indexes, such
+as geospatial indexes, extend how you can query the data.
 
 To improve query performance by using an index, make sure the index covers
 the query.  To learn more about indexes and query optimization, see the
-following MongoDB server manual entries:
+following {+server-docs-name+} entries:
 
 - :manual:`Indexes </indexes>`
 - :manual:`Query Optimization </core/query-optimization/>`
@@ -194,8 +194,8 @@ Specify Index Options
 ~~~~~~~~~~~~~~~~~~~~~
 
 MongoDB index options determine how the indexes are used and stored.
-You can specify index options when calling an index creation method such
-as ``index()`` on a ``Blueprint`` instance.
+You can specify index options when calling an index creation method, such
+as ``index()``, on a ``Blueprint`` instance.
 
 The following migration code shows how to add a collation to an index as an
 index option. Click the :guilabel:`VIEW OUTPUT` button to see the indexes
@@ -236,7 +236,7 @@ field:
       ]
 
 To learn more about index options, see :manual:`Options for All Index Types </reference/method/db.collection.createIndex/#options-for-all-index-types>`
-in the MongoDB server manual.
+in the {+server-docs-name+}.
 
 Create Sparse, TTL, and Unique Indexes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -256,7 +256,7 @@ method with a ``MongoDB\Laravel\Schema\Blueprint`` parameter. Call the
 appropriate helper method on the ``Blueprint`` instance and pass the
 index creation details.
 
-The following migration code shows how to create a sparse and TTL index
+The following migration code shows how to create a sparse and a TTL index
 by using the index helpers. Click the :guilabel:`VIEW OUTPUT` button to see
 the indexes created by running the migration, including the default index on
 the ``_id`` field:
@@ -317,7 +317,7 @@ field:
       ]
 
 To learn more about these indexes, see :manual:`Index Properties </core/indexes/index-properties/>`
-in the MongoDB server manual.
+in the {+server-docs-name+}.
 
 Create a Geospatial Index
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -360,7 +360,7 @@ default index on the ``_id`` field:
 
 To learn more about geospatial indexes, see
 :manual:`Geospatial Indexes </core/indexes/index-types/index-geospatial/>` in
-the MongoDB Server manual.
+the {+server-docs-name+}.
 
 Drop an Index
 ~~~~~~~~~~~~~
