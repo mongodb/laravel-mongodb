@@ -7,7 +7,8 @@ namespace MongoDB\Laravel\Query;
 use Illuminate\Support\Collection as LaravelCollection;
 use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
-use MongoDB\Laravel\Collection;
+use MongoDB\Collection as MongoDBCollection;
+use MongoDB\Laravel\Collection as LaravelMongoDBCollection;
 
 use function array_replace;
 use function collect;
@@ -17,9 +18,9 @@ final class AggregationBuilder
     use FluentFactoryTrait;
 
     public function __construct(
-        array $pipeline,
-        private Collection $collection,
-        private array $options,
+        private MongoDBCollection|LaravelMongoDBCollection $collection,
+        array $pipeline = [],
+        private array $options = [],
     ) {
         $this->pipeline = $pipeline;
     }

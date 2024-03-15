@@ -290,7 +290,7 @@ class Builder extends BaseBuilder
             throw new BadMethodCallException('Aggregation builder requires package mongodb/builder 0.2+');
         }
 
-        $agg = new AggregationBuilder([], $this->collection, $this->options);
+        $agg = new AggregationBuilder($this->collection, [], $this->options);
 
         $wheres = $this->compileWheres();
 

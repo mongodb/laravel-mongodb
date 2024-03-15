@@ -11,10 +11,14 @@ use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Expression;
+use MongoDB\Builder\Pipeline;
 use MongoDB\Builder\Type\Sort;
+use MongoDB\Collection as MongoDBCollection;
 use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
+
+use function is_array;
 
 class AggregationBuilderTest extends TestCase
 {
@@ -48,28 +52,20 @@ class AggregationBuilderTest extends TestCase
             ->sort(year: Sort::Desc, name: Sort::Asc)
             ->unset('birthday');
 
-        // The encoder is used to convert the pipeline to a BSON document
-        $codec = new BuilderEncoder();
-        $json = Document::fromPHP([
-            'pipeline' => $codec->encode($pipeline->getPipeline()),
-        ])->toCanonicalExtendedJSON();
-
         // Compare with the expected pipeline
-        $expected = Document::fromPHP([
-            'pipeline' => [
-                ['$match' => ['name' => 'John Doe']],
-                ['$limit' => 10],
-                [
-                    '$addFields' => [
-                        'year' => ['$year' => ['date' => '$birthday']],
-                    ],
+        $expected = [
+            ['$match' => ['name' => 'John Doe']],
+            ['$limit' => 10],
+            [
+                '$addFields' => [
+                    'year' => ['$year' => ['date' => '$birthday']],
                 ],
-                ['$sort' => ['year' => -1, 'name' => 1]],
-                ['$unset' => ['birthday']],
             ],
-        ])->toCanonicalExtendedJSON();
+            ['$sort' => ['year' => -1, 'name' => 1]],
+            ['$unset' => ['birthday']],
+        ];
 
-        $this->assertJsonStringEqualsJsonString($expected, $json);
+        $this->assertSamePipeline($expected, $pipeline->getPipeline());
 
         // Execute the pipeline and validate the results
         $results = $pipeline->get();
@@ -80,5 +76,36 @@ class AggregationBuilderTest extends TestCase
         $this->assertSame('John Doe', $results->first()['name']);
         $this->assertIsInt($results->first()['year']);
         $this->assertArrayNotHasKey('birthday', $results->first());
+    }
+
+    public function testAddRawStage(): void
+    {
+        $collection = $this->createMock(MongoDBCollection::class);
+
+        $pipeline = new AggregationBuilder($collection);
+        $pipeline
+            ->addRawStage('$match', ['name' => 'John Doe'])
+            ->addRawStage('$limit', 10)
+            ->addRawStage('$replaceRoot', (object) ['newRoot' => '$$ROOT']);
+
+        $expected = [
+            ['$match' => ['name' => 'John Doe']],
+            ['$limit' => 10],
+            ['$replaceRoot' => ['$newRoot' => '$$ROOT']],
+        ];
+
+        $this->assertSamePipeline($expected, $pipeline->getPipeline());
+    }
+
+    private static function assertSamePipeline(array $expected, Pipeline $pipeline): void
+    {
+        $expected = Document::fromPHP(['pipeline' => $expected])->toCanonicalExtendedJSON();
+
+        $codec = new BuilderEncoder();
+        $actual = $codec->encode($pipeline);
+        // Normalize with BSON round-trip
+        $actual = Document::fromPHP(['pipeline' => $actual])->toCanonicalExtendedJSON();
+
+        self::assertJsonStringEqualsJsonString($expected, $actual);
     }
 }
