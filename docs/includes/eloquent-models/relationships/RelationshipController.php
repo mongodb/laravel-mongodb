@@ -8,7 +8,7 @@ use App\Models\Orbit;
 use App\Models\Planet;
 use Illuminate\Http\Request;
 
-class RelationshipController extends Controller
+class RelationshipController
 {
     private function oneToOne()
     {
@@ -112,7 +112,7 @@ class RelationshipController extends Controller
         $planet = Planet::first();
         $explorers = $planet->visitors;
 
-        $spaceExplorer = SpaceExplorer:first();
+        $spaceExplorer = SpaceExplorer::first();
         $explored = $spaceExplorer->planetsVisited;
         // end many-to-many dynamic property example
     }
