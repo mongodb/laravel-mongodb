@@ -18,8 +18,6 @@ use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
 
-use function is_array;
-
 class AggregationBuilderTest extends TestCase
 {
     public function tearDown(): void
@@ -91,7 +89,7 @@ class AggregationBuilderTest extends TestCase
         $expected = [
             ['$match' => ['name' => 'John Doe']],
             ['$limit' => 10],
-            ['$replaceRoot' => ['$newRoot' => '$$ROOT']],
+            ['$replaceRoot' => ['newRoot' => '$$ROOT']],
         ];
 
         $this->assertSamePipeline($expected, $pipeline->getPipeline());
