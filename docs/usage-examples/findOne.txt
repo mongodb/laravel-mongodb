@@ -4,14 +4,14 @@
 Find a Document
 ===============
 
-You can retrieve a single document from a collection by calling the ``where()`` and
+You can retrieve a single document from a collection by chaining the ``where()`` and
 ``first()`` methods on an Eloquent model or a query builder.
 
 Pass a query filter to the ``where()`` method and call the ``first()`` method to return
 one document in the collection that matches the filter. If multiple documents match the
 query filter, ``first()`` returns the first matching document according to the documents'
-:term:`natural order` in the database or according to the sort order specified by the
-``orderBy()`` method.
+:term:`natural order` in the database or according to the sort order that you can specify
+by using the ``orderBy()`` method.
 
 To learn more about retrieving documents, see the :ref:`laravel-fundamentals-retrieve` guide.
 
@@ -111,5 +111,8 @@ To perform the find operation, start your Laravel application by running the fol
 
    php artisan serve
 
-Then, open the URL http://127.0.0.1:8000/browse_movies in your web browser to view the expected
-output.
+Then, open the following URL in your web browser to view the expected output:
+
+.. code-block:: none
+
+   http://127.0.0.1:8000/browse_movies
