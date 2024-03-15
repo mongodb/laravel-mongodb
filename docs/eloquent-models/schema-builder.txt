@@ -71,8 +71,10 @@ following changes to perform the schema changes on your MongoDB database:
    Make sure you set ``DB_CONNECTION=mongodb`` in your ``.env`` configuration
    file so that PHP artisan performs the migration on the correct database.
 
-The following example migration creates a collection and index when you run
-the migration and drops them when you roll back the migration:
+The following example migration class contains the following methods:
+
+- ``up()``, which creates a collection and an index when you run the migration
+- ``down()``, which drops the collection and all the indexes on it when you roll back the migration
 
 .. literalinclude:: /includes/schema-builder/astronauts_migration.php
    :dedent:
