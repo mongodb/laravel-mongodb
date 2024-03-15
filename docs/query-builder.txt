@@ -707,7 +707,7 @@ to use the following MongoDB-specific query operations:
 - :ref:`Match documents that contain a particular data type in a field <laravel-query-builder-type>`
 - :ref:`Match documents that contain a computed modulo value <laravel-query-builder-mod>`
 - :ref:`Match documents that match a regular expression <laravel-query-builder-regex>`
-- :ref:`Run MongoDB operations <laravel-query-builder-whereRaw>`
+- :ref:`Run MongoDB Query API operations <laravel-query-builder-whereRaw>`
 - :ref:`Match documents that contain array elements <laravel-query-builder-elemMatch>`
 - :ref:`Specify a cursor timeout <laravel-query-builder-cursor-timeout>`
 - :ref:`Match locations by using geospatial searches <laravel-query-builder-geospatial>`
@@ -833,8 +833,8 @@ in the {+server-docs-name+}.
 
 .. _laravel-query-builder-whereRaw:
 
-Run MongoDB Operations Example
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Run MongoDB Query API Operations Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``whereRaw()``
 query builder method to run a query operation written by
