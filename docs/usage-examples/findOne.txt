@@ -7,9 +7,9 @@ Find a Document
 You can retrieve a single document from a collection by chaining the ``where()`` and
 ``first()`` methods on an Eloquent model or a query builder.
 
-Pass a query filter to the ``where()`` method and call the ``first()`` method to return
-one document in the collection that matches the filter. If multiple documents match the
-query filter, ``first()`` returns the first matching document according to the documents'
+Pass a query filter to the ``where()`` method and then call the ``first()`` method to
+return one document in the collection that matches the filter. If multiple documents match
+the query filter, ``first()`` returns the first matching document according to the documents'
 :term:`natural order` in the database or according to the sort order that you can specify
 by using the ``orderBy()`` method.
 
@@ -25,7 +25,7 @@ to represent the ``movies`` collection.
 This example performs the following actions:
 
 - Defines a query filter that matches documents in which the value of the ``directors`` field
-  is ``"Rob Reiner"``
+  includes ``'Rob Reiner'``
 - Retrieves the first document that matches the query filter, according to the sort order
   specified by the ``orderBy()`` method
 
@@ -42,8 +42,15 @@ the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
 
          .. input::
             :language: php
-            
-            class MovieController
+           
+            <?php
+
+            namespace App\Http\Controllers;
+
+            use App\Models\Movie;
+            use Illuminate\Http\Request;
+
+            class MovieController extends Controller
             {
                  public function show()
                  {
