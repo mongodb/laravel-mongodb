@@ -39,63 +39,59 @@ testability.
 {+odm-short+} aliases the ``DB`` method ``table()`` as ``collection()``. Chain
 methods to specify the command and any constraints. Then, chain the ``get()``
 method at the end to run them on the MongoDB collection. The following example
-shows the structure of a query builder call:
+shows the syntax of a query builder call:
 
 .. code-block:: php
 
    DB::collection('<collection name>')
-       // chain methods by using the -> operator
-      ->get();
+       // chain methods by using the "->" object operator
+       ->get();
 
+This guide shows examples of the following query builder operations:
 
-This guide shows how to perform the following query builder operations:
-
-- Retrieve Documents
-  - Where Method
-  - Logical Conditionals (orWhere, whereNot, and And)
-- Range and types (whereBetween, whereNull, whereDate)
-- Array operations (whereIn,
-- Nesting Logic Groups
+- Retrieve documents
+  - Logical conditionals (orWhere, whereNot, and And)
+  - Nested logic groups
+  - Range (whereBetween, whereDate)
+  - Check for ``null`` values (whereNull)
+  - Array operations (whereIn, ...)
+  - Pattern search (like)
+- Retrieve distinct values
 - Modify results: orderBy, groupBy, skip, projection, projection with pagination
-- Distinct
-- Like
-- Aggregations (is this in Query Builder?)
 - MongoDB query operators
-- MongoDB Raw Expressions
-- MongoDB Cursor Timeout
+  - General
+  - Array
+  - Geospatial
+  - Projection
+  - MongoDB cursor timeout
+  - MongoDB raw expressions
+- Aggregations (is this in Query Builder?)
 
-
-- Increment/ decrement (are these write?)
+- Write operations
+- MongoDB write operations
+  - Upsert
+  - Increment/ decrement
+  - Modify array values - push, pull
+  - Remove a field from a document - Unset
 
 MongoDB Write Operations
 
-- Upsert
 - Combine with Paginate (is this necessary?)
 - Modify arrays - push and pull
-- Remove a field from a document - unset
-
 
 Before You Get Started
 ----------------------
 
 To run the code examples in this guide, complete the
 :ref:`Quick Start <laravel-quick-start>` tutorial and paste the example code
-in the appropriate controller method.
+in the ``show()`` controller method.
 
-.. note::
+..
+   TODO: this requirement can be removed after https://jira.mongodb.org/browse/DOCSP-37770 is completed
 
-   The view in the Quick Start tutorial displays object results. However, the
-   Laravel query builder returns array results. Modify the view to use array
-   access syntax instead of object access syntax as shown in the following
-   example:.
-
-   .. code-block:: php
-
-      // Object access syntax
-      {{ $movie->imdb->votes }}
-
-      // Array access syntax
-      {{ $movie['imdb']['votes'] }}
+   Replace the `browse_movie.blade.php <https://github.com/mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movies.blade.php>`__
+   file, which accesses Eloquent ORM operation results, with the `browse_movies_array.blade.php <https://github.com/mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movies_array.blade.php>`__
+   file to access the ar
 
 .. _laravel-retrieve-query-builder:
 
@@ -105,6 +101,9 @@ Retrieve Documents
 To retrieve documents by using the query builder, import the
 ``Illuminate\Support\Facades\DB`` facade and compose your query by using
 Laravel's query builder syntax.
+
+This section includes examples on the following operators:
+TODO
 
 
 Where Method Example
@@ -165,6 +164,27 @@ the following logical conditional operations:
 - **AND** by chaining another ``where()`` function
 - **NOT** which uses the ``whereNot()`` function
 
+- Nesting logical conditionals:  year 2010
+
+
+OR - back to the future or year 1955
+.. io-code-block::
+
+   .. input:: /includes/query-builder/MovieController.php
+      :language: php
+      :dedent:
+      :start-after: begin query orWhere
+      :end-before: end query orWhere
+
+   .. output::
+      :language: none
+      :visible: false
+
+      
+
+AND - rating == 8.2  and duration < 30
+
+NOT - type != movie
 
 
 
@@ -177,7 +197,17 @@ documents from the ``movies`` collection that contain a ``imdb.votes`` field
 value of ``350``. Click the :guilabel:`{+code-output-label+}` button to see the
 results returned from the query:
 
-s (orWhere, whereNot, and And)
+- Range and types (whereBetween, whereNull, whereDate)
+
+whereBetween - rating 9 and 10
+whereNull runtime: null
+whereDate released between 2002 2005
+
+
+
+regex: 
+"The Lord of % ..."
+
 
 
 
