@@ -1876,6 +1876,12 @@ class BuilderTest extends TestCase
             'First argument of MongoDB\Laravel\Query\Builder::where must be a field path as "string". Got "float"',
             fn (Builder $builder) => $builder->where(2.3, '>', 1),
         ];
+
+        yield 'aggregate with columns' => [
+            InvalidArgumentException::class,
+            'Columns cannot be specified to create an aggregation builder. Add a $project stage instead.',
+            fn (Builder $builder) => $builder->aggregate(null, ['foo']),
+        ];
     }
 
     /** @dataProvider getEloquentMethodsNotSupported */
