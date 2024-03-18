@@ -11,6 +11,7 @@ use MongoDB\Driver\Cursor;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Internal\FindAndModifyCommandSubscriber;
+use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
 use MongoDB\Operation\FindOneAndUpdate;
 
@@ -57,7 +58,7 @@ class Builder extends EloquentBuilder
     ];
 
     /**
-     * @return ($function === null ? PipelineBuilder : self)
+     * @return ($function is null ? AggregationBuilder : self)
      *
      * @inheritdoc
      */
@@ -65,7 +66,7 @@ class Builder extends EloquentBuilder
     {
         $result = $this->toBase()->aggregate($function, $columns);
 
-        return $result ?? $this;
+        return $result ?: $this;
     }
 
     /** @inheritdoc */

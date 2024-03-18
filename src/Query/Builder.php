@@ -301,7 +301,7 @@ class Builder extends BaseBuilder
         // Distinct query
         if ($this->distinct) {
             // Return distinct results directly
-            $column = $columns[0] ?? '_id';
+            $column = $this->columns[0] ?? '_id';
 
             $agg->group(
                 _id: \MongoDB\Builder\Expression::fieldPath($column),
@@ -596,7 +596,7 @@ class Builder extends BaseBuilder
         return md5(serialize(array_values($key)));
     }
 
-    /** @return ($function === null ? PipelineBuilder : self) */
+    /** @return ($function is null ? AggregationBuilder : mixed) */
     public function aggregate($function = null, $columns = [])
     {
         if ($function === null) {
