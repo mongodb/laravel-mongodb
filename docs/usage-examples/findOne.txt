@@ -39,7 +39,7 @@ This example performs the following actions:
          ->orderBy('_id')
          ->first();
 
-      return view('browse_movies', [
+      return view('browse_movie', [
          'movie' => $movie
       ]);
 
@@ -54,9 +54,8 @@ This example performs the following actions:
       Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
       Marty DeBergi on what proves to be a fateful tour.
 
-To perform the find operation, add the code from the :github:`browse_movie.blade.php
-<mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movie.blade.php>` view file
-to your Laravel application. Then, start your application by running the following command:
+To perform the find operation, add the code example to the ``show()`` function in your
+``MovieController.php`` file. Then, start your application by running the following command:
 
 .. code-block:: bash
 
@@ -66,7 +65,7 @@ Open the following URL in your web browser to view the expected output:
 
 .. code-block:: none
 
-   http://127.0.0.1:8000/browse_movies
+   http://127.0.0.1:8000/browse_movie
 
 .. tip:: 
 
