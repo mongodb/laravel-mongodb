@@ -29,97 +29,46 @@ This example performs the following actions:
 - Retrieves the first document that matches the query filter, according to the sort order
   specified by the ``orderBy()`` method
 
-To see the find operation code, select the :guilabel:`Controller File Code` tab. To see
-the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
+.. io-code-block::
+   :copyable: true
 
-.. tabs::
+   .. input::
+      :language: php
+      
+      $movie = Movie::where('directors', 'Rob Reiner')
+         ->orderBy('_id')
+         ->first();
 
-   .. tab:: Controller File Code
-      :tabid: find-one-controller
+      return view('browse_movies', [
+         'movie' => $movie
+      ]);
 
-      .. io-code-block::
-         :copyable: true
+   .. output::
+      :language: console
+      :visible: false
 
-         .. input::
-            :language: php
-           
-            <?php
+      Title: This Is Spinal Tap
+      Year: 1984
+      Runtime: 82
+      Director: Rob Reiner
+      Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
+      Marty DeBergi on what proves to be a fateful tour.
 
-            namespace App\Http\Controllers;
-
-            use App\Models\Movie;
-            use Illuminate\Http\Request;
-
-            class MovieController extends Controller
-            {
-                 public function show()
-                 {
-                      $movie = Movie::where('directors', 'Rob Reiner')
-                          ->orderBy('_id')
-                          ->first();
-
-                      return view('browse_movies', [
-                          'movie' => $movie
-                      ]);
-                  }
-            }
-
-         .. output::
-            :language: console
-            :visible: false
-
-            Title: This Is Spinal Tap
-            Year: 1984
-            Runtime: 82
-            Director: Rob Reiner
-            Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
-            Marty DeBergi on what proves to be a fateful tour.
-
-   .. tab:: View File Code
-      :tabid: find-one-view
-
-      .. io-code-block::
-         :copyable: true
-
-         .. input::
-            :language: php
-            
-            <!DOCTYPE html>
-            <html>
-            <head>
-            <title>Browse Movies</title>
-            </head>
-            <body>
-            <h2>Movies</h2>
-            <p>
-                Title: {{ $movie->title }}<br>
-                Year: {{ $movie->year }}<br>
-                Runtime: {{ $movie->runtime }}<br>
-                Director: {{ $movie->directors[0] }}<br>
-                Plot: {{ $movie->plot }}<br>
-            </p>
-            </body>
-            </html>
-
-         .. output::
-            :language: console
-            :visible: false
-
-            Title: This Is Spinal Tap
-            Year: 1984
-            Runtime: 82
-            Director: Rob Reiner
-            Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
-            Marty DeBergi on what proves to be a fateful tour.
-
-To perform the find operation, start your Laravel application by running the following command:
+To perform the find operation, add the code from the :github:`browse_movie.blade.php
+<mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movie.blade.php>` view file
+to your Laravel application. Then, start your application by running the following command:
 
 .. code-block:: bash
 
    php artisan serve
 
-Then, open the following URL in your web browser to view the expected output:
+Open the following URL in your web browser to view the expected output:
 
 .. code-block:: none
 
    http://127.0.0.1:8000/browse_movies
+
+.. tip:: 
+
+   For more information on running the usage example, see the :ref:`run-usage-examples` section of the
+   Usage Example landing page.
