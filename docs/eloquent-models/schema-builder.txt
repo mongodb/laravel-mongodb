@@ -69,7 +69,7 @@ following changes to perform the schema changes on your MongoDB database:
 
    If your default database connection is set to anything other than your
    MongoDB database, update the following items so that PHP artisan performs
-   the migration on the correct database::
+   the migration on the correct database:
 
    - Specify ``mongodb`` in the ``$connection`` field of your migration class
    - Set ``DB_CONNECTION=mongodb`` in your ``.env`` configuration file
