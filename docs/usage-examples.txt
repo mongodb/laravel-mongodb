@@ -50,25 +50,37 @@ You can run the usage examples from the Laravel web application and MongoDB Atla
 you set up in the :ref:`laravel-quick-start` guide. After completing the Quick Start, ensure
 that your application meets the following requirements:
 
-- Configuration to use an Atlas cluster that contains the sample datasets
+- Configuration to use an Atlas cluster that contains the sample datasets.
 - ``Movie`` model configured to use the MongoDB database
 - ``Movie`` view that lists the results
 - HTTP and API controller endpoints for displaying and storing ``Movie`` data
+
+.. tip::
+
+   See the :ref:`laravel-quick-start-create-deployment` step of the Quick Start for instructions on
+   configuring an Atlas Cluster, and see the :ref:`laravel-quick-start-connect-to-mongodb` step for
+   instructions on connecting to the cluster.
+
+   See the :ref:`laravel-quick-start-view-data` step of the Quick Start for instructions on creating
+   the model, view, and controller endpoints.
 
 .. _run-usage-examples:
 
 Run the Examples
 ~~~~~~~~~~~~~~~~
 
-Each Usage Example page features example code in the :guilabel:`Controller File Code` and
-:guilabel:`View File Code` tabs that you can copy and paste into your Laravel application.
+Each Usage Example page features controller code that you can copy and paste into your Laravel application.
 
 Unless otherwise specified, you can add Usage Example sample code to your application by performing
 the following actions:
 
-- Add the code from the :guilabel:`Controller File Code` tab to your ``MovieController.php`` file in the
+- Add the code example to the ``show()`` method in your ``MovieController.php`` file, located in the
   ``app/Http/Controllers`` directory
-- Add the code from the :guilabel:`View File Code` to your ``browse_movies.blade.php`` file in the
-  ``resources/views`` directory.
+- Add the code from one of the following view files to your ``browse_movies.blade.php`` file, located in
+  the ``resources/views`` directory:
 
-Follow the instructions on the Usage Example page to run the code and view the expected output.
+   - :github:`View one document <mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movie.blade.php>`
+   - :github:`View multiple documents <mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movies.blade.php>`
+
+Each Usage Example page specifies which view file to use for the operation and includes instructions
+on how to run the code and view the expected output.
