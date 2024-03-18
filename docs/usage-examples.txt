@@ -28,7 +28,7 @@ operations. Each usage example includes the following components:
 - Example view code that renders the result
 - Output displayed by the view
 
-How to Run the Usage Examples
+How to Use the Usage Examples
 -----------------------------
 
 To learn how to set up your application and run the usage examples, see the following
