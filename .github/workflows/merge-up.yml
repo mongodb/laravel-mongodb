@@ -27,3 +27,4 @@ jobs:
         uses: alcaeus/automatic-merge-up-action@main
         with:
           ref: ${{ github.ref_name }}
+          branchNamePattern: '<major>.<minor>'
