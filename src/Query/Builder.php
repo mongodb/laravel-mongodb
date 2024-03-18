@@ -600,7 +600,7 @@ class Builder extends BaseBuilder
     public function aggregate($function = null, $columns = [])
     {
         if ($function === null) {
-            if ($columns !== []) {
+            if ($columns !== [] && $columns !== ['*']) {
                 throw new InvalidArgumentException('Columns cannot be specified to create an aggregation builder. Add a $project stage instead.');
             }
 

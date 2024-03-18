@@ -95,6 +95,49 @@ class AggregationBuilderTest extends TestCase
         $this->assertSamePipeline($expected, $pipeline->getPipeline());
     }
 
+    public function testDistinct(): void
+    {
+        User::insert([
+            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1991-01-01'))],
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1989-01-01'))],
+            ['name' => 'John Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1990-01-01'))],
+        ]);
+
+        // Create the aggregation pipeline from the query builder
+        $pipeline = User::orderBy('name')
+            ->distinct('name')
+            ->select('name', 'birthday')
+            ->aggregate();
+
+        $expected = [
+            [
+                '$group' => [
+                    '_id' => '$name',
+                    '_document' => ['$first' => '$$ROOT'],
+                ],
+            ],
+            [
+                '$replaceRoot' => ['newRoot' => '$_document'],
+            ],
+            [
+                '$sort' => ['name' => 1],
+            ],
+            [
+                '$project' => ['birthday' => true, 'name' => true],
+            ],
+        ];
+
+        $this->assertSamePipeline($expected, $pipeline->getPipeline());
+
+        $results = $pipeline->get();
+
+        $this->assertCount(2, $results);
+        $this->assertSame('Jane Doe', $results[0]['name']);
+        $this->assertSame('1991-01-01', $results[0]['birthday']->toDateTime()->format('Y-m-d'));
+        $this->assertSame('John Doe', $results[1]['name']);
+        $this->assertSame('1989-01-01', $results[1]['birthday']->toDateTime()->format('Y-m-d'));
+    }
+
     private static function assertSamePipeline(array $expected, Pipeline $pipeline): void
     {
         $expected = Document::fromPHP(['pipeline' => $expected])->toCanonicalExtendedJSON();
