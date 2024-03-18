@@ -1,0 +1,30 @@
+name: Merge up
+
+on:
+  push:
+    branches:
+      - "[0-9]+.[0-9]+"
+
+env:
+  GH_TOKEN: ${{ secrets.MERGE_UP_TOKEN }}
+
+jobs:
+  merge-up:
+    name: Create merge up pull request
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        id: checkout
+        uses: actions/checkout@v4
+        with:
+          # fetch-depth 0 is required to fetch all branches, not just the branch being built
+          fetch-depth: 0
+          token: ${{ secrets.MERGE_UP_TOKEN }}
+
+      - name: Create pull request
+        id: create-pull-request
+        uses: alcaeus/automatic-merge-up-action@main
+        with:
+          ref: ${{ github.ref_name }}
+          branchNamePattern: '<major>.<minor>'
