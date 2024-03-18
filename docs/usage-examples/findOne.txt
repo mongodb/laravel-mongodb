@@ -39,8 +39,8 @@ This example performs the following actions:
          ->orderBy('_id')
          ->first();
 
-      return view('browse_movie', [
-         'movie' => $movie
+      return view('browse_movies', [
+         'movie' => $movies
       ]);
 
    .. output::
@@ -65,7 +65,7 @@ Open the following URL in your web browser to view the expected output:
 
 .. code-block:: none
 
-   http://127.0.0.1:8000/browse_movie
+   http://127.0.0.1:8000/browse_movies
 
 .. tip:: 
 
