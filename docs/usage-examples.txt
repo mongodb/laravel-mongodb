@@ -35,7 +35,7 @@ To learn how to set up your application and run the usage examples, see the foll
 sections:
 
 - :ref:`before-start`
-- :ref:`run-usage-examples`
+- :ref:`add-usage-examples`
 
 .. _before-start:
 
@@ -64,23 +64,15 @@ that your application meets the following requirements:
    See the :ref:`laravel-quick-start-view-data` step of the Quick Start for instructions on creating
    the model, view, and controller endpoints.
 
-.. _run-usage-examples:
+.. _add-usage-examples:
 
-Run the Examples
-~~~~~~~~~~~~~~~~
+Add the Examples to Your Application
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Each Usage Example page features controller code that you can copy and paste into your Laravel application.
 
-Unless otherwise specified, you can add Usage Example sample code to your application by performing
-the following actions:
+You can add Usage Example sample code to the ``MovieController.php`` file, located in the ``app/Http/Controllers``
+directory. Each Usage Example page specifies the following information:
 
-- Add the code example to the ``show()`` method in your ``MovieController.php`` file, located in the
-  ``app/Http/Controllers`` directory
-- Add the code from one of the following view files to your ``browse_movies.blade.php`` file, located in
-  the ``resources/views`` directory:
-
-   - :github:`View one document <mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movie.blade.php>`
-   - :github:`View multiple documents <mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movies.blade.php>`
-
-Each Usage Example page specifies which view file to use for the operation and includes instructions
-on how to run the code and view the expected output.
+- The ``MovieController.php`` method into which you can paste the code
+- How to run the operation and view the expected output
