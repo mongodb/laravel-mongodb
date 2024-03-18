@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    protected $connect = 'mongodb';
+    protected $connection = 'mongodb';
 
     public function up(): void
     {

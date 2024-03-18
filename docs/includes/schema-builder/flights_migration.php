@@ -8,7 +8,7 @@ use MongoDB\Laravel\Schema\Blueprint;
 
 return new class extends Migration
 {
-    protected $connect = 'mongodb';
+    protected $connection = 'mongodb';
 
     public function up(): void
     {
@@ -16,7 +16,7 @@ return new class extends Migration
         Schema::create('flights', function (Blueprint $collection) {
             $collection->index('mission_type');
             $collection->index(['launch_location' => 1, 'launch_date' => -1]);
-            $collection->unique('mission_id', null, null, ['name' => 'unique_mission_id_idx']);
+            $collection->unique('mission_id', options: ['name' => 'unique_mission_id_idx']);
         });
       // end create index
     }

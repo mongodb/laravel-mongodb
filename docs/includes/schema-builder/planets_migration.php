@@ -8,7 +8,7 @@ use MongoDB\Laravel\Schema\Blueprint;
 
 return new class extends Migration
 {
-    protected $connect = 'mongodb';
+    protected $connection = 'mongodb';
 
     public function up(): void
     {

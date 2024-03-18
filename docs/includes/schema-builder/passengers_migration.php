@@ -8,15 +8,19 @@ use MongoDB\Laravel\Schema\Blueprint;
 
 return new class extends Migration
 {
-    protected $connect = 'mongodb';
+    protected $connection = 'mongodb';
 
     public function up(): void
     {
         // begin index options
         Schema::create('passengers', function (Blueprint $collection) {
-            $collection->index('last_name', 'passengers_collation_idx', null, [
-                'collation' => [ 'locale' => 'de@collation=phonebook', 'numericOrdering' => true ],
-            ]);
+            $collection->index(
+                'last_name',
+                name: 'passengers_collation_idx',
+                options: [
+                    'collation' => [ 'locale' => 'de@collation=phonebook', 'numericOrdering' => true ],
+                ],
+            );
         });
         // end index options
     }
