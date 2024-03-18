@@ -69,5 +69,5 @@ Open the following URL in your web browser to view the expected output:
 
 .. tip:: 
 
-   For more information on running the usage example, see the :ref:`Run the Example <run-usage-examples>` section
+   For more information on running the usage example, see the :ref:`add-usage-examples` section
    of the Usage Example landing page.
