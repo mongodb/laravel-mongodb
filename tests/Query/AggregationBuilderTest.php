@@ -6,6 +6,8 @@ namespace MongoDB\Laravel\Tests\Query;
 
 use DateTimeImmutable;
 use Illuminate\Support\Collection;
+use Illuminate\Support\LazyCollection;
+use InvalidArgumentException;
 use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
@@ -23,9 +25,11 @@ class AggregationBuilderTest extends TestCase
     public function tearDown(): void
     {
         User::truncate();
+
+        parent::tearDown();
     }
 
-    public function testCreateFromQueryBuilder(): void
+    public function testCreateAggregationBuilder(): void
     {
         User::insert([
             ['name' => 'John Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1989-01-01'))],
@@ -33,14 +37,13 @@ class AggregationBuilderTest extends TestCase
         ]);
 
         // Create the aggregation pipeline from the query builder
-        $pipeline = User::where('name', 'John Doe')
-            ->limit(10)
-            ->offset(0)
-            ->aggregate();
+        $pipeline = User::aggregate();
 
         $this->assertInstanceOf(AggregationBuilder::class, $pipeline);
 
         $pipeline
+            ->match(name: 'John Doe')
+            ->limit(10)
             ->addFields(
                 // Requires MongoDB 5.0+
                 year: Expression::year(
@@ -67,13 +70,22 @@ class AggregationBuilderTest extends TestCase
 
         // Execute the pipeline and validate the results
         $results = $pipeline->get();
-
         $this->assertInstanceOf(Collection::class, $results);
         $this->assertCount(1, $results);
         $this->assertInstanceOf(ObjectId::class, $results->first()['_id']);
         $this->assertSame('John Doe', $results->first()['name']);
         $this->assertIsInt($results->first()['year']);
         $this->assertArrayNotHasKey('birthday', $results->first());
+
+        // Execute the pipeline and validate the results in a lazy collection
+        $results = $pipeline->cursor();
+        $this->assertInstanceOf(LazyCollection::class, $results);
+
+        // Execute the pipeline and return the first result
+        $result = $pipeline->first();
+        $this->assertIsArray($result);
+        $this->assertInstanceOf(ObjectId::class, $result['_id']);
+        $this->assertSame('John Doe', $result['name']);
     }
 
     public function testAddRawStage(): void
@@ -95,47 +107,15 @@ class AggregationBuilderTest extends TestCase
         $this->assertSamePipeline($expected, $pipeline->getPipeline());
     }
 
-    public function testDistinct(): void
+    public function testAddRawStageInvalid(): void
     {
-        User::insert([
-            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1991-01-01'))],
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1989-01-01'))],
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1990-01-01'))],
-        ]);
+        $collection = $this->createMock(MongoDBCollection::class);
 
-        // Create the aggregation pipeline from the query builder
-        $pipeline = User::orderBy('name')
-            ->distinct('name')
-            ->select('name', 'birthday')
-            ->aggregate();
+        $pipeline = new AggregationBuilder($collection);
 
-        $expected = [
-            [
-                '$group' => [
-                    '_id' => '$name',
-                    '_document' => ['$first' => '$$ROOT'],
-                ],
-            ],
-            [
-                '$replaceRoot' => ['newRoot' => '$_document'],
-            ],
-            [
-                '$sort' => ['name' => 1],
-            ],
-            [
-                '$project' => ['birthday' => true, 'name' => true],
-            ],
-        ];
-
-        $this->assertSamePipeline($expected, $pipeline->getPipeline());
-
-        $results = $pipeline->get();
-
-        $this->assertCount(2, $results);
-        $this->assertSame('Jane Doe', $results[0]['name']);
-        $this->assertSame('1991-01-01', $results[0]['birthday']->toDateTime()->format('Y-m-d'));
-        $this->assertSame('John Doe', $results[1]['name']);
-        $this->assertSame('1989-01-01', $results[1]['birthday']->toDateTime()->format('Y-m-d'));
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The stage name "match" is invalid. It must start with a "$" sign.');
+        $pipeline->addRawStage('match', ['name' => 'John Doe']);
     }
 
     private static function assertSamePipeline(array $expected, Pipeline $pipeline): void

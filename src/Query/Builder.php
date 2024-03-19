@@ -21,10 +21,7 @@ use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Builder\Accumulator;
-use MongoDB\Builder\Expression\FieldPath;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
-use MongoDB\Builder\Variable;
 use MongoDB\Driver\Cursor;
 use Override;
 use RuntimeException;
@@ -282,59 +279,6 @@ class Builder extends BaseBuilder
         dump($this->toMql(), ...$args);
 
         return $this;
-    }
-
-    private function getAggregationBuilder(): AggregationBuilder
-    {
-        if (! trait_exists(FluentFactoryTrait::class)) {
-            throw new BadMethodCallException('Aggregation builder requires package mongodb/builder 0.2+');
-        }
-
-        $agg = new AggregationBuilder($this->collection, [], $this->options);
-
-        $wheres = $this->compileWheres();
-
-        if (count($wheres)) {
-            $agg->match(...$wheres);
-        }
-
-        // Distinct query
-        if ($this->distinct) {
-            // Return distinct results directly
-            $column = $this->columns[0] ?? '_id';
-
-            $agg->group(
-                _id: \MongoDB\Builder\Expression::fieldPath($column),
-                _document: Accumulator::first(Variable::root()),
-            );
-            $agg->replaceRoot(
-                newRoot: new FieldPath('_document'),
-            );
-        }
-
-        if ($this->orders) {
-            $agg->sort(...$this->orders);
-        }
-
-        if ($this->offset) {
-            $agg->skip($this->offset);
-        }
-
-        if ($this->limit) {
-            $agg->limit($this->limit);
-        }
-
-        // Normal query
-        // Add custom projections.
-        if ($this->projections || $this->columns) {
-            $columns = in_array('*', $this->columns) ? [] : $this->columns;
-            $projection = array_fill_keys($columns, true) + $this->projections;
-            if ($projection) {
-                $agg->project(...$projection);
-            }
-        }
-
-        return $agg;
     }
 
     /**
@@ -597,14 +541,23 @@ class Builder extends BaseBuilder
     }
 
     /** @return ($function is null ? AggregationBuilder : mixed) */
-    public function aggregate($function = null, $columns = [])
+    public function aggregate($function = null, $columns = ['*'])
     {
         if ($function === null) {
+            if (! trait_exists(FluentFactoryTrait::class)) {
+                // This error will be unreachable when the mongodb/builder package will be merged into mongodb/mongodb
+                throw new BadMethodCallException('Aggregation builder requires package mongodb/builder 0.2+');
+            }
+
             if ($columns !== [] && $columns !== ['*']) {
                 throw new InvalidArgumentException('Columns cannot be specified to create an aggregation builder. Add a $project stage instead.');
             }
 
-            return $this->getAggregationBuilder();
+            if ($this->wheres) {
+                throw new BadMethodCallException('Aggregation builder does not support previous query-builder instructions. Use a $match stage instead.');
+            }
+
+            return new AggregationBuilder($this->collection, $this->options);
         }
 
         $this->aggregate = [
