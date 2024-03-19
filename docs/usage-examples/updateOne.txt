@@ -25,85 +25,74 @@ This example performs the following actions:
 
 - Defines a query filter to match documents in which the value of the ``title`` field
   is ``'Carol'``
-- Calls the ``first()`` method to retrieve the first document that matches the query filter,
-  according to the sort order specified by the ``orderBy()`` method
-- Calls the ``update()`` method to update the value of the ``metacritic`` field from ``98``
-  to ``94``
-
-To see the update operation code, select the :guilabel:`Controller File Code` tab. To see
-the HTML code that specifies a view, select the :guilabel:`View File Code` tab.
+- Calls the ``first()`` method to match only one document
+- Calls the ``update()`` method to update the value of the ``imdb`` field
 
 .. important:: 
 
-   Before running the update operation, you must add the following statement to the 
-   ``Movie`` class in your ``Movie.php`` file:
+   Before running the usage example, you must specify the changes to the ``imdb`` field in
+   the ``movie.json`` file, created in the :ref:`laravel-quick-start-write-data` step of
+   the Quick Start. Replace the contents of ``movie.json`` with the following data:
 
-   .. code-block:: php
-   
-      protected $fillable = array('metacritic');
+   .. code-block:: bash
 
-   The ``$fillable`` property specifies which document fields are mass-assignable. To learn
-   more about ``$fillable``, see the `Mass Assignment <https://laravel.com/docs/4.2/eloquent#mass-assignment>`__
-   section of the Laravel documentation.
-   
-.. tabs::
-
-   .. tab:: Controller File Code
-      :tabid: find-one-controller
-
-      .. code-block:: php
-
-         class MovieController
-         {
-             public function show()
-             {
-                $update = Movie::where('title', 'Carol')
-                    ->orderBy('_id')
-                    ->first()
-                    ->update(['metacritic' => 94]);
-
-                return view('browse_movies', [
-                    'updates' => $update
-                ]);
-             }
+      {
+         "imdb": {
+            "rating": 7.3,
+            "votes": 142000
          }
+      }
 
-   .. tab:: View File Code
-      :tabid: find-one-view
+.. io-code-block::
+   :copyable: true
 
-      .. io-code-block::
-         :copyable: true
+   .. input::
+      :language: php
 
-         .. input::
-            :language: php
-            
-            <!DOCTYPE html>
-            <html>
-            <head>
-            <title>Browse Movies</title>
-            </head>
-            <body>
-            <h2>Movies</h2>
-            <p>
-                Updated documents: {{ $updates }}<br>
-            </p>
-            </body>
-            </html>
+      public function store(Request $request)
+      {
+         $movie = Movie::where('title', 'Carol')
+                 ->first()
+                 ->update(['imdb' => $request->imdb]); 
+         $movie->save();
+      }
+      
+      public function show()
+      {
+         return view('browse_movies', [
+               'movies' => Movie::where('title', 'Carol')
+                  ->get()
+            ]);
+      }
 
-         .. output::
-            :language: console
-            :visible: false
+   .. output::
+      :language: console
+      :visible: false
 
-            Updated documents: 1
+      Title: Carol
+      Year: 2015
+      Runtime: 118
+      IMDB Rating: 7.3
+      IMDB Votes: 142000
+      Plot: Set in 1950s New York, a department-store clerk who dreams of a better life falls for an older, married woman.
 
-To perform the update operation, start your Laravel application by running the following command:
+To perform the update operation, edit the ``store()`` and ``show()`` functions in your
+``MovieController.php`` file to match the preceding code. Then, start your application
+by running the following command:
 
 .. code-block:: bash
 
    php artisan serve
 
-Then, open the following URL in your web browser to view the expected output:
+Send the JSON payload to the endpoint as a ``POST`` request by running the following command:
+
+.. code-block:: bash
+
+   curl -H "Content-Type: application/json" --data @movie.json http://localhost:8000/api/movies
+
+Open the following URL in your web browser to view the modified document:
 
 .. code-block:: none
 
    http://127.0.0.1:8000/browse_movies
+
