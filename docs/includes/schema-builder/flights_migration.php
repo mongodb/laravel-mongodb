@@ -12,13 +12,13 @@ return new class extends Migration
 
     public function up(): void
     {
-      // begin create index
+        // begin create index
         Schema::create('flights', function (Blueprint $collection) {
             $collection->index('mission_type');
             $collection->index(['launch_location' => 1, 'launch_date' => -1]);
             $collection->unique('mission_id', options: ['name' => 'unique_mission_id_idx']);
         });
-      // end create index
+        // end create index
     }
 
     public function down(): void
