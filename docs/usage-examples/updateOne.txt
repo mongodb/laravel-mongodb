@@ -61,8 +61,8 @@ This example performs the following actions:
       {
          return view('browse_movies', [
                'movies' => Movie::where('title', 'Carol')
-                  ->get()
-            ]);
+                           ->get()
+         ]);
       }
 
    .. output::
@@ -74,7 +74,8 @@ This example performs the following actions:
       Runtime: 118
       IMDB Rating: 7.3
       IMDB Votes: 142000
-      Plot: Set in 1950s New York, a department-store clerk who dreams of a better life falls for an older, married woman.
+      Plot: Set in 1950s New York, a department-store clerk who dreams of a better life falls
+      for an older, married woman.
 
 To perform the update operation, edit the ``store()`` and ``show()`` functions in your
 ``MovieController.php`` file to match the preceding code. Then, start your application
@@ -96,3 +97,7 @@ Open the following URL in your web browser to view the modified document:
 
    http://127.0.0.1:8000/browse_movies
 
+.. tip:: 
+
+   For more information on adding the usage example to your application, see the
+   :ref:`add-usage-examples` section of the Usage Example landing page.
