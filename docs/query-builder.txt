@@ -47,37 +47,16 @@ shows the syntax of a query builder call:
        // chain methods by using the "->" object operator
        ->get();
 
-This guide shows examples of the following query builder operations:
+This guide shows examples of the following types of query builder operations:
 
-- Retrieve documents
-  - Logical conditionals (orWhere, whereNot, and And)
-  - Nested logic groups
-  - Range (whereBetween, whereDate)
-  - Check for ``null`` values (whereNull)
-  - Array operations (whereIn, ...)
-  - Pattern search (like)
-- Retrieve distinct values
-- Modify results: orderBy, groupBy, skip, projection, projection with pagination
-- MongoDB query operators
-  - General
-  - Array
-  - Geospatial
-  - Projection
-  - MongoDB cursor timeout
-  - MongoDB raw expressions
-- Aggregations (is this in Query Builder?)
+- :ref:`laravel-retrieve-query-builder`
+- :ref:`laravel-modify-results-query-builder`
+- :ref:`laravel-mongodb-read-query-builder`
+- :ref:`laravel-mongodb-write-query-builder`
 
 - Write operations
-- MongoDB write operations
-  - Upsert
-  - Increment/ decrement
-  - Modify array values - push, pull
-  - Remove a field from a document - Unset
+  - link to
 
-MongoDB Write Operations
-
-- Combine with Paginate (is this necessary?)
-- Modify arrays - push and pull
 
 Before You Get Started
 ----------------------
@@ -99,12 +78,20 @@ Retrieve Documents
 ------------------
 
 To retrieve documents by using the query builder, import the
-``Illuminate\Support\Facades\DB`` facade and compose your query by using
-Laravel's query builder syntax.
+``Illuminate\Support\Facades\DB`` facade and compose your query.
 
-This section includes examples on the following operators:
-TODO
+This section includes query builder examples for the following operator
+categories:
 
+- Where (TODO: reword this)
+- Logical conditionals (orWhere, whereNot, and And)
+- Nested logic groups
+- Range (whereBetween, whereDate)
+- Check for ``null`` values (whereNull)
+- Array operations (whereIn, ...)
+- Pattern search (like)
+- Retrieve distinct values
+- Aggregations
 
 Where Method Example
 ~~~~~~~~~~~~~~~~~~~~
@@ -140,19 +127,14 @@ results returned from the query:
       IMDB Votes: 1521105
       Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.
 
-      Title: The Shawshank Redemption
-      Year: 1994
-      Runtime: 142
-      IMDB Rating: 9.3
-      IMDB Votes: 1513145
-      Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.
-
       Title: The Real Miyagi
       Year: 2015
       Runtime: 90
       IMDB Rating: 9.3
       IMDB Votes: 41
       Plot: The life of the greatest karate master of a generation.
+
+
 
 Logical Conditional Operation Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -163,52 +145,389 @@ the following logical conditional operations:
 - **OR** by chaining the ``orWhere()`` function
 - **AND** by chaining another ``where()`` function
 - **NOT** which uses the ``whereNot()`` function
+- Nested logic groups
 
 - Nesting logical conditionals:  year 2010
 
 
 OR - back to the future or year 1955
+
+ .. literalinclude:: /includes/query-builder/MovieController.php
+    :language: php
+    :dedent:
+    :start-after: begin query orWhere
+    :end-before: end query orWhere
+
+AND - rating > 8.5  and year < 1940
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query andWhere
+   :end-before: end query andWhere
+
+
+NOT - imdb.rating not > 2 (or <= 2)
+
+ .. literalinclude:: /includes/query-builder/MovieController.php
+    :language: php
+    :dedent:
+    :start-after: begin query whereNot
+    :end-before: end query whereNot
+
+
+
+Nested logical groups
+year rating is > 8.5 and (year is 1986 or 1996)
+
+ .. literalinclude:: /includes/query-builder/MovieController.php
+    :language: php
+    :dedent:
+    :start-after: begin query nestedLogical
+    :end-before: end query nestedLogical
+
+
+- Range and types (whereBetween, whereNull, whereIn, whereDate)
+
+whereBetween - rating 9 and 10
 .. io-code-block::
 
    .. input:: /includes/query-builder/MovieController.php
       :language: php
       :dedent:
-      :start-after: begin query orWhere
-      :end-before: end query orWhere
+      :start-after: begin query whereBetween
+      :end-before: end query whereBetween
 
    .. output::
       :language: none
       :visible: false
 
-      
+      Title: Hollywood
+      Year: 1980
+      Runtime: 60
+      IMDB Rating: 9.1
+      IMDB Votes: 511
+      Plot: The definitive documentary about the American silent film industry.
 
-AND - rating == 8.2  and duration < 30
+      Title: Cosmos
+      Year: 1980
+      Runtime: 60
+      IMDB Rating: 9.3
+      IMDB Votes: 17174
+      Plot: Astronomer Carl Sagan leads us on an engaging guided tour of the various elements and cosmological theories of the universe.
 
-NOT - type != movie
+      ...
 
 
-
-The following example shows how to use the following logical conditional
-operations:
-
-
-``where()`` method retrieve
-documents from the ``movies`` collection that contain a ``imdb.votes`` field
-value of ``350``. Click the :guilabel:`{+code-output-label+}` button to see the
-results returned from the query:
-
-- Range and types (whereBetween, whereNull, whereDate)
-
-whereBetween - rating 9 and 10
 whereNull runtime: null
-whereDate released between 2002 2005
+
+.. io-code-block::
+
+   .. input:: /includes/query-builder/MovieController.php
+      :language: php
+      :dedent:
+      :start-after: begin query whereNull
+      :end-before: end query whereNull
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: The Secret of the Magic Gourd
+      Year: 2007
+      Runtime:
+      IMDB Rating: 5.6
+      IMDB Votes: 340
+      Plot: A boy learns the meaning of work after a magic gourd grants him anything he wants.
+
+      Title: Jekyll
+      Year: 2007
+      Runtime:
+      IMDB Rating: 8.2
+      IMDB Votes: 6248
+      Plot: London, 2007. Tom Jackman is the only living descendent of Dr. Jekyll and Mr. Hyde. He has made a deal with his dark side: a body share. What Mr. Hyde doesn't know is that Tom has a family....
 
 
 
-regex: 
-"The Lord of % ..."
+whereIn
+[Toy Story, Shrek 2, Johny English]
+
+.. io-code-block::
+
+   .. input:: /includes/query-builder/MovieController.php
+      :language: php
+      :dedent:
+      :start-after: begin query whereIn
+      :end-before: end query whereIn
+
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: Toy Story
+      Year: 1995
+      Runtime: 81
+      IMDB Rating: 8.3
+      IMDB Votes: 542659
+      Plot: A cowboy doll is profoundly threatened and jealous when a new spaceman figure supplants him as top toy in a boy's room.
+
+      Title: Johnny English
+      Year: 2003
+      Runtime: 87
+      IMDB Rating: 6.1
+      IMDB Votes: 107074
+      Plot: After a sudden attack on the MI5, Johnny English, Britain's most confident yet unintelligent spy, becomes Britain's only spy.
+
+      Title: Shrek 2
+      Year: 2004
+      Runtime: 93
+      IMDB Rating: 7.2
+      IMDB Votes: 283852
+      Plot: Princess Fiona's parents invite her and Shrek to dinner to celebrate her marriage. If only they knew the newlyweds were both ogres.
+
+
+whereDate released on Jan 15, 2010
+
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereDate
+   :end-before: end query whereDate
 
 
 
+- Pattern search (like)
+%spider%man%
 
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query like
+   :end-before: end query like
+
+Matches results such as "Spider-Man", "Spider-Man 2", and "Kiss of the Spider Woman"
+
+- Retrieve distinct values
+
+distinct: year
+
+TODO: figure out how to print in the view
+
+distinct where: imdb.rating > 9 , distinct year
+
+TODO: figure out how to print in the view
+
+groupBy - TODO
+
+- Aggregations (is this in Query Builder?)
+TODO
+
+.. _laravel-modify-results-query-builder:
+
+Modify Results
+--------------
+
+Modify results: orderBy,  skip, projection, projection with pagination
+
+orderby
+
+back to the future% rating descending
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query orderBy
+   :end-before: end query orderBy
+
+Title: Back to the Future
+Year: 1985
+Runtime: 116
+IMDB Rating: 8.5
+IMDB Votes: 636511
+Plot: A young man is accidentally sent 30 years into the past in a time-traveling DeLorean invented by his friend, Dr. Emmett Brown, and must make sure his high-school-age parents unite in order to save his own existence.
+Title: Back to the Future Part II
+Year: 1989
+Runtime: 108
+IMDB Rating: 7.8
+IMDB Votes: 292539
+Plot: After visiting 2015, Marty McFly must repeat his visit to 1955 to prevent disastrous changes to 1985... without interfering with his first trip.
+Title: Back to the Future Part III
+Year: 1990
+Runtime: 118
+IMDB Rating: 7.4
+IMDB Votes: 242390
+Plot: Enjoying a peaceable existence in 1885, Doctor Emmet Brown is about to be killed by Buford "Mad Dog" Tannen. Marty McFly travels back in time to save his friend.
+
+skip
+like star trek% skip 7
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query skip
+   :end-before: end query skip
+
+
+
+To learn more about pagination, see
+`Paginating Query Builder Results <https://laravel.com/docs/{+mongodb-laravel-gh+}/pagination#paginating-query-builder-results>`__
+in the Laravel documentation.
+
+
+.. _laravel-mongodb-read-query-builder:
+
+MongoDB Query Operators
+-----------------------
+
+- General - Exists, All, Size, Type, Mod
+
+Exists
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query exists
+   :end-before: end query exists
+
+All (contains all fields)
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query all
+   :end-before: end query all
+
+Size (match size of array for a field)
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query size
+   :end-before: end query size
+
+Type
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query type
+   :end-before: end query type
+
+
+Mod - an even year
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query modulo 
+   :end-before: end query modulo 
+
+- Regex - "Match Regular Expressions"
+
+regex:
+"^the lord of .*"
+matches results such as "The Lord of the Rings: ..."
+
+``use MongoDB\BSON\Regex;``
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereRegex
+   :end-before: end query whereRegex
+
+- Raw expressionsa
+
+whereRaw([
+query
+])->get()
+returns collection of models
+
+maybe a query like { status: "A", $or: [ { qty: { $lt: 30 } }, { item: /^p/ } ] }
+that combines multiple things
+
+
+- Array - ElemMatch "Element Match"
+
+TODO: Match cast member
+
+https://www.mongodb.com/docs/manual/reference/operator/query/elemMatch/
+
+
+- Geospatial - near, geowithin, geointersects, geonear
+
+- Projection
+
+projection
+
+.. io-code-block::
+
+   .. input:: /includes/query-builder/MovieController.php
+      :language: php
+      :dedent:
+      :start-after: begin query projection
+      :end-before: end query projection
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        {
+          "_id": { ... },
+          "title": "City Lights"
+          "cast": [
+            "Florence Lee",
+            "Harry Myers",
+            "Al Ernest Garcia"
+          ],
+        },
+        {
+          "_id": { ... },
+          "title": "Modern Times",
+          "cast": [
+            "Paulette Goddard",
+            "Henry Bergman",
+            "Tiny Sandford"
+          ]
+        },
+        {
+          "_id": { ... },
+          "title": "Casablanca"
+          "cast": [
+            "Ingrid Bergman",
+            "Paul Henreid",
+            "Claude Rains"
+          ],
+        },
+        ...
+      ]
+
+projection with pagination
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query projection with pagination
+   :end-before: end query projection with pagination
+
+- Cursor timeout
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query cursor timeout
+   :end-before: end query cursor timeout
+
+Note this is in seconds rather than milliseconds.
+
+.. _laravel-mongodb-write-query-builder:
+
+MongoDB Write Operations
+------------------------
+
+- Upsert
+- Increment/ decrement
+- Modify array values - push, pull
+- Remove a field from a document - Unset
 
