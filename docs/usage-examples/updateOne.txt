@@ -21,13 +21,13 @@ You can update a document in a collection by retrieving a single document and ca
 the ``update()`` method on an Eloquent model or a query builder.
 
 Pass a query filter to the ``where()`` method, sort the matching documents, and call the
-``first()`` method to match only one document. Then, pass the changes you want to make to
-the document to the ``update()`` method to update one document that matches the filter.
+``first()`` method to match only one document. Then, update this matching document by passing
+your intended document changes to the ``update()`` method.
 
 Example
 -------
 
-This usage example performs the following actions
+This usage example performs the following actions:
 
 - Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
   ``sample_mflix`` database.
@@ -70,7 +70,7 @@ The example calls the following methods on the ``Movie`` model:
       for an older, married woman.
 
 To view the result, run the operation in a controller endpoint. Then, query for the document that has
-a ``'title'`` value of ``"Carol"`` and pass it to a view to see the updated document.
+a ``title`` value of ``'Carol'`` and pass it to a view to see the updated document.
 
 .. tip::
 
