@@ -17,30 +17,29 @@ Update a Document
    :depth: 1
    :class: singlecol
 
-You can update a document in a collection by chaining the ``where()``, ``first()``,
-and ``update()`` methods to an Eloquent model or a query builder.
+You can update a document in a collection by retrieving a single document and calling
+the ``update()`` method on an Eloquent model or a query builder.
 
-Pass a query filter to the ``where()`` method and call the ``first()`` method to match 
-only one document. Then, pass the document changes to the ``update()`` method to update
-one document that matches the filter.
-
-To learn more about updating data with {+odm-short+}, see the `Updates
-<https://laravel.com/docs/6.x/eloquent#updates>`__ section of the Laravel documentation.
+Pass a query filter to the ``where()`` method, sort the matching documents, and call the
+``first()`` method to match only one document. Then, pass the changes you want to make to
+the document to the ``update()`` method to update one document that matches the filter.
 
 Example
 -------
 
-This usage example updates a document that matches a query filter from the ``movies``
-collection in the ``sample_mflix`` database. The example uses the ``Movie`` Eloquent model
-to represent the ``movies`` collection.
+This usage example performs the following actions
 
-This example performs the following actions:
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database.
+- Updates a document from the ``movies`` collection that matches a query filter.
 
-- Defines a query filter to match documents in which the value of the ``title`` field
-  is ``'Carol'``
-- Calls the ``first()`` method to match only one document
-- Calls the ``update()`` method to update the value of the ``imdb.rating`` nested field to
-  ``7.3`` and the ``imdb.votes`` nested field to ``142000``
+The example calls the following methods on the ``Movie`` model:
+
+- ``where()``: matches documents in which the value of the ``title`` field is ``'Carol'``.
+- ``orderBy()``: sorts matched documents by their ascending ``_id`` values.
+- ``first()``: retrieves only the first matching document.
+- ``update()``: updates the value of the ``imdb.rating`` nested field to from ``6.9`` to
+  ``7.3``. This method also updates the ``imdb.votes`` nested field from ``493`` to ``142000``.
 
 .. io-code-block::
    :copyable: true
@@ -49,6 +48,7 @@ This example performs the following actions:
       :language: php
 
       $movie = Movie::where('title', 'Carol')
+          ->orderBy('_id')
           ->first()
           ->update([
               "imdb" => [
@@ -69,10 +69,14 @@ This example performs the following actions:
       Plot: Set in 1950s New York, a department-store clerk who dreams of a better life falls
       for an older, married woman.
 
-To view the result, run the operation in a controller endpoint.
+To view the result, run the operation in a controller endpoint. Then, query for the document that has
+a ``'title'`` value of ``"Carol"`` and pass it to a view to see the updated document.
 
 .. tip::
 
    You can add this usage example to the Laravel application created in the :ref:`laravel-quick-start`
    and view the expected output. For instructions on editing your ``{+quickstart-app-name+}`` application
    to run the usage example, see the :ref:`Usage Example landing page <laravel-usage-examples>`.
+
+To learn more about updating data with {+odm-short+}, see the `Updates
+<https://laravel.com/docs/6.x/eloquent#updates>`__ section of the Laravel documentation.
