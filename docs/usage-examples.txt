@@ -46,33 +46,45 @@ The usage examples are designed to run operations on a MongoDB deployment that c
 the MongoDB Atlas sample datasets. When you run the example code without this sample data,
 the output might not match. 
 
-You can run the usage examples from the Laravel web application and MongoDB Atlas cluster that
-you set up in the :ref:`laravel-quick-start` guide. After completing the Quick Start, ensure
-that your application meets the following requirements:
+You can run the usage examples from the ``{+quickstart-app-name+}`` Laravel web application and
+MongoDB Atlas cluster that you set up in the :ref:`laravel-quick-start` guide. After completing
+the Quick Start, your application contains the following files:
 
-- Configuration to use an Atlas cluster that contains the sample datasets.
-- ``Movie`` model configured to use the MongoDB database
-- ``Movie`` view that lists the results
-- HTTP and API controller endpoints for displaying and storing ``Movie`` data
-
-.. tip::
-
-   See the :ref:`laravel-quick-start-create-deployment` step of the Quick Start for instructions on
-   configuring an Atlas Cluster, and see the :ref:`laravel-quick-start-connect-to-mongodb` step for
-   instructions on connecting to the cluster.
-
-   See the :ref:`laravel-quick-start-view-data` step of the Quick Start for instructions on creating
-   the model, view, and controller endpoints.
+- ``Movie.php``: defines a ``Movie`` model configured to use the MongoDB database
+- ``MovieController.php``: contains controller functions to run MongoDB operations
+- ``browse_movie.blade.php``: contains HTML code to view MongoDB documents
+- ``api.php``: contains API routes that call controller functions
 
 .. _add-usage-examples:
 
 Add the Examples to Your Application
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Each Usage Example page features controller code that you can copy and paste into your Laravel application.
+Each Usage Example page includes sample code that demonstrates a MongoDB operation. You can edit
+the existing files in your ``{+quickstart-app-name+}`` application to run each operation
+and view the expected output. 
 
-You can add Usage Example sample code to the ``MovieController.php`` file, located in the ``app/Http/Controllers``
-directory. Each Usage Example page specifies the following information:
+To add the usage example, make the following changes to your ``{+quickstart-app-name+}`` files:
 
-- The ``MovieController.php`` method into which you can paste the code
-- How to run the operation and view the expected output
+- Add the code example to a controller function in the ``MovieController.php`` file
+- Add an API route that calls the controller function to the ``api.php`` file
+  
+To view the modified, inserted, or retrieved document, add the following return statement to the
+``show()`` function in ``MovieController.php``:
+
+.. code-block:: php
+
+   return view('browse_movies', [
+       'movies' => Movie::where(<query filter>)
+           ->get()
+   ]);
+
+Replace the ``<query filter>`` placeholder with a set of criteria that matches the document you want to
+view. For more information on specifying a query filter, see the :ref:`laravel-fundamentals-retrieve`
+guide.
+
+To run the usage example, start your application by running the following command:
+
+.. code-block:: bash
+
+   php artisan serve
