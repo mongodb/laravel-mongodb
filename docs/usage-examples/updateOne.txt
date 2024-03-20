@@ -4,6 +4,19 @@
 Update a Document
 =================
 
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: update one, modify, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
 You can update a document in a collection by chaining the ``where()``, ``first()``,
 and ``update()`` methods to an Eloquent model or a query builder.
 
@@ -26,22 +39,8 @@ This example performs the following actions:
 - Defines a query filter to match documents in which the value of the ``title`` field
   is ``'Carol'``
 - Calls the ``first()`` method to match only one document
-- Calls the ``update()`` method to update the value of the ``imdb`` field
-
-.. important:: 
-
-   Before running the usage example, you must specify the changes to the ``imdb`` field in
-   the ``movie.json`` file, created in the :ref:`laravel-quick-start-write-data` step of
-   the Quick Start. Replace the contents of ``movie.json`` with the following data:
-
-   .. code-block:: bash
-
-      {
-         "imdb": {
-            "rating": 7.3,
-            "votes": 142000
-         }
-      }
+- Calls the ``update()`` method to update the value of the ``imdb.rating`` nested field to
+  ``7.3`` and the ``imdb.votes`` nested field to ``142000``
 
 .. io-code-block::
    :copyable: true
@@ -49,21 +48,14 @@ This example performs the following actions:
    .. input::
       :language: php
 
-      public function store(Request $request)
-      {
-         $movie = Movie::where('title', 'Carol')
-                 ->first()
-                 ->update(['imdb' => $request->imdb]); 
-         $movie->save();
-      }
-      
-      public function show()
-      {
-         return view('browse_movies', [
-               'movies' => Movie::where('title', 'Carol')
-                           ->get()
+      $movie = Movie::where('title', 'Carol')
+          ->first()
+          ->update([
+              "imdb" => [
+                  "rating" => 7.3,
+                  "votes" => 142000
+               ],
          ]);
-      }
 
    .. output::
       :language: console
@@ -77,27 +69,15 @@ This example performs the following actions:
       Plot: Set in 1950s New York, a department-store clerk who dreams of a better life falls
       for an older, married woman.
 
-To perform the update operation, edit the ``store()`` and ``show()`` functions in your
-``MovieController.php`` file to match the preceding code. Then, start your application
+To view the result, run the operation in a controller endpoint. Then, start your application
 by running the following command:
 
 .. code-block:: bash
 
    php artisan serve
 
-Send the JSON payload to the endpoint as a ``POST`` request by running the following command:
+.. tip::
 
-.. code-block:: bash
-
-   curl -H "Content-Type: application/json" --data @movie.json http://localhost:8000/api/movies
-
-Open the following URL in your web browser to view the modified document:
-
-.. code-block:: none
-
-   http://127.0.0.1:8000/browse_movies
-
-.. tip:: 
-
-   For more information on adding the usage example to your application, see the
-   :ref:`add-usage-examples` section of the Usage Example landing page.
+   You can add this usage example to the Laravel application created in the :ref:`laravel-quick-start`
+   and view the expected output. For instructions on running the update operation by editing your
+   {+quickstart-app-name+}, see the :ref:`Usage Example landing page <laravel-usage-examples>`.
