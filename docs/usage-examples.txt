@@ -35,7 +35,7 @@ To learn how to set up your application and run the usage examples, see the foll
 sections:
 
 - :ref:`before-start`
-- :ref:`add-usage-examples`
+- :ref:`run-usage-examples`
 
 .. _before-start:
 
@@ -51,40 +51,58 @@ MongoDB Atlas cluster that you set up in the :ref:`laravel-quick-start` guide. A
 the Quick Start, your application contains the following files:
 
 - ``Movie.php``: defines a ``Movie`` model configured to use the MongoDB database
-- ``MovieController.php``: contains controller functions to run MongoDB operations
+- ``MovieController.php``: contains controller functions to run database operations
 - ``browse_movie.blade.php``: contains HTML code to view MongoDB documents
 - ``api.php``: contains API routes that call controller functions
 
-.. _add-usage-examples:
+.. _run-usage-examples:
 
-Add the Examples to Your Application
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Run the Usage Example
+~~~~~~~~~~~~~~~~~~~~~
 
-Each Usage Example page includes sample code that demonstrates a MongoDB operation. You can edit
-the existing files in your ``{+quickstart-app-name+}`` application to run each operation
+Each Usage Example page includes sample code that demonstrates a MongoDB operation. You can
+edit the existing files in your ``{+quickstart-app-name+}`` application to run each operation
 and view the expected output. 
 
-To add the usage example, make the following changes to your ``{+quickstart-app-name+}`` files:
+.. procedure::
+   :style: connected
 
-- Add the code example to a controller function in the ``MovieController.php`` file
-- Add an API route that calls the controller function to the ``api.php`` file
+   .. step:: Add the example to your application
+
+      To add the usage example to your ``{+quickstart-app-name+}`` application, make the following
+      changes to your application files
+
+    - Add the code example to a controller function in the ``MovieController.php`` file
+    - Add an API route that calls the controller function to the ``api.php`` file
   
-To view the modified, inserted, or retrieved document, add the following return statement to the
-``show()`` function in ``MovieController.php``:
+   .. step:: Pass a document to the ``browse_movies`` view
 
-.. code-block:: php
+      To view the modified, inserted, or retrieved document, add the following return statement to the
+      ``show()`` function in ``MovieController.php``:
 
-   return view('browse_movies', [
-       'movies' => Movie::where(<query filter>)
-           ->get()
-   ]);
+      .. code-block:: php
 
-Replace the ``<query filter>`` placeholder with a set of criteria that matches the document you want to
-view. For more information on specifying a query filter, see the :ref:`laravel-fundamentals-retrieve`
-guide.
+         return view('browse_movies', [
+            'movies' => Movie::where(<query filter>)
+               ->get()
+         ]);
 
-To run the usage example, start your application by running the following command:
+      Replace the ``<query filter>`` placeholder with a set of criteria that matches the document you want to
+      view. For more information on specifying a query filter, see the :ref:`laravel-fundamentals-retrieve`
+      guide.
 
-.. code-block:: bash
+   .. step:: Run the example
 
-   php artisan serve
+      To run the usage example, start your application by running the following command:
+
+      .. code-block:: bash
+
+         php artisan serve
+
+   .. step:: View the expected output
+
+      To view the operation result, open the following URL in your web browser:
+
+      .. code-block:: bash
+
+         http://127.0.0.1:8000/browse_movies
