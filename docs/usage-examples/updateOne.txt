@@ -79,5 +79,5 @@ by running the following command:
 .. tip::
 
    You can add this usage example to the Laravel application created in the :ref:`laravel-quick-start`
-   and view the expected output. For instructions on running the update operation by editing your
-   {+quickstart-app-name+}, see the :ref:`Usage Example landing page <laravel-usage-examples>`.
+   and view the expected output. For instructions on editing your {+quickstart-app-name+} application
+   to run the usage example, see the :ref:`Usage Example landing page <laravel-usage-examples>`.
