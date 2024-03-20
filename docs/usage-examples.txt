@@ -14,7 +14,7 @@ Usage Examples
 .. contents:: On this page
    :local:
    :backlinks: none
-   :depth: 1
+   :depth: 2
    :class: singlecol
 
 Overview
@@ -70,7 +70,7 @@ and view the expected output.
    .. step:: Add the example to your application
 
       To add the usage example to your ``{+quickstart-app-name+}`` application, make the following
-      changes to your application files
+      changes to your application files:
 
     - Add the code example to a controller function in the ``MovieController.php`` file
     - Add an API route that calls the controller function to the ``api.php`` file
