@@ -69,15 +69,10 @@ This example performs the following actions:
       Plot: Set in 1950s New York, a department-store clerk who dreams of a better life falls
       for an older, married woman.
 
-To view the result, run the operation in a controller endpoint. Then, start your application
-by running the following command:
-
-.. code-block:: bash
-
-   php artisan serve
+To view the result, run the operation in a controller endpoint.
 
 .. tip::
 
    You can add this usage example to the Laravel application created in the :ref:`laravel-quick-start`
-   and view the expected output. For instructions on editing your {+quickstart-app-name+} application
+   and view the expected output. For instructions on editing your ``{+quickstart-app-name+}`` application
    to run the usage example, see the :ref:`Usage Example landing page <laravel-usage-examples>`.
