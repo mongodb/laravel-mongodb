@@ -614,7 +614,11 @@ class Builder extends BaseBuilder
         return $this;
     }
 
-    /** @inheritdoc */
+    /**
+     * @param list{mixed, mixed}|CarbonPeriod $values
+     *
+     * @inheritdoc
+     */
     public function whereBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         $type = 'between';

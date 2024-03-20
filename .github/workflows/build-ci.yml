@@ -8,7 +8,7 @@ jobs:
     build:
         runs-on: "${{ matrix.os }}"
 
-        name: "PHP ${{ matrix.php }} Laravel ${{ matrix.laravel }} MongoDB ${{ matrix.mongodb }} ${{ matrix.mode }}"
+        name: "PHP v${{ matrix.php }} with MongoDB ${{ matrix.mongodb }} ${{ matrix.mode }}"
 
         strategy:
             matrix:
@@ -23,17 +23,10 @@ jobs:
                     - "8.1"
                     - "8.2"
                     - "8.3"
-                laravel:
-                    - "10.*"
-                    - "11.*"
                 include:
                     - php: "8.1"
-                      laravel: "10.*"
                       mongodb: "5.0"
                       mode: "low-deps"
-                exclude:
-                    - php: "8.1"
-                      laravel: "11.*"
 
         steps:
             -   uses: "actions/checkout@v4"
@@ -65,9 +58,6 @@ jobs:
                 if: ${{ runner.debug }}
                 run: "docker version && env"
 
-            -   name: "Restrict Laravel version"
-                run: "composer require --dev --no-update 'laravel/framework:${{ matrix.laravel }}'"
-
             -   name: "Download Composer cache dependencies from cache"
                 id: "composer-cache"
                 run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
@@ -80,7 +70,8 @@ jobs:
                     restore-keys: "${{ matrix.os }}-composer-"
 
             -   name: "Install dependencies"
-                run: composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest')
+                run: composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest --prefer-stable')
+
             -   name: "Run tests"
                 run: "./vendor/bin/phpunit --coverage-clover coverage.xml"
                 env:

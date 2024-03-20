@@ -328,7 +328,7 @@ class Connection extends BaseConnection
             try {
                 return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-mongodb');
             } catch (Throwable) {
-                return self::$version = 'error';
+                // Ignore exceptions and return unknown version
             }
         }
 

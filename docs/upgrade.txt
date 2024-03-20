@@ -1,8 +1,8 @@
 .. _laravel-upgrading:
 
-=======================
-Upgrade Library Version
-=======================
+=========
+Upgrading
+=========
 
 .. facet::
    :name: genre
@@ -11,109 +11,39 @@ Upgrade Library Version
 .. meta::
    :keywords: php framework, odm, code example
 
-.. contents:: On this page
-   :local:
-   :backlinks: none
-   :depth: 1
-   :class: singlecol
+The PHP library uses `semantic versioning <https://semver.org/>`__. Upgrading
+to a new major version may require changes to your application.
 
-Overview
---------
+Upgrading from version 3 to 4
+-----------------------------
 
-On this page, you can learn how to upgrade {+odm-short+} to a new major version.
-This page also includes the changes you must make to your application to upgrade
-your object-document mapper (ODM) version without losing functionality, if applicable.
+- Laravel 10.x is required
 
-How to Upgrade
---------------
+- Change dependency name in your composer.json to ``"mongodb/laravel-mongodb": "^4.0"``
+  and run ``composer update``
 
-Before you upgrade, perform the following actions:
+- Change namespace from ``Jenssegers\Mongodb\`` to ``MongoDB\Laravel\``
+  in your models and config
 
-- Ensure the new library version is compatible with the MongoDB Server version
-  your application connects to and the version of Laravel that your
-  application runs on. See the :ref:`<laravel-compatibility>`
-  page for this information.
-- Address any breaking changes between the version of {+odm-short+} that
-  your application currently uses and your planned upgrade version in the
-  :ref:`<laravel-breaking-changes>` section of this guide.
+- Remove support for non-Laravel projects
 
-To upgrade your library version, run the following command in your application's 
-directory:
+- Replace ``$dates`` with ``$casts`` in your models
 
-.. code-block:: bash
-   
-    composer require mongodb/laravel-mongodb:{+package-version+}
+- Call ``$model->save()`` after ``$model->unset('field')`` to persist the change
 
-To upgrade to a different version of the library, replace the information after
-``laravel-mongodb:`` with your preferred version number.
+- Replace calls to ``Query\Builder::whereAll($column, $values)`` with
+  ``Query\Builder::where($column, 'all', $values)``
 
-.. _laravel-breaking-changes:
+- ``Query\Builder::delete()`` doesn't accept ``limit()`` other than ``1`` or ``null``.
 
-Breaking Changes
-----------------
+- ``whereDate``, ``whereDay``, ``whereMonth``, ``whereYear``, ``whereTime``
+  now use MongoDB operators on date fields
 
-A breaking change is a modification in a convention or behavior in
-a specific version of {+odm-short+} that might prevent your application
-from working as expected.
+- Replace ``Illuminate\Database\Eloquent\MassPrunable`` with ``MongoDB\Laravel\Eloquent\MassPrunable``
+  in your models
 
-The breaking changes in this section are categorized by the major
-version releases that introduced them. When upgrading library versions,
-address all the breaking changes between your current version and the
-planned upgrade version.
-
-.. _laravel-breaking-changes-v4.x:
-
-Version 4.x Breaking Changes
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-This library version introduces the following breaking changes:
-
-- Minimum Laravel version is now 10.0. For instructions on upgrading your Laravel version,
-  see the `Upgrade Guide <https://laravel.com/docs/10.x/upgrade>`__ in the Laravel
-  documentation.
-
-- Dependency name is now ``"mongodb/laravel-mongodb"``. Ensure that the dependency
-  name in your ``composer.json`` file is ``"mongodb/laravel-mongodb": "^4.0"``. Then, run
-  ``composer update``.
-
-- Namespace is now ``MongoDB\Laravel\``. Ensure that you change the namespace from ``Jenssegers\Mongodb\``
-  to ``MongoDB\Laravel\`` in your models and config files.
-
-- Removes support for non-Laravel projects.
-
-- Removes support for the ``$dates`` property. Ensure that you change all instances of ``$dates``
-  to ``$casts`` in your model files.
-
-- ``Model::unset($field)`` does not persist the change. Ensure that you follow all calls to
-  ``Model::unset($field)`` with ``Model::save()``.
-
-- Removes the ``Query\Builder::whereAll($column, $values)`` method. Ensure that you replace all calls
-  to ``Query\Builder::whereAll($column, $values)`` with ``Query\Builder::where($column, 'all', $values)``.
-
-- ``Query\Builder::delete()`` can delete one or all documents. Ensure that you pass only the values
-  ``1`` or ``null`` to ``limit()``.
-
-- ``whereDate()``, ``whereDay()``, ``whereMonth()``, ``whereYear()``, and ``whereTime()`` methods
-  now use MongoDB operators on date fields.
-
-- Adds the ``MongoDB\Laravel\Eloquent\MassPrunable`` trait. Ensure that you replace all instances of 
-  ``Illuminate\Database\Eloquent\MassPrunable`` with ``MongoDB\Laravel\Eloquent\MassPrunable``
-  in your models.
-
-- Removes support for the following ``Query\Builder`` methods:
-  
-  - ``toSql()``
-  - ``toRawSql()``
-  - ``whereColumn()``
-  - ``whereFullText()``
-  - ``groupByRaw()``
-  - ``orderByRaw()``
-  - ``unionAll()``
-  - ``union()``
-  - ``having()``
-  - ``havingRaw()``
-  - ``havingBetween()``
-  - ``whereIntegerInRaw()``
-  - ``orWhereIntegerInRaw()``
-  - ``whereIntegerNotInRaw()``
-  - ``orWhereIntegerNotInRaw()``
+- Remove calls to not-supported methods of ``Query\Builder``: ``toSql``,
+  ``toRawSql``, ``whereColumn``, ``whereFullText``, ``groupByRaw``,
+  ``orderByRaw``, ``unionAll``, ``union``, ``having``, ``havingRaw``,
+  ``havingBetween``, ``whereIntegerInRaw``, ``orWhereIntegerInRaw``,
+  ``whereIntegerNotInRaw``, ``orWhereIntegerNotInRaw``.

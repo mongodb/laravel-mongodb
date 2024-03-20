@@ -33,7 +33,7 @@ read and write operations on the data.
 
    You can learn how to set up a local Laravel development environment
    and perform CRUD operations by viewing the
-   :mdbu-course:`Getting Started with Laravel and MongoDB </courses/getting-started-with-laravel-and-mongodb>`
+   :mdbu-course:`Getting Started with Laravel and MongoDB </getting-started-with-laravel-and-mongodb>`
    MongoDB University Learning Byte.
 
    If you prefer to connect to MongoDB by using the PHP Library driver without
