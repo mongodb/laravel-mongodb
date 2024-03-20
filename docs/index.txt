@@ -14,6 +14,7 @@ Laravel MongoDB
    :maxdepth: 1
 
    /quick-start
+   Release Notes <https://github.com/mongodb/laravel-mongodb/releases/>
    /retrieve
    /eloquent-models
    /query-builder
