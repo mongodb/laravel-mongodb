@@ -98,7 +98,7 @@ class MovieController extends Controller
         // begin query whereNull
         $movies = DB::connection('mongodb')
             ->collection('movies')
-            ->whereNull('runtime') 
+            ->whereNull('runtime')
             ->get();
         // end query whereNull
 
@@ -109,9 +109,9 @@ class MovieController extends Controller
         // begin query whereDate
         $movies = DB::connection('mongodb')
             ->collection('movies')
-            ->whereDate('released', '2010-1-15') 
+            ->whereDate('released', '2010-1-15')
             ->get();
-        // begin query whereDate
+        // end query whereDate
 
         return $movies;
     }
@@ -143,7 +143,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->where('title', 'like', '%spider%man%')
             ->get();
-        // begin query like
+        // end query like
 
         return $movies;
     }
@@ -152,7 +152,7 @@ class MovieController extends Controller
         // begin query exists
         $result = DB::collection('movies')
             ->exists('title', 'I\'m a Cyborg, But That\'s OK');
-        // begin query exists
+        // end query exists
 
         print_r($result);
         return null;
@@ -164,7 +164,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->where('movies', 'all', ['title', 'rated', 'imdb.rating' ])
             ->getl();
-        // begin query all
+        // end query all
 
         return $movies;
     }
@@ -175,7 +175,7 @@ class MovieController extends Controller
         $result = DB::collection('movies')
             ->where('directors', 'size', 5)
             ->get();
-        // begin query size
+        // end query size
 
         print_r($result);
         return null;
@@ -186,7 +186,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->where('released', 'type', 4)
             ->get();
-        // begin query type
+        // end query type
 
         return $movies;
     }
@@ -197,7 +197,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->where('year', 'mod', [2, 0])
             ->get();
-        // begin query modulo
+        // end query modulo
 
         return $movies;
     }
@@ -206,7 +206,7 @@ class MovieController extends Controller
         // begin query distinct
         $result = DB::collection('movies')
             ->distinct('year')->get();
-        // begin query distinct
+        // end query distinct
         print_r($result);
         return null;
     }
@@ -217,7 +217,7 @@ class MovieController extends Controller
             ->where('imdb.rating', '>', 9)
             ->distinct('year')
             ->get();
-        // begin query where distinct
+        // end query where distinct
         print_r($result);
         return null;
      }
@@ -323,7 +323,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->whereRaw([
                 'imdb.votes' => ['$gte' => 1000 ],
-                '$or' => [ 
+                '$or' => [
                     ['imdb.rating' => ['$gt' => 7]],
                     ['directors' => ['$in' => [ 'Yasujiro Ozu', 'Sofia Coppola', 'Federico Fellini' ]]]
                 ]
@@ -372,7 +372,7 @@ class MovieController extends Controller
                     'coordinates' => [
                     [
                         [-72, 40], [-74, 41], [-72, 39], [-72, 40]
-                    ], 
+                    ],
             ]]])->get();
         // end query geoWithin
 
@@ -471,7 +471,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->timeout(2) // value in seconds
             ->where('year', 2001)
-            ->get(); 
+            ->get();
         // end query cursor timeout
 
         return $movies;
@@ -496,7 +496,7 @@ class MovieController extends Controller
         // begin increment
         $result = DB::collection('movies')
             ->where('title', 'Field of Dreams')
-            ->increment('imdb.votes', 3000); 
+            ->increment('imdb.votes', 3000);
         // end increment
 
         print_r($result);
@@ -507,7 +507,7 @@ class MovieController extends Controller
         // begin decrement
         $result = DB::collection('movies')
             ->where('title', 'Sharknado')
-            ->decrement('imdb.rating', 0.2); 
+            ->decrement('imdb.rating', 0.2);
         // end decrement
 
         print_r($result);
@@ -519,7 +519,7 @@ class MovieController extends Controller
         // begin push
         $result = DB::collection('movies')
             ->where('title', 'Office Space')
-            ->push('cast', 'Gary Cole'); 
+            ->push('cast', 'Gary Cole');
         // end push
 
         print_r($result);
@@ -531,7 +531,7 @@ class MovieController extends Controller
         // begin pull
         $result = DB::collection('movies')
             ->where('title', 'Iron Man')
-            ->pull('genres', 'Adventure'); 
+            ->pull('genres', 'Adventure');
         // end pull
 
         print_r($result);
@@ -542,7 +542,7 @@ class MovieController extends Controller
         // begin unset
         $result = DB::collection('movies')
             ->where('title', 'Final Accord')
-            ->unset('tomatoes.viewer'); 
+            ->unset('tomatoes.viewer');
         // end unset
 
         print_r($result);
@@ -563,19 +563,19 @@ class MovieController extends Controller
         //$result = $this->runAndWhere();
 
        // $result = $this->runNestedLogical();
-        
-        //$result = $this->runWhereNot(); 
+
+        //$result = $this->runWhereNot();
 
         //$result = $this->runWhereBetween();
 
         //$result = $this->runWhereNull();
 
         //$result = $this->runWhereDate();
-        
+
         //$result = $this->runLike();
-        
+
         //$result = $this->runExists();
-        
+
         //$result = $this->runAll();
 
         //$result = $this->runSize();

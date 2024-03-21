@@ -145,11 +145,11 @@ the following logical conditional operations:
 
 OR - back to the future or year 1955
 
- .. literalinclude:: /includes/query-builder/MovieController.php
-    :language: php
-    :dedent:
-    :start-after: begin query orWhere
-    :end-before: end query orWhere
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query orWhere
+   :end-before: end query orWhere
 
 AND - rating > 8.5  and year < 1940
 
@@ -162,20 +162,20 @@ AND - rating > 8.5  and year < 1940
 
 NOT - imdb.rating not > 2 (or <= 2)
 
- .. literalinclude:: /includes/query-builder/MovieController.php
-    :language: php
-    :dedent:
-    :start-after: begin query whereNot
-    :end-before: end query whereNot
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereNot
+   :end-before: end query whereNot
 
 Nested logical groups
 year rating is > 8.5 and (year is 1986 or 1996)
 
- .. literalinclude:: /includes/query-builder/MovieController.php
-    :language: php
-    :dedent:
-    :start-after: begin query nestedLogical
-    :end-before: end query nestedLogical
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query nestedLogical
+   :end-before: end query nestedLogical
 
 - Range and types (whereBetween, whereNull, whereIn, whereDate)
 
@@ -387,7 +387,7 @@ back to the future% rating descending
 
    .. output::
       :language: none
-      :copyable: false
+      :visible: false
 
       Title: Back to the Future
       Year: 1985
