@@ -25,7 +25,7 @@ operations. Each usage example includes the following components:
 
 - Explanation of the MongoDB operation
 - Example controller code that runs the MongoDB operation
-- Output displayed by the view
+- Output displayed by the view or print statement
 
 How to Use the Usage Examples
 -----------------------------
@@ -71,7 +71,7 @@ and view the expected output.
       If the usage example demonstrates a read operation, add the code example to the ``show()``
       function in the ``MovieController.php`` file.
 
-      If the usage example demonstrates a write operation, you can add the example an existing
+      If the usage example demonstrates a write operation, you can add the example to an existing
       controller function in the ``MovieController.php`` file, which include ``create()``, ``edit()``,
       and ``destroy()``. You can also create your own controller function to contain the sample code.
   
@@ -114,7 +114,8 @@ and view the expected output.
 
    .. step:: View the expected output
 
-      To view the operation result, open the following URL in your web browser:
+      To view the expected output included on the usage example page, open the following URL in your web
+      browser:
 
       .. code-block:: bash
 
