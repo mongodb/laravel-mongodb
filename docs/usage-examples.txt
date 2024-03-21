@@ -25,14 +25,13 @@ operations. Each usage example includes the following components:
 
 - Explanation of the MongoDB operation
 - Example controller code that runs the MongoDB operation
-- Example view code that renders the result
 - Output displayed by the view
 
 How to Use the Usage Examples
 -----------------------------
 
-To learn how to set up your application and run the usage examples, see the following
-sections:
+To learn how to run the usage examples by editing the ``{+quickstart-app-name+}`` :ref:`Quick Start
+<laravel-quick-start>` application, see the following sections:
 
 - :ref:`before-start`
 - :ref:`run-usage-examples`
@@ -53,7 +52,7 @@ the Quick Start, your application contains the following files:
 - ``Movie.php``: defines a ``Movie`` model configured to use the MongoDB database
 - ``MovieController.php``: contains controller functions to run database operations
 - ``browse_movie.blade.php``: contains HTML code to view MongoDB documents
-- ``api.php``: contains API routes that call controller functions
+- ``web.php``: defines web routes that call controller functions
 
 .. _run-usage-examples:
 
@@ -69,31 +68,45 @@ and view the expected output.
 
    .. step:: Add the example to your application
 
-      To add the usage example to your ``{+quickstart-app-name+}`` application, make the following
-      changes to your application files:
+      If the usage example demonstrates a read operation, add the code example to the ``show()``
+      function in the ``MovieController.php`` file.
 
-    - Add the code example to a controller function in the ``MovieController.php`` file
-    - Add an API route that calls the controller function to the ``api.php`` file
+      If the usage example demonstrates a write operation, you can add the example an existing
+      controller function in the ``MovieController.php`` file, which include ``create()``, ``edit()``,
+      and ``destroy()``. You can also create your own controller function to contain the sample code.
   
-   .. step:: Pass a document to the ``browse_movies`` view
+   .. step:: Return the result to a view
 
-      To view the modified, inserted, or retrieved document, add the following return statement to the
+      To view the results of a read operation, add the following return statement to the
       ``show()`` function in ``MovieController.php``:
 
       .. code-block:: php
 
          return view('browse_movies', [
-            'movies' => Movie::where(<query filter>)
-               ->get()
+             'movies' => $<variable name>
          ]);
 
-      Replace the ``<query filter>`` placeholder with a set of criteria that matches the document you want to
-      view. For more information on specifying a query filter, see the :ref:`laravel-fundamentals-retrieve`
-      guide.
+      To view the number of documents that are inserted, modified, or deleted by a write operation, add
+      the following print statement to your controller function in ``MovieController.php``:
+
+      .. code-block:: php
+
+         print_r($<variable name>)
+
+      Replace the ``<variable name>`` placeholder with the variable name specified in the usage example.
 
    .. step:: Run the example
 
-      To run the usage example, start your application by running the following command:
+      To run the usage example, add the following route to your ``web.php`` file:
+      
+      .. code-block:: bash
+
+         Route::get('/browse_movies/', [MovieController::class, '<function name>']);
+      
+      Replace the ``<function name>`` placeholder with the name of the controller function that contains your
+      usage example code.
+
+      Then, start your application by running the following command:
 
       .. code-block:: bash
 
