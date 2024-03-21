@@ -87,7 +87,7 @@ class MovieController extends Controller
         // begin query runWhere
         $movies = DB::connection('mongodb')
             ->collection('movies')
-            ->whereBetween('imdb.rating', [9, 10])
+            ->whereBetween('imdb.rating', [9, 9.5])
             ->get();
         // end query runWhere
 
@@ -111,7 +111,7 @@ class MovieController extends Controller
             ->collection('movies')
             ->whereDate('released', '2010-1-15')
             ->get();
-        // end query whereDate
+        // begin query whereDate
 
         return $movies;
     }
@@ -143,7 +143,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->where('title', 'like', '%spider%man%')
             ->get();
-        // end query like
+        // begin query like
 
         return $movies;
     }
@@ -152,7 +152,7 @@ class MovieController extends Controller
         // begin query exists
         $result = DB::collection('movies')
             ->exists('title', 'I\'m a Cyborg, But That\'s OK');
-        // end query exists
+        // begin query exists
 
         print_r($result);
         return null;
@@ -164,7 +164,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->where('movies', 'all', ['title', 'rated', 'imdb.rating' ])
             ->getl();
-        // end query all
+        // begin query all
 
         return $movies;
     }
@@ -175,7 +175,7 @@ class MovieController extends Controller
         $result = DB::collection('movies')
             ->where('directors', 'size', 5)
             ->get();
-        // end query size
+        // begin query size
 
         print_r($result);
         return null;
@@ -186,7 +186,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->where('released', 'type', 4)
             ->get();
-        // end query type
+        // begin query type
 
         return $movies;
     }
@@ -197,7 +197,7 @@ class MovieController extends Controller
         $movies = DB::collection('movies')
             ->where('year', 'mod', [2, 0])
             ->get();
-        // end query modulo
+        // begin query modulo
 
         return $movies;
     }
@@ -206,7 +206,7 @@ class MovieController extends Controller
         // begin query distinct
         $result = DB::collection('movies')
             ->distinct('year')->get();
-        // end query distinct
+        // begin query distinct
         print_r($result);
         return null;
     }
@@ -217,7 +217,7 @@ class MovieController extends Controller
             ->where('imdb.rating', '>', 9)
             ->distinct('year')
             ->get();
-        // end query where distinct
+        // begin query where distinct
         print_r($result);
         return null;
      }
@@ -639,7 +639,7 @@ class MovieController extends Controller
 
         //$result = $this->runPull();
 
-        $result = $this->runUnset();
+        //$result = $this->runUnset();
 
         //$result = Movie::first();
       return view('browse_movies', [

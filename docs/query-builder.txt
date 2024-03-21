@@ -9,7 +9,7 @@ Query Builder
    :values: tutorial
 
 .. meta::
-   :keywords: code example
+   :keywords: code example, aggregation
 
 .. contents:: On this page
    :local:
@@ -30,6 +30,7 @@ interface and syntax.
    {+odm-short+} extends Laravel's query builder and Eloquent ORM, both of
    which can run similar database operations. To learn more about retrieving
    documents by using Eloquent models, see :ref:`laravel-fundamentals-retrieve`.
+   TODO: link to Eloquent Models page once merged
 
 Laravel provides a **facade** to access the query builder class ``DB``, which
 lets you perform database operations. Facades are static interfaces to
@@ -58,8 +59,8 @@ Before You Get Started
 ----------------------
 
 To run the code examples in this guide, complete the
-:ref:`Quick Start <laravel-quick-start>` tutorial and paste the example code
-in the ``show()`` controller method.
+:ref:`Quick Start <laravel-quick-start>` tutorial to configure a web
+application and run the example code from a controller method.
 
 ..
    TODO: this requirement can be removed after https://jira.mongodb.org/browse/DOCSP-37770 is completed
@@ -68,34 +69,35 @@ in the ``show()`` controller method.
    file, which accesses Eloquent ORM operation results, with the `browse_movies_array.blade.php <https://github.com/mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movies_array.blade.php>`__
    file to access the ar
 
+To perform read and write operations by using the query builder, import the
+``Illuminate\Support\Facades\DB`` facade and compose your query.
+
 .. _laravel-retrieve-query-builder:
 
 Retrieve Documents
 ------------------
 
-To retrieve documents by using the query builder, import the
-``Illuminate\Support\Facades\DB`` facade and compose your query.
+This section includes query builder examples for read operations in the
+following operator categories:
 
-This section includes query builder examples for the following operator
-categories:
-
-- Where (TODO: reword this)
-- Logical conditionals (orWhere, whereNot, and And)
-- Nested logic groups
-- Range (whereBetween, whereDate)
-- Check for ``null`` values (whereNull)
-- Array operations (whereIn, ...)
-- Pattern search (like)
+- :ref:`Where method <laravel-query-builder-where-example>`
+- Logical conditionals
+- Ranges and type checks
+- Array operations
+- Pattern searches
 - Retrieve distinct values
 - Aggregations
+
+.. _laravel-query-builder-where-example:
 
 Where Method Example
 ~~~~~~~~~~~~~~~~~~~~
 
-The following example shows how to use the ``where()`` method retrieve
-documents from the ``movies`` collection that contain a ``imdb.votes`` field
-value of ``350``. Click the :guilabel:`{+code-output-label+}` button to see the
-results returned from the query:
+The following example shows how to use the ``where()`` query
+builder method to retrieve documents from the ``movies`` collection
+that contain a ``imdb.votes`` field value of ``350``. Click the
+:guilabel:`{+code-output-label+}` button to see the results returned
+by the query:
 
 .. io-code-block::
 
@@ -133,17 +135,21 @@ results returned from the query:
 Logical Conditional Operation Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The examples in this section show query builder syntax you can use to perform
-the following logical conditional operations:
+The examples in this section show the query builder syntax you
+can use to perform the following logical conditional operations:
 
 - **OR** by chaining the ``orWhere()`` function
 - **AND** by chaining another ``where()`` function
 - **NOT** which uses the ``whereNot()`` function
-- Nested logic groups
+- Nested logical operator groups
 
-- Nesting logical conditionals:
+Logical OR Example
+^^^^^^^^^^^^^^^^^^
 
-OR - back to the future or year 1955
+The following example shows how to chain the ``orWhere()``
+query builder method to retrieve documents from the
+``movies`` collection that either match the ``year``
+value of "1955" or match the title "Back to the Future":
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -151,7 +157,14 @@ OR - back to the future or year 1955
    :start-after: begin query orWhere
    :end-before: end query orWhere
 
-AND - rating > 8.5  and year < 1940
+Logical AND Example
+^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to chain the ``where()``
+query builder method to retrieve documents from the
+``movies`` collection that match both an ``imdb.rating``
+value greater than "8.5" and a ``year`` value of less than
+"1940":
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -159,8 +172,14 @@ AND - rating > 8.5  and year < 1940
    :start-after: begin query andWhere
    :end-before: end query andWhere
 
+Logical NOT Example
+^^^^^^^^^^^^^^^^^^^
 
-NOT - imdb.rating not > 2 (or <= 2)
+The following example shows how to chain the ``where()``
+query builder method to retrieve documents from the
+``movies`` collection that match both an ``imdb.rating``
+value greater than "8.5" and a ``year`` value of less than
+"1940":
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -168,8 +187,16 @@ NOT - imdb.rating not > 2 (or <= 2)
    :start-after: begin query whereNot
    :end-before: end query whereNot
 
-Nested logical groups
-year rating is > 8.5 and (year is 1986 or 1996)
+Nested Logical Operator Group Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to chain the ``where()``
+query builder method to retrieve documents from the
+``movies`` collection that match both of the following
+conditions:
+
+- ``imdb.rating`` value is greater than 8.5
+- ``year`` value is either 1986 or 1996
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -177,9 +204,25 @@ year rating is > 8.5 and (year is 1986 or 1996)
    :start-after: begin query nestedLogical
    :end-before: end query nestedLogical
 
-- Range and types (whereBetween, whereNull, whereIn, whereDate)
+Ranges and Type Checks
+~~~~~~~~~~~~~~~~~~~~~~
 
-whereBetween - rating 9 and 10
+The examples in this section show the query builder syntax you
+can use to perform to match values by using the following range
+queries and type check operations:
+
+- Values within a numerical range
+- Empty or null values
+- One or more values of a set
+- Dates
+
+Numerical Range Example
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``whereBetween()``
+query builder method to retrieve documents from the
+``movies`` collection that contain an ``imdb.rating`` value
+between "9" and "9.5":
 
 .. io-code-block::
 
@@ -209,8 +252,13 @@ whereBetween - rating 9 and 10
 
       ...
 
+Empty or Null Value Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-whereNull runtime: null
+The following example shows how to use the ``whereNull()``
+query builder method to retrieve documents from the
+``movies`` collection that omit a ``runtime`` value
+or field.
 
 .. io-code-block::
 
@@ -238,9 +286,17 @@ whereNull runtime: null
       IMDB Votes: 6248
       Plot: London, 2007. Tom Jackman is the only living descendent of Dr. Jekyll and Mr. Hyde. He has made a deal with his dark side: a body share. What Mr. Hyde doesn't know is that Tom has a family....
 
+.. seealso::
 
-whereIn
-[Toy Story, Shrek 2, Johny English]
+   The ``exists()`` MongoDB operation performs the same query.
+
+One or More Values of a Set Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``whereIn()``
+query builder method to retrieve documents from the
+``movies`` collection that match at least one of the
+``title`` values in the specified set.
 
 .. io-code-block::
 
@@ -275,9 +331,13 @@ whereIn
       IMDB Votes: 283852
       Plot: Princess Fiona's parents invite her and Shrek to dinner to celebrate her marriage. If only they knew the newlyweds were both ogres.
 
+Dates Example
+^^^^^^^^^^^^^
 
-whereDate released on Jan 15, 2010
-
+The following example shows how to use the ``whereDate()``
+query builder method to retrieve documents from the
+``movies`` collection that match the specified date of
+"2010-1-15" in the ``released`` field:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -285,21 +345,45 @@ whereDate released on Jan 15, 2010
    :start-after: begin query whereDate
    :end-before: end query whereDate
 
-- Pattern search (like)
+Pattern Search Example
+^^^^^^^^^^^^^^^^^^^^^^
 
-%spider%man%
+To specify a pattern, use the ``%`` symbol to match
+zero or more characters or the ``_`` symbol to match
+any single character.
 
-.. literalinclude:: /includes/query-builder/MovieController.php
-   :language: php
-   :dedent:
-   :start-after: begin query like
-   :end-before: end query like
+The following example shows how to use the ``like()``
+query builder method to retrieve documents from the
+``movies`` collection that match the specified pattern:
 
-Matches results such as "Spider-Man", "Spider-Man 2", and "Kiss of the Spider Woman"
+.. io-code-block::
 
-- Retrieve distinct values
+   .. input:: /includes/query-builder/MovieController.php
+      :language: php
+      :dedent:
+      :start-after: begin query like
+      :end-before: end query like
 
-distinct: year
+   .. output::
+      :language: none
+      :visible: false
+
+      Title: Kiss of the Spider Woman
+      ...
+
+      Title: Spider-Man
+      ...
+
+      Title: Spider-Man 2
+      ...
+
+
+Retrieve Distinct Values
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``distinct()``
+query builder method to retrieve all the different values
+of the ``year`` field for documents in the ``movies`` collections.
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -307,9 +391,27 @@ distinct: year
    :start-after: begin query distinct
    :end-before: end query distinct
 
-distinct where: imdb.rating > 9 , distinct year
+Aggregations
+~~~~~~~~~~~~
 
-groupBy
+The examples in this section show the query builder syntax you
+can use to perform aggregations, a set of calculations on the
+query results, to return the following information:
+
+- Results Grouped by Common Field Values
+- Number of Results
+- Maximum Value of a Field
+- Minimum Value of a Field
+- Average Value of a Field
+- Summed Value of a Field
+- Aggregation on Matched Results
+
+Results Grouped by Common Field Values Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``groupBy()``
+query builder method to retrieve documents as
+TODO: fix this
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -317,10 +419,13 @@ groupBy
    :start-after: begin query groupBy
    :end-before: end query groupBy
 
+Number of Results Example
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-- Aggregations (is this in Query Builder?)
-
-count
+The following example shows how to use the ``count()``
+query builder method to return the number of results
+from a query that matches the entire ``movies``
+collection:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -328,7 +433,13 @@ count
    :start-after: begin aggregation count
    :end-before: end aggregation count
 
-max
+Maximum Value of a Field Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``max()``
+query builder method to return the highest numerical
+value of the ``runtime`` field from the entire
+``movies`` collection:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -336,7 +447,13 @@ max
    :start-after: begin aggregation max
    :end-before: end aggregation max
 
-min
+Minimum Value of a Field Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``min()``
+query builder method to return the lowest numerical
+value of the ``year`` field from the entire ``movies``
+collection:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -344,7 +461,13 @@ min
    :start-after: begin aggregation min
    :end-before: end aggregation min
 
-avg
+Average Value of a Field Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``avg()``
+query builder method to return the numerical average, or
+arithmetic mean, of the ``imdb.rating`` values from
+the entire ``movies`` collection.
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -352,7 +475,14 @@ avg
    :start-after: begin aggregation avg
    :end-before: end aggregation avg
 
-sum
+Summed Value of a Field Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``sum()``
+query builder method to return the numerical total of
+the ``imdb.votes`` values from the entire ``movies``
+collection:
+
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -360,14 +490,20 @@ sum
    :start-after: begin aggregation sum
    :end-before: end aggregation sum
 
-with filter
+
+Aggregation on Matched Results Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``sum()``
+query builder method to return the numerical total of
+the ``imdb.votes`` values from movies released in
+after the year "2000":
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
    :start-after: begin aggregation with filter
    :end-before: end aggregation with filter
-
 
 .. _laravel-modify-results-query-builder:
 
@@ -397,12 +533,14 @@ back to the future% rating descending
       IMDB Rating: 8.5
       IMDB Votes: 636511
       Plot: A young man is accidentally sent 30 years into the past in a time-traveling DeLorean invented by his friend, Dr. Emmett Brown, and must make sure his high-school-age parents unite in order to save his own existence.
+
       Title: Back to the Future Part II
       Year: 1989
       Runtime: 108
       IMDB Rating: 7.8
       IMDB Votes: 292539
       Plot: After visiting 2015, Marty McFly must repeat his visit to 1955 to prevent disastrous changes to 1985... without interfering with his first trip.
+
       Title: Back to the Future Part III
       Year: 1990
       Runtime: 118
