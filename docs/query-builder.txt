@@ -180,6 +180,7 @@ year rating is > 8.5 and (year is 1986 or 1996)
 - Range and types (whereBetween, whereNull, whereIn, whereDate)
 
 whereBetween - rating 9 and 10
+
 .. io-code-block::
 
    .. input:: /includes/query-builder/MovieController.php
@@ -285,6 +286,7 @@ whereDate released on Jan 15, 2010
    :end-before: end query whereDate
 
 - Pattern search (like)
+
 %spider%man%
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -496,8 +498,8 @@ equivalent of db.movies.find({ 'imdb.votes': { $gte: 1000 }, $or: [{ "imdb.ratin
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
-   :start-after: begin query whereRaw
-   :end-before: end query whereRaw
+   :start-after: begin query raw
+   :end-before: end query raw
 
 - Array - ElemMatch "Element Match"
 
@@ -642,16 +644,16 @@ Field of Dreams votes 127k rating 7.5
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
-   :start-after: begin increment 
-   :end-before: end increment 
+   :start-after: begin increment
+   :end-before: end increment
 
 decrement
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
-   :start-after: begin decrement 
-   :end-before: end decrement 
+   :start-after: begin decrement
+   :end-before: end decrement
 
 - Modify array values - push, pull
 
@@ -673,4 +675,4 @@ decrement
    :language: php
    :dedent:
    :start-after: begin unset
-   :end-before: end unset 
+   :end-before: end unset
