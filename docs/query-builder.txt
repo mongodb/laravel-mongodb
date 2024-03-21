@@ -54,10 +54,6 @@ This guide shows examples of the following types of query builder operations:
 - :ref:`laravel-mongodb-read-query-builder`
 - :ref:`laravel-mongodb-write-query-builder`
 
-- Write operations
-  - link to
-
-
 Before You Get Started
 ----------------------
 
@@ -134,8 +130,6 @@ results returned from the query:
       IMDB Votes: 41
       Plot: The life of the greatest karate master of a generation.
 
-
-
 Logical Conditional Operation Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -147,8 +141,7 @@ the following logical conditional operations:
 - **NOT** which uses the ``whereNot()`` function
 - Nested logic groups
 
-- Nesting logical conditionals:  year 2010
-
+- Nesting logical conditionals:
 
 OR - back to the future or year 1955
 
@@ -175,8 +168,6 @@ NOT - imdb.rating not > 2 (or <= 2)
     :start-after: begin query whereNot
     :end-before: end query whereNot
 
-
-
 Nested logical groups
 year rating is > 8.5 and (year is 1986 or 1996)
 
@@ -185,7 +176,6 @@ year rating is > 8.5 and (year is 1986 or 1996)
     :dedent:
     :start-after: begin query nestedLogical
     :end-before: end query nestedLogical
-
 
 - Range and types (whereBetween, whereNull, whereIn, whereDate)
 
@@ -248,7 +238,6 @@ whereNull runtime: null
       Plot: London, 2007. Tom Jackman is the only living descendent of Dr. Jekyll and Mr. Hyde. He has made a deal with his dark side: a body share. What Mr. Hyde doesn't know is that Tom has a family....
 
 
-
 whereIn
 [Toy Story, Shrek 2, Johny English]
 
@@ -295,8 +284,6 @@ whereDate released on Jan 15, 2010
    :start-after: begin query whereDate
    :end-before: end query whereDate
 
-
-
 - Pattern search (like)
 %spider%man%
 
@@ -312,55 +299,118 @@ Matches results such as "Spider-Man", "Spider-Man 2", and "Kiss of the Spider Wo
 
 distinct: year
 
-TODO: figure out how to print in the view
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query distinct
+   :end-before: end query distinct
 
 distinct where: imdb.rating > 9 , distinct year
 
-TODO: figure out how to print in the view
+groupBy
 
-groupBy - TODO
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query groupBy
+   :end-before: end query groupBy
+
 
 - Aggregations (is this in Query Builder?)
-TODO
+
+count
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation count
+   :end-before: end aggregation count
+
+max
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation max
+   :end-before: end aggregation max
+
+min
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation min
+   :end-before: end aggregation min
+
+avg
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation avg
+   :end-before: end aggregation avg
+
+sum
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation sum
+   :end-before: end aggregation sum
+
+with filter
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation with filter
+   :end-before: end aggregation with filter
+
 
 .. _laravel-modify-results-query-builder:
 
 Modify Results
 --------------
 
-Modify results: orderBy,  skip, projection, projection with pagination
+Modify results: orderBy, skip, projection, projection with pagination
 
 orderby
 
 back to the future% rating descending
 
-.. literalinclude:: /includes/query-builder/MovieController.php
-   :language: php
-   :dedent:
-   :start-after: begin query orderBy
-   :end-before: end query orderBy
+.. io-code-block::
+   .. input:: /includes/query-builder/MovieController.php
+      :language: php
+      :dedent:
+      :start-after: begin query orderBy
+      :end-before: end query orderBy
 
-Title: Back to the Future
-Year: 1985
-Runtime: 116
-IMDB Rating: 8.5
-IMDB Votes: 636511
-Plot: A young man is accidentally sent 30 years into the past in a time-traveling DeLorean invented by his friend, Dr. Emmett Brown, and must make sure his high-school-age parents unite in order to save his own existence.
-Title: Back to the Future Part II
-Year: 1989
-Runtime: 108
-IMDB Rating: 7.8
-IMDB Votes: 292539
-Plot: After visiting 2015, Marty McFly must repeat his visit to 1955 to prevent disastrous changes to 1985... without interfering with his first trip.
-Title: Back to the Future Part III
-Year: 1990
-Runtime: 118
-IMDB Rating: 7.4
-IMDB Votes: 242390
-Plot: Enjoying a peaceable existence in 1885, Doctor Emmet Brown is about to be killed by Buford "Mad Dog" Tannen. Marty McFly travels back in time to save his friend.
+   .. output::
+      :language: none
+      :copyable: false
+
+      Title: Back to the Future
+      Year: 1985
+      Runtime: 116
+      IMDB Rating: 8.5
+      IMDB Votes: 636511
+      Plot: A young man is accidentally sent 30 years into the past in a time-traveling DeLorean invented by his friend, Dr. Emmett Brown, and must make sure his high-school-age parents unite in order to save his own existence.
+      Title: Back to the Future Part II
+      Year: 1989
+      Runtime: 108
+      IMDB Rating: 7.8
+      IMDB Votes: 292539
+      Plot: After visiting 2015, Marty McFly must repeat his visit to 1955 to prevent disastrous changes to 1985... without interfering with his first trip.
+      Title: Back to the Future Part III
+      Year: 1990
+      Runtime: 118
+      IMDB Rating: 7.4
+      IMDB Votes: 242390
+      Plot: Enjoying a peaceable existence in 1885, Doctor Emmet Brown is about to be killed by Buford "Mad Dog" Tannen. Marty McFly travels back in time to save his friend.
 
 skip
 like star trek% skip 7
+
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
@@ -368,11 +418,9 @@ like star trek% skip 7
    :end-before: end query skip
 
 
-
 To learn more about pagination, see
 `Paginating Query Builder Results <https://laravel.com/docs/{+mongodb-laravel-gh+}/pagination#paginating-query-builder-results>`__
 in the Laravel documentation.
-
 
 .. _laravel-mongodb-read-query-builder:
 
@@ -419,8 +467,8 @@ Mod - an even year
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
-   :start-after: begin query modulo 
-   :end-before: end query modulo 
+   :start-after: begin query modulo
+   :end-before: end query modulo
 
 - Regex - "Match Regular Expressions"
 
@@ -443,18 +491,70 @@ query
 ])->get()
 returns collection of models
 
-maybe a query like { status: "A", $or: [ { qty: { $lt: 30 } }, { item: /^p/ } ] }
-that combines multiple things
+equivalent of db.movies.find({ 'imdb.votes': { $gte: 1000 }, $or: [{ "imdb.rating": { $gt: 7 }, directors: { $in: [ "Yasujiro Ozu", "Sofia Coppola", "Federico Fellini" ] } }]});
 
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereRaw
+   :end-before: end query whereRaw
 
 - Array - ElemMatch "Element Match"
 
-TODO: Match cast member
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query elemMatch
+   :end-before: end query elemMatch
 
 https://www.mongodb.com/docs/manual/reference/operator/query/elemMatch/
 
-
 - Geospatial - near, geowithin, geointersects, geonear
+
+- Near
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query geoNear
+   :end-before: end query geoNear
+
+https://www.mongodb.com/docs/manual/reference/operator/query/near/
+
+You may need to create the index
+db.theaters.createIndex({"location.geo": "2dsphere"});
+
+geoWithin
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query geoWithin
+   :end-before: end query geoWithin
+
+uses https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/crud/read-operations/geo/#query-within-a-range
+
+geoIntersects
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query geoIntersects
+   :end-before: end query geoIntersects
+
+
+db.theaters.find({ "location.geo": { $geoIntersects: { $geometry: { type: "LineString", coordinates: [[-73.600525, 40.74416], [-72.600525, 40.74416]] } } } } )
+
+geoNear
+- provides distance from point which $near does not
+
+db.theaters.aggregate([ { $geoNear: { near: { type: "Point", coordinates: [-118.34, 34.10] }, distanceField: "dist.calculated", maxDistance: 500,  includeLocs: "dist.location", spherical: true } }] )
+
+not sure syntax is correct in the controller; no error thrown
+
+
+https://www.mongodb.com/docs/manual/reference/operator/aggregation/geoNear/
+
 
 - Projection
 
@@ -527,7 +627,50 @@ MongoDB Write Operations
 ------------------------
 
 - Upsert
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin upsert
+   :end-before: end upsert
+
 - Increment/ decrement
+
+Field of Dreams votes 127k rating 7.5
+
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin increment 
+   :end-before: end increment 
+
+decrement
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin decrement 
+   :end-before: end decrement 
+
 - Modify array values - push, pull
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin push
+   :end-before: end push
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin pull
+   :end-before: end pull
+
 - Remove a field from a document - Unset
 
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin unset
+   :end-before: end unset 
