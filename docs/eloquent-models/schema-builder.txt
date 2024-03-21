@@ -9,7 +9,7 @@ Schema Builder
    :values: tutorial
 
 .. meta::
-   :keywords: php framework, odm, code example, schema facade, artisan, eloquent, blueprint, artisan, migrate
+   :keywords: php framework, odm, code example, schema facade, eloquent, blueprint, artisan, migrate
 
 .. contents:: On this page
    :local:
@@ -68,8 +68,8 @@ following changes to perform the schema changes on your MongoDB database:
 .. tip::
 
    If your default database connection is set to anything other than your
-   MongoDB database, update the following items so that Artisan performs
-   the migration on the correct database:
+   MongoDB database, update the following setting to make sure the migration
+   specifies the correct database:
 
    - Specify ``mongodb`` in the ``$connection`` field of your migration class
    - Set ``DB_CONNECTION=mongodb`` in your ``.env`` configuration file
@@ -87,19 +87,19 @@ The following example migration class contains the following methods:
 Run or Roll Back a Migration
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To run the database migration from a class file, run the following Artisan
-command after replacing the placeholder:
+To run the database migration from a class file, run the following command
+after replacing the placeholder:
 
 .. code-block:: bash
 
    php artisan migrate --path=<path to your migration class file>
 
-This Artisan command runs the ``up()`` function in the class file to create
-the collection and index in the database specified in the ``config/database.php``
+This command runs the ``up()`` function in the class file to create the
+collection and index in the database specified in the ``config/database.php``
 file.
 
-To roll back the migration, run the following Artisan command after
-replacing the placeholder:
+To roll back the migration, run the following command after replacing the
+placeholder:
 
 .. code-block:: bash
 

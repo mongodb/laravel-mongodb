@@ -8,7 +8,7 @@ jobs:
     build:
         runs-on: "${{ matrix.os }}"
 
-        name: "PHP v${{ matrix.php }} with MongoDB ${{ matrix.mongodb }} ${{ matrix.mode }}"
+        name: "PHP ${{ matrix.php }} Laravel ${{ matrix.laravel }} MongoDB ${{ matrix.mongodb }} ${{ matrix.mode }}"
 
         strategy:
             matrix:
@@ -23,8 +23,11 @@ jobs:
                     - "8.1"
                     - "8.2"
                     - "8.3"
+                laravel:
+                  - "10.*"
                 include:
                     - php: "8.1"
+                      laravel: "10.*"
                       mongodb: "5.0"
                       mode: "low-deps"
 
@@ -57,6 +60,9 @@ jobs:
             -   name: "Show Docker version"
                 if: ${{ runner.debug }}
                 run: "docker version && env"
+
+            -   name: "Restrict Laravel version"
+                run: "composer require --dev --no-update 'laravel/framework:${{ matrix.laravel }}'"
 
             -   name: "Download Composer cache dependencies from cache"
                 id: "composer-cache"
