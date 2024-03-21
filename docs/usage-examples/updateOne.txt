@@ -61,16 +61,11 @@ The example calls the following methods on the ``Movie`` model:
       :language: console
       :visible: false
 
-      Title: Carol
-      Year: 2015
-      Runtime: 118
-      IMDB Rating: 7.3
-      IMDB Votes: 142000
-      Plot: Set in 1950s New York, a department-store clerk who dreams of a better life falls
-      for an older, married woman.
+      1
 
-To view the result, run the operation in a controller endpoint. Then, query for the document that has
-a ``title`` value of ``'Carol'`` and pass it to a view to see the updated document.
+The expected output shows the number of modified documents. To view the output, add the operation
+to a controller endpoint. Then, create a web route that calls the controller endpoint and returns
+the result to a view.
 
 .. tip::
 
