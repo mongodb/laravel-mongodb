@@ -84,12 +84,12 @@ class MovieController extends Controller
     }
 
     private function runWhereBetween() {
-        // begin query runWhereBetween
+        // begin query whereBetween
         $movies = DB::connection('mongodb')
             ->collection('movies')
             ->whereBetween('imdb.rating', [9, 9.5])
             ->get();
-        // end query runWhereBetween
+        // end query whereBetween
 
         return $movies;
     }
