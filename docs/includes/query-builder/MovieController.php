@@ -151,7 +151,7 @@ class MovieController extends Controller
     private function runExists() {
         // begin query exists
         $result = DB::collection('movies')
-            ->exists('title', 'I\'m a Cyborg, But That\'s OK');
+            ->exists('random_review', true);
         // end query exists
 
         print_r($result);
@@ -457,13 +457,13 @@ class MovieController extends Controller
         $resultsPerPage = 15;
         $projectionFields = ['title', 'runtime', 'imdb.rating'];
 
-        $movies = DB::collection('movies')
-            ->paginate($resultsPerPage, $projectionFields)
-            ->get();
+        $result = DB::collection('movies')
+            ->orderBy('imdb.votes', 'desc')
+            ->paginate($resultsPerPage, $projectionFields);
         // end query projection with pagination
 
-        return $movies;
-
+        print_r($result->toJson());
+        return null;
      }
 
      private function runCursorTimeout() {
@@ -574,7 +574,7 @@ class MovieController extends Controller
 
         //$result = $this->runLike();
 
-        //$result = $this->runExists();
+        $result = $this->runExists();
 
         //$result = $this->runAll();
 
@@ -607,7 +607,7 @@ class MovieController extends Controller
 
         //$result = $this->runOrderBy();
 
-        $result = $this->runGroupBy();
+        //$result = $this->runGroupBy();
 
         //$result = $this->runAggCount();
 
@@ -626,6 +626,8 @@ class MovieController extends Controller
         //$result = Movie::where('year', 1999)->get(); //first();
 
         //$result = $this->runProjection();
+
+        //$result = $this->runProjectionWithPagination();
 
         //$result = $this->runCursorTimeout();
 

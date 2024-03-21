@@ -510,11 +510,24 @@ after the year "2000":
 Modify Results
 --------------
 
-Modify results: orderBy, skip, projection, projection with pagination
+This section includes query builder examples for the
+following functions that modify the order and format
+of query results:
 
-orderby
+- Order results by the value of a field
+- Omit a specified number of results
+- Show a subset of fields and array values in the results
+- Paginate the results
 
-back to the future% rating descending
+
+
+Order Results Example
+~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``orderBy()``
+query builder method to arrange the results that match
+the filter specified in the ``title`` field by the
+``imdb.rating`` value in descending order:
 
 .. io-code-block::
    .. input:: /includes/query-builder/MovieController.php
@@ -528,28 +541,24 @@ back to the future% rating descending
       :visible: false
 
       Title: Back to the Future
-      Year: 1985
-      Runtime: 116
       IMDB Rating: 8.5
-      IMDB Votes: 636511
-      Plot: A young man is accidentally sent 30 years into the past in a time-traveling DeLorean invented by his friend, Dr. Emmett Brown, and must make sure his high-school-age parents unite in order to save his own existence.
+      ...
 
       Title: Back to the Future Part II
-      Year: 1989
-      Runtime: 108
       IMDB Rating: 7.8
-      IMDB Votes: 292539
-      Plot: After visiting 2015, Marty McFly must repeat his visit to 1955 to prevent disastrous changes to 1985... without interfering with his first trip.
+      ...
 
       Title: Back to the Future Part III
-      Year: 1990
-      Runtime: 118
       IMDB Rating: 7.4
-      IMDB Votes: 242390
-      Plot: Enjoying a peaceable existence in 1885, Doctor Emmet Brown is about to be killed by Buford "Mad Dog" Tannen. Marty McFly travels back in time to save his friend.
+      ...
 
-skip
-like star trek% skip 7
+Omit a Specified Number of Results Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``skip()``
+query builder method to omit the first "4" results that
+match the filter speficied in the ``title`` field,
+sorted by the ``year`` value in descending order:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -558,14 +567,102 @@ like star trek% skip 7
    :end-before: end query skip
 
 
+Show a Subset of Fields and Array Values in the Results Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``project()``
+query builder method to match documents that contain an
+``imdb.rating`` value higher than "8.5" and return results
+that only the following field values:
+
+- ``title`` field
+- Second through the fourth values of the ``cast`` array, if they exist
+- ``_id`` field, which is automatically included
+
+TODO: describe output
+
+.. io-code-block::
+
+   .. input:: /includes/query-builder/MovieController.php
+      :language: php
+      :dedent:
+      :start-after: begin query projection
+      :end-before: end query projection
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        {
+          "_id": { ... },
+          "title": "City Lights"
+          "cast": [
+            "Florence Lee",
+            "Harry Myers",
+            "Al Ernest Garcia"
+          ],
+        },
+        {
+          "_id": { ... },
+          "title": "Modern Times",
+          "cast": [
+            "Paulette Goddard",
+            "Henry Bergman",
+            "Tiny Sandford"
+          ]
+        },
+        {
+          "_id": { ... },
+          "title": "Casablanca"
+          "cast": [
+            "Ingrid Bergman",
+            "Paul Henreid",
+            "Claude Rains"
+          ],
+        },
+        ...
+      ]
+
+Paginate the Results Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``paginate()``
+query builder method to divide the entire ``movie``
+collection into discrete result sets of 15 documents.
+The example also includes a sort order to arrange the
+results by the ``imdb.votes`` field in descending order
+and a projection to include only specific fields in
+the results.
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query projection with pagination
+   :end-before: end query projection with pagination
+
 To learn more about pagination, see
 `Paginating Query Builder Results <https://laravel.com/docs/{+mongodb-laravel-gh+}/pagination#paginating-query-builder-results>`__
 in the Laravel documentation.
 
 .. _laravel-mongodb-read-query-builder:
 
-MongoDB Query Operators
------------------------
+MongoDB Query Operations
+------------------------
+
+This section includes query builder examples that
+show how to use the following MongoDB-specific query
+operations:
+
+- Check whether a document with a field exists
+- Check whether a document contains all the fields
+- Match documents that contain a specific number of elements in an array
+- Match documents that contain a specific data type in a field
+- Match documents that match a computed modulo value
+- Match documents that match a regular expression
+- Run MQL
+- elemMatch
+- geospatial
 
 - General - Exists, All, Size, Type, Mod
 
@@ -624,7 +721,7 @@ matches results such as "The Lord of the Rings: ..."
    :start-after: begin query whereRegex
    :end-before: end query whereRegex
 
-- Raw expressionsa
+- Raw expressions
 
 whereRaw([
 query
@@ -696,60 +793,6 @@ not sure syntax is correct in the controller; no error thrown
 https://www.mongodb.com/docs/manual/reference/operator/aggregation/geoNear/
 
 
-- Projection
-
-projection
-
-.. io-code-block::
-
-   .. input:: /includes/query-builder/MovieController.php
-      :language: php
-      :dedent:
-      :start-after: begin query projection
-      :end-before: end query projection
-
-   .. output::
-      :language: json
-      :visible: false
-
-      [
-        {
-          "_id": { ... },
-          "title": "City Lights"
-          "cast": [
-            "Florence Lee",
-            "Harry Myers",
-            "Al Ernest Garcia"
-          ],
-        },
-        {
-          "_id": { ... },
-          "title": "Modern Times",
-          "cast": [
-            "Paulette Goddard",
-            "Henry Bergman",
-            "Tiny Sandford"
-          ]
-        },
-        {
-          "_id": { ... },
-          "title": "Casablanca"
-          "cast": [
-            "Ingrid Bergman",
-            "Paul Henreid",
-            "Claude Rains"
-          ],
-        },
-        ...
-      ]
-
-projection with pagination
-
-.. literalinclude:: /includes/query-builder/MovieController.php
-   :language: php
-   :dedent:
-   :start-after: begin query projection with pagination
-   :end-before: end query projection with pagination
 
 - Cursor timeout
 
