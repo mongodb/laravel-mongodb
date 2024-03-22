@@ -39,36 +39,48 @@ class MovieController extends Controller
     private function runWhere()
     {
         // begin query where
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->where('imdb.rating', 9.3)
             ->get();
+        // end query where
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runOrWhere()
     {
         // begin query orWhere
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->where('year', 1955)
             ->orWhere('title', 'Back to the Future')
             ->get();
+        // end query orWhere
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runAndWhere()
     {
         // begin query andWhere
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->where('imdb.rating', '>', 8.5)
             ->where('year', '<', 1940)
             ->get();
+        // end query andWhere
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runNestedLogical()
     {
         // begin query nestedLogical
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->where('imdb.rating', '>', 8.5)
             ->where(function ($query) {
@@ -76,67 +88,99 @@ class MovieController extends Controller
                     ->where('year', 1986)
                     ->orWhere('year', 1996);
             })->get();
+        // end query nestedLogical
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runWhereNot()
     {
         // begin query whereNot
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->whereNot('imdb.rating', '>', 2)
             ->get();
+        // end query whereNot
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runWhereBetween()
     {
         // begin query whereBetween
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->whereBetween('imdb.rating', [9, 9.5])
             ->get();
+        // end query whereBetween
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runWhereNull()
     {
         // begin query whereNull
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->whereNull('runtime')
             ->get();
+        // end query whereNull
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runWhereDate()
     {
         // begin query whereDate
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->whereDate('released', '2010-1-15')
             ->get();
+        // end query whereDate
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runRegex()
     {
         // begin query whereRegex
-        return DB::connection('mongodb')
+        $result = DB::connection('mongodb')
             ->collection('movies')
             ->where('title', 'REGEX', new Regex('^the lord of .*', 'i'))
             ->get();
+        // end query whereRegex
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runWhereIn()
     {
         // begin query whereIn
-        return DB::collection('movies')
+        $result = DB::collection('movies')
             ->whereIn('title', ['Toy Story', 'Shrek 2', 'Johnny English'])
             ->get();
+        // end query whereIn
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runLike()
     {
         // begin query like
-        return DB::collection('movies')
+        $result = DB::collection('movies')
             ->where('title', 'like', '%spider%man%')
             ->get();
+        // end query like
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runExists()
@@ -153,9 +197,13 @@ class MovieController extends Controller
     private function runAll()
     {
         // begin query all
-        return DB::collection('movies')
+        $result = DB::collection('movies')
             ->where('movies', 'all', ['title', 'rated', 'imdb.rating'])
             ->getl();
+        // end query all
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runSize()
@@ -173,17 +221,25 @@ class MovieController extends Controller
     private function runType()
     {
         // begin query type
-        return DB::collection('movies')
+        $result = DB::collection('movies')
             ->where('released', 'type', 4)
             ->get();
+        // end query type
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runMod()
     {
         // begin query modulo
-        return DB::collection('movies')
+        $result = DB::collection('movies')
             ->where('year', 'mod', [2, 0])
             ->get();
+        // end query modulo
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runDistinct()
@@ -211,10 +267,14 @@ class MovieController extends Controller
     private function runOrderBy()
     {
         // begin query orderBy
-        return DB::collection('movies')
+        $result = DB::collection('movies')
             ->where('title', 'like', 'back to the future%')
             ->orderBy('imdb.rating', 'desc')
             ->get();
+        // end query orderBy
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runGroupBy()
@@ -299,33 +359,44 @@ class MovieController extends Controller
     private function runSkip()
     {
         // begin query skip
-        return DB::collection('movies')
+        $result = DB::collection('movies')
            ->where('title', 'like', 'star trek%')
            ->orderBy('year', 'asc')
            ->skip(4)
            ->get();
+        // end query skip
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runWhereRaw()
     {
         // begin query raw
-        return DB::collection('movies')
-           ->whereRaw([
-               'imdb.votes' => ['$gte' => 1000 ],
-               '$or' => [
-                   ['imdb.rating' => ['$gt' => 7]],
-                   ['directors' => ['$in' => [ 'Yasujiro Ozu', 'Sofia Coppola', 'Federico Fellini' ]]],
-               ],
-           ])
-           ->get();
+        $result = DB::collection('movies')
+            ->whereRaw([
+                'imdb.votes' => ['$gte' => 1000 ],
+                '$or' => [
+                    ['imdb.rating' => ['$gt' => 7]],
+                    ['directors' => ['$in' => [ 'Yasujiro Ozu', 'Sofia Coppola', 'Federico Fellini' ]]],
+                ],
+            ])->get();
+        // end query raw
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runElemMatch()
     {
         // begin query elemMatch
-        return DB::collection('movies')
+        $result = DB::collection('movies')
            ->where('writers', 'elemMatch', ['$eq' => 'Lana Wilson', '$eq' => 'Maya Forbes'])
            ->get();
+        // end query elemMatch
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runNear()
@@ -451,16 +522,20 @@ class MovieController extends Controller
     private function runCursorTimeout()
     {
         // begin query cursor timeout
-        return DB::collection('movies')
+        $result = DB::collection('movies')
            ->timeout(2) // value in seconds
            ->where('year', 2001)
            ->get();
+        // end query cursor timeout
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runUpsert()
     {
         // begin upsert
-        return DB::collection('movies')
+        $result = DB::collection('movies')
            ->where('title', 'Will Hunting')
            ->update(
                [
@@ -470,6 +545,10 @@ class MovieController extends Controller
                ],
                ['upsert' => true],
            );
+        // end upsert
+
+        echo "{$result->toJson()}";
+        return $result;
     }
 
     private function runIncrement()
@@ -538,8 +617,7 @@ class MovieController extends Controller
     public function show()
     {
         $result = null;
-        $result = $this->runWhere()->toJson();
-        echo '{$result}';
+        $result = $this->runWhere();
 
         //$result = $this->runOrWhere();
 
