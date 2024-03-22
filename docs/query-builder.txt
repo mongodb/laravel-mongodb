@@ -81,12 +81,11 @@ This section includes query builder examples for read operations in the
 following operator categories:
 
 - :ref:`Where method <laravel-query-builder-where-example>`
-- Logical conditionals
-- Ranges and type checks
-- Array operations
-- Pattern searches
-- Retrieve distinct values
-- Aggregations
+- :ref:`Logical conditionals <laravel-query-builder-logical-operations>`
+- :ref:`Ranges and type checks <laravel-query-builder-range-type>`
+- :ref:`Pattern searches <laravel-query-builder-pattern>`
+- :ref:`Retrieve distinct values <laravel-query-builder-distinct>`
+- :ref:`Aggregations <laravel-query-builder-aggregations>`
 
 .. _laravel-query-builder-where-example:
 
@@ -131,6 +130,8 @@ by the query:
       IMDB Rating: 9.3
       IMDB Votes: 41
       Plot: The life of the greatest karate master of a generation.
+
+.. _laravel-query-builder-logical-operations:
 
 Logical Conditional Operation Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -203,6 +204,8 @@ conditions:
    :dedent:
    :start-after: begin query nestedLogical
    :end-before: end query nestedLogical
+
+.. _laravel-query-builder-range-type:
 
 Ranges and Type Checks
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -345,8 +348,10 @@ query builder method to retrieve documents from the
    :start-after: begin query whereDate
    :end-before: end query whereDate
 
+.. _laravel-query-builder-pattern:
+
 Pattern Search Example
-^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~
 
 To specify a pattern, use the ``%`` symbol to match
 zero or more characters or the ``_`` symbol to match
@@ -377,6 +382,7 @@ query builder method to retrieve documents from the
       Title: Spider-Man 2
       ...
 
+.. _laravel-query-builder-distinct:
 
 Retrieve Distinct Values
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -390,6 +396,9 @@ of the ``year`` field for documents in the ``movies`` collections.
    :dedent:
    :start-after: begin query distinct
    :end-before: end query distinct
+
+
+.. _laravel-query-builder-aggregations:
 
 Aggregations
 ~~~~~~~~~~~~
@@ -576,11 +585,9 @@ query builder method to match documents that contain an
 that only the following field values:
 
 - ``title`` field
-- Second through the fourth values of the ``cast`` array, if they exist
+- ``cast`` field, including only the second through the fourth values of the array if they exist
 - ``_id`` field, which is automatically included
-
-TODO: describe output
-
+-
 .. io-code-block::
 
    .. input:: /includes/query-builder/MovieController.php
@@ -647,15 +654,15 @@ in the Laravel documentation.
 
 .. _laravel-mongodb-read-query-builder:
 
-MongoDB Query Operations
-------------------------
+MongoDB Read Operations
+-----------------------
 
 This section includes query builder examples that
 show how to use the following MongoDB-specific query
 operations:
 
-- Check whether a document with a field exists
-- Check whether a document contains all the fields
+- Match documetns that contain a field
+- Match documents that contain all specified fields
 - Match documents that contain a specific number of elements in an array
 - Match documents that contain a specific data type in a field
 - Match documents that match a computed modulo value
@@ -666,7 +673,12 @@ operations:
 
 - General - Exists, All, Size, Type, Mod
 
-Exists
+Contains a Field Example
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``exists()``
+query builder method to match documents that contain the
+field ``random_review``:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -674,7 +686,13 @@ Exists
    :start-after: begin query exists
    :end-before: end query exists
 
-All (contains all fields)
+Contains All Fields Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``all``
+query operator with the ``where()`` query builder
+method to match documents that contain all the
+specified fields:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -682,7 +700,13 @@ All (contains all fields)
    :start-after: begin query all
    :end-before: end query all
 
-Size (match size of array for a field)
+Match Array Size Example
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to pass the ``size``
+query operator with the ``where()`` query builder
+method to match documents that contain a ``directors``
+field that contains an array of exactly "5" elements:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -690,7 +714,13 @@ Size (match size of array for a field)
    :start-after: begin query size
    :end-before: end query size
 
-Type
+Match Data Type Example
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to pass the ``type``
+query operator with the ``where()`` query builder
+method to match documents that contain a ``directors``
+field that contains an array of exactly "5" elements:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -746,20 +776,37 @@ equivalent of db.movies.find({ 'imdb.votes': { $gte: 1000 }, $or: [{ "imdb.ratin
 
 https://www.mongodb.com/docs/manual/reference/operator/query/elemMatch/
 
-- Geospatial - near, geowithin, geointersects, geonear
+
+Geospatial Operations
+~~~~~~~~~~~~~~~~~~~~~
+
+The examples in this section show the query builder syntax you
+can use to perform geospatial queries on GeoJSON or coordinate
+pair data to retrieve the following types of locations:
+
+- Near a position
+- Within an area
+- Intersecting a geometry
+- Proximity data for nearby matches
+
+Near a Position Example
+~~~~~~~~~~~~~~~~~~~~~~~
 
 - Near
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
-   :start-after: begin query geoNear
-   :end-before: end query geoNear
+   :start-after: begin query near
+   :end-before: end query near
 
 https://www.mongodb.com/docs/manual/reference/operator/query/near/
 
 You may need to create the index
 db.theaters.createIndex({"location.geo": "2dsphere"});
+
+Within an Area Example
+~~~~~~~~~~~~~~~~~~~~~~
 
 geoWithin
 
@@ -771,6 +818,9 @@ geoWithin
 
 uses https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/crud/read-operations/geo/#query-within-a-range
 
+Intersecting a Geometry Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 geoIntersects
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -779,15 +829,18 @@ geoIntersects
    :start-after: begin query geoIntersects
    :end-before: end query geoIntersects
 
-
 db.theaters.find({ "location.geo": { $geoIntersects: { $geometry: { type: "LineString", coordinates: [[-73.600525, 40.74416], [-72.600525, 40.74416]] } } } } )
 
+Proximity Data for Nearby Matches Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 geoNear
-- provides distance from point which $near does not
 
-db.theaters.aggregate([ { $geoNear: { near: { type: "Point", coordinates: [-118.34, 34.10] }, distanceField: "dist.calculated", maxDistance: 500,  includeLocs: "dist.location", spherical: true } }] )
-
-not sure syntax is correct in the controller; no error thrown
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query geoNear
+   :end-before: end query geoNear
 
 
 https://www.mongodb.com/docs/manual/reference/operator/aggregation/geoNear/
@@ -809,7 +862,24 @@ Note this is in seconds rather than milliseconds.
 MongoDB Write Operations
 ------------------------
 
-- Upsert
+- Upsert a document
+- Increment a numerical value
+- Decrement a numerical value
+- Add an array element
+- Remove a value from an array
+- Remove a field from a document
+
+Upsert a Document Example
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``update()``
+query builder method and ``upsert`` option to update
+the matching document or insert one with the specified
+data if it does not exist. When setting the ``upsert``
+option to ``true``, if the document does not exist,
+the command inserts both the data and the ``title``
+field and value specified in the ``where()`` query
+operation:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -817,10 +887,12 @@ MongoDB Write Operations
    :start-after: begin upsert
    :end-before: end upsert
 
-- Increment/ decrement
+Increment a Numerical Value Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Field of Dreams votes 127k rating 7.5
-
+The following example shows how to use the ``increment()``
+query builder method to add "3000" to the value of
+the ``imdb.votes`` field in the matched document:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -828,7 +900,12 @@ Field of Dreams votes 127k rating 7.5
    :start-after: begin increment
    :end-before: end increment
 
-decrement
+Decrement a Numerical Value Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``decrement()``
+query builder method to subtract "0.2" from the value of
+the ``imdb.rating`` field in the matched document:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -838,11 +915,26 @@ decrement
 
 - Modify array values - push, pull
 
+Add an Array Element Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``push()``
+query builder method to add "Gary Cole" to the ``cast``
+array field in the matched document:
+
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
    :start-after: begin push
    :end-before: end push
+
+Remove an Array Element Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``pull()``
+query builder method to remove the "Adventure" value
+from the ``genres`` field from the document matched
+by the query:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -850,7 +942,12 @@ decrement
    :start-after: begin pull
    :end-before: end pull
 
-- Remove a field from a document - Unset
+Remove a Field Example
+~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``unset()``
+query builder method to remove the ``tomatoes.viewer``
+field and value from the document matched by the query:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
