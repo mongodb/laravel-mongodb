@@ -6,10 +6,10 @@ Usage Examples
 
 .. facet::
    :name: genre
-   :values: tutorial
+   :values: reference
 
 .. meta::
-   :keywords: set up, runnable, code example
+   :keywords: set up, runnable
 
 .. contents:: On this page
    :local:
@@ -25,13 +25,13 @@ operations. Each usage example includes the following components:
 
 - Explanation of the MongoDB operation
 - Example controller code that runs the MongoDB operation
-- Output displayed by the view or print statement
+- Output displayed by the print statement
 
 How to Use the Usage Examples
 -----------------------------
 
-To learn how to run the usage examples by editing the ``{+quickstart-app-name+}`` :ref:`Quick Start
-<laravel-quick-start>` application, see the following sections:
+To learn how to add a usage example to your Laravel application and view the expected output,
+see the following sections:
 
 - :ref:`before-start`
 - :ref:`run-usage-examples`
@@ -41,82 +41,28 @@ To learn how to run the usage examples by editing the ``{+quickstart-app-name+}`
 Before You Get Started
 ~~~~~~~~~~~~~~~~~~~~~~
 
+You can run the usage examples from your own Laravel application or from the
+``{+quickstart-app-name+}`` application created in the :ref:`laravel-quick-start` guide. 
+
 The usage examples are designed to run operations on a MongoDB deployment that contains
-the MongoDB Atlas sample datasets. When you run the example code without this sample data,
-the output might not match. 
+the MongoDB Atlas sample datasets. Before running the usage examples, ensure that you load
+the sample data into the MongoDB cluster to which your application connects. Otherwise, the
+operation output might not match the text included in the :guilabel:`View Output` tab of
+the usage example page.
 
-You can run the usage examples from the ``{+quickstart-app-name+}`` Laravel web application and
-MongoDB Atlas cluster that you set up in the :ref:`laravel-quick-start` guide. After completing
-the Quick Start, your application contains the following files:
+.. tip:: 
 
-- ``Movie.php``: defines a ``Movie`` model configured to use the MongoDB database
-- ``MovieController.php``: contains controller functions to run database operations
-- ``browse_movie.blade.php``: contains HTML code to view MongoDB documents
-- ``web.php``: defines web routes that call controller functions
+   For instructions on loading the sample data into a MongoDB cluster, see
+   :atlas:`Load Sample Data </sample-data>` in the Atlas documentation. 
 
 .. _run-usage-examples:
 
 Run the Usage Example
 ~~~~~~~~~~~~~~~~~~~~~
 
-Each Usage Example page includes sample code that demonstrates a MongoDB operation. You can
-edit the existing files in your ``{+quickstart-app-name+}`` application to run each operation
-and view the expected output. 
+Each usage example page includes sample code that demonstrates a MongoDB operation and prints
+a result. To run the operation, you can copy the sample code to a controller endpoint in your
+Laravel application.
 
-.. procedure::
-   :style: connected
-
-   .. step:: Add the example to your application
-
-      If the usage example demonstrates a read operation, add the code example to the ``show()``
-      function in the ``MovieController.php`` file.
-
-      If the usage example demonstrates a write operation, you can add the example to an existing
-      controller function in the ``MovieController.php`` file, which include ``create()``, ``edit()``,
-      and ``destroy()``. You can also create your own controller function to contain the sample code.
-  
-   .. step:: Return the result to a view
-
-      To view the results of a read operation, add the following return statement to the
-      ``show()`` function in ``MovieController.php``:
-
-      .. code-block:: php
-
-         return view('browse_movies', [
-             'movies' => $<variable name>
-         ]);
-
-      To view the number of documents that are inserted, modified, or deleted by a write operation, add
-      the following print statement to your controller function in ``MovieController.php``:
-
-      .. code-block:: php
-
-         print_r($<variable name>)
-
-      Replace the ``<variable name>`` placeholder with the variable name specified in the usage example.
-
-   .. step:: Run the example
-
-      To run the usage example, add the following route to your ``web.php`` file:
-      
-      .. code-block:: bash
-
-         Route::get('/browse_movies/', [MovieController::class, '<function name>']);
-      
-      Replace the ``<function name>`` placeholder with the name of the controller function that contains your
-      usage example code.
-
-      Then, start your application by running the following command:
-
-      .. code-block:: bash
-
-         php artisan serve
-
-   .. step:: View the expected output
-
-      To view the expected output included on the usage example page, open the following URL in your web
-      browser:
-
-      .. code-block:: bash
-
-         http://127.0.0.1:8000/browse_movies
+To view the expected output of the operation, you can add a web route to your application that
+calls the controller function and returns the result to a web interface.
