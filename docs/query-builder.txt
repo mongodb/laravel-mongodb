@@ -66,8 +66,8 @@ To perform read and write operations by using the query builder, import the
 
 .. _laravel-retrieve-query-builder:
 
-Retrieve Documents
-------------------
+Retrieve Matching Documents
+---------------------------
 
 This section includes query builder examples for read operations in the
 following operator categories:
@@ -99,29 +99,44 @@ by the query:
       :end-before: end query where
 
    .. output::
-      :language: none
+      :language: json
       :visible: false
 
-      Title: Cosmos
-      Year: 1980
-      Runtime: 60
-      IMDB Rating: 9.3
-      IMDB Votes: 17174
-      Plot: Astronomer Carl Sagan leads us on an engaging guided tour of the various elements and cosmological theories of the universe.
-
-      Title: The Shawshank Redemption
-      Year: 1994
-      Runtime: 142
-      IMDB Rating: 9.3
-      IMDB Votes: 1521105
-      Plot: Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.
-
-      Title: The Real Miyagi
-      Year: 2015
-      Runtime: 90
-      IMDB Rating: 9.3
-      IMDB Votes: 41
-      Plot: The life of the greatest karate master of a generation.
+      [
+         { "title": "Cosmos",
+           "year": 1980,
+           "runtime": 60,
+           "imdb": {
+             "rating": 9.3,
+             "votes": 17174,
+             "id": 81846
+           },
+           "plot": "Astronomer Carl Sagan leads us on an engaging guided tour of the various elements and cosmological theories of the universe.",
+           ...
+         },
+         { "title": "The Shawshank Redemption",
+           "year": 1994,
+           "runtime": 142,
+           "imdb": {
+             "rating": 9.3,
+             "votes": 1521105,
+             "id": 111161
+           },
+           "plot": "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+           ...
+         },
+         { "title": "The Real Miyagi",
+           "year": 2015,
+           "runtime": 90,
+           "imdb": {
+             "rating": 9.3,
+             "votes": 41,
+             "id": 2313306
+           },
+           "plot": "The life of the greatest karate master of a generation.",
+            ...
+         }
+      ]
 
 .. _laravel-query-builder-logical-operations:
 
@@ -370,17 +385,15 @@ query builder method to retrieve documents from the
       :end-before: end query like
 
    .. output::
-      :language: none
+      :language: json
       :visible: false
 
-      Title: Kiss of the Spider Woman
-      ...
-
-      Title: Spider-Man
-      ...
-
-      Title: Spider-Man 2
-      ...
+      [
+         { "title": "Kiss of the Spider Woman", ... },
+         { "title": "Spider-Man", ... },
+         { "title": "Spider-Man 2", ...},
+         ...
+      ]
 
 .. _laravel-query-builder-distinct:
 
