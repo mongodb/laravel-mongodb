@@ -528,7 +528,7 @@ of query results:
 - Show a subset of fields and array values in the results
 - Paginate the results
 
-
+ .. _laravel-query-builder-orderby:
 
 Order Results Example
 ~~~~~~~~~~~~~~~~~~~~~
@@ -561,6 +561,8 @@ the filter specified in the ``title`` field by the
       IMDB Rating: 7.4
       ...
 
+ .. _laravel-query-builder-skip:
+
 Omit a Specified Number of Results Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -575,6 +577,7 @@ sorted by the ``year`` value in descending order:
    :start-after: begin query skip
    :end-before: end query skip
 
+ .. _laravel-query-builder-project:
 
 Show a Subset of Fields and Array Values in the Results Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -631,6 +634,8 @@ that only the following field values:
         ...
       ]
 
+ .. _laravel-query-builder-paginate:
+
 Paginate the Results Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -674,6 +679,8 @@ operations:
 
 - General - Exists, All, Size, Type, Mod
 
+ .. _laravel-query-builder-exists:
+
 Contains a Field Example
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -690,6 +697,8 @@ field ``random_review``:
 To learn more about this query operator, see
 :manual:`$exists </reference/operator/query/exists/>`
 in the {+server-docs-name+}.
+
+ .. _laravel-query-builder-all:
 
 Contains All Fields Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -709,6 +718,8 @@ To learn more about this query operator, see
 :manual:`$all </reference/operator/query/all/>`
 in the {+server-docs-name+}.
 
+ .. _laravel-query-builder-size:
+
 Match Array Size Example
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -727,6 +738,8 @@ To learn more about this query operator, see
 :manual:`$size </reference/operator/query/size/>`
 in the {+server-docs-name+}.
 
+ .. _laravel-query-builder-type:
+
 Match Data Type Example
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -744,6 +757,8 @@ field that contains an array of exactly "5" elements:
 To learn more about the type codes and query operator, see
 :manual:`$type </reference/operator/query/type/>`
 in the {+server-docs-name+}.
+
+ .. _laravel-query-builder-mod:
 
 Match a Value Computed with Modulo Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -764,6 +779,8 @@ To learn more about this query operator, see
 :manual:`$mod </reference/operator/query/mod/>`
 in the {+server-docs-name+}.
 
+ .. _laravel-query-builder-regex:
+
 Match a Regular Expression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -781,6 +798,8 @@ field that matches the specified regular expression:
 To learn more about regular expression queries in MongoDB, see
 :manual:`$regex </reference/operator/query/regex/>`
 in the {+server-docs-name+}.
+
+ .. _laravel-query-builder-whereRaw:
 
 Run Mongo Query API Queries Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -806,6 +825,7 @@ The following code shows the equivalent MongoDB query:
        directors: { $in: [ "Yasujiro Ozu", "Sofia Coppola", "Federico Fellini" ] }
    }]});
 
+ .. _laravel-query-builder-elemMatch:
 
 Match Array Elements Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -815,10 +835,6 @@ query operator with the ``where()`` query builder
 method to match documents that contain a at least one
 array element that matches at least one of the conditions
 in the specified query:
-
-field that matches the specified regular expression:
-
-- Array - ElemMatch "Element Match"
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -830,6 +846,7 @@ To learn more about regular expression queries in MongoDB, see
 the :manual:`$elemMatch operator <reference/operator/query/elemMatch/>`
 in the {+server-docs-name+}.
 
+ .. _laravel-query-builder-cursor-timeout:
 
 Specify Cursor Timeout Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -842,8 +859,14 @@ TODO:
    :start-after: begin query cursor timeout
    :end-before: end query cursor timeout
 
-Note this is in seconds rather than milliseconds.
+.. note::
 
+   This setting specifies a ``maxTimeMS`` value in seconds instead of
+   milliseconds. To learn more about the ``maxTimeMS`` value, see
+   `MongoDB\Collection::find() <https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBCollection-find/>`__
+   in the PHP Library documentation.
+
+ .. _laravel-query-builder-geospatial:
 
 Match Locations by Using Geospatial Operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -856,6 +879,15 @@ pair data to retrieve the following types of locations:
 - Within an area
 - Intersecting a geometry
 - Proximity data for nearby matches
+
+.. important::
+
+   To perform GeoJSON queries in MongoDB, you must create either
+   ``2d`` or ``2dsphere`` index on the collection. To learn more
+   about these indexes, see :manual:`Geospatial Indexes </core/indexes/index-types/index-geospatial/>`
+   in the {+server-docs-name+}.
+
+ .. _laravel-query-builder-geospatial-near:
 
 Near a Position Example
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -872,8 +904,7 @@ field ``random_review``:
 
 https://www.mongodb.com/docs/manual/reference/operator/query/near/
 
-You may need to create the index
-db.theaters.createIndex({"location.geo": "2dsphere"});
+ .. _laravel-query-builder-geospatial-geoWithin:
 
 Within an Area Example
 ~~~~~~~~~~~~~~~~~~~~~~
@@ -888,10 +919,11 @@ geoWithin
 
 uses https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/crud/read-operations/geo/#query-within-a-range
 
+ .. _laravel-query-builder-geospatial-geoIntersects:
+
 Intersecting a Geometry Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-geoIntersects
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -901,10 +933,11 @@ geoIntersects
 
 db.theaters.find({ "location.geo": { $geoIntersects: { $geometry: { type: "LineString", coordinates: [[-73.600525, 40.74416], [-72.600525, 40.74416]] } } } } )
 
+ .. _laravel-query-builder-geospatial-geoNear:
+
 Proximity Data for Nearby Matches Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-geoNear
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
