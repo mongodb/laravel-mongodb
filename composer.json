@@ -39,6 +39,9 @@
         "spatie/laravel-query-builder": "^5.6",
         "phpstan/phpstan": "^1.10"
     },
+    "suggest": {
+        "mongodb/builder": "Provides a fluent aggregation builder for MongoDB pipelines"
+    },
     "minimum-stability": "dev",
     "replace": {
         "jenssegers/mongodb": "self.version"
