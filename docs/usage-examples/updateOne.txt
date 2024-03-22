@@ -47,7 +47,7 @@ The example calls the following methods on the ``Movie`` model:
    .. input::
       :language: php
 
-      $movie = Movie::where('title', 'Carol')
+      $updates = Movie::where('title', 'Carol')
           ->orderBy('_id')
           ->first()
           ->update([
@@ -56,22 +56,20 @@ The example calls the following methods on the ``Movie`` model:
                   "votes" => 142000
                ],
          ]);
+      
+      echo "Updated documents: {$updates}";
 
    .. output::
       :language: console
       :visible: false
 
-      1
+      Updated documents: 1
 
-The expected output shows the number of modified documents. To view the output, add the operation
-to a controller endpoint. Then, create a web route that calls the controller endpoint and returns
-the result to a web interface.
+For instructions on editing your Laravel application to run the usage example, see the
+:ref:`Usage Example landing page <laravel-usage-examples>`.
 
 .. tip::
 
-   You can add this usage example to the Laravel application created in the :ref:`laravel-quick-start`
-   and view the expected output. For instructions on editing your ``{+quickstart-app-name+}`` application
-   to run the usage example, see the :ref:`Usage Example landing page <laravel-usage-examples>`.
+   To learn more about updating data with {+odm-short+}, see the `Updates
+   <https://laravel.com/docs/6.x/eloquent#updates>`__ section of the Laravel documentation.
 
-To learn more about updating data with {+odm-short+}, see the `Updates
-<https://laravel.com/docs/6.x/eloquent#updates>`__ section of the Laravel documentation.
