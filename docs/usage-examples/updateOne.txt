@@ -71,5 +71,6 @@ For instructions on editing your Laravel application to run the usage example, s
 .. tip::
 
    To learn more about updating data with {+odm-short+}, see the `Updates
-   <https://laravel.com/docs/6.x/eloquent#updates>`__ section of the Laravel documentation.
+   <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#updates>`__ section of the
+   Laravel documentation.
 
