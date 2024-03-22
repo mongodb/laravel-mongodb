@@ -24,7 +24,7 @@ Usage examples show runnable code examples to demonstrate frequently used MongoD
 operations. Each usage example includes the following components:
 
 - Explanation of the MongoDB operation
-- Example controller code that runs the MongoDB operation
+- Example code that you can run from an application controller
 - Output displayed by the print statement
 
 How to Use the Usage Examples
@@ -47,7 +47,7 @@ You can run the usage examples from your own Laravel application or from the
 The usage examples are designed to run operations on a MongoDB deployment that contains
 the MongoDB Atlas sample datasets. Before running the usage examples, ensure that you load
 the sample data into the MongoDB cluster to which your application connects. Otherwise, the
-operation output might not match the text included in the :guilabel:`View Output` tab of
+operation output might not match the text included in the ``{+code-output-label+}`` tab of
 the usage example page.
 
 .. tip:: 
