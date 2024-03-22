@@ -30,7 +30,6 @@ interface and syntax.
    {+odm-short+} extends Laravel's query builder and Eloquent ORM, both of
    which can run similar database operations. To learn more about retrieving
    documents by using Eloquent models, see :ref:`laravel-fundamentals-retrieve`.
-   TODO: link to Eloquent Models page once merged
 
 Laravel provides a **facade** to access the query builder class ``DB``, which
 lets you perform database operations. Facades are static interfaces to
@@ -61,13 +60,6 @@ Before You Get Started
 To run the code examples in this guide, complete the
 :ref:`Quick Start <laravel-quick-start>` tutorial to configure a web
 application and run the example code from a controller method.
-
-..
-   TODO: this requirement can be removed after https://jira.mongodb.org/browse/DOCSP-37770 is completed
-
-   Replace the `browse_movie.blade.php <https://github.com/mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movies.blade.php>`__
-   file, which accesses Eloquent ORM operation results, with the `browse_movies_array.blade.php <https://github.com/mongodb-university/laravel-quickstart/blob/main/my-app/resources/views/browse_movies_array.blade.php>`__
-   file to access the ar
 
 To perform read and write operations by using the query builder, import the
 ``Illuminate\Support\Facades\DB`` facade and compose your query.
@@ -397,7 +389,6 @@ of the ``year`` field for documents in the ``movies`` collections.
    :start-after: begin query distinct
    :end-before: end query distinct
 
-
 .. _laravel-query-builder-aggregations:
 
 Aggregations
@@ -415,6 +406,8 @@ query results, to return the following information:
 - Summed Value of a Field
 - Aggregation on Matched Results
 
+.. _laravel-query-builder-aggregation-groupby:
+
 Results Grouped by Common Field Values Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -427,6 +420,8 @@ TODO: fix this
    :dedent:
    :start-after: begin query groupBy
    :end-before: end query groupBy
+
+.. _laravel-query-builder-aggregation-count:
 
 Number of Results Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -442,6 +437,8 @@ collection:
    :start-after: begin aggregation count
    :end-before: end aggregation count
 
+.. _laravel-query-builder-aggregation-max:
+
 Maximum Value of a Field Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -455,6 +452,8 @@ value of the ``runtime`` field from the entire
    :dedent:
    :start-after: begin aggregation max
    :end-before: end aggregation max
+
+.. _laravel-query-builder-aggregation-min:
 
 Minimum Value of a Field Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -470,6 +469,8 @@ collection:
    :start-after: begin aggregation min
    :end-before: end aggregation min
 
+.. _laravel-query-builder-aggregation-avg:
+
 Average Value of a Field Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
@@ -483,6 +484,8 @@ the entire ``movies`` collection.
    :dedent:
    :start-after: begin aggregation avg
    :end-before: end aggregation avg
+
+.. _laravel-query-builder-aggregation-sum:
 
 Summed Value of a Field Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -499,6 +502,7 @@ collection:
    :start-after: begin aggregation sum
    :end-before: end aggregation sum
 
+.. _laravel-query-builder-aggregation-filter:
 
 Aggregation on Matched Results Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -523,12 +527,12 @@ This section includes query builder examples for the
 following functions that modify the order and format
 of query results:
 
-- Order results by the value of a field
-- Omit a specified number of results
-- Show a subset of fields and array values in the results
-- Paginate the results
+- :ref:`Order results by the value of a field <laravel-query-builder-orderby>`
+- :ref:`Omit a specified number of results <laravel-query-builder-skip>`
+- :ref:`Show a subset of fields and array values in the results <laravel-query-builder-project>`
+- :ref:`Paginate the results <laravel-query-builder-paginate>`
 
- .. _laravel-query-builder-orderby:
+.. _laravel-query-builder-orderby:
 
 Order Results Example
 ~~~~~~~~~~~~~~~~~~~~~
@@ -539,6 +543,7 @@ the filter specified in the ``title`` field by the
 ``imdb.rating`` value in descending order:
 
 .. io-code-block::
+
    .. input:: /includes/query-builder/MovieController.php
       :language: php
       :dedent:
@@ -561,7 +566,7 @@ the filter specified in the ``title`` field by the
       IMDB Rating: 7.4
       ...
 
- .. _laravel-query-builder-skip:
+.. _laravel-query-builder-skip:
 
 Omit a Specified Number of Results Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -577,7 +582,7 @@ sorted by the ``year`` value in descending order:
    :start-after: begin query skip
    :end-before: end query skip
 
- .. _laravel-query-builder-project:
+.. _laravel-query-builder-project:
 
 Show a Subset of Fields and Array Values in the Results Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -590,7 +595,7 @@ that only the following field values:
 - ``title`` field
 - ``cast`` field, including only the second through the fourth values of the array if they exist
 - ``_id`` field, which is automatically included
--
+
 .. io-code-block::
 
    .. input:: /includes/query-builder/MovieController.php
@@ -666,20 +671,18 @@ This section includes query builder examples that
 show how to use the following MongoDB-specific query
 operations:
 
-- Match documetns that contain a field
-- Match documents that contain all specified fields
-- Match documents that contain a specific number of elements in an array
-- Match documents that contain a specific data type in a field
-- Match documents that contain a computed modulo value
-- Match documents that match a regular expression
-- Run Mongo Query API queries
-- Match documents that contain array elements
-- Specify a cursor timeout
-- Match Locations by Using Geospatial Operations
+- :ref:`Match documetns that contain a field <laravel-query-builder-exists>`
+- :ref:`Match documents that contain all specified fields <laravel-query-builder-all>`
+- :ref:`Match documents that contain a specific number of elements in an array <laravel-query-builder-size>`
+- :ref:`Match documents that contain a specific data type in a field <laravel-query-builder-type>`
+- :ref:`Match documents that contain a computed modulo value <laravel-query-builder-mod>`
+- :ref:`Match documents that match a regular expression <laravel-query-builder-regex>`
+- :ref:`Run MongoDB Query API queries <laravel-query-builder-whereRaw>`
+- :ref:`Match documents that contain array elements <laravel-query-builder-elemMatch>`
+- :ref:`Specify a cursor timeout <laravel-query-builder-cursor-timeout>`
+- :ref:`Match Locations by Using Geospatial Operations <laravel-query-builder-geospatial>`
 
-- General - Exists, All, Size, Type, Mod
-
- .. _laravel-query-builder-exists:
+.. _laravel-query-builder-exists:
 
 Contains a Field Example
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -698,7 +701,7 @@ To learn more about this query operator, see
 :manual:`$exists </reference/operator/query/exists/>`
 in the {+server-docs-name+}.
 
- .. _laravel-query-builder-all:
+.. _laravel-query-builder-all:
 
 Contains All Fields Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -718,7 +721,7 @@ To learn more about this query operator, see
 :manual:`$all </reference/operator/query/all/>`
 in the {+server-docs-name+}.
 
- .. _laravel-query-builder-size:
+.. _laravel-query-builder-size:
 
 Match Array Size Example
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -738,7 +741,7 @@ To learn more about this query operator, see
 :manual:`$size </reference/operator/query/size/>`
 in the {+server-docs-name+}.
 
- .. _laravel-query-builder-type:
+.. _laravel-query-builder-type:
 
 Match Data Type Example
 ~~~~~~~~~~~~~~~~~~~~~~~
@@ -758,7 +761,7 @@ To learn more about the type codes and query operator, see
 :manual:`$type </reference/operator/query/type/>`
 in the {+server-docs-name+}.
 
- .. _laravel-query-builder-mod:
+.. _laravel-query-builder-mod:
 
 Match a Value Computed with Modulo Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -779,7 +782,7 @@ To learn more about this query operator, see
 :manual:`$mod </reference/operator/query/mod/>`
 in the {+server-docs-name+}.
 
- .. _laravel-query-builder-regex:
+.. _laravel-query-builder-regex:
 
 Match a Regular Expression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -846,7 +849,7 @@ To learn more about regular expression queries in MongoDB, see
 the :manual:`$elemMatch operator <reference/operator/query/elemMatch/>`
 in the {+server-docs-name+}.
 
- .. _laravel-query-builder-cursor-timeout:
+.. _laravel-query-builder-cursor-timeout:
 
 Specify Cursor Timeout Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -876,8 +879,8 @@ can use to perform geospatial queries on GeoJSON or coordinate
 pair data to retrieve the following types of locations:
 
 - Near a position
-- Within an area
-- Intersecting a geometry
+- Within a the boundary of a GeoJSON object
+- Intersecting a GeoJSON object
 - Proximity data for nearby matches
 
 .. important::
@@ -887,13 +890,17 @@ pair data to retrieve the following types of locations:
    about these indexes, see :manual:`Geospatial Indexes </core/indexes/index-types/index-geospatial/>`
    in the {+server-docs-name+}.
 
- .. _laravel-query-builder-geospatial-near:
+To learn more about GeoJSON objects that MongoDB supports,
+see :manual:`GeoJSON Objects </reference/geojson/>`
+in the {+server-docs-name+}.
+
+.. _laravel-query-builder-geospatial-near:
 
 Near a Position Example
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-The following example shows how to use the ``near()``
-query builder method to match documents that contain the
+The following example shows how to use the ``near``
+query operatorquery operator with the ``where()``query builder method to match documents that contain the
 field ``random_review``:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -902,14 +909,20 @@ field ``random_review``:
    :start-after: begin query near
    :end-before: end query near
 
-https://www.mongodb.com/docs/manual/reference/operator/query/near/
+To learn more about this operator, see
+:manual:`$near operator </reference/operator/query/near/>`
+in the {+server-docs-name+}.
 
- .. _laravel-query-builder-geospatial-geoWithin:
+.. _laravel-query-builder-geospatial-geoWithin:
 
 Within an Area Example
 ~~~~~~~~~~~~~~~~~~~~~~
 
-geoWithin
+The following example shows how to use the ``geoWithin``
+query operator with the ``where()``
+query builder method to match documents that contain a
+location within the bounds of the specified ``Polygon``
+GeoJSON object:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -917,13 +930,15 @@ geoWithin
    :start-after: begin query geoWithin
    :end-before: end query geoWithin
 
-uses https://www.mongodb.com/docs/drivers/java/sync/current/fundamentals/crud/read-operations/geo/#query-within-a-range
-
  .. _laravel-query-builder-geospatial-geoIntersects:
 
 Intersecting a Geometry Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The following example shows how to use the ``geoInstersects``
+query operator with the ``where()`` query builder method to
+match documents that contain a location that intersects with
+the specified ``LineString`` GeoJSON object:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -931,13 +946,15 @@ Intersecting a Geometry Example
    :start-after: begin query geoIntersects
    :end-before: end query geoIntersects
 
-db.theaters.find({ "location.geo": { $geoIntersects: { $geometry: { type: "LineString", coordinates: [[-73.600525, 40.74416], [-72.600525, 40.74416]] } } } } )
-
  .. _laravel-query-builder-geospatial-geoNear:
 
 Proximity Data for Nearby Matches Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The following example shows how to use the ``geoNear``
+aggregation operator with the ``raw()`` query builder method
+to perform an aggregation that returns metadata such as
+proximity information for each match:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -945,21 +962,21 @@ Proximity Data for Nearby Matches Example
    :start-after: begin query geoNear
    :end-before: end query geoNear
 
-
-https://www.mongodb.com/docs/manual/reference/operator/aggregation/geoNear/
-
+To learn more about this aggregation operator, see
+:manual:`$geoNear operator </reference/operator/aggregation/geoNear/>`
+in the {+server-docs-name+}.
 
 .. _laravel-mongodb-write-query-builder:
 
 MongoDB Write Operations
 ------------------------
 
-- Upsert a document
-- Increment a numerical value
-- Decrement a numerical value
-- Add an array element
-- Remove a value from an array
-- Remove a field from a document
+- :ref:`Upsert a document <laravel-mongodb-query-builder-upsert>`
+- :ref:`Increment a numerical value <laravel-mongodb-query-builder-increment>`
+- :ref:`Decrement a numerical value <laravel-mongodb-query-builder-decrement>`
+- :ref:`Add an array element <laravel-mongodb-query-builder-push>`
+- :ref:`Remove a value from an array <laravel-mongodb-query-builder-pull>`
+- :ref:`Remove a field from a document <laravel-mongodb-query-builder-unset>`
 
 .. _laravel-mongodb-query-builder-upsert:
 
