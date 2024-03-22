@@ -604,6 +604,7 @@ that only the following field values:
 - ``cast`` field, including only the second through the fourth values of the array if they exist
 - ``_id`` field, which is automatically included
 
+
 .. io-code-block::
 
    .. input:: /includes/query-builder/MovieController.php
@@ -647,7 +648,7 @@ that only the following field values:
         ...
       ]
 
- .. _laravel-query-builder-paginate:
+.. _laravel-query-builder-paginate:
 
 Paginate the Results Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -810,7 +811,7 @@ To learn more about regular expression queries in MongoDB, see
 :manual:`$regex </reference/operator/query/regex/>`
 in the {+server-docs-name+}.
 
- .. _laravel-query-builder-whereRaw:
+.. _laravel-query-builder-whereRaw:
 
 Run Mongo Query API Queries Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -836,7 +837,7 @@ The following code shows the equivalent MongoDB query:
        directors: { $in: [ "Yasujiro Ozu", "Sofia Coppola", "Federico Fellini" ] }
    }]});
 
- .. _laravel-query-builder-elemMatch:
+.. _laravel-query-builder-elemMatch:
 
 Match Array Elements Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -862,7 +863,8 @@ in the {+server-docs-name+}.
 Specify Cursor Timeout Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-TODO:
+The following example shows how to use the ``timeout()`` method
+to specify a period of time to spend on cursor operations.
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -877,7 +879,7 @@ TODO:
    `MongoDB\Collection::find() <https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBCollection-find/>`__
    in the PHP Library documentation.
 
- .. _laravel-query-builder-geospatial:
+.. _laravel-query-builder-geospatial:
 
 Match Locations by Using Geospatial Operations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -954,7 +956,7 @@ the specified ``LineString`` GeoJSON object:
    :start-after: begin query geoIntersects
    :end-before: end query geoIntersects
 
- .. _laravel-query-builder-geospatial-geoNear:
+.. _laravel-query-builder-geospatial-geoNear:
 
 Proximity Data for Nearby Matches Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
