@@ -75,7 +75,7 @@ class AggregationBuilder
     {
         return (clone $this)
             ->limit(1)
-            ->cursor($options)
+            ->get($options)
             ->first();
     }
 

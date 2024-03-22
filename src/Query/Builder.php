@@ -549,7 +549,7 @@ class Builder extends BaseBuilder
                 throw new BadMethodCallException('Aggregation builder requires package mongodb/builder 0.2+');
             }
 
-            if ($columns !== [] && $columns !== ['*']) {
+            if ($columns !== ['*']) {
                 throw new InvalidArgumentException('Columns cannot be specified to create an aggregation builder. Add a $project stage instead.');
             }
 

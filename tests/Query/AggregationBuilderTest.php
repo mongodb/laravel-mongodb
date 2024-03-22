@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Query;
 
+use BadMethodCallException;
 use DateTimeImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
@@ -116,6 +117,20 @@ class AggregationBuilderTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('The stage name "match" is invalid. It must start with a "$" sign.');
         $pipeline->addRawStage('match', ['name' => 'John Doe']);
+    }
+
+    public function testColumnsCannotBeSpecifiedToCreateAnAggregationBuilder(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Columns cannot be specified to create an aggregation builder.');
+        User::aggregate(null, ['name']);
+    }
+
+    public function testAggrecationBuilderDoesNotSupportPreviousQueryBuilderInstructions(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Aggregation builder does not support previous query-builder instructions.');
+        User::where('name', 'John Doe')->aggregate();
     }
 
     private static function assertSamePipeline(array $expected, Pipeline $pipeline): void
