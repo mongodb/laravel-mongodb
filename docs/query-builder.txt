@@ -665,11 +665,12 @@ operations:
 - Match documents that contain all specified fields
 - Match documents that contain a specific number of elements in an array
 - Match documents that contain a specific data type in a field
-- Match documents that match a computed modulo value
+- Match documents that contain a computed modulo value
 - Match documents that match a regular expression
-- Run MQL
-- elemMatch
-- geospatial
+- Run Mongo Query API queries
+- Match documents that contain array elements
+- Specify a cursor timeout
+- Match Locations by Using Geospatial Operations
 
 - General - Exists, All, Size, Type, Mod
 
@@ -686,6 +687,10 @@ field ``random_review``:
    :start-after: begin query exists
    :end-before: end query exists
 
+To learn more about this query operator, see
+:manual:`$exists </reference/operator/query/exists/>`
+in the {+server-docs-name+}.
+
 Contains All Fields Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -699,6 +704,10 @@ specified fields:
    :dedent:
    :start-after: begin query all
    :end-before: end query all
+
+To learn more about this query operator, see
+:manual:`$all </reference/operator/query/all/>`
+in the {+server-docs-name+}.
 
 Match Array Size Example
 ~~~~~~~~~~~~~~~~~~~~~~~~
@@ -714,6 +723,10 @@ field that contains an array of exactly "5" elements:
    :start-after: begin query size
    :end-before: end query size
 
+To learn more about this query operator, see
+:manual:`$size </reference/operator/query/size/>`
+in the {+server-docs-name+}.
+
 Match Data Type Example
 ~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -728,8 +741,18 @@ field that contains an array of exactly "5" elements:
    :start-after: begin query type
    :end-before: end query type
 
+To learn more about the type codes and query operator, see
+:manual:`$type </reference/operator/query/type/>`
+in the {+server-docs-name+}.
 
-Mod - an even year
+Match a Value Computed with Modulo Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to pass the ``mod``
+query operator with the ``where()`` query builder
+method to match documents by using the expression
+``year % 2 == 0``, which matches even values for
+the ``year`` field:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -737,13 +760,17 @@ Mod - an even year
    :start-after: begin query modulo
    :end-before: end query modulo
 
-- Regex - "Match Regular Expressions"
+To learn more about this query operator, see
+:manual:`$mod </reference/operator/query/mod/>`
+in the {+server-docs-name+}.
 
-regex:
-"^the lord of .*"
-matches results such as "The Lord of the Rings: ..."
+Match a Regular Expression
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-``use MongoDB\BSON\Regex;``
+The following example shows how to pass the ``REGEX``
+query operator with the ``where()`` query builder
+method to match documents that contain a ``title``
+field that matches the specified regular expression:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -751,20 +778,45 @@ matches results such as "The Lord of the Rings: ..."
    :start-after: begin query whereRegex
    :end-before: end query whereRegex
 
-- Raw expressions
+To learn more about regular expression queries in MongoDB, see
+:manual:`$regex </reference/operator/query/regex/>`
+in the {+server-docs-name+}.
 
-whereRaw([
-query
-])->get()
-returns collection of models
+Run Mongo Query API Queries Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-equivalent of db.movies.find({ 'imdb.votes': { $gte: 1000 }, $or: [{ "imdb.rating": { $gt: 7 }, directors: { $in: [ "Yasujiro Ozu", "Sofia Coppola", "Federico Fellini" ] } }]});
+The following example shows how to use the ``whereRaw()``
+query builder method to run a query written by using
+MongoDB Query API syntax:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
    :dedent:
    :start-after: begin query raw
    :end-before: end query raw
+
+The following code shows the equivalent MongoDB query:
+
+.. code-block::
+
+   db.movies.find({
+     "imdb.votes": { $gte: 1000 },
+     $or: [{
+       imdb.rating: { $gt: 7 },
+       directors: { $in: [ "Yasujiro Ozu", "Sofia Coppola", "Federico Fellini" ] }
+   }]});
+
+
+Match Array Elements Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to pass the ``elemMatch``
+query operator with the ``where()`` query builder
+method to match documents that contain a at least one
+array element that matches at least one of the conditions
+in the specified query:
+
+field that matches the specified regular expression:
 
 - Array - ElemMatch "Element Match"
 
@@ -774,11 +826,27 @@ equivalent of db.movies.find({ 'imdb.votes': { $gte: 1000 }, $or: [{ "imdb.ratin
    :start-after: begin query elemMatch
    :end-before: end query elemMatch
 
-https://www.mongodb.com/docs/manual/reference/operator/query/elemMatch/
+To learn more about regular expression queries in MongoDB, see
+the :manual:`$elemMatch operator <reference/operator/query/elemMatch/>`
+in the {+server-docs-name+}.
 
 
-Geospatial Operations
-~~~~~~~~~~~~~~~~~~~~~
+Specify Cursor Timeout Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+TODO:
+
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query cursor timeout
+   :end-before: end query cursor timeout
+
+Note this is in seconds rather than milliseconds.
+
+
+Match Locations by Using Geospatial Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The examples in this section show the query builder syntax you
 can use to perform geospatial queries on GeoJSON or coordinate
@@ -792,7 +860,9 @@ pair data to retrieve the following types of locations:
 Near a Position Example
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-- Near
+The following example shows how to use the ``near()``
+query builder method to match documents that contain the
+field ``random_review``:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -846,17 +916,6 @@ geoNear
 https://www.mongodb.com/docs/manual/reference/operator/aggregation/geoNear/
 
 
-
-- Cursor timeout
-
-.. literalinclude:: /includes/query-builder/MovieController.php
-   :language: php
-   :dedent:
-   :start-after: begin query cursor timeout
-   :end-before: end query cursor timeout
-
-Note this is in seconds rather than milliseconds.
-
 .. _laravel-mongodb-write-query-builder:
 
 MongoDB Write Operations
@@ -868,6 +927,8 @@ MongoDB Write Operations
 - Add an array element
 - Remove a value from an array
 - Remove a field from a document
+
+.. _laravel-mongodb-query-builder-upsert:
 
 Upsert a Document Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -887,6 +948,8 @@ operation:
    :start-after: begin upsert
    :end-before: end upsert
 
+.. _laravel-mongodb-query-builder-increment:
+
 Increment a Numerical Value Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -899,6 +962,8 @@ the ``imdb.votes`` field in the matched document:
    :dedent:
    :start-after: begin increment
    :end-before: end increment
+
+.. _laravel-mongodb-query-builder-decrement:
 
 Decrement a Numerical Value Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -913,7 +978,7 @@ the ``imdb.rating`` field in the matched document:
    :start-after: begin decrement
    :end-before: end decrement
 
-- Modify array values - push, pull
+.. _laravel-mongodb-query-builder-push:
 
 Add an Array Element Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -928,6 +993,8 @@ array field in the matched document:
    :start-after: begin push
    :end-before: end push
 
+.. _laravel-mongodb-query-builder-pull:
+
 Remove an Array Element Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -941,6 +1008,8 @@ by the query:
    :dedent:
    :start-after: begin pull
    :end-before: end pull
+
+.. _laravel-mongodb-query-builder-unset:
 
 Remove a Field Example
 ~~~~~~~~~~~~~~~~~~~~~~
