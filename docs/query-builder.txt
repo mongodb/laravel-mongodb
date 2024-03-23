@@ -59,7 +59,8 @@ Before You Get Started
 
 To run the code examples in this guide, complete the
 :ref:`Quick Start <laravel-quick-start>` tutorial to configure a web
-application and run the example code from a controller method.
+application, load sample datasets into your MongoDB deployment, and
+run the example code from a controller method.
 
 To perform read and write operations by using the query builder, import the
 ``Illuminate\Support\Facades\DB`` facade and compose your query.
@@ -245,24 +246,15 @@ between "9" and "9.5":
       :end-before: end query whereBetween
 
    .. output::
-      :language: none
+      :language: json
       :visible: false
 
-      Title: Hollywood
-      Year: 1980
-      Runtime: 60
-      IMDB Rating: 9.1
-      IMDB Votes: 511
-      Plot: The definitive documentary about the American silent film industry.
-
-      Title: Cosmos
-      Year: 1980
-      Runtime: 60
-      IMDB Rating: 9.3
-      IMDB Votes: 17174
-      Plot: Astronomer Carl Sagan leads us on an engaging guided tour of the various elements and cosmological theories of the universe.
-
-      ...
+      [
+         { "title" "The Godfather", "imdb": { "rating": 9.2, "votes": 1038358, "id": 68646 }, ... },
+         { "title": "Hollywood", "imdb": { "rating": 9.1, "votes": 511,"id": 80230 }, ... },
+         { "title": "Cosmos", "imdb": { "rating": 9.3, "votes": 17174, "id": 81846 }, ... },
+         ...
+      ]
 
 .. _laravel-query-builder-empty-null:
 
@@ -274,31 +266,11 @@ query builder method to retrieve documents from the
 ``movies`` collection that omit a ``runtime`` value
 or field.
 
-.. io-code-block::
-
-   .. input:: /includes/query-builder/MovieController.php
-      :language: php
-      :dedent:
-      :start-after: begin query whereNull
-      :end-before: end query whereNull
-
-   .. output::
-      :language: none
-      :visible: false
-
-      Title: The Secret of the Magic Gourd
-      Year: 2007
-      Runtime:
-      IMDB Rating: 5.6
-      IMDB Votes: 340
-      Plot: A boy learns the meaning of work after a magic gourd grants him anything he wants.
-
-      Title: Jekyll
-      Year: 2007
-      Runtime:
-      IMDB Rating: 8.2
-      IMDB Votes: 6248
-      Plot: London, 2007. Tom Jackman is the only living descendent of Dr. Jekyll and Mr. Hyde. He has made a deal with his dark side: a body share. What Mr. Hyde doesn't know is that Tom has a family....
+.. literalinclude:: /includes/query-builder/MovieController.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereNull
+   :end-before: end query whereNull
 
 .. seealso::
 
@@ -323,29 +295,15 @@ query builder method to retrieve documents from the
       :end-before: end query whereIn
 
    .. output::
-      :language: none
+      :language: json
       :visible: false
 
-      Title: Toy Story
-      Year: 1995
-      Runtime: 81
-      IMDB Rating: 8.3
-      IMDB Votes: 542659
-      Plot: A cowboy doll is profoundly threatened and jealous when a new spaceman figure supplants him as top toy in a boy's room.
-
-      Title: Johnny English
-      Year: 2003
-      Runtime: 87
-      IMDB Rating: 6.1
-      IMDB Votes: 107074
-      Plot: After a sudden attack on the MI5, Johnny English, Britain's most confident yet unintelligent spy, becomes Britain's only spy.
-
-      Title: Shrek 2
-      Year: 2004
-      Runtime: 93
-      IMDB Rating: 7.2
-      IMDB Votes: 283852
-      Plot: Princess Fiona's parents invite her and Shrek to dinner to celebrate her marriage. If only they knew the newlyweds were both ogres.
+      [
+         { "title": "Toy Story", "year": 1995, "runtime": 81, ... },
+         { "title": "Johnny English", "year": 2003, "runtime": 87, ... },
+         { "title": "Shrek 2", "year" 2004, "runtime": 93, ... },
+         ...
+      ]
 
 .. _laravel-query-builder-wheredate:
 
@@ -419,13 +377,13 @@ The examples in this section show the query builder syntax you
 can use to perform aggregations, a set of calculations on the
 query results, to return the following information:
 
-- Results Grouped by Common Field Values
-- Number of Results
-- Maximum Value of a Field
-- Minimum Value of a Field
-- Average Value of a Field
-- Summed Value of a Field
-- Aggregation on Matched Results
+- :ref:`Results Grouped by Common Field Values <laravel-query-builder-aggregation-groupby>`
+- :ref:`Number of Results <laravel-query-builder-aggregation-count>`
+- :ref:`Maximum Value of a Field <laravel-query-builder-aggregation-max>`
+- :ref:`Minimum Value of a Field <laravel-query-builder-aggregation-min>`
+- :ref:`Average Value of a Field <laravel-query-builder-aggregation-avg>`
+- :ref:`Summed Value of a Field <laravel-query-builder-aggregation-sum>`
+- :ref:`Aggregate Matched Results <laravel-query-builder-aggregate-matched>`
 
 .. _laravel-query-builder-aggregation-groupby:
 
@@ -523,10 +481,10 @@ collection:
    :start-after: begin aggregation sum
    :end-before: end aggregation sum
 
-.. _laravel-query-builder-aggregation-filter:
+.. _laravel-query-builder-aggregate-matched:
 
-Aggregation on Matched Results Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Aggregate Matched Results Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following example shows how to use the ``sum()``
 query builder method to return the numerical total of
@@ -541,8 +499,8 @@ after the year "2000":
 
 .. _laravel-modify-results-query-builder:
 
-Modify Results
---------------
+Modify Query Results
+--------------------
 
 This section includes query builder examples for the
 following functions that modify the order and format
@@ -572,20 +530,15 @@ the filter specified in the ``title`` field by the
       :end-before: end query orderBy
 
    .. output::
-      :language: none
+      :language: json
       :visible: false
 
-      Title: Back to the Future
-      IMDB Rating: 8.5
-      ...
-
-      Title: Back to the Future Part II
-      IMDB Rating: 7.8
-      ...
-
-      Title: Back to the Future Part III
-      IMDB Rating: 7.4
-      ...
+      [
+        { "title": "Back to the Future", "imdb": { "rating":8.5,"votes":636511,"id":88763 }, ... },
+        { "title": "Back to the Future Part II", "imdb": { "rating":7.8,"votes":292539,"id":96874 }, ... },
+        { "title": "Back to the Future Part III", "imdb": {"rating":7.4,"votes":242390,"id":99088 }, ... },
+        ...
+      ]
 
 .. _laravel-query-builder-skip:
 
@@ -610,13 +563,12 @@ Show a Subset of Fields and Array Values in the Results Example
 
 The following example shows how to use the ``project()``
 query builder method to match documents that contain an
-``imdb.rating`` value higher than "8.5" and return results
-that only the following field values:
+``imdb.rating`` value higher than "8.5" and return
+only the following field values:
 
-- ``title`` field
-- ``cast`` field, including only the second through the fourth values of the array if they exist
-- ``_id`` field, which is automatically included
-
+- Title of the movie in the ``title``
+- Second through fourth values of the ``cast`` array field, if they exist
+- Document ``_id`` field, which is automatically included
 
 .. io-code-block::
 
@@ -857,9 +809,9 @@ Match Array Elements Example
 
 The following example shows how to pass the ``elemMatch``
 query operator with the ``where()`` query builder
-method to match documents that contain a at least one
-array element that matches at least one of the conditions
-in the specified query:
+method to match documents that contain an array element
+that matches at least one of the conditions in the
+specified query:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php

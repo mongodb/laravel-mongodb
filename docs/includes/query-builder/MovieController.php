@@ -391,7 +391,7 @@ class MovieController extends Controller
     {
         // begin query elemMatch
         $result = DB::collection('movies')
-           ->where('writers', 'elemMatch', ['$eq' => 'Lana Wilson', '$eq' => 'Maya Forbes'])
+           ->where('writers', 'elemMatch', ['$in' => ['Maya Forbes', 'Eric Roth']])
            ->get();
         // end query elemMatch
 
@@ -617,90 +617,48 @@ class MovieController extends Controller
     public function show()
     {
         $result = null;
-        $result = $this->runWhere();
-
+        //$result = $this->runWhere();
         //$result = $this->runOrWhere();
-
         //$result = $this->runAndWhere();
-
         //$result = $this->runNestedLogical();
-
         //$result = $this->runWhereNot();
-
         //$result = $this->runWhereBetween();
-
         //$result = $this->runWhereNull();
-
         //$result = $this->runWhereDate();
-
         //$result = $this->runLike();
-
         //$result = $this->runExists();
-
         //$result = $this->runAll();
-
         //$result = $this->runSize();
-
         //$result = $this->runType();
-
         //$result = $this->runMod();
-
         //$result = $this->runRegex();
-
         //$result = $this->runWhereRaw();
-
         //$result = $this->runElemMatch();
-
         //$result = $this->runNear();
-
         //$result = $this->runGeoWithin();
-
         //$result = $this->runGeoIntersects();
-
         //$result = $this->runGeoNear();
-
         //$result = $this->runWhereIn();
-
         //$result = $this->runDistinct();
-
         //$result = $this->runWhereDistinct();
-
         //$result = $this->runOrderBy();
-
         //$result = $this->runGroupBy();
-
         //$result = $this->runAggCount();
-
         //$result = $this->runAggMax();
-
         //$result = $this->runAggMin();
-
         //$result = $this->runAggAvg();
-
         //$result = $this->runAggSum();
-
         //$result = $this->runAggWithFilter();
-
         //$result = $this->runSkip();
-
         //$result = Movie::where('year', 1999)->get();
-
         //$result = $this->runProjection();
-
         //$result = $this->runProjectionWithPagination();
-
         //$result = $this->runCursorTimeout();
-
         //$result = $this->runUpsert();
-
         //$result = $this->runIncrement();
-
         //$result = $this->runDecrement();
-
         //$result = $this->runPush();
-
         //$result = $this->runPull();
-
         //$result = $this->runUnset();
 
         //$result = Movie::first();
