@@ -92,6 +92,7 @@ that contain a ``imdb.votes`` field value of ``350``. Click the
 by the query:
 
 .. io-code-block::
+   :copyable: true
 
    .. input:: /includes/query-builder/MovieController.php
       :language: php
@@ -141,16 +142,18 @@ by the query:
 
 .. _laravel-query-builder-logical-operations:
 
-Logical Conditional Operation Examples
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Logical Conditional Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The examples in this section show the query builder syntax you
 can use to perform the following logical conditional operations:
 
-- **OR** by chaining the ``orWhere()`` function
-- **AND** by chaining another ``where()`` function
-- **NOT** which uses the ``whereNot()`` function
-- Nested logical operator groups
+- :ref:`Logical OR to match one or more conditions <laravel-query-builder-logical-or>`
+- :ref:`Logical AND to match all conditions  <laravel-query-builder-logical-and>`
+- :ref:`Logical NOT which matches the negation of the condition  <laravel-query-builder-logical-not>`
+- :ref:`Nested logical operator groups  <laravel-query-builder-logical-nested>`
+
+.. _laravel-query-builder-logical-or:
 
 Logical OR Example
 ^^^^^^^^^^^^^^^^^^
@@ -165,6 +168,8 @@ value of "1955" or match the title "Back to the Future":
    :dedent:
    :start-after: begin query orWhere
    :end-before: end query orWhere
+
+.. _laravel-query-builder-logical-and:
 
 Logical AND Example
 ^^^^^^^^^^^^^^^^^^^
@@ -181,6 +186,8 @@ value greater than "8.5" and a ``year`` value of less than
    :start-after: begin query andWhere
    :end-before: end query andWhere
 
+.. _laravel-query-builder-logical-not:
+
 Logical NOT Example
 ^^^^^^^^^^^^^^^^^^^
 
@@ -195,6 +202,8 @@ value greater than "8.5" and a ``year`` value of less than
    :dedent:
    :start-after: begin query whereNot
    :end-before: end query whereNot
+
+.. _laravel-query-builder-logical-nested:
 
 Nested Logical Operator Group Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -222,10 +231,10 @@ The examples in this section show the query builder syntax you
 can use to perform to match values by using the following range
 queries and type check operations:
 
-- Values within a numerical range
-- Empty or null values
-- One or more values of a set
-- Dates
+- :ref:`Values within a numerical range <laravel-query-builder-wherebetween>`
+- :ref:`Null or missing values <laravel-query-builder-null>`
+- :ref:`One or more values of a set <laravel-query-builder-wherein>`
+- :ref:`Match dates <laravel-query-builder-wheredate>`
 
 .. _laravel-query-builder-wherebetween:
 
@@ -238,6 +247,7 @@ query builder method to retrieve documents from the
 between "9" and "9.5":
 
 .. io-code-block::
+   :copyable: true
 
    .. input:: /includes/query-builder/MovieController.php
       :language: php
@@ -256,10 +266,10 @@ between "9" and "9.5":
          ...
       ]
 
-.. _laravel-query-builder-empty-null:
+.. _laravel-query-builder-null:
 
-Empty or Null Value Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Null or Missing Values Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^%^^
 
 The following example shows how to use the ``whereNull()``
 query builder method to retrieve documents from the
@@ -287,6 +297,7 @@ query builder method to retrieve documents from the
 ``title`` values in the specified set.
 
 .. io-code-block::
+   :copyable: true
 
    .. input:: /includes/query-builder/MovieController.php
       :language: php
@@ -307,8 +318,8 @@ query builder method to retrieve documents from the
 
 .. _laravel-query-builder-wheredate:
 
-Dates Example
-^^^^^^^^^^^^^
+Match Dates Example
+^^^^^^^^^^^^^^^^^^^
 
 The following example shows how to use the ``whereDate()``
 query builder method to retrieve documents from the
@@ -335,6 +346,7 @@ query builder method to retrieve documents from the
 ``movies`` collection that match the specified pattern:
 
 .. io-code-block::
+   :copyable: true
 
    .. input:: /includes/query-builder/MovieController.php
       :language: php
@@ -391,14 +403,59 @@ Results Grouped by Common Field Values Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following example shows how to use the ``groupBy()``
-query builder method to retrieve documents as
-TODO: fix this
+query builder method to retrieve document data, grouped
+by common values of the ``runtime`` field. This example
+chains the following operations to match documents from
+the ``movies`` collection that contain a ``rated``
+value of ``G`` and include the ``title``  field of one
+movie for each distinct ``runtime`` value:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
-   :language: php
-   :dedent:
-   :start-after: begin query groupBy
-   :end-before: end query groupBy
+- Match only documents that contain a ``rated`` field value of "G" by
+  using the ``where()`` method
+- Group data by the distinct values of the ``runtime`` field, which is
+  assigned the ``_id`` field, by using the ``groupBy()`` method
+- Sort the groups by the ``runtime`` field by using the ``orderBy()`` method
+- Return ``title`` data from the last document in the grouped result by
+  specifying it in the ``get()`` method
+
+.. tip::
+
+   The ``groupBy()`` method calls the MongoDB ``$group`` aggregation operator
+   and ``$last`` accumulator operator. To learn more about these, see
+   :manual:`$group (aggregation) </reference/operator/aggregation/group/>`
+   in the {+server-docs-name+}.
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/query-builder/MovieController.php
+      :language:  php
+      :dedent:
+      :start-after: begin query groupBy
+      :end-before: end query groupBy
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        ...
+        {
+          "_id": {
+            "runtime": 64
+          },
+          "runtime": 64,
+          "title": "Stitch! The Movie"
+        },
+        {
+           "_id": {
+             "runtime": 67
+           },
+           "runtime": 67,
+           "title": "Bartok the Magnificent"
+         },
+         ...
+      ]
 
 .. _laravel-query-builder-aggregation-count:
 
@@ -522,6 +579,7 @@ the filter specified in the ``title`` field by the
 ``imdb.rating`` value in descending order:
 
 .. io-code-block::
+   :copyable: true
 
    .. input:: /includes/query-builder/MovieController.php
       :language: php
@@ -571,6 +629,7 @@ only the following field values:
 - Document ``_id`` field, which is automatically included
 
 .. io-code-block::
+   :copyable: true
 
    .. input:: /includes/query-builder/MovieController.php
       :language: php

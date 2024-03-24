@@ -281,10 +281,13 @@ class MovieController extends Controller
     {
         // begin query groupBy
         $result = DB::collection('movies')
-            ->groupBy('year')
-            ->get(['title']);
+           ->where('rated', 'G')
+           ->groupBy('runtime')
+           ->orderBy('runtime', 'asc')
+           ->get(['title']);
         // end query groupBy
 
+        $result = $result->toJson();
         print_r($result);
         return null;
     }
@@ -633,7 +636,7 @@ class MovieController extends Controller
         //$result = $this->runMod();
         //$result = $this->runRegex();
         //$result = $this->runWhereRaw();
-        //$result = $this->runElemMatch();
+        //result = $this->runElemMatch();
         //$result = $this->runNear();
         //$result = $this->runGeoWithin();
         //$result = $this->runGeoIntersects();
