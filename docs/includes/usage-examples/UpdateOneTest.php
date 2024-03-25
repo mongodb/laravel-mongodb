@@ -36,8 +36,8 @@ class UpdateOneTest extends TestCase
                   "votes" => 142000
               ],
           ]);
-    
-      echo "Updated documents: {$updates}";
+
+      echo 'Updated documents: {$updates}';
       // end-update-one
       
       // <optionally, add assertions>
