@@ -13,8 +13,6 @@ the query filter, ``first()`` returns the first matching document according to t
 :term:`natural order` in the database or according to the sort order that you can specify
 by using the ``orderBy()`` method.
 
-To learn more about retrieving documents, see the :ref:`laravel-fundamentals-retrieve` guide.
-
 Example
 -------
 
@@ -31,7 +29,6 @@ The example calls the following methods on the ``Movie`` model:
 - ``first()``: retrieves only the first matching document.
 
 .. io-code-block::
-   :copyable: true
 
    .. input:: ../../tests/FindOneTest.php
       :start-after: begin-find-one
