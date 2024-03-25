@@ -23,5 +23,5 @@ The following compatibility table specifies the versions of Laravel and
 .. include:: /includes/framework-compatibility-laravel.rst
 
 To find compatibility information for unmaintained versions of {+odm-short+},
-see `Laravel Version Compatibility <https://github.com/mongodb/laravel-mongodb/blob/3.9/README.md#installation>`__
+see `Laravel Version Compatibility <{+mongodb-laravel-gh+}/blob/3.9/README.md#installation>`__
 on GitHub.

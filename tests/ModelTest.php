@@ -31,12 +31,15 @@ use MongoDB\Laravel\Tests\Models\User;
 use function abs;
 use function array_keys;
 use function array_merge;
+use function date_default_timezone_set;
 use function get_debug_type;
 use function hex2bin;
 use function sleep;
 use function sort;
 use function strlen;
 use function time;
+
+use const DATE_ATOM;
 
 class ModelTest extends TestCase
 {
@@ -668,6 +671,33 @@ class ModelTest extends TestCase
         $user = User::find($user->_id);
 
         $this->assertSame(['note2' => 'DEF', 'note1' => 'ABC'], $user->notes);
+    }
+
+    public function testDateUseLocalTimeZone(): void
+    {
+        // The default timezone is reset to UTC before every test in OrchestraTestCase
+        $tz = 'Australia/Sydney';
+        date_default_timezone_set($tz);
+
+        $date = new DateTime('1965/03/02 15:30:10');
+        $user = User::create(['birthday' => $date]);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+        $this->assertEquals($tz, $user->birthday->getTimezone()->getName());
+        $user->save();
+
+        $user = User::find($user->_id);
+        $this->assertEquals($date, $user->birthday);
+        $this->assertEquals($tz, $user->birthday->getTimezone()->getName());
+        $this->assertSame('1965-03-02T15:30:10+10:00', $user->birthday->format(DATE_ATOM));
+
+        $tz = 'America/New_York';
+        date_default_timezone_set($tz);
+        $user = User::find($user->_id);
+        $this->assertEquals($date, $user->birthday);
+        $this->assertEquals($tz, $user->birthday->getTimezone()->getName());
+        $this->assertSame('1965-03-02T00:30:10-05:00', $user->birthday->format(DATE_ATOM));
+
+        date_default_timezone_set('UTC');
     }
 
     public function testDates(): void
