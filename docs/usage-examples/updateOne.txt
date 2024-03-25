@@ -44,7 +44,7 @@ The example calls the following methods on the ``Movie`` model:
 .. io-code-block::
    :copyable: true
 
-   .. input:: ../../tests/UpdateOneTest.php
+   .. input:: ../includes/usage-examples/UpdateOneTest.php
       :start-after: begin-update-one
       :end-before: end-update-one
       :language: php
