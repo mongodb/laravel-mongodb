@@ -857,7 +857,7 @@ The following code shows the equivalent MongoDB query:
        directors: { $in: [ "Yasujiro Ozu", "Sofia Coppola", "Federico Fellini" ] }
    }]});
 
-to learn more about the MongoDB Query API, see
+To learn more about the MongoDB Query API, see
 :manual:`MongoDB Query API </query-api/>` in the {+server-docs-name+}.
 
 .. _laravel-query-builder-elemMatch:
@@ -984,8 +984,8 @@ the specified ``LineString`` GeoJSON object:
 Proximity Data for Nearby Matches Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following example shows how to use the ``geoNear`` aggregation operator 
-with the ``raw()`` query builder method to perform an aggregation that returns 
+The following example shows how to use the ``geoNear`` aggregation operator
+with the ``raw()`` query builder method to perform an aggregation that returns
 metadata, such as proximity information for each match:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
