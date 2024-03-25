@@ -20,11 +20,15 @@ MongoDB database.
 This section contains guidance on how to use Eloquent models in
 {+odm-short+} to work with MongoDB in the following ways:
 
+- :ref:`laravel-eloquent-model-class` shows how to define models and customize
+  their behavior
 - :ref:`laravel-eloquent-model-relationships` shows how to define relationships
   between models
-
+- :ref:`laravel-schema-builder` shows how to manage indexes on your MongoDB
+  collections by using Laravel migrations
+  
 .. toctree::
 
+   /eloquent-models/model-class/
    Relationships </eloquent-models/relationships>
-
-
+   Schema Builder </eloquent-models/schema-builder>
