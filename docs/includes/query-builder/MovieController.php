@@ -45,7 +45,7 @@ class MovieController extends Controller
             ->get();
         // end query where
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -59,7 +59,7 @@ class MovieController extends Controller
             ->get();
         // end query orWhere
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -73,7 +73,7 @@ class MovieController extends Controller
             ->get();
         // end query andWhere
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -90,7 +90,7 @@ class MovieController extends Controller
             })->get();
         // end query nestedLogical
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -103,7 +103,7 @@ class MovieController extends Controller
             ->get();
         // end query whereNot
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -116,7 +116,7 @@ class MovieController extends Controller
             ->get();
         // end query whereBetween
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -129,7 +129,7 @@ class MovieController extends Controller
             ->get();
         // end query whereNull
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -142,7 +142,7 @@ class MovieController extends Controller
             ->get();
         // end query whereDate
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -155,7 +155,7 @@ class MovieController extends Controller
             ->get();
         // end query whereRegex
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -167,7 +167,7 @@ class MovieController extends Controller
             ->get();
         // end query whereIn
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -179,7 +179,7 @@ class MovieController extends Controller
             ->get();
         // end query like
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -202,7 +202,7 @@ class MovieController extends Controller
             ->getl();
         // end query all
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -226,7 +226,7 @@ class MovieController extends Controller
             ->get();
         // end query type
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -238,7 +238,7 @@ class MovieController extends Controller
             ->get();
         // end query modulo
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -273,7 +273,7 @@ class MovieController extends Controller
             ->get();
         // end query orderBy
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -369,7 +369,7 @@ class MovieController extends Controller
            ->get();
         // end query skip
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -386,7 +386,7 @@ class MovieController extends Controller
             ])->get();
         // end query raw
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -398,7 +398,7 @@ class MovieController extends Controller
            ->get();
         // end query elemMatch
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -531,7 +531,7 @@ class MovieController extends Controller
            ->get();
         // end query cursor timeout
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
@@ -550,7 +550,7 @@ class MovieController extends Controller
            );
         // end upsert
 
-        echo "{$result->toJson()}";
+        echo '{$result->toJson()}';
         return $result;
     }
 
