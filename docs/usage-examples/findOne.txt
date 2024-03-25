@@ -30,7 +30,7 @@ The example calls the following methods on the ``Movie`` model:
 
 .. io-code-block::
 
-   .. input:: ../../tests/FindOneTest.php
+   .. input:: ../includes/usage-examples/FindOneTest.php
       :start-after: begin-find-one
       :end-before: end-find-one
       :language: php

@@ -24,7 +24,7 @@ class UpdateOneTest extends TestCase
      */
     public function updateOne(): void
     {
-      require 'Models/Movie.php';
+      require_once __DIR__ . '/Movie.php';
     
       // begin-find-one
       $movie = Movie::where('directors', 'Rob Reiner')
