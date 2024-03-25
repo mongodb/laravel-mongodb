@@ -161,7 +161,7 @@ Logical OR Example
 The following example shows how to chain the ``orWhere()``
 query builder method to retrieve documents from the
 ``movies`` collection that either match the ``year``
-value of "1955" or match the title "Back to the Future":
+value of ``1955`` or match the title "``Back to the Future``":
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -178,7 +178,7 @@ The following example shows how to chain the ``where()``
 query builder method to retrieve documents from the
 ``movies`` collection that match both an ``imdb.rating``
 value greater than "8.5" and a ``year`` value of less than
-"1940":
+``1940``:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -194,8 +194,8 @@ Logical NOT Example
 The following example shows how to chain the ``where()``
 query builder method to retrieve documents from the
 ``movies`` collection that match both an ``imdb.rating``
-value greater than "8.5" and a ``year`` value of less than
-"1940":
+value greater than ``8.5`` and a ``year`` value of less than
+``1940``:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -213,8 +213,8 @@ query builder method to retrieve documents from the
 ``movies`` collection that match both of the following
 conditions:
 
-- ``imdb.rating`` value is greater than 8.5
-- ``year`` value is either 1986 or 1996
+- ``imdb.rating`` value is greater than ``8.5``
+- ``year`` value is either ``1986`` or ``1996``
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -245,7 +245,7 @@ Numerical Range Example
 The following example shows how to use the ``whereBetween()``
 query builder method to retrieve documents from the
 ``movies`` collection that contain an ``imdb.rating`` value
-between "9" and "9.5":
+between ``9`` and ``9.5``:
 
 .. io-code-block::
    :copyable: true
@@ -325,7 +325,7 @@ Match Dates Example
 The following example shows how to use the ``whereDate()``
 query builder method to retrieve documents from the
 ``movies`` collection that match the specified date of
-"2010-1-15" in the ``released`` field:
+``2010-1-15`` in the ``released`` field:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -411,7 +411,7 @@ This example chains the following operations to match documents from the
 ``movies`` collection that contain a ``rated`` value of ``G`` and include the
 ``title`` field of one movie for each distinct ``runtime`` value:
 
-- Match only documents that contain a ``rated`` field value of "G" by
+- Match only documents that contain a ``rated`` field value of "``G``" by
   using the ``where()`` method
 - Group data by the distinct values of the ``runtime`` field, which is
   assigned the ``_id`` field, by using the ``groupBy()`` method
@@ -621,7 +621,7 @@ Show a Subset of Fields and Array Values in the Results Example
 
 The following example shows how to use the ``project()``
 query builder method to match documents that contain an
-``imdb.rating`` value higher than "8.5" and return
+``imdb.rating`` value higher than ``8.5`` and return
 only the following field values:
 
 - Title of the movie in the ``title``
@@ -690,7 +690,7 @@ only specific fields in the results.
    :end-before: end query projection with pagination
 
 To learn more about pagination, see
-`Paginating Query Builder Results <https://laravel.com/docs/{+mongodb-laravel-gh+}/pagination#paginating-query-builder-results>`__
+`Paginating Query Builder Results <https://laravel.com/docs/{+laravel-docs-version+}/pagination#paginating-query-builder-results>`__
 in the Laravel documentation.
 
 .. _laravel-mongodb-read-query-builder:
@@ -758,7 +758,7 @@ Match Array Size Example
 The following example shows how to pass the ``size``
 query operator with the ``where()`` query builder
 method to match documents that contain a ``directors``
-field that contains an array of exactly "5" elements:
+field that contains an array of exactly five elements:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -778,7 +778,7 @@ Match Data Type Example
 The following example shows how to pass the ``type``
 query operator with the ``where()`` query builder
 method to match documents that contain a ``directors``
-field that contains an array of exactly "5" elements:
+field that contains an array of exactly five elements:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -798,7 +798,7 @@ Match a Value Computed with Modulo Example
 The following example shows how to pass the ``mod``
 query operator with the ``where()`` query builder
 method to match documents by using the expression
-``year % 2 == 0``, which matches even values for
+"``year % 2 == 0``", which matches even values for
 the ``year`` field:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -911,10 +911,10 @@ The examples in this section show the query builder syntax you
 can use to perform geospatial queries on GeoJSON or coordinate
 pair data to retrieve the following types of locations:
 
-- Near a position
-- Within a the boundary of a GeoJSON object
-- Intersecting a GeoJSON object
-- Proximity data for nearby matches
+- :ref:`Near a position <laravel-query-builder-geospatial-near>`
+- :ref:`Within a the boundary of a GeoJSON object <laravel-query-builder-geospatial-geoWithin>`
+- :ref:`Intersecting a GeoJSON object <laravel-query-builder-geospatial-geoIntersects>`
+- :ref:`Proximity data for nearby matches <laravel-query-builder-geospatial-geoNear>`
 
 .. important::
 
@@ -1048,7 +1048,7 @@ Decrement a Numerical Value Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``decrement()`` query builder
-method to subtract "0.2" from the value of the ``imdb.rating`` field in the
+method to subtract ``0.2`` from the value of the ``imdb.rating`` field in the
 matched document:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -1063,7 +1063,7 @@ Add an Array Element Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``push()`` query builder method to
-add "Gary Cole" to the ``cast`` array field in the matched document:
+add "``Gary Cole``" to the ``cast`` array field in the matched document:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -1077,7 +1077,7 @@ Remove an Array Element Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``pull()`` query builder method
-to remove the "Adventure" value from the ``genres`` field from the document
+to remove the "``Adventure``" value from the ``genres`` field from the document
 matched by the query:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
