@@ -44,20 +44,11 @@ The example calls the following methods on the ``Movie`` model:
 .. io-code-block::
    :copyable: true
 
-   .. input::
+   .. input:: ../../tests/UpdateOneTest.php
+      :start-after: begin-update-one
+      :end-before: end-update-one
       :language: php
-
-      $updates = Movie::where('title', 'Carol')
-          ->orderBy('_id')
-          ->first()
-          ->update([
-              "imdb" => [
-                  "rating" => 7.3,
-                  "votes" => 142000
-               ],
-         ]);
-      
-      echo "Updated documents: {$updates}";
+      :dedent:
 
    .. output::
       :language: console
