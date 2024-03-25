@@ -1,0 +1,536 @@
+.. _laravel-eloquent-model-relationships:
+
+============================
+Eloquent Model Relationships
+============================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example, entity relationship, eloquent
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+When you use a relational database, the Eloquent ORM stores models as rows
+in tables that correspond to the model classes. When you use MongoDB, the
+{+odm-short+} stores models as documents in collections that correspond to the
+model classes.
+
+To define a relationship, add a function to the model class that calls the
+appropriate relationship method. This function allows you to access the related
+model as a **dynamic property**. A dynamic property lets you access the
+related model by using the same syntax as you use to access a property on the
+model.
+
+The following sections describe the Laravel Eloquent and MongoDB-specific
+relationships available in {+odm-short+} and show examples of how to define
+and use them:
+
+- :ref:`One to one relationship <laravel-eloquent-relationship-one-to-one>`,
+  created by using the ``hasOne()`` method and its inverse, ``belongsTo()``
+- :ref:`One to many relationship <laravel-eloquent-relationship-one-to-many>`,
+  created by using the ``hasMany()`` and its inverse, ``belongsTo()``
+- :ref:`Many to many relationship <laravel-eloquent-relationship-many-to-many>`,
+  created by using the ``belongsToMany()`` method
+- :ref:`Embedded document pattern <laravel-embedded-document-pattern>`, a
+  MongoDB-specific relationship that can represent a one to one or one to many
+  relationship, created by using the ``embedsOne()`` or ``embedsMany()`` method
+- :ref:`Cross-database relationships <laravel-relationship-cross-database>`,
+  required when you want to create relationships between MongoDB and SQL models
+
+.. _laravel-eloquent-relationship-one-to-one:
+
+One to One Relationship
+-----------------------
+
+A one to one relationship between models consists of a model record related to
+exactly one other type of model record.
+
+When you add a one to one relationship, Eloquent lets you access the model by
+using a dynamic property and stores the model's document ID on the related
+model.
+
+In {+odm-short+}, you can define a one to one relationship by using the
+``hasOne()`` method or ``belongsTo()`` method.
+
+When you add the inverse of the relationship by using the ``belongsTo()``
+method, Eloquent lets you access the model by using a dynamic property, but
+does not add any fields.
+
+To learn more about one to one relationships, see
+`One to One <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-relationships#one-to-one>`__
+in the Laravel documentation.
+
+One to One Example
+~~~~~~~~~~~~~~~~~~
+
+The following example class shows how to define a ``HasOne`` one to one
+relationship between a ``Planet`` and ``Orbit`` model by using the
+``hasOne()`` method:
+
+.. literalinclude:: /includes/eloquent-models/relationships/one-to-one/Planet.php
+   :language: php
+   :dedent:
+
+The following example class shows how to define the inverse ``BelongsTo``
+relationship between ``Orbit`` and ``Planet`` by using the ``belongsTo()``
+method:
+
+.. literalinclude:: /includes/eloquent-models/relationships/one-to-one/Orbit.php
+   :language: php
+   :dedent:
+
+The following sample code shows how to instantiate a model for each class
+and add the relationship between them. Click the :guilabel:`VIEW OUTPUT`
+button to see the data created by running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+      :language: php
+      :dedent:
+      :start-after: begin one-to-one save
+      :end-before: end one-to-one save
+
+   .. output::
+      :language: json
+      :visible: false
+
+      // Document in the "planets" collection
+      {
+        _id: ObjectId('65de67fb2e59d63e6d07f8b8'),
+        name: 'Earth',
+        diameter_km: 12742,
+        // ...
+      }
+
+      // Document in the "orbits" collection
+      {
+        _id: ObjectId('65de67fb2e59d63e6d07f8b9'),
+        period: 365.26,
+        direction: 'counterclockwise',
+        planet_id: '65de67fb2e59d63e6d07f8b8',
+        // ...
+      }
+
+The following sample code shows how to access the related models by using
+the dynamic properties as defined in the example classes:
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :start-after: begin planet orbit dynamic property example
+   :end-before: end planet orbit dynamic property example
+
+.. _laravel-eloquent-relationship-one-to-many:
+
+One to Many Relationship
+------------------------
+
+A one to many relationship between models consists of a model that is
+the parent and one or more related child model records.
+
+When you add a one to many relationship method, Eloquent lets you access the
+model by using a dynamic property and stores the parent model's document ID
+on each child model document.
+
+In {+odm-short+}, you can define a one to many relationship by adding the
+``hasMany()`` method on the parent class and, optionally, the ``belongsTo()``
+method on the child class.
+
+When you add the inverse of the relationship by using the ``belongsTo()``
+method, Eloquent lets you access the parent model by using a dynamic property
+without adding any fields.
+
+To learn more about one to many relationships, see
+`One to Many <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-relationships#one-to-many>`__
+in the Laravel documentation.
+
+One to Many Example
+~~~~~~~~~~~~~~~~~~~
+
+The following example class shows how to define a ``HasMany`` one to many
+relationship between a ``Planet`` parent model and ``Moon`` child model by
+using the ``hasMany()`` method:
+
+.. literalinclude:: /includes/eloquent-models/relationships/one-to-many/Planet.php
+   :language: php
+   :dedent:
+
+The following example class shows how to define the inverse ``BelongsTo``
+relationship between a ``Moon`` child model and the and the ``Planet`` parent
+model by using the ``belongsTo()`` method:
+
+.. literalinclude:: /includes/eloquent-models/relationships/one-to-many/Moon.php
+   :language: php
+   :dedent:
+
+The following sample code shows how to instantiate a model for each class
+and add the relationship between them.  Click the :guilabel:`VIEW OUTPUT`
+button to see the data created by running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+      :language: php
+      :dedent:
+      :start-after: begin one-to-many save
+      :end-before: end one-to-many save
+
+   .. output::
+      :language: json
+      :visible: false
+
+      // Parent document in the "planets" collection
+      {
+        _id: ObjectId('65dfb0050e323bbef800f7b2'),
+        name: 'Jupiter',
+        diameter_km: 142984,
+        // ...
+      }
+
+      // Child documents in the "moons" collection
+      [
+        {
+          _id: ObjectId('65dfb0050e323bbef800f7b3'),
+          name: 'Ganymede',
+          orbital_period: 7.15,
+          planet_id: '65dfb0050e323bbef800f7b2',
+          // ...
+        },
+        {
+          _id: ObjectId('65dfb0050e323bbef800f7b4'),
+          name: 'Europa',
+          orbital_period: 3.55,
+          planet_id: '65dfb0050e323bbef800f7b2',
+          // ...
+        }
+      ]
+
+The following sample code shows how to access the related models by using
+the dynamic properties as defined in the example classes.
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :start-after: begin planet moons dynamic property example
+   :end-before: end planet moons dynamic property example
+
+.. _laravel-eloquent-relationship-many-to-many:
+
+Many to Many Relationship
+-------------------------
+
+A many to many relationship consists of a relationship between two different
+model types in which, for each type of model, an instance of the model can
+be related to multiple instances of the other type.
+
+In {+odm-short+}, you can define a many to many relationship by adding the
+``belongsToMany()`` method to both related classes.
+
+When you define a many to many relationship in a relational database, Laravel
+creates a pivot table to track the relationships. When you use {+odm-short+},
+it omits the pivot table creation and adds the related document IDs to a
+document field derived from the related model class name.
+
+.. tip::
+
+   Since {+odm-short+} uses a document field instead of a pivot table, omit
+   the pivot table parameter from the ``belongsToMany()`` constructor or set
+   it to ``null``.
+
+To learn more about many to many relationships in Laravel, see
+`Many to Many <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-relationships#many-to-many>`__
+in the Laravel documentation.
+
+The following section shows an example of how to create a many to many
+relationship between model classes.
+
+Many to Many Example
+~~~~~~~~~~~~~~~~~~~~
+
+The following example class shows how to define a ``BelongsToMany`` many to
+many relationship between a ``Planet`` and ``SpaceExplorer`` model by using
+the ``belongsToMany()`` method:
+
+.. literalinclude:: /includes/eloquent-models/relationships/many-to-many/Planet.php
+   :language: php
+   :dedent:
+
+The following example class shows how to define the inverse ``BelongsToMany``
+many to many relationship between a ``SpaceExplorer`` and ``Planet`` model by
+using the ``belongsToMany()`` method:
+
+.. literalinclude:: /includes/eloquent-models/relationships/many-to-many/SpaceExplorer.php
+   :language: php
+   :dedent:
+
+The following sample code shows how to instantiate a model for each class
+and add the relationship between them. Click the :guilabel:`VIEW OUTPUT`
+button to see the data created by running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+      :language: php
+      :dedent:
+      :start-after: begin many-to-many save
+      :end-before: end many-to-many save
+
+   .. output::
+      :language: json
+      :visible: false
+
+      // Documents in the "planets" collection
+      [
+        {
+          _id: ObjectId('65e1043a5265269a03078ad0'),
+          name: 'Earth',
+          // ...
+          space_explorer_ids: [
+            '65e1043b5265269a03078ad3',
+            '65e1043b5265269a03078ad4',
+            '65e1043b5265269a03078ad5'
+          ],
+        },
+        {
+          _id: ObjectId('65e1043a5265269a03078ad1'),
+          name: 'Mars',
+          // ...
+          space_explorer_ids: [ '65e1043b5265269a03078ad4', '65e1043b5265269a03078ad5' ]
+        },
+        {
+          _id: ObjectId('65e1043b5265269a03078ad2'),
+          name: 'Jupiter',
+          // ...
+          space_explorer_ids: [ '65e1043b5265269a03078ad3', '65e1043b5265269a03078ad5' ]
+        }
+      ]
+
+      // Documents in the "space_explorers" collection
+      [
+        {
+          _id: ObjectId('65e1043b5265269a03078ad3'),
+          name: 'Tanya Kirbuk',
+          // ...
+          planet_ids: [ '65e1043a5265269a03078ad0', '65e1043b5265269a03078ad2' ]
+        },
+        {
+          _id: ObjectId('65e1043b5265269a03078ad4'),
+          name: 'Mark Watney',
+          // ...
+          planet_ids: [ '65e1043a5265269a03078ad0', '65e1043a5265269a03078ad1' ]
+        },
+        {
+          _id: ObjectId('65e1043b5265269a03078ad5'),
+          name: 'Jean-Luc Picard',
+          // ...
+          planet_ids: [
+            '65e1043a5265269a03078ad0',
+            '65e1043a5265269a03078ad1',
+            '65e1043b5265269a03078ad2'
+          ]
+        }
+      ]
+
+The following sample code shows how to access the related models by using
+the dynamic properties as defined in the example classes.
+
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+   :language: php
+   :dedent:
+   :start-after: begin many-to-many dynamic property example
+   :end-before: end many-to-many dynamic property example
+
+.. _laravel-embedded-document-pattern:
+
+Embedded Document Pattern
+-------------------------
+
+In MongoDB, the embedded document pattern adds the related model's data into
+the parent model instead of keeping foreign key references. Use this pattern
+to meet one or more of the following requirements:
+
+- Keeping associated data together in a single collection
+- Performing atomic updates on multiple fields of the document and the associated
+  data
+- Reducing the number of reads required to fetch the data
+
+In {+odm-short+}, you can define embedded documents by adding one of the
+following methods:
+
+- ``embedsOne()`` to embed a single document
+- ``embedsMany()`` to embed multiple documents
+
+.. note::
+
+   These methods return Eloquent collections, which differ from query builder
+   objects.
+
+To learn more about the MongoDB embedded document pattern, see the following
+MongoDB server tutorials:
+
+- :manual:`Model One-to-One Relationships with Embedded Documents </tutorial/model-embedded-one-to-one-relationships-between-documents/>`
+- :manual:`Model One-to-Many Relationships with Embedded Documents </tutorial/model-embedded-one-to-many-relationships-between-documents/>`
+
+The following section shows an example of how to use the embedded document
+pattern.
+
+Embedded Document Example
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example class shows how to define an ``EmbedsMany`` one to many
+relationship between a ``SpaceShip`` and ``Cargo`` model by using the
+``embedsMany()`` method:
+
+.. literalinclude:: /includes/eloquent-models/relationships/embeds/SpaceShip.php
+   :language: php
+   :dedent:
+
+The embedded model class omits the relationship definition as shown in the
+following ``Cargo`` model class:
+
+.. literalinclude:: /includes/eloquent-models/relationships/embeds/Cargo.php
+   :language: php
+   :dedent:
+
+The following sample code shows how to create a ``SpaceShip`` model and
+embed multiple ``Cargo`` models and the MongoDB document created by running the
+code. Click the :guilabel:`VIEW OUTPUT` button to see the data created by
+running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+      :language: php
+      :dedent:
+      :start-after: begin embedsMany save
+      :end-before: end embedsMany save
+
+   .. output::
+      :language: json
+      :visible: false
+
+      // Document in the "space_ships" collection
+      {
+         _id: ObjectId('65e207b9aa167d29a3048853'),
+         name: 'The Millenium Falcon',
+         // ...
+         cargo: [
+           {
+             name: 'spice',
+             weight: 50,
+             // ...
+             _id: ObjectId('65e207b9aa167d29a3048854')
+           },
+           {
+             name: 'hyperdrive',
+             weight: 25,
+             // ...
+             _id: ObjectId('65e207b9aa167d29a3048855')
+           }
+         ]
+      }
+
+.. _laravel-relationship-cross-database:
+
+Cross-Database Relationships
+----------------------------
+
+A cross-database relationship in {+odm-short+} is a relationship between models
+stored in a relational database and models stored in a MongoDB database.
+
+When you add a cross-database relationship, Eloquent lets you access the
+related models by using a dynamic property.
+
+{+odm-short+} supports the following cross-database relationship methods:
+
+- ``hasOne()``
+- ``hasMany()``
+- ``belongsTo()``
+
+To define a cross-database relationship, you must import the
+``MongoDB\Laravel\Eloquent\HybridRelations`` package in the class stored in
+the relational database.
+
+The following section shows an example of how to define a cross-database
+relationship.
+
+Cross-Database Relationship Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example class shows how to define a ``HasMany`` relationship
+between a ``SpaceShip`` model stored in a relational database and a
+``Passenger`` model stored in a MongoDB database:
+
+.. literalinclude:: /includes/eloquent-models/relationships/cross-db/SpaceShip.php
+   :language: php
+   :dedent:
+
+The following example class shows how to define the inverse ``BelongsTo``
+relationship between a ``Passenger`` model and the and the ``Spaceship``
+model by using the ``belongsTo()`` method:
+
+.. literalinclude:: /includes/eloquent-models/relationships/cross-db/Passenger.php
+   :language: php
+   :dedent:
+
+.. tip::
+
+   Make sure that the primary key defined in your relational database table
+   schema matches the one that your model uses. To learn more about Laravel
+   primary keys and schema definitions, see the following pages in the Laravel
+   documentation:
+
+   - `Primary Keys <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#primary-keys>`__
+   - `Database: Migrations <https://laravel.com/docs/{+laravel-docs-version+}/migrations>`__
+
+The following sample code shows how to create a ``SpaceShip`` model in
+a MySQL database and related ``Passenger`` models in a MongoDB database as well
+as the data created by running the code. Click the :guilabel:`VIEW OUTPUT` button
+to see the data created by running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+      :language: php
+      :dedent:
+      :start-after: begin cross-database save
+      :end-before: end cross-database save
+
+   .. output::
+      :language: none
+      :visible: false
+
+      -- Row in the "space_ships" table
+      +------+----------+
+      | id   | name     |
+      +------+----------+
+      | 1234 | Nostromo |
+      +------+----------+
+
+      // Document in the "passengers" collection
+      [
+        {
+          _id: ObjectId('65e625e74903fd63af0a5524'),
+          name: 'Ellen Ripley',
+          space_ship_id: 1234,
+          // ...
+        },
+        {
+          _id: ObjectId('65e625e74903fd63af0a5525'),
+          name: 'Dwayne Hicks',
+          space_ship_id: 1234,
+          // ...
+        }
+      ]
+
