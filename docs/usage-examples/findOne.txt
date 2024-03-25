@@ -4,7 +4,7 @@
 Find a Document
 ===============
 
-You can retrieve a single document from a collection by chaining the ``where()`` and
+You can retrieve a single document from a collection by calling the ``where()`` and
 ``first()`` methods on an Eloquent model or a query builder.
 
 Pass a query filter to the ``where()`` method and then call the ``first()`` method to
@@ -18,56 +18,46 @@ To learn more about retrieving documents, see the :ref:`laravel-fundamentals-ret
 Example
 -------
 
-This usage example retrieves a document that matches a query filter from the ``movies``
-collection in the ``sample_mflix`` database. The example uses the ``Movie`` Eloquent model
-to represent the ``movies`` collection.
+This usage example performs the following actions:
 
-This example performs the following actions:
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database.
+- Retrieves a document from the ``movies`` collection that matches a query filter.
 
-- Defines a query filter that matches documents in which the value of the ``directors`` field
-  includes ``'Rob Reiner'``
-- Retrieves the first document that matches the query filter, according to the sort order
-  specified by the ``orderBy()`` method
+The example calls the following methods on the ``Movie`` model:
+
+- ``where()``: matches documents in which the value of the ``directors`` field includes ``'Rob Reiner'``.
+- ``orderBy()``: sorts matched documents by their ascending ``_id`` values.
+- ``first()``: retrieves only the first matching document.
 
 .. io-code-block::
    :copyable: true
 
-   .. input::
+   .. input:: ../../tests/FindOneTest.php
+      :start-after: begin-find-one
+      :end-before: end-find-one
       :language: php
-      
-      $movie = Movie::where('directors', 'Rob Reiner')
-         ->orderBy('_id')
-         ->first();
-
-      return view('browse_movies', [
-         'movie' => $movies
-      ]);
+      :dedent:
 
    .. output::
       :language: console
       :visible: false
 
-      Title: This Is Spinal Tap
-      Year: 1984
-      Runtime: 82
-      Director: Rob Reiner
-      Plot: Spinal Tap, one of England's loudest bands, is chronicled by film director
-      Marty DeBergi on what proves to be a fateful tour.
+      // Result is truncated
+      
+      ...
+      Array (
+      [_id] => MongoDB\BSON\ObjectId Object ( [oid] => 573a1398f29313caabce94a3 )
+      [plot] => Spinal Tap, one of England's loudest bands, is chronicled by film director Marty DeBergi on what proves to be a fateful tour.
+      [genres] => Array ( [0] => Comedy [1] => Music )
+      [runtime] => 82
+      [metacritic] => 85 
+      ...
 
-To perform the find operation, add the code example to the ``show()`` function in your
-``MovieController.php`` file. Then, start your application by running the following command:
+For instructions on editing your Laravel application to run the usage example, see the
+:ref:`Usage Example landing page <laravel-usage-examples>`.
 
-.. code-block:: bash
+.. tip::
 
-   php artisan serve
-
-Open the following URL in your web browser to view the expected output:
-
-.. code-block:: none
-
-   http://127.0.0.1:8000/browse_movies
-
-.. tip:: 
-
-   For more information on adding the usage example to your application, see the
-   :ref:`add-usage-examples` section of the Usage Example landing page.
+   To learn more about retrieving documents with {+odm-short+}, see the
+   :ref:`laravel-fundamentals-retrieve` guide
