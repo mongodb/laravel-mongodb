@@ -15,7 +15,7 @@ use MongoDB\Laravel\Tests\TestCase;
 
 use function assert;
 
-class UpdateOneTest extends TestCase
+class FindOneTest extends TestCase
 {
 
     /**
