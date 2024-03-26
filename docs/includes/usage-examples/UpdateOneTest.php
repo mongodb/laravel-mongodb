@@ -15,8 +15,8 @@ class UpdateOneTest extends TestCase
      */
     public function updateOne(): void
     {
-      require_once __DIR__ . '/Movie.php';
-    
+        require_once __DIR__ . '/Movie.php';
+
       // begin-update-one
         $updates = Movie::where('title', 'Carol')
           ->orderBy('_id')
