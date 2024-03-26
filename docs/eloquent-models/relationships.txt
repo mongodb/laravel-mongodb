@@ -95,7 +95,7 @@ button to see the data created by running the code:
 
 .. io-code-block::
 
-   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+   .. input:: /includes/eloquent-models/relationships/RelationshipsExamplesTest.php
       :language: php
       :dedent:
       :start-after: begin one-to-one save
@@ -125,7 +125,7 @@ button to see the data created by running the code:
 The following sample code shows how to access the related models by using
 the dynamic properties as defined in the example classes:
 
-.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipsExamplesTest.php
    :language: php
    :dedent:
    :start-after: begin planet orbit dynamic property example
@@ -180,7 +180,7 @@ button to see the data created by running the code:
 
 .. io-code-block::
 
-   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+   .. input:: /includes/eloquent-models/relationships/RelationshipsExamplesTest.php
       :language: php
       :dedent:
       :start-after: begin one-to-many save
@@ -219,7 +219,7 @@ button to see the data created by running the code:
 The following sample code shows how to access the related models by using
 the dynamic properties as defined in the example classes.
 
-.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipsExamplesTest.php
    :language: php
    :dedent:
    :start-after: begin planet moons dynamic property example
@@ -280,7 +280,7 @@ button to see the data created by running the code:
 
 .. io-code-block::
 
-   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+   .. input:: /includes/eloquent-models/relationships/RelationshipsExamplesTest.php
       :language: php
       :dedent:
       :start-after: begin many-to-many save
@@ -345,7 +345,7 @@ button to see the data created by running the code:
 The following sample code shows how to access the related models by using
 the dynamic properties as defined in the example classes.
 
-.. literalinclude:: /includes/eloquent-models/relationships/RelationshipController.php
+.. literalinclude:: /includes/eloquent-models/relationships/RelationshipsExamplesTest.php
    :language: php
    :dedent:
    :start-after: begin many-to-many dynamic property example
@@ -410,7 +410,7 @@ running the code:
 
 .. io-code-block::
 
-   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+   .. input:: /includes/eloquent-models/relationships/RelationshipsExamplesTest.php
       :language: php
       :dedent:
       :start-after: begin embedsMany save
@@ -501,7 +501,7 @@ to see the data created by running the code:
 
 .. io-code-block::
 
-   .. input:: /includes/eloquent-models/relationships/RelationshipController.php
+   .. input:: /includes/eloquent-models/relationships/RelationshipsExamplesTest.php
       :language: php
       :dedent:
       :start-after: begin cross-database save
