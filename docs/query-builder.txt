@@ -32,14 +32,14 @@ interface and syntax.
    by using Eloquent models, see :ref:`laravel-fundamentals-retrieve`.
 
 Laravel provides a **facade** to access the query builder class ``DB``, which
-lets you perform database operations. Facades are static interfaces to
-classes that make the syntax more concise, avoid runtime errors, and improve
+lets you perform database operations. Facades, which are static interfaces to
+classes, make the syntax more concise, avoid runtime errors, and improve
 testability.
 
 {+odm-short+} aliases the ``DB`` method ``table()`` as the ``collection()``
-method. Chain methods to specify the command and any constraints. Then, chain
-the ``get()`` method at the end to run them on the MongoDB collection. The
-following example shows the syntax of a query builder call:
+method. Chain methods to specify commands and any constraints. Then, chain
+the ``get()`` method at the end to run the methods and retrieve the results.
+The following example shows the syntax of a query builder call:
 
 .. code-block:: php
 
@@ -47,7 +47,7 @@ following example shows the syntax of a query builder call:
        // chain methods by using the "->" object operator
        ->get();
 
-This guide shows examples of the following types of query builder operations:
+This guide provides examples of the following types of query builder operations:
 
 - :ref:`laravel-retrieve-query-builder`
 - :ref:`laravel-modify-results-query-builder`
@@ -161,7 +161,7 @@ Logical OR Example
 The following example shows how to chain the ``orWhere()``
 query builder method to retrieve documents from the
 ``movies`` collection that either match the ``year``
-value of ``1955`` or match the title "``Back to the Future``":
+value of ``1955`` or match the title ``"Back to the Future"``:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -177,7 +177,7 @@ Logical AND Example
 The following example shows how to chain the ``where()``
 query builder method to retrieve documents from the
 ``movies`` collection that match both an ``imdb.rating``
-value greater than "8.5" and a ``year`` value of less than
+value greater than ``8.5`` and a ``year`` value of less than
 ``1940``:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -191,11 +191,11 @@ value greater than "8.5" and a ``year`` value of less than
 Logical NOT Example
 ^^^^^^^^^^^^^^^^^^^
 
-The following example shows how to chain the ``where()``
+The following example shows how to call the ``whereNot()``
 query builder method to retrieve documents from the
-``movies`` collection that match both an ``imdb.rating``
-value greater than ``8.5`` and a ``year`` value of less than
-``1940``:
+``movies`` collection that match documents that do not have an ``imdb.rating``
+value greater than ``2``. This is equivalent to matching all documents
+that have an ``imdb.rating`` of less than or equal to ``2``:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -227,9 +227,8 @@ conditions:
 Ranges and Type Checks
 ~~~~~~~~~~~~~~~~~~~~~~
 
-The examples in this section show the query builder syntax you
-can use to perform to match values by using the following range
-queries and type check operations:
+The examples in this section show the query builder syntax you can use to
+match values by using the following range queries and type check operations:
 
 - :ref:`Values within a numerical range <laravel-query-builder-wherebetween>`
 - :ref:`Null or missing values <laravel-query-builder-null>`
@@ -257,7 +256,7 @@ between ``9`` and ``9.5``:
       :end-before: end query whereBetween
 
    .. output::
-      :language: json
+      :language: none
       :visible: false
 
       [
@@ -282,10 +281,6 @@ or field.
    :dedent:
    :start-after: begin query whereNull
    :end-before: end query whereNull
-
-.. seealso::
-
-   The ``exists()`` MongoDB operation performs the same query.
 
 .. _laravel-query-builder-wherein:
 
@@ -389,11 +384,12 @@ Aggregations
 ~~~~~~~~~~~~
 
 The examples in this section show the query builder syntax you
-can use to perform aggregations, a set of calculations on the
-query results, to return the following information:
+can use to perform **aggregations**. Aggregations are operations
+that compute values from a set of query result data. You can use
+aggregations to compute and return the following information:
 
 - :ref:`Results grouped by common field values <laravel-query-builder-aggregation-groupby>`
-- :ref:`Count the of results <laravel-query-builder-aggregation-count>`
+- :ref:`Count the number of results <laravel-query-builder-aggregation-count>`
 - :ref:`Maximum value of a field <laravel-query-builder-aggregation-max>`
 - :ref:`Minimum value of a field <laravel-query-builder-aggregation-min>`
 - :ref:`Average value of a field <laravel-query-builder-aggregation-avg>`
@@ -411,7 +407,7 @@ This example chains the following operations to match documents from the
 ``movies`` collection that contain a ``rated`` value of ``G`` and include the
 ``title`` field of one movie for each distinct ``runtime`` value:
 
-- Match only documents that contain a ``rated`` field value of "``G``" by
+- Match only documents that contain a ``rated`` field value of ``"G"`` by
   using the ``where()`` method
 - Group data by the distinct values of the ``runtime`` field, which is
   assigned the ``_id`` field, by using the ``groupBy()`` method
@@ -544,10 +540,11 @@ collection:
 Aggregate Matched Results Example
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The following example shows how to use the ``sum()``
-query builder method to return the numerical total of
-the ``imdb.votes`` values from movies released in
-after the year "2000":
+The following example shows how to aggregate data
+from results that match a query. The query matches all
+movies after the year ``2000`` and computes the average
+value of ``imdb.rating`` of those matches by using the
+``avg()`` method:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -605,7 +602,7 @@ Omit a Specified Number of Results Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``skip()`` query builder method to
-omit the first "4" results that match the filter specified in the ``title``
+omit the first four results that match the filter specified in the ``title``
 field, sorted by the ``year`` value in descending order:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -680,7 +677,7 @@ Paginate the Results Example
 The following example shows how to use the ``paginate()`` query builder method
 to divide the entire ``movie`` collection into discrete result sets of 15
 documents.  The example also includes a sort order to arrange the results by
-the ``imdb.votes`` field in descending order and a projection that includes
+the ``imdb.votes`` field in ascending order and a projection that includes
 only specific fields in the results.
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -777,8 +774,9 @@ Match Data Type Example
 
 The following example shows how to pass the ``type``
 query operator with the ``where()`` query builder
-method to match documents that contain a ``directors``
-field that contains an array of exactly five elements:
+method to match documents that contain a type ``4`` value,
+which corresponds to an array data type, in the
+``released`` field.
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -798,7 +796,7 @@ Match a Value Computed with Modulo Example
 The following example shows how to pass the ``mod``
 query operator with the ``where()`` query builder
 method to match documents by using the expression
-"``year % 2 == 0``", which matches even values for
+``"year % 2 == 0"``, which matches even values for
 the ``year`` field:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -846,7 +844,7 @@ using the MongoDB Query API syntax:
    :start-after: begin query raw
    :end-before: end query raw
 
-The following code shows the equivalent MongoDB query:
+The following code shows the equivalent MongoDB Query API syntax:
 
 .. code-block::
 
@@ -933,8 +931,9 @@ Near a Position Example
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``near`` query operator
-with the ``where()`` query builder method to match documents that contain the
-field ``random_review``:
+with the ``where()`` query builder method to match documents that
+contain a location that is up to ``50`` meters from a GeoJSON Point
+object:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -1003,6 +1002,9 @@ in the {+server-docs-name+}.
 MongoDB Write Operations
 ------------------------
 
+This section includes query builder examples that show how to use the
+following MongoDB-specific write operations:
+
 - :ref:`Upsert a document <laravel-mongodb-query-builder-upsert>`
 - :ref:`Increment a numerical value <laravel-mongodb-query-builder-increment>`
 - :ref:`Decrement a numerical value <laravel-mongodb-query-builder-decrement>`
@@ -1033,7 +1035,7 @@ Increment a Numerical Value Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``increment()``
-query builder method to add "3000" to the value of
+query builder method to add ``3000`` to the value of
 the ``imdb.votes`` field in the matched document:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -1063,7 +1065,7 @@ Add an Array Element Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``push()`` query builder method to
-add "``Gary Cole``" to the ``cast`` array field in the matched document:
+add ``"Gary Cole"`` to the ``cast`` array field in the matched document:
 
 .. literalinclude:: /includes/query-builder/MovieController.php
    :language: php
@@ -1077,7 +1079,7 @@ Remove an Array Element Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``pull()`` query builder method
-to remove the "``Adventure``" value from the ``genres`` field from the document
+to remove the ``"Adventure"`` value from the ``genres`` field from the document
 matched by the query:
 
 .. literalinclude:: /includes/query-builder/MovieController.php

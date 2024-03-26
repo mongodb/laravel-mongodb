@@ -199,7 +199,7 @@ class MovieController extends Controller
         // begin query all
         $result = DB::collection('movies')
             ->where('movies', 'all', ['title', 'rated', 'imdb.rating'])
-            ->getl();
+            ->get();
         // end query all
 
         echo '{$result->toJson()}';
