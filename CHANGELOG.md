@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+* New aggregation pipeline builder by @GromNaN in [#2738](https://github.com/mongodb/laravel-mongodb/pull/2738)
 
 ## [4.2.0] - 2024-12-14
 

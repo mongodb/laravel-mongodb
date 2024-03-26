@@ -21,6 +21,7 @@ use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Driver\Cursor;
 use Override;
 use RuntimeException;
@@ -65,6 +66,7 @@ use function str_starts_with;
 use function strlen;
 use function strtolower;
 use function substr;
+use function trait_exists;
 use function var_export;
 
 class Builder extends BaseBuilder
@@ -74,7 +76,7 @@ class Builder extends BaseBuilder
     /**
      * The database collection.
      *
-     * @var \MongoDB\Collection
+     * @var \MongoDB\Laravel\Collection
      */
     protected $collection;
 
@@ -83,7 +85,7 @@ class Builder extends BaseBuilder
      *
      * @var array
      */
-    public $projections;
+    public $projections = [];
 
     /**
      * The maximum amount of seconds to allow the query to run.
@@ -538,9 +540,26 @@ class Builder extends BaseBuilder
         return md5(serialize(array_values($key)));
     }
 
-    /** @inheritdoc */
-    public function aggregate($function, $columns = [])
+    /** @return ($function is null ? AggregationBuilder : mixed) */
+    public function aggregate($function = null, $columns = ['*'])
     {
+        if ($function === null) {
+            if (! trait_exists(FluentFactoryTrait::class)) {
+                // This error will be unreachable when the mongodb/builder package will be merged into mongodb/mongodb
+                throw new BadMethodCallException('Aggregation builder requires package mongodb/builder 0.2+');
+            }
+
+            if ($columns !== ['*']) {
+                throw new InvalidArgumentException('Columns cannot be specified to create an aggregation builder. Add a $project stage instead.');
+            }
+
+            if ($this->wheres) {
+                throw new BadMethodCallException('Aggregation builder does not support previous query-builder instructions. Use a $match stage instead.');
+            }
+
+            return new AggregationBuilder($this->collection, $this->options);
+        }
+
         $this->aggregate = [
             'function' => $function,
             'columns' => $columns,
