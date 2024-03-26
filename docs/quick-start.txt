@@ -53,7 +53,7 @@ that connects to a MongoDB deployment.
 .. tip::
 
    You can download the complete web application project by cloning the
-   `laravel-quickstart <https://github.com/mongodb-university/laravel-quickstart>`__
+   `laravel-quickstart <https://github.com/mongodb-university/laravel-quickstart/tree/{+laravel-docs-version+}>`__
    GitHub repository.
 
 .. button:: Next: Download and Install
