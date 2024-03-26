@@ -31,13 +31,14 @@ class UpdateOneTest extends TestCase
           ->orderBy('_id')
           ->first()
           ->update([
-              "imdb" => [
-                  "rating" => 7.3,
-                  "votes" => 142000
+              'imdb' => [
+                  'rating' => 7.3,
+                  'votes' => 142000
               ],
           ]);
 
-      echo 'Updated documents: {$updates}';
+        echo 'Updated documents: ';
+        echo $updates;
       // end-update-one
       
       // <optionally, add assertions>
