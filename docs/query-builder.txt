@@ -335,8 +335,8 @@ query builder method to retrieve documents from the
 Text Pattern Match Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The following example shows how to use the ``like()``
-query builder method to retrieve documents from the
+The following example shows how to use the ``like`` query operator
+with the ``where()`` query builder method to retrieve documents from the
 ``movies`` collection by using a specified text pattern.
 
 Text patterns can contain text mixed with the following
@@ -605,7 +605,7 @@ Omit a Specified Number of Results Example
 
 The following example shows how to use the ``skip()`` query builder method to
 omit the first four results that match the filter specified in the ``title``
-field, sorted by the ``year`` value in descending order:
+field, sorted by the ``year`` value in ascending order:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
@@ -678,7 +678,7 @@ Paginate the Results Example
 
 The following example shows how to use the ``paginate()`` query builder method
 to divide the entire ``movie`` collection into discrete result sets of 15
-documents.  The example also includes a sort order to arrange the results by
+documents. The example also includes a sort order to arrange the results by
 the ``imdb.votes`` field in descending order and a projection that includes
 only specific fields in the results.
 
@@ -887,7 +887,7 @@ Specify Cursor Timeout Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``timeout()`` method
-to specify a maximum duration to wait for cursor operations to complet to completee.
+to specify a maximum duration to wait for cursor operations to complete.
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
@@ -1021,8 +1021,8 @@ Upsert a Document Example
 
 The following example shows how to use the ``update()`` query builder method
 and ``upsert`` option to update the matching document or insert one with the
-specified data if it does not exist. When setting the ``upsert`` option to
-``true``, if the document does not exist, the command inserts both the data
+specified data if it does not exist. When you set the ``upsert`` option to
+``true`` and the document does not exist, the command inserts both the data
 and the ``title`` field and value specified in the ``where()`` query operation:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
