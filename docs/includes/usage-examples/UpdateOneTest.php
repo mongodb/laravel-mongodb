@@ -37,8 +37,7 @@ class UpdateOneTest extends TestCase
               ],
           ]);
 
-        echo 'Updated documents: ';
-        echo $updates;
+      echo 'Updated documents: ' . $updates;
       // end-update-one
       
       // <optionally, add assertions>
