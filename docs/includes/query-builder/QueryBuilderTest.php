@@ -54,6 +54,18 @@ class QueryBuilderTest extends TestCase
         // end query andWhere
     }
 
+    public function testWhereNot(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query whereNot
+        $result = DB::connection('mongodb')
+            ->collection('movies')
+            ->whereNot('imdb.rating', '>', 2)
+            ->get();
+        // end query whereNot
+    }
+
     public function testNestedLogical(): void
     {
         // <optionally, add code here to clean the database/collection>
@@ -68,18 +80,6 @@ class QueryBuilderTest extends TestCase
                     ->orWhere('year', 1996);
             })->get();
         // end query nestedLogical
-    }
-
-    public function testWhereNot(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query whereNot
-        $result = DB::connection('mongodb')
-            ->collection('movies')
-            ->whereNot('imdb.rating', '>', 2)
-            ->get();
-        // end query whereNot
     }
 
     public function testWhereBetween(): void
@@ -98,24 +98,12 @@ class QueryBuilderTest extends TestCase
     {
         // <optionally, add code here to clean the database/collection>
 
-        // begin query whereDate
+        // begin query whereNull
         $result = DB::connection('mongodb')
             ->collection('movies')
-            ->whereDate('released', '2010-1-15')
+            ->whereNull('runtime')
             ->get();
-        // end query whereDate
-    }
-
-    public function testWhereRegex(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query whereRegex
-        $result = DB::connection('mongodb')
-            ->collection('movies')
-            ->where('title', 'REGEX', new Regex('^the lord of .*', 'i'))
-            ->get();
-        // end query whereRegex
+        // end query whereNull
     }
 
     public function testWhereIn(): void
@@ -129,6 +117,18 @@ class QueryBuilderTest extends TestCase
         // end query whereIn
     }
 
+    public function testWhereDate(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query whereDate
+        $result = DB::connection('mongodb')
+            ->collection('movies')
+            ->whereDate('released', '2010-1-15')
+            ->get();
+        // end query whereDate
+    }
+
     public function testLike(): void
     {
         // <optionally, add code here to clean the database/collection>
@@ -140,60 +140,6 @@ class QueryBuilderTest extends TestCase
         // end query like
     }
 
-    public function testExists(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query exists
-        $result = DB::collection('movies')
-            ->exists('random_review', true);
-        // end query exists
-    }
-
-    public function testAll(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query all
-        $result = DB::collection('movies')
-            ->where('movies', 'all', ['title', 'rated', 'imdb.rating'])
-            ->get();
-        // end query all
-    }
-
-    public function testSize(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query size
-        $result = DB::collection('movies')
-            ->where('directors', 'size', 5)
-            ->get();
-        // end query size
-    }
-
-    public function testType(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query type
-        $result = DB::collection('movies')
-            ->where('released', 'type', 4)
-            ->get();
-        // end query type
-    }
-
-    public function testMod(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query modulo
-        $result = DB::collection('movies')
-            ->where('year', 'mod', [2, 0])
-            ->get();
-        // end query modulo
-    }
-
     public function testDistinct(): void
     {
         // <optionally, add code here to clean the database/collection>
@@ -202,28 +148,6 @@ class QueryBuilderTest extends TestCase
         $result = DB::collection('movies')
             ->distinct('year')->get();
         // end query distinct
-    }
-
-    public function testDistinct(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query distinct
-        $result = DB::collection('movies')
-            ->distinct('year')->get();
-        // end query distinct
-    }
-
-    public function testOrderBy(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query orderBy
-        $result = DB::collection('movies')
-            ->where('title', 'like', 'back to the future%')
-            ->orderBy('imdb.rating', 'desc')
-            ->get();
-        // end query orderBy
     }
 
     public function testGroupBy(): void
@@ -300,6 +224,18 @@ class QueryBuilderTest extends TestCase
         // end aggregation with filter
     }
 
+    public function testOrderBy(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query orderBy
+        $result = DB::collection('movies')
+            ->where('title', 'like', 'back to the future%')
+            ->orderBy('imdb.rating', 'desc')
+            ->get();
+        // end query orderBy
+    }
+
     public function testSkip(): void
     {
         // <optionally, add code here to clean the database/collection>
@@ -311,6 +247,101 @@ class QueryBuilderTest extends TestCase
             ->skip(4)
             ->get();
         // end query skip
+    }
+
+    public function testProjection(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query projection
+        $result = DB::collection('movies')
+            ->where('imdb.rating', '>', 8.5)
+            ->project([
+                'title' => 1,
+                'cast' => ['$slice' => [1, 3]],
+            ])
+            ->get();
+        // end query projection
+    }
+
+    public function testProjectionWithPagination(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query projection with pagination
+        $resultsPerPage = 15;
+        $projectionFields = ['title', 'runtime', 'imdb.rating'];
+
+        $result = DB::collection('movies')
+            ->orderBy('imdb.votes', 'desc')
+            ->paginate($resultsPerPage, $projectionFields);
+        // end query projection with pagination
+    }
+
+    public function testExists(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query exists
+        $result = DB::collection('movies')
+            ->exists('random_review', true);
+        // end query exists
+    }
+
+    public function testAll(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query all
+        $result = DB::collection('movies')
+            ->where('movies', 'all', ['title', 'rated', 'imdb.rating'])
+            ->get();
+        // end query all
+    }
+
+    public function testSize(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query size
+        $result = DB::collection('movies')
+            ->where('directors', 'size', 5)
+            ->get();
+        // end query size
+    }
+
+    public function testType(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query type
+        $result = DB::collection('movies')
+            ->where('released', 'type', 4)
+            ->get();
+        // end query type
+    }
+
+    public function testMod(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query modulo
+        $result = DB::collection('movies')
+            ->where('year', 'mod', [2, 0])
+            ->get();
+        // end query modulo
+    }
+
+    public function testWhereRegex(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query whereRegex
+        $result = DB::connection('mongodb')
+            ->collection('movies')
+            ->where('title', 'REGEX', new Regex('^the lord of .*', 'i'))
+            ->get();
+        // end query whereRegex
     }
 
     public function testWhereRaw(): void
@@ -338,6 +369,18 @@ class QueryBuilderTest extends TestCase
             ->where('writers', 'elemMatch', ['$in' => ['Maya Forbes', 'Eric Roth']])
             ->get();
         // end query elemMatch
+    }
+
+    public function testCursorTimeout(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        // begin query cursor timeout
+        $result = DB::collection('movies')
+            ->timeout(2) // value in seconds
+            ->where('year', 2001)
+            ->get();
+        // end query cursor timeout
     }
 
     public function testNear(): void
@@ -424,47 +467,6 @@ class QueryBuilderTest extends TestCase
         // end query geoNear
     }
 
-    public function testProjection(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query projection
-        $result = DB::collection('movies')
-            ->where('imdb.rating', '>', 8.5)
-            ->project([
-                'title' => 1,
-                'cast' => ['$slice' => [1, 3]],
-            ])
-            ->get();
-        // end query projection
-    }
-
-    public function testProjectionWithPagination(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query projection with pagination
-        $resultsPerPage = 15;
-        $projectionFields = ['title', 'runtime', 'imdb.rating'];
-
-        $result = DB::collection('movies')
-            ->orderBy('imdb.votes', 'desc')
-            ->paginate($resultsPerPage, $projectionFields);
-        // end query projection with pagination
-    }
-
-    public function testCursorTimeout(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin query cursor timeout
-        $result = DB::collection('movies')
-            ->timeout(2) // value in seconds
-            ->where('year', 2001)
-            ->get();
-        // end query cursor timeout
-    }
-
     public function testUpsert(): void
     {
         // <optionally, add code here to clean the database/collection>
@@ -528,17 +530,6 @@ class QueryBuilderTest extends TestCase
     }
 
     public function testUnset(): void
-    {
-        // <optionally, add code here to clean the database/collection>
-
-        // begin unset
-        $result = DB::collection('movies')
-            ->where('title', 'Final Accord')
-            ->unset('tomatoes.viewer');
-        // end unset
-    }
-
-    public function testPull(): void
     {
         // <optionally, add code here to clean the database/collection>
 
