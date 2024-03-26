@@ -22,8 +22,8 @@ Overview
 
 In this guide, you can learn how to use the {+odm-short+} extension of
 the Laravel query builder to work with a MongoDB database. The query builder
-lets you write queries for any supported database by using the same fluent
-interface and syntax.
+lets you use a single syntax and fluent interface to write queries for any
+of supported database.
 
 .. note::
 
@@ -87,7 +87,7 @@ Where Method Example
 
 The following example shows how to use the ``where()`` query
 builder method to retrieve documents from the ``movies`` collection
-that contain an ``imdb.votes`` field value of ``350``. Click the
+that contain an ``imdb.rating`` field value of exactly ``9.3``. Click the
 :guilabel:`{+code-output-label+}` button to see the results returned
 by the query:
 
@@ -161,7 +161,7 @@ Logical OR Example
 The following example shows how to chain the ``orWhere()``
 query builder method to retrieve documents from the
 ``movies`` collection that either match the ``year``
-value of ``1955`` or match the title ``"Back to the Future"``:
+value of ``1955`` or match the ``title`` value ``"Back to the Future"``:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
@@ -292,7 +292,7 @@ One or More Values of a Set Example
 The following example shows how to use the ``whereIn()``
 query builder method to retrieve documents from the
 ``movies`` collection that match at least one of the
-``title`` values in the specified set.
+``title`` values in the specified set:
 
 .. io-code-block::
    :copyable: true
@@ -694,8 +694,8 @@ in the Laravel documentation.
 
 .. _laravel-mongodb-read-query-builder:
 
-MongoDB Read Operations
------------------------
+Retrieve Data by Using MongoDB Operations
+-----------------------------------------
 
 This section includes query builder examples that show how
 to use the following MongoDB-specific query operations:
@@ -798,7 +798,7 @@ Match a Value Computed with Modulo Example
 The following example shows how to pass the ``mod``
 query operator with the ``where()`` query builder
 method to match documents by using the expression
-``"year % 2 == 0"``, which matches even values for
+``year % 2 == 0``, which matches even values for
 the ``year`` field:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
@@ -1001,8 +1001,8 @@ in the {+server-docs-name+}.
 
 .. _laravel-mongodb-write-query-builder:
 
-MongoDB Write Operations
-------------------------
+Write Data by Using MongoDB Write Operations
+--------------------------------------------
 
 This section includes query builder examples that show how to use the
 following MongoDB-specific write operations:
