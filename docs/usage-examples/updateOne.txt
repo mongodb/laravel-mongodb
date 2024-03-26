@@ -21,8 +21,8 @@ You can update a document in a collection by retrieving a single document and ca
 the ``update()`` method on an Eloquent model or a query builder.
 
 Pass a query filter to the ``where()`` method, sort the matching documents, and call the
-``first()`` method to match only one document. Then, update this matching document by passing
-your intended document changes to the ``update()`` method.
+``first()`` method to retrieve only the first document. Then, update this matching document
+by passing your intended document changes to the ``update()`` method.
 
 Example
 -------
