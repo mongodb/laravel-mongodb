@@ -276,7 +276,7 @@ Null or Missing Values Example
 The following example shows how to use the ``whereNull()``
 query builder method to retrieve documents from the
 ``movies`` collection that omit a ``runtime`` value
-or field.
+or field:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
