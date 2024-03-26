@@ -1,4 +1,4 @@
-.. laravel-quick-start-view-data:
+.. _laravel-quick-start-view-data:
 
 =================
 View MongoDB Data

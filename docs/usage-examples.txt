@@ -1,0 +1,68 @@
+.. _laravel-usage-examples:
+
+==============
+Usage Examples
+==============
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: set up, runnable
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+Usage examples show runnable code examples to demonstrate frequently used MongoDB
+operations. Each usage example includes the following components:
+
+- Explanation of the MongoDB operation
+- Example code that you can run from an application controller
+- Output displayed by the print statement
+
+How to Use the Usage Examples
+-----------------------------
+
+To learn how to add a usage example to your Laravel application and view the expected output,
+see the following sections:
+
+- :ref:`before-start`
+- :ref:`run-usage-examples`
+
+.. _before-start:
+
+Before You Get Started
+~~~~~~~~~~~~~~~~~~~~~~
+
+You can run the usage examples from your own Laravel application or from the
+``{+quickstart-app-name+}`` application created in the :ref:`laravel-quick-start` guide. 
+
+The usage examples are designed to run operations on a MongoDB deployment that contains
+the MongoDB Atlas sample datasets. Before running the usage examples, ensure that you load
+the sample data into the MongoDB cluster to which your application connects. Otherwise, the
+operation output might not match the text included in the ``{+code-output-label+}`` tab of
+the usage example page.
+
+.. tip:: 
+
+   For instructions on loading the sample data into a MongoDB cluster, see
+   :atlas:`Load Sample Data </sample-data>` in the Atlas documentation. 
+
+.. _run-usage-examples:
+
+Run the Usage Example
+~~~~~~~~~~~~~~~~~~~~~
+
+Each usage example page includes sample code that demonstrates a MongoDB operation and prints
+a result. To run the operation, you can copy the sample code to a controller endpoint in your
+Laravel application.
+
+To view the expected output of the operation, you can add a web route to your application that
+calls the controller function and returns the result to a web interface.
