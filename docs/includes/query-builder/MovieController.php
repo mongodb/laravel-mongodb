@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\Regex;
 use MongoDB\Laravel\Collection;
+use Illuminate\Database\Query\Builder;
 
 use function print_r;
 use function view;
@@ -45,7 +46,7 @@ class MovieController extends Controller
             ->get();
         // end query where
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -59,7 +60,7 @@ class MovieController extends Controller
             ->get();
         // end query orWhere
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -73,7 +74,7 @@ class MovieController extends Controller
             ->get();
         // end query andWhere
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -83,14 +84,14 @@ class MovieController extends Controller
         $result = DB::connection('mongodb')
             ->collection('movies')
             ->where('imdb.rating', '>', 8.5)
-            ->where(function ($query) {
+            ->where(function (Builder $query) {
                 return $query
                     ->where('year', 1986)
                     ->orWhere('year', 1996);
             })->get();
         // end query nestedLogical
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -103,7 +104,7 @@ class MovieController extends Controller
             ->get();
         // end query whereNot
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -116,7 +117,7 @@ class MovieController extends Controller
             ->get();
         // end query whereBetween
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -129,7 +130,7 @@ class MovieController extends Controller
             ->get();
         // end query whereNull
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -142,7 +143,7 @@ class MovieController extends Controller
             ->get();
         // end query whereDate
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -155,7 +156,7 @@ class MovieController extends Controller
             ->get();
         // end query whereRegex
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -167,7 +168,7 @@ class MovieController extends Controller
             ->get();
         // end query whereIn
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -175,11 +176,11 @@ class MovieController extends Controller
     {
         // begin query like
         $result = DB::collection('movies')
-            ->where('title', 'like', '%spider%man%')
+            ->where('title', 'like', '%spider_man%')
             ->get();
         // end query like
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -202,7 +203,7 @@ class MovieController extends Controller
             ->get();
         // end query all
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -226,7 +227,7 @@ class MovieController extends Controller
             ->get();
         // end query type
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -238,7 +239,7 @@ class MovieController extends Controller
             ->get();
         // end query modulo
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -273,7 +274,7 @@ class MovieController extends Controller
             ->get();
         // end query orderBy
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -369,7 +370,7 @@ class MovieController extends Controller
            ->get();
         // end query skip
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -386,7 +387,7 @@ class MovieController extends Controller
             ])->get();
         // end query raw
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -398,7 +399,7 @@ class MovieController extends Controller
            ->get();
         // end query elemMatch
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -531,7 +532,7 @@ class MovieController extends Controller
            ->get();
         // end query cursor timeout
 
-        echo '{$result->toJson()}';
+        print_r($result->toJson());
         return $result;
     }
 
@@ -550,7 +551,7 @@ class MovieController extends Controller
            );
         // end upsert
 
-        echo '{$result->toJson()}';
+        print_r($result);
         return $result;
     }
 
@@ -620,7 +621,7 @@ class MovieController extends Controller
     public function show()
     {
         $result = null;
-        //$result = $this->runWhere();
+        $result = $this->runWhere();
         //$result = $this->runOrWhere();
         //$result = $this->runAndWhere();
         //$result = $this->runNestedLogical();

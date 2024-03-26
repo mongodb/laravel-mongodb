@@ -211,7 +211,9 @@ Nested Logical Operator Group Example
 The following example shows how to chain the ``where()``
 query builder method to retrieve documents from the
 ``movies`` collection that match both of the following
-conditions:
+conditions. This example passes a closure as the first
+parameter of the ``where()`` query builder method to group
+the logical OR group:
 
 - ``imdb.rating`` value is greater than ``8.5``
 - ``year`` value is either ``1986`` or ``1996``
@@ -677,7 +679,7 @@ Paginate the Results Example
 The following example shows how to use the ``paginate()`` query builder method
 to divide the entire ``movie`` collection into discrete result sets of 15
 documents.  The example also includes a sort order to arrange the results by
-the ``imdb.votes`` field in ascending order and a projection that includes
+the ``imdb.votes`` field in descending order and a projection that includes
 only specific fields in the results.
 
 .. literalinclude:: /includes/query-builder/MovieController.php
@@ -1029,6 +1031,9 @@ and the ``title`` field and value specified in the ``where()`` query operation:
    :start-after: begin upsert
    :end-before: end upsert
 
+The ``update()`` query builder method returns the number of documents that the
+operation updated or inserted.
+
 .. _laravel-mongodb-query-builder-increment:
 
 Increment a Numerical Value Example
@@ -1043,6 +1048,9 @@ the ``imdb.votes`` field in the matched document:
    :dedent:
    :start-after: begin increment
    :end-before: end increment
+
+The ``increment()`` query builder method returns the number of documents that the
+operation updated.
 
 .. _laravel-mongodb-query-builder-decrement:
 
@@ -1059,6 +1067,9 @@ matched document:
    :start-after: begin decrement
    :end-before: end decrement
 
+The ``decrement()`` query builder method returns the number of documents that the
+operation updated.
+
 .. _laravel-mongodb-query-builder-push:
 
 Add an Array Element Example
@@ -1072,6 +1083,9 @@ add ``"Gary Cole"`` to the ``cast`` array field in the matched document:
    :dedent:
    :start-after: begin push
    :end-before: end push
+
+The ``push()`` query builder method returns the number of documents that the
+operation updated.
 
 .. _laravel-mongodb-query-builder-pull:
 
@@ -1088,6 +1102,9 @@ matched by the query:
    :start-after: begin pull
    :end-before: end pull
 
+The ``pull()`` query builder method returns the number of documents that the
+operation updated.
+
 .. _laravel-mongodb-query-builder-unset:
 
 Remove a Field Example
@@ -1103,3 +1120,5 @@ by the query:
    :start-after: begin unset
    :end-before: end unset
 
+The ``unset()`` query builder method returns the number of documents that the
+operation updated.
