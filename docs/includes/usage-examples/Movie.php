@@ -10,5 +10,3 @@ class Movie extends Model
     protected $collection = 'movies';
     protected $fillable = ['title', 'year', 'runtime', 'imdb', 'plot'];
 }
-
-
