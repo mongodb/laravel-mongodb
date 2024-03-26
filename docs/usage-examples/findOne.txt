@@ -42,14 +42,10 @@ The example calls the following methods on the ``Movie`` model:
 
       // Result is truncated
       
-      ...
-      Array (
-      [_id] => MongoDB\BSON\ObjectId Object ( [oid] => 573a1398f29313caabce94a3 )
-      [plot] => Spinal Tap, one of England's loudest bands, is chronicled by film director Marty DeBergi on what proves to be a fateful tour.
-      [genres] => Array ( [0] => Comedy [1] => Music )
-      [runtime] => 82
-      [metacritic] => 85 
-      ...
+      {"_id":"573a1398f29313caabce94a3","plot":"Spinal Tap, one of England's loudest bands, is
+      chronicled by film director Marty DeBergi on what proves to be a fateful tour.",
+      "genres":["Comedy","Music"],"runtime":82,"metacritic":85,"rated":"R","cast":
+      ["Rob Reiner","Kimberly Stringer","Chazz Dominguez","Shari Hall"] ...
 
 For instructions on editing your Laravel application to run the usage example, see the
 :ref:`Usage Example landing page <laravel-usage-examples>`.

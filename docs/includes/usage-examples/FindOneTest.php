@@ -31,7 +31,7 @@ class UpdateOneTest extends TestCase
           ->orderBy('_id')
           ->first();
 
-      print_r($movie);
+      print_r($movie->toJson());
       // end-find-one
       
       // <optionally, add assertions>
