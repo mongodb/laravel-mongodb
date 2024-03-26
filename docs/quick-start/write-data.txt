@@ -32,6 +32,16 @@ Write Data to MongoDB
 
    .. step:: Add an API route that calls the controller function
 
+      Generate an API route file by running the following command:
+
+      .. code-block:: bash
+
+         php artisan install:api
+
+      .. tip::
+
+         For Laravel 10.x and earlier, you do not need to run this command.
+
       Import the controller and add an API route that calls the ``store()``
       method in the ``routes/api.php`` file:
 
@@ -42,7 +52,7 @@ Write Data to MongoDB
          // ...
 
          Route::resource('movies', MovieController::class)->only([
-           'store'
+             'store'
          ]);
 
 
@@ -57,8 +67,8 @@ Write Data to MongoDB
 
          class Movie extends Model
          {
-            protected $connection = 'mongodb';
-            protected $fillable = ['title', 'year', 'runtime', 'imdb', 'plot'];
+              protected $connection = 'mongodb';
+              protected $fillable = ['title', 'year', 'runtime', 'imdb', 'plot'];
          }
 
    .. step:: Post a request to the API
