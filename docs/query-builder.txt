@@ -94,7 +94,7 @@ by the query:
 .. io-code-block::
    :copyable: true
 
-   .. input:: /includes/query-builder/MovieController.php
+   .. input:: /includes/query-builder/QueryBuilderTest.php
       :language: php
       :dedent:
       :start-after: begin query where
@@ -163,7 +163,7 @@ query builder method to retrieve documents from the
 ``movies`` collection that either match the ``year``
 value of ``1955`` or match the title ``"Back to the Future"``:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query orWhere
@@ -180,7 +180,7 @@ query builder method to retrieve documents from the
 value greater than ``8.5`` and a ``year`` value of less than
 ``1940``:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query andWhere
@@ -197,7 +197,7 @@ query builder method to retrieve documents from the
 value greater than ``2``. This is equivalent to matching all documents
 that have an ``imdb.rating`` of less than or equal to ``2``:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query whereNot
@@ -218,7 +218,7 @@ the logical OR group:
 - ``imdb.rating`` value is greater than ``8.5``
 - ``year`` value is either ``1986`` or ``1996``
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query nestedLogical
@@ -251,7 +251,7 @@ between ``9`` and ``9.5``:
 .. io-code-block::
    :copyable: true
 
-   .. input:: /includes/query-builder/MovieController.php
+   .. input:: /includes/query-builder/QueryBuilderTest.php
       :language: php
       :dedent:
       :start-after: begin query whereBetween
@@ -278,7 +278,7 @@ query builder method to retrieve documents from the
 ``movies`` collection that omit a ``runtime`` value
 or field.
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query whereNull
@@ -297,7 +297,7 @@ query builder method to retrieve documents from the
 .. io-code-block::
    :copyable: true
 
-   .. input:: /includes/query-builder/MovieController.php
+   .. input:: /includes/query-builder/QueryBuilderTest.php
       :language: php
       :dedent:
       :start-after: begin query whereIn
@@ -324,7 +324,7 @@ query builder method to retrieve documents from the
 ``movies`` collection that match the specified date of
 ``2010-1-15`` in the ``released`` field:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query whereDate
@@ -348,7 +348,7 @@ wildcard characters:
 .. io-code-block::
    :copyable: true
 
-   .. input:: /includes/query-builder/MovieController.php
+   .. input:: /includes/query-builder/QueryBuilderTest.php
       :language: php
       :dedent:
       :start-after: begin query like
@@ -374,7 +374,7 @@ The following example shows how to use the ``distinct()``
 query builder method to retrieve all the different values
 of the ``year`` field for documents in the ``movies`` collections.
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query distinct
@@ -427,7 +427,7 @@ This example chains the following operations to match documents from the
 .. io-code-block::
    :copyable: true
 
-   .. input:: /includes/query-builder/MovieController.php
+   .. input:: /includes/query-builder/QueryBuilderTest.php
       :language: php
       :dedent:
       :start-after: begin query groupBy
@@ -466,7 +466,7 @@ The following example shows how to use the ``count()``
 query builder method to return the number of documents
 contained in the ``movies`` collection:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin aggregation count
@@ -482,7 +482,7 @@ query builder method to return the highest numerical
 value of the ``runtime`` field from the entire
 ``movies`` collection:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin aggregation max
@@ -498,7 +498,7 @@ query builder method to return the lowest numerical
 value of the ``year`` field from the entire ``movies``
 collection:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin aggregation min
@@ -514,7 +514,7 @@ query builder method to return the numerical average, or
 arithmetic mean, of the ``imdb.rating`` values from
 the entire ``movies`` collection.
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin aggregation avg
@@ -531,7 +531,7 @@ the ``imdb.votes`` values from the entire ``movies``
 collection:
 
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin aggregation sum
@@ -548,7 +548,7 @@ movies after the year ``2000`` and computes the average
 value of ``imdb.rating`` of those matches by using the
 ``avg()`` method:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin aggregation with filter
@@ -581,7 +581,7 @@ the filter specified in the ``title`` field by the
 .. io-code-block::
    :copyable: true
 
-   .. input:: /includes/query-builder/MovieController.php
+   .. input:: /includes/query-builder/QueryBuilderTest.php
       :language: php
       :dedent:
       :start-after: begin query orderBy
@@ -607,7 +607,7 @@ The following example shows how to use the ``skip()`` query builder method to
 omit the first four results that match the filter specified in the ``title``
 field, sorted by the ``year`` value in descending order:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query skip
@@ -630,7 +630,7 @@ only the following field values:
 .. io-code-block::
    :copyable: true
 
-   .. input:: /includes/query-builder/MovieController.php
+   .. input:: /includes/query-builder/QueryBuilderTest.php
       :language: php
       :dedent:
       :start-after: begin query projection
@@ -682,7 +682,7 @@ documents.  The example also includes a sort order to arrange the results by
 the ``imdb.votes`` field in descending order and a projection that includes
 only specific fields in the results.
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query projection with pagination
@@ -720,7 +720,7 @@ The following example shows how to use the ``exists()``
 query builder method to match documents that contain the
 field ``random_review``:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query exists
@@ -739,7 +739,7 @@ The following example shows how to use the ``all`` query
 operator with the ``where()`` query builder method to match
 documents that contain all the specified fields:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query all
@@ -759,7 +759,7 @@ query operator with the ``where()`` query builder
 method to match documents that contain a ``directors``
 field that contains an array of exactly five elements:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query size
@@ -780,7 +780,7 @@ method to match documents that contain a type ``4`` value,
 which corresponds to an array data type, in the
 ``released`` field.
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query type
@@ -801,7 +801,7 @@ method to match documents by using the expression
 ``"year % 2 == 0"``, which matches even values for
 the ``year`` field:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query modulo
@@ -821,7 +821,7 @@ query operator with the ``where()`` query builder
 method to match documents that contain a ``title``
 field that matches the specified regular expression:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query whereRegex
@@ -840,7 +840,7 @@ The following example shows how to use the ``whereRaw()``
 query builder method to run a query operation written by
 using the MongoDB Query API syntax:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query raw
@@ -871,7 +871,7 @@ method to match documents that contain an array element
 that matches at least one of the conditions in the
 specified query:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query elemMatch
@@ -889,7 +889,7 @@ Specify Cursor Timeout Example
 The following example shows how to use the ``timeout()`` method
 to specify a maximum duration to wait for cursor operations to complet to completee.
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query cursor timeout
@@ -937,7 +937,7 @@ with the ``where()`` query builder method to match documents that
 contain a location that is up to ``50`` meters from a GeoJSON Point
 object:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query near
@@ -958,7 +958,7 @@ query builder method to match documents that contain a
 location within the bounds of the specified ``Polygon``
 GeoJSON object:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query geoWithin
@@ -974,7 +974,7 @@ query operator with the ``where()`` query builder method to
 match documents that contain a location that intersects with
 the specified ``LineString`` GeoJSON object:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query geoIntersects
@@ -989,7 +989,7 @@ The following example shows how to use the ``geoNear`` aggregation operator
 with the ``raw()`` query builder method to perform an aggregation that returns
 metadata, such as proximity information for each match:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query geoNear
@@ -1025,7 +1025,7 @@ specified data if it does not exist. When setting the ``upsert`` option to
 ``true``, if the document does not exist, the command inserts both the data
 and the ``title`` field and value specified in the ``where()`` query operation:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin upsert
@@ -1043,7 +1043,7 @@ The following example shows how to use the ``increment()``
 query builder method to add ``3000`` to the value of
 the ``imdb.votes`` field in the matched document:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin increment
@@ -1061,7 +1061,7 @@ The following example shows how to use the ``decrement()`` query builder
 method to subtract ``0.2`` from the value of the ``imdb.rating`` field in the
 matched document:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin decrement
@@ -1078,7 +1078,7 @@ Add an Array Element Example
 The following example shows how to use the ``push()`` query builder method to
 add ``"Gary Cole"`` to the ``cast`` array field in the matched document:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin push
@@ -1096,7 +1096,7 @@ The following example shows how to use the ``pull()`` query builder method
 to remove the ``"Adventure"`` value from the ``genres`` field from the document
 matched by the query:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin pull
@@ -1114,7 +1114,7 @@ The following example shows how to use the ``unset()`` query builder method
 to remove the ``tomatoes.viewer`` field and value from the document matched
 by the query:
 
-.. literalinclude:: /includes/query-builder/MovieController.php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin unset
