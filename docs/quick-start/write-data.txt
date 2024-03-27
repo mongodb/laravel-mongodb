@@ -40,7 +40,7 @@ Write Data to MongoDB
 
       .. tip::
 
-         Skip this step if you are using Laravel 10.x since the file that
+         Skip this step if you are using Laravel 10.x because the file that
          the command generates already exists.
 
       Import the controller and add an API route that calls the ``store()``
