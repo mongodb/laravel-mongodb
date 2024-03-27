@@ -326,6 +326,6 @@ Eloquent Mutator Features
 .. TODO Eloquent Serialization Features
 
 Eloquent Model Factory Features
-----------------------------
+-------------------------------
 
 {+odm-short+} supports all Eloquent factories features.
