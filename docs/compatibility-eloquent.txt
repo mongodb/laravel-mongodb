@@ -32,7 +32,6 @@ Database Features
 
 .. list-table::
    :header-rows: 1
-   :stub-columns: 1
 
    * - Eloquent Feature
      - Availability
@@ -56,7 +55,7 @@ Database Features
      - ✓ See :ref:`laravel-transactions`.
 
    * - Command Line Interface (CLI)
-     - Use the :mdb-shell:`MongoDB Shell <>`, ``mongosh``.
+     - Use the :mdb-shell:`MongoDB Shell <>` (``mongosh``).
 
    * - Database Inspection
      - *Unsupported*
@@ -93,7 +92,6 @@ The following Eloquent methods are not supported in {+odm-short+}:
 
 .. list-table::
    :header-rows: 1
-   :stub-columns: 1
 
    * - Eloquent Feature
      - Availability
@@ -197,7 +195,6 @@ Eloquent Features
 
 .. list-table::
    :header-rows: 1
-   :stub-columns: 1
 
    * - Eloquent Feature
      - Availability
@@ -255,7 +252,6 @@ Eloquent Relationship Features
 
 .. list-table::
    :header-rows: 1
-   :stub-columns: 1
 
    * - Eloquent Feature
      - Availability
@@ -298,7 +294,6 @@ Eloquent Mutator Features
 
 .. list-table::
    :header-rows: 1
-   :stub-columns: 1
 
    * - Eloquent Feature
      - Availability
