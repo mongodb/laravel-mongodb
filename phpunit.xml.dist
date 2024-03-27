@@ -12,6 +12,9 @@
         <testsuite name="Test Suite">
             <directory>tests/</directory>
         </testsuite>
+        <testsuite name="Documentation">
+            <directory>docs/includes/</directory>
+        </testsuite>
     </testsuites>
     <php>
         <env name="MONGODB_URI" value="mongodb://mongodb/"/>
