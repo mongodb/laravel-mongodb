@@ -102,14 +102,14 @@ The following Eloquent methods are not supported in {+odm-short+}:
    * - Chunking Results
      - ✓
 
-   * - Aggregation
+   * - Aggregates
      - ✓
 
    * - Select Statements
      - ✓
 
    * - Raw Expressions
-     - ✓
+     - *Unsupported*
 
    * - Joins
      - *Unsupported*
