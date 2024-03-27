@@ -14,12 +14,6 @@ Compatibility
    :depth: 1
    :class: singlecol
 
-.. toctree::
-   :titlesonly:
-   :maxdepth: 1
-
-   /compatibility-eloquent
-
 Laravel Compatibility
 ---------------------
 

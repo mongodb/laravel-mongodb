@@ -53,10 +53,10 @@ Database Features
      - ✓
 
    * - Transactions
-     - ✓
+     - ✓ See :ref:`laravel-transactions`.
 
    * - Command Line Interface (CLI)
-     - Use the :mdb-shell:`MongoDB Shell <>`, ``mongosh``
+     - Use the :mdb-shell:`MongoDB Shell <>`, ``mongosh``.
 
    * - Database Inspection
      - *Unsupported*
@@ -141,7 +141,7 @@ The following Eloquent methods are not supported in {+odm-short+}:
      - *Unsupported*
 
    * - Grouping
-     - Partially supported, use :ref:`Aggregation Builder <laravel-query-builder>`
+     - Partially supported, use :ref:`Aggregation Builders <laravel-query-builder>`.
 
    * - Limit and Offset
      - ✓
@@ -238,6 +238,10 @@ Eloquent Features
    * - Pruning Models
      - ✓
 
+.. tip::
+   
+   To learn more, see the :ref:`laravel-eloquent-model-class` guide.
+
 .. TODO Replicating Models: to be checked
 .. TODO Query Scopes: to be checked
 .. TODO Comparing Models: to be checked
@@ -277,6 +281,10 @@ Eloquent Relationship Features
    * - Inserting and Updating Related Models
      - ✓
 
+.. tip::
+   
+   To learn more, see the :ref:`laravel-eloquent-model-relationships` guide.
+
 .. TODO Eager Loading: to be checked
 .. TODO Touching Parent Timestamps: to be checked
 
@@ -312,6 +320,10 @@ Eloquent Mutator Features
 
    * - Custom Casts
      - ✓
+
+.. tip::
+   
+   To learn more, see the :ref:`laravel-eloquent-model-class` guide.
 
 .. TODO Query Time Casting: to be checked
 

@@ -22,6 +22,7 @@ Laravel MongoDB
    /queues
    /transactions
    /issues-and-help
+   /compatibility-eloquent
    /compatibility
    /upgrade
 
