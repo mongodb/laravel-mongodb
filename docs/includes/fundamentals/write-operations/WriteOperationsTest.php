@@ -32,6 +32,12 @@ class WriteOperationsTest extends TestCase
         $concert->save();
         // end model insert one
 
+        // begin inserted id
+        $insertedId = $concert->id;
+        // end inserted id
+
+
+        print_r($insertedId);
         $this->assertNotNull($concert);
 
         $result = Concert::first();
@@ -89,8 +95,10 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => Carbon::create(2024, 7, 25, 19, 0, 0, 'EST'),
             ],
         ];
+
         Concert::insert($data);
         // end model insert many
+
         $results = Concert::get();
 
         $this->assertEquals(2, count($results));

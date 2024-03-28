@@ -4,7 +4,6 @@
 Fundamentals
 ============
 
-
 .. facet::
    :name: genre
    :values: reference
@@ -16,8 +15,8 @@ Fundamentals
    :titlesonly:
    :maxdepth: 1
 
-   /read-operations
-   /write-operations
+   /fundamentals/read-operations
+   /fundamentals/write-operations
 
 Learn how to perform the following tasks by using the {+odm-long+} in the
 following pages:

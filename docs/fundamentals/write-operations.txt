@@ -59,6 +59,10 @@ use Eloquent models to perform insert operations:
    The ``$fillable`` attribute lets you use Laravel mass assignment for insert
    operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`.
 
+   The ``$casts`` attribute instructs Laravel to convert attributes to common
+   data types. To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
+   in the Laravel documentation.
+
 To learn more about Eloquent models in {+odm-short+} see the :ref:`laravel-eloquent-models`
 section.
 
@@ -71,19 +75,28 @@ insert an instance of a ``Concert`` model as a MongoDB document.
 When the ``save()`` method succeeds, the instance on which you called the
 method contains the model. If it fails, the instance is assigned a null value.
 
-The example code performs the following actions:
+This example code performs the following actions:
 
 - Creates a new instance of the ``Concert`` model
 - Assigns string values to the ``performer`` and ``venue`` field
 - Assigns a date to the ``performanceDate`` field by using the ``Carbon``
-  package.
-- Inserts the document by calling the ``save()`` method.
+  package
+- Inserts the document by calling the ``save()`` method
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
    :dedent:
    :start-after: begin model insert one
    :end-before: end model insert one
+
+You can retrieve the inserted document id value by accessing the ``id`` member
+of the model as shown in the following code example:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin inserted id
+   :end-before: end inserted id
 
 If you enable mass assignment by defining either the ``$fillable`` or
 ``$guarded`` attributes, you can use the Eloquent model ``create()`` method
