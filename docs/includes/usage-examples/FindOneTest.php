@@ -15,7 +15,7 @@ class FindOneTest extends TestCase
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
-    public function updateOne(): void
+    public function testFindOne(): void
     {
         require_once __DIR__ . '/Movie.php';
 
