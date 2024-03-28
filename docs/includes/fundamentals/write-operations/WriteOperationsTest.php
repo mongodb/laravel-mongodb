@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Illuminate\Database\Query\Builder;
-use Illuminate\Support\Facades\DB;
-use MongoDB\Laravel\Collection;
-use MongoDB\Laravel\Tests\TestCase;
 use App\Models\Concert;
 use Carbon\Carbon;
+use MongoDB\Laravel\Tests\TestCase;
+
+use function count;
 
 class WriteOperationsTest extends TestCase
 {
@@ -55,7 +54,7 @@ class WriteOperationsTest extends TestCase
         $insertResult = Concert::create([
             'performer' => 'The Rolling Stones',
             'venue' => 'Soldier Field',
-            'performanceDate' => Carbon::create(2024, 6, 30, 20, 0, 0, 'CDT')
+            'performanceDate' => Carbon::create(2024, 6, 30, 20, 0, 0, 'CDT'),
         ]);
         // end model insert one mass assign
 
@@ -82,13 +81,13 @@ class WriteOperationsTest extends TestCase
             [
                 'performer' => 'Brad Mehldau',
                 'venue' => 'Philharmonie de Paris',
-                'performanceDate' => Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')
+                'performanceDate' => Carbon::create(2025, 2, 12, 20, 0, 0, 'CET'),
             ],
             [
                 'performer' => 'Billy Joel',
                 'venue' => 'Madison Square Garden',
-                'performanceDate' => Carbon::create(2024, 7, 25, 19, 0, 0, 'EST')
-            ]
+                'performanceDate' => Carbon::create(2024, 7, 25, 19, 0, 0, 'EST'),
+            ],
         ];
         Concert::insert($data);
         // end model insert many
