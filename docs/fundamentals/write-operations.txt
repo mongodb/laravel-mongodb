@@ -1,0 +1,118 @@
+.. _laravel-fundamentals-write-ops:
+
+================
+Write Operations
+================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: insert, insert one, update, update one, upsert, delete, delete many, code example, mass assignment, eloquent model
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+In this guide, you can learn how to use {+odm-short+} to perform
+**write operations** on your MongoDB collections. Write operations include
+inserting, updating, and deleting data based on criteria that you specify.
+
+This guide shows you how to perform the following tasks:
+
+- Insert Documents
+- Modify Documents
+- Delete Documents
+
+.. _laravel-fundamentals-insert-documents:
+
+Insert Documents
+----------------
+
+In this section, you can learn how to insert documents into MongoDB collections
+from your Laravel application by using the {+odm-long+}.
+
+When you insert the documents, make sure that the data does not violate any
+unique indexes on the collection. When inserting the first document of a
+collection or creating a new collection, MongoDB automatically creates a
+unique index on the ``_id`` field.
+
+For more ionformation creating indexes on MongoDB collections by using the
+Laravel schema builder, see the :ref:`laravel-eloquent-indexes` guide.
+
+This section uses the following example model class to demonstrate how to
+use Eloquent models to perform insert operations:
+
+.. literalinclude:: /includes/fundamentals/write-operations/Concert.php
+   :language: php
+   :dedent:
+   :caption: Concert.php
+
+.. tip::
+
+   The ``$fillable`` attribute lets you use Laravel mass assignment for insert
+   operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`.
+
+To learn more about Eloquent models in {+odm-short+} see the :ref:`laravel-eloquent-models`
+section.
+
+Insert a Document Examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The examples in this section show how to use the ``save()`` Eloquent method to
+insert an instance of a ``Concert`` model as a MongoDB document.
+
+When the ``save()`` method succeeds, the instance on which you called the
+method contains the model. If it fails, the instance is assigned a null value.
+
+The example code performs the following actions:
+
+- Creates a new instance of the ``Concert`` model
+- Assigns string values to the ``performer`` and ``venue`` field
+- Assigns a date to the ``performanceDate`` field by using the ``Carbon``
+  package.
+- Inserts the document by calling the ``save()`` method.
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model insert one
+   :end-before: end model insert one
+
+If you enable mass assignment by defining either the ``$fillable`` or
+``$guarded`` attributes, you can use the Eloquent model ``create()`` method
+to perform the insert in a single call as shown in the following example:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model insert one mass assign
+   :end-before: end model insert one mass assign
+
+To learn more about the Carbon PHP API extension, see the
+`Carbon <https://github.com/briannesbitt/Carbon>`__ GitHub repository.
+
+Insert Multiple Documents Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The examples in this section show how to use the ``insert()`` Eloquent method
+to insert multiple instances of a ``Concert`` model as MongoDB documents.
+
+When the ``insert()`` method succeeds, the method returns the value ``1``.
+If it fails, the method throws an exception.
+
+The example code passes an array containing the data for multiple models
+to the ``insert()`` method:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model insert many
+   :end-before: end model insert many
+
