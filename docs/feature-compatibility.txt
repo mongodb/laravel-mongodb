@@ -22,7 +22,7 @@ Overview
 
 This guide describes the Laravel features that are supported by
 the {+odm-long+}. This page discusses Laravel version 11.x feature
-availability in the {+odm-short+}.
+availability in {+odm-short+}.
 
 The following sections contain tables that describe whether individual
 features are available in {+odm-short+}.
@@ -62,9 +62,6 @@ Database Features
 
    * - Database Monitoring
      - *Unsupported*
-
-.. TODO Listening to query events: yes (to be checked)
-.. TODO Monitoring cumulative query time: yes (to be checked)
 
 Query Features
 --------------
@@ -139,7 +136,7 @@ The following Eloquent methods are not supported in {+odm-short+}:
      - *Unsupported*
 
    * - Grouping
-     - Partially supported, use :ref:`Aggregation Builders <laravel-query-builder>`.
+     - Partially supported, use :ref:`Aggregation Builders <laravel-query-builder-aggregates>`.
 
    * - Limit and Offset
      - ✓
@@ -167,11 +164,6 @@ The following Eloquent methods are not supported in {+odm-short+}:
 
    * - Debugging
      - ✓
-
-.. TODO Streaming Results Lazily: (to be checked)
-.. TODO JSON Where Clauses: (to be checked)
-.. TODO Full Text Where Clauses: to be checked
-.. TODO Pessimistic Locking: (to be checked)
 
 Pagination Features
 -------------------
@@ -239,14 +231,6 @@ Eloquent Features
    
    To learn more, see the :ref:`laravel-eloquent-model-class` guide.
 
-.. TODO Replicating Models: to be checked
-.. TODO Query Scopes: to be checked
-.. TODO Comparing Models: to be checked
-.. TODO Events: to be checked
-.. TODO Using Closures: to be checked
-.. TODO Observers: to be checked
-.. TODO Muting Events: to be checked
-
 Eloquent Relationship Features
 ------------------------------
 
@@ -280,9 +264,6 @@ Eloquent Relationship Features
 .. tip::
    
    To learn more, see the :ref:`laravel-eloquent-model-relationships` guide.
-
-.. TODO Eager Loading: to be checked
-.. TODO Touching Parent Timestamps: to be checked
 
 Eloquent Collection Features
 ----------------------------
@@ -319,11 +300,6 @@ Eloquent Mutator Features
 .. tip::
    
    To learn more, see the :ref:`laravel-eloquent-model-class` guide.
-
-.. TODO Query Time Casting: to be checked
-
-.. TODO Eloquent Resource Features
-.. TODO Eloquent Serialization Features
 
 Eloquent Model Factory Features
 -------------------------------
