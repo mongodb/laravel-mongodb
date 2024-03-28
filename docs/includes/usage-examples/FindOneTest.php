@@ -27,8 +27,7 @@ class FindOneTest extends TestCase
         print_r($movie->toJson());
       // end-find-one
 
-      // <optionally, add assertions>
+      $this->expectNotToPerformAssertions();
     }
 
-    // ... <add additional test cases here>
 }
