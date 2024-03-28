@@ -10,7 +10,7 @@ permissions:
   pull-requests: write
 
 env:
-  GH_TOKEN: ${{ github.token }}
+  GH_TOKEN: ${{ secrets.MERGE_UP_TOKEN }}
 
 jobs:
   merge-up:
@@ -24,6 +24,7 @@ jobs:
         with:
           # fetch-depth 0 is required to fetch all branches, not just the branch being built
           fetch-depth: 0
+          token: ${{ secrets.MERGE_UP_TOKEN }}
 
       - name: Create pull request
         id: create-pull-request
