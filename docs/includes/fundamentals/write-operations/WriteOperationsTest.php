@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function count;
+use function print_r;
 
 class WriteOperationsTest extends TestCase
 {
@@ -35,7 +36,6 @@ class WriteOperationsTest extends TestCase
         // begin inserted id
         $insertedId = $concert->id;
         // end inserted id
-
 
         print_r($insertedId);
         $this->assertNotNull($concert);
