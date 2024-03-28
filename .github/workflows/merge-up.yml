@@ -5,8 +5,12 @@ on:
     branches:
       - "[0-9]+.[0-9]+"
 
+permissions:
+  contents: write
+  pull-requests: write
+
 env:
-  GH_TOKEN: ${{ secrets.MERGE_UP_TOKEN }}
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   merge-up:
@@ -20,7 +24,6 @@ jobs:
         with:
           # fetch-depth 0 is required to fetch all branches, not just the branch being built
           fetch-depth: 0
-          token: ${{ secrets.MERGE_UP_TOKEN }}
 
       - name: Create pull request
         id: create-pull-request
@@ -28,4 +31,3 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
           branchNamePattern: '<major>.<minor>'
-          
