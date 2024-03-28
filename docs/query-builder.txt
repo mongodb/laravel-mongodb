@@ -172,6 +172,8 @@ Distinct can be combined with **where**:
 
    $spamComments = Comment::where('body', 'like', '%spam%')->get();
 
+.. _laravel-query-builder-aggregates:
+
 **Aggregation**
 
 **Aggregations are only available for MongoDB versions greater than 2.2.x**
