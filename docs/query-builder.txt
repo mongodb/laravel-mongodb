@@ -23,7 +23,7 @@ Overview
 In this guide, you can learn how to use the {+odm-short+} extension of
 the Laravel query builder to work with a MongoDB database. The query builder
 lets you use a single syntax and fluent interface to write queries for any
-of supported database.
+supported database.
 
 .. note::
 
