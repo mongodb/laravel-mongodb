@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Concert;
 use Carbon\Carbon;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function count;
@@ -37,8 +38,8 @@ class WriteOperationsTest extends TestCase
         $insertedId = $concert->id;
         // end inserted id
 
-        print_r($insertedId);
         $this->assertNotNull($concert);
+        $this->assertNotNull($insertedId);
 
         $result = Concert::first();
         $this->assertInstanceOf(Concert::class, $result);
@@ -87,12 +88,12 @@ class WriteOperationsTest extends TestCase
             [
                 'performer' => 'Brad Mehldau',
                 'venue' => 'Philharmonie de Paris',
-                'performanceDate' => Carbon::create(2025, 2, 12, 20, 0, 0, 'CET'),
+                'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
             ],
             [
                 'performer' => 'Billy Joel',
                 'venue' => 'Madison Square Garden',
-                'performanceDate' => Carbon::create(2024, 7, 25, 19, 0, 0, 'EST'),
+                'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
             ],
         ];
 
