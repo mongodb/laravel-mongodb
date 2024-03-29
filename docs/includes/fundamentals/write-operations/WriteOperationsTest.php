@@ -10,7 +10,6 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function count;
-use function print_r;
 
 class WriteOperationsTest extends TestCase
 {
