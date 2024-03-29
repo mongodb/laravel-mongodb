@@ -44,7 +44,8 @@ collection or creating a new collection, MongoDB automatically creates a
 unique index on the ``_id`` field.
 
 For more information on creating indexes on MongoDB collections by using the
-Laravel schema builder, see the :ref:`laravel-eloquent-indexes` guide.
+Laravel schema builder, see the :ref:`laravel-eloquent-indexes` section
+of the Schema Builder documentation.
 
 This section uses the following example model class to demonstrate how to
 use Eloquent models to perform insert operations:
@@ -57,13 +58,14 @@ use Eloquent models to perform insert operations:
 .. tip::
 
    The ``$fillable`` attribute lets you use Laravel mass assignment for insert
-   operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`.
+   operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`
+   in the Eloquent Model Class documentation.
 
    The ``$casts`` attribute instructs Laravel to convert attributes to common
    data types. To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
    in the Laravel documentation.
 
-To learn more about Eloquent models in {+odm-short+} see the :ref:`laravel-eloquent-models`
+To learn more about Eloquent models in {+odm-short+}, see the :ref:`laravel-eloquent-models`
 section.
 
 Insert a Document Examples
@@ -72,13 +74,14 @@ Insert a Document Examples
 These examples show how to use the ``save()`` Eloquent method to insert an
 instance of a ``Concert`` model as a MongoDB document.
 
-When the ``save()`` method succeeds, the instance on which you called the
-method contains the model. If it fails, the instance is assigned a null value.
+When the ``save()`` method succeeds, you can access the model instance on
+which you called the method. If the operation fails, the model instance is
+assigned a null value.
 
 This example code performs the following actions:
 
 - Creates a new instance of the ``Concert`` model
-- Assigns string values to the ``performer`` and ``venue`` field
+- Assigns string values to the ``performer`` and ``venue`` fields
 - Assigns a date to the ``performanceDate`` field by using the ``Carbon``
   package
 - Inserts the document by calling the ``save()`` method
@@ -109,7 +112,7 @@ to perform the insert in a single call as shown in the following example:
    :end-before: end model insert one mass assign
 
 To learn more about the Carbon PHP API extension, see the
-`Carbon <https://github.com/briannesbitt/Carbon>`__ GitHub repository.
+:github:`Carbon <briannesbitt/Carbon>` GitHub repository.
 
 Insert Multiple Documents Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,7 +126,7 @@ When the ``insert()`` method succeeds, it returns the value ``1``. If it
 fails, it throws an exception.
 
 The example code saves multiple models in a single call by passing them as
-an array to ``insert()`` method:
+an array to the ``insert()`` method:
 
 .. note::
 
