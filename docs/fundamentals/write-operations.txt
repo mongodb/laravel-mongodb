@@ -219,7 +219,7 @@ documents in the collection, {+odm-short+} returns the following error:
 Update Multiple Documents Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To perform a single update on one or more documents, call the ``update()``
+To perform an update on one or more documents, call the ``update()``
 method on a collection of model objects. You can use the fluent syntax to
 retrieve a collection of model objects that match your criteria and then
 pass your updates to the ``update()`` method.
