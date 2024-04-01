@@ -9,7 +9,7 @@ Write Operations
    :values: tutorial
 
 .. meta::
-   :keywords: insert, insert one, update, update one, upsert, delete, delete many, code example, mass assignment, eloquent model
+   :keywords: insert, insert one, code example, mass assignment, eloquent model
 
 .. contents:: On this page
    :local:
@@ -27,8 +27,30 @@ inserting, updating, and deleting data based on specified criteria.
 This guide shows you how to perform the following tasks:
 
 - :ref:`laravel-fundamentals-insert-documents`
-- Modify Documents
+- :ref:`laravel-modify-documents`
 - Delete Documents
+
+.. _laravel-fundamentals-write-sample-model:
+
+Sample Model
+~~~~~~~~~~~~
+
+The write operations in this guide refer to the following Eloquent model class:
+
+.. literalinclude:: /includes/fundamentals/write-operations/Concert.php
+   :language: php
+   :dedent:
+   :caption: Concert.php
+
+.. tip::
+
+   The ``$fillable`` attribute lets you use Laravel mass assignment for insert
+   operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`
+   in the Eloquent Model Class documentation.
+
+   The ``$casts`` attribute instructs Laravel to convert attributes to common
+   data types. To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
+   in the Laravel documentation.
 
 .. _laravel-fundamentals-insert-documents:
 
@@ -44,26 +66,10 @@ collection or creating a new collection, MongoDB automatically creates a
 unique index on the ``_id`` field.
 
 For more information on creating indexes on MongoDB collections by using the
-Laravel schema builder, see the :ref:`laravel-eloquent-indexes` guide.
+Laravel schema builder, see the :ref:`laravel-eloquent-indexes` section
+of the Schema Builder documentation.
 
-This section uses the following example model class to demonstrate how to
-use Eloquent models to perform insert operations:
-
-.. literalinclude:: /includes/fundamentals/write-operations/Concert.php
-   :language: php
-   :dedent:
-   :caption: Concert.php
-
-.. tip::
-
-   The ``$fillable`` attribute lets you use Laravel mass assignment for insert
-   operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`.
-
-   The ``$casts`` attribute instructs Laravel to convert attributes to common
-   data types. To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
-   in the Laravel documentation.
-
-To learn more about Eloquent models in {+odm-short+} see the :ref:`laravel-eloquent-models`
+To learn more about Eloquent models in {+odm-short+}, see the :ref:`laravel-eloquent-models`
 section.
 
 Insert a Document Examples
@@ -72,13 +78,15 @@ Insert a Document Examples
 These examples show how to use the ``save()`` Eloquent method to insert an
 instance of a ``Concert`` model as a MongoDB document.
 
-When the ``save()`` method succeeds, the instance on which you called the
-method contains the model. If it fails, the instance is assigned a null value.
+When the ``save()`` method succeeds, the model instance on which you called the
+method. If the operation fails, the model instance is assigned a null value.
 
 This example code performs the following actions:
 
 - Creates a new instance of the ``Concert`` model
-- Assigns string values to the ``performer`` and ``venue`` field
+- Assigns string values to the ``performer`` and ``venue`` fields
+- Assigns an array of strings to the ``genre`` field
+- Assigns a number to the ``ticketsSold`` field
 - Assigns a date to the ``performanceDate`` field by using the ``Carbon``
   package
 - Inserts the document by calling the ``save()`` method
@@ -109,7 +117,7 @@ to perform the insert in a single call as shown in the following example:
    :end-before: end model insert one mass assign
 
 To learn more about the Carbon PHP API extension, see the
-`Carbon <https://github.com/briannesbitt/Carbon>`__ GitHub repository.
+:github:`Carbon <briannesbitt/Carbon>` GitHub repository.
 
 Insert Multiple Documents Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -123,7 +131,7 @@ When the ``insert()`` method succeeds, it returns the value ``1``. If it
 fails, it throws an exception.
 
 The example code saves multiple models in a single call by passing them as
-an array to ``insert()`` method:
+an array to the ``insert()`` method:
 
 .. note::
 
@@ -136,4 +144,99 @@ an array to ``insert()`` method:
    :dedent:
    :start-after: begin model insert many
    :end-before: end model insert many
+
+.. _laravel-fundamentals-modify-documents:
+
+Modify Documents
+----------------
+
+In this section, you can learn how to modify documents in your MongoDB
+collection from your Laravel application. Use update operations to modify
+existing documents or to insert a document if no search criteria match.
+
+The Eloquent ORM lets you specify criteria to retrieve documents, perform
+field on the returned object collections, and save them.
+
+This section provides examples of the following update operations:
+
+- :ref:`Update a document <>`
+- :ref:`Update multiple documents <>`
+- :ref:`Update an array in a document <>`
+- :ref:`Upsert a document <>`
+
+Update a Document Examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can update a document in the following ways:
+
+- Modify an instance of the model and save the changes by calling the ``save()``
+  method
+- Use the fluent syntax to retrieve a matching document and apply updates to
+  it by calling the ``update()`` method or other helper methods
+
+The following example shows how to update a document by modifying an instance
+of the model and calling its ``save()`` method:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model update one save
+   :end-before: end model update one save
+
+When the ``save()`` method succeeds, the model instance on which you called the
+method. If the operation fails, {+odm-short+} assigns the model instance a
+null value.
+
+The following example shows how to update a document by using fluent syntax to
+retrieve the first match and apply updates to the matching document:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model update one save
+   :end-before: end model update one save
+
+.. note::
+
+   The ``orderBy()`` call sorts the results by the ``_id`` field in order to
+   guarantee a consistent result when the query matches multiple result. To
+   learn more about sorting in MongoDB, see :manual:`Natural order </reference/glossary/#std-term-natural-order>`
+   glossary entry in the {+server-docs-name+}.
+
+When the ``update()`` method succeeds, the operation returns the number of
+documents updated. If the retrieve part of the call does not match any
+documents in the collection, {+odm-short+} returns the following error:
+
+.. code-block::
+   :language: none
+   :copyable; false
+
+   Error: Call to a member function update() on null
+
+Update Multiple Documents Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To perform a single update on one or more documents, call the ``update()``
+method on a collection of model objects. You can use the fluent syntax to
+retrieve a collection of model objects that match your criteria and then
+pass the updates in a call the ``update()`` method.
+
+The following example shows how to chain calls to retrieve a collection of
+model objects and apply updates to all matching documents:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model update one save
+   :end-before: end model update one save
+
+When the ``update()`` method succeeds, the operation returns the number of
+documents updated. If the retrieve part of the call does not match any
+documents in the collection, {+odm-short+} returns the following error:
+
+.. code-block::
+   :language: none
+   :copyable; false
+
+   Error: Call to a member function update() on null
 
