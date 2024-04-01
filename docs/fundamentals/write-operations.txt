@@ -98,7 +98,7 @@ This example code performs the following actions:
    :end-before: end model insert one
 
 You can retrieve the inserted document's ``_id`` value by accessing the model's
-``id`` member as shown in the following code example:
+``id`` member, as shown in the following code example:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -108,7 +108,7 @@ You can retrieve the inserted document's ``_id`` value by accessing the model's
 
 If you enable mass assignment by defining either the ``$fillable`` or
 ``$guarded`` attributes, you can use the Eloquent model ``create()`` method
-to perform the insert in a single call as shown in the following example:
+to perform the insert in a single call, as shown in the following example:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -154,15 +154,15 @@ In this section, you can learn how to modify documents in your MongoDB
 collection from your Laravel application. Use update operations to modify
 existing documents or to insert a document if no search criteria match.
 
-The Eloquent ORM lets you specify criteria to retrieve documents, perform
-field on the returned object collections, and save them.
+Eloquent lets you specify criteria to retrieve documents, perform updates on
+the returned object collections, and save them.
 
 This section provides examples of the following update operations:
 
-- :ref:`Update a document <>`
-- :ref:`Update multiple documents <>`
-- :ref:`Update an array in a document <>`
-- :ref:`Upsert a document <>`
+- :ref:`Update a document <laravel-modify-documents-update-one>`
+- :ref:`Update multiple documents <laravel-modify-documents-update-multiple>`
+
+.. _laravel-modify-documents-update-one:
 
 Update a Document Examples
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -198,9 +198,9 @@ retrieve the first match and apply updates to the matching document:
 
 .. note::
 
-   The ``orderBy()`` call sorts the results by the ``_id`` field in order to
-   guarantee a consistent result when the query matches multiple result. To
-   learn more about sorting in MongoDB, see :manual:`Natural order </reference/glossary/#std-term-natural-order>`
+   The ``orderBy()`` call sorts the results by the ``_id`` field to
+   guarantee a consistent sort order when the query matches multiple results.
+   To learn more about sorting in MongoDB, see :manual:`Natural order </reference/glossary/#std-term-natural-order>`
    glossary entry in the {+server-docs-name+}.
 
 When the ``update()`` method succeeds, the operation returns the number of
@@ -213,13 +213,15 @@ documents in the collection, {+odm-short+} returns the following error:
 
    Error: Call to a member function update() on null
 
+.. _laravel-modify-documents-update-multiple:
+
 Update Multiple Documents Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 To perform a single update on one or more documents, call the ``update()``
 method on a collection of model objects. You can use the fluent syntax to
 retrieve a collection of model objects that match your criteria and then
-pass the updates in a call the ``update()`` method.
+pass your updates to the ``update()`` method.
 
 The following example shows how to chain calls to retrieve a collection of
 model objects and apply updates to all matching documents:
