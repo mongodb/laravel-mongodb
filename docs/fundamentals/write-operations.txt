@@ -27,7 +27,7 @@ inserting, updating, and deleting data based on specified criteria.
 This guide shows you how to perform the following tasks:
 
 - :ref:`laravel-fundamentals-insert-documents`
-- :ref:`laravel-modify-documents`
+- :ref:`laravel-fundamentals-modify-documents`
 - Delete Documents
 
 .. _laravel-fundamentals-write-sample-model:
@@ -209,7 +209,7 @@ documents in the collection, {+odm-short+} returns the following error:
 
 .. code-block::
    :language: none
-   :copyable; false
+   :copyable: false
 
    Error: Call to a member function update() on null
 
@@ -238,7 +238,7 @@ documents in the collection, {+odm-short+} returns the following error:
 
 .. code-block::
    :language: none
-   :copyable; false
+   :copyable: false
 
    Error: Call to a member function update() on null
 
