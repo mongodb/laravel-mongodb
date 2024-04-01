@@ -79,7 +79,9 @@ These examples show how to use the ``save()`` Eloquent method to insert an
 instance of a ``Concert`` model as a MongoDB document.
 
 When the ``save()`` method succeeds, the model instance on which you called the
-method. If the operation fails, the model instance is assigned a null value.
+method.
+
+If the operation fails, the model instance is assigned a null value.
 
 This example code performs the following actions:
 
@@ -127,8 +129,9 @@ multiple instances of a ``Concert`` model as MongoDB documents. This bulk
 insert method reduces the number of calls your application needs to make
 to save the documents.
 
-When the ``insert()`` method succeeds, it returns the value ``1``. If it
-fails, it throws an exception.
+When the ``insert()`` method succeeds, it returns the value ``1``.
+
+If it fails, it throws an exception.
 
 The example code saves multiple models in a single call by passing them as
 an array to the ``insert()`` method:
@@ -185,8 +188,9 @@ of the model and calling its ``save()`` method:
    :end-before: end model update one save
 
 When the ``save()`` method succeeds, the model instance on which you called the
-method. If the operation fails, {+odm-short+} assigns the model instance a
-null value.
+method.
+
+If the operation fails, {+odm-short+} assigns the model instance a null value.
 
 The following example shows how to update a document by using fluent syntax to
 retrieve the first match and apply updates to the matching document:
@@ -205,8 +209,10 @@ retrieve the first match and apply updates to the matching document:
    glossary entry in the {+server-docs-name+}.
 
 When the ``update()`` method succeeds, the operation returns the number of
-documents updated. If the retrieve part of the call does not match any
-documents in the collection, {+odm-short+} returns the following error:
+documents updated.
+
+If the retrieve part of the call does not match any documents in the collection,
+{+odm-short+} returns the following error:
 
 .. code-block:: none
    :copyable: false
@@ -233,8 +239,10 @@ model objects and apply updates to all matching documents:
    :end-before: end model update multiple
 
 When the ``update()`` method succeeds, the operation returns the number of
-documents updated. If the retrieve part of the call does not match any
-documents in the collection, {+odm-short+} returns the following error:
+documents updated.
+
+If the retrieve part of the call does not match any documents in the
+collection, {+odm-short+} returns the following error:
 
 .. code-block:: none
    :copyable: false
