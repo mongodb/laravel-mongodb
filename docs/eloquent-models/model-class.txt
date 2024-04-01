@@ -249,8 +249,8 @@ The following code example shows mass assignment of the ``Planet`` model:
 .. code-block:: php
 
    $planets = [
-       [ 'name' => 'Earth', gravity => 9.8, day_length => '24 hours' ],
-       [ 'name' => 'Mars', gravity => 3.7, day_length => '25 hours' ],
+       [ 'name' => 'Earth', 'gravity' => 9.8, 'day_length' => '24 hours' ],
+       [ 'name' => 'Mars', 'gravity' => 3.7, 'day_length' => '25 hours' ],
    ];
 
    Planet::create($planets);
