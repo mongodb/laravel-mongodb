@@ -35,7 +35,7 @@ This guide shows you how to perform the following tasks:
 Sample Model
 ~~~~~~~~~~~~
 
-The write operations in this guide refer to the following Eloquent model class:
+The write operations in this guide reference the following Eloquent model class:
 
 .. literalinclude:: /includes/fundamentals/write-operations/Concert.php
    :language: php
@@ -152,7 +152,8 @@ Modify Documents
 
 In this section, you can learn how to modify documents in your MongoDB
 collection from your Laravel application. Use update operations to modify
-existing documents or to insert a document if no search criteria match.
+existing documents or to insert a document if no documents match the search
+criteria.
 
 Eloquent lets you specify criteria to retrieve documents, perform updates on
 the returned object collections, and save them.
@@ -170,9 +171,9 @@ Update a Document Examples
 You can update a document in the following ways:
 
 - Modify an instance of the model and save the changes by calling the ``save()``
-  method
+  method.
 - Use the fluent syntax to retrieve a matching document and apply updates to
-  it by calling the ``update()`` method or other helper methods
+  it by calling the ``update()`` method or other helper methods.
 
 The following example shows how to update a document by modifying an instance
 of the model and calling its ``save()`` method:
@@ -200,7 +201,7 @@ retrieve the first match and apply updates to the matching document:
 
    The ``orderBy()`` call sorts the results by the ``_id`` field to
    guarantee a consistent sort order when the query matches multiple results.
-   To learn more about sorting in MongoDB, see :manual:`Natural order </reference/glossary/#std-term-natural-order>`
+   To learn more about sorting in MongoDB, see the :manual:`Natural order </reference/glossary/#std-term-natural-order>`
    glossary entry in the {+server-docs-name+}.
 
 When the ``update()`` method succeeds, the operation returns the number of
@@ -229,8 +230,8 @@ model objects and apply updates to all matching documents:
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
    :dedent:
-   :start-after: begin model update one save
-   :end-before: end model update one save
+   :start-after: begin model update multiple
+   :end-before: end model update multiple
 
 When the ``update()`` method succeeds, the operation returns the number of
 documents updated. If the retrieve part of the call does not match any
