@@ -208,8 +208,7 @@ When the ``update()`` method succeeds, the operation returns the number of
 documents updated. If the retrieve part of the call does not match any
 documents in the collection, {+odm-short+} returns the following error:
 
-.. code-block::
-   :language: none
+.. code-block:: none
    :copyable: false
 
    Error: Call to a member function update() on null
@@ -237,8 +236,7 @@ When the ``update()`` method succeeds, the operation returns the number of
 documents updated. If the retrieve part of the call does not match any
 documents in the collection, {+odm-short+} returns the following error:
 
-.. code-block::
-   :language: none
+.. code-block:: none
    :copyable: false
 
    Error: Call to a member function update() on null
