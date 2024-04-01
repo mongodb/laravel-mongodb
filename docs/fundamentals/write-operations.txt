@@ -194,8 +194,8 @@ retrieve the first match and apply updates to the matching document:
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
    :dedent:
-   :start-after: begin model update one save
-   :end-before: end model update one save
+   :start-after: begin model update one fluent
+   :end-before: end model update one fluent
 
 .. note::
 
