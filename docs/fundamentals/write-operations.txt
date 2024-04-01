@@ -138,7 +138,7 @@ an array to the ``insert()`` method:
 
 .. note::
 
-    This example wraps the dates in the `MongoDB\BSON\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
+    This example wraps the dates in the `MongoDB\\BSON\\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
     class to convert it to a type MongoDB can serialize because Laravel
     skips attribute casting on bulk insert operations.
 
