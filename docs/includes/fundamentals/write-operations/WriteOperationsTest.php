@@ -29,7 +29,7 @@ class WriteOperationsTest extends TestCase
         $concert = new Concert();
         $concert->performer = 'Mitsuko Uchida';
         $concert->venue = 'Carnegie Hall';
-        $concert->genres = [ 'classical' ];
+        $concert->genres = ['classical'];
         $concert->ticketsSold = 2121;
         $concert->performanceDate = Carbon::create(2024, 4, 1, 20, 0, 0, 'EST');
         $concert->save();
@@ -172,7 +172,7 @@ class WriteOperationsTest extends TestCase
         $concert = Concert::where(['performer' => 'Brad Mehldau'])
             ->orderBy('_id')
             ->first()
-            ->update([ 'venue' => 'Manchester Arena', 'ticketsSold' => 9543 ]);
+            ->update(['venue' => 'Manchester Arena', 'ticketsSold' => 9543]);
         // end model update one fluent
 
         $result = Concert::first();
@@ -213,7 +213,7 @@ class WriteOperationsTest extends TestCase
         ]);
         // begin model update multiple
         Concert::whereIn('venue', ['Philharmonie de Paris', 'Soldier Field'])
-            ->update([ 'venue' => 'Concertgebouw', 'ticketsSold' => 0 ]);
+            ->update(['venue' => 'Concertgebouw', 'ticketsSold' => 0]);
         // end model update multiple
 
         $results = Concert::get();
