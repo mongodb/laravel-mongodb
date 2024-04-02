@@ -302,7 +302,8 @@ code:
       :start-after: begin model upsert
       :end-before: end model upsert
 
-   .. output:: json
+   .. output::
+      :language: json
 
       {
         "_id": "660c...",
