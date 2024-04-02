@@ -158,8 +158,9 @@ collection from your Laravel application. Use update operations to modify
 existing documents or to insert a document if no documents match the search
 criteria.
 
-Eloquent lets you specify criteria to retrieve documents, perform updates on
-the returned object collections, and save them.
+You can persist changes on an instance of an Eloquent model or use
+Eloquent's fluent syntax to chain an update operation on methods that
+return a Laravel collection object.
 
 This section provides examples of the following update operations:
 
@@ -175,8 +176,8 @@ You can update a document in the following ways:
 
 - Modify an instance of the model and save the changes by calling the ``save()``
   method.
-- Use the fluent syntax to retrieve a matching document and apply updates to
-  it by calling the ``update()`` method or other helper methods.
+- Chain methods to retrieve an instance of a model and perform updates on it
+  by calling the ``update()`` method.
 
 The following example shows how to update a document by modifying an instance
 of the model and calling its ``save()`` method:
@@ -188,12 +189,12 @@ of the model and calling its ``save()`` method:
    :end-before: end model update one save
 
 When the ``save()`` method succeeds, the model instance on which you called the
-method.
+method contains the updated values.
 
 If the operation fails, {+odm-short+} assigns the model instance a null value.
 
-The following example shows how to update a document by using fluent syntax to
-retrieve the first match and apply updates to the matching document:
+The following example shows how to update a document to retrieve and update
+the first matching document:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -211,8 +212,8 @@ retrieve the first match and apply updates to the matching document:
 When the ``update()`` method succeeds, the operation returns the number of
 documents updated.
 
-If the retrieve part of the call does not match any documents in the collection,
-{+odm-short+} returns the following error:
+If the retrieve part of the call does not match any documents, {+odm-short+}
+returns the following error:
 
 .. code-block:: none
    :copyable: false
@@ -224,13 +225,12 @@ If the retrieve part of the call does not match any documents in the collection,
 Update Multiple Documents Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To perform an update on one or more documents, call the ``update()``
-method on a collection of model objects. You can use the fluent syntax to
-retrieve a collection of model objects that match your criteria and then
-pass your updates to the ``update()`` method.
+To perform an update on one or more documents, chain the ``update()``
+method to the results of a method that retrieves the documents as a
+Laravel collection object, such as ``where()``.
 
-The following example shows how to chain calls to retrieve a collection of
-model objects and apply updates to all matching documents:
+The following example shows how to chain calls to retrieve matching documents
+and update them:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -241,8 +241,8 @@ model objects and apply updates to all matching documents:
 When the ``update()`` method succeeds, the operation returns the number of
 documents updated.
 
-If the retrieve part of the call does not match any documents in the
-collection, {+odm-short+} returns the following error:
+If the retrieve part of the call does not match any documents in MongoDB,
+{+odm-short+} returns the following error:
 
 .. code-block:: none
    :copyable: false
