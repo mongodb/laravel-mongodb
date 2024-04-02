@@ -10,6 +10,7 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function count;
+use function print_r;
 
 class WriteOperationsTest extends TestCase
 {
@@ -241,8 +242,9 @@ class WriteOperationsTest extends TestCase
         // begin model upsert
         Concert::where(['performer' => 'Jon Batiste', 'venue' => 'Radio City Music Hall'])
             ->update(
-                [ 'genres' => [ 'R&B', 'soul' ], 'ticketsSold' => 4000 ],
-                [ 'upsert' => true ] );
+                ['genres' => ['R&B', 'soul'], 'ticketsSold' => 4000],
+                ['upsert' => true],
+            );
         // end model upsert
 
         $result = Concert::first();
