@@ -155,8 +155,7 @@ Modify Documents
 
 In this section, you can learn how to modify documents in your MongoDB
 collection from your Laravel application. Use update operations to modify
-existing documents or to insert a document if no documents match the search
-criteria.
+existing documents or to insert a document if none match the search criteria.
 
 You can persist changes on an instance of an Eloquent model or use
 Eloquent's fluent syntax to chain an update operation on methods that
