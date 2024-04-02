@@ -192,8 +192,8 @@ method contains the updated values.
 
 If the operation fails, {+odm-short+} assigns the model instance a null value.
 
-The following example shows how to update a document to retrieve and update
-the first matching document:
+The following example shows how to update a document by chaining methods to
+retrieve and update the first matching document:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
