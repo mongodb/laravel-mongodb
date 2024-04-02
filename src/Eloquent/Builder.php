@@ -6,10 +6,15 @@ namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
+use InvalidArgumentException;
 use MongoDB\Driver\Cursor;
+use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
+use MongoDB\Laravel\Internal\FindAndModifyCommandSubscriber;
 use MongoDB\Model\BSONDocument;
+use MongoDB\Operation\FindOneAndUpdate;
 
+use function array_intersect_key;
 use function array_key_exists;
 use function array_merge;
 use function collect;
@@ -181,6 +186,52 @@ class Builder extends EloquentBuilder
         }
 
         return $results;
+    }
+
+    /**
+     * Attempt to create the record if it does not exist with the matching attributes.
+     * If the record exists, it will be returned.
+     *
+     * @param  array $attributes The attributes to check for duplicate records
+     * @param  array $values     The attributes to insert if no matching record is found
+     */
+    public function createOrFirst(array $attributes = [], array $values = []): Model
+    {
+        if ($attributes === []) {
+            throw new InvalidArgumentException('You must provide attributes to check for duplicates');
+        }
+
+        // Apply casting and default values to the attributes
+        // In case of duplicate key between the attributes and the values, the values have priority
+        $instance = $this->newModelInstance($values + $attributes);
+        $values = $instance->getAttributes();
+        $attributes = array_intersect_key($attributes, $values);
+
+        return $this->raw(function (Collection $collection) use ($attributes, $values) {
+            $listener = new FindAndModifyCommandSubscriber();
+            $collection->getManager()->addSubscriber($listener);
+
+            try {
+                $document = $collection->findOneAndUpdate(
+                    $attributes,
+                    // Before MongoDB 5.0, $setOnInsert requires a non-empty document.
+                    // This is should not be an issue as $values includes the query filter.
+                    ['$setOnInsert' => (object) $values],
+                    [
+                        'upsert' => true,
+                        'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+                        'typeMap' => ['root' => 'array', 'document' => 'array'],
+                    ],
+                );
+            } finally {
+                $collection->getManager()->removeSubscriber($listener);
+            }
+
+            $model = $this->model->newFromBuilder($document);
+            $model->wasRecentlyCreated = $listener->created;
+
+            return $model;
+        });
     }
 
     /**
