@@ -243,7 +243,8 @@ class WriteOperationsTest extends TestCase
         Concert::where(['performer' => 'Jon Batiste', 'venue' => 'Radio City Music Hall'])
             ->update(
                 ['genres' => ['R&B', 'soul'], 'ticketsSold' => 4000],
-                ['upsert' => true]);
+                ['upsert' => true],
+            );
         // end model upsert
 
         $result = Concert::first();
