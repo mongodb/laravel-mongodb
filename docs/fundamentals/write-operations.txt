@@ -9,7 +9,7 @@ Write Operations
    :values: tutorial
 
 .. meta::
-   :keywords: insert, insert one, code example, mass assignment, eloquent model
+   :keywords: insert, insert one, update, update one, upsert, code example, mass assignment, eloquent model
 
 .. contents:: On this page
    :local:
@@ -165,6 +165,7 @@ This section provides examples of the following update operations:
 
 - :ref:`Update a document <laravel-modify-documents-update-one>`
 - :ref:`Update multiple documents <laravel-modify-documents-update-multiple>`
+- :ref:`Update or insert in a single operation <laravel-modify-documents-upsert>`
 
 .. _laravel-modify-documents-update-one:
 
@@ -248,4 +249,70 @@ collection, {+odm-short+} returns the following error:
    :copyable: false
 
    Error: Call to a member function update() on null
+
+.. _laravel-modify-documents-upsert:
+
+Update or Insert in a Single Operation
+--------------------------------------
+
+An **upsert** operation lets you perform an update or insert in a single
+operation. This operation streamlines the task of updating a document or
+inserting one if it does not exist.
+
+To specify an upsert in an ``update()`` method, set the ``upsert`` option to
+``true`` as shown in the following code example:
+
+.. code-block:: php
+   :emphasize-lines: 4
+   :copyable: false
+
+   YourModel::where(<match criteria>)
+      ->update(
+          [<update data>],
+          [upsert => true]
+   );
+
+This operation performs one of the following actions:
+
+- If the ``update()`` method is chained to a query that matches documents,
+  it updates the matching documents.
+- If the ``update()`` method is chained to a query that matches zero documents,
+  it inserts a document that contains the update data and the equality match
+  criteria data.
+
+Upsert Example
+~~~~~~~~~~~~~~
+
+This example shows how to pass the ``upsert`` option to the  ``update()``
+method to perform an update or insert in a single operation. It also includes
+example results in which it performs an insert.
+
+The following example shows how to perform an update or insert in a single
+operation by passing the ``upsert`` option to the ``update()`` method. The
+example output shows the result if the match criteria passed to the
+``where()`` method matches zero documents in the collection. Click the
+:guilabel:`VIEW OUTPUT` button to see the document inserted by running the
+code:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+      :language: php
+      :dedent:
+      :start-after: begin model upsert
+      :end-before: end model upsert
+
+   .. output:: json
+
+      {
+        "_id": "660c...",
+        "performer": "Jon Batiste",
+        "venue": "Radio City Music Hall",
+        "genres": [
+          "R&B",
+          "soul"
+        ],
+        "ticketsSold": 4000,
+        "updated_at": ...
+      }
 

@@ -226,4 +226,30 @@ class WriteOperationsTest extends TestCase
             $this->assertEquals(0, $result->ticketsSold);
         }
     }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testModelUpsert(): void
+    {
+        // <optionally, add code here to clean the database/collection>
+
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        // begin model upsert
+        Concert::where(['performer' => 'Jon Batiste', 'venue' => 'Radio City Music Hall'])
+            ->update(
+                [ 'genres' => [ 'R&B', 'soul' ], 'ticketsSold' => 4000 ],
+                [ 'upsert' => true ] );
+        // end model upsert
+
+        $result = Concert::first();
+
+        print_r($result->toJson());
+        $this->assertInstanceOf(Concert::class, $result);
+        $this->assertEquals('Jon Batiste', $result->performer);
+        $this->assertEquals(4000, $result->ticketsSold);
+    }
 }
