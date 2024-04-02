@@ -17,22 +17,32 @@ class UpdateOneTest extends TestCase
     {
         require_once __DIR__ . '/Movie.php';
 
-      // begin-update-one
+        Movie::truncate();
+        Movie::insert([
+            [
+                'title' => 'Carol',
+                'imdb' => [
+                    'rating' => 7.2,
+                    'votes' => 125000,
+                ],
+            ],
+        ]);
+
+        // begin-update-one
         $updates = Movie::where('title', 'Carol')
-          ->orderBy('_id')
-          ->first()
-          ->update([
-              'imdb' => [
-                  'rating' => 7.3,
-                  'votes' => 142000,
-              ],
-          ]);
+            ->orderBy('_id')
+            ->first()
+            ->update([
+                'imdb' => [
+                    'rating' => 7.3,
+                    'votes' => 142000,
+                ],
+            ]);
 
         echo 'Updated documents: ' . $updates;
-      // end-update-one
+        // end-update-one
 
-      // <optionally, add assertions>
+        $this->assertTrue($updates);
+        $this->expectOutputString('Updated documents: 1');
     }
-
-    // ... <add additional test cases here>
 }
