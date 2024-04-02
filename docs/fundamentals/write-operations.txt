@@ -269,16 +269,15 @@ To specify an upsert in an ``update()`` method, set the ``upsert`` option to
    YourModel::where(<match criteria>)
       ->update(
           [<update data>],
-          [upsert => true]
-   );
+          [upsert => true]);
 
-This operation performs one of the following actions:
+When the ``update()`` method is chained to a query, it performs one of the
+following actions:
 
-- If the ``update()`` method is chained to a query that matches documents,
-  it updates the matching documents.
-- If the ``update()`` method is chained to a query that matches zero documents,
-  it inserts a document that contains the update data and the equality match
-  criteria data.
+- If the query matches documents, the ``update()`` method  updates the matching
+  documents.
+- If the query matches zero documents, the ``update()`` method inserts a
+  document that contains the update data and the equality match criteria data.
 
 Upsert Example
 ~~~~~~~~~~~~~~
@@ -304,6 +303,7 @@ code:
 
    .. output::
       :language: json
+      :visible: false
 
       {
         "_id": "660c...",
