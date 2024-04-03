@@ -274,7 +274,7 @@ To specify an upsert in an ``update()`` method, set the ``upsert`` option to
 When the ``update()`` method is chained to a query, it performs one of the
 following actions:
 
-- If the query matches documents, the ``update()`` method  updates the matching
+- If the query matches documents, the ``update()`` method modifies the matching
   documents.
 - If the query matches zero documents, the ``update()`` method inserts a
   document that contains the update data and the equality match criteria data.
@@ -283,15 +283,9 @@ Upsert Example
 ~~~~~~~~~~~~~~
 
 This example shows how to pass the ``upsert`` option to the  ``update()``
-method to perform an update or insert in a single operation. It also includes
-example results in which it performs an insert.
-
-The following example shows how to perform an update or insert in a single
-operation by passing the ``upsert`` option to the ``update()`` method. The
-example output shows the result if the match criteria passed to the
-``where()`` method matches zero documents in the collection. Click the
-:guilabel:`VIEW OUTPUT` button to see the document inserted by running the
-code:
+method to perform an update or insert in a single operation. Click the
+:guilabel:`VIEW OUTPUT` button to see the example document inserted when no
+matching documents exist:
 
 .. io-code-block::
 
