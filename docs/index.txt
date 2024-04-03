@@ -23,6 +23,7 @@ Laravel MongoDB
    /queues
    /transactions
    /issues-and-help
+   /feature-compatibility
    /compatibility
    /upgrade
 

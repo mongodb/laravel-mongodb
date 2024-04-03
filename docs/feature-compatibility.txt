@@ -1,0 +1,307 @@
+.. _laravel-feature-compat:
+
+=============================
+Laravel Feature Compatibility
+=============================
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: php framework, odm, support
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+This guide describes the Laravel features that are supported by
+the {+odm-long+}. This page discusses Laravel version 11.x feature
+availability in {+odm-short+}.
+
+The following sections contain tables that describe whether individual
+features are available in {+odm-short+}.
+
+Database Features
+-----------------
+
+.. list-table::
+   :header-rows: 1
+
+   * - Eloquent Feature
+     - Availability
+
+   * - Configuration
+     - ✓
+
+   * - Read/Write Connections
+     - Use :manual:`read preference </core/read-preference/>` instead.
+
+   * - Multiple Database Connections
+     - ✓
+
+   * - Listening for Query Events
+     - ✓
+
+   * - Monitoring Cumulative Query Time
+     - ✓
+
+   * - Transactions
+     - ✓ See :ref:`laravel-transactions`.
+
+   * - Command Line Interface (CLI)
+     - Use the :mdb-shell:`MongoDB Shell <>` (``mongosh``).
+
+   * - Database Inspection
+     - *Unsupported*
+
+   * - Database Monitoring
+     - *Unsupported*
+
+Query Features
+--------------
+
+The following Eloquent methods are not supported in {+odm-short+}:
+
+- ``toSql()``
+- ``toRawSql()``
+- ``whereColumn()``
+- ``orWhereColumn()``
+- ``whereFulltext()``
+- ``groupByRaw()``
+- ``orderByRaw()``
+- ``inRandomOrder()``
+- ``union()``
+- ``unionAll()``
+- ``havingRaw()``
+- ``having()``
+- ``havingBetween()``
+- ``orHavingRaw()``
+- ``whereIntegerInRaw()``
+- ``orWhereIntegerInRaw()``
+- ``whereIntegerNotInRaw()``
+- ``orWhereIntegerNotInRaw()``
+
+.. list-table::
+   :header-rows: 1
+
+   * - Eloquent Feature
+     - Availability
+
+   * - Running Queries
+     - ✓
+
+   * - Chunking Results
+     - ✓
+
+   * - Aggregates
+     - ✓
+
+   * - Select Statements
+     - ✓
+
+   * - Raw Expressions
+     - *Unsupported*
+
+   * - Joins
+     - *Unsupported*
+
+   * - Unions
+     - *Unsupported*
+
+   * - `Basic Where Clauses <https://laravel.com/docs/11.x/queries#basic-where-clauses>`__
+     - ✓
+
+   * - `Additional Where Clauses <https://laravel.com/docs/11.x/queries#additional-where-clauses>`__
+     - ✓
+
+   * - Logical Grouping
+     - ✓
+
+   * - `Advanced Where Clauses <https://laravel.com/docs/11.x/queries#advanced-where-clauses>`__
+     - ✓
+
+   * - `Subquery Where Clauses <https://laravel.com/docs/11.x/queries#subquery-where-clauses>`__
+     - *Unsupported*
+
+   * - Ordering
+     - ✓
+
+   * - Random Ordering
+     - *Unsupported*
+
+   * - Grouping
+     - Partially supported, use :ref:`Aggregation Builders <laravel-query-builder-aggregates>`.
+
+   * - Limit and Offset
+     - ✓
+
+   * - Conditional Clauses
+     - ✓
+
+   * - Insert Statements
+     - ✓
+
+   * - Auto-Incrementing IDs
+     - *Unsupported as MongoDB uses ObjectIDs*
+
+   * - Upserts
+     - *Unsupported*
+
+   * - Update Statements
+     - ✓
+
+   * - Updating JSON Columns
+     - *Unsupported*
+
+   * - Increment and Decrement Values
+     - ✓
+
+   * - Debugging
+     - ✓
+
+Pagination Features
+-------------------
+
+{+odm-short+} supports all Laravel pagination features.
+
+
+Migration Features
+------------------
+
+{+odm-short+} supports all Laravel migration features, but the
+implementation is specific to MongoDB's schemaless model.
+
+Seeding Features
+----------------
+
+{+odm-short+} supports all Laravel seeding features.
+
+Eloquent Features
+-----------------
+
+.. list-table::
+   :header-rows: 1
+
+   * - Eloquent Feature
+     - Availability
+
+   * - Models
+     - ✓
+
+   * - UUID and ULID Keys
+     - ✓
+
+   * - Timestamps
+     - ✓
+
+   * - Retrieving Models
+     - ✓
+
+   * - Advanced Subqueries
+     - *Unsupported*
+
+   * - Retrieving or Creating Models
+     - ✓
+
+   * - Retrieving Aggregates
+     - *Partially supported*
+
+   * - Inserting and Updating Models
+     - ✓
+
+   * - Upserts
+     - *Unsupported, but you can use the createOneOrFirst() method*
+
+   * - Deleting Models
+     - ✓
+
+   * - Soft Deleting
+     - ✓
+
+   * - Pruning Models
+     - ✓
+
+.. tip::
+   
+   To learn more, see the :ref:`laravel-eloquent-model-class` guide.
+
+Eloquent Relationship Features
+------------------------------
+
+.. list-table::
+   :header-rows: 1
+
+   * - Eloquent Feature
+     - Availability
+
+   * - Defining Relationships
+     - ✓
+
+   * - Many-to-Many Relationships
+     - ✓
+
+   * - Polymorphic Relationships
+     - ✓
+
+   * - Dynamic Relationships
+     - ✓
+
+   * - Querying Relations
+     - ✓
+
+   * - Aggregating Related Models
+     - *Unsupported*
+
+   * - Inserting and Updating Related Models
+     - ✓
+
+.. tip::
+   
+   To learn more, see the :ref:`laravel-eloquent-model-relationships` guide.
+
+Eloquent Collection Features
+----------------------------
+
+{+odm-short+} supports all Eloquent collection features.
+
+Eloquent Mutator Features
+-------------------------
+
+.. list-table::
+   :header-rows: 1
+
+   * - Eloquent Feature
+     - Availability
+
+   * - Casts
+     - ✓
+
+   * - Array and JSON Casting
+     - ✓ You can store objects and arrays in MongoDB without serializing to JSON.
+
+   * - Date Casting
+     - ✓
+
+   * - Enum Casting
+     - ✓
+
+   * - Encrypted Casting
+     - ✓
+
+   * - Custom Casts
+     - ✓
+
+.. tip::
+   
+   To learn more, see the :ref:`laravel-eloquent-model-class` guide.
+
+Eloquent Model Factory Features
+-------------------------------
+
+{+odm-short+} supports all Eloquent factory features.
