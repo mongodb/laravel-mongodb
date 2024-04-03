@@ -262,7 +262,7 @@ inserting one if it does not exist.
 To specify an upsert in an ``update()`` method, set the ``upsert`` option to
 ``true`` as shown in the following code example:
 
-.. code-block:: php
+.. code-block:: none
    :emphasize-lines: 4
    :copyable: false
 
@@ -292,6 +292,7 @@ matching documents exist:
    .. input:: /includes/fundamentals/write-operations/WriteOperationsTest.php
       :language: php
       :dedent:
+      :emphasize-lines: 4
       :start-after: begin model upsert
       :end-before: end model upsert
 
