@@ -21,7 +21,7 @@ class DeleteOneTest extends TestCase
         Movie::insert([
             [
                 'title' => 'Capote',
-                'runtime' => 114
+                'runtime' => 114,
             ],
         ]);
 
