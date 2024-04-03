@@ -9,7 +9,7 @@ Write Operations
    :values: tutorial
 
 .. meta::
-   :keywords: insert, insert one, update, update one, upsert, code example, mass assignment, eloquent model
+   :keywords: insert, insert one, update, update one, upsert, code example, mass assignment, push, pull, eloquent model
 
 .. contents:: On this page
    :local:
@@ -166,6 +166,7 @@ This section provides examples of the following update operations:
 - :ref:`Update a document <laravel-modify-documents-update-one>`
 - :ref:`Update multiple documents <laravel-modify-documents-update-multiple>`
 - :ref:`Update or insert in a single operation <laravel-modify-documents-upsert>`
+- :ref:`Update arrays in a document <laravel-modify-documents-arrays>`
 
 .. _laravel-modify-documents-update-one:
 
@@ -316,4 +317,177 @@ code:
         "ticketsSold": 4000,
         "updated_at": ...
       }
+
+.. _laravel-modify-documents-arrays:
+
+Update Arrays in a Document
+---------------------------
+
+In this section, you can see examples of the following operations that
+update array values in a MongoDB document:
+
+- Add values to an array
+- Remove values from an array
+- Update the value of an array element
+
+These examples modify the sample document created by the following insert 
+operation:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin array example document
+   :end-before: end array example document
+
+.. _laravel-modify-documents-add-array-values:
+
+Add Values to an Array Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This section shows how to use the ``push()`` method to add values to an array
+in a MongoDB document. You can pass one or more values to add and can set the 
+optional parameter ``unique`` to ``true`` to skip adding any values that exist 
+in the array. The following code example shows the structure of a ``push()`` 
+method call:
+
+.. code-block:: none
+   :emphasize-lines: 4
+   :copyable: false
+
+   YourModel::where(<match criteria>)
+      ->push(
+          <field name>,
+          [<values>], // array or single value to add
+          unique: true); // whether to skip existing values
+
+The following example shows how to add thee array value ``baroque`` to
+the ``genres`` array field of a matching document. Click the
+:guilabel:`VIEW OUTPUT` button to see the updated document:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+      :language: php
+      :dedent:
+      :start-after: begin model array push
+      :end-before: end model array push
+
+   .. output::
+      :language: json
+      :visible: false
+
+      {
+        "_id": "660eb...",
+        "performer": "Mitsuko Uchida",
+        "genres": [
+            "classical",
+            "dance-pop",
+            "baroque"
+        ],
+        "updated_at": ...,
+        "created_at": ...
+      }
+
+
+.. _laravel-modify-documents-remove-array-values:
+
+Remove Values From an Array Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This section shows how to use the ``pull()`` method to remove values from
+an array in a MongoDB document. You can pass one or more values to remove
+from the array. The following code example shows the structure of a
+``pull()`` method call:
+
+.. code-block:: none
+   :emphasize-lines: 4
+   :copyable: false
+
+   YourModel::where(<match criteria>)
+      ->push(
+          <field name>,
+          [<values>]); // array or single value to remove
+
+The following example shows how to remove array values ``"classical"`` and
+``"dance-pop"`` from the ``genres`` array field. Click the
+:guilabel:`VIEW OUTPUT` button to see the updated document:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+      :language: php
+      :dedent:
+      :start-after: begin model array pull
+      :end-before: end model array pull
+
+   .. output::
+      :language: json
+      :visible: false
+
+      {
+        "_id": "660e...",
+        "performer": "Mitsuko Uchida",
+        "genres": [],
+        "updated_at": ...,
+        "created_at": ...
+      }
+
+
+.. _laravel-modify-documents-update-array-values:
+
+Update the Value of an Array Element Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This section shows how to use the ``$`` positional operator to update specific
+array elements in a MongoDB document. The ``$`` operator represents the first
+array element that matches the query. The following code example shows the
+structure of a positional operator update call on a single matching document:
+
+
+.. note::
+
+   Currently, {+odm-short+} offers this operation only in the ``DB`` facade
+   and not in the Eloquent ORM.
+
+.. code-block:: none
+   :emphasize-lines: 4
+   :copyable: false
+
+   DB::connection('mongodb')
+      ->getCollection(<collection name>)
+      ->updateOne(
+          <match criteria>,
+          ['$set' => ['<array field>.$' => <replacement value>]]);
+
+
+The following example shows how to replace the array value ``"dance-pop"``
+with ``"contemporary"`` in the ``genres`` array field. Click the
+:guilabel:`VIEW OUTPUT` button to see the updated document:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+      :language: php
+      :dedent:
+      :start-after: begin model array positional
+      :end-before: end model array positional
+
+   .. output::
+      :language: json
+      :visible: false
+
+      {
+        "_id": "660e...",
+        "performer": "Mitsuko Uchida",
+        "genres": [
+          "classical",
+          "contemporary"
+        ],
+        "updated_at": ...,
+        "created_at": ...
+      }
+
+
+To learn more about array update operators, see :manual`Array Update Operators </reference/operator/update-array/>`
+in the {+server-docs-name+}.
 

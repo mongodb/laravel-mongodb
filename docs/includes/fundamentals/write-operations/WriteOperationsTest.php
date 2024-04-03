@@ -6,11 +6,12 @@ namespace App\Http\Controllers;
 
 use App\Models\Concert;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function count;
-use function print_r;
+use function in_array;
 
 class WriteOperationsTest extends TestCase
 {
@@ -20,8 +21,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelInsert(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
 
         Concert::truncate();
@@ -53,8 +52,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelInsertMassAssign(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
 
         Concert::truncate();
@@ -81,8 +78,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelInsertMany(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
 
         Concert::truncate();
@@ -119,8 +114,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelUpdateSave(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
         Concert::truncate();
 
@@ -155,8 +148,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelUpdateFluent(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
         Concert::truncate();
 
@@ -191,8 +182,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelUpdateMultiple(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
         Concert::truncate();
 
@@ -234,8 +223,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelUpsert(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
         Concert::truncate();
 
@@ -249,9 +236,97 @@ class WriteOperationsTest extends TestCase
 
         $result = Concert::first();
 
-        print_r($result->toJson());
         $this->assertInstanceOf(Concert::class, $result);
         $this->assertEquals('Jon Batiste', $result->performer);
         $this->assertEquals(4000, $result->ticketsSold);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testModelPushArray(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        // begin array example document
+        Concert::create([
+            'performer' => 'Mitsuko Uchida',
+            'genres' => ['classical', 'dance-pop'],
+        ]);
+        // end array example document
+
+        // begin model array push
+        Concert::where('performer', 'Mitsuko Uchida')
+            ->push(
+                'genres',
+                ['baroque'],
+            );
+        // end model array push
+
+        $result = Concert::first();
+
+        $this->assertInstanceOf(Concert::class, $result);
+        $this->assertContains('baroque', $result->genres);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testModelPullArray(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        Concert::create([
+            'performer' => 'Mitsuko Uchida',
+            'genres' => [ 'classical', 'dance-pop' ],
+        ]);
+
+        // begin model array pull
+        Concert::where('performer', 'Mitsuko Uchida')
+            ->pull(
+                'genres',
+                ['dance-pop', 'classical'],
+            );
+        // end model array pull
+
+        $result = Concert::first();
+
+        $this->assertInstanceOf(Concert::class, $result);
+        $this->assertEmpty($result->genres);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testModelPositional(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        Concert::create([
+            'performer' => 'Mitsuko Uchida',
+            'genres' => [ 'classical', 'dance-pop' ],
+        ]);
+
+        // begin model array positional
+        $match = ['performer' => 'Mitsuko Uchida', 'genres' => 'dance-pop'];
+        $update = ['$set' => ['genres.$' => 'contemporary']];
+
+        DB::connection('mongodb')
+            ->getCollection('concerts')
+            ->updateOne($match, $update);
+        // end model array positional
+
+        $result = Concert::first();
+
+        $this->assertInstanceOf(Concert::class, $result);
+        $this->assertContains('classical', $result->genres);
+        $this->assertContains('contemporary', $result->genres);
+        $this->assertFalse(in_array('dance-pop', $result->genres));
     }
 }
