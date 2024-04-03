@@ -19,8 +19,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelInsert(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
 
         Concert::truncate();
@@ -50,8 +48,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelInsertMassAssign(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
 
         Concert::truncate();
@@ -76,8 +72,6 @@ class WriteOperationsTest extends TestCase
      */
     public function testModelInsertMany(): void
     {
-        // <optionally, add code here to clean the database/collection>
-
         require_once __DIR__ . '/Concert.php';
 
         Concert::truncate();
