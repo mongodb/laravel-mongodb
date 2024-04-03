@@ -31,7 +31,7 @@ This usage example performs the following actions:
 
 - Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
   ``sample_mflix`` database.
-- Updates a document from the ``movies`` collection that matches a query filter.
+- Deletes a document from the ``movies`` collection that matches a query filter.
 
 The example calls the following methods on the ``Movie`` model:
 
