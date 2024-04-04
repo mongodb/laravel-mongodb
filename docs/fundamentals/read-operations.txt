@@ -1,8 +1,9 @@
 .. _laravel-fundamentals-retrieve:
+.. _laravel-fundamentals-read-ops:
 
-==============
-Retrieve Data
-==============
+===============
+Read Operations
+===============
 
 .. facet::
    :name: genre
