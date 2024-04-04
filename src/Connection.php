@@ -16,7 +16,6 @@ use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Concerns\ManagesTransactions;
 use Throwable;
 
-use function class_exists;
 use function filter_var;
 use function implode;
 use function is_array;
@@ -324,14 +323,10 @@ class Connection extends BaseConnection
 
     private static function lookupVersion(): string
     {
-        if (class_exists(InstalledVersions::class)) {
-            try {
-                return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-mongodb');
-            } catch (Throwable) {
-                return self::$version = 'error';
-            }
+        try {
+            return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-mongodb') ?? 'unknown';
+        } catch (Throwable) {
+            return self::$version = 'error';
         }
-
-        return self::$version = 'unknown';
     }
 }
