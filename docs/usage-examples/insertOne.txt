@@ -20,7 +20,7 @@ Insert a Document
 You can insert a document into a collection by calling the ``create()`` method on
 an Eloquent model or on a query builder.
 
-To insert a document, call the ``create()`` method and pass the document's field values
+To insert a document, call the ``create()`` method and specify the document's field values
 inside the method call. 
 
 Example
@@ -37,7 +37,7 @@ information:
 
 - ``title`` value of ``"Marriage Story"``
 - ``year`` value of ``2019``
-- ``runtime`` value of 136
+- ``runtime`` value of ``136``
 
 .. io-code-block::
    :copyable: true
@@ -66,8 +66,8 @@ For instructions on editing your Laravel application to run the usage example, s
 
 .. tip::
 
-   You can also use the ``save()`` method to insert a document into a collection. To learn more 
-   about insert operations, see the :ref:`laravel-fundamentals-insert-documents` section of the
-   Write Operations guide.
+   You can also use the ``save()`` or ``insert()`` methods to insert a document into a collection.
+   To learn more  about insert operations, see the :ref:`laravel-fundamentals-insert-documents` section
+   of the Write Operations guide.
 
 
