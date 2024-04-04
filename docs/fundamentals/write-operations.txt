@@ -262,13 +262,13 @@ inserting one if it does not exist.
 To specify an upsert in an ``update()`` method, set the ``upsert`` option to
 ``true`` as shown in the following code example:
 
-.. code-block:: none
+.. code-block:: php
    :emphasize-lines: 4
    :copyable: false
 
-   YourModel::where(<match criteria>)
+   YourModel::where(/* match criteria */)
       ->update(
-          [<update data>],
+          [/* update data */],
           ['upsert' => true]);
 
 When the ``update()`` method is chained to a query, it performs one of the
