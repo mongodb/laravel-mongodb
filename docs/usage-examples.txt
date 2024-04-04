@@ -71,4 +71,5 @@ calls the controller function and returns the result to a web interface.
    :titlesonly:
    :maxdepth: 1
 
+   /usage-examples/findOne
    /usage-examples/updateOne
