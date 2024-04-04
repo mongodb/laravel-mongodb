@@ -351,7 +351,6 @@ in the array. The following code example shows the structure of a ``push()``
 method call:
 
 .. code-block:: none
-   :emphasize-lines: 4
    :copyable: false
 
    YourModel::where(<match criteria>)
@@ -400,7 +399,6 @@ from the array. The following code example shows the structure of a
 ``pull()`` method call:
 
 .. code-block:: none
-   :emphasize-lines: 4
    :copyable: false
 
    YourModel::where(<match criteria>)
@@ -450,7 +448,6 @@ structure of a positional operator update call on a single matching document:
    and not on the Eloquent ORM.
 
 .. code-block:: none
-   :emphasize-lines: 5
    :copyable: false
 
    DB::connection('mongodb')
@@ -486,7 +483,6 @@ with ``"contemporary"`` in the ``genres`` array field. Click the
         "updated_at": ...,
         "created_at": ...
       }
-
 
 To learn more about array update operators, see :manual:`Array Update Operators </reference/operator/update-array/>`
 in the {+server-docs-name+}.
