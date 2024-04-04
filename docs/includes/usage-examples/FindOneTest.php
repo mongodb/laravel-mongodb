@@ -4,11 +4,15 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\UsageExamples\Movie;
+use App\Models\Movie;
 use MongoDB\Laravel\Tests\TestCase;
 
 class FindOneTest extends TestCase
 {
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testFindOne(): void
     {
         require_once __DIR__ . '/Movie.php';
@@ -27,7 +31,6 @@ class FindOneTest extends TestCase
         // end-find-one
 
         $this->assertInstanceOf(Movie::class, $movie);
-
-        $this->expectOutputRegex('^{"_id":"[a-z0-9]{24}","title":"The Shawshank Redemption","directors":["Frank Darabont","Rob Reiner"]}$');
+        $this->expectOutputRegex('/^{"_id":"[a-z0-9]{24}","title":"The Shawshank Redemption","directors":\["Frank Darabont","Rob Reiner"\]}$/');
     }
 }
