@@ -326,9 +326,9 @@ Update Arrays in a Document
 In this section, you can see examples of the following operations that
 update array values in a MongoDB document:
 
-- Add values to an array
-- Remove values from an array
-- Update the value of an array element
+- :ref:`Add values to an array <laravel-modify-documents-add-array-values>`
+- :ref:`Remove values from an array <laravel-modify-documents-remove-array-values>`
+- :ref:`Update the value of an array element <laravel-modify-documents-update-array-values>`
 
 These examples modify the sample document created by the following insert
 operation:
@@ -346,7 +346,7 @@ Add Values to an Array Example
 
 This section shows how to use the ``push()`` method to add values to an array
 in a MongoDB document. You can pass one or more values to add and set the
-optional parameter ``unique`` to ``true`` to skip adding any values
+optional parameter ``unique`` to ``true`` to skip adding any duplicate values
 in the array. The following code example shows the structure of a ``push()``
 method call:
 
@@ -359,7 +359,7 @@ method call:
           [<values>], // array or single value to add
           unique: true); // whether to skip existing values
 
-The following example shows how to add the value ``baroque`` to
+The following example shows how to add the value ``"baroque"`` to
 the ``genres`` array field of a matching document. Click the
 :guilabel:`VIEW OUTPUT` button to see the updated document:
 
@@ -381,7 +381,7 @@ the ``genres`` array field of a matching document. Click the
         "genres": [
             "classical",
             "dance-pop",
-            "baroque"
+
         ],
         "updated_at": ...,
         "created_at": ...
@@ -402,7 +402,7 @@ from the array. The following code example shows the structure of a
    :copyable: false
 
    YourModel::where(<match criteria>)
-      ->push(
+      ->pull(
           <field name>,
           [<values>]); // array or single value to remove
 
