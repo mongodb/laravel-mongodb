@@ -20,13 +20,13 @@ class DeleteOneTest extends TestCase
         Movie::truncate();
         Movie::insert([
             [
-                'title' => 'Capote',
-                'runtime' => 114,
+                'title' => 'Quiz Show',
+                'runtime' => 133,
             ],
         ]);
 
         // begin-delete-one
-        $deleted = Movie::where('title', 'Capote')
+        $deleted = Movie::where('title', 'Quiz Show')
             ->orderBy('_id')
             ->first()
             ->delete();
