@@ -29,7 +29,6 @@ class InsertOneTest extends TestCase
         echo $movie->toJson();
         // end-insert-one
 
-        $this->assertTrue($updates);
-        $this->expectOutputString('Updated documents: 1');
+        $this->assertInstanceOf(Movie::class, $movie);
     }
 }
