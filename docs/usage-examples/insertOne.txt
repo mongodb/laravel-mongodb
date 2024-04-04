@@ -1,0 +1,73 @@
+.. _laravel-insert-one-usage:
+
+=================
+Insert a Document
+=================
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: insert one, add one, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+You can insert a document into a collection by calling the ``create()`` method on
+an Eloquent model or on a query builder.
+
+To insert a document, call the ``create()`` method and pass the document's field values
+inside the method call. 
+
+Example
+-------
+
+This usage example performs the following actions:
+
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database
+- Inserts a document into the ``movies`` collection
+
+The example calls the ``create()`` method to insert a document that contains the following
+information:
+
+- ``title`` value of ``"Marriage Story"``
+- ``year`` value of ``2019``
+- ``runtime`` value of 136
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: ../includes/usage-examples/InsertOneTest.php
+      :start-after: begin-insert-one
+      :end-before: end-insert-one
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      {
+          "title": "Marriage Story",
+          "year": 2019,
+          "runtime": 136,
+          "updated_at": "...",
+          "created_at": "...",
+          "_id": "..."
+      }
+
+For instructions on editing your Laravel application to run the usage example, see the
+:ref:`Usage Example landing page <laravel-usage-examples>`.
+
+.. tip::
+
+   You can also use the ``save()`` method to insert a document into a collection. To learn more 
+   about insert operations, see the :ref:`laravel-fundamentals-insert-documents` section of the
+   Write Operations guide.
+
+
