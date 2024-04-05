@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -1043,5 +1044,51 @@ class ModelTest extends TestCase
         $found = User::where('2.3', 'two.three')->first();
         $this->assertInstanceOf(User::class, $found);
         $this->assertEquals([3 => 'two.three'], $found[2]);
+    }
+
+    public function testCreateOrFirst()
+    {
+        $user1 = User::createOrFirst(['email' => 'john.doe@example.com']);
+
+        $this->assertSame('john.doe@example.com', $user1->email);
+        $this->assertNull($user1->name);
+        $this->assertTrue($user1->wasRecentlyCreated);
+
+        $user2 = User::createOrFirst(
+            ['email' => 'john.doe@example.com'],
+            ['name' => 'John Doe', 'birthday' => new DateTime('1987-05-28')],
+        );
+
+        $this->assertEquals($user1->id, $user2->id);
+        $this->assertSame('john.doe@example.com', $user2->email);
+        $this->assertNull($user2->name);
+        $this->assertNull($user2->birthday);
+        $this->assertFalse($user2->wasRecentlyCreated);
+
+        $user3 = User::createOrFirst(
+            ['email' => 'jane.doe@example.com'],
+            ['name' => 'Jane Doe', 'birthday' => new DateTime('1987-05-28')],
+        );
+
+        $this->assertNotEquals($user3->id, $user1->id);
+        $this->assertSame('jane.doe@example.com', $user3->email);
+        $this->assertSame('Jane Doe', $user3->name);
+        $this->assertEquals(new DateTime('1987-05-28'), $user3->birthday);
+        $this->assertTrue($user3->wasRecentlyCreated);
+
+        $user4 = User::createOrFirst(
+            ['name' => 'Robert Doe'],
+            ['name' => 'Maria Doe', 'email' => 'maria.doe@example.com'],
+        );
+
+        $this->assertSame('Maria Doe', $user4->name);
+        $this->assertTrue($user4->wasRecentlyCreated);
+    }
+
+    public function testCreateOrFirstRequiresFilter()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You must provide attributes to check for duplicates');
+        User::createOrFirst([]);
     }
 }
