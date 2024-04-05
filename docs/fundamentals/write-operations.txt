@@ -138,9 +138,9 @@ an array to the ``insert()`` method:
 
 .. note::
 
-    This example wraps the dates in the `MongoDB\\BSON\\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
-    class to convert it to a type MongoDB can serialize because Laravel
-    skips attribute casting on bulk insert operations.
+   This example wraps the dates in the `MongoDB\\BSON\\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
+   class to convert it to a type MongoDB can serialize because Laravel
+   skips attribute casting on bulk insert operations.
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -486,4 +486,3 @@ with ``"contemporary"`` in the ``genres`` array field. Click the
 
 To learn more about array update operators, see :manual:`Array Update Operators </reference/operator/update-array/>`
 in the {+server-docs-name+}.
-
