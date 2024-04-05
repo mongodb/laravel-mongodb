@@ -918,10 +918,10 @@ pair data to retrieve the following types of locations:
 
 .. important::
 
-   To perform GeoJSON queries in MongoDB, you must create either
-   ``2d`` or ``2dsphere`` index on the collection. To learn more
-   about these indexes, see :manual:`Geospatial Indexes </core/indexes/index-types/index-geospatial/>`
-   in the {+server-docs-name+}.
+   To perform GeoJSON queries in MongoDB, you must create either ``2d`` or
+   ``2dsphere`` index on the collection. To learn how to create geospatial
+   indexes, see the :ref:`laravel-eloquent-geospatial-index` section in the
+   Schema Builder guide.
 
 To learn more about GeoJSON objects that MongoDB supports,
 see :manual:`GeoJSON Objects </reference/geojson/>`
