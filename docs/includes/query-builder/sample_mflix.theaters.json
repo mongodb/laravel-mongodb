@@ -1,0 +1,39 @@
+[
+    {
+        "theaterId": 1000,
+        "location": {
+            "address": {
+                "street1": "340 W Market",
+                "city": "Bloomington",
+                "state": "MN",
+                "zipcode": "55425"
+            },
+            "geo": {
+                "type": "Point",
+                "coordinates": [
+                    -93.24565,
+                    44.85466
+                ]
+            }
+        }
+    },
+    {
+        "theaterId": 8900,
+        "location": {
+            "address": {
+                "street1": "6801 Hollywood Blvd",
+                "street2": null,
+                "city": "Hollywood",
+                "state": "CA",
+                "zipcode": "90028"
+            },
+            "geo": {
+                "type": "Point",
+                "coordinates": [
+                    -118.340261,
+                    34.102593
+                ]
+            }
+        }
+    }
+]
