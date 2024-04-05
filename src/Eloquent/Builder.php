@@ -11,6 +11,7 @@ use MongoDB\Driver\Cursor;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Internal\FindAndModifyCommandSubscriber;
+use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
 use MongoDB\Operation\FindOneAndUpdate;
 
@@ -55,6 +56,18 @@ class Builder extends EloquentBuilder
         'sum',
         'tomql',
     ];
+
+    /**
+     * @return ($function is null ? AggregationBuilder : self)
+     *
+     * @inheritdoc
+     */
+    public function aggregate($function = null, $columns = ['*'])
+    {
+        $result = $this->toBase()->aggregate($function, $columns);
+
+        return $result ?: $this;
+    }
 
     /** @inheritdoc */
     public function update(array $values, array $options = [])
@@ -215,7 +228,7 @@ class Builder extends EloquentBuilder
                 $document = $collection->findOneAndUpdate(
                     $attributes,
                     // Before MongoDB 5.0, $setOnInsert requires a non-empty document.
-                    // This is should not be an issue as $values includes the query filter.
+                    // This should not be an issue as $values includes the query filter.
                     ['$setOnInsert' => (object) $values],
                     [
                         'upsert' => true,
