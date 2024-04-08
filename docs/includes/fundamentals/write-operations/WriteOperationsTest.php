@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\TestCase;
 
+use function array_push;
 use function count;
 use function in_array;
 
@@ -378,7 +379,6 @@ class WriteOperationsTest extends TestCase
         $this->assertEquals(3, Concert::count());
     }
 
-
     public function testModelDeleteModel(): void
     {
         require_once __DIR__ . '/Concert.php';
@@ -404,7 +404,6 @@ class WriteOperationsTest extends TestCase
     {
         require_once __DIR__ . '/Concert.php';
         Concert::truncate();
-
 
         $data = [
             [
@@ -462,17 +461,16 @@ class WriteOperationsTest extends TestCase
 
         $concerts = Concert::all();
 
-        $ids = array();
+        $ids = [];
 
         foreach ($concerts as $concert) {
             array_push($ids, $concert->id);
         }
 
         // begin model delete multiple by id
-        $result = Concert::destroy($ids);
+        Concert::destroy($ids);
         // end model delete multiple by id
 
-        $coll_count = Concert::count();
         $this->assertEquals(0, Concert::count());
     }
 
@@ -510,11 +508,10 @@ class WriteOperationsTest extends TestCase
         Concert::insert($data);
 
         // begin model delete multiple fluent
-        $result = Concert::where('ticketsSold', '>', 7500)
+        Concert::where('ticketsSold', '>', 7500)
             ->delete();
         // end model delete multiple fluent
 
-        $coll_count = Concert::count();
         $this->assertEquals(2, Concert::count());
     }
 }
