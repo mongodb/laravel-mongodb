@@ -9,7 +9,7 @@ Write Operations
    :values: tutorial
 
 .. meta::
-   :keywords: insert, insert one, update, update one, upsert, delete, delete many, code example, mass assignment, eloquent model
+   :keywords: insert, insert one, code example, mass assignment, eloquent model
 
 .. contents:: On this page
    :local:
@@ -27,8 +27,30 @@ inserting, updating, and deleting data based on specified criteria.
 This guide shows you how to perform the following tasks:
 
 - :ref:`laravel-fundamentals-insert-documents`
-- Modify Documents
+- :ref:`laravel-fundamentals-modify-documents`
 - Delete Documents
+
+.. _laravel-fundamentals-write-sample-model:
+
+Sample Model
+~~~~~~~~~~~~
+
+The write operations in this guide reference the following Eloquent model class:
+
+.. literalinclude:: /includes/fundamentals/write-operations/Concert.php
+   :language: php
+   :dedent:
+   :caption: Concert.php
+
+.. tip::
+
+   The ``$fillable`` attribute lets you use Laravel mass assignment for insert
+   operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`
+   in the Eloquent Model Class documentation.
+
+   The ``$casts`` attribute instructs Laravel to convert attributes to common
+   data types. To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
+   in the Laravel documentation.
 
 .. _laravel-fundamentals-insert-documents:
 
@@ -47,24 +69,6 @@ For more information on creating indexes on MongoDB collections by using the
 Laravel schema builder, see the :ref:`laravel-eloquent-indexes` section
 of the Schema Builder documentation.
 
-This section uses the following example model class to demonstrate how to
-use Eloquent models to perform insert operations:
-
-.. literalinclude:: /includes/fundamentals/write-operations/Concert.php
-   :language: php
-   :dedent:
-   :caption: Concert.php
-
-.. tip::
-
-   The ``$fillable`` attribute lets you use Laravel mass assignment for insert
-   operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`
-   in the Eloquent Model Class documentation.
-
-   The ``$casts`` attribute instructs Laravel to convert attributes to common
-   data types. To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
-   in the Laravel documentation.
-
 To learn more about Eloquent models in {+odm-short+}, see the :ref:`laravel-eloquent-models`
 section.
 
@@ -75,13 +79,16 @@ These examples show how to use the ``save()`` Eloquent method to insert an
 instance of a ``Concert`` model as a MongoDB document.
 
 When the ``save()`` method succeeds, you can access the model instance on
-which you called the method. If the operation fails, the model instance is
-assigned ``null``.
+which you called the method.
+
+If the operation fails, the model instance is assigned ``null``.
 
 This example code performs the following actions:
 
 - Creates a new instance of the ``Concert`` model
 - Assigns string values to the ``performer`` and ``venue`` fields
+- Assigns an array of strings to the ``genre`` field
+- Assigns a number to the ``ticketsSold`` field
 - Assigns a date to the ``performanceDate`` field by using the ``Carbon``
   package
 - Inserts the document by calling the ``save()`` method
@@ -93,7 +100,7 @@ This example code performs the following actions:
    :end-before: end model insert one
 
 You can retrieve the inserted document's ``_id`` value by accessing the model's
-``id`` member as shown in the following code example:
+``id`` member, as shown in the following code example:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -103,7 +110,7 @@ You can retrieve the inserted document's ``_id`` value by accessing the model's
 
 If you enable mass assignment by defining either the ``$fillable`` or
 ``$guarded`` attributes, you can use the Eloquent model ``create()`` method
-to perform the insert in a single call as shown in the following example:
+to perform the insert in a single call, as shown in the following example:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -122,17 +129,19 @@ multiple instances of a ``Concert`` model as MongoDB documents. This bulk
 insert method reduces the number of calls your application needs to make
 to save the documents.
 
-When the ``insert()`` method succeeds, it returns the value ``1``. If it
-fails, it throws an exception.
+
+When the ``insert()`` method succeeds, it returns the value ``1``.
+
+If it fails, it throws an exception.
 
 The example code saves multiple models in a single call by passing them as
 an array to the ``insert()`` method:
 
 .. note::
 
-    This example wraps the dates in the `MongoDB\BSON\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
-    class to convert it to a type MongoDB can serialize because Laravel
-    skips attribute casting on bulk insert operations.
+   This example wraps the dates in the `MongoDB\\BSON\\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
+   class to convert it to a type MongoDB can serialize because Laravel
+   skips attribute casting on bulk insert operations.
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -140,3 +149,102 @@ an array to the ``insert()`` method:
    :start-after: begin model insert many
    :end-before: end model insert many
 
+.. _laravel-fundamentals-modify-documents:
+
+Modify Documents
+----------------
+
+In this section, you can learn how to modify documents in your MongoDB
+collection from your Laravel application. Use update operations to modify
+existing documents or to insert a document if none match the search criteria.
+
+You can persist changes on an instance of an Eloquent model or use
+Eloquent's fluent syntax to chain an update operation on methods that
+return a Laravel collection object.
+
+This section provides examples of the following update operations:
+
+- :ref:`Update a document <laravel-modify-documents-update-one>`
+- :ref:`Update multiple documents <laravel-modify-documents-update-multiple>`
+
+.. _laravel-modify-documents-update-one:
+
+Update a Document Examples
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can update a document in the following ways:
+
+- Modify an instance of the model and save the changes by calling the ``save()``
+  method.
+- Chain methods to retrieve an instance of a model and perform updates on it
+  by calling the ``update()`` method.
+
+The following example shows how to update a document by modifying an instance
+of the model and calling its ``save()`` method:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model update one save
+   :end-before: end model update one save
+
+When the ``save()`` method succeeds, the model instance on which you called the
+method contains the updated values.
+
+If the operation fails, {+odm-short+} assigns the model instance a null value.
+
+The following example shows how to update a document by chaining methods to
+retrieve and update the first matching document:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model update one fluent
+   :end-before: end model update one fluent
+
+.. note::
+
+   The ``orderBy()`` call sorts the results by the ``_id`` field to
+   guarantee a consistent sort order. To learn more about sorting in MongoDB,
+   see the :manual:`Natural order </reference/glossary/#std-term-natural-order>`
+   glossary entry in the {+server-docs-name+}.
+
+When the ``update()`` method succeeds, the operation returns the number of
+documents updated.
+
+If the retrieve part of the call does not match any documents, {+odm-short+}
+returns the following error:
+
+.. code-block:: none
+   :copyable: false
+
+   Error: Call to a member function update() on null
+
+.. _laravel-modify-documents-update-multiple:
+
+Update Multiple Documents Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+To perform an update on one or more documents, chain the ``update()``
+method to the results of a method that retrieves the documents as a
+Laravel collection object, such as ``where()``.
+
+The following example shows how to chain calls to retrieve matching documents
+and update them:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model update multiple
+   :end-before: end model update multiple
+
+When the ``update()`` method succeeds, the operation returns the number of
+documents updated.
+
+If the retrieve part of the call does not match any documents in MongoDB,
+{+odm-short+} returns the following error:
+
+.. code-block:: none
+   :copyable: false
+
+   Error: Call to a member function update() on null
