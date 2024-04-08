@@ -81,7 +81,7 @@ instance of a ``Concert`` model as a MongoDB document.
 When the ``save()`` method succeeds, you can access the model instance on
 which you called the method.
 
-If the operation fails, the model instance is assigned a null value.
+If the operation fails, the model instance is assigned ``null``.
 
 This example code performs the following actions:
 
@@ -129,6 +129,7 @@ multiple instances of a ``Concert`` model as MongoDB documents. This bulk
 insert method reduces the number of calls your application needs to make
 to save the documents.
 
+
 When the ``insert()`` method succeeds, it returns the value ``1``.
 
 If it fails, it throws an exception.
@@ -138,9 +139,9 @@ an array to the ``insert()`` method:
 
 .. note::
 
-    This example wraps the dates in the `MongoDB\\BSON\\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
-    class to convert it to a type MongoDB can serialize because Laravel
-    skips attribute casting on bulk insert operations.
+   This example wraps the dates in the `MongoDB\\BSON\\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
+   class to convert it to a type MongoDB can serialize because Laravel
+   skips attribute casting on bulk insert operations.
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -247,4 +248,3 @@ If the retrieve part of the call does not match any documents in MongoDB,
    :copyable: false
 
    Error: Call to a member function update() on null
-
