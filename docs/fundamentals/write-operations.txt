@@ -517,9 +517,6 @@ You can delete one document in the following ways:
 - Chain methods to retrieve and delete an instance of a model by calling the
   ``delete()`` method.
 
-Use the fluent syntax to retrieve a matching document and delete it by
-  calling the ``delete()`` method
-
 The following example shows how to delete a document by passing the value of
 its primary key to the ``destroy()`` method:
 
@@ -550,8 +547,8 @@ documents deleted.
 If the retrieve part of the call does not match any documents in the collection,
 the operation returns ``0``.
 
-The following example shows how to delete a document by using fluent syntax to
-retrieve the first matching document and delete it:
+The following example shows how to chain calls to retrieve the first
+matching document and delete it:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
