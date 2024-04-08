@@ -491,7 +491,7 @@ In this section, you can learn how to delete documents from a MongoDB collection
 by using {+odm-short+}. Use delete operations to remove data from your MongoDB
 database permanently.
 
-This section provides examples for the following delete operations:
+This section provides examples of the following delete operations:
 
 - :ref:`Delete one document <laravel-fundamentals-delete-one>`
 - :ref:`Delete multiple documents <laravel-fundamentals-delete-many>`
@@ -499,7 +499,7 @@ This section provides examples for the following delete operations:
 To learn about the Laravel features available in {+odm-short+} that modify
 delete behavior, see the following sections:
 
-- :ref:`Soft Delete <laravel-model-soft-delete>`, which lets you mark
+- :ref:`Soft delete <laravel-model-soft-delete>`, which lets you mark
   documents as deleted instead of removing them from the database
 - :ref:`Pruning <laravel-model-pruning>`, which lets you define conditions
   in which a document should be deleted automatically
@@ -512,7 +512,7 @@ Delete a Document Examples
 You can delete one document in the following ways:
 
 - Call the  ``destroy()`` method on the model to delete a document by the
-  primary key
+  primary key.
 - Call the ``delete()`` method on an instance of the model
 - Chain methods to retrieve and delete an instance of a model by calling the
   ``delete()`` method.
