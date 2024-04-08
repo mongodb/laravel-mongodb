@@ -35,6 +35,6 @@ class DeleteOneTest extends TestCase
         // end-delete-one
 
         $this->assertTrue($deleted);
-        $this->expectOutputString('Deleted documents: 1');
+        $this->expectOutputString('Deleted documents: true');
     }
 }
