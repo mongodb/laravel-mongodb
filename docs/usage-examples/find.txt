@@ -28,6 +28,7 @@ The example calls the following methods on the ``Movie`` model:
 - ``get()``: retrieves the query results
 
 .. io-code-block::
+   :copyable: true
 
    .. input:: ../includes/usage-examples/FindManyTest.php
       :start-after: begin-find
@@ -50,15 +51,8 @@ The example calls the following methods on the ``Movie`` model:
           "Drama"
       ],
       "runtime": 1256,
-      "cast": [
-          "Raymond Burr",
-          "Barbara Carrera",
-          "Richard Chamberlain",
-          "Robert Conrad"
-      ],
-      "num_mflix_comments": 1,
-      "poster": "https://m.media-amazon.com/images/M/MV5BMTM4OTMyMzg4MV5BMl5BanBnXkFtZTcwMTMzMzU1MQ@@._V1_SY1000_SX677_AL_.jpg",
-     "title": "Centennial",
+      ...
+      "title": "Centennial",
       ...
       }
 
@@ -72,18 +66,11 @@ The example calls the following methods on the ``Movie`` model:
           "Sport"
       ],
       "runtime": 1140,
-      "cast": [
-          "John Chancellor",
-          "Daniel Okrent",
-          "Ossie Davis",
-          "Paul Roebling"
-      ],
-      "num_mflix_comments": 0,
-      "poster": "https://m.media-amazon.com/images/M/MV5BN2FmNjM0NzMtYjZjZi00NzQ0LWE5MjMtOWEzOGNmYjZkNmI1XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_SY1000_SX677_AL_.jpg",
+      ...
       "title": "Baseball",
       ...
       }
-      
+
       {
       "_id": "573a13a6f29313caabd18ae0",
       "plot": "Taken spans five decades and four generations, centering on three families: the Keys, Crawfords, and Clarkes.
@@ -93,18 +80,10 @@ The example calls the following methods on the ``Movie`` model:
           "Sci-Fi"
       ],
       "runtime": 877,
-      "cast": [
-          "Dakota Fanning",
-          "Matt Frewer",
-          "Emily Bergl",
-          "Heather Donahue"
-      ],
-      "num_mflix_comments": 1,
-      "poster": "https://m.media-amazon.com/images/M/MV5BMTI0NTI0NjAxMV5BMl5BanBnXkFtZTYwOTM3MTg5._V1_SY1000_SX677_AL_.jpg",
+      ...
       "title": "Taken",
       ...
       }
-
 
 For instructions on editing your Laravel application to run the usage example, see the
 :ref:`Usage Example landing page <laravel-usage-examples>`.
