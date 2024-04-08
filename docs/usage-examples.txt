@@ -73,3 +73,4 @@ calls the controller function and returns the result to a web interface.
 
    /usage-examples/findOne
    /usage-examples/updateOne
+   /usage-examples/deleteOne

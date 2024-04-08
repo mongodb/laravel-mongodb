@@ -1,0 +1,69 @@
+.. _laravel-delete-one-usage:
+
+=================
+Delete a Document
+=================
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: delete one, remove, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+You can delete a document in a collection by retrieving a single Eloquent model and calling
+the ``delete()`` method, or by calling ``delete()`` directly on a query builder.
+
+To delete a document, pass a query filter to the ``where()`` method, sort the matching documents,
+and call the ``limit()`` method to retrieve only the first document. Then, delete this matching
+document by calling the ``delete()`` method.
+
+Example
+-------
+
+This usage example performs the following actions:
+
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database
+- Deletes a document from the ``movies`` collection that matches a query filter
+
+The example calls the following methods on the ``Movie`` model:
+
+- ``where()``: matches documents in which the value of the ``title`` field is ``'Quiz Show'``
+- ``orderBy()``: sorts matched documents by their ascending ``_id`` values
+- ``limit()``: retrieves only the first matching document
+- ``delete()``: deletes the retrieved document
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: ../includes/usage-examples/DeleteOneTest.php
+      :start-after: begin-delete-one
+      :end-before: end-delete-one
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      Deleted documents: 1
+
+For instructions on editing your Laravel application to run the usage example, see the
+:ref:`Usage Example landing page <laravel-usage-examples>`.
+
+.. tip::
+
+   To learn more about deleting documents with {+odm-short+}, see the `Deleting Models
+   <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#deleting-models>`__ section of the
+   Laravel documentation.
+
+   For more information about query filters, see the :ref:`laravel-retrieve-matching` section of
+   the Read Operations guide.
+
