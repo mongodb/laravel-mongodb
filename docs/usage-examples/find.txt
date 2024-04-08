@@ -43,7 +43,7 @@ The example calls the following methods on the ``Movie`` model:
       // Results are truncated
       
       {
-      "_id": "573a1397f29313caabce69db",
+      "_id": "...",
       "plot": "The economic and cultural growth of Colorado spanning two centuries from the mid-1700s to the late-1970s.",
       "genres": [
           "Action",
@@ -57,7 +57,7 @@ The example calls the following methods on the ``Movie`` model:
       }
 
       {
-      "_id": "573a1399f29313caabcee1aa",
+      "_id": "...",
       "plot": "A documentary on the history of the sport with major topics including Afro-American players, player/team
       owner relations and the resilience of the game.",
       "genres": [
@@ -72,7 +72,7 @@ The example calls the following methods on the ``Movie`` model:
       }
 
       {
-      "_id": "573a13a6f29313caabd18ae0",
+      "_id": "...",
       "plot": "Taken spans five decades and four generations, centering on three families: the Keys, Crawfords, and Clarkes.
       World War II veteran Russell Keys is plagued by nightmares of his abduction by ...",
       "genres": [
