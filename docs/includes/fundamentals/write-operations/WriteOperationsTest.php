@@ -329,4 +329,192 @@ class WriteOperationsTest extends TestCase
         $this->assertContains('contemporary', $result->genres);
         $this->assertFalse(in_array('dance-pop', $result->genres));
     }
+
+    public function testModelDeleteById(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        $data = [
+            [
+                'performer' => 'Mitsuko Uchida',
+                'venue' => 'Carnegie Hall',
+                'genres' => ['classical'],
+                'ticketsSold' => 2121,
+                'performanceDate' => new UTCDateTime(Carbon::create(2024, 4, 1, 20, 0, 0, 'EST')),
+            ],
+            [
+                'performer' => 'Brad Mehldau',
+                'venue' => 'Philharmonie de Paris',
+                'genres' => [ 'jazz', 'post-bop' ],
+                'ticketsSold' => 5745,
+                'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
+            ],
+            [
+                'performer' => 'Billy Joel',
+                'venue' => 'Madison Square Garden',
+                'genres' => [ 'rock', 'soft rock', 'pop rock' ],
+                'ticketsSold' => 12852,
+                'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
+            ],
+            [
+                'performer' => 'The Rolling Stones',
+                'venue' => 'Soldier Field',
+                'genres' => [ 'rock', 'pop', 'blues' ],
+                'ticketsSold' => 59527,
+                'performanceDate' => new UTCDateTime(Carbon::create(2024, 6, 30, 20, 0, 0, 'CDT')),
+            ],
+        ];
+        Concert::insert($data);
+
+        $this->assertEquals(4, Concert::count());
+
+        $id = Concert::first()->id;
+
+        // begin model delete by id
+        Concert::destroy($id);
+        // end model delete by id
+
+        $this->assertEquals(3, Concert::count());
+    }
+
+
+    public function testModelDeleteModel(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        $data = [
+            [
+                'performer' => 'Mitsuko Uchida',
+                'venue' => 'Carnegie Hall',
+            ],
+        ];
+        Concert::insert($data);
+
+        // begin delete model
+        $concert = Concert::first();
+        $concert->delete();
+        // end delete model
+
+        $this->assertEquals(0, Concert::count());
+    }
+
+    public function testModelDeleteFirst(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+
+        $data = [
+            [
+                'performer' => 'Mitsuko Uchida',
+                'venue' => 'Carnegie Hall',
+            ],
+            [
+                'performer' => 'Brad Mehldau',
+                'venue' => 'Philharmonie de Paris',
+            ],
+            [
+                'performer' => 'Billy Joel',
+                'venue' => 'Madison Square Garden',
+            ],
+            [
+                'performer' => 'The Rolling Stones',
+                'venue' => 'Soldier Field',
+            ],
+        ];
+        Concert::insert($data);
+
+        // begin model delete one fluent
+        Concert::where('venue', 'Carnegie Hall')
+            ->orderBy('_id')
+            ->limit(1)
+            ->delete();
+        // end model delete one fluent
+
+        $this->assertEquals(3, Concert::count());
+    }
+
+    public function testModelDeleteMultipleById(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+        $data = [
+            [
+                'performer' => 'Mitsuko Uchida',
+                'venue' => 'Carnegie Hall',
+            ],
+            [
+                'performer' => 'Brad Mehldau',
+                'venue' => 'Philharmonie de Paris',
+            ],
+            [
+                'performer' => 'Billy Joel',
+                'venue' => 'Madison Square Garden',
+            ],
+            [
+                'performer' => 'The Rolling Stones',
+                'venue' => 'Soldier Field',
+            ],
+        ];
+        Concert::insert($data);
+
+        $concerts = Concert::all();
+
+        $ids = array();
+
+        foreach ($concerts as $concert) {
+            array_push($ids, $concert->id);
+        }
+
+        // begin model delete multiple by id
+        $result = Concert::destroy($ids);
+        // end model delete multiple by id
+
+        $coll_count = Concert::count();
+        $this->assertEquals(0, Concert::count());
+    }
+
+    public function testModelDeleteMultiple(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        $data = [
+            [
+                'performer' => 'Mitsuko Uchida',
+                'venue' => 'Carnegie Hall',
+                'genres' => ['classical'],
+                'ticketsSold' => 2121,
+            ],
+            [
+                'performer' => 'Brad Mehldau',
+                'venue' => 'Philharmonie de Paris',
+                'genres' => [ 'jazz', 'post-bop' ],
+                'ticketsSold' => 5745,
+            ],
+            [
+                'performer' => 'Billy Joel',
+                'venue' => 'Madison Square Garden',
+                'genres' => [ 'rock', 'soft rock', 'pop rock' ],
+                'ticketsSold' => 12852,
+            ],
+            [
+                'performer' => 'The Rolling Stones',
+                'venue' => 'Soldier Field',
+                'genres' => [ 'rock', 'pop', 'blues' ],
+                'ticketsSold' => 59527,
+            ],
+        ];
+        Concert::insert($data);
+
+        // begin model delete multiple fluent
+        $result = Concert::where('ticketsSold', '>', 7500)
+            ->delete();
+        // end model delete multiple fluent
+
+        $coll_count = Concert::count();
+        $this->assertEquals(2, Concert::count());
+    }
 }
