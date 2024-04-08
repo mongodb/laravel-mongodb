@@ -30,7 +30,11 @@ jobs:
                     - php: "8.1"
                       laravel: "10.*"
                       mongodb: "5.0"
-                      mode: "low-deps"
+                      mode: "--prefer-lowest"
+                    - php: "8.4"
+                      laravel: "11.*"
+                      mongodb: "7.0"
+                      mode: "--ignore-platform-reqs"
                 exclude:
                     - php: "8.1"
                       laravel: "11.*"
@@ -80,7 +84,7 @@ jobs:
                     restore-keys: "${{ matrix.os }}-composer-"
 
             -   name: "Install dependencies"
-                run: composer update --no-interaction $([[ "${{ matrix.mode }}" == low-deps ]] && echo ' --prefer-lowest')
+                run: composer update --no-interaction ${{ matrix.mode }}
             -   name: "Run tests"
                 run: "./vendor/bin/phpunit --coverage-clover coverage.xml"
                 env:
