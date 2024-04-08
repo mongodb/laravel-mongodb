@@ -4,6 +4,19 @@
 Find Multiple Documents
 =======================
 
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: find many, retrieve, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
 You can retrieve multiple documents from a collection by calling the ``where()`` method
 on an Eloquent model or a query builder.
 
