@@ -1,0 +1,66 @@
+.. _laravel-update-one-usage:
+
+=========================
+Update Multiple Documents
+=========================
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: update many, modify, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+You can update multiple documents in a collection by calling the ``update()`` method
+on an Eloquent model or a query builder.
+
+Pass a query filter to the ``where()`` method to retrieve documents that meet a
+set of criteria. Then, update the matching documents by passing your intended
+document changes to the ``update()`` method.
+
+Example
+-------
+
+This usage example performs the following actions:
+
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database
+- Updates documents from the ``movies`` collection that match a query filter
+
+The example calls the following methods on the ``Movie`` model:
+
+- ``where()``: matches documents in which the value of the ``imdb.rating`` nested field
+  is greater than ``9``
+- ``update()``: updates the matching documents by adding an ``acclaimed`` field and setting
+  its value to ``true``
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: ../includes/usage-examples/UpdateManyTest.php
+      :start-after: begin-update-many
+      :end-before: end-update-many
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      Updated documents: 20
+
+For instructions on editing your Laravel application to run the usage example, see the
+:ref:`Usage Example landing page <laravel-usage-examples>`.
+
+.. tip::
+
+   To learn more about updating data with {+odm-short+}, see the `Updates
+   <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#updates>`__ section of the
+   Laravel documentation.
+
