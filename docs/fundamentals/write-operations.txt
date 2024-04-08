@@ -499,7 +499,7 @@ This section provides example on the following delete operations:
 To learn about other Laravel features available in {+odm-short+} that perform
 delete operations, see the following sections:
 
-- :ref:`Soft Deletes <<laravel-model-soft-delete>>`, which let you mark
+- :ref:`Soft Deletes <laravel-model-soft-delete>`, which let you mark
   documents as deleted instead of removing them from the database
 - :ref:`Pruning <laravel-model-pruning>`, which lets you define conditions
   in which a document should be deleted automatically

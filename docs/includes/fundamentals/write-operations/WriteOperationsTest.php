@@ -392,10 +392,10 @@ class WriteOperationsTest extends TestCase
         ];
         Concert::insert($data);
 
-        // begin delete model
+        // begin delete one model
         $concert = Concert::first();
         $concert->delete();
-        // end delete model
+        // end delete one model
 
         $this->assertEquals(0, Concert::count());
     }
