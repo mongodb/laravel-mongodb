@@ -579,8 +579,8 @@ You can perform deletes on multiple documents in the following ways:
 - Chain methods to retrieve a Laravel collection object that references
   multiple objects and delete them by calling the ``delete()`` method.
 
-The following example shows how to delete a document by passing the value of
-its primary key to the ``destroy()`` method:
+The following example shows how to delete a document by passing an array of
+primary key values, represented by ``$ids``, to the ``destroy()`` method:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
