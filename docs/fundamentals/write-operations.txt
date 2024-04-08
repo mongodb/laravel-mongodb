@@ -69,24 +69,6 @@ For more information on creating indexes on MongoDB collections by using the
 Laravel schema builder, see the :ref:`laravel-eloquent-indexes` section
 of the Schema Builder documentation.
 
-This section uses the following example model class to demonstrate how to
-use Eloquent models to perform insert operations:
-
-.. literalinclude:: /includes/fundamentals/write-operations/Concert.php
-   :language: php
-   :dedent:
-   :caption: Concert.php
-
-.. tip::
-
-   The ``$fillable`` attribute lets you use Laravel mass assignment for insert
-   operations. To learn more about mass assignment, see :ref:`laravel-model-mass-assignment`
-   in the Eloquent Model Class documentation.
-
-   The ``$casts`` attribute instructs Laravel to convert attributes to common
-   data types. To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
-   in the Laravel documentation.
-
 To learn more about Eloquent models in {+odm-short+}, see the :ref:`laravel-eloquent-models`
 section.
 
@@ -97,8 +79,9 @@ These examples show how to use the ``save()`` Eloquent method to insert an
 instance of a ``Concert`` model as a MongoDB document.
 
 When the ``save()`` method succeeds, you can access the model instance on
-which you called the method. If the operation fails, the model instance is
-assigned ``null``.
+which you called the method.
+
+If the operation fails, the model instance is assigned ``null``.
 
 This example code performs the following actions:
 
@@ -155,9 +138,9 @@ an array to the ``insert()`` method:
 
 .. note::
 
-    This example wraps the dates in the `MongoDB\\BSON\\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
-    class to convert it to a type MongoDB can serialize because Laravel
-    skips attribute casting on bulk insert operations.
+   This example wraps the dates in the `MongoDB\\BSON\\UTCDateTime <{+phplib-api+}/class.mongodb-bson-utcdatetime.php>`__
+   class to convert it to a type MongoDB can serialize because Laravel
+   skips attribute casting on bulk insert operations.
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -172,11 +155,12 @@ Modify Documents
 
 In this section, you can learn how to modify documents in your MongoDB
 collection from your Laravel application. Use update operations to modify
-existing documents or to insert a document if no documents match the search
+existing documents or to insert a document if none match the search
 criteria.
 
-Eloquent lets you specify criteria to retrieve documents, perform updates on
-the returned object collections, and save them.
+You can persist changes on an instance of an Eloquent model or use
+Eloquent's fluent syntax to chain an update operation on methods that
+return a Laravel collection object.
 
 This section provides examples of the following update operations:
 
@@ -193,8 +177,8 @@ You can update a document in the following ways:
 
 - Modify an instance of the model and save the changes by calling the ``save()``
   method.
-- Use the fluent syntax to retrieve a matching document and apply updates to
-  it by calling the ``update()`` method or other helper methods.
+- Chain methods to retrieve an instance of a model and perform updates on it
+  by calling the ``update()`` method.
 
 The following example shows how to update a document by modifying an instance
 of the model and calling its ``save()`` method:
@@ -206,12 +190,12 @@ of the model and calling its ``save()`` method:
    :end-before: end model update one save
 
 When the ``save()`` method succeeds, the model instance on which you called the
-method.
+method contains the updated values.
 
-If the operation fails, {+odm-short+} assigns the model instance a null value.
+If the operation fails, {+odm-short+} assigns the model instance a ``null`` value.
 
-The following example shows how to update a document by using fluent syntax to
-retrieve the first match and apply updates to the matching document:
+The following example shows how to update a document by chaining methods to
+retrieve and update the first matching document:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -229,8 +213,8 @@ retrieve the first match and apply updates to the matching document:
 When the ``update()`` method succeeds, the operation returns the number of
 documents updated.
 
-If the retrieve part of the call does not match any documents in the collection,
-{+odm-short+} returns the following error:
+If the retrieve part of the call does not match any documents, {+odm-short+}
+returns the following error:
 
 .. code-block:: none
    :copyable: false
@@ -242,13 +226,12 @@ If the retrieve part of the call does not match any documents in the collection,
 Update Multiple Documents Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-To perform an update on one or more documents, call the ``update()``
-method on a collection of model objects. You can use the fluent syntax to
-retrieve a collection of model objects that match your criteria and then
-pass your updates to the ``update()`` method.
+To perform an update on one or more documents, chain the ``update()``
+method to the results of a method that retrieves the documents as a
+Laravel collection object, such as ``where()``.
 
-The following example shows how to chain calls to retrieve a collection of
-model objects and apply updates to all matching documents:
+The following example shows how to chain calls to retrieve matching documents
+and update them:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
@@ -328,4 +311,3 @@ matching documents exist:
         "ticketsSold": 4000,
         "updated_at": ...
       }
-
