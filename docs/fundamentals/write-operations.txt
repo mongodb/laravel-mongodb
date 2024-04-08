@@ -591,7 +591,7 @@ primary key values, represented by ``$ids``, to the ``destroy()`` method:
 When the ``destroy()`` method succeeds, it returns the number of documents
 deleted.
 
-If the primary key value does not match any documents, the ``destroy()`` method
+If the primary key values do not match any documents, the ``destroy()`` method
 returns returns  ``0``.
 
 The following example shows how to chain calls to retrieve matching documents
