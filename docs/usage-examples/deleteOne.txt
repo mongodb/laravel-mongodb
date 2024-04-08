@@ -21,7 +21,7 @@ You can delete a document in a collection by retrieving a single Eloquent model 
 the ``delete()`` method, or by calling ``delete()`` directly on a query builder.
 
 To delete a document, pass a query filter to the ``where()`` method, sort the matching documents,
-and call the ``first()`` method to retrieve only the first document. Then, delete this matching
+and call the ``limit()`` method to retrieve only the first document. Then, delete this matching
 document by calling the ``delete()`` method.
 
 Example
