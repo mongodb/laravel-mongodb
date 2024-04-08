@@ -27,6 +27,7 @@ class FindManyTest extends TestCase
         foreach ($movies as $m) {
             echo $m->toJson() . '<br>';
         }
+
         // end-find
 
         $this->assertInstanceOf(Movie::class, $movie);
