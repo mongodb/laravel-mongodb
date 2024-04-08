@@ -1,0 +1,115 @@
+.. _laravel-find-usage:
+
+=======================
+Find Multiple Documents
+=======================
+
+You can retrieve multiple documents from a collection by calling the ``where()`` method
+on an Eloquent model or a query builder.
+
+Pass a query filter to the ``where()`` method to retrieve documents that meet a
+set of criteria. MongoDB returns the matching documents according to their
+:term:`natural order` in the database or according to the sort order that you can specify
+by using the ``orderBy()`` method.
+
+Example
+-------
+
+This usage example performs the following actions:
+
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database
+- Retrieves documents from the ``movies`` collection that match a query filter
+
+The example calls the following methods on the ``Movie`` model:
+
+- ``where()``: matches documents in which the value of the ``runtime`` field is greater than ``800``
+- ``orderBy()``: sorts matched documents by their ascending ``_id`` values
+- ``get()``: retrieves the query results
+
+.. io-code-block::
+
+   .. input:: ../includes/usage-examples/FindManyTest.php
+      :start-after: begin-find
+      :end-before: end-find
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      // Results are truncated
+      
+      {
+      "_id": "573a1397f29313caabce69db",
+      "plot": "The economic and cultural growth of Colorado spanning two centuries from the mid-1700s to the late-1970s.",
+      "genres": [
+          "Action",
+          "Adventure",
+          "Drama"
+      ],
+      "runtime": 1256,
+      "cast": [
+          "Raymond Burr",
+          "Barbara Carrera",
+          "Richard Chamberlain",
+          "Robert Conrad"
+      ],
+      "num_mflix_comments": 1,
+      "poster": "https://m.media-amazon.com/images/M/MV5BMTM4OTMyMzg4MV5BMl5BanBnXkFtZTcwMTMzMzU1MQ@@._V1_SY1000_SX677_AL_.jpg",
+     "title": "Centennial",
+      ...
+      }
+
+      {
+      "_id": "573a1399f29313caabcee1aa",
+      "plot": "A documentary on the history of the sport with major topics including Afro-American players, player/team
+      owner relations and the resilience of the game.",
+      "genres": [
+          "Documentary",
+          "History",
+          "Sport"
+      ],
+      "runtime": 1140,
+      "cast": [
+          "John Chancellor",
+          "Daniel Okrent",
+          "Ossie Davis",
+          "Paul Roebling"
+      ],
+      "num_mflix_comments": 0,
+      "poster": "https://m.media-amazon.com/images/M/MV5BN2FmNjM0NzMtYjZjZi00NzQ0LWE5MjMtOWEzOGNmYjZkNmI1XkEyXkFqcGdeQXVyNTAyODkwOQ@@._V1_SY1000_SX677_AL_.jpg",
+      "title": "Baseball",
+      ...
+      }
+      
+      {
+      "_id": "573a13a6f29313caabd18ae0",
+      "plot": "Taken spans five decades and four generations, centering on three families: the Keys, Crawfords, and Clarkes.
+      World War II veteran Russell Keys is plagued by nightmares of his abduction by ...",
+      "genres": [
+          "Drama",
+          "Sci-Fi"
+      ],
+      "runtime": 877,
+      "cast": [
+          "Dakota Fanning",
+          "Matt Frewer",
+          "Emily Bergl",
+          "Heather Donahue"
+      ],
+      "num_mflix_comments": 1,
+      "poster": "https://m.media-amazon.com/images/M/MV5BMTI0NTI0NjAxMV5BMl5BanBnXkFtZTYwOTM3MTg5._V1_SY1000_SX677_AL_.jpg",
+      "title": "Taken",
+      ...
+      }
+
+
+For instructions on editing your Laravel application to run the usage example, see the
+:ref:`Usage Example landing page <laravel-usage-examples>`.
+
+.. tip::
+
+   To learn more about retrieving documents with {+odm-short+}, see the
+   :ref:`laravel-fundamentals-retrieve` guide
