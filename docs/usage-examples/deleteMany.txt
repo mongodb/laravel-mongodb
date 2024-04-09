@@ -34,8 +34,8 @@ This usage example performs the following actions:
 
 The example calls the following methods on the ``Movie`` model:
 
-- ``where()``: matches documents in which the value of the ``year`` field less than or
-  equal to ``1920``
+- ``where()``: matches documents in which the value of the ``year`` field is less than or
+  equal to ``1910``
 - ``delete()``: deletes the retrieved documents
 
 .. io-code-block::
