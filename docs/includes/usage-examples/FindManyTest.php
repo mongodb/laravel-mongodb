@@ -20,9 +20,11 @@ class FindManyTest extends TestCase
         Movie::truncate();
 
         // begin-find
-        foreach (Movie::where('runtime', '>', 900)
+        foreach (
+            Movie::where('runtime', '>', 900)
             ->orderBy('_id')
-            ->cursor() as $movie) {
+            ->cursor() as $movie
+        ) {
                 echo $movie->toJson() . '<br>';
         }
 
