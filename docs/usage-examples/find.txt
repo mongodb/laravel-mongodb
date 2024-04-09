@@ -38,7 +38,7 @@ The example calls the following methods on the ``Movie`` model:
 
 - ``where()``: matches documents in which the value of the ``runtime`` field is greater than ``900``
 - ``orderBy()``: sorts matched documents by their ascending ``_id`` values
-- ``get()``: retrieves the query results
+- ``cursor()``: retrieves the query results by loading each ``Movie`` model into memory one at a time
 
 .. io-code-block::
    :copyable: true
