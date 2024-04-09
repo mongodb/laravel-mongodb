@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Queue\Failed;
 
 use Carbon\Carbon;
+use DateTimeInterface;
 use Exception;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
 use MongoDB\BSON\UTCDateTime;
@@ -55,16 +56,16 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     /**
      * Get a single failed job.
      *
-     * @param mixed $id
+     * @param string $id
      *
-     * @return object
+     * @return object|null
      */
     public function find($id)
     {
         $job = $this->getTable()->find($id);
 
         if (! $job) {
-            return;
+            return null;
         }
 
         $job['id'] = (string) $job['_id'];
@@ -75,12 +76,43 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     /**
      * Delete a single failed job from storage.
      *
-     * @param mixed $id
+     * @param string $id
      *
      * @return bool
      */
     public function forget($id)
     {
         return $this->getTable()->where('_id', $id)->delete() > 0;
+    }
+
+    /**
+     * Get the IDs of all of the failed jobs.
+     *
+     * @param  string|null $queue
+     *
+     * @return array
+     */
+    public function ids($queue = null)
+    {
+        return $this->getTable()
+            ->when($queue !== null, static fn ($query) => $query->where('queue', $queue))
+            ->orderBy('_id', 'desc')
+            ->pluck('_id')
+            ->all();
+    }
+
+    /**
+     * Prune all entries older than the given date.
+     *
+     * @param  DateTimeInterface $before
+     *
+     * @return int
+     */
+    public function prune(DateTimeInterface $before)
+    {
+        return $this
+            ->getTable()
+            ->where('failed_at', '<', $before)
+            ->delete();
     }
 }
