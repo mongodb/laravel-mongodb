@@ -32,11 +32,11 @@ This usage example performs the following actions:
 
 - Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
   ``sample_mflix`` database
-- Retrieves documents from the ``movies`` collection that match a query filter
+- Retrieves and prints documents from the ``movies`` collection that match a query filter
 
 The example calls the following methods on the ``Movie`` model:
 
-- ``where()``: matches documents in which the value of the ``runtime`` field is greater than ``800``
+- ``where()``: matches documents in which the value of the ``runtime`` field is greater than ``900``
 - ``orderBy()``: sorts matched documents by their ascending ``_id`` values
 - ``get()``: retrieves the query results
 
@@ -56,13 +56,8 @@ The example calls the following methods on the ``Movie`` model:
       // Results are truncated
       
       {
-      "_id": "...",
-      "plot": "The economic and cultural growth of Colorado spanning two centuries from the mid-1700s to the late-1970s.",
-      "genres": [
-          "Action",
-          "Adventure",
-          "Drama"
-      ],
+      "_id": "573a1397f29313caabce69db",
+      ...
       "runtime": 1256,
       ...
       "title": "Centennial",
@@ -70,38 +65,18 @@ The example calls the following methods on the ``Movie`` model:
       }
 
       {
-      "_id": "...",
-      "plot": "A documentary on the history of the sport with major topics including Afro-American players, player/team
-      owner relations and the resilience of the game.",
-      "genres": [
-          "Documentary",
-          "History",
-          "Sport"
-      ],
+      "_id": "573a1399f29313caabcee1aa",
+      ...
       "runtime": 1140,
       ...
       "title": "Baseball",
       ...
       }
 
-      {
-      "_id": "...",
-      "plot": "Taken spans five decades and four generations, centering on three families: the Keys, Crawfords, and Clarkes.
-      World War II veteran Russell Keys is plagued by nightmares of his abduction by ...",
-      "genres": [
-          "Drama",
-          "Sci-Fi"
-      ],
-      "runtime": 877,
-      ...
-      "title": "Taken",
-      ...
-      }
-
 For instructions on editing your Laravel application to run the usage example, see the
-:ref:`Usage Example landing page <laravel-usage-examples>`.
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
 
 .. tip::
 
-   To learn more about retrieving documents with {+odm-short+}, see the
-   :ref:`laravel-fundamentals-retrieve` guide
+   To learn about other ways to retrieve documents with {+odm-short+}, see the
+   :ref:`laravel-fundamentals-retrieve` guide.

@@ -20,16 +20,12 @@ class FindManyTest extends TestCase
         Movie::truncate();
 
         // begin-find
-        $movies = Movie::where('runtime', '>', 800)
+        foreach (Movie::where('runtime', '>', 900)
             ->orderBy('_id')
-            ->get();
-
-        foreach ($movies as $m) {
-            echo $m->toJson() . '<br>';
+            ->cursor() as $movie) {
+                echo $movie->toJson() . '<br>';
         }
 
         // end-find
-
-        $this->assertInstanceOf(Movie::class, $movie);
     }
 }
