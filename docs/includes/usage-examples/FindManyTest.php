@@ -39,4 +39,5 @@ class FindManyTest extends TestCase
         }
 
         // end-find
+    }
 }
