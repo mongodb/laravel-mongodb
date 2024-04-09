@@ -18,6 +18,16 @@ class FindManyTest extends TestCase
         require_once __DIR__ . '/Movie.php';
 
         Movie::truncate();
+        Movie::insert([
+            [
+                'title' => 'Centennial',
+                'runtime' => 1256,
+            ],
+            [
+                'title' => 'Baseball',
+                'runtime' => 1140,
+            ],
+        ]);
 
         // begin-find
         foreach (
@@ -29,5 +39,6 @@ class FindManyTest extends TestCase
         }
 
         // end-find
+        $this->expectOutputRegex('/^{"_id":"[a-z0-9]{24}","title":"Centennial","runtime":1256}\r\n{"_id":"[a-z0-9]{24}","title":"Baseball","runtime":1140}$/');
     }
 }
