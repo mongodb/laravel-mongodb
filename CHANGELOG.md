@@ -3,8 +3,10 @@ All notable changes to this project will be documented in this file.
 
 ## [unreleased]
 
+* New aggregation pipeline builder by @GromNaN in [#2738](https://github.com/mongodb/laravel-mongodb/pull/2738)
+* Drop support for Composer 1.x by @GromNaN in [#2784](https://github.com/mongodb/laravel-mongodb/pull/2784)
 
-## [4.2.0] - 2024-12-14
+## [4.2.0] - 2024-03-14
 
 * Add support for Laravel 11 by @GromNaN in [#2735](https://github.com/mongodb/laravel-mongodb/pull/2735)
 * Implement Model::createOrFirst() using findOneAndUpdate operation by @GromNaN in [#2742](https://github.com/mongodb/laravel-mongodb/pull/2742)
