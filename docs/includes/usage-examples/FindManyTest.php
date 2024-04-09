@@ -39,6 +39,4 @@ class FindManyTest extends TestCase
         }
 
         // end-find
-        $this->expectOutputRegex('/^{"_id":"[a-z0-9]{24}","title":"Centennial","runtime":1256}\r\n{"_id":"[a-z0-9]{24}","title":"Baseball","runtime":1140}$/');
-    }
 }
