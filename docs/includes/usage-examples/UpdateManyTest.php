@@ -18,6 +18,22 @@ class UpdateManyTest extends TestCase
         require_once __DIR__ . '/Movie.php';
 
         Movie::truncate();
+        Movie::insert([
+            [
+                'title' => 'Hollywood',
+                'imdb' => [
+                    'rating' => 9.1,
+                    'votes' => 511,
+                ],
+            ],
+            [
+                'title' => 'The Shawshank Redemption',
+                'imdb' => [
+                    'rating' => 9.3,
+                    'votes' => 1513145,
+                ],
+            ],
+        ]);
 
         // begin-update-many
         $updates = Movie::where('imdb.rating', '>', 9.0)
@@ -26,7 +42,7 @@ class UpdateManyTest extends TestCase
         echo 'Updated documents: ' . $updates;
         // end-update-many
 
-        $this->assertTrue($updates);
-        $this->expectOutputString('Updated documents: 20');
+        $this->assertEquals(2, $updates);
+        $this->expectOutputString('Updated documents: 2');
     }
 }
