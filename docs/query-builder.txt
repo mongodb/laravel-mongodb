@@ -9,588 +9,1116 @@ Query Builder
    :values: tutorial
 
 .. meta::
-   :keywords: php framework, odm, code example
-
-The database driver plugs right into the original query builder.
-
-When using MongoDB connections, you will be able to build fluent queries to
-perform database operations.
-
-For your convenience, there is a ``collection`` alias for ``table`` and
-other MongoDB specific operators/operations.
-
-.. code-block:: php
-
-   $books = DB::collection('books')->get();
-
-   $hungerGames =
-       DB::collection('books')
-           ->where('name', 'Hunger Games')
-           ->first();
-
-If you are familiar with `Eloquent Queries <http://laravel.com/docs/queries>`__,
-there is the same functionality.
-
-Available operations
---------------------
-
-**Retrieving all models**
-
-.. code-block:: php
-
-   $users = User::all();
-
-**Retrieving a record by primary key**
-
-.. code-block:: php
-
-   $user = User::find('517c43667db388101e00000f');
-
-**Where**
-
-.. code-block:: php
-
-   $posts =
-       Post::where('author.name', 'John')
-           ->take(10)
-           ->get();
-
-**OR Statements**
-
-.. code-block:: php
-
-   $posts =
-       Post::where('votes', '>', 0)
-           ->orWhere('is_approved', true)
-           ->get();
-
-**AND statements**
-
-.. code-block:: php
-
-   $users =
-       User::where('age', '>', 18)
-           ->where('name', '!=', 'John')
-           ->get();
-
-**NOT statements**
-
-.. code-block:: php
-
-   $users = User::whereNot('age', '>', 18)->get();
-
-**whereIn**
-
-.. code-block:: php
-
-   $users = User::whereIn('age', [16, 18, 20])->get();
-
-When using ``whereNotIn`` objects will be returned if the field is
-non-existent. Combine with ``whereNotNull('age')`` to omit those documents.
-
-**whereBetween**
-
-.. code-block:: php
-
-   $posts = Post::whereBetween('votes', [1, 100])->get();
-
-**whereNull**
-
-.. code-block:: php
-
-   $users = User::whereNull('age')->get();
-
-**whereDate**
-
-.. code-block:: php
-
-   $users = User::whereDate('birthday', '2021-5-12')->get();
-
-The usage is the same as ``whereMonth`` / ``whereDay`` / ``whereYear`` / ``whereTime``
-
-**Advanced wheres**
-
-.. code-block:: php
-
-   $users =
-       User::where('name', 'John')
-           ->orWhere(function ($query) {
-               return $query
-                   ->where('votes', '>', 100)
-                   ->where('title', '<>', 'Admin');
-           })->get();
-
-**orderBy**
-
-.. code-block:: php
-
-   $users = User::orderBy('age', 'desc')->get();
-
-**Offset & Limit (skip & take)**
-
-.. code-block:: php
-
-   $users =
-       User::skip(10)
-           ->take(5)
-           ->get();
-
-**groupBy**
-
-Selected columns that are not grouped will be aggregated with the ``$last``
-function.
-
-.. code-block:: php
-
-   $users =
-       Users::groupBy('title')
-           ->get(['title', 'name']);
-
-**Distinct**
-
-Distinct requires a field for which to return the distinct values.
-
-.. code-block:: php
-
-   $users = User::distinct()->get(['name']);
-
-   // Equivalent to:
-   $users = User::distinct('name')->get();
-
-Distinct can be combined with **where**:
-
-.. code-block:: php
-
-   $users =
-       User::where('active', true)
-           ->distinct('name')
-           ->get();
-
-**Like**
-
-.. code-block:: php
-
-   $spamComments = Comment::where('body', 'like', '%spam%')->get();
-
-**Aggregation**
-
-**Aggregations are only available for MongoDB versions greater than 2.2.x**
-
-.. code-block:: php
-
-   $total = Product::count();
-   $price = Product::max('price');
-   $price = Product::min('price');
-   $price = Product::avg('price');
-   $total = Product::sum('price');
-
-Aggregations can be combined with **where**:
-
-.. code-block:: php
-
-   $sold = Orders::where('sold', true)->sum('price');
-
-Aggregations can be also used on sub-documents:
-
-.. code-block:: php
-
-   $total = Order::max('suborder.price');
+   :keywords: code example, aggregation
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+In this guide, you can learn how to use the {+odm-short+} extension of
+the Laravel query builder to work with a MongoDB database. The query builder
+lets you use a single syntax and fluent interface to write queries for any
+supported database.
 
 .. note::
 
-   This aggregation only works with single sub-documents (like ``EmbedsOne``)
-   not subdocument arrays (like ``EmbedsMany``).
+   {+odm-short+} extends Laravel's query builder and Eloquent ORM, which can
+   run similar database operations. To learn more about retrieving documents
+   by using Eloquent models, see :ref:`laravel-fundamentals-retrieve`.
 
-**Incrementing/Decrementing the value of a column**
+Laravel provides a **facade** to access the query builder class ``DB``, which
+lets you perform database operations. Facades, which are static interfaces to
+classes, make the syntax more concise, avoid runtime errors, and improve
+testability.
 
-Perform increments or decrements (default 1) on specified attributes:
-
-.. code-block:: php
-
-   Cat::where('name', 'Kitty')->increment('age');
-
-   Car::where('name', 'Toyota')->decrement('weight', 50);
-
-The number of updated objects is returned:
-
-.. code-block:: php
-
-   $count = User::increment('age');
-
-You may also specify more columns to update:
+{+odm-short+} aliases the ``DB`` method ``table()`` as the ``collection()``
+method. Chain methods to specify commands and any constraints. Then, chain
+the ``get()`` method at the end to run the methods and retrieve the results.
+The following example shows the syntax of a query builder call:
 
 .. code-block:: php
 
-   Cat::where('age', 3)
-       ->increment('age', 1, ['group' => 'Kitty Club']);
+   DB::collection('<collection name>')
+       // chain methods by using the "->" object operator
+       ->get();
 
-   Car::where('weight', 300)
-       ->decrement('weight', 100, ['latest_change' => 'carbon fiber']);
+This guide provides examples of the following types of query builder operations:
 
-MongoDB-specific operators
+- :ref:`laravel-retrieve-query-builder`
+- :ref:`laravel-modify-results-query-builder`
+- :ref:`laravel-mongodb-read-query-builder`
+- :ref:`laravel-mongodb-write-query-builder`
+
+Before You Get Started
+----------------------
+
+To run the code examples in this guide, complete the
+:ref:`Quick Start <laravel-quick-start>` tutorial to configure a web
+application, load sample datasets into your MongoDB deployment, and
+run the example code from a controller method.
+
+To perform read and write operations by using the query builder, import the
+``Illuminate\Support\Facades\DB`` facade and compose your query.
+
+.. _laravel-retrieve-query-builder:
+
+Retrieve Matching Documents
+---------------------------
+
+This section includes query builder examples for read operations in the
+following operator categories:
+
+- :ref:`Where method <laravel-query-builder-where-example>`
+- :ref:`Logical conditionals <laravel-query-builder-logical-operations>`
+- :ref:`Ranges and type checks <laravel-query-builder-range-type>`
+- :ref:`Pattern searches <laravel-query-builder-pattern>`
+- :ref:`Retrieve distinct values <laravel-query-builder-distinct>`
+- :ref:`Aggregations <laravel-query-builder-aggregations>`
+
+.. _laravel-query-builder-where-example:
+
+Where Method Example
+~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``where()`` query
+builder method to retrieve documents from the ``movies`` collection
+that contain an ``imdb.rating`` field value of exactly ``9.3``. Click the
+:guilabel:`{+code-output-label+}` button to see the results returned
+by the query:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query where
+      :end-before: end query where
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+         { "title": "Cosmos",
+           "year": 1980,
+           "runtime": 60,
+           "imdb": {
+             "rating": 9.3,
+             "votes": 17174,
+             "id": 81846
+           },
+           "plot": "Astronomer Carl Sagan leads us on an engaging guided tour of the various elements and cosmological theories of the universe.",
+           ...
+         },
+         { "title": "The Shawshank Redemption",
+           "year": 1994,
+           "runtime": 142,
+           "imdb": {
+             "rating": 9.3,
+             "votes": 1521105,
+             "id": 111161
+           },
+           "plot": "Two imprisoned men bond over a number of years, finding solace and eventual redemption through acts of common decency.",
+           ...
+         },
+         { "title": "The Real Miyagi",
+           "year": 2015,
+           "runtime": 90,
+           "imdb": {
+             "rating": 9.3,
+             "votes": 41,
+             "id": 2313306
+           },
+           "plot": "The life of the greatest karate master of a generation.",
+            ...
+         }
+      ]
+
+.. _laravel-query-builder-logical-operations:
+
+Logical Conditional Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The examples in this section show the query builder syntax you
+can use to perform the following logical conditional operations:
+
+- :ref:`Logical OR to match one or more conditions <laravel-query-builder-logical-or>`
+- :ref:`Logical AND to match all conditions <laravel-query-builder-logical-and>`
+- :ref:`Logical NOT to match the negation of the condition <laravel-query-builder-logical-not>`
+- :ref:`Nested logical operator groups <laravel-query-builder-logical-nested>`
+
+.. _laravel-query-builder-logical-or:
+
+Logical OR Example
+^^^^^^^^^^^^^^^^^^
+
+The following example shows how to chain the ``orWhere()``
+query builder method to retrieve documents from the
+``movies`` collection that either match the ``year``
+value of ``1955`` or match the ``title`` value ``"Back to the Future"``:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query orWhere
+   :end-before: end query orWhere
+
+.. _laravel-query-builder-logical-and:
+
+Logical AND Example
+^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to chain the ``where()``
+query builder method to retrieve documents from the
+``movies`` collection that match both an ``imdb.rating``
+value greater than ``8.5`` and a ``year`` value of less than
+``1940``:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query andWhere
+   :end-before: end query andWhere
+
+.. _laravel-query-builder-logical-not:
+
+Logical NOT Example
+^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to call the ``whereNot()``
+query builder method to retrieve documents from the
+``movies`` collection that match documents that do not have an ``imdb.rating``
+value greater than ``2``. This is equivalent to matching all documents
+that have an ``imdb.rating`` of less than or equal to ``2``:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereNot
+   :end-before: end query whereNot
+
+.. _laravel-query-builder-logical-nested:
+
+Nested Logical Operator Group Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to chain the ``where()``
+query builder method to retrieve documents from the
+``movies`` collection that match both of the following
+conditions. This example passes a closure as the first
+parameter of the ``where()`` query builder method to group
+the logical OR group:
+
+- ``imdb.rating`` value is greater than ``8.5``
+- ``year`` value is either ``1986`` or ``1996``
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query nestedLogical
+   :end-before: end query nestedLogical
+
+.. _laravel-query-builder-range-type:
+
+Ranges and Type Checks
+~~~~~~~~~~~~~~~~~~~~~~
+
+The examples in this section show the query builder syntax you can use to
+match values by using the following range queries and type check operations:
+
+- :ref:`Values within a numerical range <laravel-query-builder-wherebetween>`
+- :ref:`Null or missing values <laravel-query-builder-null>`
+- :ref:`One or more values of a set <laravel-query-builder-wherein>`
+- :ref:`Match dates <laravel-query-builder-wheredate>`
+- :ref:`Match a text pattern <laravel-query-builder-pattern>`
+
+.. _laravel-query-builder-wherebetween:
+
+Numerical Range Example
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``whereBetween()``
+query builder method to retrieve documents from the
+``movies`` collection that contain an ``imdb.rating`` value
+between ``9`` and ``9.5``:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query whereBetween
+      :end-before: end query whereBetween
+
+   .. output::
+      :language: none
+      :visible: false
+
+      [
+         { "title" "The Godfather", "imdb": { "rating": 9.2, "votes": 1038358, "id": 68646 }, ... },
+         { "title": "Hollywood", "imdb": { "rating": 9.1, "votes": 511,"id": 80230 }, ... },
+         { "title": "Cosmos", "imdb": { "rating": 9.3, "votes": 17174, "id": 81846 }, ... },
+         ...
+      ]
+
+.. _laravel-query-builder-null:
+
+Null or Missing Values Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``whereNull()``
+query builder method to retrieve documents from the
+``movies`` collection that omit a ``runtime`` value
+or field:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereNull
+   :end-before: end query whereNull
+
+.. _laravel-query-builder-wherein:
+
+One or More Values of a Set Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``whereIn()``
+query builder method to retrieve documents from the
+``movies`` collection that match at least one of the
+``title`` values in the specified set:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query whereIn
+      :end-before: end query whereIn
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+         { "title": "Toy Story", "year": 1995, "runtime": 81, ... },
+         { "title": "Johnny English", "year": 2003, "runtime": 87, ... },
+         { "title": "Shrek 2", "year" 2004, "runtime": 93, ... },
+         ...
+      ]
+
+.. _laravel-query-builder-wheredate:
+
+Match Dates Example
+^^^^^^^^^^^^^^^^^^^
+
+The following example shows how to use the ``whereDate()``
+query builder method to retrieve documents from the
+``movies`` collection that match the specified date of
+``2010-1-15`` in the ``released`` field:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereDate
+   :end-before: end query whereDate
+
+.. _laravel-query-builder-pattern:
+
+Text Pattern Match Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-In addition to the Laravel Eloquent operators, all available MongoDB query
-operators can be used with ``where``:
+The following example shows how to use the ``like`` query operator
+with the ``where()`` query builder method to retrieve documents from the
+``movies`` collection by using a specified text pattern.
 
-.. code-block:: php
+Text patterns can contain text mixed with the following
+wildcard characters:
 
-   User::where($fieldName, $operator, $value)->get();
+- ``%`` which matches zero or more characters
+- ``_`` which matches a single character
 
-It generates the following MongoDB filter:
+.. io-code-block::
+   :copyable: true
 
-.. code-block:: ts
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query like
+      :end-before: end query like
 
-   { $fieldName: { $operator: $value } }
+   .. output::
+      :language: json
+      :visible: false
 
-**Exists**
+      [
+         { "title": "Kiss of the Spider Woman", ... },
+         { "title": "Spider-Man", ... },
+         { "title": "Spider-Man 2", ...},
+         ...
+      ]
 
-Matches documents that have the specified field.
+.. _laravel-query-builder-distinct:
 
-.. code-block:: php
+Retrieve Distinct Values
+~~~~~~~~~~~~~~~~~~~~~~~~
 
-   User::where('age', 'exists', true)->get();
+The following example shows how to use the ``distinct()``
+query builder method to retrieve all the different values
+of the ``year`` field for documents in the ``movies`` collections.
 
-**All**
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query distinct
+   :end-before: end query distinct
 
-Matches arrays that contain all elements specified in the query.
+.. _laravel-query-builder-aggregations:
 
-.. code-block:: php
+Aggregations
+~~~~~~~~~~~~
 
-   User::where('roles', 'all', ['moderator', 'author'])->get();
+The examples in this section show the query builder syntax you
+can use to perform **aggregations**. Aggregations are operations
+that compute values from a set of query result data. You can use
+aggregations to compute and return the following information:
 
-**Size**
+- :ref:`Results grouped by common field values <laravel-query-builder-aggregation-groupby>`
+- :ref:`Count the number of results <laravel-query-builder-aggregation-count>`
+- :ref:`Maximum value of a field <laravel-query-builder-aggregation-max>`
+- :ref:`Minimum value of a field <laravel-query-builder-aggregation-min>`
+- :ref:`Average value of a field <laravel-query-builder-aggregation-avg>`
+- :ref:`Summed value of a field <laravel-query-builder-aggregation-sum>`
+- :ref:`Aggregate matched results <laravel-query-builder-aggregate-matched>`
 
-Selects documents if the array field is a specified size.
+.. _laravel-query-builder-aggregation-groupby:
 
-.. code-block:: php
+Results Grouped by Common Field Values Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-   Post::where('tags', 'size', 3)->get();
+The following example shows how to use the ``groupBy()`` query builder method
+to retrieve document data grouped by shared values of the ``runtime`` field.
+This example chains the following operations to match documents from the
+``movies`` collection that contain a ``rated`` value of ``G`` and include the
+``title`` field of one movie for each distinct ``runtime`` value:
 
-**Regex**
+- Match only documents that contain a ``rated`` field value of ``"G"`` by
+  using the ``where()`` method
+- Group data by the distinct values of the ``runtime`` field, which is
+  assigned the ``_id`` field, by using the ``groupBy()`` method
+- Sort the groups by the ``runtime`` field by using the ``orderBy()`` method
+- Return ``title`` data from the last document in the grouped result by
+  specifying it in the ``get()`` method
 
-Selects documents where values match a specified regular expression.
+.. tip::
 
-.. code-block:: php
+   The ``groupBy()`` method calls the MongoDB ``$group`` aggregation operator
+   and ``$last`` accumulator operator. To learn more about these operators, see
+   :manual:`$group (aggregation) </reference/operator/aggregation/group/>`
+   in the {+server-docs-name+}.
 
-   use MongoDB\BSON\Regex;
+.. io-code-block::
+   :copyable: true
 
-   User::where('name', 'regex', new Regex('.*doe', 'i'))->get();
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query groupBy
+      :end-before: end query groupBy
 
-.. note::
+   .. output::
+      :language: json
+      :visible: false
 
-   You can also use the Laravel regexp operations. These will automatically
-   convert your regular expression string to a ``MongoDB\BSON\Regex`` object.
+      [
+        ...
+        {
+          "_id": { "runtime": 64 },
+          "runtime": 64,
+          "title": "Stitch! The Movie"
+        },
+        {
+           "_id": { "runtime": 67 },
+           "runtime": 67,
+           "title": "Bartok the Magnificent"
+         },
+         {
+           "_id": { "runtime":68 },
+           "runtime": 68,
+           "title": "Mickey's Twice Upon a Christmas"
+         },
+         ...
+      ]
 
-.. code-block:: php
+.. _laravel-query-builder-aggregation-count:
 
-   User::where('name', 'regexp', '/.*doe/i')->get();
+Number of Results Example
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The inverse of regexp:
+The following example shows how to use the ``count()``
+query builder method to return the number of documents
+contained in the ``movies`` collection:
 
-.. code-block:: php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation count
+   :end-before: end aggregation count
 
-   User::where('name', 'not regexp', '/.*doe/i')->get();
+.. _laravel-query-builder-aggregation-max:
 
-**ElemMatch**
+Maximum Value of a Field Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The :manual:`$elemMatch </reference/operator/query/elemMatch//>` operator
-matches documents that contain an array field with at least one element that
-matches all the specified query criteria.
+The following example shows how to use the ``max()``
+query builder method to return the highest numerical
+value of the ``runtime`` field from the entire
+``movies`` collection:
 
-The following query matches only those documents where the results array
-contains at least one element that is both greater than or equal to 80 and
-is less than 85:
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation max
+   :end-before: end aggregation max
 
-.. code-block:: php
+.. _laravel-query-builder-aggregation-min:
 
-   User::where('results', 'elemMatch', ['gte' => 80, 'lt' => 85])->get();
+Minimum Value of a Field Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-A closure can be used to create more complex sub-queries.
+The following example shows how to use the ``min()``
+query builder method to return the lowest numerical
+value of the ``year`` field from the entire ``movies``
+collection:
 
-The following query matches only those documents where the results array
-contains at least one element with both product equal to "xyz" and score
-greater than or equal to 8:
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation min
+   :end-before: end aggregation min
 
-.. code-block:: php
+.. _laravel-query-builder-aggregation-avg:
 
-   User::where('results', 'elemMatch', function (Builder $builder) {
-       $builder
-           ->where('product', 'xyz')
-           ->andWhere('score', '>', 50);
-   })->get();
+Average Value of a Field Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Type**
+The following example shows how to use the ``avg()``
+query builder method to return the numerical average, or
+arithmetic mean, of the ``imdb.rating`` values from
+the entire ``movies`` collection.
 
-Selects documents if a field is of the specified type. For more information
-check: :manual:`$type </reference/operator/query/type/#op._S_type/>` in the
-MongoDB Server documentation.
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation avg
+   :end-before: end aggregation avg
 
-.. code-block:: php
+.. _laravel-query-builder-aggregation-sum:
 
-   User::where('age', 'type', 2)->get();
+Summed Value of a Field Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Mod**
+The following example shows how to use the ``sum()``
+query builder method to return the numerical total of
+the ``imdb.votes`` values from the entire ``movies``
+collection:
 
-Performs a modulo operation on the value of a field and selects documents with
-a specified result.
 
-.. code-block:: php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation sum
+   :end-before: end aggregation sum
 
-   User::where('age', 'mod', [10, 0])->get();
+.. _laravel-query-builder-aggregate-matched:
 
-MongoDB-specific Geo operations
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Aggregate Matched Results Example
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-**Near**
+The following example shows how to aggregate data
+from results that match a query. The query matches all
+movies after the year ``2000`` and computes the average
+value of ``imdb.rating`` of those matches by using the
+``avg()`` method:
 
-.. code-block:: php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin aggregation with filter
+   :end-before: end aggregation with filter
 
-   $bars = Bar::where('location', 'near', [
-       '$geometry' => [
-           'type' => 'Point',
-           'coordinates' => [
-               -0.1367563, // longitude
-               51.5100913, // latitude
-           ],
-       ],
-       '$maxDistance' => 50,
-   ])->get();
+.. _laravel-modify-results-query-builder:
 
-**GeoWithin**
+Modify Query Results
+--------------------
 
-.. code-block:: php
+This section includes query builder examples for the
+following functions that modify the order and format
+of query results:
 
-   $bars = Bar::where('location', 'geoWithin', [
-       '$geometry' => [
-           'type' => 'Polygon',
-           'coordinates' => [
-               [
-                   [-0.1450383, 51.5069158],
-                   [-0.1367563, 51.5100913],
-                   [-0.1270247, 51.5013233],
-                   [-0.1450383, 51.5069158],
-               ],
-           ],
-       ],
-   ])->get();
+- :ref:`Order results by the value of a field <laravel-query-builder-orderby>`
+- :ref:`Omit a specified number of results <laravel-query-builder-skip>`
+- :ref:`Show a subset of fields and array values in the results <laravel-query-builder-project>`
+- :ref:`Paginate the results <laravel-query-builder-paginate>`
 
-**GeoIntersects**
+.. _laravel-query-builder-orderby:
 
-.. code-block:: php
+Order Results Example
+~~~~~~~~~~~~~~~~~~~~~
 
-   $bars = Bar::where('location', 'geoIntersects', [
-       '$geometry' => [
-           'type' => 'LineString',
-           'coordinates' => [
-               [-0.144044, 51.515215],
-               [-0.129545, 51.507864],
-           ],
-       ],
-   ])->get();
+The following example shows how to use the ``orderBy()``
+query builder method to arrange the results that match
+the filter specified in the ``title`` field by the
+``imdb.rating`` value in descending order:
 
-**GeoNear**
+.. io-code-block::
+   :copyable: true
 
-You can make a ``geoNear`` query on MongoDB.
-You can omit specifying the automatic fields on the model.
-The returned instance is a collection, so you can call the `Collection <https://laravel.com/docs/9.x/collections>`__ operations.
-Make sure that your model has a ``location`` field, and a
-`2ndSphereIndex <https://www.mongodb.com/docs/manual/core/2dsphere>`__.
-The data in the ``location`` field must be saved as `GeoJSON <https://www.mongodb.com/docs/manual/reference/geojson/>`__.
-The ``location`` points must be saved as `WGS84 <https://www.mongodb.com/docs/manual/reference/glossary/#std-term-WGS84>`__
-reference system for geometry calculation. That means that you must
-save ``longitude and latitude``, in that order specifically, and to find near
-with calculated distance, you ``must do the same way``.
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query orderBy
+      :end-before: end query orderBy
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        { "title": "Back to the Future", "imdb": { "rating":8.5,"votes":636511,"id":88763 }, ... },
+        { "title": "Back to the Future Part II", "imdb": { "rating":7.8,"votes":292539,"id":96874 }, ... },
+        { "title": "Back to the Future Part III", "imdb": {"rating":7.4,"votes":242390,"id":99088 }, ... },
+        ...
+      ]
+
+.. _laravel-query-builder-skip:
+
+Omit a Specified Number of Results Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``skip()`` query builder method to
+omit the first four results that match the filter specified in the ``title``
+field, sorted by the ``year`` value in ascending order:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query skip
+   :end-before: end query skip
+
+.. _laravel-query-builder-project:
+
+Show a Subset of Fields and Array Values in the Results Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``project()``
+query builder method to match documents that contain an
+``imdb.rating`` value higher than ``8.5`` and return
+only the following field values:
+
+- Title of the movie in the ``title``
+- Second through fourth values of the ``cast`` array field, if they exist
+- Document ``_id`` field, which is automatically included
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query projection
+      :end-before: end query projection
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        {
+          "_id": { ... },
+          "title": "City Lights"
+          "cast": [
+            "Florence Lee",
+            "Harry Myers",
+            "Al Ernest Garcia"
+          ],
+        },
+        {
+          "_id": { ... },
+          "title": "Modern Times",
+          "cast": [
+            "Paulette Goddard",
+            "Henry Bergman",
+            "Tiny Sandford"
+          ]
+        },
+        {
+          "_id": { ... },
+          "title": "Casablanca"
+          "cast": [
+            "Ingrid Bergman",
+            "Paul Henreid",
+            "Claude Rains"
+          ],
+        },
+        ...
+      ]
+
+.. _laravel-query-builder-paginate:
+
+Paginate the Results Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``paginate()`` query builder method
+to divide the entire ``movie`` collection into discrete result sets of 15
+documents. The example also includes a sort order to arrange the results by
+the ``imdb.votes`` field in descending order and a projection that includes
+only specific fields in the results.
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query projection with pagination
+   :end-before: end query projection with pagination
+
+To learn more about pagination, see
+`Paginating Query Builder Results <https://laravel.com/docs/{+laravel-docs-version+}/pagination#paginating-query-builder-results>`__
+in the Laravel documentation.
+
+.. _laravel-mongodb-read-query-builder:
+
+Retrieve Data by Using MongoDB Operations
+-----------------------------------------
+
+This section includes query builder examples that show how
+to use the following MongoDB-specific query operations:
+
+- :ref:`Match documents that contain a field <laravel-query-builder-exists>`
+- :ref:`Match documents that contain all specified fields <laravel-query-builder-all>`
+- :ref:`Match documents that contain a specific number of elements in an array <laravel-query-builder-size>`
+- :ref:`Match documents that contain a particular data type in a field <laravel-query-builder-type>`
+- :ref:`Match documents that contain a computed modulo value <laravel-query-builder-mod>`
+- :ref:`Match documents that match a regular expression <laravel-query-builder-regex>`
+- :ref:`Run MongoDB Query API operations <laravel-query-builder-whereRaw>`
+- :ref:`Match documents that contain array elements <laravel-query-builder-elemMatch>`
+- :ref:`Specify a cursor timeout <laravel-query-builder-cursor-timeout>`
+- :ref:`Match locations by using geospatial searches <laravel-query-builder-geospatial>`
+
+.. _laravel-query-builder-exists:
+
+Contains a Field Example
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``exists()``
+query builder method to match documents that contain the
+field ``random_review``:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query exists
+   :end-before: end query exists
+
+To learn more about this query operator, see
+:manual:`$exists </reference/operator/query/exists/>`
+in the {+server-docs-name+}.
+
+.. _laravel-query-builder-all:
+
+Contains All Fields Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``all`` query
+operator with the ``where()`` query builder method to match
+documents that contain all the specified fields:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query all
+   :end-before: end query all
+
+To learn more about this query operator, see
+:manual:`$all </reference/operator/query/all/>`
+in the {+server-docs-name+}.
+
+.. _laravel-query-builder-size:
+
+Match Array Size Example
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to pass the ``size``
+query operator with the ``where()`` query builder
+method to match documents that contain a ``directors``
+field that contains an array of exactly five elements:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query size
+   :end-before: end query size
+
+To learn more about this query operator, see
+:manual:`$size </reference/operator/query/size/>`
+in the {+server-docs-name+}.
+
+.. _laravel-query-builder-type:
+
+Match Data Type Example
+~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to pass the ``type``
+query operator with the ``where()`` query builder
+method to match documents that contain a type ``4`` value,
+which corresponds to an array data type, in the
+``released`` field.
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query type
+   :end-before: end query type
+
+To learn more about the type codes and query operator, see
+:manual:`$type </reference/operator/query/type/>`
+in the {+server-docs-name+}.
+
+.. _laravel-query-builder-mod:
+
+Match a Value Computed with Modulo Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to pass the ``mod``
+query operator with the ``where()`` query builder
+method to match documents by using the expression
+``year % 2 == 0``, which matches even values for
+the ``year`` field:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query modulo
+   :end-before: end query modulo
+
+To learn more about this query operator, see
+:manual:`$mod </reference/operator/query/mod/>`
+in the {+server-docs-name+}.
+
+.. _laravel-query-builder-regex:
+
+Match a Regular Expression
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to pass the ``REGEX``
+query operator with the ``where()`` query builder
+method to match documents that contain a ``title``
+field that matches the specified regular expression:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereRegex
+   :end-before: end query whereRegex
+
+To learn more about regular expression queries in MongoDB, see
+:manual:`$regex </reference/operator/query/regex/>`
+in the {+server-docs-name+}.
+
+.. _laravel-query-builder-whereRaw:
+
+Run MongoDB Query API Operations Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``whereRaw()``
+query builder method to run a query operation written by
+using the MongoDB Query API syntax:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query raw
+   :end-before: end query raw
+
+The following code shows the equivalent MongoDB Query API syntax:
 
 .. code-block::
 
-   Bar::find("63a0cd574d08564f330ceae2")->update(
-       [
-           'location' => [
-               'type' => 'Point',
-               'coordinates' => [
-                   -0.1367563,
-                   51.5100913
-               ]
-           ]
-       ]
-   );
-   $bars = Bar::raw(function ($collection) {
-       return $collection->aggregate([
-           [
-               '$geoNear' => [
-                   "near" => [ "type" =>  "Point", "coordinates" =>  [-0.132239, 51.511874] ],
-                   "distanceField" =>  "dist.calculated",
-                   "minDistance" =>  0,
-                   "maxDistance" =>  6000,
-                   "includeLocs" =>  "dist.location",
-                   "spherical" =>  true,
-               ]
-           ]
-       ]);
-   });
+   db.movies.find({
+     "imdb.votes": { $gte: 1000 },
+     $or: [{
+       imdb.rating: { $gt: 7 },
+       directors: { $in: [ "Yasujiro Ozu", "Sofia Coppola", "Federico Fellini" ] }
+   }]});
 
-Inserts, updates and deletes
+To learn more about the MongoDB Query API, see
+:manual:`MongoDB Query API </query-api/>` in the {+server-docs-name+}.
+
+.. _laravel-query-builder-elemMatch:
+
+Match Array Elements Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Inserting, updating and deleting records works just like the original Eloquent.
-Please check `Laravel Docs' Eloquent section <https://laravel.com/docs/6.x/eloquent>`__.
+The following example shows how to pass the ``elemMatch``
+query operator with the ``where()`` query builder
+method to match documents that contain an array element
+that matches at least one of the conditions in the
+specified query:
 
-Here, only the MongoDB-specific operations are specified.
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query elemMatch
+   :end-before: end query elemMatch
 
-MongoDB specific operations
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
+To learn more about regular expression queries in MongoDB, see
+the :manual:`$elemMatch operator <reference/operator/query/elemMatch/>`
+in the {+server-docs-name+}.
 
-**Raw Expressions**
+.. _laravel-query-builder-cursor-timeout:
 
-These expressions will be injected directly into the query.
+Specify Cursor Timeout Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: php
+The following example shows how to use the ``timeout()`` method
+to specify a maximum duration to wait for cursor operations to complete.
 
-   User::whereRaw([
-       'age' => ['$gt' => 30, '$lt' => 40],
-   ])->get();
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query cursor timeout
+   :end-before: end query cursor timeout
 
-   User::whereRaw([
-       '$where' => '/.*123.*/.test(this.field)',
-   ])->get();
+.. note::
 
-   User::whereRaw([
-       '$where' => '/.*123.*/.test(this["hyphenated-field"])',
-   ])->get();
+   This setting specifies a ``maxTimeMS`` value in seconds instead of
+   milliseconds. To learn more about the ``maxTimeMS`` value, see
+   `MongoDB\Collection::find() <https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBCollection-find/>`__
+   in the PHP Library documentation.
 
-You can also perform raw expressions on the internal MongoCollection object.
-If this is executed on the model class, it will return a collection of models.
+.. _laravel-query-builder-geospatial:
 
-If this is executed on the query builder, it will return the original response.
+Match Locations by Using Geospatial Operations
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**Cursor timeout**
+The examples in this section show the query builder syntax you
+can use to perform geospatial queries on GeoJSON or coordinate
+pair data to retrieve the following types of locations:
 
-To prevent ``MongoCursorTimeout`` exceptions, you can manually set a timeout
-value that will be applied to the cursor:
+- :ref:`Near a position <laravel-query-builder-geospatial-near>`
+- :ref:`Within a the boundary of a GeoJSON object <laravel-query-builder-geospatial-geoWithin>`
+- :ref:`Intersecting a GeoJSON object <laravel-query-builder-geospatial-geoIntersects>`
+- :ref:`Proximity data for nearby matches <laravel-query-builder-geospatial-geoNear>`
 
-.. code-block:: php
+.. important::
 
-   DB::collection('users')->timeout(-1)->get();
+   To perform GeoJSON queries in MongoDB, you must create either ``2d`` or
+   ``2dsphere`` index on the collection. To learn how to create geospatial
+   indexes, see the :ref:`laravel-eloquent-geospatial-index` section in the
+   Schema Builder guide.
 
-**Upsert**
+To learn more about GeoJSON objects that MongoDB supports,
+see :manual:`GeoJSON Objects </reference/geojson/>`
+in the {+server-docs-name+}.
 
-Update or insert a document. Other options for the update method can be
-passed directly to the native update method.
+.. _laravel-query-builder-geospatial-near:
 
-.. code-block:: php
+Near a Position Example
+~~~~~~~~~~~~~~~~~~~~~~~
 
-   // Query Builder
-   DB::collection('users')
-       ->where('name', 'John')
-       ->update($data, ['upsert' => true]);
+The following example shows how to use the ``near`` query operator
+with the ``where()`` query builder method to match documents that
+contain a location that is up to ``50`` meters from a GeoJSON Point
+object:
 
-   // Eloquent
-   $user->update($data, ['upsert' => true]);
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query near
+   :end-before: end query near
 
-**Projections**
+To learn more about this operator, see
+:manual:`$near operator </reference/operator/query/near/>`
+in the {+server-docs-name+}.
 
-You can apply projections to your queries using the ``project`` method.
+.. _laravel-query-builder-geospatial-geoWithin:
 
-.. code-block:: php
+Within an Area Example
+~~~~~~~~~~~~~~~~~~~~~~
 
-   DB::collection('items')
-       ->project(['tags' => ['$slice' => 1]])
-       ->get();
+The following example shows how to use the ``geoWithin``
+query operator with the ``where()``
+query builder method to match documents that contain a
+location within the bounds of the specified ``Polygon``
+GeoJSON object:
 
-   DB::collection('items')
-       ->project(['tags' => ['$slice' => [3, 7]]])
-       ->get();
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query geoWithin
+   :end-before: end query geoWithin
 
-**Projections with Pagination**
+.. _laravel-query-builder-geospatial-geoIntersects:
 
-.. code-block:: php
+Intersecting a Geometry Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   $limit = 25;
-   $projections = ['id', 'name'];
+The following example shows how to use the ``geoInstersects``
+query operator with the ``where()`` query builder method to
+match documents that contain a location that intersects with
+the specified ``LineString`` GeoJSON object:
 
-   DB::collection('items')
-       ->paginate($limit, $projections);
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query geoIntersects
+   :end-before: end query geoIntersects
 
-**Push**
+.. _laravel-query-builder-geospatial-geoNear:
 
-Add items to an array.
+Proximity Data for Nearby Matches Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code-block:: php
+The following example shows how to use the ``geoNear`` aggregation operator
+with the ``raw()`` query builder method to perform an aggregation that returns
+metadata, such as proximity information for each match:
 
-   DB::collection('users')
-       ->where('name', 'John')
-       ->push('items', 'boots');
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query geoNear
+   :end-before: end query geoNear
 
-   $user->push('items', 'boots');
+To learn more about this aggregation operator, see
+:manual:`$geoNear operator </reference/operator/aggregation/geoNear/>`
+in the {+server-docs-name+}.
 
-.. code-block:: php
+.. _laravel-mongodb-write-query-builder:
 
-   DB::collection('users')
-       ->where('name', 'John')
-       ->push('messages', [
-           'from' => 'Jane Doe',
-           'message' => 'Hi John',
-       ]);
+Write Data by Using MongoDB Write Operations
+--------------------------------------------
 
-   $user->push('messages', [
-       'from' => 'Jane Doe',
-       'message' => 'Hi John',
-   ]);
+This section includes query builder examples that show how to use the
+following MongoDB-specific write operations:
 
-If you **DON'T** want duplicate items, set the third parameter to ``true``:
+- :ref:`Upsert a document <laravel-mongodb-query-builder-upsert>`
+- :ref:`Increment a numerical value <laravel-mongodb-query-builder-increment>`
+- :ref:`Decrement a numerical value <laravel-mongodb-query-builder-decrement>`
+- :ref:`Add an array element <laravel-mongodb-query-builder-push>`
+- :ref:`Remove a value from an array <laravel-mongodb-query-builder-pull>`
+- :ref:`Remove a field from a document <laravel-mongodb-query-builder-unset>`
 
-.. code-block:: php
+.. _laravel-mongodb-query-builder-upsert:
 
-   DB::collection('users')
-       ->where('name', 'John')
-       ->push('items', 'boots', true);
+Upsert a Document Example
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   $user->push('items', 'boots', true);
+The following example shows how to use the ``update()`` query builder method
+and ``upsert`` option to update the matching document or insert one with the
+specified data if it does not exist. When you set the ``upsert`` option to
+``true`` and the document does not exist, the command inserts both the data
+and the ``title`` field and value specified in the ``where()`` query operation:
 
-**Pull**
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin upsert
+   :end-before: end upsert
 
-Remove an item from an array.
+The ``update()`` query builder method returns the number of documents that the
+operation updated or inserted.
 
-.. code-block:: php
+.. _laravel-mongodb-query-builder-increment:
 
-   DB::collection('users')
-       ->where('name', 'John')
-       ->pull('items', 'boots');
+Increment a Numerical Value Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-   $user->pull('items', 'boots');
+The following example shows how to use the ``increment()``
+query builder method to add ``3000`` to the value of
+the ``imdb.votes`` field in the matched document:
 
-.. code-block:: php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin increment
+   :end-before: end increment
 
-   DB::collection('users')
-       ->where('name', 'John')
-       ->pull('messages', [
-           'from' => 'Jane Doe',
-           'message' => 'Hi John',
-       ]);
+The ``increment()`` query builder method returns the number of documents that the
+operation updated.
 
-   $user->pull('messages', [
-       'from' => 'Jane Doe',
-       'message' => 'Hi John',
-   ]);
+.. _laravel-mongodb-query-builder-decrement:
 
-**Unset**
+Decrement a Numerical Value Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Remove one or more fields from a document.
+The following example shows how to use the ``decrement()`` query builder
+method to subtract ``0.2`` from the value of the ``imdb.rating`` field in the
+matched document:
 
-.. code-block:: php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin decrement
+   :end-before: end decrement
 
-   DB::collection('users')
-       ->where('name', 'John')
-       ->unset('note');
+The ``decrement()`` query builder method returns the number of documents that the
+operation updated.
 
-   $user->unset('note');
+.. _laravel-mongodb-query-builder-push:
 
-   $user->save();
+Add an Array Element Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Using the native ``unset`` on models will work as well:
+The following example shows how to use the ``push()`` query builder method to
+add ``"Gary Cole"`` to the ``cast`` array field in the matched document:
 
-.. code-block:: php
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin push
+   :end-before: end push
 
-   unset($user['note']);
-   unset($user->node);
+The ``push()`` query builder method returns the number of documents that the
+operation updated.
+
+.. _laravel-mongodb-query-builder-pull:
+
+Remove an Array Element Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``pull()`` query builder method
+to remove the ``"Adventure"`` value from the ``genres`` field from the document
+matched by the query:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin pull
+   :end-before: end pull
+
+The ``pull()`` query builder method returns the number of documents that the
+operation updated.
+
+.. _laravel-mongodb-query-builder-unset:
+
+Remove a Field Example
+~~~~~~~~~~~~~~~~~~~~~~
+
+The following example shows how to use the ``unset()`` query builder method
+to remove the ``tomatoes.viewer`` field and value from the document matched
+by the query:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin unset
+   :end-before: end unset
+
+The ``unset()`` query builder method returns the number of documents that the
+operation updated.
