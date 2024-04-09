@@ -18,7 +18,7 @@ Insert a Document
    :class: singlecol
 
 You can insert a document into a collection by calling the ``create()`` method on
-an Eloquent model or on a query builder.
+an Eloquent model or query builder.
 
 To insert a document, call the ``create()`` method and specify the document's field values
 inside the method call. 
@@ -61,8 +61,8 @@ information:
           "_id": "..."
       }
 
-For instructions on editing your Laravel application to run the usage example, see the
-:ref:`Usage Example landing page <laravel-usage-examples>`.
+To learn how to edit your Laravel application to run the usage example, see the
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
 
 .. tip::
 
