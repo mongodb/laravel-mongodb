@@ -26,7 +26,8 @@ and manage MongoDB databases and collections.
 MongoDB organizes data in a hierarchical structure. A MongoDB
 deployment contains one or more **databases**, and each database
 contains one or more **collections**. In each collection, MongoDB stores
-data as **documents** that contain field-and-value pairs.
+data as **documents** that contain field-and-value pairs. In Laravel,
+documents are mapped to Eloquent models.
 
 To learn more about the document data format,
 see :manual:`Documents </core/document/>` in the Server manual.
@@ -151,7 +152,7 @@ method:
 
 .. tip::
    
-   In MongoDB, each document in a collection has a field which has a value
+   In MongoDB, each document in a collection has a field called ``_id`` which has a value
    that is a unique identifier. To learn more about customizing this field
    when you create a model to access a collection, see the :ref:`laravel-model-customize-primary-key` field of the Eloquent
    Model Class guide.
@@ -159,6 +160,32 @@ method:
 List Collections
 ----------------
 
+To see the names of the collections in a database, call the 
+``listCollections()`` method.
+
+The following example acceses a database connection, then
+calls the ``listCollections()`` method and outputs the collection names:
+
+.. code-block:: php
+
+   $collections = DB::connection('mongodb')->getMongoDB()->listCollections();
+   dump($collections);
 
 Drop a Collection
 -----------------
+
+We recommend performing a **migration** to handle dropping a collection.
+Deleting data from within a migration provides a controlled approach
+that ensures consistency, version control, and reversibility in your
+application.
+
+To learn more about migrations, see the
+:ref:`laravel-eloquent-migrations` section in the Schema Builder guide.
+
+To drop a collection idiomatically, the Laravel ``Schema`` facade provides the
+``drop()`` and ``dropIfExists()`` methods. The following example
+demonstrates how to drop the ``flowers`` collection:
+
+.. code-block:: php
+
+   Schema::dropIfExists('flowers');
