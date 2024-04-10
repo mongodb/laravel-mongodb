@@ -94,6 +94,13 @@ The following example shows how to specify multiple database connections
 
    ], ...
 
+.. note::
+
+   The MongoDB PHP driver reuses the same connection when
+   you create two clients with the same connection string. There is no
+   overhead in using two connections for two distinct databases, so you
+   do not need to optimize your connections.
+
 If your application contains multiple
 database connections, you override the ``$connection``
 property when creating a ``Model`` class to apply the model to an
