@@ -18,7 +18,7 @@ Update Multiple Documents
    :class: singlecol
 
 You can update multiple documents in a collection by calling the ``update()`` method
-on an Eloquent model or query builder.
+on an object collection or query builder.
 
 Pass a query filter to the ``where()`` method to retrieve documents that meet a
 set of criteria. Then, update the matching documents by passing your intended
@@ -32,13 +32,15 @@ This usage example performs the following actions:
 - Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
   ``sample_mflix`` database
 - Updates documents from the ``movies`` collection that match a query filter
+- Prints the number of updated documents
 
 The example calls the following methods on the ``Movie`` model:
 
 - ``where()``: matches documents in which the value of the ``imdb.rating`` nested field
-  is greater than ``9``
+  is greater than ``9``.
 - ``update()``: updates the matching documents by adding an ``acclaimed`` field and setting
-  its value to ``true``
+  its value to ``true``. This method returns the number of documents that were successfully
+  updated.
 
 .. io-code-block::
    :copyable: true
@@ -60,7 +62,6 @@ To learn how to edit your Laravel application to run the usage example, see the
 
 .. tip::
 
-   To learn more about updating data with {+odm-short+}, see the `Updates
-   <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#updates>`__ section of the
-   Laravel documentation.
+   To learn more about updating data with {+odm-short+}, see the :ref:`laravel-fundamentals-modify-documents`
+   section of the Write Operations guide.
 
