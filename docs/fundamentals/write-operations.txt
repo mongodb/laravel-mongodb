@@ -509,8 +509,8 @@ Delete a Document Examples
 
 You can delete one document in the following ways:
 
-- Call the ``destroy()`` method on the model and pass it a primary key to
-  delete the matching document.
+- Call the ``destroy()`` method on the model, passing it the primary key of
+  the document to be deleted.
 - Call the ``delete()`` method on an instance of the model.
 - Chain methods to retrieve and delete an instance of a model by calling the
   ``delete()`` method.
@@ -572,7 +572,8 @@ Delete Multiple Documents Examples
 
 You can delete multiple documents in the following ways:
 
-- Call the ``destroy()`` method on the model and pass it multiple primary
+- Call the ``destroy()`` method on the model, passing the primary keys of
+  the documents to be deleted.
   keys to delete the matching documents.
 - Chain methods to retrieve a Laravel collection object that references
   multiple objects and delete them by calling the ``delete()`` method.
