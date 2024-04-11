@@ -11,6 +11,12 @@ Transactions
 .. meta::
    :keywords: php framework, odm, rollback, commit, callback, code example, acid, atomic, consistent, isolated, durable
 
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
 Overview
 --------
 
@@ -39,7 +45,7 @@ Learn how to perform transactions in the following sections of this guide:
 - :ref:`laravel-transaction-commit`
 - :ref:`laravel-transaction-rollback`
 
-To learn more about transactions in MongoDB, see :server:`Transactions </core/transactions/>`
+To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
 in the {+server-docs-name+}.
 
 .. _laravel-trasnactions-requirements:
@@ -93,9 +99,7 @@ to another account:
 You can optionally pass the maximum number times to retry a failed transaction 
 as the second parameter as shown in the following code example:
 
-.. code-block::
-   :language: php
-   :copyable: true
+.. code-block:: php
    :emphasize-lines: 4
 
    DB::transaction(function() {
