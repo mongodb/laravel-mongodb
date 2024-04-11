@@ -20,30 +20,33 @@ class DistinctTest extends TestCase
         Movie::truncate();
         Movie::insert([
             [
-                'title' => 'The Big House',
+                'title' => 'Marie Antoinette',
+                'directors' => ['Sofia Coppola'],
                 'imdb' => [
-                    'rating' => 7.3,
-                    'votes' => 1161,
+                    'rating' => 6.4,
+                    'votes' => 74350,
                 ],
             ],
             [
-                'title' => 'The Divorcee',
+                'title' => 'Somewhere',
+                'directors' => ['Sofia Coppola'],
                 'imdb' => [
-                    'rating' => 6.9,
-                    'votes' => 1740,
+                    'rating' => 6.4,
+                    'votes' => 33753,
                 ],
             ],
             [
-                'title' => 'Morocco',
+                'title' => 'Lost in Translation',
+                'directors' => ['Sofia Coppola'],
                 'imdb' => [
-                    'rating' => 7.3,
-                    'votes' => 3566,
+                    'rating' => 7.8,
+                    'votes' => 298747,
                 ],
             ],
         ]);
 
         // begin-distinct
-        $ratings = Movie::where('year', 1930)
+        $ratings = Movie::where('directors', 'Sofia Coppola')
             ->select('imdb.rating')
             ->distinct()
             ->get();
@@ -51,6 +54,6 @@ class DistinctTest extends TestCase
         echo $ratings;
         // end-distinct
 
-        $this->expectOutputString('[[6.9],[7.3]]');
+        $this->expectOutputString('[[6.4],[7.8]]');
     }
 }

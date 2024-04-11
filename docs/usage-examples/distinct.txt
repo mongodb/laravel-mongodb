@@ -21,8 +21,8 @@ You can retrieve distinct field values of documents in a collection by calling t
 method on an object collection or a query builder.
 
 To retrieve distinct field values, pass a query filter to the ``where()`` method and a field name
-to the ``select()`` method. Then, call ``distinct()`` to return the unique field values of documents
-that match the query filter.
+to the ``select()`` method. Then, call ``distinct()`` to return the unique values of the selected
+field in documents that match the query filter.
 
 Example
 -------
@@ -38,7 +38,7 @@ The example calls the following methods on the ``Movie`` model:
 
 - ``where()``: matches documents in which the value of the ``year`` field is ``1930``.
 - ``select()``: retrieves the matching documents' ``imdb.rating`` field values.
-- ``distinct()``: accesses the unique values of the ``imdb.rating`` field for each matching
+- ``distinct()``: accesses the unique values of the ``imdb.rating`` field among the matching
   document. This method returns a list of values.
 - ``get()``: retrieves the query results.
 
@@ -55,7 +55,7 @@ The example calls the following methods on the ``Movie`` model:
       :language: console
       :visible: false
 
-      [[5.8],[6],[6.7],[6.9],[7.2],[7.3],[7.5]]
+      [[5.6],[6.4],[7.2],[7.8]]
 
 To learn how to edit your Laravel application to run the usage example, see the
 :ref:`Usage Examples landing page <laravel-usage-examples>`.
