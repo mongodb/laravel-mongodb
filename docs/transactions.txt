@@ -127,6 +127,7 @@ second account, after which the first account is deleted:
 .. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
    :language: php
    :dedent:
+   :emphasize-lines: 1,9
    :start-after: begin commit transaction
    :end-before: end commit transaction
 
@@ -149,6 +150,7 @@ transaction is rolled back and none of the models are updated:
 .. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
    :language: php
    :dedent:
+   :emphasize-lines: 1,18,20
    :start-after: begin rollback transaction
    :end-before: end rollback transaction
 
