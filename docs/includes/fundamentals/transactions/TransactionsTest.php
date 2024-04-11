@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use Exception;
+use App\Models\Account;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Tests\TestCase;
-use App\Models\Account;
 
 class TransactionsTest extends TestCase
 {
@@ -29,11 +28,11 @@ class TransactionsTest extends TestCase
             [
                 'number' => 776655,
                 'balance' => 100,
-            ]
+            ],
         ]);
 
         // begin transaction callback
-        DB::transaction(function() {
+        DB::transaction(function () {
             $transferAmount = 200;
 
             $sender = Account::where('number', 223344)->first();
@@ -60,14 +59,14 @@ class TransactionsTest extends TestCase
         Account::truncate();
 
         Account::insert([
-          [
-            'number' => 223344,
-            'balance' => 5000,
-          ],
-          [
-            'number' => 776655,
-            'balance' => 100,
-          ]
+            [
+                'number' => 223344,
+                'balance' => 5000,
+            ],
+            [
+                'number' => 776655,
+                'balance' => 100,
+            ],
         ]);
 
         // begin transaction commit
@@ -89,25 +88,24 @@ class TransactionsTest extends TestCase
         $this->assertEquals(5100, $acct2->balance);
     }
 
-
     public function testTransactionRollback(): void
     {
         require_once __DIR__ . '/Account.php';
 
         Account::truncate();
         Account::insert([
-          [
-            'number' => 223344,
-            'balance' => 200,
-          ],
-          [
-            'number' => 776655,
-            'balance' => 0,
-          ],
-          [
-            'number' => 990011,
-            'balance' => 0,
-          ]
+            [
+                'number' => 223344,
+                'balance' => 200,
+            ],
+            [
+                'number' => 776655,
+                'balance' => 0,
+            ],
+            [
+                'number' => 990011,
+                'balance' => 0,
+            ],
         ]);
 
         // begin transaction rollback
@@ -134,6 +132,7 @@ class TransactionsTest extends TestCase
                 DB::commit();
             }
         }
+
         // end transaction rollback
 
         $sender = Account::where('number', 223344)->first();
@@ -142,6 +141,4 @@ class TransactionsTest extends TestCase
         $this->assertEquals(280, $sender->balance);
         $this->assertEquals(300, $receiver->balance);
     }
-
-
 }
