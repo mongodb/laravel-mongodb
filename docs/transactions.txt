@@ -60,7 +60,7 @@ version and topology:
 - MongoDB version 4.0 or later
 - A replica set deployment or sharded cluster
 
-Specific versions of MongoDB have the following limitations:
+MongoDB server and {+odm-short+} have the following limitations:
 
 - In MongoDB versions 4.2 and earlier, write operations performed within a
   transaction must be on existing collections. In MongoDB versions 4.4 and
@@ -107,7 +107,6 @@ You can optionally pass the maximum number of times to retry a failed transactio
        },
        retries: 5,
    );
-
 
 .. _laravel-transaction-commit:
 
