@@ -109,30 +109,27 @@ class TransactionsTest extends TestCase
         ]);
 
         // begin transaction rollback
-        try {
-            DB::beginTransaction();
+        DB::beginTransaction();
 
-            $sender = Account::where('number', 223344)->first();
-            $receiverA = Account::where('number', 776655)->first();
-            $receiverB = Account::where('number', 990011)->first();
+        $sender = Account::where('number', 223344)->first();
+        $receiverA = Account::where('number', 776655)->first();
+        $receiverB = Account::where('number', 990011)->first();
 
-            $amountA = 100;
-            $amountB = 200;
+        $amountA = 100;
+        $amountB = 200;
 
-            $sender->balance -= $amountA;
-            $receiverA->balance += $amountA;
+        $sender->balance -= $amountA;
+        $receiverA->balance += $amountA;
 
-            $sender->balance -= $amountB;
-            $receiverB->balance += $amountB;
+        $sender->balance -= $amountB;
+        $receiverB->balance += $amountB;
 
-            if ($sender->balance < 0) {
-                DB::rollback();
-                echo 'Insufficient balance. Rolled back the transaction.';
-            } else {
-                DB::commit();
-            }
+        if ($sender->balance < 0) {
+            DB::rollback();
+            echo 'Insufficient balance. Rolled back the transaction.';
+        } else {
+            DB::commit();
         }
-
         // end transaction rollback
 
         $sender = Account::where('number', 223344)->first();
