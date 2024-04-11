@@ -38,7 +38,7 @@ class InsertManyTest extends TestCase
         echo 'Insert operation success: ' . $result;
         // end-insert-many
 
-        //$this->assertInstanceOf(Movie::class, $movie);
-        //$this->expectOutputRegex('/^{"title":"Marriage Story","year":2019,"runtime":136,"updated_at":".{27}","created_at":".{27}","_id":"[a-z0-9]{24}"}$/');
+        $this->assertTrue($result);
+        $this->expectOutputString('Insert operation success: 1');
     }
 }
