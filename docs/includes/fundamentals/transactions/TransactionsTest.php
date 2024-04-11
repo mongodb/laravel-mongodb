@@ -130,6 +130,7 @@ class TransactionsTest extends TestCase
         } else {
             DB::commit();
         }
+
         // end rollback transaction
 
         $sender = Account::where('number', 223344)->first();
