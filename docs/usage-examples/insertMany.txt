@@ -20,8 +20,9 @@ Insert Multiple Documents
 You can insert multiple documents into a collection by calling the ``insert()``
 method on an Eloquent model or a query builder.
 
-To insert multiple documents, call the ``insert()`` method and specify the documents' field
-values as an array inside the method call. 
+To insert multiple documents, call the ``insert()`` method and specify the new documents
+as an array inside the method call. Each array entry contains a single document's field
+values.
 
 Example
 -------
