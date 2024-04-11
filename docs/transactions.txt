@@ -67,7 +67,7 @@ Specific versions of MongoDB have the following limitations:
   you perform write operations in a transaction. To learn more about this
   limitation, see :manual:`Create Collections and Indexes in a Transaction </core/transactions/#create-collections-and-indexes-in-a-transaction>`
   in the {+server-docs-name+}.
-- MongoDB does not support nested transactions. If you attempt to start a 
+- MongoDB does not support nested transactions. If you attempt to start a
   transaction within another one, the extension raises a ``RuntimeException``.
   To learn more about this limitation, see :manual:`Transactions and Sessions </core/transactions/#transactions-and-sessions>`
   in the {+server-docs-name+}.
@@ -96,7 +96,7 @@ to another account:
    :start-after: begin transaction callback
    :end-before: end transaction callback
 
-You can optionally pass the maximum number times to retry a failed transaction 
+You can optionally pass the maximum number times to retry a failed transaction
 as the second parameter as shown in the following code example:
 
 .. code-block:: php
@@ -127,8 +127,8 @@ second account, after which the first account is deleted:
 .. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
    :language: php
    :dedent:
-   :start-after: begin transaction callback
-   :end-before: end transaction callback
+   :start-after: begin transaction commit
+   :end-before: end transaction commit
 
 .. _laravel-transaction-rollback:
 
@@ -149,6 +149,6 @@ transaction is rolled back and none of the models are updated:
 .. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
    :language: php
    :dedent:
-   :start-after: begin transaction callback
-   :end-before: end transaction callback
+   :start-after: begin transaction rollback
+   :end-before: end transaction rollback
 
