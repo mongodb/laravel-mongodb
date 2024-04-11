@@ -26,18 +26,18 @@ and manage MongoDB databases and collections.
 MongoDB organizes data in a hierarchical structure. A MongoDB
 deployment contains one or more **databases**, and each database
 contains one or more **collections**. In each collection, MongoDB stores
-data as **documents** that contain field-and-value pairs. In Laravel,
-documents are mapped to Eloquent models.
+data as **documents** that contain field-and-value pairs. In
+{+odm-short+}, you can access documents through Eloquent models.
 
 To learn more about the document data format,
 see :manual:`Documents </core/document/>` in the Server manual.
 
 .. _laravel-access-db:
 
-Access a Database
------------------
+Specify the Database in a Connection Configuration
+--------------------------------------------------
 
-You can access a database by specifying a database connection in your
+You specify a database name when configuring a connection in your
 application's ``config/database.php`` file. The ``connections`` property
 in this file stores all of your database connection information, such as
 your connection string, database name, and optionally, authentication
@@ -45,7 +45,7 @@ details. After you specify a database connection, you can perform
 database-level operations and access collections that the database
 contains.
 
-If you set the ``database`` property in a connection to the name of a
+If you set the database name in a connection string to the name of a
 nonexistent database, Laravel still makes a valid connection. When you
 insert any data into a collection in the database, the server creates it
 automatically.
@@ -55,16 +55,15 @@ create a database connection to the ``animals`` database in the
 ``config/database.php`` file:
 
 .. code-block:: php
-   :emphasize-lines: 8
+   :emphasize-lines: 7
    
-   'default' => env('DB_CONNECTION', 'mongodb'),
+   'default' => 'mongodb',
 
    'connections' => [
 
        'mongodb' => [
            'driver' => 'mongodb',
-           'dsn' => env('DB_URI', '<connection string>'),
-           'database' => 'animals',
+           'dsn' => 'mongodb://localhost:27017/animals',
        ], ...
    ]
 
@@ -82,14 +81,12 @@ The following example shows how to specify multiple database connections
 
        'mongodb' => [
            'driver' => 'mongodb',
-           'dsn' => env('DB_URI', '<connection string>'),
-           'database' => 'animals',
+           'dsn' => 'mongodb://localhost:27017/animals',
        ],
 
        'mongodb_alt' => [
            'driver' => 'mongodb',
-           'dsn' => env('DB_URI', '<connection string>'),
-           'database' => 'plants',
+           'dsn' => 'mongodb://localhost:27017/plants',
        ]
 
    ], ...
@@ -101,13 +98,14 @@ The following example shows how to specify multiple database connections
    overhead in using two connections for two distinct databases, so you
    do not need to optimize your connections.
 
-If your application contains multiple
-database connections, you override the ``$connection``
-property when creating a ``Model`` class to apply the model to an
-alternate database.
+If your application contains multiple database connections and you want
+to store your model in a database other than the default, override the
+``$connection`` property when creating a ``Model`` class.
 
 The following example shows how to override the ``$connection`` property
-on the ``Flower`` model class to use the ``mongodb_alt`` connection:
+on the ``Flower`` model class to use the ``mongodb_alt`` connection.
+This directs {+odm-short+} to store the model in the ``flowers``
+collection of the ``plants`` database, instead of in the default database:
 
 .. code-block:: php
 
@@ -121,34 +119,34 @@ on the ``Flower`` model class to use the ``mongodb_alt`` connection:
 Access a Collection
 -------------------
 
-When you create a ``Model`` class in {+odm-short+}, it is automatically
-stored in a collection with a name that is the plural of the model class
-name. For example, if you create a model class called ``Flower``,
+When you create model class that extends
+``MongoDB\Laravel\Eloquent\Model``, {+odm-short+} stores the model data
+in a collection with a name that is the snake case plural form of your
+model class name.
+
+For example, if you create a model class called ``Flower``,
 Laravel applies the model to the ``flowers`` collection in the database.
 
 .. tip::
 
-   You might be storing data in a collection with a different name than the
-   model, or your collection might contain more than one type of data. To
-   learn how to set a collection name when defining a model class, see the
+   To learn how to specify a different collection name when defining a model class, see the
    :ref:`laravel-model-customize-collection-name` section of the Eloquent
    Model Class guide.
 
-For many operations, such as CRUD operations and relationships, we
-recommend that you use the Eloquent ORM to access a collection
-implicitly. The following example specifies a find operation by using
-the ``Flower`` class, so Laravel retrieves results from the ``flowers``
-collection:
+We generally recommend that you use the Eloquent ORM to access a collection
+implicitly for code readability and maintainability. The following
+example specifies a find operation by using the ``Flower`` class, so
+Laravel retrieves results from the ``flowers`` collection:
 
 .. code-block:: php
 
    Flower::where('name', 'Water Lily')->get()
 
-For other collection operations, you can access a collection by using
-a facade to access the query builder class ``DB`` and calling the
-``collection()`` method. The following example shows the same query as
-in the preceding example constructed by using the ``DB::collection()``
-method:
+If you are not able to accomplish your operation by using an Eloquent
+model, you can access a collection by using a facade to access the query
+builder class ``DB`` and calling the ``collection()`` method. The
+following example shows the same query as in the preceding example, but
+the query is constructed by using the ``DB::collection()`` method:
 
 .. code-block:: php
 
@@ -157,42 +155,22 @@ method:
        ->where('name', 'Water Lily')
        ->get()
 
-.. tip::
-   
-   In MongoDB, each document in a collection has a field called ``_id`` which has a value
-   that is a unique identifier. To learn more about customizing this field
-   when you create a model to access a collection, see the :ref:`laravel-model-customize-primary-key` field of the Eloquent
-   Model Class guide.
-   
 List Collections
 ----------------
 
-To see the names of the collections in a database, call the 
+To see information about each of the collections in a database, call the 
 ``listCollections()`` method.
 
-The following example acceses a database connection, then
-calls the ``listCollections()`` method and outputs the collection names:
+The following example accesses a database connection, then
+calls the ``listCollections()`` method to retrieve information about the
+collections in the database:
 
 .. code-block:: php
 
    $collections = DB::connection('mongodb')->getMongoDB()->listCollections();
-   dump($collections);
 
-Drop a Collection
------------------
+Create and Drop Collections
+---------------------------
 
-We recommend performing a **migration** to handle dropping a collection.
-Deleting data from within a migration provides a controlled approach
-that ensures consistency, version control, and reversibility in your
-application.
-
-To learn more about migrations, see the
+To learn how to create and drop collections, see the
 :ref:`laravel-eloquent-migrations` section in the Schema Builder guide.
-
-To drop a collection idiomatically, the Laravel ``Schema`` facade provides the
-``drop()`` and ``dropIfExists()`` methods. The following example
-demonstrates how to drop the ``flowers`` collection:
-
-.. code-block:: php
-
-   Schema::dropIfExists('flowers');
