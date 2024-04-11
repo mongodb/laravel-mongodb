@@ -69,7 +69,7 @@ class TransactionsTest extends TestCase
             ],
         ]);
 
-        // begin transaction commit
+        // begin commit transaction
         DB::beginTransaction();
         $oldAccount = Account::where('number', 223344)->first();
 
@@ -79,7 +79,7 @@ class TransactionsTest extends TestCase
 
         $oldAccount->delete();
         DB::commit();
-        // end transaction commit
+        // end commit transaction
 
         $acct1 = Account::where('number', 223344)->first();
         $acct2 = Account::where('number', 776655)->first();
@@ -108,7 +108,7 @@ class TransactionsTest extends TestCase
             ],
         ]);
 
-        // begin transaction rollback
+        // begin rollback transaction
         DB::beginTransaction();
 
         $sender = Account::where('number', 223344)->first();
@@ -130,8 +130,7 @@ class TransactionsTest extends TestCase
         } else {
             DB::commit();
         }
-
-        // end transaction rollback
+        // end rollback transaction
 
         $sender = Account::where('number', 223344)->first();
         $receiverA = Account::where('number', 776655)->first();

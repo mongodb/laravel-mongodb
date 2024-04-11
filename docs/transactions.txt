@@ -127,8 +127,8 @@ second account, after which the first account is deleted:
 .. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
    :language: php
    :dedent:
-   :start-after: begin transaction commit
-   :end-before: end transaction commit
+   :start-after: begin commit transaction
+   :end-before: end commit transaction
 
 .. _laravel-transaction-rollback:
 
@@ -149,6 +149,6 @@ transaction is rolled back and none of the models are updated:
 .. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
    :language: php
    :dedent:
-   :start-after: begin transaction rollback
-   :end-before: end transaction rollback
+   :start-after: begin rollback transaction
+   :end-before: end rollback transaction
 
