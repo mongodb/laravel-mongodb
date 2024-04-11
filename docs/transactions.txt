@@ -46,15 +46,17 @@ Learn how to perform transactions in the following sections of this guide:
 - :ref:`laravel-transaction-commit`
 - :ref:`laravel-transaction-rollback`
 
-To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
-in the {+server-docs-name+}.
+.. tip::
+
+   To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
+   in the {+server-docs-name+}.
 
 .. _laravel-transaction-requirements:
 
 Requirements and Limitations
 ----------------------------
 
-To perform transactions in MongoDB, you must be using the following MongoDB
+To perform transactions in MongoDB, you must use the following MongoDB
 version and topology:
 
 - MongoDB version 4.0 or later
@@ -82,7 +84,7 @@ MongoDB server and {+odm-short+} have the following limitations:
 Run a Transaction in a Callback
 -------------------------------
 
-This section shows how you can run a transaction as a callback.
+This section shows how you can run a transaction in a callback.
 
 When using this method of running a transaction, all the code in the
 callback method runs as a single transaction.
@@ -116,7 +118,7 @@ Begin and Commit a Transaction
 This section shows how to start and commit a transaction.
 
 To use this method of starting and committing a transaction, call the
-``DB::beginTransaction()`` to start the transaction. Then, call the
+``DB::beginTransaction()`` method to start the transaction. Then, call the
 ``DB::commit()`` method to end the transaction, which applies all the updates
 performed within the transaction.
 
@@ -139,7 +141,7 @@ This section shows how to roll back a transaction. A rollback reverts all the
 write operations performed within that transaction. This means that the
 data is reverted to its state before the transaction.
 
-To perform the roll back, call the ``DB::rollback()`` function anytime before
+To perform the rollback, call the ``DB::rollback()`` function anytime before
 the transaction is committed.
 
 In the following example, the transaction consists of write operations that
