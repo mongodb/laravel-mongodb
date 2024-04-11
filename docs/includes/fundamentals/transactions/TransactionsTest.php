@@ -125,17 +125,19 @@ class TransactionsTest extends TestCase
         $receiverB->balance += $amountB;
 
         if ($sender->balance < 0) {
+            // insufficient balance, roll back the transaction
             DB::rollback();
-            echo 'Insufficient balance. Rolled back the transaction.';
         } else {
             DB::commit();
         }
         // end transaction rollback
 
         $sender = Account::where('number', 223344)->first();
-        $receiver = Account::where('number', 776655)->first();
+        $receiverA = Account::where('number', 776655)->first();
+        $receiverB = Account::where('number', 990011)->first();
 
-        $this->assertEquals(280, $sender->balance);
-        $this->assertEquals(300, $receiver->balance);
+        $this->assertEquals(200, $sender->balance);
+        $this->assertEquals(0, $receiverA->balance);
+        $this->assertEquals(0, $receiverB->balance);
     }
 }
