@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use MongoDB\Laravel\Tests\TestCase;
 use MongoDB\Driver\Cursor;
+use MongoDB\Laravel\Tests\TestCase;
 
 class RunCommandTest extends TestCase
 {
@@ -26,6 +26,6 @@ class RunCommandTest extends TestCase
         // end-command
 
         $this->assertNotNull($cursor);
-        $this->assertInstanceOf(\MongoDB\Driver\Cursor::class, $cursor);
+        $this->assertInstanceOf(Cursor::class, $cursor);
     }
 }
