@@ -35,7 +35,7 @@ This usage example performs the following actions:
 - Prints the result of the insert operation
 
 The example calls the ``insert()`` method to insert documents that represent movies released
-in 2023. This method returns a value of ``1`` if the operation is successful and throws
+in 2023. This method returns a value of ``1`` if the operation is successful, and it throws
 an exception if the operation is unsuccessful.
 
 .. io-code-block::
@@ -53,11 +53,11 @@ an exception if the operation is unsuccessful.
 
       Insert operation success: yes
 
-For instructions on editing your Laravel application to run the usage example, see the
-:ref:`Usage Example landing page <laravel-usage-examples>`.
+To learn how to edit your Laravel application to run the usage example, see the
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
 
 .. tip::
 
-   To learn more  about insert operations, see the :ref:`laravel-fundamentals-insert-documents` section
+   To learn more about insert operations, see the :ref:`laravel-fundamentals-insert-documents` section
    of the Write Operations guide.
 
