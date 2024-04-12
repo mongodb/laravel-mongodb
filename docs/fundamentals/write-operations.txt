@@ -509,29 +509,13 @@ Delete a Document Examples
 
 You can delete one document in the following ways:
 
-- Call the ``destroy()`` method on the model, passing it the primary key of
+- Call the ``$model->delete()`` method on an instance of the model.
+- Call the ``Model::destroy($id)`` method on the model, passing it the id of
   the document to be deleted.
-- Call the ``delete()`` method on an instance of the model.
 - Chain methods to retrieve and delete an instance of a model by calling the
   ``delete()`` method.
 
-The following example shows how to delete a document by passing the value of
-its primary key to the ``destroy()`` method:
-
-.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
-   :language: php
-   :dedent:
-   :start-after: begin model delete by id
-   :end-before: end model delete by id
-   :caption: Delete the document by its primary key.
-
-When the ``destroy()`` method succeeds, it returns the number of documents
-deleted.
-
-If the primary key value does not match any documents, the ``destroy()`` method
-returns returns ``0``.
-
-The following example shows how to delete a document by calling ``delete()``
+The following example shows how to delete a document by calling ``$model->delete()``
 on an instance of the model:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
@@ -546,6 +530,22 @@ documents deleted.
 
 If the retrieve part of the call does not match any documents in the collection,
 the operation returns ``0``.
+
+The following example shows how to delete a document by passing the value of
+its id to the ``Model::destroy($id)`` method:
+
+.. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin model delete by id
+   :end-before: end model delete by id
+   :caption: Delete the document by its id value.
+
+When the ``destroy()`` method succeeds, it returns the number of documents
+deleted.
+
+If the id value does not match any documents, the ``destroy()`` method
+returns returns ``0``.
 
 The following example shows how to chain calls to retrieve the first
 matching document and delete it:
@@ -572,26 +572,31 @@ Delete Multiple Documents Examples
 
 You can delete multiple documents in the following ways:
 
-- Call the ``destroy()`` method on the model, passing the primary keys of
-  the documents to be deleted.
-  keys to delete the matching documents.
+
+- Call the ``Model::destroy($ids)`` method, passing a list of the ids of the
+  documents or model instances to be deleted.
 - Chain methods to retrieve a Laravel collection object that references
   multiple objects and delete them by calling the ``delete()`` method.
 
 The following example shows how to delete a document by passing an array of
-primary key values, represented by ``$ids``, to the ``destroy()`` method:
+id values, represented by ``$ids``, to the ``destroy()`` method:
 
 .. literalinclude:: /includes/fundamentals/write-operations/WriteOperationsTest.php
    :language: php
    :dedent:
    :start-after: begin model delete multiple by id
    :end-before: end model delete multiple by id
-   :caption: Delete documents by their primary keys.
+   :caption: Delete documents by their ids.
+
+.. tip::
+
+   The ``destroy()`` method performance suffers when passed large lists. For
+   better performance, use ``Model::whereIn('id', $ids)->delete()`` instead.
 
 When the ``destroy()`` method succeeds, it returns the number of documents
 deleted.
 
-If the primary key values do not match any documents, the ``destroy()`` method
+If the id values do not match any documents, the ``destroy()`` method
 returns returns ``0``.
 
 The following example shows how to chain calls to retrieve matching documents

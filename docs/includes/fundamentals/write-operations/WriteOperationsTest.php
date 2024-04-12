@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\TestCase;
 
-use function array_push;
 use function count;
 use function in_array;
 
@@ -338,6 +337,7 @@ class WriteOperationsTest extends TestCase
 
         $data = [
             [
+                '_id' => 'CH-0401242000',
                 'performer' => 'Mitsuko Uchida',
                 'venue' => 'Carnegie Hall',
                 'genres' => ['classical'],
@@ -345,6 +345,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2024, 4, 1, 20, 0, 0, 'EST')),
             ],
             [
+                '_id' => 'MSG-0212252000',
                 'performer' => 'Brad Mehldau',
                 'venue' => 'Philharmonie de Paris',
                 'genres' => [ 'jazz', 'post-bop' ],
@@ -352,6 +353,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
             ],
             [
+                '_id' => 'MSG-021222000',
                 'performer' => 'Billy Joel',
                 'venue' => 'Madison Square Garden',
                 'genres' => [ 'rock', 'soft rock', 'pop rock' ],
@@ -359,6 +361,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
             ],
             [
+                '_id' => 'SF-06302000',
                 'performer' => 'The Rolling Stones',
                 'venue' => 'Soldier Field',
                 'genres' => [ 'rock', 'pop', 'blues' ],
@@ -373,10 +376,12 @@ class WriteOperationsTest extends TestCase
         $id = Concert::first()->id;
 
         // begin model delete by id
+        $id = 'MSG-0212252000';
         Concert::destroy($id);
         // end model delete by id
 
         $this->assertEquals(3, Concert::count());
+        $this->assertNull(Concert::find($id));
     }
 
     public function testModelDeleteModel(): void
@@ -441,18 +446,22 @@ class WriteOperationsTest extends TestCase
         Concert::truncate();
         $data = [
             [
+                '_id' => 3,
                 'performer' => 'Mitsuko Uchida',
                 'venue' => 'Carnegie Hall',
             ],
             [
+                '_id' => 5,
                 'performer' => 'Brad Mehldau',
                 'venue' => 'Philharmonie de Paris',
             ],
             [
+                '_id' => 7,
                 'performer' => 'Billy Joel',
                 'venue' => 'Madison Square Garden',
             ],
             [
+                '_id' => 9,
                 'performer' => 'The Rolling Stones',
                 'venue' => 'Soldier Field',
             ],
@@ -463,11 +472,10 @@ class WriteOperationsTest extends TestCase
 
         $ids = [];
 
-        foreach ($concerts as $concert) {
-            array_push($ids, $concert->id);
-        }
+        $concerts = Concert::all()->pluck('_id')->all();
 
         // begin model delete multiple by id
+        $ids = [3, 5, 7, 9];
         Concert::destroy($ids);
         // end model delete multiple by id
 
