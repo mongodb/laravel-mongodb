@@ -4,35 +4,30 @@
 Run a Command
 =============
 
-You can retrieve a single document from a collection by calling the ``where()`` and
-``first()`` methods on an Eloquent model or a query builder.
+You can run a command directly on a database by calling the ``command()``
+method on a database connection instance.
 
-Pass a query filter to the ``where()`` method and then call the ``first()`` method to
-return one document in the collection that matches the filter. If multiple documents match
-the query filter, ``first()`` returns the first matching document according to the documents'
-:term:`natural order` in the database or according to the sort order that you can specify
-by using the ``orderBy()`` method.
+To run a command, call the ``command()`` method and specify the database command
+document inside the method call. This document includes the command name and
+value.
 
 Example
 -------
 
 This usage example performs the following actions:
 
-- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
-  ``sample_mflix`` database.
-- Retrieves a document from the ``movies`` collection that matches a query filter.
+- Creates a database connection instance to access the ``sample_mflix`` database
+- Specifies a command to retrieve a list of collections in the ``sample_mflix`` database
+- Prints the name of each ``sample_mflix`` collection
 
-The example calls the following methods on the ``Movie`` model:
-
-- ``where()``: matches documents in which the value of the ``directors`` field includes ``'Rob Reiner'``.
-- ``orderBy()``: sorts matched documents by their ascending ``_id`` values.
-- ``first()``: retrieves only the first matching document.
+The example calls the ``command()`` method to run the ``listCollections`` command. This method
+returns a cursor that contains a result document for each collection in the database.
 
 .. io-code-block::
 
-   .. input:: ../includes/usage-examples/FindOneTest.php
-      :start-after: begin-find-one
-      :end-before: end-find-one
+   .. input:: ../includes/usage-examples/RunCommandTest.php
+      :start-after: begin-command
+      :end-before: end-command
       :language: php
       :dedent:
 
@@ -40,35 +35,18 @@ The example calls the following methods on the ``Movie`` model:
       :language: console
       :visible: false
 
-      // Result is truncated
-      
-      {
-         "_id": "573a1398f29313caabce94a3",
-         "plot": "Spinal Tap, one of England's loudest bands, is chronicled by film director
-         Marty DeBergi on what proves to be a fateful tour.",
-         "genres": [
-            "Comedy",
-            "Music"
-         ],
-         "runtime": 82,
-         "metacritic": 85,
-         "rated": "R",
-         "cast": [
-            "Rob Reiner",
-            "Kimberly Stringer",
-            "Chazz Dominguez",
-            "Shari Hall"
-         ],
-         "poster": "https://m.media-amazon.com/images/M/MV5BMTQ2MTIzMzg5Nl5BMl5BanBnXkFtZTgwOTc5NDI1MDE@._V1_SY1000_SX677_AL_.jpg",
-         "title": "This Is Spinal Tap",
-         ...
-      }
+      sessions
+      movies
+      theaters
+      comments
+      embedded_movies
+      users
 
 
-For instructions on editing your Laravel application to run the usage example, see the
-:ref:`Usage Example landing page <laravel-usage-examples>`.
+To learn how to edit your Laravel application to run the usage example, see the
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
 
 .. tip::
 
-   To learn more about retrieving documents with {+odm-short+}, see the
-   :ref:`laravel-fundamentals-retrieve` guide
+   To learn more about running MongoDB database commands, see
+   :manual:`Database Commands </reference/command/>` in the {+server-docs-name+}.

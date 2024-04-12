@@ -16,7 +16,7 @@ class RunCommandTest extends TestCase
     {
         require_once __DIR__ . '/Movie.php';
 
-        // begin-update-one
+        // begin-command
         $cursor = DB::connection('mongodb')
             ->command(['listCollections' => 1]);
 
@@ -24,9 +24,8 @@ class RunCommandTest extends TestCase
             echo $coll['name'] . '<br>';
         }
 
-        // end-update-one
+        // end-command
 
         $this->assertNotNull($cursor);
-        //$this->expectOutputString('movies');
     }
 }
