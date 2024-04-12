@@ -23,6 +23,7 @@ class RunCommandTest extends TestCase
         foreach ($cursor as $coll) {
             echo $coll['name'] . '<br>';
         }
+
         // end-update-one
 
         $this->assertNotNull($cursor);
