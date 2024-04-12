@@ -1,0 +1,54 @@
+.. _laravel-aggregation-builder:
+
+===================
+Aggregation Builder
+===================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: code example, pipeline, expression
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+In this guide, you can learn how to perform aggregations by using the
+{+odm-short+} aggregation builder. The aggregation builder lets you use the
+query builder's simplified syntax to construct MongoDB aggregation expressions.
+
+
+This guide provides
+and examples of the following topics:
+
+
+
+- :ref:`laravel-build-aggregation-expression`
+- :ref:`laravel-create-custom-operator-factory`
+
+.. tip::
+
+   The Aggregation Builder is available only in {+odm-short+} versions
+   4.3 and later.
+
+
+.. _laravel-build-aggregation-expression:
+
+Construct an Aggregation Expression
+-----------------------------------
+
+TODO
+
+.. _laravel-create-custom-operator-factory:
+
+Create a Custom Operator Factory
+--------------------------------
+
+TODO
