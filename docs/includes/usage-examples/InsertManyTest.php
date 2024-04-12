@@ -20,25 +20,25 @@ class InsertManyTest extends TestCase
         Movie::truncate();
 
         // begin-insert-many
-        $result = Movie::insert([
+        $success = Movie::insert([
             [
                 'title' => 'Anatomy of a Fall',
-                'year' => 2023,
+                'release_date' => new UTCDateTime(new DateTimeImmutable('2023-08-23')),
             ],
             [
                 'title' => 'The Boy and the Heron',
-                'year' => 2023,
+                'release_date' => new UTCDateTime(new DateTimeImmutable('2023-12-08')),
             ],
             [
                 'title' => 'Passages',
-                'year' => 2023,
+                'release_date' => new UTCDateTime(new DateTimeImmutable('2023-06-28')),
             ],
         ]);
 
-        echo 'Insert operation success: ' . $result;
+        echo 'Insert operation success: ' . ($success ? 'yes' : 'no');
         // end-insert-many
 
-        $this->assertTrue($result);
-        $this->expectOutputString('Insert operation success: 1');
+        $this->assertTrue($success);
+	    $this->expectOutputString('Insert operation success: yes');
     }
 }
