@@ -22,29 +22,97 @@ Overview
 
 In this guide, you can learn how to perform aggregations by using the
 {+odm-short+} aggregation builder. The aggregation builder lets you use the
-query builder's simplified syntax to construct MongoDB aggregation expressions.
+query builder's simplified syntax to construct MongoDB **aggregation pipelines.**
 
+An aggregation pipeline is a data processing pipeline that takes documents
+as input, sequentially performs transformations and computations on the data,
+and outputs the results as a new set of documents.
 
-This guide provides
-and examples of the following topics:
+The following sections show examples of how to use this feature:
 
-
-
-- :ref:`laravel-build-aggregation-expression`
+- :ref:`laravel-build-aggregation`
 - :ref:`laravel-create-custom-operator-factory`
 
 .. tip::
 
-   The Aggregation Builder is available only in {+odm-short+} versions
-   4.3 and later.
+   The aggregation builder feature is available only in {+odm-short+} versions
+   4.3 and later. To learn more about running aggregations without the
+   aggregation builder, see :ref:`laravel-query-builder-aggregations` in the
+   Query Builder guide.
 
 
-.. _laravel-build-aggregation-expression:
+.. _laravel-build-aggregation:
 
-Construct an Aggregation Expression
------------------------------------
+Construct an Aggregation
+------------------------
 
-TODO
+To construct an aggregation pipeline, you can call methods that correspond to
+MongoDB aggregation stages, listed in :manual:`Aggregation Stages </reference/operator/aggregation-pipeline/>`
+in the {+server-docs-name+}.
+
+To start an aggregation pipeline, call the ``Model::aggregate()`` method.
+Then, chain the aggregation stage methods in the sequence in which you want
+them to be run.
+
+
+Example
+~~~~~~~
+
+This example uses ``User`` model data inserted by using the following command:
+
+.. code-block:: php
+
+   User::insert([
+       ['name' => 'Alda Gröndal', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('2002-01-01'))],
+       ['name' => 'Francois Soma', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-02-02'))],
+       ['name' => 'Janet Doe', 'occupation' => 'lawyer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1987-03-03'))],
+       ['name' => 'Eliud Nkosana', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1984-04-04'))],
+       ['name' => 'Bran Steafan', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-05-05'))],
+   ]);
+
+The stages of the aggregation pipeline example perform the following operations
+to the output retrieved from each preceding step:
+
+- Retrieve documents that meet the query filter passed to the ``match()`` stage
+- Add the ``year`` field to the documents and set the value to the year from the
+  ``birthday`` field
+- Sort the documents by the value of the ``year`` field in descending order.
+  Apply a secondary sort on the ``name`` field in alphabetical order.
+- Remove the ``birthday`` and ``occupation`` fields from the documents by using the ``unset()`` method
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/aggregation/AggregationBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin pipeline example
+      :end-before: end pipeline example
+
+
+   .. output::
+
+      [
+        {
+          "_id": ...,
+          "name": "Alda Gröndal",
+          "year": 2002,
+        },
+        {
+          "_id": ...,
+          "name": "Bran Steafan",
+          "year": 1998
+        },
+        {
+          "_id": ...,
+          "name": "Francois Soma",
+          "year": 1998
+        },
+        {
+          "_id": ...,
+          "name": "Eliud Nkosana",
+          "year": 1984
+        }
+      ]
 
 .. _laravel-create-custom-operator-factory:
 
