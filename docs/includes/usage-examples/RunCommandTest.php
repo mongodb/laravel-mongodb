@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use MongoDB\Laravel\Tests\TestCase;
+use MongoDB\Driver\Cursor;
 
 class RunCommandTest extends TestCase
 {
@@ -14,8 +15,6 @@ class RunCommandTest extends TestCase
      */
     public function testRunCommand(): void
     {
-        require_once __DIR__ . '/Movie.php';
-
         // begin-command
         $cursor = DB::connection('mongodb')
             ->command(['listCollections' => 1]);
@@ -27,5 +26,6 @@ class RunCommandTest extends TestCase
         // end-command
 
         $this->assertNotNull($cursor);
+        $this->assertInstanceOf(\MongoDB\Driver\Cursor::class, $cursor);
     }
 }
