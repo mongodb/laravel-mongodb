@@ -39,6 +39,6 @@ class InsertManyTest extends TestCase
         // end-insert-many
 
         $this->assertTrue($success);
-	    $this->expectOutputString('Insert operation success: yes');
+        $this->expectOutputString('Insert operation success: yes');
     }
 }
