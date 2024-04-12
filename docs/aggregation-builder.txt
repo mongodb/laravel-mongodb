@@ -73,23 +73,28 @@ This example uses ``User`` model data inserted by using the following command:
 The stages of the aggregation pipeline example perform the following operations
 to the output retrieved from each preceding step:
 
-- Retrieve documents that meet the query filter passed to the ``match()`` stage
-- Add the ``year`` field to the documents and set the value to the year from the
-  ``birthday`` field
-- Sort the documents by the value of the ``year`` field in descending order.
-  Apply a secondary sort on the ``name`` field in alphabetical order.
-- Remove the ``birthday`` and ``occupation`` fields from the documents by using the ``unset()`` method
+- Retrieves documents that meet the query filter passed to the ``match()`` stage.
+- Adds the ``year`` field to the documents and set the value to the year from
+  the ``birthday`` field.
+- Sorts the documents by the value of the ``year`` field in descending order.
+  Applies a secondary sort on the ``name`` field in alphabetical order.
+- Removes the ``birthday`` and ``occupation`` fields from the documents by using
+  the ``unset()`` method.
+
+Click the :guilabel:`VIEW OUTPUT` button to see the data created by running the
+code:
 
 .. io-code-block::
 
-   .. input:: /includes/fundamentals/aggregation/AggregationBuilderTest.php
+   .. input:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
       :language: php
       :dedent:
       :start-after: begin pipeline example
       :end-before: end pipeline example
 
-
    .. output::
+      :language: json
+      :visible: false
 
       [
         {
