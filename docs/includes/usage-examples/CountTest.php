@@ -30,13 +30,13 @@ class CountTest extends TestCase
         ]);
 
         // begin-count
-        $biographies = Movie::where('genres', 'Biography')
+        $count = Movie::where('genres', 'Biography')
             ->count();
 
-        echo 'Number of documents: ' . $biographies;
+        echo 'Number of documents: ' . $count;
         // end-count
 
-        $this->assertEquals(2, $biographies);
+        $this->assertEquals(2, $count);
         $this->expectOutputString('Number of documents: 2');
     }
 }

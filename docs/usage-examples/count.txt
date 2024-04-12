@@ -18,7 +18,7 @@ Count Documents
    :class: singlecol
 
 You can count the number of documents returned by a query by calling the ``where()`` and
-``count()`` methods on an object collection or a query builder.
+``count()`` methods on a collection of models or a query builder.
 
 To return the number of documents that match a filter, pass the query filter to the ``where()``
 method and call the ``count()`` method.
