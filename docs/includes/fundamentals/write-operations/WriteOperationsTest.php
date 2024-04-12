@@ -432,7 +432,6 @@ class WriteOperationsTest extends TestCase
 
         // begin model delete one fluent
         Concert::where('venue', 'Carnegie Hall')
-            ->orderBy('_id')
             ->limit(1)
             ->delete();
         // end model delete one fluent
@@ -467,12 +466,6 @@ class WriteOperationsTest extends TestCase
             ],
         ];
         Concert::insert($data);
-
-        $concerts = Concert::all();
-
-        $ids = [];
-
-        $concerts = Concert::all()->pluck('_id')->all();
 
         // begin model delete multiple by id
         $ids = [3, 5, 7, 9];
