@@ -1,0 +1,57 @@
+.. _laravel-count-usage:
+
+===============
+Count Documents
+===============
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: total, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+You can count the number of documents returned by a query by calling the ``where()`` and
+``count()`` methods on an object collection or a query builder.
+
+To return the number of documents that match a filter, pass the query filter to the ``where()``
+method and call the ``count()`` method.
+
+Example
+-------
+
+This usage example performs the following actions:
+
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database
+- Counts the documents from the ``movies`` collection that match a query filter
+- Prints the matching document count
+
+The example calls the following methods on the ``Movie`` model:
+
+- ``where()``: matches documents in which the value of the ``genres`` field includes ``"Biography"``.
+- ``count()``: counts the number of matching documents. This method returns an integer value.
+
+.. io-code-block::
+
+   .. input:: ../includes/usage-examples/CountTest.php
+      :start-after: begin-count
+      :end-before: end-count
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      Matching documents: 1267
+
+
+To learn how to edit your Laravel application to run the usage example, see the
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
