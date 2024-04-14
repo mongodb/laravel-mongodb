@@ -11,6 +11,8 @@ use MongoDB\Builder\Type\Sort;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
 
+use function print_r;
+
 class AggregationsBuilderTest extends TestCase
 {
     /**
