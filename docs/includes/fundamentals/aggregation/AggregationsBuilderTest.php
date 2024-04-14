@@ -99,7 +99,6 @@ class AggregationsBuilderTest extends TestCase
 
         // begin aggregation project stage
         $pipeline = User::aggregate()
-            ->match()
             ->project(_id: 0, name: 1);
         $result = $pipeline->get();
         // end aggregation project stage
