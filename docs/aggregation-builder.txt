@@ -60,11 +60,11 @@ This section features the following examples of common aggregation stages and
 multiple stages chained together:
 
 - Match Stage Example
-- :ref:`laravel-aggregation-match-stage`
-- :ref:`laravel-aggregation-group-stage`
-- :ref:`laravel-aggregation-sort-stage`
-- :ref:`laravel-aggregation-project-stage`
-- :ref:`laravel-aggregation-pipeline-stage`
+- :ref:`laravel-aggregation-match-stage-example`
+- :ref:`laravel-aggregation-group-stage-example`
+- :ref:`laravel-aggregation-sort-stage-example`
+- :ref:`laravel-aggregation-project-stage-exmaple`
+- :ref:`laravel-aggregation-pipeline-example`
 
 To learn more about MongoDB aggregation operators, see
 :manual:`Aggregation Stages </reference/operator/aggregation-pipeline/>` in

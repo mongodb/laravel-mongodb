@@ -119,7 +119,7 @@ class AggregationsBuilderTest extends TestCase
             ['name' => 'Ellis Lee', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1996-06-06'))],
         ]);
 
-        // start pipeline example
+        // begin pipeline example
         $pipeline = User::aggregate()
             ->addFields(
                 year: Expression::year(
@@ -132,6 +132,7 @@ class AggregationsBuilderTest extends TestCase
         // end pipeline example
 
         $result = $pipeline->get();
+        print_r($result->toJson());
         $this->assertEquals(2, $result->count());
         $this->assertNotNull($result->first()['year_avg']);
     }
