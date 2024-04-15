@@ -878,7 +878,7 @@ specified query:
    :end-before: end query elemMatch
 
 To learn more about regular expression queries in MongoDB, see
-the :manual:`$elemMatch operator <reference/operator/query/elemMatch/>`
+the :manual:`$elemMatch operator </reference/operator/query/elemMatch/>`
 in the {+server-docs-name+}.
 
 .. _laravel-query-builder-cursor-timeout:
