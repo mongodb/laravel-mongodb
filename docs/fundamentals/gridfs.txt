@@ -1,4 +1,4 @@
-.. _laravel-gridfs:
+.. _laravel-fundamentals-gridfs:
 
 ======
 GridFS
@@ -33,9 +33,8 @@ suitable for your use case, see the :manual:`GridFS Server manual page </core/gr
 Navigate the following sections to learn more about GridFS operations
 and implementation:
 
-- :ref:`Select a GridFS Bucket <gridfs-create-bucket>`
+- :ref:`Select a GridFS Bucket <gridfs-select-bucket>`
 - :ref:`Upload Files <gridfs-upload-files>`
-- :ref:`Retrieve File Information <gridfs-retrieve-file-info>`
 - :ref:`Download Files <gridfs-download-files>`
 
 How GridFS Works
@@ -98,8 +97,7 @@ The following example shows how to select a bucket named ``grid`` on the
 ``filesDb`` database and specify options on it by instantiating a
 ``MongoDB\GridFS\Bucket``:
 
-.. code-block::
-   :language: php
+.. code-block:: php
    :dedent:
 
    $manager = new MongoDB\Driver\Manager(/* connection string */);
@@ -116,8 +114,7 @@ The following example shows how to select a bucket named ``grid`` on the
 ``filesDb`` database and specify options on it by calling the
 ``selectGridFSBucket()`` method:
 
-.. code-block::
-   :language: php
+.. code-block:: php
    :dedent:
 
    $db = (new MongoDB\Client(/* connection string */))->filesDb;
@@ -150,8 +147,7 @@ The examples in this section use the following variables and values:
 The following example shows how to open an upload stream and write to it
 directly:
 
-.. code-block::
-   :language: php
+.. code-block:: php
    :dedent:
 
    $stream = $bucket->openUploadStream('new-file.txt');
@@ -162,8 +158,7 @@ directly:
 The following example shows how to upload the entire contents of a readable
 stream at once:
 
-.. code-block::
-   :language: php
+.. code-block:: php
    :dedent:
 
    $file = fopen('/path/to/source-file.txt', 'rb');
@@ -185,8 +180,7 @@ The examples in this section use the following variables and values:
 
 The following example shows how to open a download stream and read from it:
 
-.. code-block::
-   :language: php
+.. code-block:: php
    :dedent:
 
    $stream = $bucket->openDownloadStream($fileId);
@@ -195,8 +189,7 @@ The following example shows how to open a download stream and read from it:
 The following example shows how to download the file at once and write it to
 a writable stream:
 
-.. code-block::
-   :language: php
+.. code-block:: php
    :dedent:
 
    $file = fopen('/path/to/download-file.txt', 'wb');

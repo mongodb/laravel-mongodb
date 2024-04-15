@@ -34,7 +34,7 @@ class GridFSTest extends TestCase
 
             $metadata = ['description' => 'A very important message.'];
             $result = $bucket->uploadFromStream(
-                            'example.txt',
+                            'example.dat',
                             fopen('php://memory', 'r+'),
                             ['metadata' => $metadata]
                         );
@@ -58,7 +58,7 @@ class GridFSTest extends TestCase
 
             $metadata = ['description' => 'A very important message.'];
             $result = $bucket->uploadFromStream(
-                'example.txt',
+                'example.dat',
                 fopen('php://memory', 'r+'),
                 ['metadata' => $metadata]
             );
@@ -79,7 +79,7 @@ class GridFSTest extends TestCase
             ]);
 
             $stream = $bucket->openUploadStream('new-file.txt');
-            $contents = file_get_contents('docs/includes/fundamentals/gridfs/example.txt');
+            $contents = file_get_contents('docs/includes/fundamentals/gridfs/example.dat');
             fwrite($stream, $contents);
             fclose($stream);
         } catch (\MongoDB\Driver\Exception\Exception $e) {
@@ -95,7 +95,7 @@ class GridFSTest extends TestCase
                 'chunkSizeBytes' => 1048576,
             ]);
 
-            $file = fopen('docs/includes/fundamentals/gridfs/example.txt', 'rb');
+            $file = fopen('docs/includes/fundamentals/gridfs/example.dat', 'rb');
             $result = $bucket->uploadFromStream(
                 'new-file.txt', $file);
 
@@ -113,7 +113,7 @@ class GridFSTest extends TestCase
             'chunkSizeBytes' => 1048576,
         ]);
 
-        $file = fopen('docs/includes/fundamentals/gridfs/example.txt', 'rb');
+        $file = fopen('docs/includes/fundamentals/gridfs/example.dat', 'rb');
         $result = $bucket->uploadFromStream(
             'new-file.txt', $file);
 
