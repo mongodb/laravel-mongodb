@@ -6,7 +6,8 @@ namespace App\Http\Controllers;
 
 use MongoDB\BSON\ObjectId;
 use MongoDB\Client as MongoDBClient;
-use MongoDB\Driver\Exception\Exception;
+use MongoDB\Driver\Manager;
+use MongoDB\GridFS\Bucket;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function fclose;
@@ -23,9 +24,8 @@ class GridFSTest extends TestCase
      */
     public function testBucketManager(): void
     {
-        try {
-            $manager = new MongoDB\Driver\Manager('mongodb://localhost:27017');
-            $bucket = new MongoDB\GridFS\Bucket(
+            $manager = new Manager('mongodb://localhost:27017');
+            $bucket = new Bucket(
                 $manager,
                 'myGridFSDb',
                 [
@@ -43,14 +43,10 @@ class GridFSTest extends TestCase
 
             echo $result; // Outputs MongoDB\BSON\ObjectId
             $this->assertNotNull($result);
-        } catch (Exception $e) {
-            echo $e;
-        }
     }
 
     public function testSelectBucket(): void
     {
-        try {
             $db = (new MongoDBClient())->filesDb;
             $bucket = $db->selectGridFSBucket([
                 'bucketName' => 'grid',
@@ -65,14 +61,10 @@ class GridFSTest extends TestCase
             );
 
             echo $result; // Outputs MongoDB\BSON\ObjectId
-        } catch (Exception $e) {
-            echo $e;
-        }
     }
 
     public function testOpenUploadStream(): void
     {
-        try {
             $db = (new MongoDBClient())->filesDb;
             $bucket = $db->selectGridFSBucket([
                 'bucketName' => 'grid',
@@ -83,14 +75,10 @@ class GridFSTest extends TestCase
             $contents = file_get_contents('docs/includes/fundamentals/gridfs/example.dat');
             fwrite($stream, $contents);
             fclose($stream);
-        } catch (Exception $e) {
-            echo $e;
-        }
     }
 
     public function testUploadStreamAtOnce(): void
     {
-        try {
             $db = (new MongoDBClient())->filesDb;
             $bucket = $db->selectGridFSBucket([
                 'bucketName' => 'grid',
@@ -104,9 +92,6 @@ class GridFSTest extends TestCase
             );
 
             echo $result; // Outputs MongoDB\BSON\ObjectId
-        } catch (Exception $e) {
-            echo $e;
-        }
     }
 
     private function uploadFileHelper(): ObjectId
