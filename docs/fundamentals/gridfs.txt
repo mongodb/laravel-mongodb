@@ -98,7 +98,6 @@ The following example shows how to select a bucket named ``grid`` on the
 ``MongoDB\GridFS\Bucket``:
 
 .. code-block:: php
-   :dedent:
 
    $manager = new MongoDB\Driver\Manager(/* connection string */);
    $bucket = new MongoDB\GridFS\Bucket(
@@ -115,7 +114,6 @@ The following example shows how to select a bucket named ``grid`` on the
 ``selectGridFSBucket()`` method:
 
 .. code-block:: php
-   :dedent:
 
    $db = (new MongoDB\Client(/* connection string */))->filesDb;
    $bucket = $db->selectGridFSBucket([
@@ -148,7 +146,6 @@ The following example shows how to open an upload stream and write to it
 directly:
 
 .. code-block:: php
-   :dedent:
 
    $stream = $bucket->openUploadStream('new-file.txt');
    $contents = file_get_contents('/path/to/source-file.txt');
@@ -159,7 +156,6 @@ The following example shows how to upload the entire contents of a readable
 stream at once:
 
 .. code-block:: php
-   :dedent:
 
    $file = fopen('/path/to/source-file.txt', 'rb');
    $bucket->uploadFromStream('new-file.txt', $file);
@@ -181,7 +177,6 @@ The examples in this section use the following variables and values:
 The following example shows how to open a download stream and read from it:
 
 .. code-block:: php
-   :dedent:
 
    $stream = $bucket->openDownloadStream($fileId);
    $contents = stream_get_contents($stream);
@@ -190,7 +185,6 @@ The following example shows how to download the file at once and write it to
 a writable stream:
 
 .. code-block:: php
-   :dedent:
 
    $file = fopen('/path/to/download-file.txt', 'wb');
    $bucket->downloadToStream($fileId, $file);
