@@ -124,7 +124,7 @@ The following example shows how to select a bucket named ``grid`` on the
 For more information on these classes and the options that you can specify,
 see the following API documentation:
 
-- `MongoDBGridFSBucket constructor < https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBGridFSBucket__construct/#mongodb-phpmethod-phpmethod.MongoDB-GridFS-Bucket--__construct-->`__
+- `MongoDBGridFSBucket constructor <https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBGridFSBucket__construct/#mongodb-phpmethod-phpmethod.MongoDB-GridFS-Bucket--__construct-->`__
 - `selectGridFSBucket() method <https://www.mongodb.com/docs/php-library/master/reference/method/MongoDBDatabase-selectGridFSBucket/#phpmethod.MongoDB\Database::selectGridFSBucket>`__
 
 .. _gridfs-upload-files:
