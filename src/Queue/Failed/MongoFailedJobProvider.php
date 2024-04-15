@@ -90,7 +90,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
      *
      * @param  string|null $queue
      *
-     * @return array
+     * @return list<mixed>
      */
     public function ids($queue = null)
     {
