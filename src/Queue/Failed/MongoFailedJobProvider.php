@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
+use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
 
 use function array_map;
@@ -86,11 +87,11 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     }
 
     /**
-     * Get the IDs of all of the failed jobs.
+     * Get the IDs of all the failed jobs.
      *
      * @param  string|null $queue
      *
-     * @return list<mixed>
+     * @return list<ObjectId>
      */
     public function ids($queue = null)
     {
@@ -102,7 +103,7 @@ class MongoFailedJobProvider extends DatabaseFailedJobProvider
     }
 
     /**
-     * Prune all entries older than the given date.
+     * Prune all failed jobs older than the given date.
      *
      * @param  DateTimeInterface $before
      *
