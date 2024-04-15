@@ -6,10 +6,10 @@ namespace App\Http\Controllers;
 
 use DateTimeImmutable;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Builder\Accumulator;
 use MongoDB\Builder\Expression;
 use MongoDB\Builder\Query;
 use MongoDB\Builder\Type\Sort;
-use MongoDB\Builder\Accumulator;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
 
@@ -130,8 +130,10 @@ class AggregationsBuilderTest extends TestCase
                 ),
             )
             //->addRawStage('$group', ['_id' => '$occupation', 'year_avg' => ['$avg' => '$year']])
-            ->group(_id: Expression::fieldPath('occupation'),
-                year_avg: Accumulator::avg(Expression::numberFieldPath('year')))
+            ->group(
+                _id: Expression::fieldPath('occupation'),
+                year_avg: Accumulator::avg(Expression::numberFieldPath('year')),
+            )
             ->sort(_id: Sort::Asc);
         // end pipeline example
 
