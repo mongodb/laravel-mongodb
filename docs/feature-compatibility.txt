@@ -136,7 +136,7 @@ The following Eloquent methods are not supported in {+odm-short+}:
      - *Unsupported*
 
    * - Grouping
-     - Partially supported, use :ref:`Aggregation Builders <laravel-query-builder-aggregates>`.
+     - Partially supported, use :ref:`Aggregations <laravel-query-builder-aggregations>`.
 
    * - Limit and Offset
      - ✓
