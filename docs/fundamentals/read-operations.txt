@@ -266,7 +266,7 @@ documents.
             Runtime: 95
             IMDB Rating: 4
             IMDB Votes: 9296
-            Plot: A sci-fi update of the famous 6th Century poem. In a beseiged land, Beowulf must
+            Plot: A sci-fi update of the famous 6th Century poem. In a besieged land, Beowulf must
             battle against the hideous creature Grendel and his vengeance seeking mother.
 
 .. _laravel-retrieve-one:
