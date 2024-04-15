@@ -9,7 +9,7 @@ GridFS
    :values: tutorial
 
 .. meta::
-   :keywords: php framework, odm, file storage, large files
+   :keywords: php framework, odm, file storage, large files, upload, stream, chunk size
 
 .. contents:: On this page
    :local:
@@ -22,7 +22,7 @@ Overview
 
 In this guide, you can learn how to store and retrieve large files in
 MongoDB using **GridFS**. GridFS is a specification that describes how
-to split files into chunks during storage and reassemble them during retrieval. 
+to split files into chunks during storage and reassemble them during retrieval.
 {+odm-short+} uses the PHP Library driver implementation of GridFS to manage
 the operations and organization of the file storage.
 
@@ -33,7 +33,7 @@ suitable for your use case, see the :manual:`GridFS Server manual page </core/gr
 Navigate the following sections to learn more about GridFS operations
 and implementation:
 
-- :ref:`Create a GridFS Bucket <gridfs-create-bucket>`
+- :ref:`Select a GridFS Bucket <gridfs-create-bucket>`
 - :ref:`Upload Files <gridfs-upload-files>`
 - :ref:`Retrieve File Information <gridfs-retrieve-file-info>`
 - :ref:`Download Files <gridfs-download-files>`
@@ -42,19 +42,17 @@ How GridFS Works
 ----------------
 
 GridFS organizes files in a **bucket**, a group of MongoDB collections
-that contain the chunks of files and descriptive information.
-Buckets contain the following collections, named using the convention
-defined in the GridFS specification:
+that contain the chunks of files and descriptive information. Buckets contain
+the following collections:
 
-- The ``chunks`` collection stores the binary file chunks.
-- The ``files`` collection stores the file metadata.
+- ``chunks``, which stores the binary file chunks
+- ``files``, which stores the file metadata
 
 When you create a new GridFS bucket, the driver creates the following data:
 
-- Collections for ``chunks`` and ``files``, prefixed with the default bucket 
-  name ``fs``, unless you specify a different name. 
+- Collections for ``chunks`` and ``files``, prefixed with the default bucket
+  name ``fs`` followed by a ``.`` character, unless you specify a different name.
 - An index on each collection to retrieve files and related metadata efficiently.
-- A GridFS bucket on the first write operation if it does not already exist.
 
 To learn more, see :manual:`GridFS Indexes </core/gridfs/#gridfs-indexes>` in
 the {+server-docs-name+}.
@@ -62,7 +60,7 @@ the {+server-docs-name+}.
 When storing files with GridFS, the driver splits the files into smaller
 pieces, each represented by a separate document in the ``chunks`` collection.
 The driver creates a document in the ``files`` collection that contains
-a unique file id, file name, and other file metadata. You can upload the file 
+a unique file id, file name, and other file metadata. You can upload the file
 from memory or from a stream. The following diagram shows how GridFS splits
 files when uploading to a bucket:
 
@@ -74,83 +72,135 @@ collection in the specified bucket and uses the information to reconstruct
 the file from documents in the ``chunks`` collection. You can read the file
 into memory or output it to a stream.
 
-.. _gridfs-create-bucket:
+.. _gridfs-select-bucket:
 
-Create a GridFS Bucket
+Select a GridFS Bucket
 ----------------------
 
-You can create a GridFS bucket by using one of the following methods:
+To store or retrieve files from GridFS, select a new or existing bucket on
+a MongoDB database. MongoDB creates a bucket only when you upload the first
+file to it.
+
+You can select a GridFS bucket by using one of the following methods:
 
 - Instantiate a ``MongoDB\GridFS\Bucket`` by using the PHP extension
 - Call the ``selectGridFSBucket()`` method from the PHP Library ``MongoDB\Database`` class
 
 The bucket can be constructed with various options:
 
-bucketName determines the prefix for the bucket's metadata and chunk collections. The default value is "fs".
+- ``bucketName`` determines the prefix for the bucket's metadata and chunk
+  collections. The default value is ``"fs"``.
+- ``chunkSizeBytes`` determines the size of each chunk. GridFS divides the
+  file into chunks of this length, except for the last, which is only as large
+  as needed. The default size is ``261120``, which equals 255 KiB.
 
-chunkSizeBytes determines the size of each chunk. GridFS divides the file into chunks of this length, except for the last, which is only as large as needed. The default size is 261120 (i.e. 255 KiB).
+The following example shows how to select a bucket named ``grid`` on the
+``filesDb`` database and specify options on it by instantiating a
+``MongoDB\GridFS\Bucket``:
 
-readConcern, readPreference and writeConcern options can be used to specify defaults for read and write operations, much like the 
-MongoDB\GridFS\Collection
- options.
+.. code-block::
+   :language: php
+   :dedent:
 
-TODO: add code example
+   $manager = new MongoDB\Driver\Manager(/* connection string */);
+   $bucket = new MongoDB\GridFS\Bucket(
+       $manager,
+       'filesDb',
+       [
+           'bucketName' => 'grid',
+           'chunkSizeBytes' => 1048576,
+       ]);
 
+
+The following example shows how to select a bucket named ``grid`` on the
+``filesDb`` database and specify options on it by calling the
+``selectGridFSBucket()`` method:
+
+.. code-block::
+   :language: php
+   :dedent:
+
+   $db = (new MongoDB\Client(/* connection string */))->filesDb;
+   $bucket = $db->selectGridFSBucket([
+       'bucketName' => 'grid',
+       'chunkSizeBytes' => 1048576,
+   ]);
+
+For more information on these classes and the options that you can specify,
+see the following API documentation:
+
+- `MongoDBGridFSBucket constructor < https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBGridFSBucket__construct/#mongodb-phpmethod-phpmethod.MongoDB-GridFS-Bucket--__construct-->`__
+- `selectGridFSBucket() method <https://www.mongodb.com/docs/php-library/master/reference/method/MongoDBDatabase-selectGridFSBucket/#phpmethod.MongoDB\Database::selectGridFSBucket>`__
 
 .. _gridfs-upload-files:
 
 Upload Files
 ------------
 
-To upload a file to GridFS using a writable stream, you can either open a 
-stream and write to it directly or write the entire contents of another 
-readable stream to GridFS all at once.
+To upload a file to a GridFS by using a writable stream, you can either open
+a stream and write to it directly or write the entire contents of a readable
+stream to GridFS at once.
 
-To open an upload stream and write to it:
+The examples in this section use the following variables and values:
 
-<?php
-$bucket = (new MongoDB\Client)->test->selectGridFSBucket();
-$stream = $bucket->openUploadStream('my-file.txt');
-$contents = file_get_contents('/path/to/my-file.txt');
-fwrite($stream, $contents);
-fclose($stream);
+- ``$bucket`` references the selected bucket
+- ``new-file.txt`` is the name of GridFS file you write to
+- ``/path/to/source-file.txt`` is the path of the file that you want to upload
 
-To upload the entire contents of a readable stream in one call:
+The following example shows how to open an upload stream and write to it
+directly:
 
-<?php
-$bucket = (new MongoDB\Client)->test->selectGridFSBucket();
-$file = fopen('/path/to/my-file.txt', 'rb');
-$bucket->uploadFromStream('my-file.txt', $file);
+.. code-block::
+   :language: php
+   :dedent:
 
+   $stream = $bucket->openUploadStream('new-file.txt');
+   $contents = file_get_contents('/path/to/source-file.txt');
+   fwrite($stream, $contents);
+   fclose($stream);
+
+The following example shows how to upload the entire contents of a readable
+stream at once:
+
+.. code-block::
+   :language: php
+   :dedent:
+
+   $file = fopen('/path/to/source-file.txt', 'rb');
+   $bucket->uploadFromStream('new-file.txt', $file);
 
 .. _gridfs-download-files:
 
 Download Files
 --------------
 
-To download a file from GridFS using a readable stream, you can either open a stream and read from it directly or download the entire file all at once.
+To download a file from GridFS by using a readable stream, you can either open
+a stream and read from it directly or download the entire file at once.
 
-To open a download stream and read from it:
+The examples in this section use the following variables and values:
 
-<?php
-// In practice, $fileId denotes the _id of an existing file in GridFS
-$fileId = new MongoDB\BSON\ObjectId;
-$bucket = (new MongoDB\Client)->test->selectGridFSBucket();
-$stream = $bucket->openDownloadStream($fileId);
-$contents = stream_get_contents($stream);
+- ``$bucket`` references the selected bucket
+- ``$fileId`` references the ``MongoDB\BSON\ObjectId`` value of the file to download
+- ``/path/to/download-file.txt`` is the download file path
 
+The following example shows how to open a download stream and read from it:
 
-To download the file all at once and write it to a writable stream:
+.. code-block::
+   :language: php
+   :dedent:
 
-<?php
-// In practice, $fileId denotes the _id of an existing file in GridFS
-$fileId = new MongoDB\BSON\ObjectId;
-$bucket = (new MongoDB\Client)->test->selectGridFSBucket();
-$file = fopen('/path/to/my-output-file.txt', 'wb');
-$bucket->downloadToStream($fileId, $file);
+   $stream = $bucket->openDownloadStream($fileId);
+   $contents = stream_get_contents($stream);
 
+The following example shows how to download the file at once and write it to
+a writable stream:
 
+.. code-block::
+   :language: php
+   :dedent:
 
+   $file = fopen('/path/to/download-file.txt', 'wb');
+   $bucket->downloadToStream($fileId, $file);
 
-To learn more, see the `GridFS <https://www.mongodb.com/docs/php-library/current/tutorial/gridfs/>`__ 
+To learn more, see the `GridFS <https://www.mongodb.com/docs/php-library/current/tutorial/gridfs/>`__
 PHP Library tutorial.
