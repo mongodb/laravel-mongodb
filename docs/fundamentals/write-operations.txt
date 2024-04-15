@@ -30,7 +30,6 @@ This guide shows you how to perform the following tasks:
 - :ref:`laravel-fundamentals-modify-documents`
 - :ref:`laravel-fundamentals-delete-documents`
 
-
 .. _laravel-fundamentals-write-sample-model:
 
 Sample Model
