@@ -37,7 +37,7 @@ see :manual:`Documents </core/document/>` in the Server manual.
 Specify the Database in a Connection Configuration
 --------------------------------------------------
 
-You specify a database name when configuring a connection in your
+You can specify a database name that a connection uses in your
 application's ``config/database.php`` file. The ``connections`` property
 in this file stores all of your database connection information, such as
 your connection string, database name, and optionally, authentication
@@ -55,7 +55,7 @@ create a database connection to the ``animals`` database in the
 ``config/database.php`` file:
 
 .. code-block:: php
-   :emphasize-lines: 7
+   :emphasize-lines: 8
    
    'default' => 'mongodb',
 
@@ -63,7 +63,8 @@ create a database connection to the ``animals`` database in the
 
        'mongodb' => [
            'driver' => 'mongodb',
-           'dsn' => 'mongodb://localhost:27017/animals',
+           'dsn' => 'mongodb://localhost:27017/',
+           'database' => 'animals',
        ], ...
    ]
 
@@ -81,12 +82,14 @@ The following example shows how to specify multiple database connections
 
        'mongodb' => [
            'driver' => 'mongodb',
-           'dsn' => 'mongodb://localhost:27017/animals',
+           'dsn' => 'mongodb://localhost:27017/',
+           'database' => 'animals',
        ],
 
        'mongodb_alt' => [
            'driver' => 'mongodb',
-           'dsn' => 'mongodb://localhost:27017/plants',
+           'dsn' => 'mongodb://localhost:27017/',
+           'database' => 'plants',
        ]
 
    ], ...
@@ -100,7 +103,7 @@ The following example shows how to specify multiple database connections
 
 If your application contains multiple database connections and you want
 to store your model in a database other than the default, override the
-``$connection`` property when creating a ``Model`` class.
+``$connection`` property in your ``Model`` class.
 
 The following example shows how to override the ``$connection`` property
 on the ``Flower`` model class to use the ``mongodb_alt`` connection.
@@ -121,7 +124,7 @@ Access a Collection
 
 When you create model class that extends
 ``MongoDB\Laravel\Eloquent\Model``, {+odm-short+} stores the model data
-in a collection with a name that is the snake case plural form of your
+in a collection with a name formatted as the snake case plural form of your
 model class name.
 
 For example, if you create a model class called ``Flower``,
@@ -129,12 +132,12 @@ Laravel applies the model to the ``flowers`` collection in the database.
 
 .. tip::
 
-   To learn how to specify a different collection name when defining a model class, see the
+   To learn how to specify a different collection name in your model class, see the
    :ref:`laravel-model-customize-collection-name` section of the Eloquent
    Model Class guide.
 
 We generally recommend that you use the Eloquent ORM to access a collection
-implicitly for code readability and maintainability. The following
+for code readability and maintainability. The following
 example specifies a find operation by using the ``Flower`` class, so
 Laravel retrieves results from the ``flowers`` collection:
 
@@ -142,11 +145,11 @@ Laravel retrieves results from the ``flowers`` collection:
 
    Flower::where('name', 'Water Lily')->get()
 
-If you are not able to accomplish your operation by using an Eloquent
-model, you can access a collection by using a facade to access the query
-builder class ``DB`` and calling the ``collection()`` method. The
-following example shows the same query as in the preceding example, but
-the query is constructed by using the ``DB::collection()`` method:
+If you are unable to accomplish your operation by using an Eloquent
+model, you can access the query builder by calling the ``collection()``
+method on the ``DB`` facade. The following example shows the same query
+as in the preceding example, but the query is constructed by using the
+``DB::collection()`` method:
 
 .. code-block:: php
 
