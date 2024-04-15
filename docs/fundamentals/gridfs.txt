@@ -26,9 +26,10 @@ to split files into chunks during storage and reassemble them during retrieval.
 {+odm-short+} uses the PHP Library driver implementation of GridFS to manage
 the operations and organization of the file storage.
 
-Use GridFS if the size of your file exceeds the MongoDB BSON document
-size limit of 16 megabytes. For more detailed information on whether GridFS is
-suitable for your use case, see the :manual:`GridFS Server manual page </core/gridfs>`.
+Use GridFS if your file exceeds the MongoDB BSON document size limit of 16
+megabytes. To learn whether GridFS is suitable for your use case, see
+:manual:`When to Use GridFS </core/gridfs/#when-to-use-gridfs>` in the
+{+server-docs-name+}.
 
 Navigate the following sections to learn more about GridFS operations
 and implementation:
@@ -41,7 +42,7 @@ How GridFS Works
 ----------------
 
 GridFS organizes files in a **bucket**, a group of MongoDB collections
-that contain the chunks of files and descriptive information. Buckets contain
+containing chunks of files and descriptive information. Buckets contain
 the following collections:
 
 - ``chunks``, which stores the binary file chunks
@@ -50,8 +51,8 @@ the following collections:
 When you create a new GridFS bucket, the driver creates the following data:
 
 - Collections for ``chunks`` and ``files``, prefixed with the default bucket
-  name ``fs`` followed by a ``.`` character, unless you specify a different name.
-- An index on each collection to retrieve files and related metadata efficiently.
+  name ``fs`` followed by a ``.`` character, unless you specify a different name
+- An index on each collection to retrieve files and related metadata efficiently
 
 To learn more, see :manual:`GridFS Indexes </core/gridfs/#gridfs-indexes>` in
 the {+server-docs-name+}.
@@ -60,7 +61,7 @@ When storing files with GridFS, the driver splits the files into smaller
 pieces, each represented by a separate document in the ``chunks`` collection.
 The driver creates a document in the ``files`` collection that contains
 a unique file id, file name, and other file metadata. You can upload the file
-from memory or from a stream. The following diagram shows how GridFS splits
+from memory or a stream. The following diagram shows how GridFS splits
 files when uploading to a bucket:
 
 .. figure:: /includes/figures/GridFS-upload.png
@@ -85,7 +86,7 @@ You can select a GridFS bucket by using one of the following methods:
 - Instantiate a ``MongoDB\GridFS\Bucket`` by using the PHP extension
 - Call the ``selectGridFSBucket()`` method from the PHP Library ``MongoDB\Database`` class
 
-The bucket can be constructed with various options:
+You can pass the GridFS bucket selection methods the following options:
 
 - ``bucketName`` determines the prefix for the bucket's metadata and chunk
   collections. The default value is ``"fs"``.
@@ -133,7 +134,7 @@ Upload Files
 ------------
 
 To upload a file to a GridFS by using a writable stream, you can either open
-a stream and write to it directly or write the entire contents of a readable
+the stream and write to it directly or write the entire contents of a readable
 stream to GridFS at once.
 
 The examples in this section use the following variables and values:
@@ -189,5 +190,5 @@ a writable stream:
    $file = fopen('/path/to/download-file.txt', 'wb');
    $bucket->downloadToStream($fileId, $file);
 
-To learn more, see the `GridFS <https://www.mongodb.com/docs/php-library/current/tutorial/gridfs/>`__
-PHP Library tutorial.
+To learn more, see the `GridFS tutorial <https://www.mongodb.com/docs/php-library/current/tutorial/gridfs/>`__
+in the PHP Library documentation.
