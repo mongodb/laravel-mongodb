@@ -45,17 +45,17 @@ details. After you specify a database connection, you can perform
 database-level operations and access collections that the database
 contains.
 
-If you set the database name in a connection string to the name of a
+If you set the database name in the ``database`` property to the name of a
 nonexistent database, Laravel still makes a valid connection. When you
 insert any data into a collection in the database, the server creates it
 automatically.
 
 The following example shows how to set a default database connection and
 create a database connection to the ``animals`` database in the
-``config/database.php`` file:
+``config/database.php`` file by setting the ``dsn`` and ``database`` properties:
 
 .. code-block:: php
-   :emphasize-lines: 8
+   :emphasize-lines: 1,8
    
    'default' => 'mongodb',
 
