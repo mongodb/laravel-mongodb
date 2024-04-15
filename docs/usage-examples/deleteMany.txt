@@ -1,0 +1,68 @@
+.. _laravel-delete-many-usage:
+
+=========================
+Delete Multiple Documents
+=========================
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: delete many, remove, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+You can delete multiple documents in a collection by calling the ``delete()`` method on an
+object collection or a query builder.
+
+To delete multiple documents, pass a query filter to the ``where()`` method. Then, delete the
+matching documents by calling the ``delete()`` method.
+
+Example
+-------
+
+This usage example performs the following actions:
+
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database
+- Deletes documents from the ``movies`` collection that match a query filter
+- Prints the number of deleted documents
+
+The example calls the following methods on the ``Movie`` model:
+
+- ``where()``: matches documents in which the value of the ``year`` field is less than or
+  equal to ``1910``.
+- ``delete()``: deletes the retrieved documents. This method returns the number of documents
+  that were successfully deleted.
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: ../includes/usage-examples/DeleteManyTest.php
+      :start-after: begin-delete-many
+      :end-before: end-delete-many
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      Deleted documents: 7
+
+To learn how to edit your Laravel application to run the usage example, see the
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
+
+.. tip::
+
+   To learn more about deleting documents with {+odm-short+}, see the :ref:`laravel-fundamentals-delete-documents`
+   section of the Write Operations guide.
+
+   For more information about query filters, see the :ref:`laravel-retrieve-matching` section of
+   the Read Operations guide.
+
