@@ -4,15 +4,16 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Account;
-use Illuminate\Support\Facades\DB;
-use MongoDB\Client as MongoDBClient;
-use MongoDB\Laravel\Tests\TestCase;
-use MongoDB\Client;
-use MongoDB\Driver\Manager;
-use MongoDB\GridFS\Bucket;
-use MongoDB\Driver\ReadPreference;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Client as MongoDBClient;
+use MongoDB\Driver\Exception\Exception;
+use MongoDB\Laravel\Tests\TestCase;
+
+use function fclose;
+use function file_get_contents;
+use function fopen;
+use function fwrite;
+use function stream_get_contents;
 
 class GridFSTest extends TestCase
 {
@@ -30,27 +31,27 @@ class GridFSTest extends TestCase
                 [
                     'bucketName' => 'grid',
                     'chunkSizeBytes' => 1048576,
-                ]);
+                ],
+            );
 
             $metadata = ['description' => 'A very important message.'];
             $result = $bucket->uploadFromStream(
-                            'example.txt',
-                            fopen('php://memory', 'r+'),
-                            ['metadata' => $metadata]
-                        );
-
+                'example.txt',
+                fopen('php://memory', 'r+'),
+                ['metadata' => $metadata],
+            );
 
             echo $result; // Outputs MongoDB\BSON\ObjectId
             $this->assertNotNull($result);
-
-        } catch (\MongoDB\Driver\Exception\Exception $e) {
+        } catch (Exception $e) {
             echo $e;
         }
     }
+
     public function testSelectBucket(): void
     {
         try {
-            $db = (new MongoDBClient)->filesDb;
+            $db = (new MongoDBClient())->filesDb;
             $bucket = $db->selectGridFSBucket([
                 'bucketName' => 'grid',
                 'chunkSizeBytes' => 1048576,
@@ -60,19 +61,19 @@ class GridFSTest extends TestCase
             $result = $bucket->uploadFromStream(
                 'example.txt',
                 fopen('php://memory', 'r+'),
-                ['metadata' => $metadata]
+                ['metadata' => $metadata],
             );
 
             echo $result; // Outputs MongoDB\BSON\ObjectId
-
-        } catch (\MongoDB\Driver\Exception\Exception $e) {
+        } catch (Exception $e) {
             echo $e;
         }
     }
+
     public function testOpenUploadStream(): void
     {
         try {
-            $db = (new MongoDBClient)->filesDb;
+            $db = (new MongoDBClient())->filesDb;
             $bucket = $db->selectGridFSBucket([
                 'bucketName' => 'grid',
                 'chunkSizeBytes' => 1048576,
@@ -82,14 +83,15 @@ class GridFSTest extends TestCase
             $contents = file_get_contents('docs/includes/fundamentals/gridfs/example.txt');
             fwrite($stream, $contents);
             fclose($stream);
-        } catch (\MongoDB\Driver\Exception\Exception $e) {
+        } catch (Exception $e) {
             echo $e;
         }
     }
+
     public function testUploadStreamAtOnce(): void
     {
         try {
-            $db = (new MongoDBClient)->filesDb;
+            $db = (new MongoDBClient())->filesDb;
             $bucket = $db->selectGridFSBucket([
                 'bucketName' => 'grid',
                 'chunkSizeBytes' => 1048576,
@@ -97,46 +99,47 @@ class GridFSTest extends TestCase
 
             $file = fopen('docs/includes/fundamentals/gridfs/example.txt', 'rb');
             $result = $bucket->uploadFromStream(
-                'new-file.txt', $file);
+                'new-file.txt',
+                $file,
+            );
 
             echo $result; // Outputs MongoDB\BSON\ObjectId
-        } catch (\MongoDB\Driver\Exception\Exception $e) {
+        } catch (Exception $e) {
             echo $e;
         }
     }
 
     private function uploadFileHelper(): ObjectId
     {
-        $db = (new MongoDBClient)->filesDb;
+        $db = (new MongoDBClient())->filesDb;
         $bucket = $db->selectGridFSBucket([
             'bucketName' => 'grid',
             'chunkSizeBytes' => 1048576,
         ]);
 
         $file = fopen('docs/includes/fundamentals/gridfs/example.txt', 'rb');
-        $result = $bucket->uploadFromStream(
-            'new-file.txt', $file);
-
-        return $result;
+        return $bucket->uploadFromStream(
+            'new-file.txt',
+            $file,
+        );
     }
 
     public function testDownloadStream(): void
     {
         $fileId = $this->uploadFileHelper();
 
-        $bucket = (new MongoDBClient)->filesDb->selectGridFSBucket(['bucketName' => 'grid']);
+        $bucket = (new MongoDBClient())->filesDb->selectGridFSBucket(['bucketName' => 'grid']);
         $stream = $bucket->openDownloadStream($fileId);
         $contents = stream_get_contents($stream);
 
         echo $contents;
-
     }
 
     public function testDownloadFile(): void
     {
         $fileId = $this->uploadFileHelper();
 
-        $bucket = (new MongoDBClient)->filesDb->selectGridFSBucket(['bucketName' => 'grid']);
+        $bucket = (new MongoDBClient())->filesDb->selectGridFSBucket(['bucketName' => 'grid']);
 
         $file = fopen('docs/includes/fundamentals/gridfs/download.txt', 'wb');
         $bucket->downloadToStream($fileId, $file);
