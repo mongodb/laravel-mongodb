@@ -44,7 +44,7 @@ sample data and creating the following files in your Laravel web application:
 - ``browse_movies.blade.php`` file, which contains HTML code to display the results of database
   operations
 
-The following sections describe how to edit the files in your Laravel application to run 
+The following sections describe how to edit the files in your Laravel application to run
 the find operation code examples and view the expected output.
 
 .. _laravel-retrieve-matching:
@@ -52,41 +52,37 @@ the find operation code examples and view the expected output.
 Retrieve Documents that Match a Query
 -------------------------------------
 
-You can retrieve documents that match a set of criteria by passing a query filter to the ``where()``
-method. A query filter specifies field value requirements and instructs the find operation
-to only return documents that meet these requirements. To run the query, call the ``where()``
-method on an Eloquent model or query builder that represents your collection.
+You can use Laravel's Eloquent object-relational mapper (ORM) to create models
+that represent MongoDB collections and chain methods on them to specify
+query criteria.
+
+To retrieve documents that match a set of criteria, pass a query filter to the
+``where()`` method.
+
+A query filter specifies field value requirements and instructs the find
+operation to return only documents that meet these requirements.
+
+You can use Laravel's Eloquent object-relational mapper (ORM) to create models
+that represent MongoDB collections. To retrieve documents from a collection,
+call the ``where()`` method on the collection's corresponding Eloquent model.
 
 You can use one of the following ``where()`` method calls to build a query:
 
-- ``where('<field name>', <value>)``: builds a query that matches documents in which the
-  target field has the exact specified value
+- ``where('<field name>', <value>)`` builds a query that matches documents in
+  which the target field has the exact specified value
 
-- ``where('<field name>', '<comparison operator>', <value>)``: builds a query that matches
-  documents in which the target field's value meets the comparison criteria
-
-After building your query with the ``where()`` method, use the ``get()`` method to
-retrieve the query results.
+- ``where('<field name>', '<comparison operator>', <value>)`` builds a query
+  that matches documents in which the target field's value meets the comparison
+  criteria
 
 To apply multiple sets of criteria to the find operation, you can chain a series
 of ``where()`` methods together.
 
-.. tip:: 
+After building your query with the ``where()`` method, chain the ``get()``
+method to retrieve the query results.
 
-   To learn more about other query methods in {+odm-short+}, see the :ref:`laravel-query-builder`
-   page.
-
-.. _laravel-retrieve-eloquent:
-
-Use Eloquent Models to Retrieve Documents
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can use Laravel's Eloquent object-relational mapper (ORM) to create models that represent
-MongoDB collections. To retrieve documents from a collection, call the ``where()`` method
-on the collection's corresponding Eloquent model.
-
-This example calls two ``where()`` methods on the ``Movie`` Eloquent model to retrieve
-documents that meet the following criteria:
+This example calls two ``where()`` methods on the ``Movie`` Eloquent model to
+retrieve documents that meet the following criteria:
 
 - ``year`` field has a value of ``2010``
 - ``imdb.rating`` nested field has a value greater than ``8.5``
@@ -123,7 +119,7 @@ documents that meet the following criteria:
                      $movies = Movie::where('year', 2010)
                          ->where('imdb.rating', '>', 8.5)
                          ->get();
-                  
+
                      return view('browse_movies', [
                          'movies' => $movies
                      ]);
@@ -150,132 +146,8 @@ documents that meet the following criteria:
             Plot: A documentary on Brazilian Formula One racing driver Ayrton Senna, who won the
             F1 world championship three times before his death at age 34.
 
-.. _laravel-retrieve-query-builder:
-
-Use Laravel Queries to Retrieve Documents
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-You can use Laravel's database query builder to run find operations instead of using Eloquent
-models. To run the database query, import the ``DB`` facade into your controller file and use
-Laravel's query builder syntax.
-
-This example uses Laravel's query builder to retrieve documents in which the value
-of the ``imdb.votes`` nested field is ``350``.
-
-.. tabs::
-
-   .. tab:: Query Syntax
-      :tabid: query-syntax
-
-      Use the following syntax to specify the query:
-
-      .. code-block:: php
-
-         $movies = DB::connection('mongodb')
-             ->collection('movies')
-             ->where('imdb.votes', 350)
-             ->get();
-
-   .. tab:: Controller Method
-      :tabid: controller
-
-      To see the query results in the ``browse_movies`` view, edit the ``show()`` function
-      in the ``MovieController.php`` file to resemble the following code:
-
-      .. io-code-block::
-         :copyable: true
-
-         .. input::
-            :language: php
-
-            class MovieController
-            {
-                public function show()
-                {
-                     $movies = DB::connection('mongodb')
-                         ->collection('movies')
-                         ->where('imdb.votes', 350)
-                         ->get();
-
-                     return view('browse_movies', [
-                         'movies' => $movies
-                     ]);
-                }
-            }
-
-         .. output::
-            :language: none
-            :visible: false
-
-            Title: Murder in New Hampshire: The Pamela Wojas Smart Story
-            Year: 1991
-            Runtime: 100
-            IMDB Rating: 5.9
-            IMDB Votes: 350
-            Plot: Pamela Smart knows exactly what she wants and is willing to do
-            anything to get it. She is fed up with teaching, and her marriage offers
-            little excitement. Looking for a way out she applies ...
-            
-            Title: Ah Fu
-            Year: 2000
-            Runtime: 105
-            IMDB Rating: 6.6
-            IMDB Votes: 350
-            Plot: After a 13-year imprisonment in Hong Kong, a kickboxer challenges the
-            current champion in order to restore his honor.
-            
-            Title: Bandage
-            Year: 2010
-            Runtime: 119
-            IMDB Rating: 7
-            IMDB Votes: 350
-            Plot: Four boys have their friendship and musical talents tested in the ever
-            changing worlds of the music industry and real life in 1990s Japan.
-            
-            Title: Great Migrations
-            Year: 2010
-            Runtime: 45
-            IMDB Rating: 8.2
-            IMDB Votes: 350
-            Plot: Great Migrations takes viewers on the epic journeys animals undertake to
-            ensure the survival of their species.
-
-      Then, make the following changes to your Laravel Quick Start application:
-
-      - Import the ``DB`` facade into your ``MovieController.php`` file by adding the
-        ``use Illuminate\Support\Facades\DB`` use statement 
-      - Replace the contents of your ``browse_movies.blade.php`` file with the following code:
-
-        .. code-block:: php
-
-           <!DOCTYPE html>
-           <html>
-           <head>
-              <title>Browse Movies</title>
-           </head>
-           <body>
-           <h2>Movies</h2>
-
-           @forelse ($movies as $movie)
-           <p>
-              Title: {{ $movie['title'] }}<br>
-              Year: {{ $movie['year'] }}<br>
-              Runtime: {{ $movie['runtime'] }}<br>
-              IMDB Rating: {{ $movie['imdb']['rating'] }}<br>
-              IMDB Votes: {{ $movie['imdb']['votes'] }}<br>
-              Plot: {{ $movie['plot'] }}<br>
-           </p>
-           @empty
-              <p>No results</p>
-           @endforelse
-
-           </body>
-           </html>
-
-        .. note::
-
-           Since the Laravel query builder returns data as an array rather than as instances of the Eloquent model class,
-           the view accesses the fields by using the array syntax instead of the ``->`` object operator.
+To learn how to query by using the Laravel query builder instead of the
+Eloquent ORM, see the :ref:`laravel-query-builder` page.
 
 .. _laravel-retrieve-all:
 
@@ -296,10 +168,10 @@ Use the following syntax to run a find operation that matches all documents:
 .. warning::
 
    The ``movies`` collection in the Atlas sample dataset contains a large amount of data.
-   Retrieving and displaying all documents in this collection might cause your web 
-   application to time out. 
-   
-   To avoid this issue, specify a document limit by using the ``take()`` method. For 
+   Retrieving and displaying all documents in this collection might cause your web
+   application to time out.
+
+   To avoid this issue, specify a document limit by using the ``take()`` method. For
    more information about ``take()``, see the :ref:`laravel-modify-find` section of this
    guide.
 
@@ -463,7 +335,7 @@ field.
             IMDB Votes: 620
             Plot: A documentary of black art.
 
-.. tip:: 
+.. tip::
 
    To learn more about sorting, see the following resources:
 

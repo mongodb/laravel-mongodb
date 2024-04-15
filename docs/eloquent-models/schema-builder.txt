@@ -324,6 +324,8 @@ field:
 To learn more about these indexes, see :manual:`Index Properties </core/indexes/index-properties/>`
 in the {+server-docs-name+}.
 
+.. _laravel-eloquent-geospatial-index:
+
 Create a Geospatial Index
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
