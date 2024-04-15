@@ -487,7 +487,7 @@ Delete Documents
 
 In this section, you can learn how to delete documents from a MongoDB collection
 by using {+odm-short+}. Use delete operations to remove data from your MongoDB
-database permanently.
+database.
 
 This section provides examples of the following delete operations:
 
