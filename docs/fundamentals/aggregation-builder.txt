@@ -66,8 +66,7 @@ to build aggregation stages:
 
 .. tip::
 
-   To see a complete list and the source code, see the
-   `mongodb/mongodb-php-builder <https://github.com/mongodb/mongo-php-builder/>`__
+   To learn more about builder classes, see the `mongodb/mongodb-php-builder <https://github.com/mongodb/mongo-php-builder/>`__
    GitHub repository.
 
 This section features the following examples of common aggregation stages and
@@ -102,7 +101,7 @@ Match Stage Example
 ~~~~~~~~~~~~~~~~~~~
 
 You can chain the ``match()`` method to your aggregation pipeline to specify
-a query filter. If you omit this stage, the ``aggregate()``  method outputs
+a query filter. If you omit this stage, the ``aggregate()`` method outputs
 all the documents in the model's collection for the following stage.
 
 This aggregation stage is often placed first to retrieve the data by using
@@ -418,7 +417,68 @@ running the code:
 Create a Custom Operator Factory
 --------------------------------
 
-A custom operator factory is a means of defining custom operators that you
-can use in Eloquent query builder expressions.
+When you use the aggregation builder to create an aggregation pipeline, you
+can define operations or stages in a **custom operator factory**. A custom
+operator factory is a function that returns expressions or stages of an
+aggregation pipeline. You can create these functions to improve code
+readability and reuse.
 
-TODO
+This example shows how to create and use a custom operator factory that
+returns expressions that extract the year from a specified date field.
+
+The following function accepts the name of a field that contains a date
+and returns an expression that extracts the ``year`` part of the date value:
+
+.. literalinclude:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+   :language: php
+   :dedent:
+
+The example aggregation pipeline includes the following stages:
+
+- ``addFields()``, which calls the custom operator factory function to extract
+  the year from the ``birthday`` field and assign it to the ``birth_year`` field
+- ``project()``, which includes only the ``name`` and ``birth_year`` fields in
+  its output
+
+Click the :guilabel:`{+code-output-label+}` button to see the data returned by
+running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin custom operator factory usage
+      :end-before: end custom operator factory usage
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        {
+          "name": "Alda Gröndal",
+          "birth_year": 2002
+        },
+        {
+          "name": "Francois Soma",
+          "birth_year": 1998
+        },
+        {
+          "name": "Janet Doe",
+          "birth_year": 1987
+        },
+        {
+          "name": "Eliud Nkosana",
+          "birth_year": 1984
+        },
+        {
+          "name": "Bran Steafan",
+          "birth_year": 1998
+        },
+        {
+          "name": "Ellis Lee",
+          "birth_year": 1996
+        }
+      ]
+
