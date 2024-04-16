@@ -43,7 +43,7 @@ aggregation builder to create the stages of an aggregation pipeline:
 .. tip::
 
    The aggregation builder feature is available only in {+odm-short+} versions
-   4.3 and later. To learn more about running aggregations without the
+   4.3 and later. To learn more about running aggregations without using the
    aggregation builder, see :ref:`laravel-query-builder-aggregations` in the
    Query Builder guide.
 
@@ -53,7 +53,7 @@ Create an Aggregation Pipeline
 ------------------------------
 
 To start an aggregation pipeline, call the ``Model::aggregate()`` method.
-Then, chain the aggregation stage methods in the sequence you want them to be
+Then, chain the aggregation stage methods in the sequence you want them to
 run.
 
 The aggregation builder includes the following namespaces that you can import
@@ -105,8 +105,7 @@ a query filter. If you omit this stage, the ``aggregate()`` method outputs
 all the documents in the model's collection for the following stage.
 
 This aggregation stage is often placed first to retrieve the data by using
-available indexes and reduce the amount of data that the subsequent stages
-process.
+available indexes and reduce the amount of data the subsequent stages process.
 
 .. tip::
 
@@ -114,16 +113,17 @@ process.
    documents in the collection that correspond to the model before other
    aggregation stages.
 
-This example shows how to construct criteria for a **match** aggregation
-stage by using the ``Query`` builder. The match stage includes the the following
+This example constructs a query filter for a **match** aggregation stage by
+using the ``Query`` builder. The match stage includes the the following
 criteria:
 
 - Returns results that match either of the query filters by using the
   ``Query::or()`` function
-- Matches documents that contain a ``occupation`` field with a value of ``"designer"``
-  by using the ``Query::query()`` and ``Query::eq()`` functions
-- Matches documents that contain a ``name`` field with a value of ``"Eliud Nkosana"``
-  by using the ``Query::query()`` and ``Query::eq()`` functions
+- Matches documents that contain an ``occupation`` field with a value of
+  ``"designer"`` by using the ``Query::query()`` and ``Query::eq()`` functions
+- Matches documents that contain a ``name`` field with a value of
+  ``"Eliud Nkosana"`` by using the ``Query::query()`` and ``Query::eq()``
+  functions
 
 Click the :guilabel:`{+code-output-label+}` button to see the documents
 returned by running the code:
@@ -179,17 +179,17 @@ Group Stage Example
 ~~~~~~~~~~~~~~~~~~~
 
 You can chain the ``group()`` method to your aggregation pipeline to modify the
-structure of the input data by performing calculations and grouping the data by
-common field values.
+structure of the data by performing calculations and grouping it by common
+field values.
 
 This aggregation stage is often placed immediately after a match stage to
-reduce the data the subsequent stages process.
+reduce the data subsequent stages process.
 
-This example shows how to define the group keys in a **group** aggregation
-stage by using the ``Expression`` builder. The group stage specifies the
-following grouping behavior:
+This example uses the ``Expression`` builder to define the group keys in a
+ **group** aggregation stage. The group stage specifies the following grouping
+behavior:
 
-- Sets the value of the group key, represented by the ``_id`` field to the
+- Sets the value of the group key, represented by the ``_id`` field, to the
   field value defined by the ``Expression`` builder
 - References the document values in the ``occupation`` field by calling the
   ``Expression::fieldPath()`` function
@@ -226,9 +226,9 @@ Sort Stage Example
 ~~~~~~~~~~~~~~~~~~
 
 You can chain the ``sort()`` method to your aggregation pipeline to specify
-the output order of the documents.
+the documents' output order.
 
-This aggregation stage can be added anywhere in the pipeline. It is often
+You can add this aggregation stage anywhere in the pipeline. It is often
 placed after the group stage since it can depend on the grouped data. We
 recommend placing the sort stage as late as possible in the pipeline to limit
 the data it processes.
@@ -238,7 +238,7 @@ To specify an ascending sort, set the field value to the ``Sort::Asc`` enum.
 To specify a descending sort, set the field value to the ``Sort::Desc`` enum.
 
 This example shows a ``sort()`` aggregation pipeline stage that sorts the
-documents by the ``name`` field to ``Sort::Desc``, which corresponds to reverse
+documents by the ``name`` field to ``Sort::Desc``, corresponding to reverse
 alphabetical order. Click the :guilabel:`{+code-output-label+}` button to see
 the documents returned by running the code:
 
@@ -323,7 +323,7 @@ Project Stage Example
 ~~~~~~~~~~~~~~~~~~~~~
 
 You can chain the ``project()`` method to your aggregation pipeline to specify
-which fields to display in the documents output by this stage.
+which fields from the documents to display by this stage.
 
 To specify fields to include, pass the name of a field and a truthy value,
 such as ``1`` or ``true``. All other fields are omitted from the output.
@@ -335,8 +335,7 @@ the output.
 .. tip::
 
    When you specify fields to include, the ``_id`` field is included by default.
-   To exclude the ``_id`` field, you must explicitly exclude it in he
-   projection.
+   To exclude the ``_id`` field, explicitly exclude it in the projection stage.
 
 This example shows how to use the ``project()`` method aggregation stage to
 include only the ``name`` field and exclude all other fields from the output.
@@ -376,7 +375,7 @@ stages perform the following operations sequentially:
 
 - Match all documents in the collection since the ``match()`` stage
   is omitted.
-- Add the ``year`` field to the documents and set the value to the year,
+- Add the ``year`` field to the documents and set the value to the year
   extracted from the ``birthday`` field.
 - Group the documents by the value of the ``occupation`` field and compute
   the average value of the ``year`` field for each group by using the
@@ -417,7 +416,7 @@ running the code:
 Create a Custom Operator Factory
 --------------------------------
 
-When you use the aggregation builder to create an aggregation pipeline, you
+When using the aggregation builder to create an aggregation pipeline, you
 can define operations or stages in a **custom operator factory**. A custom
 operator factory is a function that returns expressions or stages of an
 aggregation pipeline. You can create these functions to improve code
@@ -432,6 +431,8 @@ and returns an expression that extracts the ``year`` part of the date value:
 .. literalinclude:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
    :language: php
    :dedent:
+   :start-after: start custom operator factory function
+   :end-before: end custom operator factory function
 
 The example aggregation pipeline includes the following stages:
 

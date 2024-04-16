@@ -156,8 +156,8 @@ class AggregationsBuilderTest extends TestCase
             $dateFieldName = Expression::dateFieldPath($dateFieldName),
         );
     }
-
     // end custom operator factory function
+
     public function testCustomOperatorFactory(): void
     {
         User::truncate();
