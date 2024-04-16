@@ -37,11 +37,15 @@ class AggregationsBuilderTest extends TestCase
 
         // begin aggregation match stage
         $pipeline = User::aggregate()
-            ->match(occupation: Query::eq('designer'));
+            ->match(Query::or(
+                Query::query(occupation: Query::eq('designer')),
+                Query::query(name: Query::eq('Eliud Nkosana')),
+            ));
         $result = $pipeline->get();
         // end aggregation match stage
 
-        $this->assertEquals(2, $result->count());
+        print_r($result->toJson());
+        $this->assertEquals(3, $result->count());
     }
 
     public function testAggregationBuilderGroupStage(): void
@@ -58,10 +62,11 @@ class AggregationsBuilderTest extends TestCase
 
         // begin aggregation group stage
         $pipeline = User::aggregate()
-            ->group(_id: '$occupation');
+            ->group(_id: Expression::fieldPath('occupation'));
         $result = $pipeline->get();
         // end aggregation group stage
 
+        print_r($result->toJson());
         $this->assertEquals(2, $result->count());
     }
 
@@ -129,12 +134,12 @@ class AggregationsBuilderTest extends TestCase
                     Expression::dateFieldPath('birthday'),
                 ),
             )
-            //->addRawStage('$group', ['_id' => '$occupation', 'year_avg' => ['$avg' => '$year']])
             ->group(
                 _id: Expression::fieldPath('occupation'),
                 year_avg: Accumulator::avg(Expression::numberFieldPath('year')),
             )
-            ->sort(_id: Sort::Asc);
+            ->sort(_id: Sort::Asc)
+            ->project(profession: Expression::fieldPath('_id'), year_avg: 1, _id: 0);
         // end pipeline example
 
         $result = $pipeline->get();
