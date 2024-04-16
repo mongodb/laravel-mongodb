@@ -1,0 +1,27 @@
+.. _laravel_fundamentals:
+
+============
+Fundamentals
+============
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: php framework, odm
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   /fundamentals/database-collection
+   /fundamentals/read-operations
+   /fundamentals/write-operations
+
+Learn how to use the {+odm-long+} to perform the following tasks:
+
+- :ref:`Manage Databases and Collections <laravel-db-coll>`
+- :ref:`Read Operations <laravel-fundamentals-read-ops>`
+- :ref:`Write Operations <laravel-fundamentals-write-ops>`
+
