@@ -186,7 +186,7 @@ This aggregation stage is often placed immediately after a match stage to
 reduce the data subsequent stages process.
 
 This example uses the ``Expression`` builder to define the group keys in a
- **group** aggregation stage. The group stage specifies the following grouping
+**group** aggregation stage. The group stage specifies the following grouping
 behavior:
 
 - Sets the value of the group key, represented by the ``_id`` field, to the
