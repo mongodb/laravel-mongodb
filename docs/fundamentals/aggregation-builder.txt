@@ -91,8 +91,8 @@ to build aggregation stages:
    To learn more about builder classes, see the `mongodb/mongodb-php-builder <https://github.com/mongodb/mongo-php-builder/>`__
    GitHub repository.
 
-This section features the following examples of common aggregation stages and
-of an aggregation pipeline:
+This section features the following examples, which show how to use common
+aggregation stages and combine stages to build an aggregation pipeline:
 
 - :ref:`laravel-aggregation-match-stage-example`
 - :ref:`laravel-aggregation-group-stage-example`
@@ -244,9 +244,9 @@ returned by running the code:
 
 .. tip::
 
-   This example stage performs a similar grouping to an equivalent
-   ``distinct()`` query builder method. To learn more about the ``distinct()``
-   method, see the :ref:`laravel-distinct-usage` usage example.
+   This example stage performs a similar task as the ``distinct()`` query
+   builder method. To learn more about the ``distinct()`` method, see the
+   :ref:`laravel-distinct-usage` usage example.
 
 .. _laravel-aggregation-sort-stage-example:
 
@@ -403,14 +403,15 @@ stages perform the following operations sequentially:
 
 - Match all documents in the collection since the ``match()`` stage
   is omitted.
-- Add the ``year`` field to the documents and set the value to the year
+- Add the ``birth_year`` field to the documents and set the value to the year
   extracted from the ``birthday`` field.
 - Group the documents by the value of the ``occupation`` field and compute
-  the average value of the ``year`` field for each group by using the
-  ``Accumulator::avg()`` function.
+  the average value of ``birth_year`` for each group by using the
+  ``Accumulator::avg()`` function. Assign to result of the computation to
+  the ``birth_year_avg`` field.
 - Sort the documents by the group key field in ascending order.
 - Create the ``profession`` field from the value of the group key field,
-  include the ``year_avg`` field, and omit the ``_id`` field.
+  include the ``birth_year_avg`` field, and omit the ``_id`` field.
 
 Click the :guilabel:`{+code-output-label+}` button to see the data returned by
 running the code:
@@ -429,11 +430,11 @@ running the code:
 
       [
         {
-          "year_avg": 1991.5,
+          "birth_year_avg": 1991.5,
           "profession": "designer"
         },
         {
-          "year_avg": 1995.5,
+          "birth_year_avg": 1995.5,
           "profession": "engineer"
         }
       ]
@@ -454,7 +455,7 @@ This example shows how to create and use a custom operator factory that
 returns expressions that extract the year from a specified date field.
 
 The following function accepts the name of a field that contains a date
-and returns an expression that extracts the ``year`` part of the date value:
+and returns an expression that extracts the year from the date:
 
 .. literalinclude:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
    :language: php

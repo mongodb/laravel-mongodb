@@ -14,8 +14,6 @@ use MongoDB\Builder\Type\Sort;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
 
-use function print_r;
-
 class AggregationsBuilderTest extends TestCase
 {
     /**
@@ -45,7 +43,6 @@ class AggregationsBuilderTest extends TestCase
         $result = $pipeline->get();
         // end aggregation match stage
 
-        print_r($result->toJson());
         $this->assertEquals(3, $result->count());
     }
 
@@ -67,7 +64,6 @@ class AggregationsBuilderTest extends TestCase
         $result = $pipeline->get();
         // end aggregation group stage
 
-        print_r($result->toJson());
         $this->assertEquals(2, $result->count());
     }
 
@@ -131,22 +127,22 @@ class AggregationsBuilderTest extends TestCase
         // begin pipeline example
         $pipeline = User::aggregate()
             ->addFields(
-                year: Expression::year(
+                birth_year: Expression::year(
                     Expression::dateFieldPath('birthday'),
                 ),
             )
             ->group(
                 _id: Expression::fieldPath('occupation'),
-                year_avg: Accumulator::avg(Expression::numberFieldPath('year')),
+                birth_year_avg: Accumulator::avg(Expression::numberFieldPath('birth_year')),
             )
             ->sort(_id: Sort::Asc)
-            ->project(profession: Expression::fieldPath('_id'), year_avg: 1, _id: 0);
+            ->project(profession: Expression::fieldPath('_id'), birth_year_avg: 1, _id: 0);
         // end pipeline example
 
         $result = $pipeline->get();
-        print_r($result->toJson());
+
         $this->assertEquals(2, $result->count());
-        $this->assertNotNull($result->first()['year_avg']);
+        $this->assertNotNull($result->first()['birth_year_avg']);
     }
 
     // start custom operator factory function
@@ -156,6 +152,7 @@ class AggregationsBuilderTest extends TestCase
             $dateFieldName = Expression::dateFieldPath($dateFieldName),
         );
     }
+
     // end custom operator factory function
 
     public function testCustomOperatorFactory(): void
@@ -177,8 +174,8 @@ class AggregationsBuilderTest extends TestCase
         // end custom operator factory usage
 
         $result = $pipeline->get();
-        print_r($result->toJson());
-        $this->assertEquals(2, $result->count());
-        $this->assertNotNull($result->first()['year_avg']);
+
+        $this->assertEquals(6, $result->count());
+        $this->assertNotNull($result->first()['birth_year']);
     }
 }
