@@ -30,13 +30,11 @@ class FindManyTest extends TestCase
         ]);
 
         // begin-find
-        $cursor = Movie::where('runtime', '>', 900)
+        $movies = Movie::where('runtime', '>', 900)
             ->orderBy('_id')
-            ->cursor();
-        foreach ($cursor as $movie) {
-            echo $movie->toJson() . '<br>';
-        }
-
+            ->get();
         // end-find
+
+        $this->assertEquals(2, $movies->count());
     }
 }
