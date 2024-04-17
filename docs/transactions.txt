@@ -9,71 +9,150 @@ Transactions
    :values: tutorial
 
 .. meta::
-   :keywords: php framework, odm, code example
+   :keywords: php framework, odm, rollback, commit, callback, code example, acid, atomic, consistent, isolated, durable
 
-MongoDB transactions require the following software and topology:
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+In this guide, you can learn how to perform a **transaction** in MongoDB by
+using the {+odm-long+}. Transactions let you run a sequence of write operations
+that update the data only after the transaction is committed.
+
+If the transaction fails, the PHP library that manages MongoDB operations
+for {+odm-short+} ensures that MongoDB discards all the changes made within
+the transaction before they become visible. This property of transactions
+that ensures that all changes within a transaction are either applied or
+discarded is called **atomicity**.
+
+MongoDB performs write operations on single documents atomically. If you
+need atomicity in write operations on multiple documents or data consistency
+across multiple documents for your operations, run them in a multi-document
+transaction.
+
+Multi-document transactions are **ACID compliant** because MongoDB
+guarantees that the data in your transaction operations remains consistent,
+even if the driver encounters unexpected errors.
+
+Learn how to perform transactions in the following sections of this guide:
+
+- :ref:`laravel-transaction-requirements`
+- :ref:`laravel-transaction-callback`
+- :ref:`laravel-transaction-commit`
+- :ref:`laravel-transaction-rollback`
+
+.. tip::
+
+   To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
+   in the {+server-docs-name+}.
+
+.. _laravel-transaction-requirements:
+
+Requirements and Limitations
+----------------------------
+
+To perform transactions in MongoDB, you must use the following MongoDB
+version and topology:
 
 - MongoDB version 4.0 or later
 - A replica set deployment or sharded cluster
 
-You can find more information :manual:`in the MongoDB docs </core/transactions/>`
+MongoDB server and {+odm-short+} have the following limitations:
+
+- In MongoDB versions 4.2 and earlier, write operations performed within a
+  transaction must be on existing collections. In MongoDB versions 4.4 and
+  later, the server automatically creates collections as necessary when
+  you perform write operations in a transaction. To learn more about this
+  limitation, see :manual:`Create Collections and Indexes in a Transaction </core/transactions/#create-collections-and-indexes-in-a-transaction>`
+  in the {+server-docs-name+}.
+- MongoDB does not support nested transactions. If you attempt to start a
+  transaction within another one, the extension raises a ``RuntimeException``.
+  To learn more about this limitation, see :manual:`Transactions and Sessions </core/transactions/#transactions-and-sessions>`
+  in the {+server-docs-name+}.
+- The {+odm-long+} does not support the database testing traits
+  ``Illuminate\Foundation\Testing\DatabaseTransactions`` and ``Illuminate\Foundation\Testing\RefreshDatabase``.
+  As a workaround, you can create migrations with the ``Illuminate\Foundation\Testing\DatabaseMigrations``
+  trait to reset the database after each test.
+
+.. _laravel-transaction-callback:
+
+Run a Transaction in a Callback
+-------------------------------
+
+This section shows how you can run a transaction in a callback.
+
+When using this method of running a transaction, all the code in the
+callback method runs as a single transaction.
+
+In the following example, the transaction consists of write operations that
+transfer the funds from a bank account, represented by the ``Account`` model,
+to another account:
+
+.. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
+   :language: php
+   :dedent:
+   :start-after: begin transaction callback
+   :end-before: end transaction callback
+
+You can optionally pass the maximum number of times to retry a failed transaction as the second parameter as shown in the following code example:
 
 .. code-block:: php
+   :emphasize-lines: 4
 
-   DB::transaction(function () {
-       User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'john@example.com']);
-       DB::collection('users')->where('name', 'john')->update(['age' => 20]);
-       DB::collection('users')->where('name', 'john')->delete();
-   });
+   DB::transaction(function() {
+           // transaction code
+       },
+       retries: 5,
+   );
 
-.. code-block:: php
+.. _laravel-transaction-commit:
 
-   // begin a transaction
-   DB::beginTransaction();
-   User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'john@example.com']);
-   DB::collection('users')->where('name', 'john')->update(['age' => 20]);
-   DB::collection('users')->where('name', 'john')->delete();
+Begin and Commit a Transaction
+------------------------------
 
-   // commit changes
-   DB::commit();
+This section shows how to start and commit a transaction.
 
-To abort a transaction, call the ``rollBack`` method at any point during the transaction:
+To use this method of starting and committing a transaction, call the
+``DB::beginTransaction()`` method to start the transaction. Then, call the
+``DB::commit()`` method to end the transaction, which applies all the updates
+performed within the transaction.
 
-.. code-block:: php
+In the following example, the balance from the first account is moved to the
+second account, after which the first account is deleted:
 
-   DB::beginTransaction();
-   User::create(['name' => 'john', 'age' => 19, 'title' => 'admin', 'email' => 'john@example.com']);
+.. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
+   :language: php
+   :dedent:
+   :emphasize-lines: 1,9
+   :start-after: begin commit transaction
+   :end-before: end commit transaction
 
-   // Abort the transaction, discarding any data created as part of it
-   DB::rollBack();
+.. _laravel-transaction-rollback:
 
+Roll Back a Transaction
+-----------------------
 
-.. note::
+This section shows how to roll back a transaction. A rollback reverts all the
+write operations performed within that transaction. This means that the
+data is reverted to its state before the transaction.
 
-   Transactions in MongoDB cannot be nested. DB::beginTransaction() function 
-   will start new transactions in a new created or existing session and will
-   raise the RuntimeException when transactions already exist. See more in 
-   MongoDB official docs :manual:`Transactions and Sessions </core/transactions/#transactions-and-sessions>`.
+To perform the rollback, call the ``DB::rollback()`` function anytime before
+the transaction is committed.
 
-.. code-block:: php
+In the following example, the transaction consists of write operations that
+transfer funds from one account, represented by the ``Account`` model, to
+multiple other accounts. If the sender account has insufficient funds, the
+transaction is rolled back, and none of the models are updated:
 
-   DB::beginTransaction();
-   User::create(['name' => 'john', 'age' => 20, 'title' => 'admin']);
+.. literalinclude:: /includes/fundamentals/transactions/TransactionsTest.php
+   :language: php
+   :dedent:
+   :emphasize-lines: 1,18,20
+   :start-after: begin rollback transaction
+   :end-before: end rollback transaction
 
-   // This call to start a nested transaction will raise a RuntimeException
-   DB::beginTransaction();
-   DB::collection('users')->where('name', 'john')->update(['age' => 20]);
-   DB::commit();
-   DB::rollBack();
-
-Database Testing
-----------------
-
-For testing, the traits ``Illuminate\Foundation\Testing\DatabaseTransactions``
-and ``Illuminate\Foundation\Testing\RefreshDatabase`` are not yet supported.
-Instead, create migrations and use the ``DatabaseMigrations`` trait to reset 
-the database after each test:
-
-.. code-block:: php
-
-   use Illuminate\Foundation\Testing\DatabaseMigrations;

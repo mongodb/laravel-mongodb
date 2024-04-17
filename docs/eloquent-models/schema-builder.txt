@@ -54,6 +54,10 @@ your database schema by running methods included in the ``Schema`` facade.
 The following sections explain how to author a migration class when you use
 a MongoDB database and how to run them.
 
+Modifying databases and collections from within a migration provides a
+controlled approach that ensures consistency, version control, and reversibility in your
+application.
+
 Create a Migration Class
 ~~~~~~~~~~~~~~~~~~~~~~~~
 

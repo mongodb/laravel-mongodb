@@ -1,0 +1,67 @@
+.. _laravel-distinct-usage:
+
+==============================
+Retrieve Distinct Field Values
+==============================
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: unique, different, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+You can retrieve distinct field values of documents in a collection by calling the ``distinct()``
+method on an object collection or a query builder.
+
+To retrieve distinct field values, pass a query filter to the ``where()`` method and a field name
+to the ``select()`` method. Then, call ``distinct()`` to return the unique values of the selected
+field in documents that match the query filter.
+
+Example
+-------
+
+This usage example performs the following actions:
+
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database
+- Retrieves distinct field values of documents from the ``movies`` collection that match a query filter
+- Prints the distinct values
+
+The example calls the following methods on the ``Movie`` model:
+
+- ``where()``: matches documents in which the value of the ``directors`` field includes ``'Sofia Coppola'``.
+- ``select()``: retrieves the matching documents' ``imdb.rating`` field values.
+- ``distinct()``: accesses the unique values of the ``imdb.rating`` field among the matching
+  documents. This method returns a list of values.
+- ``get()``: retrieves the query results.
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: ../includes/usage-examples/DistinctTest.php
+      :start-after: begin-distinct
+      :end-before: end-distinct
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      [[5.6],[6.4],[7.2],[7.8]]
+
+To learn how to edit your Laravel application to run the usage example, see the
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
+
+.. tip::
+
+   For more information about query filters, see the :ref:`laravel-retrieve-matching` section of
+   the Read Operations guide.
+
