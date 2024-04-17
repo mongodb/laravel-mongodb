@@ -22,16 +22,16 @@ Overview
 
 In this guide, you can learn how to perform aggregations and construct
 pipelines by using the {+odm-short+} aggregation builder. The aggregation
-builder lets you use a typesafe syntax to construct a MongoDB
+builder lets you use a type-safe syntax to construct a MongoDB
 **aggregation pipeline**.
 
 An aggregation pipeline is a data processing pipeline that sequentially
-performs transformations and computations on input data, and outputs the
-results as a new set of documents.
+performs transformations and computations on input data, then outputs the
+results as a new document or set of documents.
 
-An aggregation pipeline is composed of **aggregation stages**, which are
-operators that process input data and output data that the next stage uses as
-its input.
+An aggregation pipeline is composed of **aggregation stages**. Aggregation
+stages use operators to process input data and produce data that the next 
+stage uses as its input.
 
 The {+odm-short+} aggregation builder lets you build aggregation stages and
 aggregation pipelines. The following sections show examples of how to use the
@@ -261,9 +261,8 @@ placed after the group stage since it can depend on the grouped data. We
 recommend placing the sort stage as late as possible in the pipeline to limit
 the data it processes.
 
-To specify an ascending sort, set the field value to the ``Sort::Asc`` enum.
-
-To specify a descending sort, set the field value to the ``Sort::Desc`` enum.
+To specify an sort, set the field value to the ``Sort::Asc`` enum for an
+ascending sort or the ``Sort::Desc`` enum for a descending sort.
 
 This example shows a ``sort()`` aggregation pipeline stage that sorts the
 documents by the ``name`` field to ``Sort::Desc``, corresponding to reverse
@@ -401,8 +400,6 @@ This aggregation pipeline example chains multiple stages. Each stage runs
 on the output retrieved from each preceding stage. In this example, the
 stages perform the following operations sequentially:
 
-- Match all documents in the collection since the ``match()`` stage
-  is omitted.
 - Add the ``birth_year`` field to the documents and set the value to the year
   extracted from the ``birthday`` field.
 - Group the documents by the value of the ``occupation`` field and compute
@@ -439,6 +436,10 @@ running the code:
         }
       ]
 
+.. note::
+
+   Since this pipeline omits the ``match()`` stage, the input for the initial
+   stage consists of all the documents in the collection.
 
 .. _laravel-create-custom-operator-factory:
 
