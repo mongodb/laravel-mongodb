@@ -4,17 +4,17 @@
 Run a Command
 =============
 
-You can run a command directly on a database by calling the ``command()``
+You can run a MongoDB command directly on a database by calling the ``command()``
 method on a database connection instance.
 
-To run a command, call the ``command()`` method and specify the database command
-document inside the method call. This document includes the command name and
-value.
+To run a command, call the ``command()`` method and pass it a document that
+contains the command and its parameters.
 
 Example
 -------
 
-This usage example performs the following actions:
+This usage example performs the following actions on the database connection
+instance that uses the ``sample_mflix`` database:
 
 - Creates a database connection instance to access the ``sample_mflix`` database
 - Specifies a command to retrieve a list of collections in the ``sample_mflix`` database
