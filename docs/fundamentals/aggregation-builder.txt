@@ -37,6 +37,7 @@ The {+odm-short+} aggregation builder lets you build aggregation stages and
 aggregation pipelines. The following sections show examples of how to use the
 aggregation builder to create the stages of an aggregation pipeline:
 
+- :ref:`laravel-add-aggregation-dependency`
 - :ref:`laravel-build-aggregation`
 - :ref:`laravel-create-custom-operator-factory`
 
@@ -46,6 +47,27 @@ aggregation builder to create the stages of an aggregation pipeline:
    4.3 and later. To learn more about running aggregations without using the
    aggregation builder, see :ref:`laravel-query-builder-aggregations` in the
    Query Builder guide.
+
+.. _laravel-add-aggregation-dependency:
+
+Add the Aggregation Builder Dependency
+--------------------------------------
+
+The aggregation builder is part of the {+agg-builder-package-name+} package.
+You must add this package as a dependency to your project to use it. Run the
+following command to add the aggregation builder dependency to your
+application:
+
+.. code-block:: bash
+
+   composer require {+agg-builder-package-name+}:^{+agg-builder-version+}
+
+When the installation completes, verify that the ``composer.json`` file
+includes the following line in the ``require`` object:
+
+.. code-block:: json
+
+   "{+agg-builder-package-name+}": "{+agg-builder-version+}",
 
 .. _laravel-build-aggregation:
 
@@ -114,8 +136,8 @@ available indexes and reduce the amount of data the subsequent stages process.
    aggregation stages.
 
 This example constructs a query filter for a **match** aggregation stage by
-using the ``Query`` builder. The match stage includes the the following
-criteria:
+using the ``MongoDB\Builder\Query`` builder. The match stage includes the the
+following criteria:
 
 - Returns results that match either of the query filters by using the
   ``Query::or()`` function
@@ -173,6 +195,12 @@ returned by running the code:
         }
       ]
 
+.. tip::
+
+   The ``Query::or()`` function corresponds to the ``$or`` MongoDB query operator.
+   To learn more about this operator, see :manual:`$or </reference/operator/query/or/>`
+   in the {+server-docs-name+}.
+
 .. _laravel-aggregation-group-stage-example:
 
 Group Stage Example
@@ -185,7 +213,7 @@ field values.
 This aggregation stage is often placed immediately after a match stage to
 reduce the data subsequent stages process.
 
-This example uses the ``Expression`` builder to define the group keys in a
+This example uses the ``MongoDB\Builder\Expression`` builder to define the group keys in a
 **group** aggregation stage. The group stage specifies the following grouping
 behavior:
 
