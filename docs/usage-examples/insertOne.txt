@@ -20,8 +20,8 @@ Insert a Document
 You can insert a document into a collection by calling the ``create()`` method on
 an Eloquent model or query builder.
 
-To insert a document, call the ``create()`` method and specify the document's field values
-inside the method call. 
+To insert a document, pass the data you need to insert as a document containing
+the fields and values to the ``create()`` method.
 
 Example
 -------
@@ -49,7 +49,7 @@ information:
       :dedent:
 
    .. output::
-      :language: console
+      :language: json
       :visible: false
 
       {
