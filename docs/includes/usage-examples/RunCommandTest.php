@@ -16,7 +16,7 @@ class RunCommandTest extends TestCase
      */
     public function testRunCommand(): void
     {
-        // php:disable
+        // phpcs:disable
         // begin-command
         $cursor = DB::connection('mongodb')
             ->command(['listCollections' => 1]);
