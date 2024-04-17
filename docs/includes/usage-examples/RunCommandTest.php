@@ -24,6 +24,7 @@ class RunCommandTest extends TestCase
         foreach ($cursor as $coll) {
             echo $coll['name'] . '<br>';
         }
+
         // end-command
         // phpcs:enable
 
