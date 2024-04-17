@@ -16,9 +16,11 @@ Example
 This usage example performs the following actions on the database connection
 instance that uses the ``sample_mflix`` database:
 
-- Creates a database connection instance to access the ``sample_mflix`` database
-- Specifies a command to retrieve a list of collections in the ``sample_mflix`` database
-- Prints the name of each ``sample_mflix`` collection
+- Creates a database connection instance that references the ``sample_mflix`` 
+  database
+- Specifies a command to retrieve a list of collections and views in the
+  ``sample_mflix``  database
+- Prints the value of the ``name`` field of each result returned by the command
 
 The example calls the ``command()`` method to run the ``listCollections`` command. This method
 returns a cursor that contains a result document for each collection in the database.
@@ -41,7 +43,6 @@ returns a cursor that contains a result document for each collection in the data
       comments
       embedded_movies
       users
-
 
 To learn how to edit your Laravel application to run the usage example, see the
 :ref:`Usage Examples landing page <laravel-usage-examples>`.
