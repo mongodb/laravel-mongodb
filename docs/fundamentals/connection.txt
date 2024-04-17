@@ -1,0 +1,25 @@
+.. _laravel-fundamentals-connection:
+
+================
+Connection Guide
+================
+
+.. toctree::
+
+   /fundamentals/connection/connect
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+Overview
+--------
+
+Learn how to set up a connection and specify connection behavior from your
+Laravel application to a MongoDB deployment by using {+odm-short+} in the
+following sections:
+
+- :ref:`Connect to MongoDB <laravel-connect-to-mongodb>`
+
