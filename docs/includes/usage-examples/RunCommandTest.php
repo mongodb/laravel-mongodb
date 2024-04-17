@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\DB;
 use MongoDB\Driver\Cursor;
 use MongoDB\Laravel\Tests\TestCase;
 
