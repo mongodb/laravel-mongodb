@@ -37,7 +37,7 @@ class UpdateManyTest extends TestCase
 
         // begin-update-many
         $updates = Movie::where('imdb.rating', '>', 9.0)
-            ->update(['$set' => ['acclaimed' => true]]);
+            ->update(['acclaimed' => true]);
 
         echo 'Updated documents: ' . $updates;
         // end-update-many

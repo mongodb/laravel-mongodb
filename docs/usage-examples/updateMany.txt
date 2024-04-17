@@ -18,7 +18,7 @@ Update Multiple Documents
    :class: singlecol
 
 You can update multiple documents in a collection by calling the ``update()`` method
-on an object collection or query builder.
+on a query builder.
 
 Pass a query filter to the ``where()`` method to retrieve documents that meet a
 set of criteria. Then, update the matching documents by passing your intended
