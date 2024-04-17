@@ -25,9 +25,9 @@ pipelines by using the {+odm-short+} aggregation builder. The aggregation
 builder lets you use a typesafe syntax to construct a MongoDB
 **aggregation pipeline**.
 
-An aggregation pipeline is a data processing pipeline that takes documents
-as input, sequentially performs transformations and computations on the data,
-and outputs the results as a new set of documents.
+An aggregation pipeline is a data processing pipeline that sequentially
+performs transformations and computations on input data, and outputs the
+results as a new set of documents.
 
 An aggregation pipeline is composed of **aggregation stages**, which are
 operators that process input data and output data that the next stage uses as

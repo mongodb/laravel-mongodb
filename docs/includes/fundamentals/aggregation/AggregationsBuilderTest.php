@@ -46,6 +46,10 @@ class AggregationsBuilderTest extends TestCase
         $this->assertEquals(3, $result->count());
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testAggregationBuilderGroupStage(): void
     {
         User::truncate();
@@ -67,6 +71,10 @@ class AggregationsBuilderTest extends TestCase
         $this->assertEquals(2, $result->count());
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testAggregationBuilderSortStage(): void
     {
         User::truncate();
@@ -89,6 +97,10 @@ class AggregationsBuilderTest extends TestCase
         $this->assertEquals('Janet Doe', $result->first()['name']);
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testAggregationBuilderProjectStage(): void
     {
         User::truncate();
@@ -112,6 +124,10 @@ class AggregationsBuilderTest extends TestCase
         $this->assertArrayNotHasKey('_id', $result->first());
     }
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testAggregationBuilderPipeline(): void
     {
         User::truncate();
@@ -145,16 +161,21 @@ class AggregationsBuilderTest extends TestCase
         $this->assertNotNull($result->first()['birth_year_avg']);
     }
 
+    // phpcs:disable
     // start custom operator factory function
-    function yearFromField(string $dateFieldName): YearOperator
+    public function yearFromField(string $dateFieldName): YearOperator
     {
         return Expression::year(
             $dateFieldName = Expression::dateFieldPath($dateFieldName),
         );
     }
-
     // end custom operator factory function
+    // phpcs:enable
 
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
     public function testCustomOperatorFactory(): void
     {
         User::truncate();
