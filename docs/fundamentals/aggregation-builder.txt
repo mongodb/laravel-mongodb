@@ -60,7 +60,7 @@ application:
 
 .. code-block:: bash
 
-   composer require {+agg-builder-package-name+}:^{+agg-builder-version+}
+   composer require {+agg-builder-package-name+}:{+agg-builder-version+}
 
 When the installation completes, verify that the ``composer.json`` file
 includes the following line in the ``require`` object:
@@ -84,7 +84,7 @@ to build aggregation stages:
 - ``MongoDB\Builder\Accumulator``
 - ``MongoDB\Builder\Expression``
 - ``MongoDB\Builder\Query``
-- ``MongoDB\Builder\Type```
+- ``MongoDB\Builder\Type``
 
 .. tip::
 

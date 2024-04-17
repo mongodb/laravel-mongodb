@@ -173,7 +173,7 @@ class AggregationsBuilderTest extends TestCase
         // begin custom operator factory usage
         $pipeline = User::aggregate()
             ->addFields(birth_year: $this->yearFromField('birthday'))
-            ->project(_id:0, name: 1, birth_year: 1);
+            ->project(_id: 0, name: 1, birth_year: 1);
         // end custom operator factory usage
 
         $result = $pipeline->get();
