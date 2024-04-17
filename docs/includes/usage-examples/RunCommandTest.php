@@ -16,6 +16,7 @@ class RunCommandTest extends TestCase
      */
     public function testRunCommand(): void
     {
+        // php:disable
         // begin-command
         $cursor = DB::connection('mongodb')
             ->command(['listCollections' => 1]);
@@ -23,8 +24,8 @@ class RunCommandTest extends TestCase
         foreach ($cursor as $coll) {
             echo $coll['name'] . '<br>';
         }
-
         // end-command
+        // phpcs:enable
 
         $this->assertNotNull($cursor);
         $this->assertInstanceOf(Cursor::class, $cursor);
