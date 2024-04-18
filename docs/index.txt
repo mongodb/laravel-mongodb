@@ -19,7 +19,6 @@ Laravel MongoDB
    /fundamentals
    /eloquent-models
    /query-builder
-   /aggregation-builder
    /user-authentication
    /queues
    /transactions
