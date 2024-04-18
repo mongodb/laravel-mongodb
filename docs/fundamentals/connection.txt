@@ -1,8 +1,8 @@
 .. _laravel-fundamentals-connection:
 
-================
-Connection Guide
-================
+===========
+Connections
+===========
 
 .. toctree::
 
