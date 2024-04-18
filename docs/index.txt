@@ -65,6 +65,7 @@ see the following content:
 - :ref:`laravel-fundamentals-write-ops`
 - :ref:`laravel-eloquent-models`
 - :ref:`laravel-query-builder`
+- :ref:`laravel-aggregation-builder`
 - :ref:`laravel-user-authentication`
 - :ref:`laravel-queues`
 - :ref:`laravel-transactions`
