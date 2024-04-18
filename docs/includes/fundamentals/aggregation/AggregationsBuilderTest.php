@@ -147,7 +147,7 @@ class AggregationsBuilderTest extends TestCase
     public function yearFromField(string $dateFieldName): YearOperator
     {
         return Expression::year(
-            $dateFieldName = Expression::dateFieldPath($dateFieldName),
+            Expression::dateFieldPath($dateFieldName),
         );
     }
     // end custom operator factory function
