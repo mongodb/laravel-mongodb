@@ -79,8 +79,8 @@ more resources in the :ref:`laravel-issues-and-help` section.
 Feature Compatibility
 ---------------------
 
-Learn about Laravel features that are supported by
-the {+odm-long+} in the :ref:`laravel-feature-compat` section.
+Learn about Laravel features that {+odm-short+} supports in the
+:ref:`laravel-feature-compat` section.
 
 Compatibility
 -------------
