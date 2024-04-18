@@ -277,10 +277,13 @@ Sort Query Results
 ~~~~~~~~~~~~~~~~~~
 
 To order query results based on the values of specified fields, use the ``where()`` method
-followed by the ``orderBy()`` method. You can set an **ascending** or
-**descending** sort direction on results. By default, the ``orderBy()``
-method sets an ascending sort on the supplied field name. To specify a
-descending sort, pass ``'desc'`` as the second parameter.
+followed by the ``orderBy()`` method.
+
+You can set an **ascending** or **descending** sort direction on
+results. By default, the ``orderBy()`` method sets an ascending sort on
+the supplied field name, but you can explicitly specify an ascending
+sort by passing ``'asc'`` as the second parameter. To
+specify a descending sort, pass ``'desc'`` as the second parameter.
 
 If your documents contain duplicate values in a specific field, you can
 handle the tie by specifying additional fields to sort on. This ensures consistent
