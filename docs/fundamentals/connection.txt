@@ -6,7 +6,7 @@ Connection Guide
 
 .. toctree::
 
-   /fundamentals/connection/connect
+   /fundamentals/connection/connect-to-mongodb
 
 .. contents:: On this page
    :local:

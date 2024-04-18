@@ -154,7 +154,7 @@ To connect your application to a MongoDB instance hosted on the same machine,
 you must complete the following tasks:
 
 - Download, install and run MongoDB server. To learn how to install MongoDB, see
-  :server:`Install MongoDB Community Edition </installation/#mongodb-installation-tutorials>`.
+  :manual:`Install MongoDB Community Edition </installation/#mongodb-installation-tutorials>`.
 - Obtain the IP address and port on which your MongoDB server is running. If
   you use the default settings of a local installation of MongoDB server,
   the IP address is ``127.0.0.1`` and the port is ``27017``.
