@@ -1,0 +1,63 @@
+.. _laravel-insert-many-usage:
+
+=========================
+Insert Multiple Documents
+=========================
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: insert many, add, create, bulk, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+You can insert multiple documents into a collection by calling the ``insert()``
+method on an Eloquent model or a query builder.
+
+To insert multiple documents, call the ``insert()`` method and specify the new documents
+as an array inside the method call. Each array entry contains a single document's field
+values.
+
+Example
+-------
+
+This usage example performs the following actions:
+
+- Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
+  ``sample_mflix`` database
+- Inserts documents into the ``movies`` collection
+- Prints the result of the insert operation
+
+The example calls the ``insert()`` method to insert documents that represent movies released
+in 2023. This method returns a value of ``1`` if the operation is successful, and it throws
+an exception if the operation is unsuccessful.
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: ../includes/usage-examples/InsertManyTest.php
+      :start-after: begin-insert-many
+      :end-before: end-insert-many
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      Insert operation success: yes
+
+To learn how to edit your Laravel application to run the usage example, see the
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
+
+.. tip::
+
+   To learn more about insert operations, see the :ref:`laravel-fundamentals-insert-documents` section
+   of the Write Operations guide.
+

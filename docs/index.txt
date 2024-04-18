@@ -16,7 +16,7 @@ Laravel MongoDB
    /quick-start
    /usage-examples
    Release Notes <https://github.com/mongodb/laravel-mongodb/releases/>
-   /retrieve
+   /fundamentals
    /eloquent-models
    /query-builder
    /user-authentication
@@ -61,7 +61,9 @@ Fundamentals
 To learn how to perform the following tasks by using {+odm-short+},
 see the following content:
 
-- :ref:`laravel-fundamentals-retrieve`
+- :ref:`Manage Databases and Collections <laravel-db-coll>`
+- :ref:`laravel-fundamentals-read-ops`
+- :ref:`laravel-fundamentals-write-ops`
 - :ref:`laravel-eloquent-models`
 - :ref:`laravel-query-builder`
 - :ref:`laravel-user-authentication`
@@ -73,6 +75,12 @@ Issues & Help
 
 Learn how to report bugs, contribute to the library, and find
 more resources in the :ref:`laravel-issues-and-help` section.
+
+Feature Compatibility
+---------------------
+
+Learn about Laravel features that {+odm-short+} supports in the
+:ref:`laravel-feature-compat` section.
 
 Compatibility
 -------------
