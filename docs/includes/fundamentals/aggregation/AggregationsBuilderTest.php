@@ -16,9 +16,12 @@ use MongoDB\Laravel\Tests\TestCase;
 
 class AggregationsBuilderTest extends TestCase
 {
-    public function testAggregationBuilderMatchStage(): void
+    protected function setUp(): void
     {
+        parent::setUp();
+
         User::truncate();
+
         // begin aggregation builder sample data
         User::insert([
             ['name' => 'Alda Gröndal', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('2002-01-01'))],
@@ -29,7 +32,10 @@ class AggregationsBuilderTest extends TestCase
             ['name' => 'Ellis Lee', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1996-06-06'))],
         ]);
         // end aggregation builder sample data
+    }
 
+    public function testAggregationBuilderMatchStage(): void
+    {
         // begin aggregation match stage
         $pipeline = User::aggregate()
             ->match(Query::or(
@@ -44,16 +50,6 @@ class AggregationsBuilderTest extends TestCase
 
     public function testAggregationBuilderGroupStage(): void
     {
-        User::truncate();
-        User::insert([
-            ['name' => 'Alda Gröndal', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('2002-01-01'))],
-            ['name' => 'Francois Soma', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-02-02'))],
-            ['name' => 'Janet Doe', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1987-03-03'))],
-            ['name' => 'Eliud Nkosana', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1984-04-04'))],
-            ['name' => 'Bran Steafan', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-05-05'))],
-            ['name' => 'Ellis Lee', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1996-06-06'))],
-        ]);
-
         // begin aggregation group stage
         $pipeline = User::aggregate()
             ->group(_id: Expression::fieldPath('occupation'));
@@ -65,16 +61,6 @@ class AggregationsBuilderTest extends TestCase
 
     public function testAggregationBuilderSortStage(): void
     {
-        User::truncate();
-        User::insert([
-            ['name' => 'Alda Gröndal', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('2002-01-01'))],
-            ['name' => 'Francois Soma', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-02-02'))],
-            ['name' => 'Janet Doe', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1987-03-03'))],
-            ['name' => 'Eliud Nkosana', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1984-04-04'))],
-            ['name' => 'Bran Steafan', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-05-05'))],
-            ['name' => 'Ellis Lee', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1996-06-06'))],
-        ]);
-
         // begin aggregation sort stage
         $pipeline = User::aggregate()
             ->sort(name: Sort::Desc);
@@ -87,16 +73,6 @@ class AggregationsBuilderTest extends TestCase
 
     public function testAggregationBuilderProjectStage(): void
     {
-        User::truncate();
-        User::insert([
-            ['name' => 'Alda Gröndal', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('2002-01-01'))],
-            ['name' => 'Francois Soma', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-02-02'))],
-            ['name' => 'Janet Doe', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1987-03-03'))],
-            ['name' => 'Eliud Nkosana', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1984-04-04'))],
-            ['name' => 'Bran Steafan', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-05-05'))],
-            ['name' => 'Ellis Lee', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1996-06-06'))],
-        ]);
-
         // begin aggregation project stage
         $pipeline = User::aggregate()
             ->project(_id: 0, name: 1);
@@ -110,16 +86,6 @@ class AggregationsBuilderTest extends TestCase
 
     public function testAggregationBuilderPipeline(): void
     {
-        User::truncate();
-        User::insert([
-            ['name' => 'Alda Gröndal', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('2002-01-01'))],
-            ['name' => 'Francois Soma', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-02-02'))],
-            ['name' => 'Janet Doe', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1987-03-03'))],
-            ['name' => 'Eliud Nkosana', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1984-04-04'))],
-            ['name' => 'Bran Steafan', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-05-05'))],
-            ['name' => 'Ellis Lee', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1996-06-06'))],
-        ]);
-
         // begin pipeline example
         $pipeline = User::aggregate()
             ->addFields(
@@ -155,16 +121,6 @@ class AggregationsBuilderTest extends TestCase
 
     public function testCustomOperatorFactory(): void
     {
-        User::truncate();
-        User::insert([
-            ['name' => 'Alda Gröndal', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('2002-01-01'))],
-            ['name' => 'Francois Soma', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-02-02'))],
-            ['name' => 'Janet Doe', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1987-03-03'))],
-            ['name' => 'Eliud Nkosana', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1984-04-04'))],
-            ['name' => 'Bran Steafan', 'occupation' => 'engineer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1998-05-05'))],
-            ['name' => 'Ellis Lee', 'occupation' => 'designer', 'birthday' => new UTCDateTime(new DateTimeImmutable('1996-06-06'))],
-        ]);
-
         // begin custom operator factory usage
         $pipeline = User::aggregate()
             ->addFields(birth_year: $this->yearFromField('birthday'))
