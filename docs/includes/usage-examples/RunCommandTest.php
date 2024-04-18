@@ -10,25 +10,20 @@ use MongoDB\Laravel\Tests\TestCase;
 
 class RunCommandTest extends TestCase
 {
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
     public function testRunCommand(): void
     {
-        // phpcs:disable
         // begin-command
         $cursor = DB::connection('mongodb')
             ->command(['listCollections' => 1]);
 
         foreach ($cursor as $coll) {
-            echo $coll['name'] . '<br>';
+            echo $coll['name'] . "<br>\n";
         }
 
         // end-command
-        // phpcs:enable
 
         $this->assertNotNull($cursor);
         $this->assertInstanceOf(Cursor::class, $cursor);
+        $this->expectOutputRegex('/<br>/');
     }
 }
