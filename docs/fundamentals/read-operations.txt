@@ -94,11 +94,11 @@ retrieve documents that meet the following criteria:
 
       Use the following syntax to specify the query:
 
-      .. code-block:: php
-
-         $movies = Movie::where('year', 2010)
-             ->where('imdb.rating', '>', 8.5)
-             ->get();
+      .. literalinclude:: /includes/fundamentals/read-operations/ReadOperationsTest.php
+         :language: php
+         :dedent:
+         :start-after: start-query
+         :end-before: end-query
 
    .. tab:: Controller Method
       :tabid: controller
@@ -209,12 +209,11 @@ documents.
 
       Use the following syntax to specify the query:
 
-      .. code-block:: php
-
-         $movies = Movie::where('year', 1999)
-             ->skip(2)
-             ->take(3)
-             ->get();
+      .. literalinclude:: /includes/fundamentals/read-operations/ReadOperationsTest.php
+         :language: php
+         :dedent:
+         :start-after: start-skip-limit
+         :end-before: end-skip-limit
 
    .. tab:: Controller Method
       :tabid: controller
@@ -300,12 +299,11 @@ This example queries for documents in which the value of the ``countries`` field
 
       Use the following syntax to specify the query:
 
-      .. code-block:: php
-
-         $movies = Movie::where('countries', 'Indonesia')
-             ->orderBy('year')
-             ->orderBy('title', 'desc')
-             ->get();
+      .. literalinclude:: /includes/fundamentals/read-operations/ReadOperationsTest.php
+         :language: php
+         :dedent:
+         :start-after: start-sort
+         :end-before: end-sort
 
    .. tab:: Controller Method
       :tabid: controller
@@ -368,7 +366,7 @@ This example queries for documents in which the value of the ``countries`` field
 
    - :manual:`Natural order </reference/glossary/#std-term-natural-order>`
      in the Server manual glossary
-   - `Ordering, Grouping, Limit and Offset <https://laravel.com/docs/10.x/queries#ordering-grouping-limit-and-offset>`__
+   - `Ordering, Grouping, Limit and Offset <https://laravel.com/docs/11.x/queries#ordering-grouping-limit-and-offset>`__
      in the Laravel documentation
 
 .. _laravel-retrieve-one:
@@ -394,11 +392,11 @@ field.
 
       Use the following syntax to specify the query:
 
-      .. code-block:: php
-
-         $movies = Movie::where('runtime', 30)
-             ->orderBy('_id')
-             ->first();
+      .. literalinclude:: /includes/fundamentals/read-operations/ReadOperationsTest.php
+         :language: php
+         :dedent:
+         :start-after: start-first
+         :end-before: end-first
 
    .. tab:: Controller Method
       :tabid: controller
