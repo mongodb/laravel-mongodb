@@ -25,15 +25,16 @@ MongoDB instance or replica set deployment by using {+odm-short+}.
 
 This guide includes the following sections:
 
-- :ref:`Connection URI <laravel-connection-uri>` describes connection URIs
-  and their constituent parts
-- :ref:`Laravel Data Source Name <laravel-data-source-name>`
-- :ref:`Connection Example <laravel-atlas-connection-example>` provides
-  examples that show how to connect to MongoDB by using an Atlas
-  connection string
+- :ref:`Connection URI <laravel-connection-uri>`, which explains connection 
+  URIs and their constituent parts
+- :ref:`Laravel Data Source Name <laravel-data-source-name>`, which explains
+  how to specify a connection to MongoDB.
+- :ref:`Connection Example <laravel-atlas-connection-example>`, which  provides
+  examples that show how to connect to MongoDB by using an Atlas connection 
+  string.
 - :ref:`Other Ways to Connect to MongoDB <laravel-other-ways-to-connect>`
   describes ways to connect to MongoDB deployments that are not hosted
-  on Atlas
+  on Atlas.
 
 .. _laravel-connection-uri:
 
@@ -59,20 +60,22 @@ If machine that hosts your MongoDB deployment supports it, you can use the
 for greater flexibility in your deployment and the ability to change the
 servers in rotation without reconfiguring clients.
 
-If you are using password-based authentication, the part of the connection
+If you use a password-based authentication, the part of the connection
 string after the protocol contains your username and password. Replace the
 placeholder for ``user`` with your username and ``pass`` with your password.
-If you are using an authentication mechanism that does not require a username
+If you use an authentication mechanism that does not require a username
 and password, omit this part of the connection URI.
 
-The part of the connection string after the credentials specifies the
-hostname or IP address and port of your MongoDB instance. In the
-preceding example, we use ``sample.host`` as the hostname and ``27017``
-as the port. Replace these values to point to your MongoDB instance.
+The part of the connection string after the credentials specifies your MongoDB
+instance's hostname or IP address and port. The preceding example uses
+``sample.host`` as the hostname and ``27017`` as the port. Replace these values 
+to point to your MongoDB instance.
 
 The last part of the connection string specifies connection and authentication
-options. In the example, we set two connection options:
-``maxPoolSize=20`` and ``w=majority``.
+options. In the example, we set the following connection options and values:
+
+- ``maxPoolSize=20``
+- ``w=majority``
 
 .. _laravel-data-source-name:
 
@@ -80,26 +83,23 @@ Laravel Data Source Name
 ------------------------
 
 In Laravel, you can specify your database connection details in a connection
-string, which is called a data source name (DSN). {+odm-short+} lets you use
-a the MongoDB standard connection string format to specify the connection
-details and options.
+string, called a data source name (DSN). {+odm-short+} lets you use the MongoDB
+standard connection string format to specify the connection details and options.
 
-The next sections provide following sections provide common ways of specifying
-MongoDB connections.
+The next sections provide common ways of specifying MongoDB connections.
 
 .. _laravel-atlas-connection-example:
 
 Connection Example
 ------------------
 
-This section shows how you can configure your Laravel application's DSN to
-use a MongoDB Atlas connection string.
+This section shows how to configure your Laravel application's DSN by using a
+MongoDB Atlas connection string.
 
 To add your MongoDB DSN to your Laravel application, make the following changes:
 
 - Add the DSN as an environment variable in your project's ``.env`` environment
-  configuration file. Set the value of the variable to your MongoDB connection
-  URI.
+  configuration file. Set the variable value to your Atlas connection string.
 - Add a connection entry for your MongoDB connection in the ``connections``
   array of your ``config/database.php`` configuration file. Set the ``dsn``
   value of the connection entry to reference the environment variable that
@@ -146,22 +146,22 @@ instance or a replica set not hosted on MongoDB Atlas.
 Connect to a MongoDB Server on Your Local Machine
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-This section shows an example connection string that you can use when you
-run Laravel application and MongoDB server from the same machine, such as
-your local development environment.
+This section shows an example connection string you can use when running a
+Laravel application and MongoDB server from the same machine, such as your 
+local development environment.
 
 To connect your application to a MongoDB instance hosted on the same machine,
 you must complete the following tasks:
 
-- Download, install and run MongoDB server. To learn how to install MongoDB, see
-  :manual:`Install MongoDB Community Edition </installation/#mongodb-installation-tutorials>`.
+- Download, install, and run MongoDB server.
 - Obtain the IP address and port on which your MongoDB server is running. If
   you use the default settings of a local installation of MongoDB server,
-  the IP address is ``127.0.0.1`` and the port is ``27017``.
-- Set up your ``config/database.php`` connection to reference the MongoDB
-  ``dsn`` as shown in the :ref:`laravel-atlas-connection-example` section.
+  the IP address is ``127.0.0.1``, and the port is ``27017``.
+- Set up your ``config/database.php`` connection to reference the environment
+  variable ``DB_URI`` for the value of the ``dsn``, as shown in the
+  :ref:`laravel-atlas-connection-example` section.
 
-The following example shows a sample connection string that you can add to
+The following example shows a sample connection string that you can add to the
 ``.env`` file if your application connects to a MongoDB server running on the
 default IP address and port:
 
@@ -170,18 +170,22 @@ default IP address and port:
 
    DB_URI="mongodb://127.0.0.1:27017/";
 
+To learn how to download  and install MongoDB server, see
+:manual:`Install MongoDB Community Edition </installation/#mongodb-installation-tutorials>`
+in the {+server-docs-name+}.
+
 .. _laravel-connect-replica-set:
 
 Connect to a Replica Set
 ~~~~~~~~~~~~~~~~~~~~~~~~
 
 A MongoDB replica set deployment is a group of connected instances, or nodes,
-where the nodes store the same set of data. This configuration of instances
+where the nodes store the same data set. This configuration of instances
 provides data redundancy and high data availability.
 
-To connect to a replica set deployment, specify the hostname and port numbers
-of each instance, separated by commas, and the replica set name as the value
-of the ``replicaSet`` parameter in the connection string.
+To connect to a replica set deployment, specify each node's hostname and port 
+number, separated by commas, and the replica set name as the value of the 
+``replicaSet`` parameter in the connection string.
 
 This example, which shows the connection string you can add to your
 Laravel application's ``.env`` file to connect to a replica set, uses the
@@ -209,7 +213,7 @@ specified:
 .. tip::
 
    You are required to specify only one host to connect to a replica set.
-   However, to ensure connectivity when the specified host is unavailable,
+   However, to ensure connectivity when the selected host is unavailable,
    provide the full list of hosts.
 
 To learn more about setting up a MongoDB replica set, see
@@ -221,11 +225,11 @@ Direct Connection
 
 To force operations to run on a specific node in a MongoDB replica set,
 specify the connection information for the node in the connection string and
-specify the ``directConnection`` parameter with a value of ``true``.
+the ``directConnection`` parameter with a ``true`` value.
 
 Direct connections include the following limitations:
 
-- DNS seedlist SRV connection strings cannot be used.
+- DNS seed list connection format connection strings cannot be used.
 - Write operations fail when the specified host is not the primary.
 - When the host is not the primary, you must specify the  ``secondary`` read
   preference in your connection options. To learn more about this limitation, see the
