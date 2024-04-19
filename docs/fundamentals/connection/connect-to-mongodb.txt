@@ -102,39 +102,39 @@ For a MongoDB database connection, you can specify the following details:
 
 .. list-table::
    :header-rows: 1
-   :widths: 30 70
+   :widths: 25 75
 
    * - Setting
      - Description
 
    * - ``driver``
-     - Specifies the database driver to use for the connection
+     - Specifies the database driver to use for the connection.
 
    * - ``dsn``
-     - The data source name (DSN) that specifies the MongoDB connection URI
+     - The data source name (DSN) that specifies the MongoDB connection URI.
 
    * - ``host``
      - Specifies the network address of one or more MongoDB nodes in a
        deployment. You can use this setting instead of the ``dsn`` setting.
 
    * - ``database``
-     - Specifies the name of the MongoDB database to read and write to
+     - Specifies the name of the MongoDB database to read and write to.
 
    * - ``username``
      - Specifies your database user's username credential to authenticate
-       with MongoDB
+       with MongoDB.
 
    * - ``password``
      - Specifies your database user's password credential to authenticate
-       with MongoDB
+       with MongoDB.
 
    * - ``options``
      - Specifies connection options to pass to MongoDB that determine the
-       connection behavior
+       connection behavior.
 
    * - ``driverOptions``
      - Specifies options specific to pass to the MongoDB PHP Library driver
-       that determine the driver behavior for that connection
+       that determine the driver behavior for that connection.
 
 .. note::
 
