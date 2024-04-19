@@ -30,6 +30,10 @@ class ReadOperationsTest extends TestCase
             ['title' => 'movie_b', 'plot' => 'love is a long story'],
             ['title' => 'movie_c', 'plot' => 'went on a trip'],
         ]);
+
+        $collection = MongoDB::connection('mongodb')->collection('movies');
+        $index = ['plot' => 'text'];
+        $collection->createIndex($index);
     }
 
     /**
@@ -119,11 +123,6 @@ class ReadOperationsTest extends TestCase
      */
     public function testTextRelevance(): void
     {
-
-        $collection = MongoDB::connection('mongodb')->collection('movies');
-        $index = ['plot' => 'text'];
-        $collection->createIndex($index);
-
         // start-text-relevance
         $movies = Movie::where('$text', ['$search' => '"love story"'])
             ->orderBy('score', ['$meta' => 'textScore'])    
