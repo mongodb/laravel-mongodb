@@ -1,0 +1,53 @@
+.. _laravel-run-command-usage:
+
+=============
+Run a Command
+=============
+
+You can run a MongoDB command directly on a database by calling the ``command()``
+method on a database connection instance.
+
+To run a command, call the ``command()`` method and pass it a document that
+contains the command and its parameters.
+
+Example
+-------
+
+This usage example performs the following actions on the database connection
+instance that uses the ``sample_mflix`` database:
+
+- Creates a database connection instance that references the ``sample_mflix`` 
+  database
+- Specifies a command to retrieve a list of collections and views in the
+  ``sample_mflix``  database
+- Prints the value of the ``name`` field of each result returned by the command
+
+The example calls the ``command()`` method to run the ``listCollections`` command. This method
+returns a cursor that contains a result document for each collection in the database.
+
+.. io-code-block::
+
+   .. input:: ../includes/usage-examples/RunCommandTest.php
+      :start-after: begin-command
+      :end-before: end-command
+      :language: php
+      :dedent:
+
+   .. output::
+      :language: console
+      :visible: false
+
+      sessions
+      movies
+      theaters
+      comments
+      embedded_movies
+      users
+
+To learn how to edit your Laravel application to run the usage example, see the
+:ref:`Usage Examples landing page <laravel-usage-examples>`.
+
+.. tip::
+
+   To learn more about running MongoDB database commands, see
+   :manual:`Database Commands </reference/command/>` in the {+server-docs-name+}.
