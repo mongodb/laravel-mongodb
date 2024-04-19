@@ -121,7 +121,7 @@ details in a ``connections`` array entry:
    'connections' => [
        'mongodb' => [
            'driver' => 'mongodb',
-           'dsn' => 'mongodb+srv//myUser:myPass@sample.host:27017/',
+           'dsn' => 'mongodb+srv//myUser:myPass123@sample.host:27017/',
            'database' => 'sample_mflix',
            'options' => [
                'maxPoolSize' => 20,
