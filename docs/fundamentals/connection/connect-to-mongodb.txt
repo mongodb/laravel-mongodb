@@ -92,7 +92,7 @@ connection details in this file:
   one or more databases from your application
 
 You can use the following code in the configuration file to set the default
-connection to a corresponding ``"mongodb"`` entry in the ``connections`` array:
+connection to a corresponding ``mongodb`` entry in the ``connections`` array:
 
 .. code-block:: php
 
@@ -190,10 +190,10 @@ To add your MongoDB DSN to your Laravel application, make the following changes:
 The following examples show how to specify ``"mongodb+srv://myUser:myPass123@mongodb0.example.com/"``
 as the connection string in the relevant configuration files:
 
-.. code-block:: php
+.. code-block:: bash
    :caption: Sample .env environment configuration
 
-   DB_URI=""mongodb+srv://myUser:myPass123@mongodb0.example.com/";
+   DB_URI="mongodb+srv://myUser:myPass123@mongodb0.example.com/"
 
 .. code-block:: php
    :caption: Sample config/database.php connection entry
