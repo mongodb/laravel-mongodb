@@ -27,14 +27,13 @@ This guide includes the following sections:
 
 - :ref:`Connection URI <laravel-connection-uri>`, which explains connection
   URIs and their constituent parts
-- :ref:`Laravel Data Source Name <laravel-data-source-name>`, which explains
-  how to specify a connection to MongoDB.
+- :ref:`laravel-database-config`, which explains how to set up your MongoDB
+  database connection for your Laravel app.
 - :ref:`Connection Example <laravel-atlas-connection-example>`, which  provides
   examples that show how to connect to MongoDB by using an Atlas connection
   string.
-- :ref:`Other Ways to Connect to MongoDB <laravel-other-ways-to-connect>`
-  describes ways to connect to MongoDB deployments that are not hosted
-  on Atlas.
+- :ref:`laravel-other-ways-to-connect` describes ways to connect to MongoDB
+  deployments that are not hosted on Atlas.
 
 .. _laravel-connection-uri:
 
@@ -79,15 +78,61 @@ options. In the example, we set the following connection options and values:
 - ``maxPoolSize=20``
 - ``w=majority``
 
-.. _laravel-data-source-name:
+.. _laravel-database-config:
 
-Laravel Data Source Name
-------------------------
+Laravel Database Connection Configuration
+------------------------------------------
 
-In Laravel, you can specify your database connection details in a connection
-string, called a **data source name (DSN)**. {+odm-short+} lets you use the
-MongoDB standard connection string format to specify the connection details
-and options.
+{+odm-short+} lets you configure your MongoDB database connection in the
+``config/database.php`` Laravel application file. You can specify the following
+connection details in this file:
+
+- ``default``, which specifies the default database connection to use when
+  unspecified
+- ``connections``, which contains dataabase connection information to access
+  various databases from your application
+
+You can use the following code in the configuration file to set the default
+connection to a corresponding ``"mongodb"`` entry in the ``connections`` array:
+
+.. code-block:: php
+
+   'default' => 'mongodb',
+
+For a MongoDB database connection, you can specify the following details:
+
+- ``driver``, which specifies the database driver to use for the connection
+- ``dsn``, the data source name (DSN) that specifies the MongoDB connection URI
+- ``host``, which you can use instead of the ``dsn`` setting to specify the
+  network address of one or more MongoDB nodes
+- ``database``, which specifies the name of the MongoDB database to read and
+  write to
+- ``username`` and ``password``, which you can optionally include to specify
+  your database user's credentials to authenticate with MongoDB
+- ``options`` and ``driverOptions``, which specify connection options to
+  pass to the MongoDB driver
+
+The following example shows how you can specify a your MongoDB connection
+details in a ``connections`` array entry:
+
+.. code-block:: php
+   :caption: Example config/database.php MongoDB connection configuration
+
+   'connections' => [
+       'mongodb' => [
+           'driver' => 'mongodb',
+           'dsn' => 'mongodb+srv//myUser:myPass@sample.host:27017/',
+           'database' => 'laravel',
+           'options' => [
+               'maxPoolSize => 20,
+               'w' => 'majority',
+           ],
+           'driverOptions' => [
+               'serverApi' => 1,
+           ],
+       ],
+       // ...
+   ],
 
 The next sections provide common ways of specifying MongoDB connections.
 
@@ -122,7 +167,7 @@ as the connection string in the relevant configuration files:
 
    'connections' => [
        'mongodb' => [
-           'dsn' => env(DB_URI), // uses the value of the DB_URI environment variable
+           'dsn' => env('DB_URI'), // uses the value of the DB_URI environment variable
            'driver' => 'mongodb',
            'database' => 'sample_mflix',
            // ...
