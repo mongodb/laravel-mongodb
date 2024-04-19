@@ -366,7 +366,7 @@ This example queries for documents in which the value of the ``countries`` field
 
    - :manual:`Natural order </reference/glossary/#std-term-natural-order>`
      in the Server manual glossary
-   - `Ordering, Grouping, Limit and Offset <https://laravel.com/docs/11.x/queries#ordering-grouping-limit-and-offset>`__
+   - `Ordering, Grouping, Limit and Offset <https://laravel.com/docs/queries#ordering-grouping-limit-and-offset>`__
      in the Laravel documentation
 
 .. _laravel-retrieve-one:
@@ -414,12 +414,12 @@ field.
             {
                 public function show()
                 {
-                    $movies = Movie::where('runtime', 30)
+                    $movie = Movie::where('runtime', 30)
                         ->orderBy('_id')
                         ->first();
 
                     return view('browse_movies', [
-                        'movies' => $movies
+                        'movies' => $movie
                     ]);
                 }
             }
