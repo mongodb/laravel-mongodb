@@ -181,12 +181,6 @@ Use the following syntax to run a find operation that matches all documents:
 Search Text Fields
 ------------------
 
-You can perform a text search by using the :manual:`$text
-</reference/operator/query/text>` operator followed
-by the ``$search`` field in your query filter that you pass to the
-``where()`` method. The ``$text`` operator performs a text search on the
-text-indexed fields. The ``$search`` field specifies the text to search for.
-
 A text search retrieves documents that contain a **term** or a **phrase** in the
 text-indexed fields. A term is a sequence of characters that excludes
 whitespace characters. A phrase is a sequence of terms with any number
@@ -200,12 +194,19 @@ of whitespace characters.
    indexes, see the :ref:`laravel-eloquent-indexes` section of the
    Schema Builder guide.
 
+You can perform a text search by using the :manual:`$text
+</reference/operator/query/text>` operator followed
+by the ``$search`` field in your query filter that you pass to the
+``where()`` method. The ``$text`` operator performs a text search on the
+text-indexed fields. The ``$search`` field specifies the text to search for.
+
 After building your query with the ``where()`` method, chain the ``get()``
 method to retrieve the query results.
 
 This example calls the ``where()`` method on the ``Movie`` Eloquent model to
 retrieve documents in which the ``plot`` field contains the phrase
-``"love story"``:
+``"love story"``. To perform this text search, the collection must have
+a text index on the ``plot`` field.
 
 .. tabs::
 
@@ -271,16 +272,12 @@ retrieve documents in which the ``plot`` field contains the phrase
             Plot: A girl. A boy. A love story ...
 
             ...
-            
-.. note::
 
-   To specify a phrase as the text search criteria, you must include it
-   with escaped quotes in the query filter.
-
-A text search assigns a numerical text score to indicate how closely
+A text search assigns a numerical :manual:`text score </reference/operator/query/text/#text-score>` to indicate how closely
 each result matches the string in your query filter. You can sort the
 results by relevance by using the ``orderBy()`` method to sort on the
-``textScore`` metadata:
+``textScore`` metadata field. You can access this metadata by using the
+:manual:`$meta </reference/operator/aggregation/meta/>` operator:
 
 .. literalinclude:: /includes/fundamentals/read-operations/ReadOperationsTest.php
    :language: php

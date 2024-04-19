@@ -105,7 +105,7 @@ class ReadOperationsTest extends TestCase
     public function testText(): void
     {
         // start-text
-        $movies = Movie::where('$text', ['$search' => "\"" . 'love story' . "\""])
+        $movies = Movie::where('$text', ['$search' => '"love story"'])
             ->get();
         // end-text
 
@@ -125,7 +125,7 @@ class ReadOperationsTest extends TestCase
         $collection->createIndex($index);
 
         // start-text-relevance
-        $movies = Movie::where('$text', ['$search' => "\"" . 'love story' . "\""])
+        $movies = Movie::where('$text', ['$search' => '"love story"'])
             ->orderBy('score', ['$meta' => 'textScore'])    
             ->get();
         // end-text-relevance
