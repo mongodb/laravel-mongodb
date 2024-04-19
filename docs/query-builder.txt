@@ -36,6 +36,12 @@ lets you perform database operations. Facades, which are static interfaces to
 classes, make the syntax more concise, avoid runtime errors, and improve
 testability.
 
+.. tip::
+
+   Before using the ``DB`` facade, ensure that you specify MongoDB as your application's
+   default database connection. For instructions on setting the database connection,
+   see the :ref:`laravel-quick-start-connect-to-mongodb` step in the Quick Start.
+
 {+odm-short+} aliases the ``DB`` method ``table()`` as the ``collection()``
 method. Chain methods to specify commands and any constraints. Then, chain
 the ``get()`` method at the end to run the methods and retrieve the results.
