@@ -112,8 +112,8 @@ For a MongoDB database connection, you can specify the following details:
 - ``options`` and ``driverOptions``, which specify connection options to
   pass to the MongoDB driver
 
-The following example shows how you can specify a your MongoDB connection
-details in a ``connections`` array entry:
+The following example shows how you can specify your MongoDB connection details
+in a ``connections`` array entry:
 
 .. code-block:: php
    :caption: Example config/database.php MongoDB connection configuration
@@ -134,7 +134,7 @@ details in a ``connections`` array entry:
        // ...
    ],
 
-The next sections provide common ways of specifying MongoDB connections.
+The following sections provide common ways of specifying MongoDB connections.
 
 .. _laravel-atlas-connection-example:
 
