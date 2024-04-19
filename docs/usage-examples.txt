@@ -73,9 +73,12 @@ calls the controller function and returns the result to a web interface.
 
    /usage-examples/findOne
    /usage-examples/find
+   /usage-examples/insertOne
    /usage-examples/insertMany
    /usage-examples/updateOne
+   /usage-examples/updateMany
    /usage-examples/deleteOne
    /usage-examples/deleteMany
    /usage-examples/count
    /usage-examples/distinct
+   /usage-examples/runCommand
