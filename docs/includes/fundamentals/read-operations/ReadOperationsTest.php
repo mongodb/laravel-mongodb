@@ -4,19 +4,30 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Models\Cargo;
-
-// <add your imports here including any models and facades>
-
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Schema\SQLiteBuilder;
-use Illuminate\Support\Facades\Schema;
+use App\Models\Movie;
 use MongoDB\Laravel\Tests\TestCase;
-
-use function assert;
 
 class ReadOperationsTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        require_once __DIR__ . '/Movie.php';
+
+        parent::setUp();
+
+        Movie::truncate();
+        Movie::insert([
+            ['year' => 2010, 'imdb' => ['rating' => 9]],
+            ['year' => 2010, 'imdb' => ['rating' => 9.5]],
+            ['year' => 2010, 'imdb' => ['rating' => 7]],
+            ['year' => 1999, 'countries' => ['Indonesia', 'Canada'], 'title' => 'Title 1'],
+            ['year' => 1999, 'countries' => ['Indonesia'], 'title' => 'Title 2'],
+            ['year' => 1999, 'countries' => ['Indonesia'], 'title' => 'Title 3'],
+            ['year' => 1999, 'countries' => ['Indonesia'], 'title' => 'Title 4'],
+            ['year' => 1999, 'countries' => ['Canada'], 'title' => 'Title 5'],
+            ['year' => 1999, 'runtime' => 30],
+        ]);
+    }
 
     /**
      * @runInSeparateProcess
@@ -24,8 +35,6 @@ class ReadOperationsTest extends TestCase
      */
     public function testFindFilter(): void
     {
-        require_once __DIR__ . '/Movie.php';
-
         // start-query
         $movies = Movie::where('year', 2010)
             ->where('imdb.rating', '>', 8.5)
@@ -35,15 +44,13 @@ class ReadOperationsTest extends TestCase
         $this->assertNotNull($movies);
         $this->assertCount(2, $movies);
     }
-    
+
     /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
     public function testSkipLimit(): void
     {
-        require_once __DIR__ . '/Movie.php';
-
         // start-skip-limit
         $movies = Movie::where('year', 1999)
             ->skip(2)
@@ -61,8 +68,6 @@ class ReadOperationsTest extends TestCase
      */
     public function testSort(): void
     {
-        require_once __DIR__ . '/Movie.php';
-
         // start-sort
         $movies = Movie::where('countries', 'Indonesia')
             ->orderBy('year')
@@ -71,7 +76,7 @@ class ReadOperationsTest extends TestCase
         // end-sort
 
         $this->assertNotNull($movies);
-        $this->assertCount(24, $movies);
+        $this->assertCount(4, $movies);
     }
 
     /**
@@ -80,16 +85,13 @@ class ReadOperationsTest extends TestCase
      */
     public function testFirst(): void
     {
-        require_once __DIR__ . '/Movie.php';
-
         // start-first
-        $movies = Movie::where('runtime', 30)
+        $movie = Movie::where('runtime', 30)
             ->orderBy('_id')
             ->first();
         // end-first
 
-        $this->assertNotNull($movies);
-        $this->assertCount(1, $movies);
+        $this->assertNotNull($movie);
+        $this->assertInstanceOf(Movie::class, $movie);
     }
-
 }
