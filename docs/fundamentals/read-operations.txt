@@ -237,7 +237,7 @@ a text index on the ``plot`` field.
             {
                 public function show()
                 {
-                     $movies = Movie::where('$text', ['$search' => "\"" . 'love story' . "\""])
+                     $movies = Movie::where('$text', ['$search' => '"love story"'])
                          ->get();
 
                      return view('browse_movies', [
