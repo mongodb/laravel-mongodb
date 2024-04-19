@@ -26,6 +26,9 @@ class ReadOperationsTest extends TestCase
             ['year' => 1999, 'countries' => ['Indonesia'], 'title' => 'Title 4'],
             ['year' => 1999, 'countries' => ['Canada'], 'title' => 'Title 5'],
             ['year' => 1999, 'runtime' => 30],
+            ['title' => 'movie_a', 'fullplot' => 'this is a love story'],
+            ['title' => 'movie_b', 'fullplot' => 'love is a long story'],
+            ['title' => 'movie_c', 'fullplot' => 'went on a trip'],
         ]);
     }
 
@@ -94,4 +97,36 @@ class ReadOperationsTest extends TestCase
         $this->assertNotNull($movie);
         $this->assertInstanceOf(Movie::class, $movie);
     }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testText(): void
+    {
+        // start-text
+        $movies = Movie::where('$text', ['$search' => "\"" . 'love story' . "\""])
+            ->get();
+        // end-text
+
+        $this->assertNotNull($movies);
+        $this->assertCount(2, $movies);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testTextRelevance(): void
+    {
+        // start-text-relevance
+        $movies = Movie::where('$text', ['$search' => "\"" . 'love story' . "\""])
+            ->orderBy('score', ['$meta' => 'textScore'])    
+            ->get();
+        // end-text-relevance
+
+        $this->assertNotNull($movies);
+        $this->assertCount(2, $movies);
+    }
+
 }
