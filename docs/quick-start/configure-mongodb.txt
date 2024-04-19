@@ -41,6 +41,18 @@ Configure Your MongoDB Connection
 
          // ...
 
+      .. note:: Laravel Facades
+
+         In order to use Laravel's facade classes, which offer static interfaces to classes in
+         the service container, you must specify MongoDB as the application's database connection.
+         You can replace ``DB_CONNECTION=mysql`` with ``DB_CONNECTION=mongodb`` in your ``.env`` file.
+         Alternatively, you can specify the database connection in your ``config/database.php`` file
+         without the ``DB_CONNECTION`` variable as shown in the following code:
+
+         .. code-block:: php
+
+            'default' => 'mongodb',
+
    .. step:: Add the Laravel MongoDB provider
 
       Open the ``app.php`` file in the ``config`` directory and
