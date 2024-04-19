@@ -80,3 +80,4 @@ calls the controller function and returns the result to a web interface.
    /usage-examples/deleteMany
    /usage-examples/count
    /usage-examples/distinct
+   /usage-examples/runCommand
