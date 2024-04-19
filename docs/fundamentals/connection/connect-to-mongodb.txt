@@ -89,7 +89,7 @@ connection details in this file:
 
 - ``default``, which specifies the default database connection to use when
   unspecified
-- ``connections``, which contains dataabase connection information to access
+- ``connections``, which contains database connection information to access
   various databases from your application
 
 You can use the following code in the configuration file to set the default
@@ -122,9 +122,9 @@ details in a ``connections`` array entry:
        'mongodb' => [
            'driver' => 'mongodb',
            'dsn' => 'mongodb+srv//myUser:myPass@sample.host:27017/',
-           'database' => 'laravel',
+           'database' => 'sample_mflix',
            'options' => [
-               'maxPoolSize => 20,
+               'maxPoolSize' => 20,
                'w' => 'majority',
            ],
            'driverOptions' => [
