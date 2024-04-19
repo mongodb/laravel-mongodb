@@ -269,6 +269,8 @@ retrieve documents in which the ``plot`` field contains the phrase
             IMDB Rating: 6.1
             IMDB Votes: 223
             Plot: A girl. A boy. A love story ...
+
+            ...
             
 .. note::
 

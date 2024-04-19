@@ -26,9 +26,9 @@ class ReadOperationsTest extends TestCase
             ['year' => 1999, 'countries' => ['Indonesia'], 'title' => 'Title 4'],
             ['year' => 1999, 'countries' => ['Canada'], 'title' => 'Title 5'],
             ['year' => 1999, 'runtime' => 30],
-            ['title' => 'movie_a', 'fullplot' => 'this is a love story'],
-            ['title' => 'movie_b', 'fullplot' => 'love is a long story'],
-            ['title' => 'movie_c', 'fullplot' => 'went on a trip'],
+            ['title' => 'movie_a', 'plot' => 'this is a love story'],
+            ['title' => 'movie_b', 'plot' => 'love is a long story'],
+            ['title' => 'movie_c', 'plot' => 'went on a trip'],
         ]);
     }
 
@@ -119,6 +119,11 @@ class ReadOperationsTest extends TestCase
      */
     public function testTextRelevance(): void
     {
+
+        $collection = MongoDB::connection('mongodb')->collection('movies');
+        $index = ['plot' => 'text'];
+        $collection->createIndex($index);
+
         // start-text-relevance
         $movies = Movie::where('$text', ['$search' => "\"" . 'love story' . "\""])
             ->orderBy('score', ['$meta' => 'textScore'])    
