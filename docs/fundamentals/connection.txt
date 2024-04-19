@@ -17,8 +17,8 @@ Connections
 Overview
 --------
 
-Learn how to set up a connection and specify connection behavior from your
-Laravel application to a MongoDB deployment by using {+odm-short+} in the
+Learn how to set up a connection from your Laravel application to a MongoDB
+deployment and specify the connection behavior by using {+odm-short+} in the
 following sections:
 
 - :ref:`Connect to MongoDB <laravel-connect-to-mongodb>`

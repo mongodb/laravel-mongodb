@@ -87,10 +87,9 @@ Laravel Database Connection Configuration
 ``config/database.php`` Laravel application file. You can specify the following
 connection details in this file:
 
-- ``default``, which specifies the default database connection to use when
-  unspecified
+- ``default``, which specifies the database connection to use when unspecified
 - ``connections``, which contains database connection information to access
-  various databases from your application
+  one or more databases from your application
 
 You can use the following code in the configuration file to set the default
 connection to a corresponding ``"mongodb"`` entry in the ``connections`` array:
@@ -101,19 +100,54 @@ connection to a corresponding ``"mongodb"`` entry in the ``connections`` array:
 
 For a MongoDB database connection, you can specify the following details:
 
-- ``driver``, which specifies the database driver to use for the connection
-- ``dsn``, the data source name (DSN) that specifies the MongoDB connection URI
-- ``host``, which you can use instead of the ``dsn`` setting to specify the
-  network address of one or more MongoDB nodes
-- ``database``, which specifies the name of the MongoDB database to read and
-  write to
-- ``username`` and ``password``, which you can optionally include to specify
-  your database user's credentials to authenticate with MongoDB
-- ``options`` and ``driverOptions``, which specify connection options to
-  pass to the MongoDB driver
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Setting
+     - Description
+
+   * - ``driver``
+     - Specifies the database driver to use for the connection
+
+   * - ``dsn``
+     - The data source name (DSN) that specifies the MongoDB connection URI
+
+   * - ``host``
+     - Specifies the network address of one or more MongoDB nodes in a
+       deployment. You can use this setting instead of the ``dsn`` setting.
+
+   * - ``database``
+     - Specifies the name of the MongoDB database to read and write to
+
+   * - ``username``
+     - Specifies your database user's username credential to authenticate
+       with MongoDB
+
+   * - ``password``
+     - Specifies your database user's password credential to authenticate
+       with MongoDB
+
+   * - ``options``
+     - Specifies connection options to pass to MongoDB that determine the
+       connection behavior
+
+   * - ``driverOptions``
+     - Specifies options specific to pass to the MongoDB PHP Library driver
+       that determine the driver behavior for that connection
+
+.. note::
+
+   You can specify the following settings in the ``dsn`` configuration
+   as parameters in your MongoDB connection string instead of as array items:
+
+   - ``host``
+   - ``username``
+   - ``password``
+   - ``options`` and ``driverOptions``, which are specified by the option name
 
 The following example shows how you can specify your MongoDB connection details
-in a ``connections`` array entry:
+in the ``connections`` array item:
 
 .. code-block:: php
    :caption: Example config/database.php MongoDB connection configuration
@@ -201,7 +235,7 @@ local development environment.
 To connect your application to a MongoDB instance hosted on the same machine,
 you must complete the following tasks:
 
-- Download, install, and run MongoDB server.
+- Download, install, and run the MongoDB server.
 - Obtain the IP address and port on which your MongoDB server is running. If
   you use the default settings of a local installation of MongoDB server,
   the IP address is ``127.0.0.1``, and the port is ``27017``.
