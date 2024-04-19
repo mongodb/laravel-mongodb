@@ -17,15 +17,18 @@ Find Multiple Documents
    :depth: 1
    :class: singlecol
 
-You can retrieve multiple documents from a collection by chaining a retrieval
-method such as ``where()`` with the ``get()`` method to retrieve the results.
-You can chain these methods to an Eloquent model or a query builder.
+You can retrieve multiple documents from a collection by creating a query
+builder using a method such as ``Model::where()`` or by using the ``DB``
+facade, and then chaining the ``get()`` method to retrieve the result.
 
 Pass a query filter to the ``where()`` method to retrieve documents that meet a
 set of criteria. When you call the ``get()`` method, MongoDB returns the
 matching documents according to their :term:`natural order` in the database or
 according to the sort order that you can specify by using the ``orderBy()``
 method.
+
+To learn more about query builder methods, see the :ref:`laravel-query-builder`
+guide.
 
 Example
 -------
