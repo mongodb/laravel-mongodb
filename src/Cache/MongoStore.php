@@ -34,7 +34,7 @@ final class MongoStore implements LockProvider, Store
      * @param string          $prefix                      Prefix for the name of cache items
      * @param Connection|null $lockConnection              The MongoDB connection to use for the lock, if different from the cache connection
      * @param string          $lockCollectionName          Name of the collection where locks are stored
-     * @param array{int, int} $lockLottery                 Probability [chance, total] of pruning expired cache items
+     * @param array{int, int} $lockLottery                 Probability [chance, total] of pruning expired cache items. Set to [0, 0] to disable
      * @param int             $defaultLockTimeoutInSeconds Time-to-live of the locks in seconds
      */
     public function __construct(
@@ -62,10 +62,9 @@ final class MongoStore implements LockProvider, Store
         return new MongoLock(
             ($this->lockConnection ?? $this->connection)->getCollection($this->lockCollectionName),
             $this->prefix . $name,
-            $seconds,
+            $seconds ?: $this->defaultLockTimeoutInSeconds,
             $owner,
             $this->lockLottery,
-            $this->defaultLockTimeoutInSeconds,
         );
     }
 
@@ -307,7 +306,7 @@ final class MongoStore implements LockProvider, Store
         return unserialize($value);
     }
 
-    protected function getUTCDateTime(int $additionalSeconds = 0): UTCDateTime
+    private function getUTCDateTime(int $additionalSeconds = 0): UTCDateTime
     {
         return new UTCDateTime(Carbon::now()->addSeconds($additionalSeconds));
     }

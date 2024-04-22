@@ -16,12 +16,11 @@ final class MongoLock extends Lock
     /**
      * Create a new lock instance.
      *
-     * @param Collection  $collection              The MongoDB collection
-     * @param string      $name                    Name of the lock
-     * @param int         $seconds                 Time-to-live of the lock in seconds
-     * @param string|null $owner                   A unique string that identifies the owner. Random if not set
-     * @param array       $lottery                 The prune probability odds
-     * @param int         $defaultTimeoutInSeconds The default number of seconds that a lock should be held
+     * @param Collection      $collection The MongoDB collection
+     * @param string          $name       Name of the lock
+     * @param int             $seconds    Time-to-live of the lock in seconds
+     * @param string|null     $owner      A unique string that identifies the owner. Random if not set
+     * @param array{int, int} $lottery    Probability [chance, total] of pruning expired cache items. Set to [0, 0] to disable
      */
     public function __construct(
         private readonly Collection $collection,
@@ -29,7 +28,6 @@ final class MongoLock extends Lock
         int $seconds,
         ?string $owner = null,
         private readonly array $lottery = [2, 100],
-        private readonly int $defaultTimeoutInSeconds = 86400,
     ) {
         parent::__construct($name, $seconds, $owner);
     }
@@ -62,7 +60,7 @@ final class MongoLock extends Lock
                         'expiration' => [
                             '$cond' => [
                                 'if' => $isExpiredOrAlreadyOwned,
-                                'then' => $this->expiresAt(),
+                                'then' => $this->getUTCDateTime($this->seconds),
                                 'else' => '$expiration',
                             ],
                         ],
@@ -135,17 +133,7 @@ final class MongoLock extends Lock
         )['owner'] ?? null;
     }
 
-    /**
-     * Get the UNIX timestamp indicating when the lock should expire.
-     */
-    private function expiresAt(): UTCDateTime
-    {
-        $lockTimeout = $this->seconds > 0 ? $this->seconds : $this->defaultTimeoutInSeconds;
-
-        return $this->getUTCDateTime($lockTimeout);
-    }
-
-    protected function getUTCDateTime(int $additionalSeconds = 0): UTCDateTime
+    private function getUTCDateTime(int $additionalSeconds = 0): UTCDateTime
     {
         return new UTCDateTime(Carbon::now()->addSeconds($additionalSeconds));
     }
