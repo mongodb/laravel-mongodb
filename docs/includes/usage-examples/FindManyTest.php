@@ -27,6 +27,10 @@ class FindManyTest extends TestCase
                 'title' => 'Baseball',
                 'runtime' => 1140,
             ],
+            [
+                'title' => 'Basketball',
+                'runtime' => 600,
+            ],
         ]);
 
         // begin-find
