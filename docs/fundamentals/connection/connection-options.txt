@@ -334,17 +334,16 @@ item, as shown in the following example:
    :emphasize-lines: 6-9
 
    'connections' => [
-         'mongodb' => [
-             'dsn' => 'mongodb+srv://mongodb0.example.com/',
-             'driver' => 'mongodb',
-             'database' => 'sample_mflix',
-             'driverOptions' => [
-                  'serverApi' => 1,
-                  'allow_invalid_hostname' => false,
-              ],
-         ],
-       // ...
-     ]
+       'mongodb' => [
+           'dsn' => 'mongodb+srv://mongodb0.example.com/',
+           'driver' => 'mongodb',
+           'database' => 'sample_mflix',
+           'driverOptions' => [
+               'serverApi' => 1,
+               'allow_invalid_hostname' => false,
+           ],
+       ],
+   ]
 
 See the `$driverOptions: array <https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBClient__construct/#parameters>`__
 section of the {+php-library+} documentation for a list of driver options.
