@@ -36,9 +36,9 @@ read and write operations on the data.
    :mdbu-course:`Getting Started with Laravel and MongoDB </courses/getting-started-with-laravel-and-mongodb>`
    MongoDB University Learning Byte.
 
-   If you prefer to connect to MongoDB by using the PHP Library driver without
+   If you prefer to connect to MongoDB by using the {+php-library+} without
    Laravel, see `Connecting to MongoDB <https://www.mongodb.com/docs/php-library/current/tutorial/connecting/>`__
-   in the PHP Library documentation.
+   in the {+php-library+} documentation.
 
 {+odm-short+} extends the Laravel Eloquent and Query Builder syntax to
 store and retrieve data from MongoDB.

@@ -41,7 +41,7 @@ Configure Your MongoDB Connection
 
          // ...
 
-   .. step:: Add the Laravel MongoDB provider
+   .. step:: Add the {+odm-short+} provider
 
       Open the ``app.php`` file in the ``config`` directory and
       add the following entry into the ``providers`` array:

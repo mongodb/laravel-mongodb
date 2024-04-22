@@ -30,7 +30,7 @@ data as **documents** that contain field-and-value pairs. In
 {+odm-short+}, you can access documents through Eloquent models.
 
 To learn more about the document data format,
-see :manual:`Documents </core/document/>` in the Server manual.
+see :manual:`Documents </core/document/>` in the {+server-docs-name+}.
 
 .. _laravel-access-db:
 

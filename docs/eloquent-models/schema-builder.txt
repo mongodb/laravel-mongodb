@@ -168,7 +168,7 @@ fields:
 - Compound index on ``launch_location`` and ``launch_date``, specifying a descending sort order on ``launch_date``
 - Unique index on the ``mission_id`` field, specifying the index name "unique_mission_id_idx"
 
-Click the :guilabel:`VIEW OUTPUT` button to see the indexes created by running
+Click the :guilabel:`{+code-output-label+}` button to see the indexes created by running
 the migration, including the default index on the ``_id`` field:
 
 .. io-code-block::
@@ -207,7 +207,7 @@ You can specify index options when calling an index creation method, such
 as ``index()``, on a ``Blueprint`` instance.
 
 The following migration code shows how to add a collation to an index as an
-index option. Click the :guilabel:`VIEW OUTPUT` button to see the indexes
+index option. Click the :guilabel:`{+code-output-label+}` button to see the indexes
 created by running the migration, including the default index on the ``_id``
 field:
 
@@ -266,7 +266,7 @@ appropriate helper method on the ``Blueprint`` instance and pass the
 index creation details.
 
 The following migration code shows how to create a sparse and a TTL index
-by using the index helpers. Click the :guilabel:`VIEW OUTPUT` button to see
+by using the index helpers. Click the :guilabel:`{+code-output-label+}` button to see
 the indexes created by running the migration, including the default index on
 the ``_id`` field:
 
@@ -297,7 +297,7 @@ You can specify sparse, TTL, and unique indexes on either a single field or
 compound index by specifying them in the index options.
 
 The following migration code shows how to create all three types of indexes
-on a single field. Click the :guilabel:`VIEW OUTPUT` button to see the indexes
+on a single field. Click the :guilabel:`{+code-output-label+}` button to see the indexes
 created by running the migration, including the default index on the ``_id``
 field:
 
@@ -342,7 +342,7 @@ method with a ``MongoDB\Laravel\Schema\Blueprint`` parameter. Specify the
 geospatial index creation details on the ``Blueprint`` instance.
 
 The following example migration creates a ``2d`` and ``2dsphere`` geospatial
-index on the ``spaceports`` collection. Click the :guilabel:`VIEW OUTPUT`
+index on the ``spaceports`` collection. Click the :guilabel:`{+code-output-label+}`
 button to see the indexes created by running the migration, including the
 default index on the ``_id`` field:
 

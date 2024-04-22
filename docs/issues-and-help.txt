@@ -5,7 +5,7 @@ Issues & Help
 =============
 
 We are lucky to have a vibrant PHP community that includes users of varying
-experience with MongoDB PHP Library and {+odm-short+}. To get support for
+experience with {+php-library+} and {+odm-short+}. To get support for
 general questions, search or post in the
 :community-forum:`MongoDB PHP Community Forums </tag/php>`.
 

@@ -283,7 +283,7 @@ Upsert Example
 
 This example shows how to pass the ``upsert`` option to the  ``update()``
 method to perform an update or insert in a single operation. Click the
-:guilabel:`VIEW OUTPUT` button to see the example document inserted when no
+:guilabel:`{+code-output-label+}` button to see the example document inserted when no
 matching documents exist:
 
 .. io-code-block::
@@ -353,7 +353,7 @@ method call:
 
 The following example shows how to add the value ``"baroque"`` to
 the ``genres`` array field of a matching document. Click the
-:guilabel:`VIEW OUTPUT` button to see the updated document:
+:guilabel:`{+code-output-label+}` button to see the updated document:
 
 .. io-code-block::
 
@@ -400,7 +400,7 @@ from the array. The following code example shows the structure of a
 
 The following example shows how to remove array values ``"classical"`` and
 ``"dance-pop"`` from the ``genres`` array field. Click the
-:guilabel:`VIEW OUTPUT` button to see the updated document:
+:guilabel:`{+code-output-label+}` button to see the updated document:
 
 .. io-code-block::
 
@@ -451,7 +451,7 @@ structure of a positional operator update call on a single matching document:
 
 The following example shows how to replace the array value ``"dance-pop"``
 with ``"contemporary"`` in the ``genres`` array field. Click the
-:guilabel:`VIEW OUTPUT` button to see the updated document:
+:guilabel:`{+code-output-label+}` button to see the updated document:
 
 .. io-code-block::
 

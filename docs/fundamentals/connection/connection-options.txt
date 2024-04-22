@@ -155,7 +155,9 @@ and their default values:
      - Boolean
      - ``false``
      - Specifies whether to directly connect to a single host instead of
-       discovering and connecting to all servers in the cluster.
+       discovering and connecting to all servers in the cluster. To learn more
+       about this setting, see :ref:`laravel-direct-connection` in the
+       Connection Guide.
 
    * - **heartbeatFrequencyMS**
      - Integer greater than or equal to ``500``
@@ -295,7 +297,7 @@ and their default values:
      - | Requests acknowledgment that the operation has propagated to a
          specific number or variety of servers.
        | To learn more, see :manual:`Write Concern </reference/write-concern>`
-         in the Server manual.
+         in the {+server-docs-name+}.
 
    * - **wTimeoutMS**
      - Non-negative integer

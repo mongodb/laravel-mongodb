@@ -481,7 +481,7 @@ This example queries for documents in which the value of the ``countries`` field
    To learn more about sorting, see the following resources:
 
    - :manual:`Natural order </reference/glossary/#std-term-natural-order>`
-     in the Server manual glossary
+     in the {+server-docs-name+} glossary
    - `Ordering, Grouping, Limit and Offset <https://laravel.com/docs/queries#ordering-grouping-limit-and-offset>`__
      in the Laravel documentation
 

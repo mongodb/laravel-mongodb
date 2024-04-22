@@ -1,5 +1,5 @@
 ===============
-Laravel MongoDB
+{+odm-short+}
 ===============
 
 .. facet::
@@ -94,5 +94,4 @@ Upgrade Versions
 
 Learn what changes you might need to make to your application to upgrade
 versions in the :ref:`laravel-upgrading` section.
-
 
