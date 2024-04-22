@@ -83,7 +83,7 @@ See code examples of the following operations in this section:
 - :ref:`laravel-insert-one-usage`
 - :ref:`laravel-insert-many-usage`
 - :ref:`laravel-update-one-usage`
-- :ref:`laravel-update-one-usage`
+- :ref:`laravel-update-many-usage`
 - :ref:`laravel-delete-one-usage`
 - :ref:`laravel-delete-many-usage`
 - :ref:`laravel-count-usage`
