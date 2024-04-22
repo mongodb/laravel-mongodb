@@ -6,8 +6,8 @@ Connections
 
 .. toctree::
 
-   /fundamentals/connection/connection-options
    /fundamentals/connection/connect-to-mongodb
+   /fundamentals/connection/connection-options
 
 .. contents:: On this page
    :local:

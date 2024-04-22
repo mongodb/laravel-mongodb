@@ -23,7 +23,6 @@ Fundamentals
 Learn how to use the {+odm-long+} to perform the following tasks:
 
 - :ref:`laravel-fundamentals-connection`
-- :ref:`laravel-fundamentals-connection`
 - :ref:`laravel-db-coll`
 - :ref:`laravel-fundamentals-read-ops`
 - :ref:`laravel-fundamentals-write-ops`
