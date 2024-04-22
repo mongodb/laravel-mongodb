@@ -204,6 +204,24 @@ less than three years ago:
 
    Planet::where( 'discovery_dt', '>', new DateTime('-3 years'))->get();
 
+.. tip:: Casts in Laravel 11
+
+   In Laravel 11, you can define a ``casts()`` method to specify data type conversions
+   instead of using the ``$casts`` attribute. The following code converts
+   the ``$casts`` attribute in the ``Planet`` model class to a ``casts()`` method:
+
+   .. code-block:: php
+
+      protected function casts(): array
+      {
+         return [
+            'discovery_dt' => 'datetime',
+         ];
+      }
+   
+   To learn more, see the `Model Casts <https://laravel-news.com/model-casts>`__
+   announcement page on the Laravel News website.
+
 To learn more about MongoDB's data types, see :manual:`BSON Types </reference/bson-types/>`
 in the MongoDB server docs.
 
