@@ -15,6 +15,7 @@ Fundamentals
    :titlesonly:
    :maxdepth: 1
 
+   /fundamentals/connection
    /fundamentals/database-collection
    /fundamentals/read-operations
    /fundamentals/write-operations
@@ -22,8 +23,8 @@ Fundamentals
 
 Learn how to use the {+odm-long+} to perform the following tasks:
 
-- :ref:`Manage Databases and Collections <laravel-db-coll>`
-- :ref:`Read Operations <laravel-fundamentals-read-ops>`
-- :ref:`Write Operations <laravel-fundamentals-write-ops>`
-- :ref:`Create Aggregation Pipelines by Using the Aggregation Builder <laravel-aggregation-builder>`
-
+- :ref:`laravel-fundamentals-connection`
+- :ref:`laravel-db-coll`
+- :ref:`laravel-fundamentals-read-ops`
+- :ref:`laravel-fundamentals-write-ops`
+- :ref:`laravel-aggregation-builder`
