@@ -9,7 +9,7 @@ Connection Options
    :values: reference
 
 .. meta::
-   :keywords: code example, data source name, authentication
+   :keywords: code example, data source name, dsn, authentication, configuration, options, driverOptions
 
 .. contents:: On this page
    :local:
@@ -20,12 +20,12 @@ Connection Options
 Overview
 --------
 
-In this guide, you can learn about several connection, authentication,
-and driver options and how to specify them in your Laravel application's
-database connection configuration. Connection options are passed to the
-MongoDB PHP Library, which manages your database connections.
+In this guide, you can learn about several connection, authentication, and
+driver options and how to specify them in your Laravel application's database
+connection configuration. Connection options are passed to the {+php-library+},
+which manages your database connections.
 
-To learn more about MongoDB PHP Library, see the `MongoDB PHP Library documentation <https://www.mongodb.com/docs/php-library/current/>`__.
+To learn more about the {+php-library+}, see the `{+php-library+} documentation <https://www.mongodb.com/docs/php-library/current/>`__.
 
 This guide is organized by the following sections:
 
@@ -39,8 +39,7 @@ Connection and Authentication Options
 -------------------------------------
 
 The following sections describe how to add connection and authentication
-options to your configuration and explain common options and their default
-values.
+options to your configuration and the common options and their default values.
 
 Add Connection and Authentication Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -49,8 +48,7 @@ You can specify connection or authentication options in your Laravel web
 application's ``config/database.php`` configuration file by using one of the
 following methods:
 
-- Add the setting and value as an array item in the ``options`` array
-  item.
+- Add the setting and value as an array item in the ``options`` array item.
 - Append the setting and value as a query string parameter on the connection
   string specified in the ``dsn`` array item.
 
@@ -58,28 +56,28 @@ To specify an option in the ``options`` array, add its name and value value as
 an array item as shown in the following example:
 
 .. code-block:: php
-   :emphasize-lines: 6-9
+   :emphasize-lines: 6-10
 
    'connections' => [
-         'mongodb' => [
-             'dsn' => 'mongodb+srv://mongodb0.example.com/',
-             'driver' => 'mongodb',
-             'database' => 'sample_mflix',
-             'options' => [
-                  'appName' => 'myLaravelApp',
-                  'compressors' => 'zlib',
-              ],
-         ],
-       // ...
-     ]
+       'mongodb' => [
+           'dsn' => 'mongodb+srv://mongodb0.example.com/',
+           'driver' => 'mongodb',
+           'database' => 'sample_mflix',
+           'options' => [
+               'appName' => 'myLaravelApp',
+               'compressors' => 'zlib',
+               'zlibCompressionLevel' => 7,
+           ],
+       ],
+   ],
 
 To specify options as parameters in the connection string, use the following
 query string syntax formatting:
 
-- Use the question mark character, ``?``, to separate the host information
-  from the parameters
-- Use the ``<option>=<value>`` syntax to specify the option and its value
-- Use the ampersand character, ``&``, as a delimiter to separate each option
+- Add the question mark character, ``?``, to separate the host information
+  from the parameters.
+- Add the options by formatting them as ``<option>=<value>``.
+- Separate each option and value pair with the ampersand character, ``&``.
 
 The following setting example shows this syntax:
 
@@ -102,7 +100,7 @@ Option Descriptions
    * - **appName**
      - String
      - None
-     - | Specifies the application name that the PHP Library sends to the
+     - | Specifies the application name that the {+php-library+} sends the
          MongoDB deployment as part of the handshake.
        | Specifying an ``appName`` can help you identify activities related
          to that application in the server logs.
@@ -132,7 +130,7 @@ Option Descriptions
    * - **compressors**
      - A comma-separated list of strings
      - None
-     - Specifies data compressors that the PHP Library uses to reduce the
+     - Specifies data compressors that the {+php-library+} uses to reduce the
        amount of network data passed between MongoDB and your application in
        the specified order.
 
@@ -190,7 +188,7 @@ Option Descriptions
    * - **maxPoolSize**
      - Non-negative integer
      - ``10``
-     - | Specifies the maximum number of connections that the PHP Library
+     - | Specifies the maximum number of connections that the {+php-library+}
          can create in a connection pool for a given server.
        | If you attempt an operation while the value of ``maxPoolSize``
          connections are checked out, the operation waits until an
@@ -208,13 +206,13 @@ Option Descriptions
      - String
      - None
      - Specifies the default read concern for operations performed by the
-       PHP Library.
+       {+php-library+}.
        To learn more, see :manual:`Read Concern </reference/read-concern/>` in the {+server-docs-name+}.
 
    * - **readPreference**
      - String
      - ``primary``
-     - Specifies how the PHP Library routes a read operation to members of a
+     - Specifies how the {+php-library+} routes a read operation to members of a
        replica set.
        To learn more, see :manual:`Read Preference </core/read-preference>` in the {+server-docs-name+}.
 
@@ -228,59 +226,59 @@ Option Descriptions
    * - **replicaSet**
      - String
      - None
-     - Specifies the name of the replica set that the PHP Library connects
+     - Specifies the name of the replica set that the {+php-library+} connects
        to.
 
    * - **retryReads**
      - Boolean
      - ``true``
-     - Specifies whether the PHP Library retries a read operation if the operation fails.
+     - Specifies whether the {+php-library+} retries a read operation if the operation fails.
 
    * - **serverSelectionTimeoutMS**
      - Non-negative integer
      - ``30000`` (30 seconds)
-     - Specifies the amount of time in milliseconds that the PHP Library waits 
-       when attempting to select a server for an operation before timing out.
+     - Specifies the amount of time in milliseconds that the {+php-library+}
+       waits to select a server for an operation before timing out.
 
    * - **tls**
      - Boolean
      - ``false``
-     - | Specifies the TLS configuration for the PHP Library driver to use in
-         its connections with the server.
+     - | Specifies the TLS configuration for the {+php-library+} to use in its
+         connections with the server.
        | By default, TLS is off.
 
    * - **tlsAllowInvalidCertificates**
      - Boolean
      - ``false``
-     - | Specifies whether the PHP Library returns an error if the server
+     - | Specifies whether the {+php-library+} returns an error if the server
          presents an invalid certificate.
-       | We recommend that you set this option to ``true`` only in
-         testing environments to avoid creating vulnerabilities in your
+       | We recommend that you set this option to ``true`` only in testing
+         environments to avoid creating security vulnerabilities in your
          application.
 
    * - **tlsCAFile**
      - String
      - See description
      - | Specifies the path to the certificate authority (CA) file that
-         the PHP Library uses for TLS.
+         the {+php-library+} uses for TLS.
        | If you do not specify this option, the driver uses the Mozilla
          root certificates from the ``webpki-roots`` crate.
 
    * - **tlsCertificateKeyFile**
      - String
      - None
-     - | Specifies the path to the certificate file that the PHP Library
-         presents to the server to verify its identify.
-       | If you do not set this option, the PHP Library does not
+     - | Specifies the path to the certificate file that the {+php-library+}
+         presents to the server to verify its identity.
+       | If you do not set this option, the {+php-library+} does not
          attempt to verify its identity to the server.
 
    * - **tlsInsecure**
      - Boolean
      - ``false``
-     - | Specifies whether the PHP Library returns an error if the
-         server presents an invalid certificate.
-       | We recommend that you set this option to ``true`` only in
-         testing environments to avoid creating vulnerabilities in your
+     - | Specifies whether the {+php-library+} returns an error if the server
+         presents an invalid certificate.
+       | We recommend that you set this option to ``true`` only in testing
+         environments to avoid creating security vulnerabilities in your
          application.
 
    * - **w**
@@ -288,15 +286,15 @@ Option Descriptions
      - None
      - | Requests acknowledgment that the operation has propagated to a
          specific number or variety of servers.
-       | To learn more, see :manual:`Write Concern </reference/write-concern>` 
+       | To learn more, see :manual:`Write Concern </reference/write-concern>`
          in the Server manual.
 
    * - **wTimeoutMS**
      - Non-negative integer
      - No timeout
      - Specifies a time limit, in milliseconds, for the write concern.
-       If an operation has not propagated to the requested level within the 
-       time limit, the PHP Library raises an error.
+       If an operation has not propagated to the requested level within the
+       time limit, the {+php-library+} raises an error.
 
    * - **zlibCompressionLevel**
      - Integer between -1 and 9 (inclusive)
@@ -306,7 +304,7 @@ Option Descriptions
        | Setting a value of ``0`` specifies no compression, and setting
          a value of ``9`` specifies maximum compression.
 
-To see a full list of connection options, see the :manual:`Connection String Options 
+To see a full list of connection options, see the :manual:`Connection String Options
 </reference/connection-string/#connection-string-options>` section of the
 Connection Strings guide in the {+server-docs-name+}.
 
@@ -315,18 +313,13 @@ Connection Strings guide in the {+server-docs-name+}.
 Driver Connection Options
 -------------------------
 
-Driver options modify the behavior of the PHP Library, which manages
-connections and all operations between your Laravel web application
-and MongoDB.
+Driver options modify the behavior of the {+php-library+}, which manages
+connections and all operations between a Laravel application and MongoDB.
 
-You can specify driver options in your Laravel web application's 
+You can specify driver options in your Laravel web application's
 ``config/database.php`` configuration file. To add driver options,
 add the setting and value as an array item in the ``driverOptions`` array
 item as shown in the following example:
-
-
-To specify an option in the ``options`` array, add its name and value value as
-an array item as shown in the following example:
 
 .. code-block:: php
    :emphasize-lines: 6-9
@@ -347,4 +340,4 @@ an array item as shown in the following example:
 
 For a list of driver options, see
 the `$driverOptions: array section <https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBClient__construct/#parameters>`__
-of the PHP Library documentation.
+of the {+php-library+} documentation.
