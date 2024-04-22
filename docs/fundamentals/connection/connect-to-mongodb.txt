@@ -114,8 +114,29 @@ For a MongoDB database connection, you can specify the following details:
      - The data source name (DSN) that specifies the MongoDB connection URI.
 
    * - ``host``
-     - Specifies the network address of one or more MongoDB nodes in a
-       deployment. You can use this setting instead of the ``dsn`` setting.
+     - | Specifies the network address and port of one or more MongoDB nodes
+         in a deployment. You can use this setting instead of the ``dsn``
+         setting.
+       | To specify a single host, pass the hostname and port as a string as
+         shown in the following example:
+
+       .. code-block:: php
+          :copyable: false
+
+          'host' => 'myhost.example.com:27017',
+
+       | To specify multiple hosts, pass them in an array as shown in the
+         following example::
+
+       .. code-block:: php
+          :copyable: false
+
+          'host' => ['node1.example.com:27017', 'node2.example.com:27017', 'node3.example.com:27017'],
+
+       .. note::
+
+          This option does not accept hosts that use the DNS seedlist
+          connection format.
 
    * - ``database``
      - Specifies the name of the MongoDB database to read and write to.
