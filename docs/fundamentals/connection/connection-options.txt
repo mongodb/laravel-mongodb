@@ -307,7 +307,9 @@ and their default values:
 
 To see a full list of connection options, see the :manual:`Connection String Options
 </reference/connection-string/#connection-string-options>` section of the
-Connection Strings guide in the {+server-docs-name+}.
+Connection Strings guide in the {+server-docs-name+}, and select ``PHP``
+from the :guilabel:`Select your language` dropdown on the right side of the
+page.
 
 .. _laravel-driver-options:
 
