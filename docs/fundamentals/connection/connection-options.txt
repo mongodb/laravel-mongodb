@@ -20,26 +20,26 @@ Connection Options
 Overview
 --------
 
-In this guide, you can learn about several connection, authentication, and
-driver options and how to specify them in your Laravel application's database
+In this guide, you can learn about connection, authentication, and driver
+options and how to specify them in your Laravel application's database
 connection configuration. Connection options are passed to the {+php-library+},
 which manages your database connections.
 
-To learn more about the {+php-library+}, see the `{+php-library+} documentation <https://www.mongodb.com/docs/php-library/current/>`__.
+To learn more about the {+php-library+}, see the
+`{+php-library+} documentation <https://www.mongodb.com/docs/php-library/current/>`__.
 
-This guide is organized by the following sections:
+This guide covers the following topics:
 
 - :ref:`laravel-connection-auth-options`
 - :ref:`laravel-driver-options`
-
 
 .. _laravel-connection-auth-options:
 
 Connection and Authentication Options
 -------------------------------------
 
-The following sections describe how to add connection and authentication
-options to your configuration and the common options and their default values.
+Learn how to add common connection and authentication options to your
+configuration file in the following sections.
 
 Add Connection and Authentication Options
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -53,7 +53,7 @@ following methods:
   string specified in the ``dsn`` array item.
 
 To specify an option in the ``options`` array, add its name and value value as
-an array item as shown in the following example:
+an array item, as shown in the following example:
 
 .. code-block:: php
    :emphasize-lines: 6-10
@@ -102,7 +102,7 @@ Option Descriptions
      - None
      - | Specifies the application name that the {+php-library+} sends the
          MongoDB deployment as part of the handshake.
-       | Specifying an ``appName`` can help you identify activities related
+       | Specifying ``appName`` can help you identify activities related
          to that application in the server logs.
 
    * - **authMechanism**
@@ -116,8 +116,8 @@ Option Descriptions
    * - **authMechanismProperties**
      - String
      - None
-     - Specifies more properties for the authentication mechanism set in the
-       ``authMechanism`` option.
+     - Specifies more properties related to the authentication mechanism set in
+       the ``authMechanism`` option.
 
    * - **authSource**
      - String
@@ -143,13 +143,13 @@ Option Descriptions
    * - **directConnection**
      - Boolean
      - ``false``
-     - Specifies whether to directly connects to a single host instead of
-       discovering and connecting to all servers in the cluster. TODO: link
+     - Specifies whether to directly connect to a single host instead of
+       discovering and connecting to all servers in the cluster.
 
    * - **heartbeatFrequencyMS**
      - Integer greater than or equal to 500
      - ``10000`` (10 seconds)
-     - Specifies the amount of time in milliseconds that each monitoring thread
+     - Specifies the time in milliseconds that each monitoring thread
        waits between performing server checks.
 
    * - **journal**
@@ -161,18 +161,17 @@ Option Descriptions
    * - **localThresholdMS**
      - Non-negative integer
      - 15
-     - | Specifies the amount of time in milliseconds that the average
-         round-trip time between the driver and server can last
-         compared to the shortest round-trip time of all the suitable servers.
-       | A value of ``0`` indicates that there is no latency window, so
-         only the server with the lowest average round-trip time is
-         eligible.
+     - | Specifies the time in milliseconds that the average round-trip time
+         between the driver and server can last compared to the shortest
+         round-trip time of all the suitable servers.
+       | A value of ``0`` indicates no latency window, so only the server with
+         the lowest average round-trip time is eligible.
 
    * - **maxIdleTimeMS**
      - Non-negative integer
      - 0
-     - | Specifies the amount of time in milliseconds that a connection
-         can remain idle in a connection pool the server closes it.
+     - | Specifies the time in milliseconds that a connection can remain idle
+         in a connection pool the server closes it.
        | A value of ``0`` indicates that the client does not close idle
          connections.
 
@@ -180,10 +179,9 @@ Option Descriptions
      - ``-1``, or any integer greater than or equal to ``90``
      - ``-1``
      - | Specifies the maximum lag, in seconds, behind the primary node
-         that a secondary node can be to be considered for the given operation.
-       | The value of this option must be at least ``90``, or the
-         operation raises an error. A value of ``-1`` means there is no
-         maximum lag.
+         that a secondary node can be considered for the given operation.
+       | This option's value must be at least ``90``, or the operation raises
+         an error. A value of ``-1`` means there is no maximum lag.
 
    * - **maxPoolSize**
      - Non-negative integer
@@ -197,8 +195,8 @@ Option Descriptions
    * - **minPoolSize**
      - Non-negative integer
      - ``0``
-     - | Specifies the minimum number of connections that are available in
-         a server's connection pool at a given time.
+     - | Specifies the minimum number of connections available in a server'
+         connection pool at a given time.
        | If fewer than ``minPoolSize`` connections are in the pool,
          the server adds connections in the background up to the value of ``minPoolSize``.
 
@@ -212,8 +210,8 @@ Option Descriptions
    * - **readPreference**
      - String
      - ``primary``
-     - Specifies how the {+php-library+} routes a read operation to members of a
-       replica set.
+     - Specifies how the {+php-library+} routes a read operation to replica set
+       members.
        To learn more, see :manual:`Read Preference </core/read-preference>` in the {+server-docs-name+}.
 
    * - **readPreferenceTags**
@@ -221,13 +219,12 @@ Option Descriptions
      - None
      - Specifies which replica set members are considered for operations.  Each
        instance of this key is a separate tag set. The driver checks each tag
-       set until it finds one or more servers with each tag in the set.
+       set until it finds one or more servers with each tag.
 
    * - **replicaSet**
      - String
      - None
-     - Specifies the name of the replica set that the {+php-library+} connects
-       to.
+     - Specifies the name of the replica set the {+php-library+} connects to.
 
    * - **retryReads**
      - Boolean
@@ -237,8 +234,8 @@ Option Descriptions
    * - **serverSelectionTimeoutMS**
      - Non-negative integer
      - ``30000`` (30 seconds)
-     - Specifies the amount of time in milliseconds that the {+php-library+}
-       waits to select a server for an operation before timing out.
+     - Specifies the time in milliseconds that {+php-library+} waits to
+       select a server for an operation before timing out.
 
    * - **tls**
      - Boolean
@@ -252,7 +249,7 @@ Option Descriptions
      - ``false``
      - | Specifies whether the {+php-library+} returns an error if the server
          presents an invalid certificate.
-       | We recommend that you set this option to ``true`` only in testing
+       | We recommend setting this option to ``true`` only in testing
          environments to avoid creating security vulnerabilities in your
          application.
 
@@ -267,17 +264,17 @@ Option Descriptions
    * - **tlsCertificateKeyFile**
      - String
      - None
-     - | Specifies the path to the certificate file that the {+php-library+}
+     - | Specifies the path to the certificate file that {+php-library+}
          presents to the server to verify its identity.
        | If you do not set this option, the {+php-library+} does not
-         attempt to verify its identity to the server.
+         attempt to verify its identity with the server.
 
    * - **tlsInsecure**
      - Boolean
      - ``false``
      - | Specifies whether the {+php-library+} returns an error if the server
          presents an invalid certificate.
-       | We recommend that you set this option to ``true`` only in testing
+       | We recommend setting this option to ``true`` only in testing
          environments to avoid creating security vulnerabilities in your
          application.
 
@@ -292,7 +289,7 @@ Option Descriptions
    * - **wTimeoutMS**
      - Non-negative integer
      - No timeout
-     - Specifies a time limit, in milliseconds, for the write concern.
+     - Specifies a time limit, in milliseconds, of the write concern.
        If an operation has not propagated to the requested level within the
        time limit, the {+php-library+} raises an error.
 
@@ -319,7 +316,7 @@ connections and all operations between a Laravel application and MongoDB.
 You can specify driver options in your Laravel web application's
 ``config/database.php`` configuration file. To add driver options,
 add the setting and value as an array item in the ``driverOptions`` array
-item as shown in the following example:
+item, as shown in the following example:
 
 .. code-block:: php
    :emphasize-lines: 6-9
@@ -337,7 +334,5 @@ item as shown in the following example:
        // ...
      ]
 
-
-For a list of driver options, see
-the `$driverOptions: array section <https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBClient__construct/#parameters>`__
-of the {+php-library+} documentation.
+See the `$driverOptions: array section <https://www.mongodb.com/docs/php-library/current/reference/method/MongoDBClient__construct/#parameters>`__
+of the {+php-library+} documentation for a list of driver options.
