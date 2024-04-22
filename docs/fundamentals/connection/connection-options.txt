@@ -89,6 +89,9 @@ The following setting example shows the connection string parameter syntax:
 Option Descriptions
 ~~~~~~~~~~~~~~~~~~~
 
+The following table describes a list of connection and authentication options
+and their default values:
+
 .. list-table::
    :header-rows: 1
    :widths: 30 12 12 46
