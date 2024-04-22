@@ -9,7 +9,7 @@ Enable and Configure TLS
    :values: reference
 
 .. meta::
-   :keywords: code example, security, connection options
+   :keywords: code example, security, connection options, ssl
 
 .. contents:: On this page
    :local:
@@ -23,8 +23,7 @@ Overview
 In this guide, you can learn how to use the TLS protocol to secure 
 your connection to a MongoDB deployment. To configure your connection to
 use TLS, enable the TLS option and provide your certificates for
-validation when configuring a connection in your application's
-``config/database.php`` file.
+validation in your application's ``config/database.php`` file.
 
 .. tip::
    
@@ -38,10 +37,11 @@ In your application's ``config/database.php`` file, you can enable TLS
 on a connection to your MongoDB deployment in one of the following ways:
 
 - Setting the ``tls`` option to ``true`` in your connection string
-- Setting the ``tls`` option to ``true`` in the ``options`` property
+- Setting the ``tls`` option to ``true`` in the ``options`` property of
+  your ``mongodb`` connection entry
 
 Select from the following :guilabel:`Connection String` and
-:guilabel:`URI Options` tabs to see a corresponding code sample:
+:guilabel:`Connection Options` tabs to see a corresponding code sample:
 
 .. tabs::
 
@@ -55,13 +55,13 @@ Select from the following :guilabel:`Connection String` and
       
              'mongodb' => [
                  'driver' => 'mongodb',
-                 'dsn' => 'mongodb://<hostname>:<port>?tls=true',
+                 'dsn' => 'mongodb://<hostname>:<port>/?tls=true',
                  'database' => 'myDB',
-             ], ...
+             ]
          ]
 
-   .. tab:: URI Options
-      :tabid: urioptions tls true
+   .. tab:: Connection Options
+      :tabid: options tls true
       
       .. code-block:: php
          :emphasize-lines: 8
@@ -75,8 +75,11 @@ Select from the following :guilabel:`Connection String` and
                  'options'  => [
                      'tls' => true,
                  ],
-             ], ...
+             ]
          ]
+
+      To view a full list of connection options, see
+      :ref:`laravel-fundamentals-connection-options`.
 
 .. note::
    
@@ -109,18 +112,25 @@ present to establish a TLS-enabled connection:
 
    * - Certificate Authority (CA)
      - One or more certificate authorities to
-       trust when making a TLS connection.
+       trust when making a TLS connection. You can pass this file's path
+       to the ``tlsCAFile`` option.
 
    * - Client Certificate
      - A digital certificate that allows the server to verify the identity
        of your application to establish an encrypted network connection.
+       You can pass this file's path to the ``tlsCertificateKeyFile`` option.
 
    * - Certificate Key
      - The client certificate private key file. This key is often
-       included within the certificate file itself.
+       included within the certificate file itself. If you must
+       provide this item, the certificate and key should be concatenated
+       in one file that you can pass to the ``tlsCertificateKeyFile``
+       option.
 
    * - Passphrase
-     - The password to decrypt the private client key if it is encrypted.
+     - The password to decrypt the private client key if it is
+       encrypted. You can pass this file's path to the
+       ``tlsCertificateKeyFilePassword`` option.
 
 Reference Certificates
 ----------------------
@@ -130,8 +140,8 @@ connection so that the server can validate them before the client connects.
 
 We recommend that you reference your certificates and set other TLS
 options in the ``options`` property of your connection configuration
-instead of in the connection string. This improves readability and
-flexibility in your application.
+instead of in the connection string. This improves code readability in
+your application.
 
 Set the following options in the ``options`` property to reference your
 certificates:
@@ -139,21 +149,20 @@ certificates:
 - ``tlsCAFile``
 - ``tlsCertificateKeyFile``
 - ``tlsCertificateKeyFilePassword``
-
-You can specify additional options to configure TLS on your connection.
-For **testing purposes**, you can set the
-``tlsAllowInvalidCertificates``, ``tlsAllowInvalidHostnames``, or
-``tlsInsecure`` fields to ``true``.
    
-.. warning::
+.. note::
 
-   Setting these options to ``true`` disables
-   certificate and hostname validation.
+   For **testing purposes**, you can set the following options to
+   disable validation:
+
+   - ``tlsAllowInvalidCertificates``
+   - ``tlsAllowInvalidHostnames``
+   - ``tlsInsecure`` 
    
-   Specifying these options in a production environment makes
-   your application insecure and potentially
-   vulnerable to expired certificates and foreign processes posing
-   as valid client instances.
+   Specifying these options in a production environment might
+   your application insecure. To learn more, see the :manual:`Connection
+   Options </reference/connection-string/#connection-options>`
+   reference in the Server manual.
 
 The following example configures a connection with TLS enabled:
 
@@ -168,9 +177,10 @@ The following example configures a connection with TLS enabled:
            'options'  => [
                'tls' => true,
                'tlsCAFile' => '<path to CA certificate>',
-               'tlsCertificateKeyFile' => '<path to public client certificate>',
-           ],
-       ], ...
+               'tlsCertificateKeyFile' => '<path to private client certificate>',
+               'tlsCertificateKeyFilePassword' => '<path to client key passphrase>',
+           ]
+       ]
    ]
 
 .. note::
