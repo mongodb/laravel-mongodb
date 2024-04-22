@@ -6,7 +6,6 @@ Connections
 
 .. toctree::
 
-   /fundamentals/connection/connect-to-mongodb
    /fundamentals/connection/connection-options
 
 .. contents:: On this page
@@ -22,5 +21,4 @@ Learn how to set up a connection and specify connection behavior from your
 Laravel application to a MongoDB deployment by using {+odm-short+} in the
 following sections:
 
-- :ref:`laravel-connect-to-mongodb`
 - :ref:`laravel-fundamentals-connection-options`
