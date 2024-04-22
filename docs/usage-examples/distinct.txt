@@ -36,7 +36,7 @@ This usage example performs the following actions:
 
 The example calls the following methods on the ``Movie`` model:
 
-- ``where()``: matches documents in which the value of the ``directors`` field includes ``'Sofia Coppola'``.
+- ``where()``: matches documents in which the value of the ``directors`` field includes ``"Sofia Coppola"``.
 - ``select()``: retrieves the matching documents' ``imdb.rating`` field values.
 - ``distinct()``: accesses the unique values of the ``imdb.rating`` field among the matching
   documents. This method returns a list of values.

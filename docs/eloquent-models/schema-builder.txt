@@ -75,8 +75,9 @@ following changes to perform the schema changes on your MongoDB database:
    MongoDB database, update the following setting to make sure the migration
    specifies the correct database:
 
-   - Specify ``mongodb`` in the ``$connection`` field of your migration class
-   - Set ``DB_CONNECTION=mongodb`` in your ``.env`` configuration file
+   - Specify ``"mongodb"`` in the ``$connection`` field of your migration class
+   - Make sure your ``connections`` array item contains a valid ``mongodb``
+     entry in your ``config/database.php`` file
 
 The following example migration class contains the following methods:
 
@@ -166,7 +167,7 @@ fields:
 
 - Single field index on ``mission_type``
 - Compound index on ``launch_location`` and ``launch_date``, specifying a descending sort order on ``launch_date``
-- Unique index on the ``mission_id`` field, specifying the index name "unique_mission_id_idx"
+- Unique index on the ``mission_id`` field, specifying the index name ``"unique_mission_id_idx"``
 
 Click the :guilabel:`{+code-output-label+}` button to see the indexes created by running
 the migration, including the default index on the ``_id`` field:

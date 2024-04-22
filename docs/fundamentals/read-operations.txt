@@ -397,15 +397,15 @@ followed by the ``orderBy()`` method.
 You can set an **ascending** or **descending** sort direction on
 results. By default, the ``orderBy()`` method sets an ascending sort on
 the supplied field name, but you can explicitly specify an ascending
-sort by passing ``'asc'`` as the second parameter. To
-specify a descending sort, pass ``'desc'`` as the second parameter.
+sort by passing ``"asc"`` as the second parameter. To
+specify a descending sort, pass ``"desc"`` as the second parameter.
 
 If your documents contain duplicate values in a specific field, you can
 handle the tie by specifying additional fields to sort on. This ensures consistent
 results if the additional fields contain unique values.
 
 This example queries for documents in which the value of the ``countries`` field contains
-``'Indonesia'`` and orders results first by an ascending sort on the
+``"Indonesia"`` and orders results first by an ascending sort on the
 ``year`` field, then a descending sort on the ``title`` field.
 
 .. tabs::
