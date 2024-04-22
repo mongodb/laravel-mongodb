@@ -72,6 +72,7 @@ calls the controller function and returns the result to a web interface.
    :maxdepth: 1
 
    /usage-examples/findOne
+   /usage-examples/find
    /usage-examples/insertOne
    /usage-examples/insertMany
    /usage-examples/updateOne
