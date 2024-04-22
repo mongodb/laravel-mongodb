@@ -4,8 +4,11 @@
 Find a Document
 ===============
 
-You can retrieve a single document from a collection by calling the ``where()`` and
-``first()`` methods on an Eloquent model or a query builder.
+.. include:: /includes/usage-examples/operation-description.rst
+
+   .. replacement:: operator-description
+
+      You can retrieve a single document from a collection
 
 Pass a query filter to the ``where()`` method and then call the ``first()`` method to
 return one document in the collection that matches the filter. If multiple documents match
@@ -42,7 +45,7 @@ The example calls the following methods on the ``Movie`` model:
       :visible: false
 
       // Result is truncated
-      
+
       {
          "_id": "573a1398f29313caabce94a3",
          "plot": "Spinal Tap, one of England's loudest bands, is chronicled by film director
