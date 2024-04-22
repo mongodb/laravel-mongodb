@@ -49,8 +49,21 @@ The write operations in this guide reference the following Eloquent model class:
    in the Eloquent Model Class documentation.
 
    The ``$casts`` attribute instructs Laravel to convert attributes to common
-   data types. To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
-   in the Laravel documentation.
+   data types. In Laravel 11, you can define a ``casts()`` method instead of using
+   the ``$casts`` attribute. The following code converts the ``$casts`` attribute
+   specified in the sample model class to a ``casts()`` method:
+
+   .. code-block:: php
+
+      protected function casts(): array
+      {
+         return [
+            'performanceDate' => 'datetime',
+         ];
+      }
+   
+   To learn more, see the `Model Casts <https://laravel-news.com/model-casts>`__
+   page on the Laravel News website.
 
 .. _laravel-fundamentals-insert-documents:
 
