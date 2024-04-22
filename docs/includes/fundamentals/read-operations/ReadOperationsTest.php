@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Movie;
+use Illuminate\Support\Facades\DB;
 use MongoDB\Laravel\Tests\TestCase;
 
 class ReadOperationsTest extends TestCase
@@ -15,7 +16,10 @@ class ReadOperationsTest extends TestCase
 
         parent::setUp();
 
-        Movie::truncate();
+        $moviesCollection = DB::connection('mongodb')->getCollection('movies');
+        $moviesCollection->drop();
+        $moviesCollection->createIndex(['plot' => 'text']);
+
         Movie::insert([
             ['year' => 2010, 'imdb' => ['rating' => 9]],
             ['year' => 2010, 'imdb' => ['rating' => 9.5]],
@@ -26,14 +30,10 @@ class ReadOperationsTest extends TestCase
             ['year' => 1999, 'countries' => ['Indonesia'], 'title' => 'Title 4'],
             ['year' => 1999, 'countries' => ['Canada'], 'title' => 'Title 5'],
             ['year' => 1999, 'runtime' => 30],
-            ['title' => 'movie_a', 'plot' => 'this is a love story'],
             ['title' => 'movie_b', 'plot' => 'love is a long story'],
+            ['title' => 'movie_a', 'plot' => 'this is a love story'],
             ['title' => 'movie_c', 'plot' => 'went on a trip'],
         ]);
-
-        $collection = MongoDB::connection('mongodb')->collection('movies');
-        $index = ['plot' => 'text'];
-        $collection->createIndex($index);
     }
 
     /**
@@ -109,7 +109,7 @@ class ReadOperationsTest extends TestCase
     public function testText(): void
     {
         // start-text
-        $movies = Movie::where('$text', ['$search' => '"love story"'])
+        $movies = Movie::where('$text', ['$search' => 'love story'])
             ->get();
         // end-text
 
@@ -124,13 +124,13 @@ class ReadOperationsTest extends TestCase
     public function testTextRelevance(): void
     {
         // start-text-relevance
-        $movies = Movie::where('$text', ['$search' => '"love story"'])
-            ->orderBy('score', ['$meta' => 'textScore'])    
+        $movies = Movie::where('$text', ['$search' => 'love story'])
+            ->orderBy('score', ['$meta' => 'textScore'])
             ->get();
         // end-text-relevance
 
         $this->assertNotNull($movies);
         $this->assertCount(2, $movies);
+        $this->assertEquals('this is a love story', $movies[0]->plot);
     }
-
 }
