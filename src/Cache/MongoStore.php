@@ -182,12 +182,9 @@ final class MongoStore implements LockProvider, Store
     #[Override]
     public function increment($key, $value = 1): int|float|false
     {
-        $this->forgetIfExpired($key);
-
         $result = $this->collection->findOneAndUpdate(
             [
                 '_id' => $this->prefix . $key,
-                'expiration' => ['$gte' => $this->getUTCDateTime()],
             ],
             [
                 '$inc' => ['value' => $value],
