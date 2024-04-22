@@ -79,11 +79,11 @@ query string syntax formatting:
 - Add the options by formatting them as ``<option>=<value>``.
 - Separate each option and value pair with the ampersand character, ``&``.
 
-The following setting example shows this syntax:
+The following setting example shows the connection string parameter syntax:
 
 .. code-block:: php
 
-   'dsn' => 'mongodb+srv://myUser:myPass123@mongodb0.example.com/?appName=myLaravelApp&compressors=zlib',
+   'dsn' => 'mongodb+srv://mongodb0.example.com/?appName=myLaravelApp&compressors=zlib',
 
 Option Descriptions
 ~~~~~~~~~~~~~~~~~~~
