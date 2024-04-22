@@ -88,6 +88,15 @@ class MongoLockTest extends TestCase
         $this->assertFalse($resoredLock->isOwnedByCurrentProcess());
     }
 
+    public function testTTLIndex()
+    {
+        $store = $this->getCache()->lock('')->createTTLIndex();
+
+        // TTL index remove expired items asynchronously, this test would be very slow
+        $indexes = DB::connection('mongodb')->getCollection('foo_cache_locks')->listIndexes();
+        $this->assertCount(2, $indexes);
+    }
+
     private function getCache(): Repository
     {
         $repository = Cache::driver('mongodb');

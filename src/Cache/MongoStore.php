@@ -5,7 +5,8 @@ namespace MongoDB\Laravel\Cache;
 use Illuminate\Cache\RetrievesMultipleKeys;
 use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
-use Illuminate\Support\InteractsWithTime;
+use Illuminate\Support\Carbon;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
@@ -20,7 +21,6 @@ use function unserialize;
 
 final class MongoStore implements LockProvider, Store
 {
-    use InteractsWithTime;
     // Provides "many" and "putMany" in a non-optimized way
     use RetrievesMultipleKeys;
 
@@ -95,7 +95,7 @@ final class MongoStore implements LockProvider, Store
             [
                 '$set' => [
                     'value' => $this->serialize($value),
-                    'expiration' => $this->currentTime() + $seconds,
+                    'expiration' => $this->getUTCDateTime($seconds),
                 ],
             ],
             [
@@ -116,6 +116,8 @@ final class MongoStore implements LockProvider, Store
      */
     public function add($key, $value, $seconds): bool
     {
+        $isExpired = ['$lte' => ['$expiration', $this->getUTCDateTime()]];
+
         $result = $this->collection->updateOne(
             [
                 '_id' => $this->prefix . $key,
@@ -125,15 +127,15 @@ final class MongoStore implements LockProvider, Store
                     '$set' => [
                         'value' => [
                             '$cond' => [
-                                'if' => ['$lte' => ['$expiration', $this->currentTime()]],
+                                'if' => $isExpired,
                                 'then' => $this->serialize($value),
                                 'else' => '$value',
                             ],
                         ],
                         'expiration' => [
                             '$cond' => [
-                                'if' => ['$lte' => ['$expiration', $this->currentTime()]],
-                                'then' => $this->currentTime() + $seconds,
+                                'if' => $isExpired,
+                                'then' => $this->getUTCDateTime($seconds),
                                 'else' => '$expiration',
                             ],
                         ],
@@ -163,7 +165,7 @@ final class MongoStore implements LockProvider, Store
             return null;
         }
 
-        if ($result['expiration'] <= $this->currentTime()) {
+        if ($result['expiration'] <= $this->getUTCDateTime()) {
             $this->forgetIfExpired($key);
 
             return null;
@@ -186,7 +188,7 @@ final class MongoStore implements LockProvider, Store
         $result = $this->collection->findOneAndUpdate(
             [
                 '_id' => $this->prefix . $key,
-                'expiration' => ['$gte' => $this->currentTime()],
+                'expiration' => ['$gte' => $this->getUTCDateTime()],
             ],
             [
                 '$inc' => ['value' => $value],
@@ -200,7 +202,7 @@ final class MongoStore implements LockProvider, Store
             return false;
         }
 
-        if ($result['expiration'] <= $this->currentTime()) {
+        if ($result['expiration'] <= $this->getUTCDateTime()) {
             $this->forgetIfExpired($key);
 
             return false;
@@ -257,7 +259,7 @@ final class MongoStore implements LockProvider, Store
     {
         $result = $this->collection->deleteOne([
             '_id' => $this->prefix . $key,
-            'expiration' => ['$lte' => $this->currentTime()],
+            'expiration' => ['$lte' => $this->getUTCDateTime()],
         ]);
 
         return $result->getDeletedCount() > 0;
@@ -273,6 +275,17 @@ final class MongoStore implements LockProvider, Store
     public function getPrefix(): string
     {
         return $this->prefix;
+    }
+
+    /** Creates a TTL index that automatically deletes expired objects. */
+    public function createTTLIndex(): void
+    {
+        $this->collection->createIndex(
+            // UTCDateTime field that holds the expiration date
+            ['expiration' => 1],
+            // Delay to remove items after expiration
+            ['expireAfterSeconds' => 0],
+        );
     }
 
     private function serialize($value): string|int|float
@@ -292,5 +305,10 @@ final class MongoStore implements LockProvider, Store
         }
 
         return unserialize($value);
+    }
+
+    protected function getUTCDateTime(int $additionalSeconds = 0): UTCDateTime
+    {
+        return new UTCDateTime(Carbon::now()->addSeconds($additionalSeconds));
     }
 }

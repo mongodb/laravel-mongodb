@@ -3,6 +3,8 @@
 namespace MongoDB\Laravel\Cache;
 
 use Illuminate\Cache\Lock;
+use Illuminate\Support\Carbon;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Collection;
 use MongoDB\Operation\FindOneAndUpdate;
 use Override;
@@ -41,11 +43,11 @@ final class MongoLock extends Lock
         // or it is already owned by the same lock instance.
         $isExpiredOrAlreadyOwned = [
             '$or' => [
-                ['$lte' => ['$expiration', $this->currentTime()]],
+                ['$lte' => ['$expiration', $this->getUTCDateTime()]],
                 ['$eq' => ['$owner', $this->owner]],
             ],
         ];
-        $result = $this->collection->findOneAndUpdate(
+        $result = $this->collection->updateOne(
             ['_id' => $this->name],
             [
                 [
@@ -74,11 +76,11 @@ final class MongoLock extends Lock
             ],
         );
 
-        if (random_int(1, $this->lottery[1]) <= $this->lottery[0]) {
-            $this->collection->deleteMany(['expiration' => ['$lte' => $this->currentTime()]]);
+        if (! empty($this->lottery[0]) && random_int(1, $this->lottery[1]) <= $this->lottery[0]) {
+            $this->collection->deleteMany(['expiration' => ['$lte' => $this->getUTCDateTime()]]);
         }
 
-        return $result['owner'] === $this->owner;
+        return $result->getModifiedCount() > 0 || $result->getUpsertedCount() > 0;
     }
 
     /**
@@ -107,6 +109,17 @@ final class MongoLock extends Lock
         ]);
     }
 
+    /** Creates a TTL index that automatically deletes expired objects. */
+    public function createTTLIndex(): void
+    {
+        $this->collection->createIndex(
+            // UTCDateTime field that holds the expiration date
+            ['expiration' => 1],
+            // Delay to remove items after expiration
+            ['expireAfterSeconds' => 0],
+        );
+    }
+
     /**
      * Returns the owner value written into the driver for this lock.
      */
@@ -116,7 +129,7 @@ final class MongoLock extends Lock
         return $this->collection->findOne(
             [
                 '_id' => $this->name,
-                'expiration' => ['$gte' => $this->currentTime()],
+                'expiration' => ['$gte' => $this->getUTCDateTime()],
             ],
             ['projection' => ['owner' => 1]],
         )['owner'] ?? null;
@@ -125,10 +138,15 @@ final class MongoLock extends Lock
     /**
      * Get the UNIX timestamp indicating when the lock should expire.
      */
-    private function expiresAt(): int
+    private function expiresAt(): UTCDateTime
     {
         $lockTimeout = $this->seconds > 0 ? $this->seconds : $this->defaultTimeoutInSeconds;
 
-        return $this->currentTime() + $lockTimeout;
+        return $this->getUTCDateTime($lockTimeout);
+    }
+
+    protected function getUTCDateTime(int $additionalSeconds = 0): UTCDateTime
+    {
+        return new UTCDateTime(Carbon::now()->addSeconds($additionalSeconds));
     }
 }
