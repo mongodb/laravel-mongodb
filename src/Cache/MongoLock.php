@@ -41,7 +41,7 @@ final class MongoLock extends Lock
         // or it is already owned by the same lock instance.
         $isExpiredOrAlreadyOwned = [
             '$or' => [
-                ['$lte' => ['$expiration', $this->getUTCDateTime()]],
+                ['$lte' => ['$expires_at', $this->getUTCDateTime()]],
                 ['$eq' => ['$owner', $this->owner]],
             ],
         ];
@@ -57,11 +57,11 @@ final class MongoLock extends Lock
                                 'else' => '$owner',
                             ],
                         ],
-                        'expiration' => [
+                        'expires_at' => [
                             '$cond' => [
                                 'if' => $isExpiredOrAlreadyOwned,
                                 'then' => $this->getUTCDateTime($this->seconds),
-                                'else' => '$expiration',
+                                'else' => '$expires_at',
                             ],
                         ],
                     ],
@@ -74,8 +74,8 @@ final class MongoLock extends Lock
             ],
         );
 
-        if (! empty($this->lottery[0]) && random_int(1, $this->lottery[1]) <= $this->lottery[0]) {
-            $this->collection->deleteMany(['expiration' => ['$lte' => $this->getUTCDateTime()]]);
+        if ($this->lottery[0] <= 0 && random_int(1, $this->lottery[1]) <= $this->lottery[0]) {
+            $this->collection->deleteMany(['expires_at' => ['$lte' => $this->getUTCDateTime()]]);
         }
 
         return $result->getModifiedCount() > 0 || $result->getUpsertedCount() > 0;
@@ -112,7 +112,7 @@ final class MongoLock extends Lock
     {
         $this->collection->createIndex(
             // UTCDateTime field that holds the expiration date
-            ['expiration' => 1],
+            ['expires_at' => 1],
             // Delay to remove items after expiration
             ['expireAfterSeconds' => 0],
         );
@@ -127,7 +127,7 @@ final class MongoLock extends Lock
         return $this->collection->findOne(
             [
                 '_id' => $this->name,
-                'expiration' => ['$gte' => $this->getUTCDateTime()],
+                'expires_at' => ['$gte' => $this->getUTCDateTime()],
             ],
             ['projection' => ['owner' => 1]],
         )['owner'] ?? null;

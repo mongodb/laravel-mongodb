@@ -53,7 +53,7 @@ class MongoLockTest extends TestCase
     {
         $lock = $this->getCache()->lock('foo');
         $this->assertTrue($lock->get());
-        DB::table('foo_cache_locks')->update(['expiration' => now()->subDays(1)->getTimestamp()]);
+        DB::table('foo_cache_locks')->update(['expires_at' => now()->subDays(1)->getTimestamp()]);
 
         $otherLock = $this->getCache()->lock('foo');
         $this->assertTrue($otherLock->get());

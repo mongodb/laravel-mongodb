@@ -236,7 +236,7 @@ class MongoCacheStoreTest extends TestCase
             ->insertOne([
                 '_id' => $this->withCachePrefix($key),
                 'value' => $value,
-                'expiration' => new UTCDateTime(Carbon::now()->addSeconds($ttl)),
+                'expires_at' => new UTCDateTime(Carbon::now()->addSeconds($ttl)),
             ]);
     }
 }

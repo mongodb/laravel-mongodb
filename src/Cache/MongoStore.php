@@ -94,7 +94,7 @@ final class MongoStore implements LockProvider, Store
             [
                 '$set' => [
                     'value' => $this->serialize($value),
-                    'expiration' => $this->getUTCDateTime($seconds),
+                    'expires_at' => $this->getUTCDateTime($seconds),
                 ],
             ],
             [
@@ -115,7 +115,7 @@ final class MongoStore implements LockProvider, Store
      */
     public function add($key, $value, $seconds): bool
     {
-        $isExpired = ['$lte' => ['$expiration', $this->getUTCDateTime()]];
+        $isExpired = ['$lte' => ['$expires_at', $this->getUTCDateTime()]];
 
         $result = $this->collection->updateOne(
             [
@@ -131,11 +131,11 @@ final class MongoStore implements LockProvider, Store
                                 'else' => '$value',
                             ],
                         ],
-                        'expiration' => [
+                        'expires_at' => [
                             '$cond' => [
                                 'if' => $isExpired,
                                 'then' => $this->getUTCDateTime($seconds),
-                                'else' => '$expiration',
+                                'else' => '$expires_at',
                             ],
                         ],
                     ],
@@ -157,14 +157,14 @@ final class MongoStore implements LockProvider, Store
     {
         $result = $this->collection->findOne(
             ['_id' => $this->prefix . $key],
-            ['projection' => ['value' => 1, 'expiration' => 1]],
+            ['projection' => ['value' => 1, 'expires_at' => 1]],
         );
 
         if (! $result) {
             return null;
         }
 
-        if ($result['expiration'] <= $this->getUTCDateTime()) {
+        if ($result['expires_at'] <= $this->getUTCDateTime()) {
             $this->forgetIfExpired($key);
 
             return null;
@@ -198,7 +198,7 @@ final class MongoStore implements LockProvider, Store
             return false;
         }
 
-        if ($result['expiration'] <= $this->getUTCDateTime()) {
+        if ($result['expires_at'] <= $this->getUTCDateTime()) {
             $this->forgetIfExpired($key);
 
             return false;
@@ -255,7 +255,7 @@ final class MongoStore implements LockProvider, Store
     {
         $result = $this->collection->deleteOne([
             '_id' => $this->prefix . $key,
-            'expiration' => ['$lte' => $this->getUTCDateTime()],
+            'expires_at' => ['$lte' => $this->getUTCDateTime()],
         ]);
 
         return $result->getDeletedCount() > 0;
@@ -278,7 +278,7 @@ final class MongoStore implements LockProvider, Store
     {
         $this->collection->createIndex(
             // UTCDateTime field that holds the expiration date
-            ['expiration' => 1],
+            ['expires_at' => 1],
             // Delay to remove items after expiration
             ['expireAfterSeconds' => 0],
         );
