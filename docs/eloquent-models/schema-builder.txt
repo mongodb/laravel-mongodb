@@ -75,9 +75,9 @@ following changes to perform the schema changes on your MongoDB database:
    MongoDB database, update the following setting to make sure the migration
    specifies the correct database:
 
-   - Specify ``"mongodb"`` in the ``$connection`` field of your migration class
    - Make sure your ``connections`` array item contains a valid ``mongodb``
      entry in your ``config/database.php`` file
+   - Specify ``"mongodb"`` in the ``$connection`` field of your migration class
 
 The following example migration class contains the following methods:
 
