@@ -51,7 +51,7 @@ final class MongoLock extends Lock
                 ['$eq' => ['$owner', $this->owner]],
             ],
         ];
-        $result = $this->collection->updateOne(
+        $result = $this->collection->findOneAndUpdate(
             ['_id' => $this->name],
             [
                 [
@@ -84,7 +84,9 @@ final class MongoLock extends Lock
             $this->collection->deleteMany(['expires_at' => ['$lte' => $this->getUTCDateTime()]]);
         }
 
-        return $result->getModifiedCount() > 0 || $result->getUpsertedCount() > 0;
+        // Compare the owner to check if the lock is owned. Acquiring the same lock
+        // with the same owner at the same instant would lead to not update the document
+        return $result['owner'] === $this->owner;
     }
 
     /**
