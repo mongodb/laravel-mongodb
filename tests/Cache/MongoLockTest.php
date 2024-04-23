@@ -5,8 +5,11 @@ namespace MongoDB\Laravel\Tests\Cache;
 use Illuminate\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
 use MongoDB\Laravel\Cache\MongoLock;
+use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Tests\TestCase;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function now;
 
@@ -17,6 +20,23 @@ class MongoLockTest extends TestCase
         DB::connection('mongodb')->getCollection('foo_cache_locks')->drop();
 
         parent::tearDown();
+    }
+
+    #[TestWith([[5, 2]])]
+    #[TestWith([['foo', 10]])]
+    #[TestWith([[10, 'foo']])]
+    #[TestWith([[10]])]
+    public function testInvalidLottery(array $lottery)
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Lock lottery must be a couple of integers');
+
+        new MongoLock(
+            $this->createMock(Collection::class),
+            'cache_lock',
+            10,
+            lottery: $lottery,
+        );
     }
 
     public function testLockCanBeAcquired()

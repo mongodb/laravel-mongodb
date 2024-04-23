@@ -4,11 +4,13 @@ namespace MongoDB\Laravel\Cache;
 
 use Illuminate\Cache\Lock;
 use Illuminate\Support\Carbon;
+use InvalidArgumentException;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Collection;
 use MongoDB\Operation\FindOneAndUpdate;
 use Override;
 
+use function is_numeric;
 use function random_int;
 
 final class MongoLock extends Lock
@@ -29,6 +31,10 @@ final class MongoLock extends Lock
         ?string $owner = null,
         private readonly array $lottery = [2, 100],
     ) {
+        if (! is_numeric($this->lottery[0] ?? null) || ! is_numeric($this->lottery[1] ?? null) || $this->lottery[0] > $this->lottery[1]) {
+            throw new InvalidArgumentException('Lock lottery must be a couple of integers [$chance, $total] where $chance <= $total. Example [2, 100]');
+        }
+
         parent::__construct($name, $seconds, $owner);
     }
 
