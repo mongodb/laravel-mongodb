@@ -22,7 +22,7 @@ Configure Your MongoDB Connection
 
       .. code-block:: php
 
-         'default' => env('DB_CONNECTION', 'mongodb'),
+         'default' => 'mongodb',
 
       Add the following highlighted ``mongodb`` entry to the ``connections`` array
       in the same file. Replace the ``<connection string>`` placeholder with the
@@ -35,7 +35,7 @@ Configure Your MongoDB Connection
          'connections' => [
            'mongodb' => [
              'driver' => 'mongodb',
-             'dsn' => env('DB_URI', '<connection string>'),
+             'dsn' => '<connection string>',
              'database' => 'sample_mflix',
            ],
 
