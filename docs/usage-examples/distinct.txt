@@ -38,8 +38,8 @@ The example calls the following methods on the ``Movie`` model:
 
 - ``where()``: matches documents in which the value of the ``directors`` field includes ``"Sofia Coppola"``.
 - ``select()``: retrieves the matching documents' ``imdb.rating`` field values.
-- ``distinct()``: accesses the unique values of the ``imdb.rating`` field among the matching
-  documents. This method returns a list of values.
+- ``distinct()``: retrieves the unique values of the selected field and returns
+  the list of values.
 - ``get()``: retrieves the query results.
 
 .. io-code-block::
@@ -57,8 +57,7 @@ The example calls the following methods on the ``Movie`` model:
 
       [[5.6],[6.4],[7.2],[7.8]]
 
-To learn how to edit your Laravel application to run the usage example, see the
-:ref:`Usage Examples landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
 
 .. tip::
 

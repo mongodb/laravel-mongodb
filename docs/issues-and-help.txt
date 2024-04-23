@@ -4,6 +4,13 @@
 Issues & Help
 =============
 
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: debug, report bug, request, contribute, github, support
+
 We are lucky to have a vibrant PHP community that includes users of varying
 experience with {+php-library+} and {+odm-short+}. To get support for
 general questions, search or post in the

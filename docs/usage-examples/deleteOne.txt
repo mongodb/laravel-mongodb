@@ -56,15 +56,11 @@ The example calls the following methods on the ``Movie`` model:
 
       Deleted documents: 1
 
-For instructions on editing your Laravel application to run the usage example, see the
-:ref:`Usage Example landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
 
 .. tip::
 
    To learn more about deleting documents with {+odm-short+}, see the `Deleting Models
    <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#deleting-models>`__ section of the
    Laravel documentation.
-
-   For more information about query filters, see the :ref:`laravel-retrieve-matching` section of
-   the Read Operations guide.
 

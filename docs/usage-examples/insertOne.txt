@@ -61,13 +61,12 @@ information:
           "_id": "..."
       }
 
-To learn how to edit your Laravel application to run the usage example, see the
-:ref:`Usage Examples landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
 
 .. tip::
 
    You can also use the ``save()`` or ``insert()`` methods to insert a document into a collection.
-   To learn more  about insert operations, see the :ref:`laravel-fundamentals-insert-documents` section
+   To learn more about insert operations, see the :ref:`laravel-fundamentals-insert-documents` section
    of the Write Operations guide.
 
 
