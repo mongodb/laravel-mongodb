@@ -3,12 +3,15 @@
 namespace MongoDB\Laravel\Tests\Cache;
 
 use Illuminate\Cache\Repository;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Cache\MongoLock;
+use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Tests\TestCase;
-
-use function now;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class MongoLockTest extends TestCase
 {
@@ -17,6 +20,23 @@ class MongoLockTest extends TestCase
         DB::connection('mongodb')->getCollection('foo_cache_locks')->drop();
 
         parent::tearDown();
+    }
+
+    #[TestWith([[5, 2]])]
+    #[TestWith([['foo', 10]])]
+    #[TestWith([[10, 'foo']])]
+    #[TestWith([[10]])]
+    public function testInvalidLottery(array $lottery)
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Lock lottery must be a couple of integers');
+
+        new MongoLock(
+            $this->createMock(Collection::class),
+            'cache_lock',
+            10,
+            lottery: $lottery,
+        );
     }
 
     public function testLockCanBeAcquired()
@@ -53,7 +73,7 @@ class MongoLockTest extends TestCase
     {
         $lock = $this->getCache()->lock('foo');
         $this->assertTrue($lock->get());
-        DB::table('foo_cache_locks')->update(['expiration' => now()->subDays(1)->getTimestamp()]);
+        DB::table('foo_cache_locks')->update(['expires_at' => new UTCDateTime(Carbon::now('UTC')->subDays(1))]);
 
         $otherLock = $this->getCache()->lock('foo');
         $this->assertTrue($otherLock->get());
@@ -86,6 +106,15 @@ class MongoLockTest extends TestCase
 
         $resoredLock->release();
         $this->assertFalse($resoredLock->isOwnedByCurrentProcess());
+    }
+
+    public function testTTLIndex()
+    {
+        $store = $this->getCache()->lock('')->createTTLIndex();
+
+        // TTL index remove expired items asynchronously, this test would be very slow
+        $indexes = DB::connection('mongodb')->getCollection('foo_cache_locks')->listIndexes();
+        $this->assertCount(2, $indexes);
     }
 
     private function getCache(): Repository

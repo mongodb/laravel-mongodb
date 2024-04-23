@@ -6,6 +6,7 @@ use Illuminate\Cache\Repository;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function assert;
@@ -200,7 +201,17 @@ class MongoCacheStoreTest extends TestCase
         $this->assertFalse($store->increment('foo', 5));
     }
 
-    protected function getStore(): Repository
+    public function testTTLIndex()
+    {
+        $store = $this->getStore();
+        $store->createTTLIndex();
+
+        // TTL index remove expired items asynchronously, this test would be very slow
+        $indexes = DB::connection('mongodb')->getCollection($this->getCacheCollectionName())->listIndexes();
+        $this->assertCount(2, $indexes);
+    }
+
+    private function getStore(): Repository
     {
         $repository = Cache::store('mongodb');
         assert($repository instanceof Repository);
@@ -208,24 +219,24 @@ class MongoCacheStoreTest extends TestCase
         return $repository;
     }
 
-    protected function getCacheCollectionName(): string
+    private function getCacheCollectionName(): string
     {
         return config('cache.stores.mongodb.collection');
     }
 
-    protected function withCachePrefix(string $key): string
+    private function withCachePrefix(string $key): string
     {
         return config('cache.prefix') . $key;
     }
 
-    protected function insertToCacheTable(string $key, $value, $ttl = 60)
+    private function insertToCacheTable(string $key, $value, $ttl = 60)
     {
         DB::connection('mongodb')
             ->getCollection($this->getCacheCollectionName())
             ->insertOne([
                 '_id' => $this->withCachePrefix($key),
                 'value' => $value,
-                'expiration' => Carbon::now()->addSeconds($ttl)->getTimestamp(),
+                'expires_at' => new UTCDateTime(Carbon::now()->addSeconds($ttl)),
             ]);
     }
 }
