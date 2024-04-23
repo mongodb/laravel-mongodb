@@ -256,14 +256,14 @@ a text index on the ``plot`` field.
             IMDB Rating: 7.4
             IMDB Votes: 9663
             Plot: A love story between a man and woman ...
-            
+
             Title: Paheli
             Year: 2005
             Runtime: 140
             IMDB Rating: 6.7
             IMDB Votes: 8909
             Plot: A folk tale - supernatural love story about a ghost ...
-            
+
             Title: Por un puèado de besos
             Year: 2014
             Runtime: 98
@@ -296,7 +296,7 @@ results by relevance by using the ``orderBy()`` method to sort on the
 Modify Behavior
 ---------------
 
-You can modify the results of a find operation by chaining additional methods
+You can modify the results of a find operation by chaining more methods
 to ``where()``.
 
 The following sections demonstrate how to modify the behavior of the ``where()``
@@ -401,8 +401,8 @@ sort by passing ``"asc"`` as the second parameter. To
 specify a descending sort, pass ``"desc"`` as the second parameter.
 
 If your documents contain duplicate values in a specific field, you can
-handle the tie by specifying additional fields to sort on. This ensures consistent
-results if the additional fields contain unique values.
+handle the tie by specifying more fields to sort on. This ensures consistent
+results if the other fields contain unique values.
 
 This example queries for documents in which the value of the ``countries`` field contains
 ``"Indonesia"`` and orders results first by an ascending sort on the
@@ -458,14 +458,14 @@ This example queries for documents in which the value of the ``countries`` field
             IMDB Rating: 7.6
             IMDB Votes: 702
             Plot: A film delivery man promises ...
-            
+
             Title: Gie
             Year: 2005
             Runtime: 147
             IMDB Rating: 7.5
             IMDB Votes: 470
             Plot: Soe Hok Gie is an activist who lived in the sixties ...
-            
+
             Title: Requiem from Java
             Year: 2006
             Runtime: 120
@@ -473,7 +473,7 @@ This example queries for documents in which the value of the ``countries`` field
             IMDB Votes: 316
             Plot: Setyo (Martinus Miroto) and Siti (Artika Sari Dewi)
             are young married couple ...
-            
+
             ...
 
 .. tip::
@@ -482,7 +482,7 @@ This example queries for documents in which the value of the ``countries`` field
 
    - :manual:`Natural order </reference/glossary/#std-term-natural-order>`
      in the {+server-docs-name+} glossary
-   - `Ordering, Grouping, Limit and Offset <https://laravel.com/docs/queries#ordering-grouping-limit-and-offset>`__
+   - `Ordering, Grouping, Limit, and Offset <https://laravel.com/docs/queries#ordering-grouping-limit-and-offset>`__
      in the Laravel documentation
 
 .. _laravel-retrieve-one:
