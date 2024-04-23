@@ -159,7 +159,7 @@ certificates:
    - ``tlsAllowInvalidHostnames``
    - ``tlsInsecure`` 
    
-   Specifying these options in a production environment might
+   Specifying these options in a production environment might make
    your application insecure. To learn more, see the :manual:`Connection
    Options </reference/connection-string/#connection-options>`
    reference in the Server manual.
@@ -183,17 +183,12 @@ The following example configures a connection with TLS enabled:
        ]
    ]
 
-.. note::
-
-   You can alternatively reference your certificates by setting options
-   in the ``driverOptions`` property in your connection configuration.
-   To learn more about these options, see the
-   `MongoDB\Driver\Manager::__construct()
-   <https://www.php.net/manual/en/mongodb-driver-manager.construct.php>`__
-   API documentation.
-
 Additional Information
 ----------------------
+
+To learn more about setting URI options, see the `MongoDB\Driver\Manager::__construct()
+<https://www.php.net/manual/en/mongodb-driver-manager.construct.php>`__
+API documentation.
 
 To learn more about enabling TLS on a connection, see the
 following Server manual documentation:
