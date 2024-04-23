@@ -54,6 +54,6 @@ The example calls the following methods on the ``Movie`` model:
       :language: console
       :visible: false
 
-      Matching documents: 1267
+      Number of documents: 1267
 
 .. include:: /includes/usage-examples/fact-edit-laravel-app.rst
