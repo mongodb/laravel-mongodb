@@ -3,15 +3,15 @@
 namespace MongoDB\Laravel\Tests\Cache;
 
 use Illuminate\Cache\Repository;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Cache\MongoLock;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\TestWith;
-
-use function now;
 
 class MongoLockTest extends TestCase
 {
@@ -73,7 +73,7 @@ class MongoLockTest extends TestCase
     {
         $lock = $this->getCache()->lock('foo');
         $this->assertTrue($lock->get());
-        DB::table('foo_cache_locks')->update(['expires_at' => now()->subDays(1)->getTimestamp()]);
+        DB::table('foo_cache_locks')->update(['expires_at' => new UTCDateTime(Carbon::now('UTC')->subDays(1))]);
 
         $otherLock = $this->getCache()->lock('foo');
         $this->assertTrue($otherLock->get());
