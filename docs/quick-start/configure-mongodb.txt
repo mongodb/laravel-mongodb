@@ -19,7 +19,7 @@ Configure Your MongoDB Connection
       Copy the ``.env.example`` file to a file named ``.env`` in the project
       root directory by running the following shell command:
 
-      .. code-block:: bash
+      .. code-block:: sh
 
          cp .env.example .env
 
@@ -33,7 +33,7 @@ Configure Your MongoDB Connection
          DB_URI="<connection string>"
 
       For example, if your connection string is
-      ``mongodb+srv://myUser:myPass123@mongo0.example.com/``,
+      ``"mongodb+srv://myUser:myPass123@mongo0.example.com/"``,
       your ``DB_URI`` variable matches the following line:
 
       .. code-block:: bash
