@@ -28,6 +28,7 @@ use MongoDB\Laravel\Tests\Models\MemberStatus;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function abs;
 use function array_keys;
@@ -1099,5 +1100,47 @@ class ModelTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You must provide attributes to check for duplicates');
         User::createOrFirst([]);
+    }
+
+    #[TestWith([new ObjectID()])]
+    #[TestWith(['foo'])]
+    public function testUpdateOrCreate(mixed $id)
+    {
+        Carbon::setTestNow('2010-01-01');
+        //$createdAt = Carbon::now()->getTimestamp();
+
+        // Create
+        $user = User::updateOrCreate(
+            ['_id' => $id],
+            ['email' => 'john.doe@example.com', 'birthday' => new DateTime('1987-05-28')],
+        );
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertEquals('john.doe@example.com', $user->email);
+        $this->assertEquals(new DateTime('1987-05-28'), $user->birthday);
+        //$this->assertEquals($createdAt, $user->created_at->getTimestamp());
+        //$this->assertEquals($createdAt, $user->updated_at->getTimestamp());
+
+        Carbon::setTestNow('2010-02-01');
+        $updatedAt = Carbon::now()->getTimestamp();
+
+        // Update
+        $user = User::updateOrCreate(
+            ['_id' => $id],
+            ['birthday' => new DateTime('1990-01-12'), 'foo' => 'bar'],
+        );
+
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertEquals('john.doe@example.com', $user->email);
+        $this->assertEquals(new DateTime('1990-01-12'), $user->birthday);
+        //$this->assertEquals($createdAt, $user->created_at->getTimestamp());
+        $this->assertEquals($updatedAt, $user->updated_at->getTimestamp());
+
+        // Stored data
+        $checkUser = User::find($id)->first();
+        $this->assertInstanceOf(User::class, $checkUser);
+        $this->assertEquals('john.doe@example.com', $checkUser->email);
+        $this->assertEquals(new DateTime('1990-01-12'), $checkUser->birthday);
+        //$this->assertEquals($createdAt, $user->created_at->getTimestamp());
+        $this->assertEquals($updatedAt, $checkUser->updated_at->getTimestamp());
     }
 }
