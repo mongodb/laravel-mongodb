@@ -57,7 +57,7 @@ and their default values:
      - Default ``cache_locks``. Name of the MongoDB collection to store locks.
 
    * - ``lock_lottery``
-     - Default ``[2, 100]``. Probability [chance, total] of pruning expired cache items. Set to [0, 0] to disable
+     - Default ``[2, 100]``. Probability [chance, total] of pruning expired cache items. Set to [0, 0] to disable.
 
    * - ``lock_timeout``
      - Default ``86400``. Time-to-live of the locks, in seconds.
