@@ -72,7 +72,7 @@ The :manual:`TTL indexes </core/index-ttl/>` integrated into MongoDB automatical
 delete documents when they expire. Their use is optional with the ``mongodb``
 driver, but recommended, because they provide better performance by delegating the
 deletion of expired documents to MongoDB instead of requiring the application to
-perform this task randomly.
+perform this task.
 
 Create the indexes with a migration that calls the
 ``createTTLIndex()`` methods provided by both the cache, and the lock stores:
@@ -197,7 +197,7 @@ increments a counter each time it is invoked.
 
 
 .. code-block:: php
-   :emphasize-lines: 9,14
+   :emphasize-lines: 8,13
 
    <?php
 
