@@ -31,6 +31,8 @@ add a store configuration by using the ``mongodb`` driver in ``config/cache.php`
        ],
    ],
 
+To configure the ``mongodb`` database connection, see the :ref:`laravel-fundamentals-connection` section.
+
 The following table describes a list of cache and lock options
 and their default values:
 
@@ -57,7 +59,7 @@ and their default values:
      - Default ``cache_locks``. Name of the MongoDB collection to store locks.
 
    * - ``lock_lottery``
-     - Default ``[2, 100]``. Probability [chance, total] of pruning expired cache items. Set to [0, 0] to disable.
+     - Default ``[2, 100]``. Probability ``[chance, total]`` of pruning expired cache items. Set to ``[0, 0]`` to disable.
 
    * - ``lock_timeout``
      - Default ``86400``. Time-to-live of the locks, in seconds.
@@ -150,6 +152,9 @@ adds 5, and removes 2.
 
    {+odm-short+} supports incrementing and decrementing with integer and float values.
 
+For more information on using cache, see the `Laravel Cache documentation
+<https://laravel.com/docs/{+laravel-docs-version+}/cache#cache-usage>`__.
+
 Configuring MongoDB as Default Cache
 ------------------------------------
 
@@ -212,7 +217,6 @@ increments a counter each time it is invoked.
        }
    }
 
-
 Using MongoDB Lock
 ------------------
 
@@ -232,4 +236,5 @@ about race conditions. The following example implements an atomic lock:
        $lock->release();
    }
 
-
+For more information on using locks, see the `Laravel Locks documentation
+<https://laravel.com/docs/{+laravel-docs-version+}/cache#atomic-locks>`__.
