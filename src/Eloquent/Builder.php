@@ -217,6 +217,12 @@ class Builder extends EloquentBuilder
         // Apply casting and default values to the attributes
         // In case of duplicate key between the attributes and the values, the values have priority
         $instance = $this->newModelInstance($values + $attributes);
+
+        /* @see \Illuminate\Database\Eloquent\Model::performInsert */
+        if ($instance->usesTimestamps()) {
+            $instance->updateTimestamps();
+        }
+
         $values = $instance->getAttributes();
         $attributes = array_intersect_key($attributes, $values);
 

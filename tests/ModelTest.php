@@ -1048,12 +1048,17 @@ class ModelTest extends TestCase
 
     public function testCreateOrFirst()
     {
+        Carbon::setTestNow('2010-06-22');
+        $createdAt = Carbon::now()->getTimestamp();
         $user1 = User::createOrFirst(['email' => 'john.doe@example.com']);
 
         $this->assertSame('john.doe@example.com', $user1->email);
         $this->assertNull($user1->name);
         $this->assertTrue($user1->wasRecentlyCreated);
+        $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
+        $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
 
+        Carbon::setTestNow('2020-12-28');
         $user2 = User::createOrFirst(
             ['email' => 'john.doe@example.com'],
             ['name' => 'John Doe', 'birthday' => new DateTime('1987-05-28')],
@@ -1064,6 +1069,8 @@ class ModelTest extends TestCase
         $this->assertNull($user2->name);
         $this->assertNull($user2->birthday);
         $this->assertFalse($user2->wasRecentlyCreated);
+        $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
+        $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
 
         $user3 = User::createOrFirst(
             ['email' => 'jane.doe@example.com'],
@@ -1075,6 +1082,8 @@ class ModelTest extends TestCase
         $this->assertSame('Jane Doe', $user3->name);
         $this->assertEquals(new DateTime('1987-05-28'), $user3->birthday);
         $this->assertTrue($user3->wasRecentlyCreated);
+        $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
+        $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
 
         $user4 = User::createOrFirst(
             ['name' => 'Robert Doe'],
