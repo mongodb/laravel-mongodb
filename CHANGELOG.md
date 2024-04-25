@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.2.2] - 2024-04-25
+
+* Add return types to `FindAndModifyCommandSubscriber`, used by `firstOrCreate` by @wivaku in [#2913](https://github.com/mongodb/laravel-mongodb/pull/2913)
+
 ## [4.2.1] - 2024-04-25
 
 * Set timestamps when using `Model::createOrFirst()` by @GromNaN in [#2905](https://github.com/mongodb/laravel-mongodb/pull/2905)
