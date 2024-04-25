@@ -6,7 +6,7 @@ Cache and Locks
 
 .. facet::
    :name: genre
-   :values: tutorial
+   :values: reference
 
 .. meta::
    :keywords: php framework, cache, lock, code example
@@ -14,8 +14,8 @@ Cache and Locks
 Configuration
 -------------
 
-In order to use MongoDB as backend for `Laravel Cache and Locks <https://laravel.com/docs/{+laravel-docs-version+}/cache>`__,
-add a store configuration using the ``mongodb`` driver in ``config/cache.php``:
+To use MongoDB as a backend for `Laravel Cache and Locks <https://laravel.com/docs/{+laravel-docs-version+}/cache>`__,
+add a store configuration by using the ``mongodb`` driver in ``config/cache.php``:
 
 .. code-block:: php
 
@@ -45,13 +45,13 @@ and their default values:
      - **Required**. Specifies the lock driver to use. Must be ``mongodb``.
 
    * - ``connection``
-     - **Required**. The database connection to use to store cache items. It must be a ``mongodb`` connection.
+     - **Required**. The database connection used to store cache items. It must be a ``mongodb`` connection.
 
    * - ``collection``
      - Default ``cache``. Name of the MongoDB collection to store cache items.
 
    * - ``lock_connection``
-     - Default to the cache ``connection``. The database connection to use to store locks. It must be a ``mongodb`` connection.
+     - Default to the cache ``connection``. The database connection used to store locks. It must be a ``mongodb`` connection.
 
    * - ``lock_collection``
      - Default ``cache_locks``. Name of the MongoDB collection to store locks.
@@ -60,20 +60,20 @@ and their default values:
      - Default ``[2, 100]``. Probability [chance, total] of pruning expired cache items. Set to [0, 0] to disable
 
    * - ``lock_timeout``
-     - Default ``86400``. Time-to-live of the locks in seconds
+     - Default ``86400``. Time-to-live of the locks, in seconds.
 
 
-Setup auto-expiration indexes
+Setup Auto-Expiration Indexes
 -----------------------------
 
 The :manual:`TTL indexes </core/index-ttl/>` integrated into MongoDB automatically
-delete documents when they have expired. Their use is optional with the ``mongodb``
-driver, but recommended as they provide better performance by delegating the
+delete documents when they expire. Their use is optional with the ``mongodb``
+driver, but recommended, because they provide better performance by delegating the
 deletion of expired documents to MongoDB instead of requiring the application to
 perform this task randomly.
 
-The best way is to create the indexes with a migration calling the methods
-``createTTLIndex()`` provided by both the cache and the lock stores:
+Create the indexes with a migration that calls the
+``createTTLIndex()`` methods provided by both the cache, and the lock stores:
 
 .. literalinclude:: /includes/cache/migration.php
    :language: php
@@ -84,9 +84,9 @@ Then run the migration:
 
 .. code-block:: none
 
-   $ php artisan migrate
+   php artisan migrate
 
-Alternatively, the index can be created using :mdb-shell:`MongoDB Shell <>` (``mongosh``):
+Alternatively, you can create the index by using :mdb-shell:`MongoDB Shell <>` (``mongosh``):
 
 .. code-block:: ts
 
@@ -110,18 +110,19 @@ If you use Locks, disable ``lock_lottery`` by setting the probability to ``0``:
        ],
    ],
 
-Using MongoDB cache
+Using MongoDB Cache
 -------------------
 
 The Laravel cache can be used to store any serializable data using the facade
-``Illuminate\Support\Facades\Cache``:
+``Illuminate\Support\Facades\Cache``.
 
-In this example:
-- Gets the cache repository with the store ``mongodb``,
-- Tries to read and return the cache item named ``foo``,
-- If missing, calls the closure to compute the value, store this value forever and return it.
+This example performs the following actions:
 
-..code-block:: php
+- Gets the cache repository with the ``mongodb`` store
+- Tries to read and return the cache item named ``foo``
+- If missing, calls the closure to compute the value, stores the value forever, and returns it
+
+.. code-block:: php
 
    use Illuminate\Support\Facades\Cache;
 
@@ -129,17 +130,17 @@ In this example:
        return [1, 2, 3];
    });
 
-The default, cached objects do not expire. It is possible to define an expiry time.
+By default, cached objects do not expire. However, it is possible to define an expiry time, as shown in the following example:
 
-..code-block:: php
+.. code-block:: php
 
    Cache::store('mongodb')->set('foo', 'abc', '1 day');
 
-Incrementing and decrementing a value is also supported, the value must
-be initialized before. The following example initialize the counter to ``3``,
-adds 5 and removes 2.
+Incrementing and decrementing a value is also supported if the value is
+initialized before. The following example initializes the counter to ``3``,
+adds 5, and removes 2.
 
-..code-block:: php
+.. code-block:: php
 
    Cache::store('mongodb')->set('counter', 3);
    Cache::store('mongodb')->increment('counter', 5);
@@ -149,7 +150,7 @@ adds 5 and removes 2.
 
    {+odm-short+} supports incrementing and decrementing with integer and float values.
 
-Configuring MongoDB as default cache
+Configuring MongoDB as Default Cache
 ------------------------------------
 
 To use the ``mongodb`` store by default, change the default store in
@@ -169,8 +170,8 @@ To use the ``mongodb`` store by default, change the default store in
        ],
    ];
 
-The variable ``CACHE_STORE`` could be set in your environment or in
-the ``.env`` file. Update or remove it:
+The variable ``CACHE_STORE`` can be set in your environment or in
+the ``.env`` file. Update or remove it as follows:
 
 .. code-block:: none
 
@@ -185,8 +186,8 @@ automatic injection:
 
    Cache::get('foo', 5);
 
-This example shows how to use automatic injection of the cache
-manager, using the default store. It is a controller that
+The following example shows how to use automatic injection of the cache
+manager by using the default store. The example creates a controller that
 increments a counter each time it is invoked.
 
 
@@ -216,9 +217,9 @@ Using MongoDB Lock
 ------------------
 
 Atomic locks allow for the manipulation of distributed locks without worrying
-about race conditions.
+about race conditions. The following example implements an atomic lock:
 
-..code-block:: php
+.. code-block:: php
    :emphasize-lines: 3
 
    use Illuminate\Support\Facades\Cache;
