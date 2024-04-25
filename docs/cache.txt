@@ -15,7 +15,7 @@ Configuration
 -------------
 
 To use MongoDB as a backend for `Laravel Cache and Locks <https://laravel.com/docs/{+laravel-docs-version+}/cache>`__,
-add a store configuration by using the ``mongodb`` driver in ``config/cache.php``:
+add a store configuration by specifying the ``mongodb`` driver in ``config/cache.php``:
 
 .. code-block:: php
 
@@ -65,12 +65,12 @@ and their default values:
      - Default ``86400``. Time-to-live of the locks, in seconds.
 
 
-Setup Auto-Expiration Indexes
------------------------------
+Set Up Auto-Expiration Indexes
+-------------------------------
 
 The :manual:`TTL indexes </core/index-ttl/>` integrated into MongoDB automatically
 delete documents when they expire. Their use is optional with the ``mongodb``
-driver, but recommended, because they provide better performance by delegating the
+driver, but recommended. The indexes provide better performance by delegating the
 deletion of expired documents to MongoDB instead of requiring the application to
 perform this task.
 
@@ -102,7 +102,7 @@ Alternatively, you can create the index by using :mdb-shell:`MongoDB Shell <>` (
 If you use Locks, disable ``lock_lottery`` by setting the probability to ``0``:
 
 .. code-block:: php
-   :highlightLines: [4]
+   :emphasize-lines: 4
 
    'stores' => [
        'mongodb' => [
@@ -152,11 +152,11 @@ adds 5, and removes 2.
 
    {+odm-short+} supports incrementing and decrementing with integer and float values.
 
-For more information on using cache, see the `Laravel Cache documentation
+For more information about using the cache, see the `Laravel Cache documentation
 <https://laravel.com/docs/{+laravel-docs-version+}/cache#cache-usage>`__.
 
-Configuring MongoDB as Default Cache
-------------------------------------
+Configuring MongoDB as the Default Cache
+----------------------------------------
 
 To use the ``mongodb`` store by default, change the default store in
 ``config/cache.php``:
@@ -175,7 +175,7 @@ To use the ``mongodb`` store by default, change the default store in
        ],
    ];
 
-The variable ``CACHE_STORE`` can be set in your environment or in
+The ``CACHE_STORE`` variable can be set in your environment or in
 the ``.env`` file. Update or remove it as follows:
 
 .. code-block:: none
