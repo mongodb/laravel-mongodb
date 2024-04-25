@@ -8,6 +8,10 @@ All notable changes to this project will be documented in this file.
 * Fix `artisan query:retry` command by @GromNaN in [#2838](https://github.com/mongodb/laravel-mongodb/pull/2838)
 * Add `mongodb` cache and lock drivers by @GromNaN in [#2877](https://github.com/mongodb/laravel-mongodb/pull/2877)
 
+## [4.2.2] - 2024-04-25
+
+* Add return types to `FindAndModifyCommandSubscriber`, used by `firstOrCreate` by @wivaku in [#2913](https://github.com/mongodb/laravel-mongodb/pull/2913)
+
 ## [4.2.1] - 2024-04-25
 
 * Set timestamps when using `Model::createOrFirst()` by @GromNaN in [#2905](https://github.com/mongodb/laravel-mongodb/pull/2905)
