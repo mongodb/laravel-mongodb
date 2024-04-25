@@ -19,15 +19,15 @@ final class FindAndModifyCommandSubscriber implements CommandSubscriber
 {
     public bool $created;
 
-    public function commandFailed(CommandFailedEvent $event)
+    public function commandFailed(CommandFailedEvent $event): void
     {
     }
 
-    public function commandStarted(CommandStartedEvent $event)
+    public function commandStarted(CommandStartedEvent $event): void
     {
     }
 
-    public function commandSucceeded(CommandSucceededEvent $event)
+    public function commandSucceeded(CommandSucceededEvent $event): void
     {
         $this->created = ! $event->getReply()->lastErrorObject->updatedExisting;
     }
