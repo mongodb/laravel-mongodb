@@ -47,6 +47,7 @@ class ModelTest extends TestCase
 {
     public function tearDown(): void
     {
+        Carbon::setTestNow();
         User::truncate();
         Soft::truncate();
         Book::truncate();
