@@ -1,0 +1,515 @@
+.. _laravel-aggregation-builder:
+
+===================
+Aggregation Builder
+===================
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: code example, pipeline, expression
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+In this guide, you can learn how to perform aggregations and construct
+pipelines by using the {+odm-short+} aggregation builder. The aggregation
+builder lets you use a type-safe syntax to construct a MongoDB
+**aggregation pipeline**.
+
+An aggregation pipeline is a data processing pipeline that sequentially
+performs transformations and computations on data from the MongoDB database,
+then outputs the results as a new document or set of documents.
+
+An aggregation pipeline is composed of **aggregation stages**. Aggregation
+stages use operators to process input data and produce data that the next 
+stage uses as its input.
+
+The {+odm-short+} aggregation builder lets you build aggregation stages and
+aggregation pipelines. The following sections show examples of how to use the
+aggregation builder to create the stages of an aggregation pipeline:
+
+- :ref:`laravel-add-aggregation-dependency`
+- :ref:`laravel-build-aggregation`
+- :ref:`laravel-create-custom-operator-factory`
+
+.. tip::
+
+   The aggregation builder feature is available only in {+odm-short+} versions
+   4.3 and later. To learn more about running aggregations without using the
+   aggregation builder, see :ref:`laravel-query-builder-aggregations` in the
+   Query Builder guide.
+
+.. _laravel-add-aggregation-dependency:
+
+Add the Aggregation Builder Dependency
+--------------------------------------
+
+The aggregation builder is part of the {+agg-builder-package-name+} package.
+You must add this package as a dependency to your project to use it. Run the
+following command to add the aggregation builder dependency to your
+application:
+
+.. code-block:: bash
+
+   composer require {+agg-builder-package-name+}:{+agg-builder-version+}
+
+When the installation completes, verify that the ``composer.json`` file
+includes the following line in the ``require`` object:
+
+.. code-block:: json
+
+   "{+agg-builder-package-name+}": "{+agg-builder-version+}",
+
+.. _laravel-build-aggregation:
+
+Create an Aggregation Pipeline
+------------------------------
+
+To start an aggregation pipeline, call the ``Model::aggregate()`` method.
+Then, chain the aggregation stage methods in the sequence you want them to
+run.
+
+The aggregation builder includes the following namespaces that you can import
+to build aggregation stages:
+
+- ``MongoDB\Builder\Accumulator``
+- ``MongoDB\Builder\Expression``
+- ``MongoDB\Builder\Query``
+- ``MongoDB\Builder\Type``
+
+.. tip::
+
+   To learn more about builder classes, see the `mongodb/mongodb-php-builder <https://github.com/mongodb/mongo-php-builder/>`__
+   GitHub repository.
+
+This section features the following examples, which show how to use common
+aggregation stages and combine stages to build an aggregation pipeline:
+
+- :ref:`laravel-aggregation-match-stage-example`
+- :ref:`laravel-aggregation-group-stage-example`
+- :ref:`laravel-aggregation-sort-stage-example`
+- :ref:`laravel-aggregation-project-stage-example`
+- :ref:`laravel-aggregation-pipeline-example`
+
+To learn more about MongoDB aggregation operators, see
+:manual:`Aggregation Stages </reference/operator/aggregation-pipeline/>` in
+the {+server-docs-name+}.
+
+Sample Documents
+~~~~~~~~~~~~~~~~
+
+The following examples run aggregation pipelines on a collection represented
+by the ``User`` model. You can add the sample data by running the following
+``insert()`` method:
+
+.. literalinclude:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin aggregation builder sample data
+      :end-before: end aggregation builder sample data
+
+.. _laravel-aggregation-match-stage-example:
+
+Match Stage Example
+~~~~~~~~~~~~~~~~~~~
+
+You can chain the ``match()`` method to your aggregation pipeline to specify
+a query filter. If you omit this stage, the ``aggregate()`` method outputs
+all the documents in the model's collection for the following stage.
+
+This aggregation stage is often placed first to retrieve the data by using
+available indexes and reduce the amount of data the subsequent stages process.
+
+.. tip::
+
+   If you omit the ``match()`` method, the aggregation pipeline matches all
+   documents in the collection that correspond to the model before other
+   aggregation stages.
+
+This example constructs a query filter for a **match** aggregation stage by
+using the ``MongoDB\Builder\Query`` builder. The match stage includes the the
+following criteria:
+
+- Returns results that match either of the query filters by using the
+  ``Query::or()`` function
+- Matches documents that contain an ``occupation`` field with a value of
+  ``"designer"`` by using the ``Query::query()`` and ``Query::eq()`` functions
+- Matches documents that contain a ``name`` field with a value of
+  ``"Eliud Nkosana"`` by using the ``Query::query()`` and ``Query::eq()``
+  functions
+
+Click the :guilabel:`{+code-output-label+}` button to see the documents
+returned by running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin aggregation match stage
+      :end-before: end aggregation match stage
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        {
+          "_id": ...,
+          "name": "Janet Doe",
+          "occupation": "designer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "541728000000"
+            }
+          }
+        },
+        {
+          "_id": ...,
+          "name": "Eliud Nkosana",
+          "occupation": "engineer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "449884800000"
+            }
+          }
+        },
+        {
+          "_id": ...,
+          "name": "Ellis Lee",
+          "occupation": "designer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "834019200000"
+            }
+          }
+        }
+      ]
+
+.. tip::
+
+   The ``Query::or()`` function corresponds to the ``$or`` MongoDB query operator.
+   To learn more about this operator, see :manual:`$or </reference/operator/query/or/>`
+   in the {+server-docs-name+}.
+
+.. _laravel-aggregation-group-stage-example:
+
+Group Stage Example
+~~~~~~~~~~~~~~~~~~~
+
+You can chain the ``group()`` method to your aggregation pipeline to modify the
+structure of the data by performing calculations and grouping it by common
+field values.
+
+This aggregation stage is often placed immediately after a match stage to
+reduce the data subsequent stages process.
+
+This example uses the ``MongoDB\Builder\Expression`` builder to define the group keys in a
+**group** aggregation stage. The group stage specifies the following grouping
+behavior:
+
+- Sets the value of the group key, represented by the ``_id`` field, to the
+  field value defined by the ``Expression`` builder
+- References the document values in the ``occupation`` field by calling the
+  ``Expression::fieldPath()`` function
+
+Click the :guilabel:`{+code-output-label+}` button to see the documents
+returned by running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin aggregation group stage
+      :end-before: end aggregation group stage
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        { "_id": "engineer" },
+        { "_id": "designer" }
+      ]
+
+.. tip::
+
+   This example stage performs a similar task as the ``distinct()`` query
+   builder method. To learn more about the ``distinct()`` method, see the
+   :ref:`laravel-distinct-usage` usage example.
+
+.. _laravel-aggregation-sort-stage-example:
+
+Sort Stage Example
+~~~~~~~~~~~~~~~~~~
+
+You can chain the ``sort()`` method to your aggregation pipeline to specify
+the documents' output order.
+
+You can add this aggregation stage anywhere in the pipeline. It is often
+placed after the group stage since it can depend on the grouped data. We
+recommend placing the sort stage as late as possible in the pipeline to limit
+the data it processes.
+
+To specify an sort, set the field value to the ``Sort::Asc`` enum for an
+ascending sort or the ``Sort::Desc`` enum for a descending sort.
+
+This example shows a ``sort()`` aggregation pipeline stage that sorts the
+documents by the ``name`` field to ``Sort::Desc``, corresponding to reverse
+alphabetical order. Click the :guilabel:`{+code-output-label+}` button to see
+the documents returned by running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin aggregation sort stage
+      :end-before: end aggregation sort stage
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        {
+          "_id": ...,
+          "name": "Janet Doe",
+          "occupation": "designer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "541728000000"
+            }
+          }
+        },
+        {
+          "_id": ...,
+          "name": "Francois Soma",
+          "occupation": "engineer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "886377600000"
+            }
+          }
+        },
+        {
+          "_id": ...,
+          "name": "Ellis Lee",
+          "occupation": "designer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "834019200000"
+            }
+          }
+        },
+        {
+          "_id": ...,
+          "name": "Eliud Nkosana",
+          "occupation": "engineer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "449884800000"
+            }
+          }
+        },
+        {
+          "_id": ...,
+          "name": "Bran Steafan",
+          "occupation": "engineer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "894326400000"
+            }
+          }
+        },
+        {
+          "_id": ...,
+          "name": "Alda Gröndal",
+          "occupation": "engineer",
+          "birthday": {
+            "$date": {
+              "$numberLong": "1009843200000"
+            }
+          }
+        }
+      ]
+
+.. _laravel-aggregation-project-stage-example:
+
+Project Stage Example
+~~~~~~~~~~~~~~~~~~~~~
+
+You can chain the ``project()`` method to your aggregation pipeline to specify
+which fields from the documents to display by this stage.
+
+To specify fields to include, pass the name of a field and a truthy value,
+such as ``1`` or ``true``. All other fields are omitted from the output.
+
+Alternatively, to specify fields to exclude, pass each field name and
+a falsy value, such as ``0`` or ``false``. All other fields are included in
+the output.
+
+.. tip::
+
+   When you specify fields to include, the ``_id`` field is included by default.
+   To exclude the ``_id`` field, explicitly exclude it in the projection stage.
+
+This example shows how to use the ``project()`` method aggregation stage to
+include only the ``name`` field and exclude all other fields from the output.
+Click the :guilabel:`{+code-output-label+}` button to see the data returned by
+running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin aggregation project stage
+      :end-before: end aggregation project stage
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        { "name": "Alda Gröndal" },
+        { "name": "Francois Soma" },
+        { "name": "Janet Doe" },
+        { "name": "Eliud Nkosana" },
+        { "name": "Bran Steafan" },
+        { "name": "Ellis Lee" }
+      ]
+
+
+.. _laravel-aggregation-pipeline-example:
+
+Aggregation Pipeline Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This aggregation pipeline example chains multiple stages. Each stage runs
+on the output retrieved from each preceding stage. In this example, the
+stages perform the following operations sequentially:
+
+- Add the ``birth_year`` field to the documents and set the value to the year
+  extracted from the ``birthday`` field.
+- Group the documents by the value of the ``occupation`` field and compute
+  the average value of ``birth_year`` for each group by using the
+  ``Accumulator::avg()`` function. Assign to result of the computation to
+  the ``birth_year_avg`` field.
+- Sort the documents by the group key field in ascending order.
+- Create the ``profession`` field from the value of the group key field,
+  include the ``birth_year_avg`` field, and omit the ``_id`` field.
+
+Click the :guilabel:`{+code-output-label+}` button to see the data returned by
+running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin pipeline example
+      :end-before: end pipeline example
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        {
+          "birth_year_avg": 1991.5,
+          "profession": "designer"
+        },
+        {
+          "birth_year_avg": 1995.5,
+          "profession": "engineer"
+        }
+      ]
+
+.. note::
+
+   Since this pipeline omits the ``match()`` stage, the input for the initial
+   stage consists of all the documents in the collection.
+
+.. _laravel-create-custom-operator-factory:
+
+Create a Custom Operator Factory
+--------------------------------
+
+When using the aggregation builder to create an aggregation pipeline, you
+can define operations or stages in a **custom operator factory**. A custom
+operator factory is a function that returns expressions or stages of an
+aggregation pipeline. You can create these functions to improve code
+readability and reuse.
+
+This example shows how to create and use a custom operator factory that
+returns expressions that extract the year from a specified date field.
+
+The following function accepts the name of a field that contains a date
+and returns an expression that extracts the year from the date:
+
+.. literalinclude:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: start custom operator factory function
+   :end-before: end custom operator factory function
+
+The example aggregation pipeline includes the following stages:
+
+- ``addFields()``, which calls the custom operator factory function to extract
+  the year from the ``birthday`` field and assign it to the ``birth_year`` field
+- ``project()``, which includes only the ``name`` and ``birth_year`` fields in
+  its output
+
+Click the :guilabel:`{+code-output-label+}` button to see the data returned by
+running the code:
+
+.. io-code-block::
+
+   .. input:: /includes/fundamentals/aggregation/AggregationsBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin custom operator factory usage
+      :end-before: end custom operator factory usage
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+        {
+          "name": "Alda Gröndal",
+          "birth_year": 2002
+        },
+        {
+          "name": "Francois Soma",
+          "birth_year": 1998
+        },
+        {
+          "name": "Janet Doe",
+          "birth_year": 1987
+        },
+        {
+          "name": "Eliud Nkosana",
+          "birth_year": 1984
+        },
+        {
+          "name": "Bran Steafan",
+          "birth_year": 1998
+        },
+        {
+          "name": "Ellis Lee",
+          "birth_year": 1996
+        }
+      ]
+

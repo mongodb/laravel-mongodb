@@ -1,6 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.3.0] - unreleased
+
+* New aggregation pipeline builder by @GromNaN in [#2738](https://github.com/mongodb/laravel-mongodb/pull/2738)
+* Drop support for Composer 1.x by @GromNaN in [#2784](https://github.com/mongodb/laravel-mongodb/pull/2784)
+* Fix `artisan query:retry` command by @GromNaN in [#2838](https://github.com/mongodb/laravel-mongodb/pull/2838)
+* Add `mongodb` cache and lock drivers by @GromNaN in [#2877](https://github.com/mongodb/laravel-mongodb/pull/2877)
+
 ## [4.2.2] - 2024-04-25
 
 * Add return types to `FindAndModifyCommandSubscriber`, used by `firstOrCreate` by @wivaku in [#2913](https://github.com/mongodb/laravel-mongodb/pull/2913)
