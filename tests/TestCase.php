@@ -75,6 +75,12 @@ class TestCase extends OrchestraTestCase
         $app['config']->set('auth.providers.users.model', User::class);
         $app['config']->set('cache.driver', 'array');
 
+        $app['config']->set('cache.stores.mongodb', [
+            'driver' => 'mongodb',
+            'connection' => 'mongodb',
+            'collection' => 'foo_cache',
+        ]);
+
         $app['config']->set('queue.default', 'database');
         $app['config']->set('queue.connections.database', [
             'driver' => 'mongodb',
