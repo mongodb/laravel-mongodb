@@ -1,4 +1,4 @@
-.. _laravel-queues:
+.. _laravel-cache:
 
 ===============
 Cache and Locks
