@@ -201,7 +201,7 @@ increments a counter each time it is invoked.
 
 
 .. code-block:: php
-   :emphasize-lines: 8,13
+   :emphasize-lines: 10,15
 
    <?php
 
