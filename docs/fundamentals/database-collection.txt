@@ -30,7 +30,7 @@ data as **documents** that contain field-and-value pairs. In
 {+odm-short+}, you can access documents through Eloquent models.
 
 To learn more about the document data format,
-see :manual:`Documents </core/document/>` in the Server manual.
+see :manual:`Documents </core/document/>` in the {+server-docs-name+}.
 
 .. _laravel-access-db:
 
@@ -39,7 +39,7 @@ Specify the Database in a Connection Configuration
 
 You can specify a database name that a connection uses in your
 application's ``config/database.php`` file. The ``connections`` property
-in this file stores all of your database connection information, such as
+in this file stores all your database connection information, such as
 your connection string, database name, and optionally, authentication
 details. After you specify a database connection, you can perform
 database-level operations and access collections that the database
@@ -98,8 +98,8 @@ The following example shows how to specify multiple database connections
 
    The MongoDB PHP driver reuses the same connection when
    you create two clients with the same connection string. There is no
-   overhead in using two connections for two distinct databases, so you
-   do not need to optimize your connections.
+   overhead in using two connections for two distinct databases, so it is
+   unnecessary to optimize your connections.
 
 If your application contains multiple database connections and you want
 to store your model in a database other than the default, override the

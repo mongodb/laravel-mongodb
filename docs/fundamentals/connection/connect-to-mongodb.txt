@@ -78,6 +78,9 @@ options. In the example, we set the following connection options and values:
 - ``maxPoolSize=20``
 - ``w=majority``
 
+To learn more about connection options, see
+:ref:`laravel-fundamentals-connection-options`.
+
 .. _laravel-database-config:
 
 Laravel Database Connection Configuration
@@ -151,11 +154,13 @@ For a MongoDB database connection, you can specify the following details:
 
    * - ``options``
      - Specifies connection options to pass to MongoDB that determine the
-       connection behavior.
+       connection behavior. To learn more about connection options, see
+       :ref:`laravel-connection-auth-options`.
 
    * - ``driverOptions``
-     - Specifies options specific to pass to the MongoDB PHP Library driver
-       that determine the driver behavior for that connection.
+     - Specifies options specific to pass to the {+php-library+} that
+       determine the driver behavior for that connection. To learn more about
+       driver options, see :ref:`laravel-driver-options`.
 
 .. note::
 
@@ -322,6 +327,8 @@ specified:
 To learn more about setting up a MongoDB replica set, see
 :manual:`Deploy a Replica Set </tutorial/deploy-replica-set/>` in the
 {+server-docs-name+}.
+
+.. _laravel-direct-connection:
 
 Direct Connection
 `````````````````

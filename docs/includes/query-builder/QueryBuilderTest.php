@@ -228,7 +228,6 @@ class QueryBuilderTest extends TestCase
         // begin aggregation avg
         $result = DB::collection('movies')
             ->avg('imdb.rating');
-            //->avg('year');
         // end aggregation avg
 
         $this->assertIsFloat($result);

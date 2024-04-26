@@ -4,12 +4,24 @@
 Find a Document
 ===============
 
-You can retrieve a single document from a collection by calling the ``where()`` and
-``first()`` methods on an Eloquent model or a query builder.
+.. facet::
+   :name: genre
+   :values: reference
 
-Pass a query filter to the ``where()`` method and then call the ``first()`` method to
-return one document in the collection that matches the filter. If multiple documents match
-the query filter, ``first()`` returns the first matching document according to the documents'
+.. meta::
+   :keywords: find one, retrieve, code example, first
+
+.. include:: /includes/usage-examples/operation-description.rst
+
+   .. replacement:: operator-description
+
+      You can retrieve a single document from a collection
+
+   .. replacement:: result-operation
+
+      the ``first()`` method to return one document.
+
+If multiple documents match the query filter, ``first()`` returns the first matching document according to the documents'
 :term:`natural order` in the database or according to the sort order that you can specify
 by using the ``orderBy()`` method.
 
@@ -25,7 +37,7 @@ This usage example performs the following actions:
 
 The example calls the following methods on the ``Movie`` model:
 
-- ``where()``: matches documents in which the value of the ``directors`` field includes ``'Rob Reiner'``.
+- ``where()``: matches documents in which the value of the ``directors`` field includes ``"Rob Reiner"``.
 - ``orderBy()``: sorts matched documents by their ascending ``_id`` values.
 - ``first()``: retrieves only the first matching document.
 
@@ -42,34 +54,17 @@ The example calls the following methods on the ``Movie`` model:
       :visible: false
 
       // Result is truncated
-      
+
       {
-         "_id": "573a1398f29313caabce94a3",
-         "plot": "Spinal Tap, one of England's loudest bands, is chronicled by film director
-         Marty DeBergi on what proves to be a fateful tour.",
-         "genres": [
-            "Comedy",
-            "Music"
-         ],
-         "runtime": 82,
-         "metacritic": 85,
-         "rated": "R",
-         "cast": [
-            "Rob Reiner",
-            "Kimberly Stringer",
-            "Chazz Dominguez",
-            "Shari Hall"
-         ],
-         "poster": "https://m.media-amazon.com/images/M/MV5BMTQ2MTIzMzg5Nl5BMl5BanBnXkFtZTgwOTc5NDI1MDE@._V1_SY1000_SX677_AL_.jpg",
-         "title": "This Is Spinal Tap",
+        "_id": ...,
+        "title": "This Is Spinal Tap",
+        "directors": [ "Rob Reiner" ],
          ...
       }
 
-
-For instructions on editing your Laravel application to run the usage example, see the
-:ref:`Usage Example landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
 
 .. tip::
 
    To learn more about retrieving documents with {+odm-short+}, see the
-   :ref:`laravel-fundamentals-retrieve` guide
+   :ref:`laravel-fundamentals-retrieve` guide.

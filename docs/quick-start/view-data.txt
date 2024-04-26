@@ -39,7 +39,7 @@ View MongoDB Data
       make the following edits:
 
       - Replace the ``Illuminate\Database\Eloquent\Model`` import with ``MongoDB\Laravel\Eloquent\Model``
-      - Specify ``mongodb`` in the ``$connection`` field
+      - Specify ``"mongodb"`` in the ``$connection`` field
 
       The edited ``Movie.php`` file contains the following code:
 

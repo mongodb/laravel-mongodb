@@ -23,8 +23,15 @@ GitHub repository.
 
 Learn more about {+odm-short+} features from the following resources:
 
+- :ref:`laravel-fundamentals-connection`: learn how to configure your MongoDB
+  connection.
+
+- :ref:`laravel-usage-examples`: see code examples of frequently used MongoDB
+  operations.
+
 - :ref:`laravel-eloquent-models`: use Eloquent model classes to work
   with MongoDB data.
 
 - :ref:`laravel-query-builder`: use the query builder to specify MongoDB
   queries and aggregations.
+
