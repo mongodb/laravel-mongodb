@@ -20,6 +20,7 @@ Laravel MongoDB
    /eloquent-models
    /query-builder
    /user-authentication
+   /cache
    /queues
    /transactions
    /issues-and-help
@@ -69,6 +70,7 @@ see the following content:
 - :ref:`laravel-query-builder`
 - :ref:`laravel-aggregation-builder`
 - :ref:`laravel-user-authentication`
+- :ref:`laravel-cache`
 - :ref:`laravel-queues`
 - :ref:`laravel-transactions`
 
