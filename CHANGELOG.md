@@ -1,17 +1,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [unreleased]
+## [4.3.0] - unreleased
 
 * New aggregation pipeline builder by @GromNaN in [#2738](https://github.com/mongodb/laravel-mongodb/pull/2738)
 * Drop support for Composer 1.x by @GromNaN in [#2784](https://github.com/mongodb/laravel-mongodb/pull/2784)
 * Fix `artisan query:retry` command by @GromNaN in [#2838](https://github.com/mongodb/laravel-mongodb/pull/2838)
 * Add `mongodb` cache and lock drivers by @GromNaN in [#2877](https://github.com/mongodb/laravel-mongodb/pull/2877)
 
+## [4.2.2] - 2024-04-25
+
+* Add return types to `FindAndModifyCommandSubscriber`, used by `firstOrCreate` by @wivaku in [#2913](https://github.com/mongodb/laravel-mongodb/pull/2913)
+
+## [4.2.1] - 2024-04-25
+
+* Set timestamps when using `Model::createOrFirst()` by @GromNaN in [#2905](https://github.com/mongodb/laravel-mongodb/pull/2905)
+
 ## [4.2.0] - 2024-03-14
 
 * Add support for Laravel 11 by @GromNaN in [#2735](https://github.com/mongodb/laravel-mongodb/pull/2735)
-* Implement Model::createOrFirst() using findOneAndUpdate operation by @GromNaN in [#2742](https://github.com/mongodb/laravel-mongodb/pull/2742)
+* Implement `Model::createOrFirst()` using findOneAndUpdate operation by @GromNaN in [#2742](https://github.com/mongodb/laravel-mongodb/pull/2742)
 
 ## [4.1.3] - 2024-03-05
 

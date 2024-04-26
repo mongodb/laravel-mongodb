@@ -28,6 +28,7 @@ use MongoDB\Laravel\Tests\Models\MemberStatus;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function abs;
 use function array_keys;
@@ -46,6 +47,7 @@ class ModelTest extends TestCase
 {
     public function tearDown(): void
     {
+        Carbon::setTestNow();
         User::truncate();
         Soft::truncate();
         Book::truncate();
@@ -1048,12 +1050,17 @@ class ModelTest extends TestCase
 
     public function testCreateOrFirst()
     {
+        Carbon::setTestNow('2010-06-22');
+        $createdAt = Carbon::now()->getTimestamp();
         $user1 = User::createOrFirst(['email' => 'john.doe@example.com']);
 
         $this->assertSame('john.doe@example.com', $user1->email);
         $this->assertNull($user1->name);
         $this->assertTrue($user1->wasRecentlyCreated);
+        $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
+        $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
 
+        Carbon::setTestNow('2020-12-28');
         $user2 = User::createOrFirst(
             ['email' => 'john.doe@example.com'],
             ['name' => 'John Doe', 'birthday' => new DateTime('1987-05-28')],
@@ -1064,6 +1071,8 @@ class ModelTest extends TestCase
         $this->assertNull($user2->name);
         $this->assertNull($user2->birthday);
         $this->assertFalse($user2->wasRecentlyCreated);
+        $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
+        $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
 
         $user3 = User::createOrFirst(
             ['email' => 'jane.doe@example.com'],
@@ -1075,6 +1084,8 @@ class ModelTest extends TestCase
         $this->assertSame('Jane Doe', $user3->name);
         $this->assertEquals(new DateTime('1987-05-28'), $user3->birthday);
         $this->assertTrue($user3->wasRecentlyCreated);
+        $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
+        $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
 
         $user4 = User::createOrFirst(
             ['name' => 'Robert Doe'],
@@ -1090,5 +1101,54 @@ class ModelTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('You must provide attributes to check for duplicates');
         User::createOrFirst([]);
+    }
+
+    #[TestWith([['_id' => new ObjectID()]])]
+    #[TestWith([['foo' => 'bar']])]
+    public function testUpdateOrCreate(array $criteria)
+    {
+        // Insert data to ensure we filter on the correct criteria, and not getting
+        // the first document randomly.
+        User::insert([
+            ['email' => 'fixture@example.com'],
+            ['email' => 'john.doe@example.com'],
+        ]);
+
+        Carbon::setTestNow('2010-01-01');
+        $createdAt = Carbon::now()->getTimestamp();
+
+        // Create
+        $user = User::updateOrCreate(
+            $criteria,
+            ['email' => 'john.doe@example.com', 'birthday' => new DateTime('1987-05-28')],
+        );
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertEquals('john.doe@example.com', $user->email);
+        $this->assertEquals(new DateTime('1987-05-28'), $user->birthday);
+        $this->assertEquals($createdAt, $user->created_at->getTimestamp());
+        $this->assertEquals($createdAt, $user->updated_at->getTimestamp());
+
+        Carbon::setTestNow('2010-02-01');
+        $updatedAt = Carbon::now()->getTimestamp();
+
+        // Update
+        $user = User::updateOrCreate(
+            $criteria,
+            ['birthday' => new DateTime('1990-01-12'), 'foo' => 'bar'],
+        );
+
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertEquals('john.doe@example.com', $user->email);
+        $this->assertEquals(new DateTime('1990-01-12'), $user->birthday);
+        $this->assertEquals($createdAt, $user->created_at->getTimestamp());
+        $this->assertEquals($updatedAt, $user->updated_at->getTimestamp());
+
+        // Stored data
+        $checkUser = User::where($criteria)->first();
+        $this->assertInstanceOf(User::class, $checkUser);
+        $this->assertEquals('john.doe@example.com', $checkUser->email);
+        $this->assertEquals(new DateTime('1990-01-12'), $checkUser->birthday);
+        $this->assertEquals($createdAt, $checkUser->created_at->getTimestamp());
+        $this->assertEquals($updatedAt, $checkUser->updated_at->getTimestamp());
     }
 }
