@@ -79,14 +79,14 @@ Write Data to MongoDB
       .. code-block:: json
 
          {
-           "title": "The Laravel MongoDB Quick Start",
+           "title": "The {+odm-short+} Quick Start",
            "year": 2024,
            "runtime": 15,
            "imdb": {
              "rating": 9.5,
              "votes": 1
            },
-           "plot": "This movie entry was created by running through the Laravel MongoDB Quick Start tutorial."
+           "plot": "This movie entry was created by running through the {+odm-short+} Quick Start tutorial."
          }
 
       Send the JSON payload to the endpoint as a ``POST`` request by running

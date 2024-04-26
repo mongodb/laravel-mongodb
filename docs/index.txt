@@ -1,5 +1,5 @@
 ===============
-Laravel MongoDB
+{+odm-short+}
 ===============
 
 .. facet::
@@ -95,7 +95,6 @@ compatible, see the :ref:`laravel-compatibility` section.
 Upgrade Versions
 ----------------
 
-Learn what changes you might need to make to your application to upgrade
-versions in the :ref:`laravel-upgrading` section.
-
+Learn what changes you must make to your application to upgrade versions in
+the :ref:`laravel-upgrading` section.
 

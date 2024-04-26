@@ -9,7 +9,7 @@ Insert Multiple Documents
    :values: reference
 
 .. meta::
-   :keywords: insert many, add, create, bulk, code example
+   :keywords: insert many, add multiple, code example
 
 .. contents:: On this page
    :local:
@@ -32,11 +32,12 @@ This usage example performs the following actions:
 - Uses the ``Movie`` Eloquent model to represent the ``movies`` collection in the
   ``sample_mflix`` database
 - Inserts documents into the ``movies`` collection
-- Prints the result of the insert operation
+- Prints whether the insert operation succeeds
 
-The example calls the ``insert()`` method to insert documents that represent movies released
-in 2023. This method returns a value of ``1`` if the operation is successful, and it throws
-an exception if the operation is unsuccessful.
+The example calls the ``insert()`` method to insert documents that contain
+information about movies released in ``2023``. If the insert operation is
+successful, it returns a value of ``1``. If the operation fails, it throws
+an exception.
 
 .. io-code-block::
    :copyable: true
@@ -53,8 +54,7 @@ an exception if the operation is unsuccessful.
 
       Insert operation success: yes
 
-To learn how to edit your Laravel application to run the usage example, see the
-:ref:`Usage Examples landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
 
 .. tip::
 

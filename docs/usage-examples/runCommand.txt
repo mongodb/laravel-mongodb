@@ -4,6 +4,19 @@
 Run a Command
 =============
 
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: server command, list collections, code example
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
 You can run a MongoDB command directly on a database by calling the ``command()``
 method on a database connection instance.
 
@@ -44,8 +57,7 @@ returns a cursor that contains a result document for each collection in the data
       embedded_movies
       users
 
-To learn how to edit your Laravel application to run the usage example, see the
-:ref:`Usage Examples landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
 
 .. tip::
 

@@ -1,4 +1,4 @@
-.. _laravel-update-one-usage:
+.. _laravel-update-many-usage:
 
 =========================
 Update Multiple Documents
@@ -37,7 +37,7 @@ This usage example performs the following actions:
 The example calls the following methods on the ``Movie`` model:
 
 - ``where()``: matches documents in which the value of the ``imdb.rating`` nested field
-  is greater than ``9``.
+  is greater than ``9.0``.
 - ``update()``: updates the matching documents by adding an ``acclaimed`` field and setting
   its value to ``true``. This method returns the number of documents that were successfully
   updated.
@@ -57,8 +57,7 @@ The example calls the following methods on the ``Movie`` model:
 
       Updated documents: 20
 
-To learn how to edit your Laravel application to run the usage example, see the
-:ref:`Usage Examples landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
 
 .. tip::
 

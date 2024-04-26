@@ -14,20 +14,50 @@ Configure Your MongoDB Connection
 .. procedure::
    :style: connected
 
+   .. step:: Configure the application environment variable file
+
+      Copy the ``.env.example`` file to a file named ``.env`` in the project
+      root directory by running the following shell command:
+
+      .. code-block:: sh
+
+         cp .env.example .env
+
+      Open the ``.env`` file and add or edit the following variables and values.
+      Replace the ``<connection string>`` placeholder with your connection
+      string from the :ref:`laravel-quick-start-connection-string` step:
+
+      .. code-block:: bash
+
+         DB_CONNECTION=mongodb
+         DB_URI="<connection string>"
+
+      For example, if your connection string is
+      ``"mongodb+srv://myUser:myPass123@mongo0.example.com/"``,
+      your ``DB_URI`` variable matches the following line:
+
+      .. code-block:: bash
+
+         DB_URI="mongodb+srv://myUser:myPass123@mongo0.example.com/"
+
+      .. note::
+
+         Make sure these variables in your ``.env`` file are undefined in the
+         shell in which you run your application. Environment variables in
+         the shell take precedence over the ones in the ``.env`` file.
+
    .. step:: Set the connection string in the database configuration
 
-      Open the ``database.php`` file in the ``config`` directory and
-      set the default database connection to ``mongodb`` as shown
-      in the following line:
+      Open the ``database.php`` file in the ``config`` directory and set the
+      default database connection to the ``DB_CONNECTION`` environment
+      variable as shown in the following line:
 
       .. code-block:: php
 
-         'default' => env('DB_CONNECTION', 'mongodb'),
+         'default' => env('DB_CONNECTION'),
 
       Add the following highlighted ``mongodb`` entry to the ``connections`` array
-      in the same file. Replace the ``<connection string>`` placeholder with the
-      connection string that you copied from the :ref:`laravel-quick-start-connection-string`
-      step in the following code example:
+      in the same file:
 
       .. code-block:: php
          :emphasize-lines: 2-6
@@ -35,13 +65,13 @@ Configure Your MongoDB Connection
          'connections' => [
            'mongodb' => [
              'driver' => 'mongodb',
-             'dsn' => env('DB_URI', '<connection string>'),
+             'dsn' => env('DB_URI'),
              'database' => 'sample_mflix',
            ],
 
          // ...
 
-   .. step:: Add the MongoDB provider
+   .. step:: Add the {+odm-short+} provider
 
       Open the ``providers.php`` file in the ``bootstrap`` directory and add
       the following entry into the array:

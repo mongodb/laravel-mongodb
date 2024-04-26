@@ -17,11 +17,15 @@ Count Documents
    :depth: 1
    :class: singlecol
 
-You can count the number of documents returned by a query by calling the ``where()`` and
-``count()`` methods on a collection of models or a query builder.
+.. include:: /includes/usage-examples/operation-description.rst
 
-To return the number of documents that match a filter, pass the query filter to the ``where()``
-method and call the ``count()`` method.
+   .. replacement:: operator-description
+
+      You can count the number of documents returned by a query
+
+   .. replacement:: result-operation
+
+      the ``count()`` method to retrieve the results.
 
 Example
 -------
@@ -50,8 +54,6 @@ The example calls the following methods on the ``Movie`` model:
       :language: console
       :visible: false
 
-      Matching documents: 1267
+      Number of documents: 1267
 
-
-To learn how to edit your Laravel application to run the usage example, see the
-:ref:`Usage Examples landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
