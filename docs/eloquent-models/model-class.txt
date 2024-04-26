@@ -209,8 +209,8 @@ type, to the Laravel ``datetime`` type.
          ];
       }
    
-   To learn more, see the `Model Casts are moving to methods in Laravel 11 <https://laravel-news.com/model-casts>`__
-   article on the Laravel News website.
+   To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
+   in the Laravel documentation.
    
 This conversion lets you use the PHP `DateTime <https://www.php.net/manual/en/class.datetime.php>`__
 or the `Carbon class <https://carbon.nesbot.com/docs/>`__ to work with dates
