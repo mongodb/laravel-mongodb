@@ -159,14 +159,13 @@ Configuring MongoDB as the Default Cache
 ----------------------------------------
 
 To use the ``mongodb`` store by default, change the default store in
-``config/cache.php``:
+``config/cache.php``.
 
 .. code-block:: php
    :emphasize-lines: 2
 
    return [
        'default' => env('CACHE_STORE', 'mongodb'),
-
        'stores' => [
            'mongodb' => [
                'driver' => 'mongodb',
@@ -174,6 +173,11 @@ To use the ``mongodb`` store by default, change the default store in
            ],
        ],
    ];
+
+.. note::
+
+   We have deliberately omitted all optional parameters in the previous example,
+   so the default values are applied.
 
 The ``CACHE_STORE`` variable can be set in your environment or in
 the ``.env`` file. Update or remove it as follows:
