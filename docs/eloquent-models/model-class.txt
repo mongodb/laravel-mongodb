@@ -194,6 +194,24 @@ type, to the Laravel ``datetime`` type.
    :emphasize-lines: 9-11
    :dedent:
 
+.. tip:: Casts in Laravel 11
+
+   In Laravel 11, you can define a ``casts()`` method to specify data type conversions
+   instead of using the ``$casts`` attribute. The following code performs the same
+   conversion as the preceding example by using a ``casts()`` method:
+
+   .. code-block:: php
+
+      protected function casts(): array
+      {
+         return [
+            'discovery_dt' => 'datetime',
+         ];
+      }
+   
+   To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
+   in the Laravel documentation.
+   
 This conversion lets you use the PHP `DateTime <https://www.php.net/manual/en/class.datetime.php>`__
 or the `Carbon class <https://carbon.nesbot.com/docs/>`__ to work with dates
 in this field. The following example shows a Laravel query that uses the
