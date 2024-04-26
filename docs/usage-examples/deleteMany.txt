@@ -37,8 +37,8 @@ The example calls the following methods on the ``Movie`` model:
 
 - ``where()``: matches documents in which the value of the ``year`` field is less than or
   equal to ``1910``.
-- ``delete()``: deletes the retrieved documents. This method returns the number of documents
-  that were successfully deleted.
+- ``delete()``: deletes the matched documents. This method returns the number
+  of documents that the method successfully deletes.
 
 .. io-code-block::
    :copyable: true
@@ -55,14 +55,10 @@ The example calls the following methods on the ``Movie`` model:
 
       Deleted documents: 7
 
-To learn how to edit your Laravel application to run the usage example, see the
-:ref:`Usage Examples landing page <laravel-usage-examples>`.
+.. include:: /includes/usage-examples/fact-edit-laravel-app.rst
 
 .. tip::
 
    To learn more about deleting documents with {+odm-short+}, see the :ref:`laravel-fundamentals-delete-documents`
    section of the Write Operations guide.
-
-   For more information about query filters, see the :ref:`laravel-retrieve-matching` section of
-   the Read Operations guide.
 

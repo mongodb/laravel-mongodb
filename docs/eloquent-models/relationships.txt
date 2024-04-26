@@ -90,7 +90,7 @@ method:
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them. Click the :guilabel:`VIEW OUTPUT`
+and add the relationship between them. Click the :guilabel:`{+code-output-label+}`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -175,7 +175,7 @@ model by using the ``belongsTo()`` method:
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them.  Click the :guilabel:`VIEW OUTPUT`
+and add the relationship between them.  Click the :guilabel:`{+code-output-label+}`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -275,7 +275,7 @@ using the ``belongsToMany()`` method:
    :dedent:
 
 The following sample code shows how to instantiate a model for each class
-and add the relationship between them. Click the :guilabel:`VIEW OUTPUT`
+and add the relationship between them. Click the :guilabel:`{+code-output-label+}`
 button to see the data created by running the code:
 
 .. io-code-block::
@@ -405,7 +405,7 @@ following ``Cargo`` model class:
 
 The following sample code shows how to create a ``SpaceShip`` model and
 embed multiple ``Cargo`` models and the MongoDB document created by running the
-code. Click the :guilabel:`VIEW OUTPUT` button to see the data created by
+code. Click the :guilabel:`{+code-output-label+}` button to see the data created by
 running the code:
 
 .. io-code-block::
@@ -496,7 +496,7 @@ model by using the ``belongsTo()`` method:
 
 The following sample code shows how to create a ``SpaceShip`` model in
 a MySQL database and related ``Passenger`` models in a MongoDB database as well
-as the data created by running the code. Click the :guilabel:`VIEW OUTPUT` button
+as the data created by running the code. Click the :guilabel:`{+code-output-label+}` button
 to see the data created by running the code:
 
 .. io-code-block::

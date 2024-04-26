@@ -9,7 +9,7 @@ Fundamentals
    :values: reference
 
 .. meta::
-   :keywords: php framework, odm
+   :keywords: php framework, odm, concepts
 
 .. toctree::
    :titlesonly:
@@ -20,7 +20,7 @@ Fundamentals
    /fundamentals/read-operations
    /fundamentals/write-operations
 
-Learn how to use the {+odm-long+} to perform the following tasks:
+Learn more about the following concepts related to the {+odm-long+}:
 
 - :ref:`laravel-fundamentals-connection`
 - :ref:`laravel-db-coll`

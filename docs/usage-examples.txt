@@ -42,7 +42,7 @@ Before You Get Started
 ~~~~~~~~~~~~~~~~~~~~~~
 
 You can run the usage examples from your own Laravel application or from the
-``{+quickstart-app-name+}`` application created in the :ref:`laravel-quick-start` guide. 
+``{+quickstart-app-name+}`` application created in the :ref:`laravel-quick-start` guide.
 
 The usage examples are designed to run operations on a MongoDB deployment that contains
 the MongoDB Atlas sample datasets. Before running the usage examples, ensure that you load
@@ -50,10 +50,14 @@ the sample data into the MongoDB cluster to which your application connects. Oth
 operation output might not match the text included in the ``{+code-output-label+}`` tab of
 the usage example page.
 
-.. tip:: 
+Unless otherwise mentioned, usage examples use the ``Movie.php`` model class
+created in the Quick Start to demonstrate operations on the ``movies`` MongoDB
+collection.
+
+.. tip::
 
    For instructions on loading the sample data into a MongoDB cluster, see
-   :atlas:`Load Sample Data </sample-data>` in the Atlas documentation. 
+   :atlas:`Load Sample Data </sample-data>` in the Atlas documentation.
 
 .. _run-usage-examples:
 
@@ -66,6 +70,25 @@ Laravel application.
 
 To view the expected output of the operation, you can add a web route to your application that
 calls the controller function and returns the result to a web interface.
+
+.. _usage-example-list:
+
+Usage Example List
+------------------
+
+See code examples of the following operations in this section:
+
+- :ref:`laravel-find-one-usage`
+- :ref:`laravel-find-usage`
+- :ref:`laravel-insert-one-usage`
+- :ref:`laravel-insert-many-usage`
+- :ref:`laravel-update-one-usage`
+- :ref:`laravel-update-many-usage`
+- :ref:`laravel-delete-one-usage`
+- :ref:`laravel-delete-many-usage`
+- :ref:`laravel-count-usage`
+- :ref:`laravel-distinct-usage`
+- :ref:`laravel-run-command-usage`
 
 .. toctree::
    :titlesonly:

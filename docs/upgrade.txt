@@ -34,7 +34,7 @@ Before you upgrade, perform the following actions:
   application runs on. See the :ref:`<laravel-compatibility>`
   page for this information.
 - Address any breaking changes between the version of {+odm-short+} that
-  your application currently uses and your planned upgrade version in the
+  your application now uses and your planned upgrade version in the
   :ref:`<laravel-breaking-changes>` section of this guide.
 
 To upgrade your library version, run the following command in your application's 
