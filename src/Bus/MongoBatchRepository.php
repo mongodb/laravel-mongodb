@@ -3,12 +3,16 @@
 namespace MongoDB\Laravel\Bus;
 
 use BadMethodCallException;
+use Carbon\CarbonImmutable;
 use Closure;
 use DateTimeInterface;
+use Illuminate\Bus\Batch;
+use Illuminate\Bus\BatchFactory;
 use Illuminate\Bus\DatabaseBatchRepository;
 use Illuminate\Bus\PendingBatch;
 use Illuminate\Bus\PrunableBatchRepository;
 use Illuminate\Bus\UpdatedBatchJobCounts;
+use Illuminate\Database\Connection;
 use Illuminate\Support\Carbon;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
@@ -16,19 +20,29 @@ use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Collection;
 use Override;
 
+use function assert;
+use function date_default_timezone_get;
 use function is_string;
 
 // Extending DatabaseBatchRepository is necessary so methods pruneUnfinished and pruneCancelled
 // are called by PruneBatchesCommand
 class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBatchRepository
 {
+    private Collection $collection;
+
     public function __construct(
-        private Collection $collection,
+        BatchFactory $factory,
+        Connection $connection,
+        string $collection,
     ) {
+        assert($connection instanceof \MongoDB\Laravel\Connection);
+        $this->collection = $connection->getCollection($collection);
+
+        parent::__construct($factory, $connection, $collection);
     }
 
     #[Override]
-    public function get($limit = 50, $before = null)
+    public function get($limit = 50, $before = null): array
     {
         if (is_string($before)) {
             $before = new ObjectId($before);
@@ -41,22 +55,36 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
                 'sort' => ['_id' => -1],
                 'typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array'],
             ],
-        );
+        )->toArray();
     }
 
     #[Override]
-    public function find(string $batchId)
+    public function find(string $batchId): ?Batch
     {
         $batchId = new ObjectId($batchId);
 
-        return $this->collection->findOne(
+        $batch = $this->collection->findOne(
             ['_id' => $batchId],
             ['readPreference' => ReadPreference::PRIMARY],
+        );
+
+        return $this->factory->make(
+            $this,
+            $batch['id'],
+            $batch['name'],
+            $batch['total_jobs'],
+            $batch['pending_jobs'],
+            $batch['failed_jobs'],
+            $batch['failed_job_ids'],
+            $batch['options'],
+            CarbonImmutable::createFromTimestamp($batch['created_at']->getTimestamp(), date_default_timezone_get()),
+            $batch['cancelled_at'] ? CarbonImmutable::createFromTimestamp($batch['cancelled_at']->getTimestamp(), date_default_timezone_get()) : null,
+            $batch['finished_at'] ? CarbonImmutable::createFromTimestamp($batch['finished_at']->getTimestamp(), date_default_timezone_get()) : null,
         );
     }
 
     #[Override]
-    public function store(PendingBatch $batch)
+    public function store(PendingBatch $batch): Batch
     {
         $this->collection->insertOne([
             'name' => $batch->name,
@@ -72,7 +100,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     }
 
     #[Override]
-    public function incrementTotalJobs(string $batchId, int $amount)
+    public function incrementTotalJobs(string $batchId, int $amount): void
     {
         $batchId = new ObjectId($batchId);
         $this->collection->updateOne(
@@ -90,13 +118,14 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     }
 
     #[Override]
-    public function decrementPendingJobs(string $batchId, string $jobId)
+    public function decrementPendingJobs(string $batchId, string $jobId): UpdatedBatchJobCounts
     {
         $batchId = new ObjectId($batchId);
         $values = $this->collection->findOneAndUpdate(
             ['_id' => $batchId],
             [
                 '$dec' => ['pending_jobs' => 1],
+                '$pull' => ['failed_job_ids' => $jobId],
             ],
             [
                 'projection' => ['pending_jobs' => 1, 'failed_jobs' => 1],
@@ -110,13 +139,28 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     }
 
     #[Override]
-    public function incrementFailedJobs(string $batchId, string $jobId)
+    public function incrementFailedJobs(string $batchId, string $jobId): UpdatedBatchJobCounts
     {
-        // TODO: Implement incrementFailedJobs() method.
+        $batchId = new ObjectId($batchId);
+        $values = $this->collection->findOneAndUpdate(
+            ['_id' => $batchId],
+            [
+                '$inc' => ['pending_jobs' => 1],
+                '$push' => ['failed_job_ids' => $jobId],
+            ],
+            [
+                'projection' => ['pending_jobs' => 1, 'failed_jobs' => 1],
+            ],
+        );
+
+        return new UpdatedBatchJobCounts(
+            $values['pending_jobs'],
+            $values['failed_jobs'],
+        );
     }
 
     #[Override]
-    public function markAsFinished(string $batchId)
+    public function markAsFinished(string $batchId): void
     {
         $batchId = new ObjectId($batchId);
         $this->collection->updateOne(
@@ -126,7 +170,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     }
 
     #[Override]
-    public function cancel(string $batchId)
+    public function cancel(string $batchId): void
     {
         $batchId = new ObjectId($batchId);
         $this->collection->updateOne(
@@ -141,22 +185,27 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     }
 
     #[Override]
-    public function delete(string $batchId)
+    public function delete(string $batchId): void
     {
         $batchId = new ObjectId($batchId);
         $this->collection->deleteOne(['_id' => $batchId]);
     }
 
+    /** Execute the given Closure within a storage specific transaction. */
     #[Override]
-    public function transaction(Closure $callback)
+    public function transaction(Closure $callback): mixed
     {
         // Transactions are not necessary
         return $callback();
     }
 
-    /** Update an atomic value within the batch. */
+    /**
+     * Rollback the last database transaction for the connection.
+     *
+     * Not implemented.
+     */
     #[Override]
-    public function rollBack()
+    public function rollBack(): void
     {
         throw new BadMethodCallException('Not implemented');
     }
@@ -196,5 +245,23 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         );
 
         return $result->getDeletedCount();
+    }
+
+    #[Override]
+    protected function toBatch($batch): Batch
+    {
+        return $this->factory->make(
+            $this,
+            $batch->id,
+            $batch->name,
+            $batch->total_jobs,
+            $batch->pending_jobs,
+            $batch->failed_jobs,
+            $batch->failed_job_ids,
+            $batch->options,
+            CarbonImmutable::createFromTimestamp($batch->created_at->getTimestamp(), date_default_timezone_get()),
+            $batch->cancelled_at ? CarbonImmutable::createFromTimestamp($batch->cancelled_at->getTimestamp(), date_default_timezone_get()) : null,
+            $batch->finished_at ? CarbonImmutable::createFromTimestamp($batch->finished_at->getTimestamp(), date_default_timezone_get()) : null,
+        );
     }
 }
