@@ -86,7 +86,7 @@ Retrieve Matching Documents
 ---------------------------
 
 This section includes query builder examples for read operations in the
-following operator categoriess
+following operator categories:
 
 - :ref:`Where method <laravel-query-builder-where-example>`
 - :ref:`Logical conditionals <laravel-query-builder-logical-operations>`
