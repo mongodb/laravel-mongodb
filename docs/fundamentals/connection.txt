@@ -4,6 +4,13 @@
 Connections
 ===========
 
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: options, deployment, connection behavior
+
 .. toctree::
 
    /fundamentals/connection/connect-to-mongodb
