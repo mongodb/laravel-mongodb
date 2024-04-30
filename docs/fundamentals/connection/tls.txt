@@ -22,7 +22,7 @@ Overview
 
 In this guide, you can learn how to use the TLS protocol to secure 
 your connection to a MongoDB deployment. To configure your connection to
-use TLS, enable the TLS option and provide your certificates for
+use TLS, enable the TLS option and optionally provide your certificates for
 validation in your application's ``config/database.php`` file.
 
 .. tip::
@@ -90,7 +90,7 @@ Select from the following :guilabel:`Connection String` and
 Configure Certificates
 ----------------------
 
-To successfully initiate a TLS request, your application must present 
+To successfully initiate a TLS request, your application might need to present 
 cryptographic certificates to prove its identity. Your application's
 certificates must be stored as PEM files to enable TLS when connecting.
 
@@ -100,7 +100,7 @@ certificates must be stored as PEM files to enable TLS when connecting.
    certificates generated and signed by the same certificate authority.
    For testing, your deployment can use self-signed certificates.
 
-The following list describes the components that your client must
+The following list describes the components that your client can
 present to establish a TLS-enabled connection:
 
 .. list-table::
@@ -135,7 +135,7 @@ present to establish a TLS-enabled connection:
 Reference Certificates
 ----------------------
 
-You must reference your certificates when configuring your ``mongodb``
+If required, you must reference your certificates when configuring your ``mongodb``
 connection so that the server can validate them before the client connects.
 
 We recommend that you reference your certificates and set other TLS
