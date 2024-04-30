@@ -14,6 +14,7 @@ use MongoDB\Driver\Exception\ConnectionException;
 use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Concerns\ManagesTransactions;
+use OutOfBoundsException;
 use Throwable;
 
 use function filter_var;
@@ -324,7 +325,11 @@ class Connection extends BaseConnection
     private static function lookupVersion(): string
     {
         try {
-            return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-mongodb') ?? 'unknown';
+            try {
+                return self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-mongodb') ?? 'unknown';
+            } catch (OutOfBoundsException) {
+                return self::$version = InstalledVersions::getPrettyVersion('jenssegers/mongodb') ?? 'unknown';
+            }
         } catch (Throwable) {
             return self::$version = 'error';
         }
