@@ -74,7 +74,7 @@ To run the code examples in this guide, complete the
 :ref:`Quick Start <laravel-quick-start>` tutorial to configure a web
 application, load sample datasets into your MongoDB deployment, and
 run the example code from a controller method. To see the expected code
-output, follow the instructions in the optional :ref:`View your results as JSON documents
+output, use the ``toJson()`` method shown in the optional :ref:`View your results as JSON documents
 <laravel-quick-start-json>` step of the Quick Start.
 
 To perform read and write operations by using the query builder, import the

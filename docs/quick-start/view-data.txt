@@ -158,7 +158,7 @@ View MongoDB Data
                  ->get();
 
              foreach ($results as $movie) {
-               echo $movie->toJson() . '<br>\n';
+                 echo $movie->toJson() . '<br>\n';
              }
          }
 
