@@ -153,11 +153,13 @@ certificates:
 .. note::
 
    For **testing purposes**, you can set the following options to
-   disable validation:
+   ``true`` to disable validation:
 
    - ``tlsAllowInvalidCertificates``
    - ``tlsAllowInvalidHostnames``
-   - ``tlsInsecure`` 
+   
+   Or, you can set the ``tlsInsecure`` option to ``true`` to implicitly set
+   both of the preceding options.
    
    Specifying these options in a production environment might make
    your application insecure. To learn more, see the :manual:`Connection
