@@ -126,8 +126,8 @@ To check whether a collection exists, call the ``hasCollection()`` method on
 the ``Schema`` facade in your migration file. You can use this to
 perform migration logic conditionally.
 
-The following example migration creates a ``stars`` collection if a collection
-named ``telescopes`` exists:
+The following example migration creates a ``telescopes`` collection if a collection
+named ``stars`` exists:
 
 .. literalinclude:: /includes/schema-builder/stars_migration.php
    :language: php
