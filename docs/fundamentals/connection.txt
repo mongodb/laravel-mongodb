@@ -15,6 +15,7 @@ Connections
 
    /fundamentals/connection/connect-to-mongodb
    /fundamentals/connection/connection-options
+   /fundamentals/connection/tls
 
 .. contents:: On this page
    :local:
@@ -30,3 +31,4 @@ and specify connection behavior in the following sections:
 
 - :ref:`laravel-connect-to-mongodb`
 - :ref:`laravel-fundamentals-connection-options`
+- :ref:`laravel-tls`
