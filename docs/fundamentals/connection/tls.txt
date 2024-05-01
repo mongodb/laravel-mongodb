@@ -1,0 +1,199 @@
+.. _laravel-tls:
+
+========================
+Enable and Configure TLS
+========================
+
+.. facet::
+   :name: genre
+   :values: reference
+
+.. meta::
+   :keywords: code example, security, connection options, ssl
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 2
+   :class: singlecol
+
+Overview
+--------
+
+In this guide, you can learn how to use the TLS protocol to secure 
+your connection to a MongoDB deployment. To configure your connection to
+use TLS, enable the TLS option and optionally provide your certificates for
+validation in your application's ``config/database.php`` file.
+
+.. tip::
+   
+   To learn more about TLS, see the Wikipedia entry on
+   :wikipedia:`Transport Layer Security <w/index.php?title=Transport_Layer_Security&oldid=1184063676>`.
+
+Enable TLS
+----------
+
+In your application's ``config/database.php`` file, you can enable TLS
+on a connection to your MongoDB deployment in one of the following ways:
+
+- Setting the ``tls`` option to ``true`` in your connection string
+- Setting the ``tls`` option to ``true`` in the ``options`` property of
+  your ``mongodb`` connection entry
+
+Select from the following :guilabel:`Connection String` and
+:guilabel:`Connection Options` tabs to see a corresponding code sample:
+
+.. tabs::
+
+   .. tab:: Connection String
+      :tabid: connection string tls true
+
+      .. code-block:: php
+         :emphasize-lines: 5
+
+         'connections' => [
+      
+             'mongodb' => [
+                 'driver' => 'mongodb',
+                 'dsn' => 'mongodb://<hostname>:<port>/?tls=true',
+                 'database' => 'myDB',
+             ]
+         ]
+
+   .. tab:: Connection Options
+      :tabid: options tls true
+      
+      .. code-block:: php
+         :emphasize-lines: 8
+
+         'connections' => [
+      
+             'mongodb' => [
+                 'driver' => 'mongodb',
+                 'dsn' => '<connection string>',
+                 'database' => 'myDB',
+                 'options'  => [
+                     'tls' => true,
+                 ],
+             ]
+         ]
+
+      To view a full list of connection options, see
+      :ref:`laravel-fundamentals-connection-options`.
+
+.. note::
+   
+   If your connection string uses a DNS SRV record by including
+   the ``mongodb+srv`` prefix, TLS is enabled on your connection by
+   default.
+
+Configure Certificates
+----------------------
+
+To successfully initiate a TLS request, your application might need to present 
+cryptographic certificates to prove its identity. Your application's
+certificates must be stored as PEM files to enable TLS when connecting.
+
+.. important::
+
+   For production use, we recommend that your MongoDB deployment use valid
+   certificates generated and signed by the same certificate authority.
+   For testing, your deployment can use self-signed certificates.
+
+The following list describes the components that your client can
+present to establish a TLS-enabled connection:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - TLS Component
+     - Description
+
+   * - Certificate Authority (CA)
+     - One or more certificate authorities to
+       trust when making a TLS connection. You can pass this file's path
+       to the ``tlsCAFile`` option.
+
+   * - Client Certificate
+     - A digital certificate that allows the server to verify the identity
+       of your application to establish an encrypted network connection.
+       You can pass this file's path to the ``tlsCertificateKeyFile`` option.
+
+   * - Certificate Key
+     - The client certificate private key file. This key is often
+       included within the certificate file itself. If you must
+       provide this item, the certificate and key should be concatenated
+       in one file that you can pass to the ``tlsCertificateKeyFile``
+       option.
+
+   * - Passphrase
+     - The password to decrypt the private client key if it is
+       encrypted. You can pass this file's path to the
+       ``tlsCertificateKeyFilePassword`` option.
+
+Reference Certificates
+----------------------
+
+If required, you must reference your certificates when configuring your ``mongodb``
+connection so that the server can validate them before the client connects.
+
+We recommend that you reference your certificates and set other TLS
+options in the ``options`` property of your connection configuration
+instead of in the connection string. This improves code readability in
+your application.
+
+Set the following options in the ``options`` property to reference your
+certificates:
+
+- ``tlsCAFile``
+- ``tlsCertificateKeyFile``
+- ``tlsCertificateKeyFilePassword``
+   
+.. note::
+
+   For **testing purposes**, you can set the following options to
+   ``true`` to disable validation:
+
+   - ``tlsAllowInvalidCertificates``
+   - ``tlsAllowInvalidHostnames``
+   
+   Or, you can set the ``tlsInsecure`` option to ``true`` to implicitly set
+   both of the preceding options.
+   
+   Specifying these options in a production environment might make
+   your application insecure. To learn more, see the :manual:`Connection
+   Options </reference/connection-string/#connection-options>`
+   reference in the Server manual.
+
+The following example configures a connection with TLS enabled:
+
+.. code-block:: php
+
+   'connections' => [
+   
+       'mongodb' => [
+           'driver' => 'mongodb',
+           'dsn' => '<connection string>',
+           'database' => 'myDB',
+           'options'  => [
+               'tls' => true,
+               'tlsCAFile' => '<path to CA certificate>',
+               'tlsCertificateKeyFile' => '<path to private client certificate>',
+               'tlsCertificateKeyFilePassword' => '<path to client key passphrase>',
+           ]
+       ]
+   ]
+
+Additional Information
+----------------------
+
+To learn more about setting URI options, see the `MongoDB\Driver\Manager::__construct()
+<https://www.php.net/manual/en/mongodb-driver-manager.construct.php>`__
+API documentation.
+
+To learn more about enabling TLS on a connection, see the
+following Server manual documentation:
+
+- :manual:`TLS/SSL (Transport Encryption) </core/security-transport-encryption/>`
+- :manual:`TLS/SSL Configuration for Clients </tutorial/configure-ssl-clients/>`
