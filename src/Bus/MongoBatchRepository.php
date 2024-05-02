@@ -17,10 +17,13 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Connection;
+use MongoDB\Operation\FindOneAndUpdate;
 use Override;
 
 use function date_default_timezone_get;
 use function is_string;
+use function serialize;
+use function unserialize;
 
 // Extending DatabaseBatchRepository is necessary so methods pruneUnfinished and pruneCancelled
 // are called by PruneBatchesCommand
@@ -68,19 +71,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
             ],
         );
 
-        return $this->factory->make(
-            $this,
-            $batch['_id'],
-            $batch['name'],
-            $batch['total_jobs'],
-            $batch['pending_jobs'],
-            $batch['failed_jobs'],
-            $batch['failed_job_ids'],
-            $batch['options'],
-            $this->toCarbon($batch['created_at']),
-            $this->toCarbon($batch['cancelled_at']),
-            $this->toCarbon($batch['finished_at']),
-        );
+        return $batch ? $this->toBatch($batch) : null;
     }
 
     #[Override]
@@ -92,7 +83,8 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
             'pending_jobs' => 0,
             'failed_jobs' => 0,
             'failed_job_ids' => [],
-            'options' => $batch->options,
+            // Serialization is required for Closures
+            'options' => serialize($batch->options),
             'created_at' => new UTCDateTime(Carbon::now()),
             'cancelled_at' => null,
             'finished_at' => null,
@@ -126,11 +118,12 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         $values = $this->collection->findOneAndUpdate(
             ['_id' => $batchId],
             [
-                '$dec' => ['pending_jobs' => 1],
+                '$inc' => ['pending_jobs' => -1],
                 '$pull' => ['failed_job_ids' => $jobId],
             ],
             [
                 'projection' => ['pending_jobs' => 1, 'failed_jobs' => 1],
+                'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
             ],
         );
 
@@ -147,11 +140,12 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         $values = $this->collection->findOneAndUpdate(
             ['_id' => $batchId],
             [
-                '$inc' => ['pending_jobs' => 1],
+                '$inc' => ['failed_jobs' => 1],
                 '$push' => ['failed_job_ids' => $jobId],
             ],
             [
                 'projection' => ['pending_jobs' => 1, 'failed_jobs' => 1],
+                'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
             ],
         );
 
@@ -251,16 +245,16 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     {
         return $this->factory->make(
             $this,
-            $batch->id,
-            $batch->name,
-            $batch->total_jobs,
-            $batch->pending_jobs,
-            $batch->failed_jobs,
-            $batch->failed_job_ids,
-            $batch->options,
-            $this->toCarbon($batch->created_at),
-            $this->toCarbon($batch->cancelled_at),
-            $this->toCarbon($batch->finished_at),
+            $batch['_id'],
+            $batch['name'],
+            $batch['total_jobs'],
+            $batch['pending_jobs'],
+            $batch['failed_jobs'],
+            $batch['failed_job_ids'],
+            unserialize($batch['options']),
+            $this->toCarbon($batch['created_at']),
+            $this->toCarbon($batch['cancelled_at']),
+            $this->toCarbon($batch['finished_at']),
         );
     }
 
