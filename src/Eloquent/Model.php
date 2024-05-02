@@ -49,6 +49,7 @@ use function strcmp;
 use function uniqid;
 use function var_export;
 
+/** @mixin QueryBuilder */
 abstract class Model extends BaseModel
 {
     use HybridRelations;
