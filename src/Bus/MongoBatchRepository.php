@@ -2,7 +2,6 @@
 
 namespace MongoDB\Laravel\Bus;
 
-use BadMethodCallException;
 use Carbon\CarbonImmutable;
 use Closure;
 use DateTimeInterface;
@@ -12,15 +11,14 @@ use Illuminate\Bus\DatabaseBatchRepository;
 use Illuminate\Bus\PendingBatch;
 use Illuminate\Bus\PrunableBatchRepository;
 use Illuminate\Bus\UpdatedBatchJobCounts;
-use Illuminate\Database\Connection;
 use Illuminate\Support\Carbon;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Collection;
+use MongoDB\Laravel\Connection;
 use Override;
 
-use function assert;
 use function date_default_timezone_get;
 use function is_string;
 
@@ -35,7 +33,6 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         Connection $connection,
         string $collection,
     ) {
-        assert($connection instanceof \MongoDB\Laravel\Connection);
         $this->collection = $connection->getCollection($collection);
 
         parent::__construct($factory, $connection, $collection);
@@ -65,38 +62,43 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
 
         $batch = $this->collection->findOne(
             ['_id' => $batchId],
-            ['readPreference' => ReadPreference::PRIMARY],
+            [
+                'readPreference' => new ReadPreference(ReadPreference::PRIMARY),
+                'typeMap' => ['root' => 'array', 'array' => 'array', 'document' => 'array'],
+            ],
         );
 
         return $this->factory->make(
             $this,
-            $batch['id'],
+            $batch['_id'],
             $batch['name'],
             $batch['total_jobs'],
             $batch['pending_jobs'],
             $batch['failed_jobs'],
             $batch['failed_job_ids'],
             $batch['options'],
-            CarbonImmutable::createFromTimestamp($batch['created_at']->getTimestamp(), date_default_timezone_get()),
-            $batch['cancelled_at'] ? CarbonImmutable::createFromTimestamp($batch['cancelled_at']->getTimestamp(), date_default_timezone_get()) : null,
-            $batch['finished_at'] ? CarbonImmutable::createFromTimestamp($batch['finished_at']->getTimestamp(), date_default_timezone_get()) : null,
+            $this->toCarbon($batch['created_at']),
+            $this->toCarbon($batch['cancelled_at']),
+            $this->toCarbon($batch['finished_at']),
         );
     }
 
     #[Override]
     public function store(PendingBatch $batch): Batch
     {
-        $this->collection->insertOne([
+        $result = $this->collection->insertOne([
             'name' => $batch->name,
             'total_jobs' => 0,
             'pending_jobs' => 0,
             'failed_jobs' => 0,
-            'failed_job_ids' => '[]',
-            'options' => $this->serialize($batch->options),
+            'failed_job_ids' => [],
+            'options' => $batch->options,
             'created_at' => new UTCDateTime(Carbon::now()),
             'cancelled_at' => null,
             'finished_at' => null,
         ]);
+
+        return $this->find($result->getInsertedId());
     }
 
     #[Override]
@@ -195,19 +197,16 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     #[Override]
     public function transaction(Closure $callback): mixed
     {
-        // Transactions are not necessary
-        return $callback();
+        return $this->connection->transaction(fn () => $callback());
     }
 
     /**
      * Rollback the last database transaction for the connection.
-     *
-     * Not implemented.
      */
     #[Override]
     public function rollBack(): void
     {
-        throw new BadMethodCallException('Not implemented');
+        $this->connection->rollBack();
     }
 
     /** Mark the batch that has the given ID as finished. */
@@ -259,9 +258,19 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
             $batch->failed_jobs,
             $batch->failed_job_ids,
             $batch->options,
-            CarbonImmutable::createFromTimestamp($batch->created_at->getTimestamp(), date_default_timezone_get()),
-            $batch->cancelled_at ? CarbonImmutable::createFromTimestamp($batch->cancelled_at->getTimestamp(), date_default_timezone_get()) : null,
-            $batch->finished_at ? CarbonImmutable::createFromTimestamp($batch->finished_at->getTimestamp(), date_default_timezone_get()) : null,
+            $this->toCarbon($batch->created_at),
+            $this->toCarbon($batch->cancelled_at),
+            $this->toCarbon($batch->finished_at),
         );
+    }
+
+    /** @return ($date is null ? null : CarbonImmutable) */
+    private function toCarbon(?UTCDateTime $date): ?CarbonImmutable
+    {
+        if ($date === null) {
+            return null;
+        }
+
+        return CarbonImmutable::createFromTimestamp((string) $date, date_default_timezone_get());
     }
 }
