@@ -1396,6 +1396,18 @@ class BuilderTest extends TestCase
         ];
     }
 
+    public function testToSql()
+    {
+        $builder = self::getBuilder();
+        $builder
+            ->where('foo', 'bar')
+            ->limit(10);
+
+        $expected = '{ "find" : [ { "foo" : "bar" }, { "limit" : { "$numberInt" : "10" }, "typeMap" : { "root" : "array", "document" : "array" } } ] }';
+        $this->assertSame($expected, $builder->toSql());
+        $this->assertSame($expected, $builder->toRawSql());
+    }
+
     /** @dataProvider getEloquentMethodsNotSupported */
     public function testEloquentMethodsNotSupported(Closure $callback)
     {
@@ -1411,9 +1423,6 @@ class BuilderTest extends TestCase
     {
         // Most of this methods can be implemented using aggregation framework
         // whereInRaw, whereNotInRaw, orWhereInRaw, orWhereNotInRaw, whereBetweenColumns
-
-        yield 'toSql' => [fn (Builder $builder) => $builder->toSql()];
-        yield 'toRawSql' => [fn (Builder $builder) => $builder->toRawSql()];
 
         /** @see DatabaseQueryBuilderTest::testBasicWhereColumn() */
         /** @see DatabaseQueryBuilderTest::testArrayWhereColumn() */

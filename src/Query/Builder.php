@@ -18,6 +18,7 @@ use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LogicException;
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -1446,16 +1447,26 @@ class Builder extends BaseBuilder
         return parent::__call($method, $parameters);
     }
 
-    /** @internal This method is not supported by MongoDB. */
+    /**
+     * Return the JSON representation of the MongoDB Query.
+     * Naming is inherited and used for compatibility with third-party packages.
+     *
+     * @internal
+     */
     public function toSql()
     {
-        throw new BadMethodCallException('This method is not supported by MongoDB. Try "toMql()" instead.');
+        return Document::fromPHP($this->toMql())->toCanonicalExtendedJSON();
     }
 
-    /** @internal This method is not supported by MongoDB. */
+    /**
+     * Return the JSON representation of the MongoDB Query.
+     * Naming is inherited and used for compatibility with third-party packages.
+     *
+     * @internal
+     */
     public function toRawSql()
     {
-        throw new BadMethodCallException('This method is not supported by MongoDB. Try "toMql()" instead.');
+        return $this->toSql();
     }
 
     /** @internal This method is not supported by MongoDB. */
@@ -1532,6 +1543,12 @@ class Builder extends BaseBuilder
 
     /** @internal This method is not supported by MongoDB. */
     public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /** @internal This method is not supported by MongoDB. */
+    public function insertUsing(array $columns, $query)
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }

@@ -55,6 +55,8 @@ class Builder extends EloquentBuilder
         'raw',
         'sum',
         'tomql',
+        'tosql',
+        'torawsql',
     ];
 
     /**

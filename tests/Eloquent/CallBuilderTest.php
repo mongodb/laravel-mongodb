@@ -24,34 +24,36 @@ final class CallBuilderTest extends TestCase
     }
 
     #[Dataprovider('provideFunctionNames')]
-    public function testCallingABuilderMethodDoesNotReturnTheBuilderInstance(string $method, string $className, $parameters = []): void
+    public function testCallingABuilderMethodDoesNotReturnTheBuilderInstance(string $method, $parameters = []): void
     {
         $builder = User::query()->newQuery();
         assert($builder instanceof Builder);
 
-        self::assertNotInstanceOf(expected: $className, actual: $builder->{$method}(...$parameters));
+        self::assertNotInstanceOf(Builder::class, $builder->{$method}(...$parameters));
     }
 
     public static function provideFunctionNames(): Generator
     {
-        yield 'does not exist' => ['doesntExist', Builder::class];
-        yield 'get bindings' => ['getBindings', Builder::class];
-        yield 'get connection' => ['getConnection', Builder::class];
-        yield 'get grammar' => ['getGrammar', Builder::class];
-        yield 'insert get id' => ['insertGetId', Builder::class, [['user' => 'foo']]];
-        yield 'to Mql' => ['toMql', Builder::class];
-        yield 'average' => ['average', Builder::class, ['name']];
-        yield 'avg' => ['avg', Builder::class, ['name']];
-        yield 'count' => ['count', Builder::class, ['name']];
-        yield 'exists' => ['exists', Builder::class];
-        yield 'insert' => ['insert', Builder::class, [['name']]];
-        yield 'max' => ['max', Builder::class, ['name']];
-        yield 'min' => ['min', Builder::class, ['name']];
-        yield 'pluck' => ['pluck', Builder::class, ['name']];
-        yield 'pull' => ['pull', Builder::class, ['name']];
-        yield 'push' => ['push', Builder::class, ['name']];
-        yield 'raw' => ['raw', Builder::class];
-        yield 'sum' => ['sum', Builder::class, ['name']];
+        yield 'does not exist' => ['doesntExist'];
+        yield 'get bindings' => ['getBindings'];
+        yield 'get connection' => ['getConnection'];
+        yield 'get grammar' => ['getGrammar'];
+        yield 'insert get id' => ['insertGetId', [['user' => 'foo']]];
+        yield 'to Mql' => ['toMql'];
+        yield 'to Sql' => ['toSql'];
+        yield 'to Raw Sql' => ['toRawSql'];
+        yield 'average' => ['average', ['name']];
+        yield 'avg' => ['avg', ['name']];
+        yield 'count' => ['count', ['name']];
+        yield 'exists' => ['exists'];
+        yield 'insert' => ['insert', [['name']]];
+        yield 'max' => ['max', ['name']];
+        yield 'min' => ['min', ['name']];
+        yield 'pluck' => ['pluck', ['name']];
+        yield 'pull' => ['pull', ['name']];
+        yield 'push' => ['push', ['name']];
+        yield 'raw' => ['raw'];
+        yield 'sum' => ['sum', ['name']];
     }
 
     #[Test]
@@ -79,14 +81,7 @@ final class CallBuilderTest extends TestCase
         yield 'insert using' => [
             'insertUsing',
             BadMethodCallException::class,
-            'This method is not supported by MongoDB. Try "toMql()" instead',
-            [[['name' => 'Jane']], fn (QueryBuilder $builder) => $builder],
-        ];
-
-        yield 'to sql' => [
-            'toSql',
-            BadMethodCallException::class,
-            'This method is not supported by MongoDB. Try "toMql()" instead',
+            'This method is not supported by MongoDB',
             [[['name' => 'Jane']], fn (QueryBuilder $builder) => $builder],
         ];
     }
