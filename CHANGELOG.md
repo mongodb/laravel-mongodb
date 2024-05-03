@@ -1,7 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [Unreleased]
+## [3.8.6] - 2024-05-03
+
+### Added
+- Report driver version in handshake [#2929](https://github.com/mongodb/laravel-mongodb/pull/2929) by [@alcaeus](https://github.com/alcaeus)
 
 ## [3.8.5] - 2022-07-14
 

@@ -2,13 +2,20 @@
 
 namespace Jenssegers\Mongodb;
 
+use function class_exists;
+use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
 use Illuminate\Support\Arr;
 use InvalidArgumentException;
 use MongoDB\Client;
+use OutOfBoundsException;
+use Throwable;
 
 class Connection extends BaseConnection
 {
+    /** @var string|null */
+    private static $version = null;
+
     /**
      * The MongoDB database handler.
      * @var \MongoDB\Database
@@ -154,6 +161,11 @@ class Connection extends BaseConnection
             $driverOptions = $config['driver_options'];
         }
 
+        $driverOptions['driver'] = [
+            'name' => 'laravel-mongodb',
+            'version' => self::getVersion(),
+        ];
+
         // Check if the credentials are not already set in the options
         if (! isset($options['username']) && ! empty($config['username'])) {
             $options['username'] = $config['username'];
@@ -286,5 +298,29 @@ class Connection extends BaseConnection
     public function __call($method, $parameters)
     {
         return call_user_func_array([$this->db, $method], $parameters);
+    }
+
+    private static function getVersion(): string
+    {
+        return self::$version ?? self::lookupVersion();
+    }
+
+    private static function lookupVersion(): string
+    {
+        self::$version = 'unknown';
+
+        if (class_exists(InstalledVersions::class)) {
+            try {
+                try {
+                    self::$version = InstalledVersions::getPrettyVersion('mongodb/laravel-mongodb') ?? 'unknown';
+                } catch (OutOfBoundsException $e) {
+                    self::$version = InstalledVersions::getPrettyVersion('jenssegers/mongodb') ?? 'unknown';
+                }
+            } catch (Throwable $e) {
+                self::$version = 'error';
+            }
+        }
+
+        return self::$version;
     }
 }
