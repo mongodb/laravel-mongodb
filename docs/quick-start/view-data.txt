@@ -136,6 +136,29 @@ View MongoDB Data
 
          </body>
          </html>
+ 
+   .. _laravel-quick-start-json:
+
+   .. step:: Optionally, view your results as JSON documents
+
+      Rather than generating a view and editing the ``browse_movie.blade.php`` file, you can
+      use the ``toJson()`` method to display your results in JSON format.
+      
+      Replace the ``show()`` function with the following code to retrieve results and
+      return them as JSON documents:
+
+      .. code-block:: php
+
+         public function show()
+         {
+             $results = Movie::where('runtime', '<', 60)
+                 ->where('imdb.rating', '>', 8.5)
+                 ->orderBy('imdb.rating', 'desc')
+                 ->take(10)
+                 ->get();
+
+             return $results->toJson();
+         }
 
    .. step:: Start your Laravel application
 
