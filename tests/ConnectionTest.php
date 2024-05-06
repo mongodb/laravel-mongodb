@@ -178,6 +178,8 @@ class ConnectionTest extends TestCase
 
         $this->assertSame($expectedUri, (string) $client);
         $this->assertSame($expectedDatabaseName, $connection->getMongoDB()->getDatabaseName());
+        $this->assertSame('foo', $connection->getCollection('foo')->getCollectionName());
+        $this->assertSame('foo', $connection->collection('foo')->raw()->getCollectionName());
     }
 
     public function testConnectionWithoutConfiguredDatabase(): void
@@ -198,6 +200,20 @@ class ConnectionTest extends TestCase
 
         $collection = DB::connection('mongodb')->table('unittests');
         $this->assertInstanceOf(Builder::class, $collection);
+    }
+
+    public function testPrefix()
+    {
+        $config = [
+            'dsn' => 'mongodb://127.0.0.1/',
+            'database' => 'tests',
+            'prefix' => 'prefix_',
+        ];
+
+        $connection = new Connection($config);
+
+        $this->assertSame('prefix_foo', $connection->getCollection('foo')->getCollectionName());
+        $this->assertSame('prefix_foo', $connection->collection('foo')->raw()->getCollectionName());
     }
 
     public function testQueryLog()
