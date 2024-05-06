@@ -20,7 +20,6 @@ use MongoDB\Laravel\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
 use Override;
 
-use function date_default_timezone_get;
 use function is_string;
 use function serialize;
 use function unserialize;
@@ -66,6 +65,9 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         $batch = $this->collection->findOne(
             ['_id' => $batchId],
             [
+                // If the select query is executed faster than the database replication takes place,
+                // then no batch is found. In that case an exception is thrown because jobs are added
+                // to a null batch.
                 'readPreference' => new ReadPreference(ReadPreference::PRIMARY),
                 'typeMap' => ['root' => 'array', 'array' => 'array', 'document' => 'array'],
             ],
@@ -85,7 +87,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
             'failed_job_ids' => [],
             // Serialization is required for Closures
             'options' => serialize($batch->options),
-            'created_at' => new UTCDateTime(Carbon::now()),
+            'created_at' => $this->getUTCDateTime(),
             'cancelled_at' => null,
             'finished_at' => null,
         ]);
@@ -161,7 +163,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         $batchId = new ObjectId($batchId);
         $this->collection->updateOne(
             ['_id' => $batchId],
-            ['$set' => ['finished_at' => new UTCDateTime(Carbon::now())]],
+            ['$set' => ['finished_at' => $this->getUTCDateTime()]],
         );
     }
 
@@ -173,8 +175,8 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
             ['_id' => $batchId],
             [
                 '$set' => [
-                    'cancelled_at' => new UTCDateTime(Carbon::now()),
-                    'finished_at' => new UTCDateTime(Carbon::now()),
+                    'cancelled_at' => $this->getUTCDateTime(),
+                    'finished_at' => $this->getUTCDateTime(),
                 ],
             ],
         );
@@ -194,16 +196,14 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         return $this->connection->transaction(fn () => $callback());
     }
 
-    /**
-     * Rollback the last database transaction for the connection.
-     */
+    /** Rollback the last database transaction for the connection. */
     #[Override]
     public function rollBack(): void
     {
         $this->connection->rollBack();
     }
 
-    /** Mark the batch that has the given ID as finished. */
+    /** Prune the entries older than the given date. */
     #[Override]
     public function prune(DateTimeInterface $before): int
     {
@@ -258,6 +258,12 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         );
     }
 
+    private function getUTCDateTime(): UTCDateTime
+    {
+        // Using Carbon so the current time can be modified for tests
+        return new UTCDateTime(Carbon::now());
+    }
+
     /** @return ($date is null ? null : CarbonImmutable) */
     private function toCarbon(?UTCDateTime $date): ?CarbonImmutable
     {
@@ -265,6 +271,6 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
             return null;
         }
 
-        return CarbonImmutable::createFromTimestamp((string) $date, date_default_timezone_get());
+        return CarbonImmutable::createFromTimestampMsUTC((string) $date);
     }
 }
