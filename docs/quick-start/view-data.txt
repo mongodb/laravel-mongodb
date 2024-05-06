@@ -157,9 +157,7 @@ View MongoDB Data
                  ->take(10)
                  ->get();
 
-             foreach ($results as $movie) {
-                 echo $movie->toJson() . '<br>\n';
-             }
+             return $results->toJson();
          }
 
    .. step:: Start your Laravel application
