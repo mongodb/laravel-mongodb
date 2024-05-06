@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [4.4.0] - unreleased
 
 * Implement `Builder::toSql` using JSON representation of the MQL by @GromNaN in [#2931](https://github.com/mongodb/laravel-mongodb/pull/2931)
+* Support collection name prefix by @GromNaN in [#2930](https://github.com/mongodb/laravel-mongodb/pull/2930)
 
 ## [4.3.0] - 2024-04-26
 
