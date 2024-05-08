@@ -404,7 +404,7 @@ stages perform the following operations sequentially:
   extracted from the ``birthday`` field.
 - Group the documents by the value of the ``occupation`` field and compute
   the average value of ``birth_year`` for each group by using the
-  ``Accumulator::avg()`` function. Assign to result of the computation to
+  ``Accumulator::avg()`` function. Assign the result of the computation to
   the ``birth_year_avg`` field.
 - Sort the documents by the group key field in ascending order.
 - Create the ``profession`` field from the value of the group key field,
