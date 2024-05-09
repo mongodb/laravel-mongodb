@@ -279,7 +279,7 @@ class RelationsTest extends TestCase
 
         $user = User::with('clients')->find($user->_id);
 
-        // Assert non attached ID's are detached succesfully
+        // Assert non attached ID's are detached successfully
         $this->assertNotContains('1234523', $user->client_ids);
 
         // Assert there are two client objects in the relationship
