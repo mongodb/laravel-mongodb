@@ -11,6 +11,7 @@
      -
 
    * - 4.0
-     - ✓
+     - ✓ [#min-version-note]_
      -
 
+.. [#min-version-note] This {+odm-short+} version is compatible with Laravel v9.3.9 and later.
