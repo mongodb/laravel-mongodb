@@ -25,6 +25,10 @@ The following compatibility table specifies the versions of Laravel and
 
 .. include:: /includes/framework-compatibility-laravel.rst
 
+.. note:: {+odm-short+} v4.0 Minimum Version
+
+   {+odm-short+} v4.0 is compatible with Laravel v9.3.9 and later.
+   
 To find compatibility information for unmaintained versions of {+odm-short+},
 see `Laravel Version Compatibility <{+mongodb-laravel-gh+}/blob/3.9/README.md#installation>`__
 on GitHub.
