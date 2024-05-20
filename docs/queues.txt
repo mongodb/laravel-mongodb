@@ -23,7 +23,7 @@ the driver in ``config/queue.php``:
            'connection' => 'mongodb',
            'collection' => 'jobs',
            'queue' => 'default',
-           'expire' => 60,
+           'retry_after' => 60,
        ],
    ],
 

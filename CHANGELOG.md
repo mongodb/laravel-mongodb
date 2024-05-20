@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 * Support collection name prefix by @GromNaN in [#2930](https://github.com/mongodb/laravel-mongodb/pull/2930)
 * Add `mongodb` driver for Batching by @GromNaN in [#2904](https://github.com/mongodb/laravel-mongodb/pull/2904)
 * Rename queue option `table` to `collection`
+* Replace queue option `expire` with `retry_after`
 
 ## [4.3.0] - 2024-04-26
 
