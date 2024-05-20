@@ -79,7 +79,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     #[Override]
     public function store(PendingBatch $batch): Batch
     {
-        $result = $this->collection->insertOne([
+        $batch = [
             'name' => $batch->name,
             'total_jobs' => 0,
             'pending_jobs' => 0,
@@ -90,9 +90,10 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
             'created_at' => $this->getUTCDateTime(),
             'cancelled_at' => null,
             'finished_at' => null,
-        ]);
+        ];
+        $result = $this->collection->insertOne($batch);
 
-        return $this->find($result->getInsertedId());
+        return $this->toBatch(['_id' => $result->getInsertedId()] + $batch);
     }
 
     #[Override]
@@ -240,6 +241,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
         return $result->getDeletedCount();
     }
 
+    /** @param array $batch */
     #[Override]
     protected function toBatch($batch): Batch
     {

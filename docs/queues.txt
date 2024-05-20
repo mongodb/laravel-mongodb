@@ -89,7 +89,7 @@ Job Batching
 
 `Job batching https://laravel.com/docs/{+laravel-docs-version+}/queues#job-batching>`__
 is a Laravel feature to execute batch of jobs and subsequent actions before,
-after and during the execution of the jobs from the queue.
+after, and during the execution of the jobs from the queue.
 
 With MongoDB, you don't have to create any collection before using this feature.
 The collection ``job_batches`` will be created automatically to store meta
