@@ -73,12 +73,17 @@ Configure Your MongoDB Connection
 
    .. step:: Add the {+odm-short+} provider
 
-      Open the ``app.php`` file in the ``config`` directory and
-      add the following entry into the ``providers`` array:
+      Open the ``providers.php`` file in the ``bootstrap`` directory and add
+      the following entry into the array:
 
       .. code-block::
 
          MongoDB\Laravel\MongoDBServiceProvider::class,
+
+      .. tip::
+
+         To learn how to register the provider in Laravel 10.x, see
+         `Registering Providers <https://laravel.com/docs/10.x/providers#registering-providers>`__.
 
 After completing these steps, your Laravel web application is ready to
 connect to MongoDB.
