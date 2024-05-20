@@ -29,17 +29,10 @@ class MongoDBBusServiceProvider extends ServiceProvider implements DeferrablePro
         $this->app->extend(BatchRepository::class, function (BatchRepository $repository, Container $app) {
             $driver = $app->config->get('queue.batching.driver');
 
-            return $driver === 'mongodb'
-                ? $app->make(MongoBatchRepository::class)
-                : $repository;
-        });
-        // Add database driver.
-        $this->app->resolving('db', function ($db) {
-            $db->extend('mongodb', function ($config, $name) {
-                $config['name'] = $name;
-
-                return new Connection($config);
-            });
+            return match ($driver) {
+                'mongodb' => $app->make(MongoBatchRepository::class),
+                default => $repository,
+            };
         });
     }
 
