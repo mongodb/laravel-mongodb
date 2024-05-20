@@ -193,7 +193,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     #[Override]
     public function transaction(Closure $callback): mixed
     {
-        return $this->connection->transaction(fn () => $callback());
+        return $this->connection->transaction($callback);
     }
 
     /** Rollback the last database transaction for the connection. */
