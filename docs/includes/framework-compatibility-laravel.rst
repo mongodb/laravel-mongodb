@@ -19,7 +19,5 @@
 
    * - 4.0
      -
-     - ✓ [#min-version-note]_
+     - ✓
      -
-
-.. [#min-version-note] {+odm-short+} v4.0 is compatible with Laravel v9.3.9 and later.
