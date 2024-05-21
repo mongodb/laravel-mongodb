@@ -46,7 +46,6 @@ use function sprintf;
 use function str_contains;
 use function str_starts_with;
 use function strcmp;
-use function uniqid;
 use function var_export;
 
 /** @mixin Builder */
@@ -54,6 +53,8 @@ abstract class Model extends BaseModel
 {
     use HybridRelations;
     use EmbedsRelations;
+
+    private const TEMPORARY_KEY = '__LARAVEL_TEMPORARY_KEY__';
 
     /**
      * The collection associated with the model.
@@ -271,12 +272,10 @@ abstract class Model extends BaseModel
         // Support keys in dot notation.
         if (str_contains($key, '.')) {
             // Store to a temporary key, then move data to the actual key
-            $uniqueKey = uniqid($key);
+            parent::setAttribute(self::TEMPORARY_KEY, $value);
 
-            parent::setAttribute($uniqueKey, $value);
-
-            Arr::set($this->attributes, $key, $this->attributes[$uniqueKey] ?? null);
-            unset($this->attributes[$uniqueKey]);
+            Arr::set($this->attributes, $key, $this->attributes[self::TEMPORARY_KEY] ?? null);
+            unset($this->attributes[self::TEMPORARY_KEY]);
 
             return $this;
         }
