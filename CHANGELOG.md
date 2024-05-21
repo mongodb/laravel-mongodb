@@ -1,7 +1,11 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [4.3.0] - unreleased
+## [4.3.1]
+
+* Fix memory leak when filling nested fields using dot notation by @GromNaN in [#2962](https://github.com/mongodb/laravel-mongodb/pull/2962)
+
+## [4.3.0] - 2024-04-26
 
 * New aggregation pipeline builder by @GromNaN in [#2738](https://github.com/mongodb/laravel-mongodb/pull/2738)
 * Drop support for Composer 1.x by @GromNaN in [#2784](https://github.com/mongodb/laravel-mongodb/pull/2784)
