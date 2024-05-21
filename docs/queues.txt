@@ -38,7 +38,7 @@ the driver in ``config/queue.php``:
      - **Required**. Specifies the queue driver to use. Must be ``mongodb``.
 
    * - ``connection``
-     - Uses the default connection by default. The database connection used to store jobs. It must be a ``mongodb`` connection.
+     - The database connection used to store jobs. It must be a ``mongodb`` connection. The driver uses the default connection if a connection is not specified.
 
    * - ``collection``
      - **Required**. Name of the MongoDB collection to store jobs to process.
@@ -47,7 +47,7 @@ the driver in ``config/queue.php``:
      - **Required**. Name of the queue.
 
    * - ``retry_after``
-     - Default ``60``. Specify how many seconds the queue connection should wait before retrying a job that is being processed
+     - Specifies how many seconds the queue connection should wait before retrying a job that is being processed. Defaults to ``60``. 
 
 If you want to use MongoDB to handle failed jobs, change the database in
 ``config/queue.php``:
@@ -71,10 +71,10 @@ If you want to use MongoDB to handle failed jobs, change the database in
      - **Required**. Specifies the queue driver to use. Must be ``mongodb``.
 
    * - ``connection``
-     - Uses the default connection by default. The database connection used to store jobs. It must be a ``mongodb`` connection.
+     - The database connection used to store jobs. It must be a ``mongodb`` connection. The driver uses the default connection if a connection is not specified.
 
    * - ``collection``
-     - Default ``failed_jobs``. Name of the MongoDB collection to store failed jobs.
+     - Name of the MongoDB collection to store failed jobs. Defaults to ``failed_jobs``. 
 
 
 Add the service provider in ``config/app.php``:
@@ -87,12 +87,12 @@ Add the service provider in ``config/app.php``:
 Job Batching
 ------------
 
-`Job batching https://laravel.com/docs/{+laravel-docs-version+}/queues#job-batching>`__
-is a Laravel feature to execute batch of jobs and subsequent actions before,
+`Job batching <https://laravel.com/docs/{+laravel-docs-version+}/queues#job-batching>`__
+is a Laravel feature to execute a batch of jobs and subsequent actions before,
 after, and during the execution of the jobs from the queue.
 
-With MongoDB, you don't have to create any collection before using this feature.
-The collection ``job_batches`` will be created automatically to store meta
+With MongoDB, you don't have to create any collection before using job batching.
+The ``job_batches`` collection is created automatically to store meta
 information about your job batches, such as their completion percentage.
 
 .. code-block:: php
@@ -114,10 +114,10 @@ information about your job batches, such as their completion percentage.
      - **Required**. Specifies the queue driver to use. Must be ``mongodb``.
 
    * - ``connection``
-     - Uses the default connection by default. The database connection used to store jobs. It must be a ``mongodb`` connection.
+     - The database connection used to store jobs. It must be a ``mongodb`` connection. The driver uses the default connection if a connection is not specified.
 
    * - ``collection``
-     - Default ``job_batches``. Name of the MongoDB collection to store job batches.
+     - Name of the MongoDB collection to store job batches. Defaults to ``job_batches``. 
 
 Add the service provider in ``config/app.php``:
 
