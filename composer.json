@@ -41,6 +41,9 @@
         "spatie/laravel-query-builder": "^5.6",
         "phpstan/phpstan": "^1.10"
     },
+    "conflict": {
+        "illuminate/bus": "< 10.37.2"
+    },
     "suggest": {
         "mongodb/builder": "Provides a fluent aggregation builder for MongoDB pipelines"
     },
@@ -62,7 +65,8 @@
         "laravel": {
             "providers": [
                 "MongoDB\\Laravel\\MongoDBServiceProvider",
-                "MongoDB\\Laravel\\MongoDBQueueServiceProvider"
+                "MongoDB\\Laravel\\MongoDBQueueServiceProvider",
+                "MongoDB\\Laravel\\MongoDBBusServiceProvider"
             ]
         }
     },
