@@ -92,7 +92,7 @@ jobs:
 
       # This step creates the signed release tag
       - name: "Create release tag"
-        uses: mongodb-labs/drivers-github-tools/garasign/git-sign@main
+        uses: mongodb-labs/drivers-github-tools/garasign/git-sign@v1
         with:
           command: "git tag -m 'Release ${{ inputs.version }}' -s --local-user=${{ vars.GPG_KEY_ID }} ${{ inputs.version }}"
           garasign_username: ${{ secrets.GRS_CONFIG_USER1_USERNAME }}
