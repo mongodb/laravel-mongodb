@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [4.3.1]
 
 * Fix memory leak when filling nested fields using dot notation by @GromNaN in [#2962](https://github.com/mongodb/laravel-mongodb/pull/2962)
+* Fix PHP error when accessing the connection after disconnect by @SanderMuller in [#2967](https://github.com/mongodb/laravel-mongodb/pull/2967)
 
 ## [4.3.0] - 2024-04-26
 
