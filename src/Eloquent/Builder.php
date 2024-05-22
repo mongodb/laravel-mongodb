@@ -21,6 +21,7 @@ use function array_merge;
 use function collect;
 use function is_array;
 use function iterator_to_array;
+use function json_encode;
 
 /** @method \MongoDB\Laravel\Query\Builder toBase() */
 class Builder extends EloquentBuilder
@@ -210,8 +211,8 @@ class Builder extends EloquentBuilder
      */
     public function createOrFirst(array $attributes = [], array $values = []): Model
     {
-        if ($attributes === []) {
-            throw new InvalidArgumentException('You must provide attributes to check for duplicates');
+        if ($attributes === [] || $attributes === ['_id' => null]) {
+            throw new InvalidArgumentException('You must provide attributes to check for duplicates. Got ' . json_encode($attributes));
         }
 
         // Apply casting and default values to the attributes
@@ -233,8 +234,8 @@ class Builder extends EloquentBuilder
             try {
                 $document = $collection->findOneAndUpdate(
                     $attributes,
-                    // Before MongoDB 5.0, $setOnInsert requires a non-empty document.
-                    // This should not be an issue as $values includes the query filter.
+                    // Before MongoDB 5.0, $setOnInsert requires a non-empty document,
+                    // this should not be an issue as $values include the query filter.
                     ['$setOnInsert' => (object) $values],
                     [
                         'upsert' => true,

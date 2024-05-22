@@ -746,6 +746,12 @@ abstract class Model extends BaseModel
      */
     public function save(array $options = [])
     {
+        // SQL databases would use autoincrement the id field if set to null.
+        // Apply the same behavior to MongoDB with _id only, otherwise null would be stored.
+        if (array_key_exists('_id', $this->attributes) && $this->attributes['_id'] === null) {
+            unset($this->attributes['_id']);
+        }
+
         $saved = parent::save($options);
 
         // Clear list of unset fields
