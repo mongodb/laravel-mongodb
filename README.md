@@ -17,6 +17,26 @@ It is compatible with Laravel 10.x. For older versions of Laravel, please refer 
 - https://www.mongodb.com/docs/drivers/php/laravel-mongodb/
 - https://www.mongodb.com/docs/drivers/php/ 
 
+## Release Integrity
+
+Releases are created automatically and the resulting release tag is signed using
+the [PHP team's GPG key](https://pgp.mongodb.com/php-driver.asc). To verify the
+tag signature, download the key and import it using `gpg`:
+
+```shell
+gpg --import php-driver.asc
+```
+
+Then, in a local clone, verify the signature of a given tag (e.g. `4.4.0`):
+
+```shell
+git show --show-signature 4.4.0
+```
+
+> [!NOTE]
+> Composer does not support verifying signatures as part of its installation
+> process.
+
 ## Reporting Issues
 
 Think you’ve found a bug in the library? Want to see a new feature? Please open a case in our issue management tool, JIRA:
