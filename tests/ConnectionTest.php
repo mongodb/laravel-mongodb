@@ -38,6 +38,22 @@ class ConnectionTest extends TestCase
         $this->assertNotEquals(spl_object_hash($c1), spl_object_hash($c2));
     }
 
+    public function testDisconnectAndCreateNewConnection()
+    {
+        $connection = DB::connection('mongodb');
+        $this->assertInstanceOf(Connection::class, $connection);
+        $client = $connection->getMongoClient();
+        $this->assertInstanceOf(Client::class, $client);
+        $connection->disconnect();
+        $client = $connection->getMongoClient();
+        $this->assertNull($client);
+        DB::purge('mongodb');
+        $connection = DB::connection('mongodb');
+        $this->assertInstanceOf(Connection::class, $connection);
+        $client = $connection->getMongoClient();
+        $this->assertInstanceOf(Client::class, $client);
+    }
+
     public function testDb()
     {
         $connection = DB::connection('mongodb');

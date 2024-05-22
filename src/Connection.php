@@ -210,7 +210,7 @@ class Connection extends BaseConnection
     /** @inheritdoc */
     public function disconnect()
     {
-        unset($this->connection);
+        $this->connection = null;
     }
 
     /**
