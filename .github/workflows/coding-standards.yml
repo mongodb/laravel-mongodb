@@ -108,7 +108,13 @@ jobs:
             phpstan-result-cache-
 
       - name: Run PHPStan
-        run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi
+        run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi --error-format=sarif > phpstan.sarif
+
+      - name: "Upload SARIF report"
+        if: always()
+        uses: "github/codeql-action/upload-sarif@v3"
+        with:
+          sarif_file: phpstan.sarif
 
       - name: Save cache PHPStan results
         id: phpstan-cache-save

@@ -14,3 +14,11 @@ parameters:
     ignoreErrors:
         - '#Unsafe usage of new static#'
         - '#Call to an undefined method [a-zA-Z0-9\\_\<\>]+::[a-zA-Z]+\(\)#'
+
+services:
+    errorFormatter.sarif:
+        class: MongoDB\Laravel\Tests\PHPStan\SarifErrorFormatter
+        arguments:
+            relativePathHelper: @simpleRelativePathHelper
+            currentWorkingDirectory: %currentWorkingDirectory%
+            pretty: true
