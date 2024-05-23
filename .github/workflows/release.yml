@@ -8,36 +8,12 @@ on:
         description: "The version to be released. This is checked for consistency with the branch name and configuration"
         required: true
         type: "string"
-      jira-version-number:
-        description: "JIRA version ID (e.g. 54321)"
-        required: true
-        type: "string"
 
 env:
   # TODO: Use different token
   GH_TOKEN: ${{ secrets.MERGE_UP_TOKEN }}
   GIT_AUTHOR_NAME: "DBX PHP Release Bot"
   GIT_AUTHOR_EMAIL: "dbx-php@mongodb.com"
-  default-release-message: |
-    The PHP team is happy to announce that version {0} of the MongoDB integration for Laravel is now available.
-
-    **Release Highlights**
-
-    TODO: one or more paragraphs describing important changes in this release
-
-    A complete list of resolved issues in this release may be found in [JIRA](https://jira.mongodb.org/secure/ReleaseNote.jspa?version={1}&projectId=22488).
-
-    **Documentation**
-
-    Documentation for this library may be found in the [Readme](https://github.com/mongodb/laravel-mongodb/blob/$VERSION/README.md).
-
-    **Installation**
-
-    This library may be installed or upgraded with:
-    
-      composer require mongodb/laravel-mongodb:{0}
-      
-    Installation instructions for the `mongodb` extension may be found in the [PHP.net documentation](https://php.net/manual/en/mongodb.installation.php).
 
 jobs:
   prepare-release:
@@ -80,15 +56,9 @@ jobs:
           git config user.name "${GIT_AUTHOR_NAME}"
           git config user.email "${GIT_AUTHOR_EMAIL}"
 
-      # Create a draft release with release message filled in
-      - name: "Prepare release message"
-        run: |
-          cat > release-message <<'EOL'
-          ${{ format(env.default-release-message, inputs.version, inputs.jira-version-number) }}
-          EOL
-
+      # Create draft release with release notes
       - name: "Create draft release"
-        run: echo "RELEASE_URL=$(gh release create ${{ inputs.version }} --target ${{ github.ref_name }} --title "${{ inputs.version }}" --notes-file release-message --draft)" >> "$GITHUB_ENV"
+        run: echo "RELEASE_URL=$(gh release create ${{ inputs.version }} --target ${{ github.ref_name }} --title "${{ inputs.version }}" --generate-notes --draft)" >> "$GITHUB_ENV"
 
       # This step creates the signed release tag
       - name: "Create release tag"
