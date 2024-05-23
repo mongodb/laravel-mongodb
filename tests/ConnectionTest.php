@@ -204,6 +204,14 @@ class ConnectionTest extends TestCase
         new Connection(['dsn' => 'mongodb://some-host']);
     }
 
+    public function testConnectionWithoutConfiguredDsnOrHost(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('MongoDB connection configuration requires "dsn" or "host" key.');
+
+        new Connection(['database' => 'hello']);
+    }
+
     public function testCollection()
     {
         $collection = DB::connection('mongodb')->getCollection('unittest');

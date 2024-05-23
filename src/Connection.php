@@ -261,9 +261,15 @@ class Connection extends BaseConnection
      */
     protected function getDsn(array $config): string
     {
-        return $this->hasDsnString($config)
-            ? $this->getDsnString($config)
-            : $this->getHostDsn($config);
+        if (! empty($config['dsn'])) {
+            return $this->getDsnString($config);
+        }
+
+        if (! empty($config['host'])) {
+            return $this->getHostDsn($config);
+        }
+
+        throw new InvalidArgumentException('MongoDB connection configuration requires "dsn" or "host" key.');
     }
 
     /** @inheritdoc */
