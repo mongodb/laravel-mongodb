@@ -213,6 +213,8 @@ class Connection extends BaseConnection
 
     /**
      * Determine if the given configuration array has a dsn string.
+     *
+     * @deprecated
      */
     protected function hasDsnString(array $config): bool
     {
