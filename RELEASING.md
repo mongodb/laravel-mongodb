@@ -87,44 +87,6 @@ tagging.
 
 ## Publish release notes
 
-The following template should be used for creating GitHub release notes via
-[this form](https://github.com/mongodb/laravel-mongodb/releases/new).
-
-```markdown
-The PHP team is happy to announce that version X.Y.Z of the MongoDB integration for Laravel is now available.
-
-**Release Highlights**
-
-<one or more paragraphs describing important changes in this release>
-
-A complete list of resolved issues in this release may be found in [JIRA]($JIRA_URL).
-
-**Documentation**
-
-Documentation for this library may be found in the [Readme](https://github.com/mongodb/laravel-mongodb/blob/$VERSION/README.md).
-
-**Installation**
-
-This library may be installed or upgraded with:
-
-    composer require mongodb/laravel-mongodb:X.Y.Z
-
-Installation instructions for the `mongodb` extension may be found in the [PHP.net documentation](https://php.net/manual/en/mongodb.installation.php).
-```
-
-The URL for the list of resolved JIRA issues will need to be updated with each
-release. You may obtain the list from
-[this form](https://jira.mongodb.org/secure/ReleaseNote.jspa?projectId=22488).
-
-If commits from community contributors were included in this release, append the
-following section:
-
-```markdown
-**Thanks**
-
-Thanks for our community contributors for this release:
-
- * [$CONTRIBUTOR_NAME](https://github.com/$GITHUB_USERNAME)
-```
+Use the generated release note in [this form](https://github.com/mongodb/laravel-mongodb/releases/new).
 
 Release announcements should also be posted in the [MongoDB Product & Driver Announcements: Driver Releases](https://mongodb.com/community/forums/tags/c/announcements/driver-releases/110/php) forum and shared on Twitter.
