@@ -1151,4 +1151,21 @@ class ModelTest extends TestCase
         $this->assertEquals($createdAt, $checkUser->created_at->getTimestamp());
         $this->assertEquals($updatedAt, $checkUser->updated_at->getTimestamp());
     }
+
+    public function testCreateWithNullId()
+    {
+        $user = User::create(['_id' => null, 'email' => 'foo@bar']);
+        $this->assertNotNull(ObjectId::class, $user->id);
+        $this->assertSame(1, User::count());
+    }
+
+    public function testUpdateOrCreateWithNullId()
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('You must provide attributes to check for duplicates');
+        User::updateOrCreate(
+            ['_id' => null],
+            ['email' => 'jane.doe@example.com'],
+        );
+    }
 }

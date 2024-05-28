@@ -21,6 +21,7 @@ use function array_merge;
 use function collect;
 use function is_array;
 use function iterator_to_array;
+use function json_encode;
 
 /** @method \MongoDB\Laravel\Query\Builder toBase() */
 class Builder extends EloquentBuilder
@@ -210,8 +211,8 @@ class Builder extends EloquentBuilder
      */
     public function createOrFirst(array $attributes = [], array $values = []): Model
     {
-        if ($attributes === []) {
-            throw new InvalidArgumentException('You must provide attributes to check for duplicates');
+        if ($attributes === [] || $attributes === ['_id' => null]) {
+            throw new InvalidArgumentException('You must provide attributes to check for duplicates. Got ' . json_encode($attributes));
         }
 
         // Apply casting and default values to the attributes
