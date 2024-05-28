@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use BackedEnum;
+use BadMethodCallException;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use DateTimeZone;
@@ -31,6 +32,7 @@ use function array_keys;
 use function array_merge;
 use function array_unique;
 use function array_values;
+use function assert;
 use function class_basename;
 use function count;
 use function date_default_timezone_get;
@@ -757,6 +759,71 @@ abstract class Model extends BaseModel
         $this->unset = [];
 
         return $saved;
+    }
+
+    /** @internal Not part of Laravel Eloquent API. Use raw findOneAndModify if necessary */
+    public function saveOrFirst(array $criteria): ?static
+    {
+        $this->mergeAttributesFromCachedCasts();
+
+        $query = $this->newModelQuery();
+        assert($query instanceof Builder);
+
+        // If the "saving" event returns false we'll bail out of the save and return
+        // false, indicating that the save failed. This provides a chance for any
+        // listeners to cancel save operations if validations fail or whatever.
+        if ($this->fireModelEvent('saving') === false) {
+            return null;
+        }
+
+        if ($this->exists) {
+            throw new BadMethodCallException(sprintf('%s can be used on new model instances only', __FUNCTION__));
+        }
+
+        if ($this->usesUniqueIds()) {
+            $this->setUniqueIds();
+        }
+
+        if ($this->fireModelEvent('creating') === false) {
+            return null;
+        }
+
+        // First we'll need to create a fresh query instance and touch the creation and
+        // update timestamps on this model, which are maintained by us for developer
+        // convenience. After, we will just continue saving these model instances.
+        if ($this->usesTimestamps()) {
+            $this->updateTimestamps();
+        }
+
+        // If the model has an incrementing key, we can use the "insertGetId" method on
+        // the query builder, which will give us back the final inserted ID for this
+        // table from the database. Not all tables have to be incrementing though.
+        $attributes = $this->getAttributesForInsert();
+
+        $document = $query->getQuery()
+            ->where($criteria)
+            ->insertOrFirst($attributes);
+
+        $connection = $query->getConnection();
+        if (! $this->getConnectionName() && $connection) {
+            $this->setConnection($connection->getName());
+        }
+
+        // If a document matching the criteria was found, it is returned. Nothing was saved.
+        if (! $document['wasRecentlyCreated']) {
+            return $this->newInstance($document);
+        }
+
+        // If the model is successfully saved, we need to do a few more things once
+        // that is done. We will call the "saved" method here to run any actions
+        // we need to happen after a model gets successfully saved right here.
+        $this->exists = true;
+        $this->wasRecentlyCreated = true;
+        $this->setAttribute($this->getKeyName(), $document[$this->getKeyName()]);
+        $this->fireModelEvent('created', false);
+        $this->finishSave([]);
+
+        return $this;
     }
 
     /**

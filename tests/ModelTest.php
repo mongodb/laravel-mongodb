@@ -1052,6 +1052,9 @@ class ModelTest extends TestCase
     {
         Carbon::setTestNow('2010-06-22');
         $createdAt = Carbon::now()->getTimestamp();
+        $events = [];
+        self::registerModelEvents(User::class, $events);
+
         $user1 = User::createOrFirst(['email' => 'john.doe@example.com']);
 
         $this->assertSame('john.doe@example.com', $user1->email);
@@ -1059,8 +1062,10 @@ class ModelTest extends TestCase
         $this->assertTrue($user1->wasRecentlyCreated);
         $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
 
         Carbon::setTestNow('2020-12-28');
+        $events = [];
         $user2 = User::createOrFirst(
             ['email' => 'john.doe@example.com'],
             ['name' => 'John Doe', 'birthday' => new DateTime('1987-05-28')],
@@ -1073,7 +1078,9 @@ class ModelTest extends TestCase
         $this->assertFalse($user2->wasRecentlyCreated);
         $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'creating'], $events);
 
+        $events = [];
         $user3 = User::createOrFirst(
             ['email' => 'jane.doe@example.com'],
             ['name' => 'Jane Doe', 'birthday' => new DateTime('1987-05-28')],
@@ -1086,7 +1093,9 @@ class ModelTest extends TestCase
         $this->assertTrue($user3->wasRecentlyCreated);
         $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
 
+        $events = [];
         $user4 = User::createOrFirst(
             ['name' => 'Robert Doe'],
             ['name' => 'Maria Doe', 'email' => 'maria.doe@example.com'],
@@ -1094,6 +1103,7 @@ class ModelTest extends TestCase
 
         $this->assertSame('Maria Doe', $user4->name);
         $this->assertTrue($user4->wasRecentlyCreated);
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
     }
 
     public function testCreateOrFirstRequiresFilter()
@@ -1114,6 +1124,9 @@ class ModelTest extends TestCase
             ['email' => 'john.doe@example.com'],
         ]);
 
+        $events = [];
+        self::registerModelEvents(User::class, $events);
+
         Carbon::setTestNow('2010-01-01');
         $createdAt = Carbon::now()->getTimestamp();
 
@@ -1127,6 +1140,8 @@ class ModelTest extends TestCase
         $this->assertEquals(new DateTime('1987-05-28'), $user->birthday);
         $this->assertEquals($createdAt, $user->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
+        $events = [];
 
         Carbon::setTestNow('2010-02-01');
         $updatedAt = Carbon::now()->getTimestamp();
@@ -1142,6 +1157,7 @@ class ModelTest extends TestCase
         $this->assertEquals(new DateTime('1990-01-12'), $user->birthday);
         $this->assertEquals($createdAt, $user->created_at->getTimestamp());
         $this->assertEquals($updatedAt, $user->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'saved'], $events);
 
         // Stored data
         $checkUser = User::where($criteria)->first();
@@ -1167,5 +1183,22 @@ class ModelTest extends TestCase
             ['_id' => null],
             ['email' => 'jane.doe@example.com'],
         );
+    }
+
+    /** @param class-string<Model> $modelClass */
+    private static function registerModelEvents(string $modelClass, array &$events): void
+    {
+        $modelClass::creating(function () use (&$events) {
+            $events[] = 'creating';
+        });
+        $modelClass::created(function () use (&$events) {
+            $events[] = 'created';
+        });
+        $modelClass::saving(function () use (&$events) {
+            $events[] = 'saving';
+        });
+        $modelClass::saved(function () use (&$events) {
+            $events[] = 'saved';
+        });
     }
 }

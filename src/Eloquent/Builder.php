@@ -8,16 +8,13 @@ use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use InvalidArgumentException;
 use MongoDB\Driver\Cursor;
-use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
-use MongoDB\Laravel\Internal\FindAndModifyCommandSubscriber;
 use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
-use MongoDB\Operation\FindOneAndUpdate;
 
-use function array_intersect_key;
 use function array_key_exists;
 use function array_merge;
+use function assert;
 use function collect;
 use function is_array;
 use function iterator_to_array;
@@ -218,40 +215,9 @@ class Builder extends EloquentBuilder
         // Apply casting and default values to the attributes
         // In case of duplicate key between the attributes and the values, the values have priority
         $instance = $this->newModelInstance($values + $attributes);
+        assert($instance instanceof Model);
 
-        /* @see \Illuminate\Database\Eloquent\Model::performInsert */
-        if ($instance->usesTimestamps()) {
-            $instance->updateTimestamps();
-        }
-
-        $values = $instance->getAttributes();
-        $attributes = array_intersect_key($attributes, $values);
-
-        return $this->raw(function (Collection $collection) use ($attributes, $values) {
-            $listener = new FindAndModifyCommandSubscriber();
-            $collection->getManager()->addSubscriber($listener);
-
-            try {
-                $document = $collection->findOneAndUpdate(
-                    $attributes,
-                    // Before MongoDB 5.0, $setOnInsert requires a non-empty document.
-                    // This should not be an issue as $values includes the query filter.
-                    ['$setOnInsert' => (object) $values],
-                    [
-                        'upsert' => true,
-                        'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
-                        'typeMap' => ['root' => 'array', 'document' => 'array'],
-                    ],
-                );
-            } finally {
-                $collection->getManager()->removeSubscriber($listener);
-            }
-
-            $model = $this->model->newFromBuilder($document);
-            $model->wasRecentlyCreated = $listener->created;
-
-            return $model;
-        });
+        return $instance->saveOrFirst($attributes);
     }
 
     /**

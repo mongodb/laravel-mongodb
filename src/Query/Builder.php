@@ -23,6 +23,8 @@ use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Driver\Cursor;
+use MongoDB\Laravel\Internal\FindAndModifyCommandSubscriber;
+use MongoDB\Operation\FindOneAndUpdate;
 use Override;
 use RuntimeException;
 
@@ -723,6 +725,32 @@ class Builder extends BaseBuilder
         $options = $this->inheritConnectionOptions($options);
 
         return $this->performUpdate($values, $options);
+    }
+
+    public function insertOrFirst(array $document): array
+    {
+        $wheres = $this->compileWheres();
+        $listener = new FindAndModifyCommandSubscriber();
+
+        try {
+            $this->collection->getManager()->addSubscriber($listener);
+            $document = $this->collection->findOneAndUpdate(
+                $wheres,
+                // Before MongoDB 5.0, $setOnInsert requires a non-empty document.
+                ['$setOnInsert' => (object) $document],
+                [
+                    'upsert' => true,
+                    'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
+                    'typeMap' => ['root' => 'array', 'document' => 'array'],
+                ],
+            );
+        } finally {
+            $this->collection->getManager()->removeSubscriber($listener);
+        }
+
+        $document['wasRecentlyCreated'] = $listener->created;
+
+        return $document;
     }
 
     /** @inheritdoc */
