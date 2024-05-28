@@ -48,7 +48,6 @@ use function str_starts_with;
 use function strcmp;
 use function var_export;
 
-/** @mixin Builder */
 abstract class Model extends BaseModel
 {
     use HybridRelations;
