@@ -6,26 +6,22 @@ namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use InvalidArgumentException;
 use MongoDB\Driver\Cursor;
-use MongoDB\Laravel\Collection;
+use MongoDB\Driver\Exception\WriteException;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
-use MongoDB\Laravel\Internal\FindAndModifyCommandSubscriber;
 use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
-use MongoDB\Operation\FindOneAndUpdate;
 
-use function array_intersect_key;
 use function array_key_exists;
 use function array_merge;
 use function collect;
 use function is_array;
 use function iterator_to_array;
-use function json_encode;
 
 /** @method \MongoDB\Laravel\Query\Builder toBase() */
 class Builder extends EloquentBuilder
 {
+    private const DUPLICATE_KEY_ERROR = 11000;
     use QueriesRelationships;
 
     /**
@@ -202,56 +198,17 @@ class Builder extends EloquentBuilder
         return $results;
     }
 
-    /**
-     * Attempt to create the record if it does not exist with the matching attributes.
-     * If the record exists, it will be returned.
-     *
-     * @param  array $attributes The attributes to check for duplicate records
-     * @param  array $values     The attributes to insert if no matching record is found
-     */
-    public function createOrFirst(array $attributes = [], array $values = []): Model
+    public function createOrFirst(array $attributes = [], array $values = []): Builder|Model
     {
-        if ($attributes === [] || $attributes === ['_id' => null]) {
-            throw new InvalidArgumentException('You must provide attributes to check for duplicates. Got ' . json_encode($attributes));
-        }
-
-        // Apply casting and default values to the attributes
-        // In case of duplicate key between the attributes and the values, the values have priority
-        $instance = $this->newModelInstance($values + $attributes);
-
-        /* @see \Illuminate\Database\Eloquent\Model::performInsert */
-        if ($instance->usesTimestamps()) {
-            $instance->updateTimestamps();
-        }
-
-        $values = $instance->getAttributes();
-        $attributes = array_intersect_key($attributes, $values);
-
-        return $this->raw(function (Collection $collection) use ($attributes, $values) {
-            $listener = new FindAndModifyCommandSubscriber();
-            $collection->getManager()->addSubscriber($listener);
-
-            try {
-                $document = $collection->findOneAndUpdate(
-                    $attributes,
-                    // Before MongoDB 5.0, $setOnInsert requires a non-empty document.
-                    // This should not be an issue as $values includes the query filter.
-                    ['$setOnInsert' => (object) $values],
-                    [
-                        'upsert' => true,
-                        'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
-                        'typeMap' => ['root' => 'array', 'document' => 'array'],
-                    ],
-                );
-            } finally {
-                $collection->getManager()->removeSubscriber($listener);
+        try {
+            return $this->create(array_merge($attributes, $values));
+        } catch (WriteException $e) {
+            if ($e->getCode() === self::DUPLICATE_KEY_ERROR) {
+                return $this->where($attributes)->first() ?? throw $e;
             }
 
-            $model = $this->model->newFromBuilder($document);
-            $model->wasRecentlyCreated = $listener->created;
-
-            return $model;
-        });
+            throw $e;
+        }
     }
 
     /**

@@ -10,8 +10,8 @@ use Generator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -48,7 +48,7 @@ class ModelTest extends TestCase
     public function tearDown(): void
     {
         Carbon::setTestNow();
-        User::truncate();
+        DB::connection('mongodb')->getCollection('users')->drop();
         Soft::truncate();
         Book::truncate();
         Item::truncate();
@@ -1050,8 +1050,14 @@ class ModelTest extends TestCase
 
     public function testCreateOrFirst()
     {
+        DB::connection('mongodb')
+            ->getCollection('users')
+            ->createIndex(['email' => 1], ['unique' => true]);
+
         Carbon::setTestNow('2010-06-22');
         $createdAt = Carbon::now()->getTimestamp();
+        $events = [];
+        self::registerModelEvents(User::class, $events);
         $user1 = User::createOrFirst(['email' => 'john.doe@example.com']);
 
         $this->assertSame('john.doe@example.com', $user1->email);
@@ -1059,8 +1065,10 @@ class ModelTest extends TestCase
         $this->assertTrue($user1->wasRecentlyCreated);
         $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
 
         Carbon::setTestNow('2020-12-28');
+        $events = [];
         $user2 = User::createOrFirst(
             ['email' => 'john.doe@example.com'],
             ['name' => 'John Doe', 'birthday' => new DateTime('1987-05-28')],
@@ -1073,7 +1081,9 @@ class ModelTest extends TestCase
         $this->assertFalse($user2->wasRecentlyCreated);
         $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'creating'], $events);
 
+        $events = [];
         $user3 = User::createOrFirst(
             ['email' => 'jane.doe@example.com'],
             ['name' => 'Jane Doe', 'birthday' => new DateTime('1987-05-28')],
@@ -1086,7 +1096,9 @@ class ModelTest extends TestCase
         $this->assertTrue($user3->wasRecentlyCreated);
         $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
 
+        $events = [];
         $user4 = User::createOrFirst(
             ['name' => 'Robert Doe'],
             ['name' => 'Maria Doe', 'email' => 'maria.doe@example.com'],
@@ -1094,13 +1106,7 @@ class ModelTest extends TestCase
 
         $this->assertSame('Maria Doe', $user4->name);
         $this->assertTrue($user4->wasRecentlyCreated);
-    }
-
-    public function testCreateOrFirstRequiresFilter()
-    {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('You must provide attributes to check for duplicates');
-        User::createOrFirst([]);
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
     }
 
     #[TestWith([['_id' => new ObjectID()]])]
@@ -1116,6 +1122,8 @@ class ModelTest extends TestCase
 
         Carbon::setTestNow('2010-01-01');
         $createdAt = Carbon::now()->getTimestamp();
+        $events = [];
+        self::registerModelEvents(User::class, $events);
 
         // Create
         $user = User::updateOrCreate(
@@ -1127,11 +1135,13 @@ class ModelTest extends TestCase
         $this->assertEquals(new DateTime('1987-05-28'), $user->birthday);
         $this->assertEquals($createdAt, $user->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user->updated_at->getTimestamp());
-
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
+        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
         Carbon::setTestNow('2010-02-01');
         $updatedAt = Carbon::now()->getTimestamp();
 
         // Update
+        $events = [];
         $user = User::updateOrCreate(
             $criteria,
             ['birthday' => new DateTime('1990-01-12'), 'foo' => 'bar'],
@@ -1159,13 +1169,20 @@ class ModelTest extends TestCase
         $this->assertSame(1, User::count());
     }
 
-    public function testUpdateOrCreateWithNullId()
+    /** @param class-string<Model> $modelClass */
+    private static function registerModelEvents(string $modelClass, array &$events): void
     {
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('You must provide attributes to check for duplicates');
-        User::updateOrCreate(
-            ['_id' => null],
-            ['email' => 'jane.doe@example.com'],
-        );
+        $modelClass::creating(function () use (&$events) {
+            $events[] = 'creating';
+        });
+        $modelClass::created(function () use (&$events) {
+            $events[] = 'created';
+        });
+        $modelClass::saving(function () use (&$events) {
+            $events[] = 'saving';
+        });
+        $modelClass::saved(function () use (&$events) {
+            $events[] = 'saved';
+        });
     }
 }
