@@ -1048,11 +1048,18 @@ class ModelTest extends TestCase
         $this->assertEquals([3 => 'two.three'], $found[2]);
     }
 
-    public function testCreateOrFirst()
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testCreateOrFirst(bool $transaction)
     {
-        DB::connection('mongodb')
+        $connection = DB::connection('mongodb');
+        $connection
             ->getCollection('users')
             ->createIndex(['email' => 1], ['unique' => true]);
+
+        if ($transaction) {
+            $connection->beginTransaction();
+        }
 
         Carbon::setTestNow('2010-06-22');
         $createdAt = Carbon::now()->getTimestamp();
@@ -1081,7 +1088,11 @@ class ModelTest extends TestCase
         $this->assertFalse($user2->wasRecentlyCreated);
         $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
-        $this->assertEquals(['saving', 'creating'], $events);
+        if ($transaction) {
+            $this->assertEquals([], $events);
+        } else {
+            $this->assertEquals(['saving', 'creating'], $events);
+        }
 
         $events = [];
         $user3 = User::createOrFirst(
@@ -1107,6 +1118,10 @@ class ModelTest extends TestCase
         $this->assertSame('Maria Doe', $user4->name);
         $this->assertTrue($user4->wasRecentlyCreated);
         $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
+
+        if ($transaction) {
+            $connection->commit();
+        }
     }
 
     #[TestWith([['_id' => new ObjectID()]])]
@@ -1136,7 +1151,6 @@ class ModelTest extends TestCase
         $this->assertEquals($createdAt, $user->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user->updated_at->getTimestamp());
         $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
-        $this->assertEquals(['saving', 'creating', 'created', 'saved'], $events);
         Carbon::setTestNow('2010-02-01');
         $updatedAt = Carbon::now()->getTimestamp();
 
@@ -1152,6 +1166,7 @@ class ModelTest extends TestCase
         $this->assertEquals(new DateTime('1990-01-12'), $user->birthday);
         $this->assertEquals($createdAt, $user->created_at->getTimestamp());
         $this->assertEquals($updatedAt, $user->updated_at->getTimestamp());
+        $this->assertEquals(['saving', 'updating', 'updated', 'saved'], $events);
 
         // Stored data
         $checkUser = User::where($criteria)->first();
@@ -1177,6 +1192,12 @@ class ModelTest extends TestCase
         });
         $modelClass::created(function () use (&$events) {
             $events[] = 'created';
+        });
+        $modelClass::updating(function () use (&$events) {
+            $events[] = 'updating';
+        });
+        $modelClass::updated(function () use (&$events) {
+            $events[] = 'updated';
         });
         $modelClass::saving(function () use (&$events) {
             $events[] = 'saving';

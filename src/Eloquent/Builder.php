@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
-use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Exception\WriteException;
+use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
@@ -198,8 +198,34 @@ class Builder extends EloquentBuilder
         return $results;
     }
 
+    /**
+     * Get the first record matching the attributes. If the record is not found, create it.
+     *
+     * @param  array $attributes
+     * @param  array $values
+     */
+    public function firstOrCreate(array $attributes = [], array $values = []): Model|Builder
+    {
+        $instance = (clone $this)->where($attributes)->first();
+        if ($instance !== null) {
+            return $instance;
+        }
+
+        // createOrFirst is not supported in transaction.
+        if ($this->getConnection()->getSession()?->isInTransaction()) {
+            return $this->create(array_merge($attributes, $values));
+        }
+
+        return $this->createOrFirst($attributes, $values);
+    }
+
     public function createOrFirst(array $attributes = [], array $values = []): Builder|Model
     {
+        // The duplicate key error would abort the transaction. Using the regular firstOrCreate in that case.
+        if ($this->getConnection()->getSession()?->isInTransaction()) {
+            return $this->firstOrCreate($attributes, $values);
+        }
+
         try {
             return $this->create(array_merge($attributes, $values));
         } catch (WriteException $e) {
@@ -234,8 +260,7 @@ class Builder extends EloquentBuilder
         return $values;
     }
 
-    /** @return ConnectionInterface */
-    public function getConnection()
+    public function getConnection(): Connection
     {
         return $this->query->getConnection();
     }
