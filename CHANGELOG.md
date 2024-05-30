@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.5.0] - upcoming
+
+* Add GridFS integration for Laravel File Storage by @GromNaN in [#2984](https://github.com/mongodb/laravel-mongodb/pull/2985)
+
 ## [4.4.0] - 2024-05-31
 
 * Support collection name prefix by @GromNaN in [#2930](https://github.com/mongodb/laravel-mongodb/pull/2930)
@@ -9,7 +13,6 @@ All notable changes to this project will be documented in this file.
 * Rename queue option `table` to `collection`
 * Replace queue option `expire` with `retry_after`
 * Revert behavior of `createOrFirst` to delegate to `firstOrCreate` when in transaction by @GromNaN in [#2984](https://github.com/mongodb/laravel-mongodb/pull/2984)
-* Add GridFS integration for Laravel File Storage by @GromNaN in [#2984](https://github.com/mongodb/laravel-mongodb/pull/2985)
 
 ## [4.3.1] - 2024-05-31
 

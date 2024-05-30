@@ -136,7 +136,7 @@ need to work with revisions.
 
 .. code-block:: php
 
-   // Create a MongoDB Bucket service from the MongoDB connection
+   // Create a bucket service from the MongoDB connection
    /** @var \MongoDB\GridFS\Bucket $bucket */
    $bucket = $app['db']->connection('mongodb')->getMongoDB()->selectGridFSBucket();
 
