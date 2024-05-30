@@ -6,33 +6,35 @@ use Generator;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use InvalidArgumentException;
 use League\Flysystem\UnableToWriteFile;
+use MongoDB\GridFS\Bucket;
 use PHPUnit\Framework\Attributes\DataProvider;
+use stdClass;
 
 use function env;
 use function microtime;
+use function stream_get_contents;
 
 class FilesystemsTest extends TestCase
 {
     public function tearDown(): void
     {
-        DB::connection('mongodb')->getMongoDB()->drop();
+        $this->getBucket()->drop();
 
         parent::tearDown();
     }
 
-    public static function provideDiskConfigurations(): Generator
+    public static function provideValidOptions(): Generator
     {
-        yield [
-            'gridfs-connection-minimal',
+        yield 'connection-minimal' => [
             [
                 'driver' => 'gridfs',
                 'connection' => 'mongodb',
             ],
         ];
 
-        yield [
-            'gridfs-connection-full',
+        yield 'connection-full' => [
             [
                 'driver' => 'gridfs',
                 'connection' => 'mongodb',
@@ -42,16 +44,14 @@ class FilesystemsTest extends TestCase
             ],
         ];
 
-        yield [
-            'gridfs-bucket-service',
+        yield 'bucket-service' => [
             [
                 'driver' => 'gridfs',
                 'bucket' => 'bucket',
             ],
         ];
 
-        yield [
-            'gridfs-bucket-factory',
+        yield 'bucket-factory' => [
             [
                 'driver' => 'gridfs',
                 'bucket' => static fn (Application $app) => $app['db']
@@ -62,20 +62,52 @@ class FilesystemsTest extends TestCase
         ];
     }
 
-    #[DataProvider('provideDiskConfigurations')]
-    public function testConfig(string $name, array $options)
+    #[DataProvider('provideValidOptions')]
+    public function testValidOptions(array $options)
     {
-        // Service used by "gridfs-bucket-service"
+        // Service used by "bucket-service"
         $this->app->singleton('bucket', static fn (Application $app) => $app['db']
             ->connection('mongodb')
             ->getMongoDB()
             ->selectGridFSBucket());
 
-        $this->app['config']->set('filesystems.disks.' . $name, $options);
+        $this->app['config']->set('filesystems.disks.' . $this->dataName(), $options);
 
-        $disk = Storage::disk($name);
-        $disk->put($filename = $name . '.txt', $value = microtime());
+        $disk = Storage::disk($this->dataName());
+        $disk->put($filename = $this->dataName() . '.txt', $value = microtime());
         $this->assertEquals($value, $disk->get($filename), 'File saved');
+    }
+
+    public static function provideInvalidOptions(): Generator
+    {
+        yield 'not-mongodb-connection' => [
+            ['driver' => 'gridfs', 'connection' => 'sqlite'],
+            'The database connection "sqlite" does not use the "mongodb" driver.',
+        ];
+
+        yield 'factory-not-bucket' => [
+            ['driver' => 'gridfs', 'bucket' => static fn () => new stdClass()],
+            'Unexpected value for GridFS "bucket" configuration. Expecting "MongoDB\GridFS\Bucket". Got "stdClass"',
+        ];
+
+        yield 'service-not-bucket' => [
+            ['driver' => 'gridfs', 'bucket' => 'bucket'],
+            'Unexpected value for GridFS "bucket" configuration. Expecting "MongoDB\GridFS\Bucket". Got "stdClass"',
+        ];
+    }
+
+    #[DataProvider('provideInvalidOptions')]
+    public function testInvalidOptions(array $options, string $message)
+    {
+        // Service used by "service-not-bucket"
+        $this->app->singleton('bucket', static fn () => new stdClass());
+
+        $this->app['config']->set('filesystems.disks.' . $this->dataName(), $options);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage($message);
+
+        Storage::disk($this->dataName());
     }
 
     public function testReadOnlyAndThrowOption()
@@ -95,5 +127,24 @@ class FilesystemsTest extends TestCase
         $this->expectExceptionMessage('This is a readonly adapter.');
 
         $disk->put('file.txt', '');
+    }
+
+    public function testPrefix()
+    {
+        $this->app['config']->set('filesystems.disks.gridfs-prefix', [
+            'driver' => 'gridfs',
+            'connection' => 'mongodb',
+            'prefix' => 'foo/bar/',
+        ]);
+
+        $disk = Storage::disk('gridfs-prefix');
+        $disk->put('hello/world.txt', 'Hello World!');
+        $this->assertSame('Hello World!', $disk->get('hello/world.txt'));
+        $this->assertSame('Hello World!', stream_get_contents($this->getBucket()->openDownloadStreamByName('foo/bar/hello/world.txt')), 'File name is prefixed in the bucket');
+    }
+
+    private function getBucket(): Bucket
+    {
+        return DB::connection('mongodb')->getMongoDB()->selectGridFSBucket();
     }
 }
