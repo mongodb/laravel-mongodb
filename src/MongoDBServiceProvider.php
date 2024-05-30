@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel;
 
+use Closure;
 use Illuminate\Cache\CacheManager;
 use Illuminate\Cache\Repository;
 use Illuminate\Filesystem\FilesystemAdapter;
@@ -14,7 +15,6 @@ use InvalidArgumentException;
 use League\Flysystem\Filesystem;
 use League\Flysystem\GridFS\GridFSAdapter;
 use League\Flysystem\ReadOnly\ReadOnlyFilesystemAdapter;
-use MongoDB\Client;
 use MongoDB\GridFS\Bucket;
 use MongoDB\Laravel\Cache\MongoStore;
 use MongoDB\Laravel\Eloquent\Model;
@@ -106,23 +106,15 @@ class MongoDBServiceProvider extends ServiceProvider
 
                     $bucket = $connection->getMongoClient()
                         ->selectDatabase($config['database'] ?? $connection->getDatabaseName())
-                        ->selectGridFSBucket(['bucketName' => $config['bucket'] ?? 'fs']);
-                } elseif (isset($config['mongodb_uri'])) {
-                    // Create a new MongoDB client from the config
-                    if (! isset($config['database'])) {
-                        throw new InvalidArgumentException('MongoDB "database" name is required for filesystem GridFS configuration');
-                    }
+                        ->selectGridFSBucket(['bucketName' => $config['bucket'] ?? 'fs', 'disableMD5' => true]);
 
-                    $bucket = (new Client($config['mongodb_uri'], $config['mongodb_uri_options'] ?? [], $config['mongodb_driver_options'] ?? []))
-                        ->selectDatabase($config['database'])
-                        ->selectGridFSBucket(['bucketName' => $config['bucket'] ?? 'fs']);
-                } elseif (isset($config['bucket'])) {
                     // Allows setting the bucket instance directly
+                } elseif (isset($config['bucket'])) {
                     $bucket = $config['bucket'];
+                    // Resolves the "bucket" service
                     if (is_string($bucket)) {
-                        // Resolves the "bucket" service
                         $bucket = $app->get($bucket);
-                    } elseif ($bucket instanceof \Closure) {
+                    } elseif ($bucket instanceof Closure) {
                         $bucket = $bucket($app, $config);
                     }
 
