@@ -1089,8 +1089,12 @@ class ModelTest extends TestCase
         $this->assertEquals($createdAt, $user1->created_at->getTimestamp());
         $this->assertEquals($createdAt, $user1->updated_at->getTimestamp());
         if ($transaction) {
+            // In a transaction, firstOrCreate is used instead.
+            // Since a document is found, "save" is not called.
             $this->assertEquals([], $events);
         } else {
+            // The "duplicate key error" exception interrupts the save process
+            // before triggering "created" and "saved". Consistent with Laravel
             $this->assertEquals(['saving', 'creating'], $events);
         }
 

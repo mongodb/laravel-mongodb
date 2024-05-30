@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 * Add `mongodb` driver for Batching by @GromNaN in [#2904](https://github.com/mongodb/laravel-mongodb/pull/2904)
 * Rename queue option `table` to `collection`
 * Replace queue option `expire` with `retry_after`
+* Revert behavior of `createOrFirst` to delegate to `firstOrCreate` when in transaction by @GromNaN in [#2984](https://github.com/mongodb/laravel-mongodb/pull/2984)
 
 ## [4.3.1]
 
