@@ -198,13 +198,7 @@ class Builder extends EloquentBuilder
         return $results;
     }
 
-    /**
-     * Get the first record matching the attributes. If the record is not found, create it.
-     *
-     * @param  array $attributes
-     * @param  array $values
-     */
-    public function firstOrCreate(array $attributes = [], array $values = []): Model|Builder
+    public function firstOrCreate(array $attributes = [], array $values = [])
     {
         $instance = (clone $this)->where($attributes)->first();
         if ($instance !== null) {
@@ -219,7 +213,7 @@ class Builder extends EloquentBuilder
         return $this->createOrFirst($attributes, $values);
     }
 
-    public function createOrFirst(array $attributes = [], array $values = []): Builder|Model
+    public function createOrFirst(array $attributes = [], array $values = [])
     {
         // The duplicate key error would abort the transaction. Using the regular firstOrCreate in that case.
         if ($this->getConnection()->getSession()?->isInTransaction()) {
