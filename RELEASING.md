@@ -31,24 +31,18 @@ Update the version's release date and status from the
 [Manage Versions](https://jira.mongodb.org/plugins/servlet/project-config/PHPORM/versions)
 page.
 
-## Update version info
+## Choose a version
 
 This uses [semantic versioning](https://semver.org/). Do not break
 backwards compatibility in a non-major release or your users will kill you.
 
-Before proceeding, ensure that the default branch is up-to-date with all code
-changes in this maintenance branch. This is important because we will later
-merge the ensuing release commits with `--strategy=ours`, which will ignore
-changes from the merged commits.
+## Create the release with GitHub Action
 
-## Tag the release
+Go to the [Release New Version](https://github.com/mongodb/laravel-mongodb/actions/workflows/release.yml) action an click on "Run workflow".
 
-Create a tag for the release and push:
+Select the branch to release, the new version number and click "Run workflow".
 
-```console
-$ git tag -a -m "Release X.Y.Z" X.Y.Z
-$ git push mongodb --tags
-```
+The GitHub Action will create the tag and a draft release. Update and publish the release.
 
 ## Branch management
 
