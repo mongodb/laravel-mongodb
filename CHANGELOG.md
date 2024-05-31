@@ -10,7 +10,7 @@ All notable changes to this project will be documented in this file.
 * Replace queue option `expire` with `retry_after`
 * Revert behavior of `createOrFirst` to delegate to `firstOrCreate` when in transaction by @GromNaN in [#2984](https://github.com/mongodb/laravel-mongodb/pull/2984)
 
-## [4.3.1]
+## [4.3.1] - 2024-05-31
 
 * Fix memory leak when filling nested fields using dot notation by @GromNaN in [#2962](https://github.com/mongodb/laravel-mongodb/pull/2962)
 * Fix PHP error when accessing the connection after disconnect by @SanderMuller in [#2967](https://github.com/mongodb/laravel-mongodb/pull/2967)
