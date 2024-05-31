@@ -1,6 +1,15 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.4.0] - 2024-05-31
+
+* Support collection name prefix by @GromNaN in [#2930](https://github.com/mongodb/laravel-mongodb/pull/2930)
+* Ignore `_id: null` to let MongoDB generate an `ObjectId` by @GromNaN in [#2969](https://github.com/mongodb/laravel-mongodb/pull/2969)
+* Add `mongodb` driver for Batching by @GromNaN in [#2904](https://github.com/mongodb/laravel-mongodb/pull/2904)
+* Rename queue option `table` to `collection`
+* Replace queue option `expire` with `retry_after`
+* Revert behavior of `createOrFirst` to delegate to `firstOrCreate` when in transaction by @GromNaN in [#2984](https://github.com/mongodb/laravel-mongodb/pull/2984)
+
 ## [4.3.1] - 2024-05-31
 
 * Fix memory leak when filling nested fields using dot notation by @GromNaN in [#2962](https://github.com/mongodb/laravel-mongodb/pull/2962)

@@ -1,6 +1,11 @@
 parameters:
 	ignoreErrors:
 		-
+			message: "#^Access to an undefined property Illuminate\\\\Container\\\\Container\\:\\:\\$config\\.$#"
+			count: 3
+			path: src/MongoDBBusServiceProvider.php
+
+		-
 			message: "#^Method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:push\\(\\) invoked with 3 parameters, 0 required\\.$#"
 			count: 2
 			path: src/Relations/BelongsToMany.php
