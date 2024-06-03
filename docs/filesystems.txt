@@ -1,8 +1,8 @@
-.. _laravel-queues:
+.. _laravel-filesystems:
 
-======
-Queues
-======
+==================
+GridFS Filesystems
+==================
 
 .. facet::
    :name: genre
@@ -14,22 +14,23 @@ Queues
 Overview
 --------
 
-Using MongoDB to store files can be done using the
-`GridFS Adapter for Flysystem <https://flysystem.thephpleague.com/docs/adapter/gridfs/>`__.
+You can use the
+`GridFS Adapter for Flysystem <https://flysystem.thephpleague.com/docs/adapter/gridfs/>`__
+to store large files in MongoDB.
 GridFS lets you store files of unlimited size in the same database as your data.
-This ensures the integrity of transactions and backups.
 
 
 Configuration
 -------------
 
-Before using the GridFS driver, you will need to install the Flysystem GridFS package via the Composer package manager:
+Before using the GridFS driver, install the Flysystem GridFS package through the
+Composer package manager by running the following command:
 
 .. code-block:: bash
 
    composer require league/flysystem-gridfs
 
-Configure `Laravel File Storage <https://laravel.com/docs/{+laravel-docs-version+}/filesystem>`__,
+Configure `Laravel File Storage <https://laravel.com/docs/{+laravel-docs-version+}/filesystem>`__
 to use the ``gridfs`` driver in ``config/filesystems.php``:
 
 .. code-block:: php
@@ -38,13 +39,10 @@ to use the ``gridfs`` driver in ``config/filesystems.php``:
        'gridfs' => [
            'driver' => 'gridfs',
            'connection' => 'mongodb',
-           'database' => 'files',
-           'bucket' => 'fs',
-           'prefix' => '',
-           'read-only' => false,
-           'throw' => false,
        ],
    ],
+
+You can configure the disk the following settings in ``config/filesystems.php``:
 
 .. list-table::
    :header-rows: 1
@@ -60,10 +58,10 @@ to use the ``gridfs`` driver in ``config/filesystems.php``:
      - The database connection used to store jobs. It must be a ``mongodb`` connection. The driver uses the default connection if a connection is not specified.
 
    * - ``database``
-     - Name of the MongoDB database fot the GridFS bucket. Use the database of the connection if not specified.
+     - Name of the MongoDB database for the GridFS bucket. The driver uses the database of the connection if a database is not specified.
 
    * - ``bucket``
-     - Name of the GridFS bucket. A database can contain multiple buckets identified by their name. Defaults to ``fs``.
+     - Name or instance of the GridFS bucket. A database can contain multiple buckets identified by their name. Defaults to ``fs``.
 
    * - ``prefix``
      - Specifies a prefix for the name of the files that are stored in the bucket. Using a distinct bucket is recommended
@@ -74,11 +72,11 @@ to use the ``gridfs`` driver in ``config/filesystems.php``:
        depending on the configuration of ``throw``. Defaults to ``false``.
 
    * - ``throw``
-     - If ``true``, exceptions are thrown when an operation cannot be performed. Defaults to ``false``, the operations
-       return ``true`` in case of succes, ``false`` in case of error.
+     - If ``true``, exceptions are thrown when an operation cannot be performed. If ``false``,
+	   operations return ``true`` on success and ``false`` on error. Defaults to ``false``.
 
-If you have specific requirements, you can use a factory or a service name to define the bucket. The options
-``connection`` and ``database`` are ignored when a ``MongoDB\GridFS\Bucket`` is provided:
+You can also use a factory or a service name to create an instance of ``MongoDB\GridFS\Bucket``.
+In this case, the options ``connection`` and ``database`` are ignored:
 
 .. code-block:: php
 
@@ -102,9 +100,9 @@ If you have specific requirements, you can use a factory or a service name to de
 Usage
 -----
 
-The benefits of using Laravel File Storage facade, is that it provides a common
-interface for all the supported file systems. Use the ``gridfs`` disk in the
-same way as the ``local`` disk.
+A benefit of using Laravel Filesystem is that it provides a common interface
+for all the supported file systems. You can use the ``gridfs`` disk in the same
+way as the ``local`` disk.
 
 .. code-block:: php
 
@@ -117,22 +115,28 @@ same way as the ``local`` disk.
    echo $disk->get('hello.txt'); // Hello World!
 
 To learn more Laravel File Storage, see
-`Laravel File Storage <https://laravel.com/docs/{+laravel-docs-version+}/filesystem>`__.
+`Laravel File Storage <https://laravel.com/docs/{+laravel-docs-version+}/filesystem>`__
+in the Laravel documentation.
 
 Versioning
 ----------
 
-In GridFS, file names are metadata to file objects identified by unique MongoDB ObjectID.
-There may be more than one file with the same name, they are called "revisions":
+In GridFS, file names are metadata in file documents identified by unique
+MongoDB ObjectID. If multiple documents share the same file name, they are
+considered "revisions" and further distinguished by creation timestamps.
+
+The Laravel MongoDB integration uses the GridFS Flysystem adapter. It interacts
+with file revisions in the following ways:
 
 - Reading a file reads the last revision of this file name
-- Writing to a file name creates a new revision for this file name
+- Writing a file creates a new revision for this file name
 - Renaming a file renames all the revisions of this file name
 - Deleting a file deletes all the revisions of this file name
 
 The GridFS Adapter for Flysystem does not provide access to a specific revision
-of a filename, you must use the :manual:`GridFS API </tutorial/gridfs/>` if you
-need to work with revisions.
+of a filename. You must use the
+`GridFS API <https://www.mongodb.com/docs/php-library/current/tutorial/gridfs/>`__
+if you need to work with revisions, as shown in the following code:
 
 .. code-block:: php
 
