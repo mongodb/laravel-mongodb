@@ -94,18 +94,14 @@ class MongoDBServiceProvider extends ServiceProvider
 
                 $bucket = $config['bucket'] ?? null;
 
-                // Get the bucket from a factory function
                 if ($bucket instanceof Closure) {
+                    // Get the bucket from a factory function
                     $bucket = $bucket($app, $config);
-                }
-
-                // Get the bucket from a service
-                if (is_string($bucket) && $app->has($bucket)) {
+                } elseif (is_string($bucket) && $app->has($bucket)) {
+                    // Get the bucket from a service
                     $bucket = $app->get($bucket);
-                }
-
-                // Get the bucket from the database connection
-                if (is_string($bucket) || $bucket === null) {
+                } elseif (is_string($bucket) || $bucket === null) {
+                    // Get the bucket from the database connection
                     $connection = $app['db']->connection($config['connection']);
                     if (! $connection instanceof Connection) {
                         throw new InvalidArgumentException(sprintf('The database connection "%s" does not use the "mongodb" driver.', $config['connection'] ?? $app['config']['database.default']));
@@ -114,7 +110,9 @@ class MongoDBServiceProvider extends ServiceProvider
                     $bucket = $connection->getMongoClient()
                         ->selectDatabase($config['database'] ?? $connection->getDatabaseName())
                         ->selectGridFSBucket(['bucketName' => $config['bucket'] ?? 'fs', 'disableMD5' => true]);
-                } elseif (! $bucket instanceof Bucket) {
+                }
+
+                if (! $bucket instanceof Bucket) {
                     throw new InvalidArgumentException(sprintf('Unexpected value for GridFS "bucket" configuration. Expecting "%s". Got "%s"', Bucket::class, get_debug_type($bucket)));
                 }
 

@@ -110,7 +110,7 @@ class FilesystemsTest extends TestCase
         Storage::disk($this->dataName());
     }
 
-    public function testReadOnlyAndThrowOption()
+    public function testReadOnlyAndThrowOptions()
     {
         $this->app['config']->set('filesystems.disks.gridfs-readonly', [
             'driver' => 'gridfs',
