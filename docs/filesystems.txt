@@ -70,7 +70,8 @@ You can configure the disk the following settings in ``config/filesystems.php``:
 
    * - ``prefix``
      - Specifies a prefix for the name of the files that are stored in the bucket. Using a distinct bucket is recommended
-       in order to store the files in a different collection.
+       in order to store the files in a different collection, instead of using a prefix.
+       The prefix should not start with a leading slash ``/``.
 
    * - ``read-only``
      - If ``true``, writing to the GridFS bucket is disabled. Write operations will return ``false`` or throw exceptions
@@ -151,3 +152,8 @@ if you need to work with revisions, as shown in the following code:
 
    // Download the last but one version of a file
    $bucket->openDownloadStreamByName('hello.txt', ['revision' => -2])
+
+.. note::
+
+   If you use a prefix the Filesystem component, you will have to handle it
+   by yourself when using the GridFS API directly.
