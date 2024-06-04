@@ -21,9 +21,9 @@ the driver in your application's ``config/queue.php`` file:
            'driver' => 'mongodb',
            // You can also specify your jobs-specific database created on config/database.php
            'connection' => 'mongodb',
-           'collection' => 'jobs',
-           'queue' => 'default',
-           'retry_after' => 60,
+           // 'collection' => 'jobs',
+           // 'queue' => 'default',
+           // 'retry_after' => 60,
        ],
    ],
 
@@ -38,20 +38,20 @@ the behavior of the queue:
      - Description
 
    * - ``driver``
-     - **Required**. Specifies the queue driver to use. The value of
+     - **Required** Queue driver to use. The value of
        this property must be ``mongodb``.
 
    * - ``connection``
-     - Specifies the database connection used to store jobs. It must be a
+     - Database connection used to store jobs. It must be a
        ``mongodb`` connection. The driver uses the default connection if
        a connection is not specified.
 
    * - ``collection``
-     - **Required**. Specifies the name of the MongoDB collection to
+     - **Required** Name of the MongoDB collection to
        store jobs to process.
 
    * - ``queue``
-     - **Required**. Specifies the name of the queue.
+     - **Required** Name of the queue.
 
    * - ``retry_after``
      - Specifies how many seconds the queue connection should wait
@@ -81,16 +81,16 @@ how to handle failed jobs:
      - Description
 
    * - ``driver``
-     - **Required**. Specifies the queue driver to use. The value of
+     - **Required** Queue driver to use. The value of
        this property must be ``mongodb``.
 
    * - ``connection``
-     - Specifies the database connection used to store jobs. It must be
+     - Database connection used to store jobs. It must be
        a ``mongodb`` connection. The driver uses the default connection
        if a connection is not specified.
 
    * - ``collection``
-     - Specifies the name of the MongoDB collection to store failed
+     - Name of the MongoDB collection to store failed
        jobs. The value is ``failed_jobs`` by default.
 
 Then, add the service provider in your application's
@@ -136,19 +136,19 @@ job batching:
      - Description
 
    * - ``driver``
-     - **Required**. Specifies the queue driver to use. The value of
+     - **Required** Queue driver to use. The value of
        this property must be ``mongodb``.
 
    * - ``connection``
-     - Specifies the database connection used to store jobs. It must be a
+     - Database connection used to store jobs. It must be a
        ``mongodb`` connection. The driver uses the default connection if
        a connection is not specified.
 
    * - ``collection``
-     - Specifies the name of the MongoDB collection to store job
+     - Name of the MongoDB collection to store job
        batches. The value is ``job_batches`` by default.
 
-The, add the service provider in ``config/app.php``:
+Then, add the service provider in ``config/app.php``:
 
 .. code-block:: php
 
