@@ -19,7 +19,8 @@ the driver in your application's ``config/queue.php`` file:
    'connections' => [
        'database' => [
            'driver' => 'mongodb',
-           // You can also specify your jobs-specific database created on config/database.php
+           // You can also specify your jobs-specific database
+           // in the config/database.php file
            'connection' => 'mongodb',
            // 'collection' => 'jobs',
            // 'queue' => 'default',
