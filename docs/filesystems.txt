@@ -39,6 +39,11 @@ to use the ``gridfs`` driver in ``config/filesystems.php``:
        'gridfs' => [
            'driver' => 'gridfs',
            'connection' => 'mongodb',
+           // 'database' => null,
+           // 'bucket' => 'fs',
+           // 'prefix' => '',
+           // 'read-only' => false,
+           // 'throw' => false,
        ],
    ],
 
@@ -80,8 +85,8 @@ In this case, the options ``connection`` and ``database`` are ignored:
 
 .. code-block:: php
 
-    use Illuminate\Foundation\Application;
-    use MongoDB\GridFS\Bucket;
+   use Illuminate\Foundation\Application;
+   use MongoDB\GridFS\Bucket;
 
    'disks' => [
        'gridfs' => [
@@ -121,8 +126,8 @@ in the Laravel documentation.
 Versioning
 ----------
 
-In GridFS, file names are metadata in file documents identified by unique
-MongoDB ObjectID. If multiple documents share the same file name, they are
+File names in GridFS are metadata in file documents, which are identified by
+unique ObjectIDs. If multiple documents share the same file name, they are
 considered "revisions" and further distinguished by creation timestamps.
 
 The Laravel MongoDB integration uses the GridFS Flysystem adapter. It interacts
