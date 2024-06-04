@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.5.0] - upcoming
+
+* Add GridFS integration for Laravel File Storage by @GromNaN in [#2984](https://github.com/mongodb/laravel-mongodb/pull/2985)
+
 ## [4.4.0] - 2024-05-31
 
 * Support collection name prefix by @GromNaN in [#2930](https://github.com/mongodb/laravel-mongodb/pull/2930)

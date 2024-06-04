@@ -34,6 +34,8 @@
     },
     "require-dev": {
         "mongodb/builder": "^0.2",
+        "league/flysystem-gridfs": "^3.28",
+        "league/flysystem-read-only": "^3.0",
         "phpunit/phpunit": "^10.3",
         "orchestra/testbench": "^8.0|^9.0",
         "mockery/mockery": "^1.4.4",
@@ -45,6 +47,7 @@
         "illuminate/bus": "< 10.37.2"
     },
     "suggest": {
+        "league/flysystem-gridfs": "Filesystem storage in MongoDB with GridFS",
         "mongodb/builder": "Provides a fluent aggregation builder for MongoDB pipelines"
     },
     "minimum-stability": "dev",
