@@ -31,18 +31,18 @@ Update the version's release date and status from the
 [Manage Versions](https://jira.mongodb.org/plugins/servlet/project-config/PHPORM/versions)
 page.
 
-## Choose a version
+## Trigger the release workflow
 
-This uses [semantic versioning](https://semver.org/). Do not break
-backwards compatibility in a non-major release or your users will kill you.
+Releases are done automatically through a GitHub Action. Visit the corresponding
+[Release New Version](https://github.com/mongodb/laravel-mongodb/actions/workflows/release.yml)
+workflow page to trigger a new build. Select the correct branch (e.g. `v4.5`)
+and trigger a new run using the "Run workflow" button. In the following prompt,
+enter the version number.
 
-## Create the release with GitHub Action
+The automation will then create and push the necessary commits and tag, and create
+a draft release. The release is created in a draft state and can be published
+once the release notes have been updated.
 
-Go to the [Release New Version](https://github.com/mongodb/laravel-mongodb/actions/workflows/release.yml) action an click on "Run workflow".
-
-Select the branch to release, the new version number and click "Run workflow".
-
-The GitHub Action will create the tag and a draft release. Update and publish the release.
 
 ## Branch management
 
