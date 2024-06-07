@@ -9,20 +9,29 @@ on:
         required: true
         type: "string"
 
-env:
-  # TODO: Use different token
-  GH_TOKEN: ${{ secrets.MERGE_UP_TOKEN }}
-  GIT_AUTHOR_NAME: "DBX PHP Release Bot"
-  GIT_AUTHOR_EMAIL: "dbx-php@mongodb.com"
-
 jobs:
   prepare-release:
+    environment: release
     name: "Prepare release"
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
 
     steps:
       - name: "Create release output"
         run: echo '🎬 Release process for version ${{ inputs.version }} started by @${{ github.triggering_actor }}' >> $GITHUB_STEP_SUMMARY
+
+      - name: "Create temporary app token"
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID }}
+          private-key: ${{ secrets.APP_PRIVATE_KEY }}
+
+      - name: "Store GitHub token in environment"
+        run: echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
+        shell: bash
 
       - uses: actions/checkout@v4
         with:
@@ -51,10 +60,12 @@ jobs:
       # Preliminary checks done - commence the release process
       #
 
-      - name: "Set git author information"
-        run: |
-          git config user.name "${GIT_AUTHOR_NAME}"
-          git config user.email "${GIT_AUTHOR_EMAIL}"
+      - name: "Set up drivers-github-tools"
+        uses: mongodb-labs/drivers-github-tools/setup@v2
+        with:
+          aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws_region_name: ${{ vars.AWS_REGION_NAME }}
+          aws_secret_id: ${{ secrets.AWS_SECRET_ID }}
 
       # Create draft release with release notes
       - name: "Create draft release"
@@ -62,13 +73,9 @@ jobs:
 
       # This step creates the signed release tag
       - name: "Create release tag"
-        uses: mongodb-labs/drivers-github-tools/garasign/git-sign@v1
+        uses: mongodb-labs/drivers-github-tools/git-sign@v2
         with:
-          command: "git tag -m 'Release ${{ inputs.version }}' -s --local-user=${{ vars.GPG_KEY_ID }} ${{ inputs.version }}"
-          garasign_username: ${{ secrets.GRS_CONFIG_USER1_USERNAME }}
-          garasign_password: ${{ secrets.GRS_CONFIG_USER1_PASSWORD }}
-          artifactory_username: ${{ secrets.ARTIFACTORY_USER }}
-          artifactory_password: ${{ secrets.ARTIFACTORY_PASSWORD }}
+          command: "git tag -m 'Release ${{ inputs.version }}' -s --local-user=${{ env.GPG_KEY_ID }} ${{ inputs.version }}"
 
       # TODO: Manually merge using ours strategy. This avoids merge-up pull requests being created
       # Process is:
