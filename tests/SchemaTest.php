@@ -377,6 +377,23 @@ class SchemaTest extends TestCase
         $this->assertSame($check[2]['column'], $check2[2]['column']);
     }
 
+    public function testHasColumn(): void
+    {
+        DB::connection()->collection('newcollection')->insert(['column1' => 'value']);
+
+        $this->assertTrue(Schema::hasColumn('newcollection', 'column1'));
+        $this->assertFalse(Schema::hasColumn('newcollection', 'column2'));
+    }
+
+    public function testHasColumns(): void
+    {
+        DB::connection()->collection('newcollection')->insert(['column1' => 'value']);
+        DB::connection()->collection('newcollection')->insert(['column2' => 'value']);
+
+        $this->assertTrue(Schema::hasColumns('newcollection', ['column1', 'column2']));
+        $this->assertFalse(Schema::hasColumns('newcollection', ['column1', 'column3']));
+    }
+
     protected function getIndex(string $collection, string $name)
     {
         $collection = DB::getCollection($collection);

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Schema;
 
 use Closure;
+use Illuminate\Support\Facades\DB;
 use MongoDB\Model\CollectionInfo;
 
 use function count;
@@ -13,15 +14,37 @@ use function iterator_to_array;
 
 class Builder extends \Illuminate\Database\Schema\Builder
 {
-    /** @inheritdoc */
-    public function hasColumn($table, $column)
+    /**
+     * Check if column exists in the collection schema.
+     *
+     * @param $table
+     * @param $column
+     * @return bool
+     */
+    public function hasColumn($table, $column): bool
     {
-        return true;
+        $collection = $this->connection->table($table);
+
+        return $collection->where($column, 'exists', true)
+            ->project(['_id' => 1])
+            ->exists();
     }
 
-    /** @inheritdoc */
-    public function hasColumns($table, array $columns)
+    /**
+     * Check if columns exists in the collection schema.
+     *
+     * @param       $table
+     * @param array $columns
+     *
+     * @return bool
+     */
+    public function hasColumns($table, array $columns): bool
     {
+        foreach ($columns as $column) {
+            if (!$this->hasColumn($table, $column)) {
+                return false;
+            }
+        }
         return true;
     }
 
