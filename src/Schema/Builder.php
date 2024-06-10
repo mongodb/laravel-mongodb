@@ -39,12 +39,11 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function hasColumns($table, array $columns): bool
     {
-        foreach ($columns as $column) {
-            if (!$this->hasColumn($table, $column)) {
-                return false;
-            }
-        }
-        return true;
+        $collection = $this->connection->table($table);
+
+        return $collection->whereAll($columns, 'exists', true)
+            ->project(['_id' => 1])
+            ->exists();
     }
 
     /**

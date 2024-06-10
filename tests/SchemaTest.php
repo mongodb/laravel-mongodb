@@ -387,8 +387,10 @@ class SchemaTest extends TestCase
 
     public function testHasColumns(): void
     {
-        DB::connection()->collection('newcollection')->insert(['column1' => 'value']);
-        DB::connection()->collection('newcollection')->insert(['column2' => 'value']);
+        // Insert documents with both column1 and column2
+        DB::connection()->collection('newcollection')->insert([
+            ['column1' => 'value1', 'column2' => 'value2']
+        ]);
 
         $this->assertTrue(Schema::hasColumns('newcollection', ['column1', 'column2']));
         $this->assertFalse(Schema::hasColumns('newcollection', ['column1', 'column3']));
