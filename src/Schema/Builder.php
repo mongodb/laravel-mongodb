@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Schema;
 
 use Closure;
-use Illuminate\Support\Facades\DB;
 use MongoDB\Model\CollectionInfo;
 
 use function count;
