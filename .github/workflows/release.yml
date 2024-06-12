@@ -95,3 +95,13 @@ jobs:
         run: |
           echo '🚀 Created tag and drafted release for version [${{ inputs.version }}](${{ env.RELEASE_URL }})' >> $GITHUB_STEP_SUMMARY
           echo '✍️ You may now update the release notes and publish the release when ready' >> $GITHUB_STEP_SUMMARY
+
+  static-analysis:
+    needs: prepare-release
+    name: "Run Static Analysis"
+    uses: ./.github/workflows/static-analysis.yml
+    with:
+      ref: refs/tags/${{ inputs.version }}
+    permissions:
+      security-events: write
+      id-token: write
