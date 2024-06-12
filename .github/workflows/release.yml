@@ -105,3 +105,63 @@ jobs:
     permissions:
       security-events: write
       id-token: write
+
+  publish-ssdlc-assets:
+    needs: static-analysis
+    environment: release
+    name: "Publish SSDLC Assets"
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: read
+      id-token: write
+      contents: write
+
+    steps:
+      - name: "Generate token and checkout repository"
+        uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+        with:
+          app_id: ${{ vars.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
+          ref: refs/tags/${{ inputs.version }}
+
+      # Sets the S3_ASSETS environment variable used later
+      - name: "Set up drivers-github-tools"
+        uses: mongodb-labs/drivers-github-tools/setup@v2
+        with:
+          aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws_region_name: ${{ vars.AWS_REGION_NAME }}
+          aws_secret_id: ${{ secrets.AWS_SECRET_ID }}
+
+      - name: "Generate authorized publication document"
+        uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
+        with:
+          product_name: "MongoDB Laravel Integration"
+          release_version: ${{ inputs.version }}
+          filenames: ""
+          token: ${{ env.GH_TOKEN }}
+
+      - name: "Download SBOM file from Silk"
+        uses: mongodb-labs/drivers-github-tools/sbom@v2
+        with:
+          silk_asset_group: mongodb-laravel-integration
+
+      - name: "Upload SBOM as release artifact"
+        run: gh release upload ${{ inputs.version }} ${{ env.S3_ASSETS }}/cyclonedx.sbom.json
+        continue-on-error: true
+
+      - name: "Generate SARIF report from code scanning alerts"
+        uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
+        with:
+          ref: ${{ inputs.version }}
+          output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
+
+      - name: "Generate compliance report"
+        uses: mongodb-labs/drivers-github-tools/compliance-report@v2
+        with:
+          token: ${{ env.GH_TOKEN }}
+
+      - name: Upload S3 assets
+        uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+        with:
+          version: ${{ inputs.version }}
+          product_name: laravel-mongodb
