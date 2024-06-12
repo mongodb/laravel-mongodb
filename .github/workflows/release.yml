@@ -22,21 +22,11 @@ jobs:
       - name: "Create release output"
         run: echo '🎬 Release process for version ${{ inputs.version }} started by @${{ github.triggering_actor }}' >> $GITHUB_STEP_SUMMARY
 
-      - name: "Create temporary app token"
-        uses: actions/create-github-app-token@v1
-        id: app-token
+      - name: "Generate token and checkout repository"
+        uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
         with:
-          app-id: ${{ vars.APP_ID }}
-          private-key: ${{ secrets.APP_PRIVATE_KEY }}
-
-      - name: "Store GitHub token in environment"
-        run: echo "GH_TOKEN=${{ steps.app-token.outputs.token }}" >> "$GITHUB_ENV"
-        shell: bash
-
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-          token: ${{ env.GH_TOKEN }}
+          app_id: ${{ vars.APP_ID }}
+          private_key: ${{ secrets.APP_PRIVATE_KEY }}
 
       - name: "Store version numbers in env variables"
         run: |
