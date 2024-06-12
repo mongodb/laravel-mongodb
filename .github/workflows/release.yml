@@ -61,11 +61,11 @@ jobs:
       - name: "Create draft release"
         run: echo "RELEASE_URL=$(gh release create ${{ inputs.version }} --target ${{ github.ref_name }} --title "${{ inputs.version }}" --generate-notes --draft)" >> "$GITHUB_ENV"
 
-      # This step creates the signed release tag
       - name: "Create release tag"
-        uses: mongodb-labs/drivers-github-tools/git-sign@v2
+        uses: mongodb-labs/drivers-github-tools/tag-version@v2
         with:
-          command: "git tag -m 'Release ${{ inputs.version }}' -s --local-user=${{ env.GPG_KEY_ID }} ${{ inputs.version }}"
+          version: ${{ inputs.version }}
+          tag_message_template: 'Release ${VERSION}'
 
       # TODO: Manually merge using ours strategy. This avoids merge-up pull requests being created
       # Process is:
@@ -73,13 +73,6 @@ jobs:
       # 2. merge release branch using --strategy=ours
       # 3. push next branch
       # 4. switch back to release branch, then push
-
-      - name: "Push changes from release branch"
-        run: git push
-
-      # Pushing the release tag starts build processes that then produce artifacts for the release
-      - name: "Push release tag"
-        run: git push origin ${{ inputs.version }}
 
       - name: "Set summary"
         run: |
