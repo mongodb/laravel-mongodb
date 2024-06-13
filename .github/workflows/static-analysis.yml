@@ -1,0 +1,74 @@
+name: "Static Analysis"
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+    inputs:
+      ref:
+        description: "The git ref to check"
+        type: string
+        required: true
+
+env:
+  PHP_VERSION: "8.2"
+  DRIVER_VERSION: "stable"
+
+jobs:
+  phpstan:
+    runs-on: "ubuntu-22.04"
+    continue-on-error: true
+    strategy:
+      matrix:
+        php:
+          - '8.1'
+          - '8.2'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: curl, mbstring
+          tools: composer:v2
+          coverage: none
+
+      - name: Cache dependencies
+        id: composer-cache
+        uses: actions/cache@v4
+        with:
+          path: ./vendor
+          key: composer-${{ hashFiles('**/composer.lock') }}
+
+      - name: Install dependencies
+        run: composer install
+
+      - name: Restore cache PHPStan results
+        id: phpstan-cache-restore
+        uses: actions/cache/restore@v4
+        with:
+          path: .cache
+          key: "phpstan-result-cache-${{ matrix.php }}-${{ github.run_id }}"
+          restore-keys: |
+            phpstan-result-cache-
+
+      - name: Run PHPStan
+        run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi --error-format=sarif > phpstan.sarif
+
+      - name: "Upload SARIF report"
+        if: always()
+        uses: "github/codeql-action/upload-sarif@v3"
+        with:
+          sarif_file: phpstan.sarif
+
+      - name: Save cache PHPStan results
+        id: phpstan-cache-save
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: .cache
+          key: ${{ steps.phpstan-cache-restore.outputs.cache-primary-key }}
