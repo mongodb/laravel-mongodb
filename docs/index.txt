@@ -23,6 +23,7 @@
    /cache
    /queues
    /transactions
+   /filesystems
    /issues-and-help
    /feature-compatibility
    /compatibility
@@ -73,6 +74,7 @@ see the following content:
 - :ref:`laravel-cache`
 - :ref:`laravel-queues`
 - :ref:`laravel-transactions`
+- :ref:`laravel-filesystems`
 
 Issues & Help
 -------------
