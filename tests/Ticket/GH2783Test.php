@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Tests\Ticket;
 
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Relations\MorphTo;
+use MongoDB\Laravel\Tests\TestCase;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 /**
