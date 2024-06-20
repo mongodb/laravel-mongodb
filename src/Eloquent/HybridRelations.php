@@ -226,7 +226,7 @@ trait HybridRelations
                 $this->newQuery(),
                 $this,
                 $id,
-                $ownerKey ?: $this->getKeyName(),
+                $ownerKey,
                 $type,
                 $name,
             );
