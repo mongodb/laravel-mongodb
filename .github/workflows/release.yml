@@ -115,33 +115,16 @@ jobs:
           aws_region_name: ${{ vars.AWS_REGION_NAME }}
           aws_secret_id: ${{ secrets.AWS_SECRET_ID }}
 
-      - name: "Generate authorized publication document"
-        uses: mongodb-labs/drivers-github-tools/authorized-pub@v2
+      - name: "Generate SSDLC Reports"
+        uses: mongodb-labs/drivers-github-tools/full-report@v2
         with:
           product_name: "MongoDB Laravel Integration"
           release_version: ${{ inputs.version }}
-          filenames: ""
-          token: ${{ env.GH_TOKEN }}
-
-      - name: "Download SBOM file from Silk"
-        uses: mongodb-labs/drivers-github-tools/sbom@v2
-        with:
           silk_asset_group: mongodb-laravel-integration
 
       - name: "Upload SBOM as release artifact"
         run: gh release upload ${{ inputs.version }} ${{ env.S3_ASSETS }}/cyclonedx.sbom.json
         continue-on-error: true
-
-      - name: "Generate SARIF report from code scanning alerts"
-        uses: mongodb-labs/drivers-github-tools/code-scanning-export@v2
-        with:
-          ref: ${{ inputs.version }}
-          output-file: ${{ env.S3_ASSETS }}/code-scanning-alerts.json
-
-      - name: "Generate compliance report"
-        uses: mongodb-labs/drivers-github-tools/compliance-report@v2
-        with:
-          token: ${{ env.GH_TOKEN }}
 
       - name: Upload S3 assets
         uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
