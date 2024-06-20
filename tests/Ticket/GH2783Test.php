@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Ticket;
 
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Relations\MorphTo;
 use MongoDB\Laravel\Tests\TestCase;
-use Illuminate\Database\Eloquent\Relations\MorphOne;
 
 /**
  * @see https://github.com/mongodb/laravel-mongodb/issues/2783
