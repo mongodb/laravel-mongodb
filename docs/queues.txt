@@ -9,23 +9,28 @@ Queues
    :values: tutorial
 
 .. meta::
-   :keywords: php framework, odm, code example
+   :keywords: php framework, odm, code example, jobs
 
-If you want to use MongoDB as your database backend for Laravel Queue, change
-the driver in ``config/queue.php``:
+To use MongoDB as your database for Laravel Queue, change
+the driver in your application's ``config/queue.php`` file:
 
 .. code-block:: php
 
    'connections' => [
        'database' => [
            'driver' => 'mongodb',
-           // You can also specify your jobs specific database created on config/database.php
+           // You can also specify your jobs-specific database
+           // in the config/database.php file
            'connection' => 'mongodb',
            'collection' => 'jobs',
            'queue' => 'default',
-           'retry_after' => 60,
+           // Optional setting
+           // 'retry_after' => 60,
        ],
    ],
+
+The following table describes properties that you can specify to configure
+the behavior of the queue:
 
 .. list-table::
    :header-rows: 1
@@ -35,22 +40,29 @@ the driver in ``config/queue.php``:
      - Description
 
    * - ``driver``
-     - **Required**. Specifies the queue driver to use. Must be ``mongodb``.
+     - **Required** Queue driver to use. The value of
+       this property must be ``mongodb``.
 
    * - ``connection``
-     - The database connection used to store jobs. It must be a ``mongodb`` connection. The driver uses the default connection if a connection is not specified.
+     - Database connection used to store jobs. It must be a
+       ``mongodb`` connection. The driver uses the default connection if
+       a connection is not specified.
 
    * - ``collection``
-     - **Required**. Name of the MongoDB collection to store jobs to process.
+     - **Required** Name of the MongoDB collection to
+       store jobs to process.
 
    * - ``queue``
-     - **Required**. Name of the queue.
+     - **Required** Name of the queue.
 
    * - ``retry_after``
-     - Specifies how many seconds the queue connection should wait before retrying a job that is being processed. Defaults to ``60``. 
+     - Specifies how many seconds the queue connection should wait
+       before retrying a job that is being processed. The value is
+       ``60`` by default.
 
-If you want to use MongoDB to handle failed jobs, change the database in
-``config/queue.php``:
+To use MongoDB to handle failed jobs, create a ``failed`` entry in your
+application's ``config/queue.php`` file and specify the database and
+collection:
 
 .. code-block:: php
 
@@ -60,6 +72,9 @@ If you want to use MongoDB to handle failed jobs, change the database in
        'collection' => 'failed_jobs',
    ],
 
+The following table describes properties that you can specify to configure
+how to handle failed jobs:
+
 .. list-table::
    :header-rows: 1
    :widths: 25 75
@@ -68,32 +83,41 @@ If you want to use MongoDB to handle failed jobs, change the database in
      - Description
 
    * - ``driver``
-     - **Required**. Specifies the queue driver to use. Must be ``mongodb``.
+     - **Required** Queue driver to use. The value of
+       this property must be ``mongodb``.
 
    * - ``connection``
-     - The database connection used to store jobs. It must be a ``mongodb`` connection. The driver uses the default connection if a connection is not specified.
+     - Database connection used to store jobs. It must be
+       a ``mongodb`` connection. The driver uses the default connection
+       if a connection is not specified.
 
    * - ``collection``
-     - Name of the MongoDB collection to store failed jobs. Defaults to ``failed_jobs``. 
+     - Name of the MongoDB collection to store failed
+       jobs. The value is ``failed_jobs`` by default.
 
-
-Add the service provider in ``config/app.php``:
+Then, add the service provider in your application's
+``config/app.php`` file:
 
 .. code-block:: php
 
    MongoDB\Laravel\MongoDBQueueServiceProvider::class,
 
-
 Job Batching
 ------------
 
-`Job batching <https://laravel.com/docs/{+laravel-docs-version+}/queues#job-batching>`__
-is a Laravel feature to execute a batch of jobs and subsequent actions before,
-after, and during the execution of the jobs from the queue.
+**Job batching** is a Laravel feature that enables you to execute a
+batch of jobs and related actions before, after, and during the
+execution of the jobs from the queue. To learn more about this feature,
+see `Job Batching <https://laravel.com/docs/{+laravel-docs-version+}/queues#job-batching>`__
+in the Laravel documentation.
 
-With MongoDB, you don't have to create any collection before using job batching.
-The ``job_batches`` collection is created automatically to store meta
-information about your job batches, such as their completion percentage.
+In MongoDB, you don't have to create a designated collection before
+using job batching. The ``job_batches`` collection is created
+automatically to store metadata about your job batches, such as
+their completion percentage.
+
+To enable job batching, create the ``batching`` entry in your
+application's ``config/queue.php`` file:
 
 .. code-block:: php
 
@@ -103,6 +127,9 @@ information about your job batches, such as their completion percentage.
        'collection' => 'job_batches',
    ],
 
+The following table describes properties that you can specify to configure
+job batching:
+
 .. list-table::
    :header-rows: 1
    :widths: 25 75
@@ -111,15 +138,20 @@ information about your job batches, such as their completion percentage.
      - Description
 
    * - ``driver``
-     - **Required**. Specifies the queue driver to use. Must be ``mongodb``.
+     - **Required** Queue driver to use. The value of
+       this property must be ``mongodb``.
 
    * - ``connection``
-     - The database connection used to store jobs. It must be a ``mongodb`` connection. The driver uses the default connection if a connection is not specified.
+     - Database connection used to store jobs. It must be a
+       ``mongodb`` connection. The driver uses the default connection if
+       a connection is not specified.
 
    * - ``collection``
-     - Name of the MongoDB collection to store job batches. Defaults to ``job_batches``. 
+     - Name of the MongoDB collection to store job
+       batches. The value is ``job_batches`` by default.
 
-Add the service provider in ``config/app.php``:
+Then, add the service provider in your application's ``config/app.php``
+file:
 
 .. code-block:: php
 
