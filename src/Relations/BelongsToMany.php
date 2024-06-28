@@ -202,7 +202,13 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Attach the new ids to the parent model.
         if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
-            $this->parent->push($this->relatedPivotKey, (array) $id, true);
+            if ($id instanceof \MongoDB\BSON\ObjectId) {
+                $id = [$id];
+            } else {
+                $id = (array) $id;
+            }
+            
+            $this->parent->push($this->relatedPivotKey, $id, true);
         } else {
             $instance = new $this->related();
             $instance->forceFill([$this->relatedKey => $id]);
