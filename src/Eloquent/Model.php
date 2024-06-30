@@ -771,4 +771,29 @@ abstract class Model extends BaseModel
 
         return $this;
     }
+
+    /**
+     * Determine if two models have the same ID and belong to the same table.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model|null  $model
+     * @return bool
+     */
+    public function is($model)
+    {
+        $modelKey = $model?->getKey();
+        $currentKey = $this->getKey();
+
+        if ($modelKey instanceof \MongoDB\BSON\ObjectId) {
+            $modelKey = (string) $modelKey;
+        }
+
+        if ($currentKey instanceof \MongoDB\BSON\ObjectId) {
+            $currentKey = (string) $currentKey;
+        }
+
+        return ! is_null($model) &&
+            $currentKey === $modelKey &&
+            $this->getTable() === $model->getTable() &&
+            $this->getConnectionName() === $model->getConnectionName();
+    }
 }
