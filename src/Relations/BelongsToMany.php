@@ -386,6 +386,12 @@ class BelongsToMany extends EloquentBelongsToMany
 
         foreach ($results as $result) {
             foreach ($result->$foreign as $item) {
+
+                //Prevent if id is non keyable
+                if ($item instanceof \MongoDB\BSON\ObjectId) {
+                    $item = (string) $item;
+                }
+
                 $dictionary[$item][] = $result;
             }
         }
