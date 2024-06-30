@@ -14,9 +14,11 @@ use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Photo;
+use MongoDB\Laravel\Tests\Models\PlanetOid;
 use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\Soft;
+use MongoDB\Laravel\Tests\Models\SpaceExplorerOid;
 use MongoDB\Laravel\Tests\Models\User;
 
 class RelationsTest extends TestCase
@@ -35,6 +37,8 @@ class RelationsTest extends TestCase
         Photo::truncate();
         Label::truncate();
         Skill::truncate();
+        SpaceExplorerOid::truncate();
+        PlanetOid::truncate();
     }
 
     public function testHasMany(): void
@@ -1272,5 +1276,106 @@ class RelationsTest extends TestCase
         $items = Item::whereBelongsTo($user)->get();
 
         $this->assertCount(3, $items);
+    }
+
+    public function testBelongsToManyOid(): void
+    {
+        $explorer = SpaceExplorerOid::create(['name' => 'John Doe']);
+
+        // Add 2 explorer
+        $explorer->planetsVisited()->save(new PlanetOid(['name' => 'Mars']));
+        $explorer->planetsVisited()->create(['name' => 'Jupiter']);
+
+        // Refetch
+        $explorer = SpaceExplorerOid::with('planetsVisited')->find($explorer->_id);
+        $planet = PlanetOid::with('visitors')->first();
+
+        // Check for relation attributes
+        $this->assertArrayHasKey('space_explorer_oid_ids', $planet->getAttributes());
+        $this->assertArrayHasKey('planet_oid_ids', $explorer->getAttributes());
+
+        $planets = $explorer->getRelation('planetsVisited');
+        $explorers = $planet->getRelation('visitors');
+
+        $this->assertInstanceOf(Collection::class, $planets);
+        $this->assertInstanceOf(Collection::class, $explorers);
+        $this->assertInstanceOf(SpaceExplorerOid::class, $explorers[0]);
+        $this->assertInstanceOf(PlanetOid::class, $planets[0]);
+        $this->assertCount(2, $explorer->planetsVisited);
+        $this->assertCount(1, $planet->visitors);
+
+        // Now create a new explorer to an existing planet
+        $explorer = $planet->visitors()->create(['name' => 'skaywalker']);
+
+        $this->assertInstanceOf(Collection::class, $explorer->planetsVisited);
+        $this->assertInstanceOf(PlanetOid::class, $explorer->planetsVisited->first());
+        $this->assertCount(1, $explorer->planetsVisited);
+
+        // Get explorer and unattached planet
+        $explorer  = SpaceExplorerOid::where('name', '=', 'skaywalker')->first();
+        $planet = PlanetOid::where('name', '=', 'Jupiter')->first();
+
+        // Check the models are what they should be
+        $this->assertInstanceOf(PlanetOid::class, $planet);
+        $this->assertInstanceOf(SpaceExplorerOid::class, $explorer);
+
+        // Assert they are not attached
+        $this->assertNotContains($planet->_id, $explorer->planet_oid_ids);
+        $this->assertNotContains($explorer->_id, $planet->space_explorer_oid_ids);
+        $this->assertCount(1, $explorer->planetsVisited);
+        $this->assertCount(1, $planet->visitors);
+
+        // Attach the planet to the explorer
+        $explorer->planetsVisited()->attach($planet);
+
+        // Get the new explorer model
+        $explorer  = SpaceExplorerOid::where('name', '=', 'skaywalker')->first();
+        $planet = PlanetOid::where('name', '=', 'Mars')->first();
+
+        // Assert they are attached
+        $this->assertNotContains($planet->_id, $explorer->planet_oid_ids);
+        $this->assertNotContains($explorer->_id, $planet->space_explorer_oid_ids);
+        $this->assertCount(2, $explorer->planetsVisited);
+        $this->assertCount(2, $planet->visitors);
+
+
+        // Detach planets from explorer
+        $explorer->planetsVisited()->sync([]);
+
+        // Get the new user model
+        $explorer   = SpaceExplorerOid::where('name', '=', 'skaywalker')->first();
+        $planet = PlanetOid::where('name', '=', 'Mars')->first();
+
+        // Assert they are attached
+        $this->assertNotContains($planet->_id, $explorer->planet_oid_ids);
+        $this->assertNotContains($explorer->_id, $planet->space_explorer_oid_ids);
+        $this->assertCount(0, $explorer->planetsVisited);
+        $this->assertCount(1, $planet->visitors);
+    }
+
+    public function testBelongsToManySyncOid(): void
+    {
+        // create test instances
+        $explorer = SpaceExplorerOid::create(['name' => 'John Doe']);
+        $planet1 = PlanetOid::create(['name' => 'Mars']);
+        $planet2 = PlanetOid::create(['name' => 'Jupiter']);
+
+        // Sync multiple
+        $explorer->planetsVisited()->sync([$planet1->_id, $planet2->_id]);
+        $this->assertCount(2, $explorer->planetsVisited);
+
+        // Sync single wrapped by an array
+        $explorer->planetsVisited()->sync([$planet1->_id]);
+        $explorer->load('planetsVisited');
+
+        $this->assertCount(1, $explorer->planetsVisited);
+        self::assertTrue($explorer->planetsVisited->first()->is($planet1));
+
+        // Sync single model
+        $explorer->planetsVisited()->sync($planet2);
+        $explorer->load('planetsVisited');
+
+        $this->assertCount(1, $explorer->planetsVisited);
+        self::assertTrue($explorer->planetsVisited->first()->is($planet2));
     }
 }
