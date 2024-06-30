@@ -7,7 +7,7 @@ namespace MongoDB\Laravel\Relations;
 use BackedEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use \Illuminate\Support\Collection as BaseCollection;
+use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
