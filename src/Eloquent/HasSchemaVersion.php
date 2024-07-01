@@ -63,7 +63,7 @@ trait HasSchemaVersion
      */
     public function setSchemaVersion(int $version): void
     {
-            $this->{static::getSchemaVersionKey()} = $version;
+        $this->{static::getSchemaVersionKey()} = $version;
     }
 
     /**
