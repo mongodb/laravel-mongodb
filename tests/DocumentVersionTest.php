@@ -26,8 +26,6 @@ class DocumentVersionTest extends TestCase
         $document = DocumentVersion::query()->where('name', 'Luc')->first();
         $this->assertEquals(35, $document->age);
 
-        dump($document->toArray());
-
         // Test without migration
         $newDocument = new DocumentVersion(['name' => 'Vador']);
         $newDocument->documentVersion = 2;
@@ -36,9 +34,7 @@ class DocumentVersionTest extends TestCase
         $this->assertEquals(2, $newDocument->getDocumentVersion());
         $this->assertNull($newDocument->age);
 
-        $document = DocumentVersion::query()->where('name', 'Vador')->first();
+        $newDocument = DocumentVersion::query()->where('name', 'Vador')->first();
         $this->assertNull($newDocument->age);
-
-        dump($newDocument->toArray());
     }
 }

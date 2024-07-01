@@ -12,8 +12,6 @@ class DocumentVersion extends Eloquent
 {
     use HasDocumentVersion;
 
-    public $documentVersion = 1;
-
     protected $connection       = 'mongodb';
     protected $collection       = 'documentVersion';
     protected static $unguarded = true;
