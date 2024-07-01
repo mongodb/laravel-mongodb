@@ -16,14 +16,14 @@ trait HasDocumentVersion
     public static function bootHasDocumentVersion(): void
     {
         static::saving(function ($model) {
-            $versionKey = static::getDocumentVersionKey();
-            if (!empty($versionKey)) {
-                $model->{$versionKey} = $model->documentVersion ?? 1;
-            }
+          $version = $model->getDocumentVersion();
+          if (empty($version)) {
+              $model->{static::getDocumentVersionKey()} = $model->documentVersion ?? 1;
+          }
         });
 
         static::retrieved(function ($model) {
-            $model->migrateDocumentVersion($model->getDocumentVersion());
+            $model->migrateDocumentVersion($model->getDocumentVersion() ?? 0);
         });
     }
 
@@ -38,11 +38,11 @@ trait HasDocumentVersion
     /**
      * Get Current document version
      *
-     * @return int
+     * @return int|null
      */
-    public function getDocumentVersion(): int
+    public function getDocumentVersion(): ?int
     {
-        return (int) $this->{static::getDocumentVersionKey()} ?? 0;
+        return $this->{static::getDocumentVersionKey()} ?? null;
     }
 
     /**
