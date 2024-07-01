@@ -7,7 +7,6 @@ namespace MongoDB\Laravel\Tests\Models;
 use MongoDB\Laravel\Eloquent\HasDocumentVersion;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
-/** @property int __v */
 class DocumentVersion extends Eloquent
 {
     use HasDocumentVersion;
