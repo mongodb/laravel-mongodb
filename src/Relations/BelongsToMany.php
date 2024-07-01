@@ -11,6 +11,8 @@ use Illuminate\Support\Collection as BaseCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
+use MongoDB\BSON\Binary;
+use MongoDB\BSON\ObjectId;
 
 use function array_diff;
 use function array_map;
@@ -304,7 +306,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Attach the new ids to the parent model.
         if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
-            if ($id instanceof \MongoDB\BSON\ObjectId) {
+            if ($id instanceof ObjectId) {
                 $id = [$id];
             } else {
                 $id = (array) $id;
@@ -340,7 +342,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // If associated IDs were passed to the method we will only delete those
         // associations, otherwise all of the association ties will be broken.
         // We'll return the numbers of affected rows when we do the deletes.
-        if ($ids instanceof \MongoDB\BSON\ObjectId) {
+        if ($ids instanceof ObjectId) {
             $ids = [$ids];
         } else {
             $ids = (array) $ids;
@@ -388,8 +390,12 @@ class BelongsToMany extends EloquentBelongsToMany
             foreach ($result->$foreign as $item) {
 
                 //Prevent if id is non keyable
-                if ($item instanceof \MongoDB\BSON\ObjectId) {
+                if ($item instanceof ObjectId) {
                     $item = (string) $item;
+                }
+
+                if ($item instanceof Binary) {
+                    $item =  (string) $item->getData();
                 }
 
                 $dictionary[$item][] = $result;
