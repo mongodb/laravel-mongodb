@@ -812,7 +812,7 @@ abstract class Model extends BaseModel
      */
     public function is($model)
     {
-        return ! is_null($model) &&
+        return $model !== null &&
             $this->getSerializedKey() === $model->getSerializedKey() &&
             $this->getTable() === $model->getTable() &&
             $this->getConnectionName() === $model->getConnectionName();
