@@ -22,7 +22,7 @@ trait HasSchemaVersion
         });
 
         static::retrieved(function ($model) {
-            $model->migrateSchema($model->upgradeSchemaVersion());
+            $model->upgradeSchemaVersion();
         });
     }
 
