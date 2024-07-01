@@ -27,12 +27,9 @@ trait HasDocumentVersion
     }
 
     /**
-     * migrate model document version schema
-     *
-     * @param int|null $fromVersion
-     * @return void
+     * Migrate document to the current schema version.
      */
-    public function migrateDocumentVersion($fromVersion): void
+    public function migrateDocumentVersion(int $fromVersion): void
     {
     }
 
