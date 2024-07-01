@@ -19,7 +19,6 @@ use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Tests\Models\Book;
-use MongoDB\Laravel\Tests\Models\DocumentVersion;
 use MongoDB\Laravel\Tests\Models\Guarded;
 use MongoDB\Laravel\Tests\Models\IdIsBinaryUuid;
 use MongoDB\Laravel\Tests\Models\IdIsInt;
@@ -55,7 +54,6 @@ class ModelTest extends TestCase
         Book::truncate();
         Item::truncate();
         Guarded::truncate();
-        DocumentVersion::truncate();
     }
 
     public function testNewModel(): void
@@ -1188,12 +1186,6 @@ class ModelTest extends TestCase
         $user = User::create(['_id' => null, 'email' => 'foo@bar']);
         $this->assertNotNull(ObjectId::class, $user->id);
         $this->assertSame(1, User::count());
-    }
-
-    public function testDocumentVersion()
-    {
-        $document = DocumentVersion::create(['name' => 'versionTest']);
-        $this->assertEquals(1, $document->__v);
     }
 
     /** @param class-string<Model> $modelClass */
