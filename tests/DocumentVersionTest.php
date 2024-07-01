@@ -14,25 +14,29 @@ class DocumentVersionTest extends TestCase
         DocumentVersion::truncate();
     }
 
-    public function testCreateWithNullId()
+    public function testWithBasicDocument()
     {
         $document = new DocumentVersion(['name' => 'Luc']);
-        $this->assertEmpty($document->getDocumentVersion());
+        $this->assertEmpty($document->getSchemaVersion());
         $document->save();
 
-        $this->assertEquals(1, $document->getDocumentVersion());
+        $this->assertEquals(1, $document->getSchemaVersion());
         $this->assertNull($document->age);
 
-        $document = DocumentVersion::query()->where('name', 'Luc')->first();
+        $document->currentSchemaVersion = 2;
+        $document->migrateSchemaVersion($document->getSchemaVersion());
+
         $this->assertEquals(35, $document->age);
-        $this->assertEquals(2, $document->getDocumentVersion());
+        $this->assertEquals(2, $document->getSchemaVersion());
 
         // Test without migration
         $newDocument = new DocumentVersion(['name' => 'Vador']);
-        $newDocument->setDocumentVersion(2);
+        $newDocument->setSchemaVersion(2);
         $newDocument->save();
+        $newDocument->currentSchemaVersion = 2;
+        $newDocument->migrateSchema($newDocument->getSchemaVersion());
 
-        $this->assertEquals(2, $newDocument->getDocumentVersion());
+        $this->assertEquals(2, $newDocument->getSchemaVersion());
         $this->assertNull($newDocument->age);
 
         $newDocument = DocumentVersion::query()->where('name', 'Vador')->first();
