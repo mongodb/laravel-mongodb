@@ -22,9 +22,7 @@ trait HasSchemaVersion
         });
 
         static::retrieved(function ($model) {
-            if ($model->getSchemaVersion() < $model->currentSchemaVersion) {
-                $model->migrateSchema($model->getSchemaVersion());
-            }
+            $model->migrateSchema($model->upgradeSchemaVersion());
         });
     }
 
@@ -33,6 +31,20 @@ trait HasSchemaVersion
      */
     public function migrateSchema(int $fromVersion): void
     {
+    }
+
+    /**
+     * migrate schema and set current model version
+     * @return void
+     */
+    public function upgradeSchemaVersion(): void
+    {
+        $version = $this->getSchemaVersion();
+
+        if ($version && $version < $this->currentSchemaVersion) {
+            $this->migrateSchema($version);
+            $this->setSchemaVersion($this->currentSchemaVersion);
+        }
     }
 
     /**
