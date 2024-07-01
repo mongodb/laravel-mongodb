@@ -25,10 +25,11 @@ class DocumentVersionTest extends TestCase
 
         $document = DocumentVersion::query()->where('name', 'Luc')->first();
         $this->assertEquals(35, $document->age);
+        $this->assertEquals(2, $document->getDocumentVersion());
 
         // Test without migration
         $newDocument = new DocumentVersion(['name' => 'Vador']);
-        $newDocument->documentVersion = 2;
+        $newDocument->setDocumentVersion(2);
         $newDocument->save();
 
         $this->assertEquals(2, $newDocument->getDocumentVersion());

@@ -14,11 +14,14 @@ class DocumentVersion extends Eloquent
     protected $connection       = 'mongodb';
     protected $collection       = 'documentVersion';
     protected static $unguarded = true;
-    public function migrateDocumentVersion(int $fromVersion): void
+
+    public function migrateDocumentVersion($fromVersion): void
     {
         if ($fromVersion) {
             if ($fromVersion < 2) {
                 $this->age = 35;
+
+                $this->setDocumentVersion(2);
             }
         }
     }

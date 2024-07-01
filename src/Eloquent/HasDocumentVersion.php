@@ -6,8 +6,6 @@ namespace MongoDB\Laravel\Eloquent;
 
 trait HasDocumentVersion
 {
-    public $documentVersion = 1;
-
     /**
      * Auto call on model instance as booting
      *
@@ -17,23 +15,26 @@ trait HasDocumentVersion
     {
         static::saving(function ($model) {
           $version = $model->getDocumentVersion();
-          if (empty($version)) {
-              $model->{static::getDocumentVersionKey()} = $model->documentVersion ?? 1;
+
+          if (!$version) {
+              $model->setDocumentVersion(static::getCurrentVersion());
           }
         });
 
         static::retrieved(function ($model) {
-            $model->migrateDocumentVersion($model->getDocumentVersion() ?? 0);
+            $model->migrateDocumentVersion($model->getDocumentVersion());
         });
     }
 
     /**
      * migrate model document version schema
      *
-     * @param int $fromVersion
+     * @param int|null $fromVersion
      * @return void
      */
-    public function migrateDocumentVersion(int $fromVersion): void {}
+    public function migrateDocumentVersion($fromVersion): void
+    {
+    }
 
     /**
      * Get Current document version
@@ -46,6 +47,15 @@ trait HasDocumentVersion
     }
 
     /**
+     * @param int $version
+     * @return void
+     */
+    public function setDocumentVersion(int $version): void
+    {
+            $this->{static::getDocumentVersionKey()} = $version;
+    }
+
+    /**
      * Get document version key
      *
      * @return string
@@ -55,5 +65,15 @@ trait HasDocumentVersion
         return defined(static::class.'::DOCUMENT_VERSION_KEY')
             ? (string) static::DOCUMENT_VERSION_KEY
             : 'schema_version';
+    }
+
+    /**
+     * @return int
+     */
+    protected static function getCurrentVersion(): int
+    {
+        return defined(static::class.'::DOCUMENT_VERSION')
+            ? (int) static::DOCUMENT_VERSION
+            : 1;
     }
 }
