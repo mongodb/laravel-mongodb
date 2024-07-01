@@ -7,7 +7,7 @@ namespace MongoDB\Laravel\Tests\Models;
 use MongoDB\Laravel\Eloquent\HasSchemaVersion;
 use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
-class DocumentVersion extends Eloquent
+class SchemaVersion extends Eloquent
 {
     use HasSchemaVersion;
 
@@ -15,7 +15,7 @@ class DocumentVersion extends Eloquent
     protected $collection       = 'documentVersion';
     protected static $unguarded = true;
 
-    public function migrateSchemaVersion($fromVersion): void
+    public function migrateSchema($fromVersion): void
     {
         if ($fromVersion) {
             if ($fromVersion < 2) {

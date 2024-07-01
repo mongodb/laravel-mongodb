@@ -4,19 +4,19 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
-use MongoDB\Laravel\Tests\Models\DocumentVersion;
+use MongoDB\Laravel\Tests\Models\SchemaVersion;
 use MongoDB\Laravel\Tests\Models\User;
 
-class DocumentVersionTest extends TestCase
+class SchemaVersionTest extends TestCase
 {
     public function tearDown(): void
     {
-        DocumentVersion::truncate();
+        SchemaVersion::truncate();
     }
 
     public function testWithBasicDocument()
     {
-        $document = new DocumentVersion(['name' => 'Luc']);
+        $document = new SchemaVersion(['name' => 'Luc']);
         $this->assertEmpty($document->getSchemaVersion());
         $document->save();
 
@@ -24,13 +24,13 @@ class DocumentVersionTest extends TestCase
         $this->assertNull($document->age);
 
         $document->currentSchemaVersion = 2;
-        $document->migrateSchemaVersion($document->getSchemaVersion());
+        $document->migrateSchema($document->getSchemaVersion());
 
         $this->assertEquals(35, $document->age);
         $this->assertEquals(2, $document->getSchemaVersion());
 
         // Test without migration
-        $newDocument = new DocumentVersion(['name' => 'Vador']);
+        $newDocument = new SchemaVersion(['name' => 'Vador']);
         $newDocument->setSchemaVersion(2);
         $newDocument->save();
         $newDocument->currentSchemaVersion = 2;
@@ -39,7 +39,7 @@ class DocumentVersionTest extends TestCase
         $this->assertEquals(2, $newDocument->getSchemaVersion());
         $this->assertNull($newDocument->age);
 
-        $newDocument = DocumentVersion::query()->where('name', 'Vador')->first();
+        $newDocument = SchemaVersion::query()->where('name', 'Vador')->first();
         $this->assertNull($newDocument->age);
     }
 }

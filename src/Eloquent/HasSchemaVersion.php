@@ -23,7 +23,7 @@ trait HasSchemaVersion
 
         static::retrieved(function ($model) {
             if ($model->getSchemaVersion() < $model->currentSchemaVersion) {
-                $model->migrateSchemaVersion($model->getSchemaVersion());
+                $model->migrateSchema($model->getSchemaVersion());
             }
         });
     }
