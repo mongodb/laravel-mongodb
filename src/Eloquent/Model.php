@@ -333,6 +333,8 @@ abstract class Model extends BaseModel
                 $value = (string) $value;
             } elseif ($value instanceof Binary) {
                 $value = (string) $value->getData();
+            } elseif ($value instanceof UTCDateTime) {
+                $value = $this->serializeDate($value->toDateTime());
             } elseif (is_array($value)) {
                 foreach ($value as &$embedValue) {
                     $convertMongoObjects($embedValue);
