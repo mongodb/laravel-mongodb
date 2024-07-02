@@ -6,7 +6,7 @@ namespace MongoDB\Laravel\Eloquent;
 
 trait HasSchemaVersion
 {
-    public $currentSchemaVersion = 1;
+    public int $currentSchemaVersion = 1;
 
     /**
      * Auto call on model instance as booting
