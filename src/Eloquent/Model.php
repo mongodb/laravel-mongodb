@@ -775,7 +775,8 @@ abstract class Model extends BaseModel
     /**
      * Get a serialized attribute from the model.
      *
-     * @param  string  $key
+     * @param  string $key
+     *
      * @return mixed
      */
     public function getSerializedAttribute($key)
@@ -807,7 +808,8 @@ abstract class Model extends BaseModel
     /**
      * Determine if two models have the same ID and belong to the same table.
      *
-     * @param  \Illuminate\Database\Eloquent\Model|null  $model
+     * @param  \Illuminate\Database\Eloquent\Model|null $model
+     *
      * @return bool
      */
     public function is($model)

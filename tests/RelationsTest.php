@@ -1338,7 +1338,6 @@ class RelationsTest extends TestCase
         $this->assertCount(2, $explorer->planetsVisited);
         $this->assertCount(2, $planet->visitors);
 
-
         // Detach planets from explorer
         $explorer->planetsVisited()->sync([]);
 
