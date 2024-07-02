@@ -19,7 +19,6 @@ use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\User;
 
 use function array_merge;
-use function PHPUnit\Framework\assertIsString;
 
 class EmbeddedRelationsTest extends TestCase
 {
@@ -34,6 +33,7 @@ class EmbeddedRelationsTest extends TestCase
         Client::truncate();
         Group::truncate();
         Photo::truncate();
+        Address::truncate();
     }
 
     public function testEmbedsManySave()
@@ -949,10 +949,13 @@ class EmbeddedRelationsTest extends TestCase
 
     public function testEmbedManySerialization()
     {
-        $user = User::create(['name' => 'John Doe']);
-        $user->addresses()->save(new Address(['city' => 'New York']));
+        $address = new Address(['country' => 'France']);
+        $address->save();
 
-        $results = $user->toArray();
+        $address->addresses()->create(['city' => 'Paris']);
+        $address->addresses()->create(['city' => 'Nice']);
+
+        $results = $address->toArray();
         $this->assertIsString($results['addresses'][0]['_id']);
     }
 }

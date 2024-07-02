@@ -319,31 +319,44 @@ abstract class Model extends BaseModel
         return new Decimal128($this->asDecimal($value, $decimals));
     }
 
+    /**
+     * Convert MongoDB objects to their string representations.
+     *
+     * This method converts MongoDB related objects (ObjectID, Binary, UTCDateTime)
+     * to their serialized representations, ensuring the values can be correctly
+     * serialized when the model is converted to JSON.
+     *
+     * @param mixed $value The value to convert
+     *
+     * @return mixed
+     */
+    protected function convertMongoObjects(mixed $value): mixed
+    {
+        if ($value instanceof ObjectID) {
+            $value = (string) $value;
+        } elseif ($value instanceof Binary) {
+            $value = (string) $value->getData();
+        } elseif ($value instanceof UTCDateTime) {
+            $value = $this->serializeDate($value->toDateTime());
+        } elseif (is_array($value)) {
+            foreach ($value as &$nestedValue) {
+                $nestedValue = $this->convertMongoObjects($nestedValue);
+            }
+        }
+
+        return $value;
+    }
+
     /** @inheritdoc */
     public function attributesToArray()
     {
         $attributes = parent::attributesToArray();
 
-        // Because the original Eloquent never returns objects, we convert
         // MongoDB related objects to a string representation. This kind
         // of mimics the SQL behaviour so that dates are formatted
         // nicely when your models are converted to JSON.
-        $convertMongoObjects = function (&$value) use (&$convertMongoObjects) {
-            if ($value instanceof ObjectID) {
-                $value = (string) $value;
-            } elseif ($value instanceof Binary) {
-                $value = (string) $value->getData();
-            } elseif ($value instanceof UTCDateTime) {
-                $value = $this->serializeDate($value->toDateTime());
-            } elseif (is_array($value)) {
-                foreach ($value as &$embedValue) {
-                    $convertMongoObjects($embedValue);
-                }
-            }
-        };
-
         foreach ($attributes as $key => &$value) {
-            $convertMongoObjects($value);
+            $value = $this->convertMongoObjects($value);
         }
 
         return $attributes;
