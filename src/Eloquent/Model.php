@@ -328,12 +328,20 @@ abstract class Model extends BaseModel
         // MongoDB related objects to a string representation. This kind
         // of mimics the SQL behaviour so that dates are formatted
         // nicely when your models are converted to JSON.
-        foreach ($attributes as $key => &$value) {
+        $convertMongoObjects = function (&$value) use (&$convertMongoObjects) {
             if ($value instanceof ObjectID) {
                 $value = (string) $value;
             } elseif ($value instanceof Binary) {
                 $value = (string) $value->getData();
+            } elseif (is_array($value)) {
+                foreach ($value as &$embedValue) {
+                    $convertMongoObjects($embedValue);
+                }
             }
+        };
+
+        foreach ($attributes as $key => &$value) {
+            $convertMongoObjects($value);
         }
 
         return $attributes;
