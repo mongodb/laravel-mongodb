@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Relations;
 
+use BackedEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection as BaseCollection;
+use MongoDB\BSON\Binary;
+use MongoDB\BSON\ObjectId;
 
 use function array_diff;
-use function array_keys;
+use function array_intersect;
 use function array_map;
 use function array_merge;
 use function array_values;
 use function assert;
+use function collect;
 use function count;
 use function in_array;
 use function is_numeric;
@@ -107,7 +112,111 @@ class BelongsToMany extends EloquentBelongsToMany
         return $instance;
     }
 
-    /** @inheritdoc */
+    /**
+     * Format the sync / toggle record list so that it is keyed by ID.
+     *
+     * @param  array $records
+     *
+     * @return array
+     */
+    protected function formatRecordsList($records): array
+    {
+        //Support for an object type id.
+        //Removal of attribute management because there is no pivot table
+        return collect($records)->map(function ($id) {
+            if ($id instanceof BackedEnum) {
+                $id = $id->value;
+            }
+
+            return $id;
+        })->all();
+    }
+
+    /**
+     * Toggles a model (or models) from the parent.
+     *
+     * Each existing model is detached, and non existing ones are attached.
+     *
+     * @param  mixed $ids
+     * @param  bool  $touch
+     *
+     * @return array
+     */
+    public function toggle($ids, $touch = true)
+    {
+        $changes = [
+            'attached' => [],
+            'detached' => [],
+            'updated' => [],
+        ];
+
+        if ($ids instanceof Collection) {
+            $ids = $this->parseIds($ids);
+        } elseif ($ids instanceof Model) {
+            $ids = $this->parseIds($ids);
+        }
+
+        // First we need to attach any of the associated models that are not currently
+        // in this joining table. We'll spin through the given IDs, checking to see
+        // if they exist in the array of current ones, and if not we will insert.
+        $current = match ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+            true => $this->parent->{$this->relatedPivotKey} ?: [],
+            false => $this->parent->{$this->relationName} ?: [],
+        };
+
+        // Support Base Collection
+        if ($current instanceof BaseCollection) {
+            $current = $this->parseIds($current);
+        }
+
+        $current = Arr::wrap($current);
+        $records = $this->formatRecordsList($ids);
+
+        $detach = array_values(array_intersect($current, $records));
+
+        if (count($detach) > 0) {
+            $this->detach($detach, false);
+
+            $changes['detached'] = (array) array_map(function ($v) {
+                return is_numeric($v) ? (int) $v : (string) $v;
+            }, $detach);
+        }
+
+        // Finally, for all of the records which were not "detached", we'll attach the
+        // records into the intermediate table. Then, we will add those attaches to
+        // this change list and get ready to return these results to the callers.
+        $attach = array_values(array_diff($records, $current));
+
+        if (count($attach) > 0) {
+            $this->attach($attach, [], false);
+
+            $changes['attached'] = (array) array_map(function ($v) {
+                return $this->castKey($v);
+            }, $attach);
+        }
+
+        // Once we have finished attaching or detaching the records, we will see if we
+        // have done any attaching or detaching, and if we have we will touch these
+        // relationships if they are configured to touch on any database updates.
+        if (
+            $touch && (count($changes['attached']) ||
+                count($changes['detached']))
+        ) {
+            $this->parent->touch();
+            $this->newRelatedQuery()->whereIn($this->relatedKey, $ids)->touch();
+        }
+
+        return $changes;
+    }
+
+    /**
+     * Sync the intermediate tables with a list of IDs or collection of models.
+     *
+     * @param  \Illuminate\Support\Collection|Model|array $ids
+     * @param  bool                                       $detaching
+     *
+     * @return array
+     */
     public function sync($ids, $detaching = true)
     {
         $changes = [
@@ -130,25 +239,21 @@ class BelongsToMany extends EloquentBelongsToMany
             false => $this->parent->{$this->relationName} ?: [],
         };
 
-        if ($current instanceof Collection) {
+        // Support Base Collection
+        if ($current instanceof BaseCollection) {
             $current = $this->parseIds($current);
         }
 
+        $current = Arr::wrap($current);
         $records = $this->formatRecordsList($ids);
 
-        $current = Arr::wrap($current);
-
-        $detach = array_diff($current, array_keys($records));
-
-        // We need to make sure we pass a clean array, so that it is not interpreted
-        // as an associative array.
-        $detach = array_values($detach);
+        $detach = array_values(array_diff($current, $records));
 
         // Next, we will take the differences of the currents and given IDs and detach
         // all of the entities that exist in the "current" array but are not in the
         // the array of the IDs given to the method which will complete the sync.
         if ($detaching && count($detach) > 0) {
-            $this->detach($detach);
+            $this->detach($detach, false);
 
             $changes['detached'] = (array) array_map(function ($v) {
                 return is_numeric($v) ? (int) $v : (string) $v;
@@ -158,13 +263,18 @@ class BelongsToMany extends EloquentBelongsToMany
         // Now we are finally ready to attach the new records. Note that we'll disable
         // touching until after the entire operation is complete so we don't fire a
         // ton of touch operations until we are totally done syncing the records.
-        $changes = array_merge(
-            $changes,
-            $this->attachNew($records, $current, false),
-        );
+        foreach ($records as $id) {
+            // Only non strict check if exist no update s possible beacause no attributtes
+            if (! in_array($id, $current)) {
+                $this->attach($id, [], false);
+                $changes['attached'][] = $this->castKey($id);
+            }
+        }
 
-        if (count($changes['attached']) || count($changes['updated'])) {
-            $this->touchIfTouching();
+        if ((count($changes['attached']) || count($changes['detached']))) {
+            $touches = array_merge($detach, $records);
+            $this->parent->touch();
+            $this->newRelatedQuery()->whereIn($this->relatedKey, $touches)->touch();
         }
 
         return $changes;
@@ -202,7 +312,13 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Attach the new ids to the parent model.
         if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
-            $this->parent->push($this->relatedPivotKey, (array) $id, true);
+            if ($id instanceof ObjectId) {
+                $id = [$id];
+            } else {
+                $id = (array) $id;
+            }
+
+            $this->parent->push($this->relatedPivotKey, $id, true);
         } else {
             $instance = new $this->related();
             $instance->forceFill([$this->relatedKey => $id]);
@@ -214,13 +330,16 @@ class BelongsToMany extends EloquentBelongsToMany
             return;
         }
 
-        $this->touchIfTouching();
+        $this->parent->touch();
+        $this->newRelatedQuery()->whereIn($this->relatedKey, (array) $id);
     }
 
     /** @inheritdoc */
     public function detach($ids = [], $touch = true)
     {
-        if ($ids instanceof Model) {
+        if ($ids instanceof Collection) {
+            $ids = $this->parseIds($ids);
+        } elseif ($ids instanceof Model) {
             $ids = $this->parseIds($ids);
         }
 
@@ -229,7 +348,11 @@ class BelongsToMany extends EloquentBelongsToMany
         // If associated IDs were passed to the method we will only delete those
         // associations, otherwise all of the association ties will be broken.
         // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array) $ids;
+        if ($ids instanceof ObjectId) {
+            $ids = [$ids];
+        } else {
+            $ids = (array) $ids;
+        }
 
         // Detach all ids from the parent model.
         if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
@@ -237,6 +360,7 @@ class BelongsToMany extends EloquentBelongsToMany
         } else {
             $value = $this->parent->{$this->relationName}
                 ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $ids));
+
             $this->parent->setRelation($this->relationName, $value);
         }
 
@@ -251,7 +375,8 @@ class BelongsToMany extends EloquentBelongsToMany
         $query->pull($this->foreignPivotKey, $this->parent->{$this->parentKey});
 
         if ($touch) {
-            $this->touchIfTouching();
+            $this->parent->touch();
+            $query->touch();
         }
 
         return count($ids);
@@ -269,6 +394,15 @@ class BelongsToMany extends EloquentBelongsToMany
 
         foreach ($results as $result) {
             foreach ($result->$foreign as $item) {
+                //Prevent if id is non keyable
+                if ($item instanceof ObjectId) {
+                    $item = (string) $item;
+                }
+
+                if ($item instanceof Binary) {
+                    $item =  (string) $item->getData();
+                }
+
                 $dictionary[$item][] = $result;
             }
         }

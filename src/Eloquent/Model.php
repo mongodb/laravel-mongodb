@@ -771,4 +771,52 @@ abstract class Model extends BaseModel
 
         return $this;
     }
+
+    /**
+     * Get a serialized attribute from the model.
+     *
+     * @param  string $key
+     *
+     * @return mixed
+     */
+    public function getSerializedAttribute($key)
+    {
+        $value = $this->getAttribute($key);
+
+        // Convert ObjectID to string.
+        if ($value instanceof ObjectID) {
+            return (string) $value;
+        }
+
+        if ($value instanceof Binary) {
+            return (string) $value->getData();
+        }
+
+        return $value;
+    }
+
+    /**
+     * Get the serialized value of the model's primary key.
+     *
+     * @return mixed
+     */
+    public function getSerializedKey()
+    {
+        return $this->getSerializedAttribute($this->getKeyName());
+    }
+
+    /**
+     * Determine if two models have the same ID and belong to the same table.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model|null $model
+     *
+     * @return bool
+     */
+    public function is($model)
+    {
+        return $model !== null &&
+            $this->getSerializedKey() === $model->getSerializedKey() &&
+            $this->getTable() === $model->getTable() &&
+            $this->getConnectionName() === $model->getConnectionName();
+    }
 }
