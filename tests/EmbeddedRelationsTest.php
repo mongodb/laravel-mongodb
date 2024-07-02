@@ -953,6 +953,6 @@ class EmbeddedRelationsTest extends TestCase
         $user->addresses()->save(new Address(['city' => 'New York']));
 
         $results = $user->toArray();
-        assertIsString($results['addresses'][0]['_id']);
+        $this->assertIsString($results['addresses'][0]['_id']);
     }
 }
