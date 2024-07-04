@@ -352,6 +352,7 @@ abstract class Model extends BaseModel
     {
         $attributes = parent::attributesToArray();
 
+        // Because the original Eloquent never returns objects, we convert
         // MongoDB related objects to a string representation. This kind
         // of mimics the SQL behaviour so that dates are formatted
         // nicely when your models are converted to JSON.
