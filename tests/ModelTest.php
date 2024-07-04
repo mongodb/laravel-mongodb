@@ -58,7 +58,7 @@ class ModelTest extends TestCase
     public function testNewModel(): void
     {
         $user = new User();
-        $this->assertInstanceOf(Model::class, $user);
+        $this->assertTrue(Model::isDocumentModel($user));
         $this->assertInstanceOf(Connection::class, $user->getConnection());
         $this->assertFalse($user->exists);
         $this->assertEquals('users', $user->getTable());
@@ -234,8 +234,7 @@ class ModelTest extends TestCase
 
         $check = User::find($user->_id);
         $this->assertInstanceOf(User::class, $check);
-
-        $this->assertInstanceOf(Model::class, $check);
+        $this->assertTrue(Model::isDocumentModel($check));
         $this->assertTrue($check->exists);
         $this->assertEquals($user->_id, $check->_id);
 
@@ -259,7 +258,7 @@ class ModelTest extends TestCase
         $users = User::get();
         $this->assertCount(2, $users);
         $this->assertInstanceOf(EloquentCollection::class, $users);
-        $this->assertInstanceOf(Model::class, $users[0]);
+        $this->assertInstanceOf(User::class, $users[0]);
     }
 
     public function testFirst(): void
@@ -271,7 +270,7 @@ class ModelTest extends TestCase
 
         $user = User::first();
         $this->assertInstanceOf(User::class, $user);
-        $this->assertInstanceOf(Model::class, $user);
+        $this->assertTrue(Model::isDocumentModel($user));
         $this->assertEquals('John Doe', $user->name);
     }
 
@@ -299,7 +298,7 @@ class ModelTest extends TestCase
         $user = User::create(['name' => 'Jane Poe']);
         $this->assertInstanceOf(User::class, $user);
 
-        $this->assertInstanceOf(Model::class, $user);
+        $this->assertTrue(Model::isDocumentModel($user));
         $this->assertTrue($user->exists);
         $this->assertEquals('Jane Poe', $user->name);
 
@@ -872,13 +871,13 @@ class ModelTest extends TestCase
             return $collection->find(['age' => 35]);
         });
         $this->assertInstanceOf(EloquentCollection::class, $users);
-        $this->assertInstanceOf(Model::class, $users[0]);
+        $this->assertInstanceOf(User::class, $users[0]);
 
         $user = User::raw(function (Collection $collection) {
             return $collection->findOne(['age' => 35]);
         });
 
-        $this->assertInstanceOf(Model::class, $user);
+        $this->assertTrue(Model::isDocumentModel($user));
 
         $count = User::raw(function (Collection $collection) {
             return $collection->count();
@@ -1008,7 +1007,7 @@ class ModelTest extends TestCase
 
         $user = User::firstOrCreate(['name' => $name]);
         $this->assertInstanceOf(User::class, $user);
-        $this->assertInstanceOf(Model::class, $user);
+        $this->assertTrue(Model::isDocumentModel($user));
         $this->assertTrue($user->exists);
         $this->assertEquals($name, $user->name);
 

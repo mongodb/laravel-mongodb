@@ -10,7 +10,6 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\Exception\LogicException;
-use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 
 use function array_key_exists;
 use function array_values;
@@ -231,9 +230,9 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Save alias.
      *
-     * @return MongoDBModel
+     * @return Model
      */
-    public function attach(MongoDBModel $model)
+    public function attach(Model $model)
     {
         return $this->save($model);
     }

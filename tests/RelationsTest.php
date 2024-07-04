@@ -331,7 +331,6 @@ class RelationsTest extends TestCase
         $client1 = Client::create(['name' => 'Test 1'])->_id;
         $client2 = Client::create(['name' => 'Test 2'])->_id;
 
-        $user = User::where('name', '=', 'John Doe')->first();
         $user->clients()->attach([$client1, $client2]);
         $this->assertCount(2, $user->clients);
     }

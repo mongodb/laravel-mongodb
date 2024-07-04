@@ -54,7 +54,7 @@ trait QueriesRelationships
 
         // If this is a hybrid relation then we can not use a normal whereExists() query that relies on a subquery
         // We need to use a `whereIn` query
-        if ($this->getModel() instanceof Model || $this->isAcrossConnections($relation)) {
+        if (Model::isDocumentModel($this->getModel()) || $this->isAcrossConnections($relation)) {
             return $this->addHybridHas($relation, $operator, $count, $boolean, $callback);
         }
 

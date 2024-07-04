@@ -11,12 +11,12 @@ use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Contracts\Auth\Authenticatable as AuthenticatableContract;
 use Illuminate\Contracts\Auth\CanResetPassword as CanResetPasswordContract;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
 use MongoDB\Laravel\Eloquent\Builder;
-use MongoDB\Laravel\Eloquent\HybridRelations;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 use MongoDB\Laravel\Eloquent\MassPrunable;
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
 
 /**
  * @property string $_id
@@ -30,14 +30,16 @@ use MongoDB\Laravel\Eloquent\Model as Eloquent;
  * @property string $username
  * @property MemberStatus member_status
  */
-class User extends Eloquent implements AuthenticatableContract, CanResetPasswordContract
+class User extends Model implements AuthenticatableContract, CanResetPasswordContract
 {
+    use DocumentModel;
     use Authenticatable;
     use CanResetPassword;
-    use HybridRelations;
     use Notifiable;
     use MassPrunable;
 
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
     protected $connection = 'mongodb';
     protected $casts      = [
         'birthday' => 'datetime',
