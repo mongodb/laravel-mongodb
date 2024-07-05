@@ -58,8 +58,8 @@ that represent MongoDB collections and chain methods on them to specify
 query criteria.
 
 To retrieve documents that match a set of criteria, call the ``where()``
-method on the collection's corresponding Eloquent modelm then pass a query
-filter.
+method on the collection's corresponding Eloquent model, then pass a query
+filter to the method.
 
 A query filter specifies field value requirements and instructs the find
 operation to return only documents that meet these requirements.
