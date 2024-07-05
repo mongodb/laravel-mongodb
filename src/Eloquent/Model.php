@@ -28,7 +28,13 @@ abstract class Model extends BaseModel
      */
     protected $keyType = 'string';
 
-    /** @param class-string|object $related */
+    /**
+     * Indicates if the given model class is a MongoDB document model.
+     * It must be a subclass of {@see BaseModel} and use the
+     * {@see DocumentModel} trait.
+     *
+     * @param class-string|object $related
+     */
     public static function isDocumentModel(string|object $related): bool
     {
         return is_subclass_of($related, BaseModel::class)

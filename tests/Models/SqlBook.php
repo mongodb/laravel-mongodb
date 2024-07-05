@@ -17,10 +17,10 @@ class SqlBook extends EloquentModel
 {
     use HybridRelations;
 
-    protected $connection       = 'sqlite';
-    protected $table            = 'books';
+    protected $connection = 'sqlite';
+    protected $table = 'books';
     protected static $unguarded = true;
-    protected $primaryKey       = 'title';
+    protected $primaryKey = 'title';
 
     public function author(): BelongsTo
     {

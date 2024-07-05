@@ -41,13 +41,13 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected $casts      = [
+    protected $casts = [
         'birthday' => 'datetime',
         'entry.date' => 'datetime',
         'member_status' => MemberStatus::class,
     ];
 
-    protected $fillable         = [
+    protected $fillable = [
         'name',
         'email',
         'title',

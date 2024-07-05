@@ -54,18 +54,9 @@ trait DocumentModel
     use EmbedsRelations;
 
     /**
-     * The collection associated with the model.
-     *
-     * @var string
-     */
-    protected $collection;
-
-    /**
      * The parent relation instance.
-     *
-     * @var Relation
      */
-    protected $parentRelation;
+    private Relation $parentRelation;
 
     /**
      * List of field names to unset from the document on save.
@@ -150,7 +141,7 @@ trait DocumentModel
     /** @inheritdoc */
     public function getTable()
     {
-        return $this->collection ?: parent::getTable();
+        return $this->collection ?? parent::getTable();
     }
 
     /** @inheritdoc */
@@ -552,12 +543,10 @@ trait DocumentModel
 
     /**
      * Get the parent relation.
-     *
-     * @return Relation
      */
-    public function getParentRelation()
+    public function getParentRelation(): ?Relation
     {
-        return $this->parentRelation;
+        return $this->parentRelation ?? null;
     }
 
     /** @inheritdoc */

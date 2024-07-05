@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 
-class Experience extends Eloquent
+class Experience extends Model
 {
-    protected $connection       = 'mongodb';
-    protected $collection       = 'experiences';
+    use DocumentModel;
+
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
+    protected $connection = 'mongodb';
+    protected string $collection = 'experiences';
     protected static $unguarded = true;
 
     protected $casts = ['years' => 'int'];

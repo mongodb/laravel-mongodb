@@ -20,8 +20,8 @@ class SqlUser extends EloquentModel
 {
     use HybridRelations;
 
-    protected $connection       = 'sqlite';
-    protected $table            = 'users';
+    protected $connection = 'sqlite';
+    protected $table = 'users';
     protected static $unguarded = true;
 
     public function books(): HasMany

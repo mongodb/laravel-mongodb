@@ -5,21 +5,25 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Models;
 
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Model;
 use MongoDB\Laravel\Eloquent\Builder;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 use MongoDB\Laravel\Eloquent\MassPrunable;
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
 use MongoDB\Laravel\Eloquent\SoftDeletes;
 
 /** @property Carbon $deleted_at */
-class Soft extends Eloquent
+class Soft extends Model
 {
+    use DocumentModel;
     use SoftDeletes;
     use MassPrunable;
 
-    protected $connection       = 'mongodb';
-    protected $collection       = 'soft';
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
+    protected $connection = 'mongodb';
+    protected string $collection = 'soft';
     protected static $unguarded = true;
-    protected $casts            = ['deleted_at' => 'datetime'];
+    protected $casts = ['deleted_at' => 'datetime'];
 
     public function prunable(): Builder
     {

@@ -4,13 +4,18 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 
-class Role extends Eloquent
+class Role extends Model
 {
-    protected $connection       = 'mongodb';
-    protected $collection       = 'roles';
+    use DocumentModel;
+
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
+    protected $connection = 'mongodb';
+    protected string $collection = 'roles';
     protected static $unguarded = true;
 
     public function user(): BelongsTo
