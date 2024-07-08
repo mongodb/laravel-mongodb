@@ -20,7 +20,7 @@ User Authentication
 Overview
 --------
 
-In this guide, you can learn how to use the {+odm-long+} to create a ``User``
+In this guide, you can learn how to use the {+odm-long+} to modify the ``User``
 model and configure user authentication.
 
 User Model
