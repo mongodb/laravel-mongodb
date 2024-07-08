@@ -14,7 +14,7 @@ User Authentication
 .. contents:: On this page
    :local:
    :backlinks: none
-   :depth: 2
+   :depth: 1
    :class: singlecol
 
 Overview
@@ -108,7 +108,7 @@ The following code updates the ``providers.php`` file in the ``bootstrap`` direc
 of a Laravel application to register the ``PasswordResetServiceProvider`` provider:
 
 .. code-block:: php
-   :emphasize-lines: 5
+   :emphasize-lines: 4
 
    return [
      App\Providers\AppServiceProvider::class,
@@ -121,3 +121,5 @@ Additional Information
 
 To learn more about user authentication, see `Authentication <https://laravel.com/docs/{+laravel-docs-version+}/authentication>`__
 in the Laravel documentation.
+
+To learn more about Eloquent models, see the :ref:`laravel-eloquent-model-class` guide.
