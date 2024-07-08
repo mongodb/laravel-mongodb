@@ -4,16 +4,11 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use MongoDB\Laravel\Eloquent\Casts\BinaryUuid;
-use MongoDB\Laravel\Eloquent\DocumentModel;
+use MongoDB\Laravel\Eloquent\Model;
 
 class Casting extends Model
 {
-    use DocumentModel;
-
-    protected $primaryKey = '_id';
-    protected $keyType = 'string';
     protected $connection = 'mongodb';
     protected string $collection = 'casting';
 
