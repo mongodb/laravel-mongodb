@@ -57,15 +57,12 @@ You can use Laravel's Eloquent object-relational mapper (ORM) to create models
 that represent MongoDB collections and chain methods on them to specify
 query criteria.
 
-To retrieve documents that match a set of criteria, pass a query filter to the
-``where()`` method.
+To retrieve documents that match a set of criteria, call the ``where()``
+method on the collection's corresponding Eloquent model, then pass a query
+filter to the method.
 
 A query filter specifies field value requirements and instructs the find
 operation to return only documents that meet these requirements.
-
-You can use Laravel's Eloquent object-relational mapper (ORM) to create models
-that represent MongoDB collections. To retrieve documents from a collection,
-call the ``where()`` method on the collection's corresponding Eloquent model.
 
 You can use one of the following ``where()`` method calls to build a query:
 
@@ -79,7 +76,7 @@ You can use one of the following ``where()`` method calls to build a query:
 To apply multiple sets of criteria to the find operation, you can chain a series
 of ``where()`` methods together.
 
-After building your query with the ``where()`` method, chain the ``get()``
+After building your query by using the ``where()`` method, chain the ``get()``
 method to retrieve the query results.
 
 This example calls two ``where()`` methods on the ``Movie`` Eloquent model to
@@ -150,6 +147,60 @@ retrieve documents that meet the following criteria:
 To learn how to query by using the Laravel query builder instead of the
 Eloquent ORM, see the :ref:`laravel-query-builder` page.
 
+Match Array Field Elements
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can specify a query filter to match array field elements when
+retrieving documents. If your documents contain an array field, you can
+match documents based on if the value contains all or some specified
+array elements.
+
+You can use one of the following ``where()`` method calls to build a
+query on an array field:
+
+- ``where('<array field>', <array>)`` builds a query that matches documents in
+  which the array field value is exactly the specified array
+
+- ``where('<array field>', 'in', <array>)`` builds a query
+  that matches documents in which the array field value contains one or
+  more of the specified array elements
+
+After building your query by using the ``where()`` method, chain the ``get()``
+method to retrieve the query results.
+
+Select from the following :guilabel:`Exact Array Match` and
+:guilabel:`Element Match` tabs to view the query syntax for each pattern:
+
+.. tabs::
+
+   .. tab:: Exact Array Match
+      :tabid: exact-array
+
+      This example retrieves documents in which the ``countries`` array is
+      exactly ``['Indonesia', 'Canada']``:
+
+      .. literalinclude:: /includes/fundamentals/read-operations/ReadOperationsTest.php
+         :language: php
+         :dedent:
+         :start-after: start-exact-array
+         :end-before: end-exact-array
+
+   .. tab:: Element Match
+      :tabid: element-match
+
+      This example retrieves documents in which the ``countries`` array
+      contains one of the values in the array ``['Canada', 'Egypt']``:
+
+      .. literalinclude:: /includes/fundamentals/read-operations/ReadOperationsTest.php
+         :language: php
+         :dedent:
+         :start-after: start-elem-match
+         :end-before: end-elem-match
+
+To learn how to query array fields by using the Laravel query builder instead of the
+Eloquent ORM, see the :ref:`laravel-query-builder-elemMatch` section in
+the Query Builder guide.
+
 .. _laravel-retrieve-all:
 
 Retrieve All Documents in a Collection
@@ -200,7 +251,7 @@ by the ``$search`` field in your query filter that you pass to the
 ``where()`` method. The ``$text`` operator performs a text search on the
 text-indexed fields. The ``$search`` field specifies the text to search for.
 
-After building your query with the ``where()`` method, chain the ``get()``
+After building your query by using the ``where()`` method, chain the ``get()``
 method to retrieve the query results.
 
 This example calls the ``where()`` method on the ``Movie`` Eloquent model to
