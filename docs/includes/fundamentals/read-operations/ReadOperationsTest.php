@@ -133,4 +133,35 @@ class ReadOperationsTest extends TestCase
         $this->assertCount(1, $movies);
         $this->assertEquals('this is a love story', $movies[0]->plot);
     }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function exactArrayMatch(): void
+    {
+        // start-exact-array
+        $movies = Movie::where('countries', ['Indonesia', 'Canada'])
+            ->get();
+        // end-exact-array
+
+        $this->assertNotNull($movies);
+        $this->assertCount(1, $movies);
+        $this->assertEquals('Title 1', $movies[0]->title);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function arrayElemMatch(): void
+    {
+        // start-elem-match
+        $movies = Movie::where('countries', 'in', ['Canada', 'Egypt'])
+            ->get();
+        // end-elem-match
+
+        $this->assertNotNull($movies);
+        $this->assertCount(2, $movies);
+    }
 }
