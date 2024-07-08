@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\Eloquent\Model as BaseModel;
+use MongoDB\Laravel\Auth\User;
 
 use function array_key_exists;
 use function class_uses_recursive;
@@ -29,7 +30,9 @@ abstract class Model extends BaseModel
      */
     protected $keyType = 'string';
 
-    private static $documentModelClasses = [];
+    private static $documentModelClasses = [
+        User::class => true,
+    ];
 
     /**
      * Indicates if the given model class is a MongoDB document model.
