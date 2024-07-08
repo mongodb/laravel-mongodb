@@ -33,7 +33,6 @@ class ReadOperationsTest extends TestCase
             ['title' => 'movie_a', 'plot' => 'this is a love story'],
             ['title' => 'movie_b', 'plot' => 'love is a long story'],
             ['title' => 'movie_c', 'plot' => 'went on a trip'],
-            ['title' => 'movie_c', 'plot' => 'went on a trip'],
         ]);
     }
 
