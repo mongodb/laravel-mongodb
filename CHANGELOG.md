@@ -1,9 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [4.5.0] - upcoming
+## [4.6.0] - upcoming
 
-* Add GridFS integration for Laravel File Storage by @GromNaN in [#2984](https://github.com/mongodb/laravel-mongodb/pull/2985)
+* Add `DocumentTrait` to use any 3rd party model with MongoDB @GromNaN in [#2580](https://github.com/mongodb/laravel-mongodb/pull/2580)
+
+## [4.5.0] - 2024-06-20
+
+* Add GridFS integration for Laravel File Storage by @GromNaN in [#2985](https://github.com/mongodb/laravel-mongodb/pull/2985)
 
 ## [4.4.0] - 2024-05-31
 

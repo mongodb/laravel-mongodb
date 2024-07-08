@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Models;
 
 use MongoDB\Laravel\Eloquent\Casts\BinaryUuid;
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\Model;
 
-class Casting extends Eloquent
+class Casting extends Model
 {
     protected $connection = 'mongodb';
-    protected $collection = 'casting';
+    protected string $collection = 'casting';
 
     protected $fillable = [
         'uuid',

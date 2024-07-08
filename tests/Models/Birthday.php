@@ -4,17 +4,22 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 
 /**
  * @property string $name
  * @property string $birthday
  * @property string $time
  */
-class Birthday extends Eloquent
+class Birthday extends Model
 {
+    use DocumentModel;
+
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected $collection = 'birthday';
+    protected string $collection = 'birthday';
     protected $fillable   = ['name', 'birthday'];
 
     protected $casts = ['birthday' => 'datetime'];

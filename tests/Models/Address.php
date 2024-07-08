@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 use MongoDB\Laravel\Relations\EmbedsMany;
 
-class Address extends Eloquent
+class Address extends Model
 {
-    protected $connection       = 'mongodb';
+    use DocumentModel;
+
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
+    protected $connection = 'mongodb';
     protected static $unguarded = true;
 
     public function addresses(): EmbedsMany

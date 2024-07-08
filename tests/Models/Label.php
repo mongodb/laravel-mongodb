@@ -4,18 +4,23 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 
 /**
  * @property string $title
  * @property string $author
  * @property array $chapters
  */
-class Label extends Eloquent
+class Label extends Model
 {
-    protected $connection       = 'mongodb';
-    protected $collection       = 'labels';
+    use DocumentModel;
+
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
+    protected $connection = 'mongodb';
+    protected string $collection = 'labels';
     protected static $unguarded = true;
 
     protected $fillable = [

@@ -7,10 +7,11 @@ namespace MongoDB\Laravel\Relations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Expression;
 use MongoDB\Driver\Exception\LogicException;
-use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use Throwable;
 
 use function array_merge;
@@ -46,6 +47,14 @@ abstract class EmbedsOneOrMany extends Relation
      */
     public function __construct(Builder $query, Model $parent, Model $related, string $localKey, string $foreignKey, string $relation)
     {
+        if (! DocumentModel::isDocumentModel($parent)) {
+            throw new LogicException('Parent model must be a document model.');
+        }
+
+        if (! DocumentModel::isDocumentModel($related)) {
+            throw new LogicException('Related model must be a document model.');
+        }
+
         parent::__construct($query, $parent);
 
         $this->related    = $related;

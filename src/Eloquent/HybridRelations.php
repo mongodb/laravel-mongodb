@@ -7,7 +7,6 @@ namespace MongoDB\Laravel\Eloquent;
 use Illuminate\Database\Eloquent\Concerns\HasRelationships;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Support\Str;
-use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 use MongoDB\Laravel\Helpers\EloquentBuilder;
 use MongoDB\Laravel\Relations\BelongsTo;
 use MongoDB\Laravel\Relations\BelongsToMany;
@@ -20,7 +19,6 @@ use MongoDB\Laravel\Relations\MorphToMany;
 use function array_pop;
 use function debug_backtrace;
 use function implode;
-use function is_subclass_of;
 use function preg_split;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
@@ -46,7 +44,7 @@ trait HybridRelations
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (! Model::isDocumentModel($related)) {
             return parent::hasOne($related, $foreignKey, $localKey);
         }
 
@@ -75,7 +73,7 @@ trait HybridRelations
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (! Model::isDocumentModel($related)) {
             return parent::morphOne($related, $name, $type, $id, $localKey);
         }
 
@@ -102,7 +100,7 @@ trait HybridRelations
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (! Model::isDocumentModel($related)) {
             return parent::hasMany($related, $foreignKey, $localKey);
         }
 
@@ -131,7 +129,7 @@ trait HybridRelations
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (! Model::isDocumentModel($related)) {
             return parent::morphMany($related, $name, $type, $id, $localKey);
         }
 
@@ -171,7 +169,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (! Model::isDocumentModel($related)) {
             return parent::belongsTo($related, $foreignKey, $ownerKey, $relation);
         }
 
@@ -242,7 +240,7 @@ trait HybridRelations
         $ownerKey ??= $instance->getKeyName();
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($instance, MongoDBModel::class)) {
+        if (! Model::isDocumentModel($instance)) {
             return parent::morphTo($name, $type, $id, $ownerKey);
         }
 
@@ -288,7 +286,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, MongoDBModel::class)) {
+        if (! Model::isDocumentModel($related)) {
             return parent::belongsToMany(
                 $related,
                 $collection,
@@ -367,7 +365,7 @@ trait HybridRelations
         }
 
         // Check if it is a relation with an original model.
-        if (! is_subclass_of($related, Model::class)) {
+        if (! Model::isDocumentModel($related)) {
             return parent::morphToMany(
                 $related,
                 $name,
@@ -434,7 +432,7 @@ trait HybridRelations
     ) {
         // If the related model is an instance of eloquent model class, leave pivot keys
         // as default. It's necessary for supporting hybrid relationship
-        if (is_subclass_of($related, Model::class)) {
+        if (Model::isDocumentModel($related)) {
             // For the inverse of the polymorphic many-to-many relations, we will change
             // the way we determine the foreign and other keys, as it is the opposite
             // of the morph-to-many method since we're figuring out these inverses.
@@ -459,7 +457,7 @@ trait HybridRelations
     /** @inheritdoc */
     public function newEloquentBuilder($query)
     {
-        if ($this instanceof MongoDBModel) {
+        if (Model::isDocumentModel($this)) {
             return new Builder($query);
         }
 

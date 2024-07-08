@@ -17,8 +17,8 @@ class SqlRole extends EloquentModel
 {
     use HybridRelations;
 
-    protected $connection       = 'sqlite';
-    protected $table            = 'roles';
+    protected $connection = 'sqlite';
+    protected $table = 'roles';
     protected static $unguarded = true;
 
     public function user(): BelongsTo
