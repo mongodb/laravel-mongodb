@@ -8,6 +8,7 @@ use Generator;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\CastObjectId;
 use MongoDB\Laravel\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class ObjectIdTest extends TestCase
 {
@@ -18,7 +19,7 @@ class ObjectIdTest extends TestCase
         CastObjectId::truncate();
     }
 
-    /** @dataProvider provideObjectIdCast */
+    #[DataProvider('provideObjectIdCast')]
     public function testStoreObjectId(string|ObjectId $saveObjectId, ObjectId $queryObjectId): void
     {
         $stringObjectId = (string) $saveObjectId;

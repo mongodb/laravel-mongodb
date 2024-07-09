@@ -19,6 +19,7 @@ use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Query\Grammar;
 use MongoDB\Laravel\Query\Processor;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use stdClass;
 
@@ -29,7 +30,7 @@ use function var_export;
 
 class BuilderTest extends TestCase
 {
-    /** @dataProvider provideQueryBuilderToMql */
+    #[DataProvider('provideQueryBuilderToMql')]
     public function testMql(array $expected, Closure $build): void
     {
         $builder = $build(self::getBuilder());
@@ -1298,7 +1299,7 @@ class BuilderTest extends TestCase
         }
     }
 
-    /** @dataProvider provideExceptions */
+    #[DataProvider('provideExceptions')]
     public function testException($class, $message, Closure $build): void
     {
         $builder = self::getBuilder();
@@ -1396,7 +1397,7 @@ class BuilderTest extends TestCase
         ];
     }
 
-    /** @dataProvider getEloquentMethodsNotSupported */
+    #[DataProvider('getEloquentMethodsNotSupported')]
     public function testEloquentMethodsNotSupported(Closure $callback)
     {
         $builder = self::getBuilder();

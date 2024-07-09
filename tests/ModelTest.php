@@ -28,6 +28,7 @@ use MongoDB\Laravel\Tests\Models\MemberStatus;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 
 use function abs;
@@ -370,7 +371,7 @@ class ModelTest extends TestCase
         $this->assertEquals(2, Soft::count());
     }
 
-    /** @dataProvider provideId */
+    #[DataProvider('provideId')]
     public function testPrimaryKey(string $model, $id, $expected, bool $expectedFound): void
     {
         $model::truncate();
@@ -755,7 +756,7 @@ class ModelTest extends TestCase
         yield 'DateTime date, time and ms before unix epoch' => [new DateTime('1965-08-08 04.08.37.324')];
     }
 
-    /** @dataProvider provideDate */
+    #[DataProvider('provideDate')]
     public function testDateInputs($date): void
     {
         // Test with create and standard property
