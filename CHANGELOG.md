@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [4.6.0] - upcoming
 
 * Add `DocumentTrait` to use any 3rd party model with MongoDB @GromNaN in [#2580](https://github.com/mongodb/laravel-mongodb/pull/2580)
+* Add support for Closure for Embed pagination @GromNaN in [#3027](https://github.com/mongodb/laravel-mongodb/pull/3027)
 
 ## [4.5.0] - 2024-06-20
 
