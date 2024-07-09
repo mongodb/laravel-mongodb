@@ -11,18 +11,16 @@ class SchemaVersion extends Eloquent
 {
     use HasSchemaVersion;
 
+    public const SCHEMA_VERSION = 2;
+
     protected $connection       = 'mongodb';
     protected $collection       = 'documentVersion';
     protected static $unguarded = true;
 
-    public function migrateSchema($fromVersion): void
+    public function migrateSchema(int $fromVersion): void
     {
-        if ($fromVersion) {
-            if ($fromVersion < 2) {
-                $this->age = 35;
-
-                $this->setSchemaVersion(2);
-            }
+        if ($fromVersion < 2) {
+            $this->age = 35;
         }
     }
 }

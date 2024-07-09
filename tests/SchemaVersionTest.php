@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use Illuminate\Support\Facades\DB;
+use LogicException;
+use MongoDB\Laravel\Eloquent\HasSchemaVersion;
+use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Tests\Models\SchemaVersion;
-use MongoDB\Laravel\Tests\Models\User;
 
 class SchemaVersionTest extends TestCase
 {
@@ -20,26 +23,36 @@ class SchemaVersionTest extends TestCase
         $this->assertEmpty($document->getSchemaVersion());
         $document->save();
 
-        $this->assertEquals(1, $document->getSchemaVersion());
-        $this->assertNull($document->age);
-
-        $document->currentSchemaVersion = 2;
-        $document->migrateSchema($document->getSchemaVersion());
-
-        $this->assertEquals(35, $document->age);
+        // The current schema version of the model is stored by default
         $this->assertEquals(2, $document->getSchemaVersion());
 
-        // Test without migration
-        $newDocument = new SchemaVersion(['name' => 'Vador']);
-        $newDocument->setSchemaVersion(2);
-        $newDocument->save();
-        $newDocument->currentSchemaVersion = 2;
-        $newDocument->migrateSchema($newDocument->getSchemaVersion());
+        // Test automatic migration
+        SchemaVersion::insert([
+            ['name' => 'Vador', 'schema_version' => 1],
+        ]);
+        $document = SchemaVersion::where('name', 'Vador')->first();
+        $this->assertEquals(2, $document->getSchemaVersion());
+        $this->assertEquals(35, $document->age);
 
-        $this->assertEquals(2, $newDocument->getSchemaVersion());
-        $this->assertNull($newDocument->age);
+        $document->save();
 
-        $newDocument = SchemaVersion::query()->where('name', 'Vador')->first();
-        $this->assertNull($newDocument->age);
+        // The migrated version is saved
+        $data = DB::connection('mongodb')
+            ->collection('documentVersion')
+            ->where('name', 'Vador')
+            ->get();
+
+        $this->assertEquals(2, $data[0]['schema_version']);
+    }
+
+    public function testIncompleteImplementation(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('::SCHEMA_VERSION is required when using HasSchemaVersion');
+        $document = new class extends Model {
+            use HasSchemaVersion;
+        };
+
+        $document->save();
     }
 }
