@@ -20,21 +20,29 @@ User Authentication
 Overview
 --------
 
-In this guide, you can learn how to use the {+odm-long+} to modify the ``User``
-model and configure user authentication.
+In this guide, you can learn how to authenticate users stored in MongoDB
+by using Laravel's native authentication functionality. 
+
+Laravel provides a native Auth module that includes authentication services,
+such as guards that define how users are authenticated and providers that define
+how users are retrieved. To learn more about these services, see `Authentication 
+<https://laravel.com/docs/{+laravel-docs-version+}/authentication>`__ in the
+Laravel documentation.
 
 User Model
 ----------
 
-By default, Laravel includes an ``App\Models\User`` Eloquent model in your ``app/Models``
-directory. You can extend the ``Jenssegers\Mongodb\Auth\User`` class to configure your
-``User`` model to use the Laravel Auth module, which provides multiple authentication services.
+By default, Laravel generates the ``User`` Eloquent model in your ``App/Models``
+directory. To enable authentication for users stored in MongoDB, your ``User`` model
+must extend the ``MongoDB\Laravel\Auth\User`` class. 
+
 To extend this class, navigate to your ``app/Models/User.php`` file and replace the
-``use Illuminate\Foundation\Auth\User as Authenticatable`` use statement with the following code:
+``use Illuminate\Foundation\Auth\User as Authenticatable`` use statement with the following
+code:
 
 .. code-block:: php
 
-   use Jenssegers\Mongodb\Auth\User as Authenticatable;
+   use MongoDB\Laravel\Auth\User as Authenticatable;
 
 Ensure that your ``User`` class extends ``Authenticatable``, as shown in the following code:
 
@@ -51,7 +59,7 @@ creating a controller, see the :ref:`laravel-auth-controller` section on this pa
 Example
 ~~~~~~~
 
-The following code demonstrates a ``User.php`` file that extends the ``Jenssegers\Mongodb\Auth\User``
+The following code demonstrates a ``User.php`` file that extends the ``MongoDB\Laravel\Auth\User``
 class:
 
 .. literalinclude:: /includes/auth/AuthUser.php
