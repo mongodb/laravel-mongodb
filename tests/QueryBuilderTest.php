@@ -24,6 +24,7 @@ use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\TestWith;
 use Stringable;
 
 use function count;
@@ -963,5 +964,21 @@ class QueryBuilderTest extends TestCase
         DB::collection('users')->where($ageColumn, 28)->increment($ageColumn, 1);
         $user = DB::collection('users')->where($ageColumn, 29)->first();
         $this->assertEquals('John Doe', $user['name']);
+    }
+
+    #[TestWith(['id', 'id'])]
+    #[TestWith(['id', '_id'])]
+    #[TestWith(['_id', 'id'])]
+    public function testIdAlias($insertId, $queryId): void
+    {
+        DB::collection('items')->insert([$insertId => 'abc', 'name' => 'Karting']);
+        $item = DB::collection('items')->where($queryId, '=', 'abc')->first();
+        $this->assertNotNull($item);
+        $this->assertSame('abc', $item['_id']);
+        $this->assertSame('Karting', $item['name']);
+
+        DB::collection('items')->where($insertId, '=', 'abc')->update(['name' => 'Bike']);
+        $item = DB::collection('items')->where($queryId, '=', 'abc')->first();
+        $this->assertSame('Bike', $item['name']);
     }
 }

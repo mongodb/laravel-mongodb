@@ -682,6 +682,17 @@ class Builder extends BaseBuilder
             $values = [$values];
         }
 
+        // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
+        foreach ($values as &$document) {
+            if (isset($document['id'])) {
+                if (isset($document['_id']) && $document['_id'] !== $document['id']) {
+                    throw new InvalidArgumentException('Cannot insert document with different "id" and "_id" values');
+                }
+
+                $document['_id'] = $document['id'];
+            }
+        }
+
         $options = $this->inheritConnectionOptions();
 
         $result = $this->collection->insertMany($values, $options);
@@ -750,18 +761,6 @@ class Builder extends BaseBuilder
     public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
         return $this->increment($column, -1 * $amount, $extra, $options);
-    }
-
-    /** @inheritdoc */
-    public function chunkById($count, callable $callback, $column = '_id', $alias = null)
-    {
-        return parent::chunkById($count, $callback, $column, $alias);
-    }
-
-    /** @inheritdoc */
-    public function forPageAfterId($perPage = 15, $lastId = 0, $column = '_id')
-    {
-        return parent::forPageAfterId($perPage, $lastId, $column);
     }
 
     /** @inheritdoc */
@@ -1038,6 +1037,11 @@ class Builder extends BaseBuilder
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
         $params = func_get_args();
+
+        // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
+        if ($column === 'id') {
+            $params[0] = $column = '_id';
+        }
 
         // Remove the leading $ from operators.
         if (func_num_args() >= 3) {

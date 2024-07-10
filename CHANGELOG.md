@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+# [4.7.0] - upcoming
+
+* **BREAKING CHANGE** Use `id` and an alias for `_id` in commands and queries for compatibility with Eloquent packages by @GromNaN in [#3040](https://github.com/mongodb/laravel-mongodb/pull/3040)
+
 ## [4.6.0] - 2024-07-09
 
 * Add `DocumentModel` trait to use any 3rd party model with MongoDB @GromNaN in [#2580](https://github.com/mongodb/laravel-mongodb/pull/2580)
