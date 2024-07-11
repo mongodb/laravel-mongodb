@@ -375,7 +375,7 @@ class Builder extends BaseBuilder
 
             // Apply order and limit
             if ($this->orders) {
-                $pipeline[] = ['$sort' => $this->renameId($this->orders)];
+                $pipeline[] = ['$sort' => $this->aliasIdForQuery($this->orders)];
             }
 
             if ($this->offset) {
@@ -416,7 +416,7 @@ class Builder extends BaseBuilder
 
         // Normal query
         // Convert select columns to simple projections.
-        $projection = $this->renameId(array_fill_keys($columns, true));
+        $projection = $this->aliasIdForQuery(array_fill_keys($columns, true));
 
         // Add custom projections.
         if ($this->projections) {
@@ -431,7 +431,7 @@ class Builder extends BaseBuilder
         }
 
         if ($this->orders) {
-            $options['sort'] = $this->renameId($this->orders);
+            $options['sort'] = $this->aliasIdForQuery($this->orders);
         }
 
         if ($this->offset) {
@@ -506,13 +506,17 @@ class Builder extends BaseBuilder
         if ($returnLazy) {
             return LazyCollection::make(function () use ($result) {
                 foreach ($result as $item) {
-                    yield $item;
+                    yield $this->aliasIdForResult($item);
                 }
             });
         }
 
         if ($result instanceof Cursor) {
             $result = $result->toArray();
+        }
+
+        foreach ($result as &$document) {
+            $document = $this->aliasIdForResult($document);
         }
 
         return new Collection($result);
@@ -593,7 +597,7 @@ class Builder extends BaseBuilder
     /** @inheritdoc */
     public function exists()
     {
-        return $this->first(['_id']) !== null;
+        return $this->first(['id']) !== null;
     }
 
     /** @inheritdoc */
@@ -690,6 +694,7 @@ class Builder extends BaseBuilder
                 }
 
                 $document['_id'] = $document['id'];
+                unset($document['id']);
             }
         }
 
@@ -711,11 +716,10 @@ class Builder extends BaseBuilder
             return null;
         }
 
-        if ($sequence === null || $sequence === '_id') {
-            return $result->getInsertedId();
-        }
-
-        return $values[$sequence];
+        return match ($sequence) {
+            '_id', 'id', null => $result->getInsertedId(),
+            default => $values[$sequence],
+        };
     }
 
     /** @inheritdoc */
@@ -731,7 +735,12 @@ class Builder extends BaseBuilder
             unset($values[$key]);
         }
 
-        $options = $this->inheritConnectionOptions($options);
+        // Since "id" is an alias for "_id", we prevent updating it
+        foreach ($values as $fields) {
+            if (array_key_exists('id', $fields)) {
+                throw new InvalidArgumentException('Cannot update "id" field.');
+            }
+        }
 
         return $this->performUpdate($values, $options);
     }
@@ -978,21 +987,26 @@ class Builder extends BaseBuilder
     /**
      * Perform an update query.
      *
-     * @param  array $query
-     *
      * @return int
      */
-    protected function performUpdate($query, array $options = [])
+    protected function performUpdate(array $update, array $options = [])
     {
         // Update multiple items by default.
         if (! array_key_exists('multiple', $options)) {
             $options['multiple'] = true;
         }
 
+        // Since "id" is an alias for "_id", we prevent updating it
+        foreach ($update as $operator => $fields) {
+            if (array_key_exists('id', $fields)) {
+                throw new InvalidArgumentException('Cannot update "id" field.');
+            }
+        }
+
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
-        $result = $this->collection->updateMany($wheres, $query, $options);
+        $result = $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
         }
@@ -1540,11 +1554,20 @@ class Builder extends BaseBuilder
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
-    private function renameId(array $values): array
+    private function aliasIdForQuery(array $values): array
     {
         if (isset($values['id'])) {
             $values['_id'] = $values['id'];
             unset($values['id']);
+        }
+
+        return $values;
+    }
+
+    private function aliasIdForResult(array $values): array
+    {
+        if (isset($values['_id'])) {
+            $values['id'] = $values['_id'];
         }
 
         return $values;
