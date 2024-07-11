@@ -124,9 +124,10 @@ class BuilderTest extends TestCase
         ];
 
         // Nested array are not flattened like in the Eloquent builder. MongoDB can compare objects.
+        // When id is used as data field name, it's not converted to _id
         $array = [['issue' => 45582], ['id' => 2], [3]];
         yield 'whereIn nested array' => [
-            ['find' => [['id' => ['$in' => $array]], []]],
+            ['find' => [['_id' => ['$in' => $array]], []]],
             fn (Builder $builder) => $builder->whereIn('id', $array),
         ];
 
@@ -170,7 +171,7 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testEmptyWhereIns */
         yield 'whereIn empty array' => [
-            ['find' => [['id' => ['$in' => []]], []]],
+            ['find' => [['_id' => ['$in' => []]], []]],
             fn (Builder $builder) => $builder->whereIn('id', []),
         ];
 
@@ -553,12 +554,12 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testWhereBetweens() */
         yield 'whereBetween array of numbers' => [
-            ['find' => [['id' => ['$gte' => 1, '$lte' => 2]], []]],
+            ['find' => [['_id' => ['$gte' => 1, '$lte' => 2]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', [1, 2]),
         ];
 
         yield 'whereBetween nested array of numbers' => [
-            ['find' => [['id' => ['$gte' => [1], '$lte' => [2, 3]]], []]],
+            ['find' => [['_id' => ['$gte' => [1], '$lte' => [2, 3]]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', [[1], [2, 3]]),
         ];
 
@@ -579,7 +580,7 @@ class BuilderTest extends TestCase
         ];
 
         yield 'whereBetween collection' => [
-            ['find' => [['id' => ['$gte' => 1, '$lte' => 2]], []]],
+            ['find' => [['_id' => ['$gte' => 1, '$lte' => 2]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', collect([1, 2])),
         ];
 

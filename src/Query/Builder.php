@@ -1038,11 +1038,6 @@ class Builder extends BaseBuilder
     {
         $params = func_get_args();
 
-        // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
-        if ($column === 'id') {
-            $params[0] = $column = '_id';
-        }
-
         // Remove the leading $ from operators.
         if (func_num_args() >= 3) {
             $operator = &$params[1];
@@ -1090,16 +1085,21 @@ class Builder extends BaseBuilder
             // Convert column name to string to use as array key
             if (isset($where['column'])) {
                 $where['column'] = (string) $where['column'];
-            }
 
-            // Convert id's.
-            if (isset($where['column']) && ($where['column'] === '_id' || str_ends_with($where['column'], '._id'))) {
-                if (isset($where['values'])) {
-                    // Multiple values.
-                    $where['values'] = array_map($this->convertKey(...), $where['values']);
-                } elseif (isset($where['value'])) {
-                    // Single value.
-                    $where['value'] = $this->convertKey($where['value']);
+                // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
+                if ($where['column'] === 'id') {
+                    $where['column'] = '_id';
+                }
+
+                // Convert id's.
+                if ($where['column'] === '_id' || str_ends_with($where['column'], '._id')) {
+                    if (isset($where['values'])) {
+                        // Multiple values.
+                        $where['values'] = array_map($this->convertKey(...), $where['values']);
+                    } elseif (isset($where['value'])) {
+                        // Single value.
+                        $where['value'] = $this->convertKey($where['value']);
+                    }
                 }
             }
 
