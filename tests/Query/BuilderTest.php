@@ -39,11 +39,11 @@ class BuilderTest extends TestCase
 
         // Operations that return a Cursor expect a "typeMap" option.
         if (isset($expected['find'][1])) {
-            $expected['find'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
+            $expected['find'][1]['typeMap'] = ['root' => 'object', 'document' => 'array'];
         }
 
         if (isset($expected['aggregate'][1])) {
-            $expected['aggregate'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
+            $expected['aggregate'][1]['typeMap'] = ['root' => 'object', 'document' => 'array'];
         }
 
         // Compare with assertEquals because the query can contain BSON objects.
@@ -125,10 +125,9 @@ class BuilderTest extends TestCase
 
         // Nested array are not flattened like in the Eloquent builder. MongoDB can compare objects.
         // When id is used as data field name, it's not converted to _id
-        $array = [['issue' => 45582], ['id' => 2], [3]];
         yield 'whereIn nested array' => [
-            ['find' => [['_id' => ['$in' => $array]], []]],
-            fn (Builder $builder) => $builder->whereIn('id', $array),
+            ['find' => [['_id' => ['$in' => [['issue' => 45582], ['_id' => 2], [3]]]], []]],
+            fn (Builder $builder) => $builder->whereIn('id', [['issue' => 45582], ['id' => 2], [3]]),
         ];
 
         yield 'orWhereIn' => [
@@ -1335,7 +1334,7 @@ class BuilderTest extends TestCase
         yield 'orderBy invalid direction' => [
             InvalidArgumentException::class,
             'Order direction must be "asc" or "desc"',
-            fn (Builder $builder) => $builder->orderBy('_id', 'dasc'),
+            fn (Builder $builder) => $builder->orderBy('id', 'dasc'),
         ];
 
         /** @see DatabaseQueryBuilderTest::testWhereBetweens */

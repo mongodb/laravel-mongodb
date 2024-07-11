@@ -76,8 +76,8 @@ trait DocumentModel
     {
         // If we don't have a value for 'id', we will use the MongoDB '_id' value.
         // This allows us to work with models in a more sql-like way.
-        if (! $value && array_key_exists('_id', $this->attributes)) {
-            $value = $this->attributes['_id'];
+        if (! $value && array_key_exists('id', $this->attributes)) {
+            $value = $this->attributes['id'];
         }
 
         // Convert ObjectID to string.
@@ -238,8 +238,8 @@ trait DocumentModel
             };
         }
 
-        // Convert _id to ObjectID.
-        if ($key === '_id' && is_string($value)) {
+        // Convert "id" to ObjectID.
+        if ($key === 'id' && is_string($value)) {
             $builder = $this->newBaseQueryBuilder();
 
             $value = $builder->convertKey($value);
@@ -721,9 +721,9 @@ trait DocumentModel
     public function save(array $options = [])
     {
         // SQL databases would use autoincrement the id field if set to null.
-        // Apply the same behavior to MongoDB with _id only, otherwise null would be stored.
-        if (array_key_exists('_id', $this->attributes) && $this->attributes['_id'] === null) {
-            unset($this->attributes['_id']);
+        // Apply the same behavior to MongoDB with "id" only, otherwise null would be stored.
+        if (array_key_exists('id', $this->attributes) && $this->attributes['id'] === null) {
+            unset($this->attributes['id']);
         }
 
         $saved = parent::save($options);

@@ -18,7 +18,6 @@ class Soft extends Model
     use SoftDeletes;
     use MassPrunable;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
     protected string $collection = 'soft';

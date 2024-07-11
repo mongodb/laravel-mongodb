@@ -38,7 +38,6 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     use Notifiable;
     use MassPrunable;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
     protected $casts = [
@@ -100,7 +99,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
 
     public function groups()
     {
-        return $this->belongsToMany(Group::class, 'groups', 'users', 'groups', '_id', '_id', 'groups');
+        return $this->belongsToMany(Group::class, 'groups', 'users', 'groups', 'id', 'id', 'groups');
     }
 
     public function photos()

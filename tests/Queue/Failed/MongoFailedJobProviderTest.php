@@ -57,8 +57,7 @@ class MongoFailedJobProviderTest extends TestCase
         $this->assertSame('default', $inserted->queue);
         $this->assertSame('{"foo":"bar"}', $inserted->payload);
         $this->assertStringContainsString('OutOfBoundsException: This is the error', $inserted->exception);
-        $this->assertInstanceOf(ObjectId::class, $inserted->_id);
-        $this->assertSame((string) $inserted->_id, $inserted->id);
+        $this->assertInstanceOf(ObjectId::class, $inserted->id);
     }
 
     public function testCount(): void
@@ -75,7 +74,7 @@ class MongoFailedJobProviderTest extends TestCase
         $all = $this->getProvider()->all();
 
         $this->assertCount(5, $all);
-        $this->assertEquals(new ObjectId(sprintf('%024d', 5)), $all[0]->_id);
+        $this->assertEquals(new ObjectId(sprintf('%024d', 5)), $all[0]->id);
         $this->assertEquals(sprintf('%024d', 5), $all[0]->id, 'id field is added for compatibility with DatabaseFailedJobProvider');
     }
 
@@ -87,7 +86,7 @@ class MongoFailedJobProviderTest extends TestCase
         $found = $provider->find($id);
 
         $this->assertIsObject($found, 'The job is found');
-        $this->assertEquals(new ObjectId($id), $found->_id);
+        $this->assertEquals(new ObjectId($id), $found->id);
         $this->assertObjectHasProperty('failed_at', $found);
 
         // Delete the job
@@ -117,7 +116,7 @@ class MongoFailedJobProviderTest extends TestCase
         $ids = $this->getProvider()->ids('other');
 
         $this->assertCount(2, $ids);
-        $this->assertEquals(new ObjectId(sprintf('%024d', 4)), $ids[0]);
+        $this->assertEquals(sprintf('%024d', 4), $ids[0]);
     }
 
     public function testFlush(): void

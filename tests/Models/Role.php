@@ -12,7 +12,6 @@ class Role extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
     protected string $collection = 'roles';

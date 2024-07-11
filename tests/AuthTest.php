@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use DateTimeInterface;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\Models\User;
 
 use function bcrypt;
@@ -52,7 +52,7 @@ class AuthTest extends TestCase
             $broker->sendResetLink(
                 ['email' => 'john.doe@example.com'],
                 function ($actualUser, $actualToken) use ($user, &$token) {
-                    $this->assertEquals($user->_id, $actualUser->_id);
+                    $this->assertEquals($user->id, $actualUser->id);
                     // Store token for later use
                     $token = $actualToken;
                 },
@@ -61,9 +61,9 @@ class AuthTest extends TestCase
 
         $this->assertEquals(1, DB::collection('password_reset_tokens')->count());
         $reminder = DB::collection('password_reset_tokens')->first();
-        $this->assertEquals('john.doe@example.com', $reminder['email']);
-        $this->assertNotNull($reminder['token']);
-        $this->assertInstanceOf(UTCDateTime::class, $reminder['created_at']);
+        $this->assertEquals('john.doe@example.com', $reminder->email);
+        $this->assertNotNull($reminder->token);
+        $this->assertInstanceOf(DateTimeInterface::class, $reminder->created_at);
 
         $credentials = [
             'email' => 'john.doe@example.com',

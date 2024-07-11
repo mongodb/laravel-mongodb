@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Query;
 
 use ArgumentCountError;
 use BadMethodCallException;
+use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Closure;
 use DateTimeInterface;
@@ -25,6 +26,7 @@ use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Driver\Cursor;
 use Override;
 use RuntimeException;
+use stdClass;
 
 use function array_fill_keys;
 use function array_is_list;
@@ -39,6 +41,7 @@ use function call_user_func;
 use function call_user_func_array;
 use function count;
 use function ctype_xdigit;
+use function date_default_timezone_get;
 use function dd;
 use function dump;
 use function end;
@@ -46,6 +49,7 @@ use function explode;
 use function func_get_args;
 use function func_num_args;
 use function get_debug_type;
+use function get_object_vars;
 use function implode;
 use function in_array;
 use function is_array;
@@ -53,6 +57,7 @@ use function is_bool;
 use function is_callable;
 use function is_float;
 use function is_int;
+use function is_object;
 use function is_string;
 use function md5;
 use function preg_match;
@@ -227,7 +232,7 @@ class Builder extends BaseBuilder
     /** @inheritdoc */
     public function find($id, $columns = [])
     {
-        return $this->where('_id', '=', $this->convertKey($id))->first($columns);
+        return $this->where('id', '=', $this->convertKey($id))->first($columns);
     }
 
     /** @inheritdoc */
@@ -391,7 +396,7 @@ class Builder extends BaseBuilder
             }
 
             $options = [
-                'typeMap' => ['root' => 'array', 'document' => 'array'],
+                'typeMap' => ['root' => 'object', 'document' => 'array'],
             ];
 
             // Add custom query options
@@ -451,7 +456,7 @@ class Builder extends BaseBuilder
         }
 
         // Fix for legacy support, converts the results to arrays instead of objects.
-        $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
+        $options['typeMap'] = ['root' => 'object', 'document' => 'array'];
 
         // Add custom query options
         if (count($this->options)) {
@@ -506,7 +511,7 @@ class Builder extends BaseBuilder
         if ($returnLazy) {
             return LazyCollection::make(function () use ($result) {
                 foreach ($result as $item) {
-                    yield $this->aliasIdForResult($item);
+                    yield is_object($item) ? $this->aliasIdForResult($item) : $item;
                 }
             });
         }
@@ -515,8 +520,8 @@ class Builder extends BaseBuilder
             $result = $result->toArray();
         }
 
-        foreach ($result as &$document) {
-            $document = $this->aliasIdForResult($document);
+        foreach ($result as &$item) {
+            $item = is_object($item) ? $this->aliasIdForResult($item) : $item;
         }
 
         return new Collection($result);
@@ -590,7 +595,7 @@ class Builder extends BaseBuilder
         if (isset($results[0])) {
             $result = (array) $results[0];
 
-            return $result['aggregate'];
+            return $this->aliasIdForResult($result['aggregate']);
         }
     }
 
@@ -628,6 +633,7 @@ class Builder extends BaseBuilder
         }
 
         $column = (string) $column;
+
         if ($column === 'natural') {
             $this->orders['$natural'] = $direction;
         } else {
@@ -692,10 +698,9 @@ class Builder extends BaseBuilder
                 if (isset($document['_id']) && $document['_id'] !== $document['id']) {
                     throw new InvalidArgumentException('Cannot insert document with different "id" and "_id" values');
                 }
-
-                $document['_id'] = $document['id'];
-                unset($document['id']);
             }
+
+            $document = $this->aliasIdForQuery($document);
         }
 
         $options = $this->inheritConnectionOptions();
@@ -709,6 +714,8 @@ class Builder extends BaseBuilder
     public function insertGetId(array $values, $sequence = null)
     {
         $options = $this->inheritConnectionOptions();
+
+        $values = $this->aliasIdForQuery($values);
 
         $result = $this->collection->insertOne($values, $options);
 
@@ -733,13 +740,6 @@ class Builder extends BaseBuilder
 
             $values['$set'][$key] = $value;
             unset($values[$key]);
-        }
-
-        // Since "id" is an alias for "_id", we prevent updating it
-        foreach ($values as $fields) {
-            if (array_key_exists('id', $fields)) {
-                throw new InvalidArgumentException('Cannot update "id" field.');
-            }
         }
 
         return $this->performUpdate($values, $options);
@@ -778,9 +778,9 @@ class Builder extends BaseBuilder
         $results = $this->get($key === null ? [$column] : [$column, $key]);
 
         // Convert ObjectID's to strings
-        if (((string) $key) === '_id') {
+        if (((string) $key) === 'id') {
             $results = $results->map(function ($item) {
-                $item['_id'] = (string) $item['_id'];
+                $item->id = (string) $item->id;
 
                 return $item;
             });
@@ -798,13 +798,14 @@ class Builder extends BaseBuilder
         // the ID to allow developers to simply and quickly remove a single row
         // from their database without manually specifying the where clauses.
         if ($id !== null) {
-            $this->where('_id', '=', $id);
+            $this->where('id', '=', $id);
         }
 
         $wheres  = $this->compileWheres();
         $options = $this->inheritConnectionOptions();
 
-        if (is_int($this->limit)) {
+        /** 1000 is a large value used by Laravel {@see DatabaseFailedJobProvider} */
+        if (is_int($this->limit) && $this->limit !== 1000) {
             if ($this->limit !== 1) {
                 throw new LogicException(sprintf('Delete limit can be 1 or null (unlimited). Got %d', $this->limit));
             }
@@ -997,15 +998,19 @@ class Builder extends BaseBuilder
         }
 
         // Since "id" is an alias for "_id", we prevent updating it
-        foreach ($update as $operator => $fields) {
+        foreach ($update as &$fields) {
             if (array_key_exists('id', $fields)) {
                 throw new InvalidArgumentException('Cannot update "id" field.');
             }
+
+            // Rename "id" to "_id" for embedded documents
+            $fields = $this->aliasIdForQuery($fields);
         }
 
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
+
         $result = $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
@@ -1188,7 +1193,7 @@ class Builder extends BaseBuilder
             }
         }
 
-        return $compiled;
+        return $this->aliasIdForQuery($compiled);
     }
 
     protected function compileWhereBasic(array $where): array
@@ -1561,13 +1566,52 @@ class Builder extends BaseBuilder
             unset($values['id']);
         }
 
+        foreach ($values as $key => $value) {
+            if (is_string($key) && str_ends_with($key, '.id')) {
+                $values[substr($key, 0, -3) . '._id'] = $value;
+                unset($values[$key]);
+            }
+        }
+
+        foreach ($values as &$value) {
+            if ($value instanceof DateTimeInterface) {
+                $value = new UTCDateTime($value);
+            } elseif (is_array($value)) {
+                $value = $this->aliasIdForQuery($value);
+            }
+        }
+
         return $values;
     }
 
-    private function aliasIdForResult(array $values): array
+    private function aliasIdForResult(stdClass|array $values): stdClass|array
     {
-        if (isset($values['_id'])) {
-            $values['id'] = $values['_id'];
+        if (is_array($values)) {
+            if (isset($values['_id'])) {
+                $values['id'] = $values['_id'];
+                unset($values['_id']);
+            }
+
+            foreach ($values as $key => $value) {
+                if ($value instanceof UTCDateTime) {
+                    $values[$key] = CarbonImmutable::createFromTimestamp($value->toDateTime()->getTimestamp(), 'UTC')->setTimezone(date_default_timezone_get());
+                } elseif (is_array($value) || $value instanceof stdClass) {
+                    $values[$key] = $this->aliasIdForResult($value);
+                }
+            }
+        } else {
+            if (isset($values->_id)) {
+                $values->id = $values->_id;
+                unset($values->_id);
+            }
+
+            foreach (get_object_vars($values) as $key => $value) {
+                if ($value instanceof UTCDateTime) {
+                    $values->{$key} = CarbonImmutable::createFromTimestamp($value->toDateTime()->getTimestamp(), 'UTC')->setTimezone(date_default_timezone_get());
+                } elseif (is_array($value) || $value instanceof stdClass) {
+                    $values->{$key} = $this->aliasIdForResult($value);
+                }
+            }
         }
 
         return $values;

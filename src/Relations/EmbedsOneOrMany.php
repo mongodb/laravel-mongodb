@@ -17,6 +17,7 @@ use Throwable;
 use function array_merge;
 use function count;
 use function is_array;
+use function sprintf;
 use function throw_if;
 
 abstract class EmbedsOneOrMany extends Relation
@@ -132,6 +133,10 @@ abstract class EmbedsOneOrMany extends Relation
      */
     public function save(Model $model)
     {
+        if (! \MongoDB\Laravel\Eloquent\Model::isDocumentModel($model)) {
+            throw new LogicException(sprintf('Model "%s" must be a Document Model to be embedded.', $model::class));
+        }
+
         $model->setParentRelation($this);
 
         return $model->save() ? $model : false;
@@ -214,17 +219,15 @@ abstract class EmbedsOneOrMany extends Relation
         return $ids;
     }
 
-    /** @inheritdoc */
     protected function getEmbedded()
     {
         // Get raw attributes to skip relations and accessors.
         $attributes = $this->parent->getAttributes();
 
         // Get embedded models form parent attributes.
-        return isset($attributes[$this->localKey]) ? (array) $attributes[$this->localKey] : null;
+        return $attributes[$this->localKey] ?? null;
     }
 
-    /** @inheritdoc */
     protected function setEmbedded($records)
     {
         // Assign models to parent attributes array.

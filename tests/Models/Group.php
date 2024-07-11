@@ -12,7 +12,6 @@ class Group extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
     protected string $collection = 'groups';
@@ -20,6 +19,6 @@ class Group extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'users', 'groups', 'users', '_id', '_id', 'users');
+        return $this->belongsToMany(User::class, 'users', 'groups', 'users', 'id', 'id', 'users');
     }
 }

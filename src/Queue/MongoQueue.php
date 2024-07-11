@@ -93,6 +93,7 @@ class MongoQueue extends DatabaseQueue
 
         if ($job) {
             $job->id = $job->_id;
+            unset($job->_id);
         }
 
         return $job;
@@ -116,7 +117,7 @@ class MongoQueue extends DatabaseQueue
             ->get();
 
         foreach ($reserved as $job) {
-            $this->releaseJob($job['_id'], $job['attempts']);
+            $this->releaseJob($job->id, $job->attempts);
         }
     }
 
@@ -130,7 +131,7 @@ class MongoQueue extends DatabaseQueue
      */
     protected function releaseJob($id, $attempts)
     {
-        $this->database->table($this->table)->where('_id', $id)->update([
+        $this->database->table($this->table)->where('id', $id)->update([
             'reserved' => 0,
             'reserved_at' => null,
             'attempts' => $attempts,
@@ -140,7 +141,7 @@ class MongoQueue extends DatabaseQueue
     /** @inheritdoc */
     public function deleteReserved($queue, $id)
     {
-        $this->database->collection($this->table)->where('_id', $id)->delete();
+        $this->database->collection($this->table)->where('id', $id)->delete();
     }
 
     /** @inheritdoc */

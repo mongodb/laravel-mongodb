@@ -68,7 +68,7 @@ class AggregationsBuilderTest extends TestCase
         // end aggregation sort stage
 
         $this->assertEquals(6, $result->count());
-        $this->assertEquals('Janet Doe', $result->first()['name']);
+        $this->assertEquals('Janet Doe', $result->first()->name);
     }
 
     public function testAggregationBuilderProjectStage(): void
@@ -80,8 +80,9 @@ class AggregationsBuilderTest extends TestCase
         // end aggregation project stage
 
         $this->assertEquals(6, $result->count());
-        $this->assertNotNull($result->first()['name']);
-        $this->assertArrayNotHasKey('_id', $result->first());
+        $this->assertNotNull($result->first()->name);
+        $this->assertObjectNotHasProperty('_id', $result->first());
+        $this->assertObjectNotHasProperty('id', $result->first());
     }
 
     public function testAggregationBuilderPipeline(): void
@@ -104,7 +105,7 @@ class AggregationsBuilderTest extends TestCase
         $result = $pipeline->get();
 
         $this->assertEquals(2, $result->count());
-        $this->assertNotNull($result->first()['birth_year_avg']);
+        $this->assertNotNull($result->first()->birth_year_avg);
     }
 
     // phpcs:disable Squiz.Commenting.FunctionComment.WrongStyle
@@ -130,6 +131,6 @@ class AggregationsBuilderTest extends TestCase
         $result = $pipeline->get();
 
         $this->assertEquals(6, $result->count());
-        $this->assertNotNull($result->first()['birth_year']);
+        $this->assertNotNull($result->first()->birth_year);
     }
 }

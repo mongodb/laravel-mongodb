@@ -73,10 +73,10 @@ class AggregationBuilderTest extends TestCase
         $results = $pipeline->get();
         $this->assertInstanceOf(Collection::class, $results);
         $this->assertCount(1, $results);
-        $this->assertInstanceOf(ObjectId::class, $results->first()['_id']);
-        $this->assertSame('John Doe', $results->first()['name']);
-        $this->assertIsInt($results->first()['year']);
-        $this->assertArrayNotHasKey('birthday', $results->first());
+        $this->assertInstanceOf(ObjectId::class, $results->first()->_id);
+        $this->assertSame('John Doe', $results->first()->name);
+        $this->assertIsInt($results->first()->year);
+        $this->assertObjectNotHasProperty('birthday', $results->first());
 
         // Execute the pipeline and validate the results in a lazy collection
         $results = $pipeline->cursor();
@@ -84,9 +84,9 @@ class AggregationBuilderTest extends TestCase
 
         // Execute the pipeline and return the first result
         $result = $pipeline->first();
-        $this->assertIsArray($result);
-        $this->assertInstanceOf(ObjectId::class, $result['_id']);
-        $this->assertSame('John Doe', $result['name']);
+        $this->assertInstanceOf(\stdClass::class, $result);
+        $this->assertInstanceOf(ObjectId::class, $result->_id);
+        $this->assertSame('John Doe', $result->name);
     }
 
     public function testAddRawStage(): void

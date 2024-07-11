@@ -88,7 +88,7 @@ class AggregationBuilder
         $pipeline = $encoder->encode($this->getPipeline());
 
         $options = array_replace(
-            ['typeMap' => ['root' => 'array', 'document' => 'array']],
+            ['typeMap' => ['root' => 'object', 'document' => 'object']],
             $this->options,
             $options,
         );
