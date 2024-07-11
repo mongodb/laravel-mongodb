@@ -10,12 +10,6 @@ use Illuminate\Events\Dispatcher;
 use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
-use MongoDB\Laravel\Tests\Models\Book;
-use MongoDB\Laravel\Tests\Models\Client;
-use MongoDB\Laravel\Tests\Models\Group;
-use MongoDB\Laravel\Tests\Models\Item;
-use MongoDB\Laravel\Tests\Models\Photo;
-use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\User;
 
 use function array_merge;
@@ -27,12 +21,6 @@ class EmbeddedRelationsTest extends TestCase
         Mockery::close();
 
         User::truncate();
-        Book::truncate();
-        Item::truncate();
-        Role::truncate();
-        Client::truncate();
-        Group::truncate();
-        Photo::truncate();
     }
 
     public function testEmbedsManySave()
