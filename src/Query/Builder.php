@@ -375,7 +375,7 @@ class Builder extends BaseBuilder
 
             // Apply order and limit
             if ($this->orders) {
-                $pipeline[] = ['$sort' => $this->orders];
+                $pipeline[] = ['$sort' => $this->renameId($this->orders)];
             }
 
             if ($this->offset) {
@@ -416,7 +416,7 @@ class Builder extends BaseBuilder
 
         // Normal query
         // Convert select columns to simple projections.
-        $projection = array_fill_keys($columns, true);
+        $projection = $this->renameId(array_fill_keys($columns, true));
 
         // Add custom projections.
         if ($this->projections) {
@@ -431,7 +431,7 @@ class Builder extends BaseBuilder
         }
 
         if ($this->orders) {
-            $options['sort'] = $this->orders;
+            $options['sort'] = $this->renameId($this->orders);
         }
 
         if ($this->offset) {
@@ -1538,5 +1538,15 @@ class Builder extends BaseBuilder
     public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    private function renameId(array $values): array
+    {
+        if (isset($values['id'])) {
+            $values['_id'] = $values['id'];
+            unset($values['id']);
+        }
+
+        return $values;
     }
 }

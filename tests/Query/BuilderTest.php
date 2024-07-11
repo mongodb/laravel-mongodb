@@ -498,6 +498,11 @@ class BuilderTest extends TestCase
                 ->orderBy('age', 'desc'),
         ];
 
+        yield 'orders by id field' => [
+            ['find' => [[], ['sort' => ['_id' => 1]]]],
+            fn (Builder $builder) => $builder->orderBy('id'),
+        ];
+
         yield 'orders = null' => [
             ['find' => [[], []]],
             function (Builder $builder) {
@@ -1169,6 +1174,11 @@ class BuilderTest extends TestCase
         yield 'id alias for _id with $or' => [
             ['find' => [['$or' => [['_id' => 1], ['_id' => 2]]], []]],
             fn (Builder $builder) => $builder->where('id', 1)->orWhere('id', 2),
+        ];
+
+        yield 'select colums with id alias' => [
+            ['find' => [[], ['projection' => ['name' => 1, 'email' => 1, '_id' => 1]]]],
+            fn (Builder $builder) => $builder->select('name', 'email', 'id'),
         ];
 
         // Method added in Laravel v10.47.0
