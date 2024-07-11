@@ -3,7 +3,7 @@ All notable changes to this project will be documented in this file.
 
 # [4.7.0] - upcoming
 
-* **BREAKING CHANGE** Use `id` and an alias for `_id` in commands and queries for compatibility with Eloquent packages by @GromNaN in [#3040](https://github.com/mongodb/laravel-mongodb/pull/3040)
+* **BREAKING CHANGE** Use `id` as an alias for `_id` in commands and queries for compatibility with Eloquent packages by @GromNaN in [#3040](https://github.com/mongodb/laravel-mongodb/pull/3040)
 
 ## [4.6.0] - 2024-07-09
 
