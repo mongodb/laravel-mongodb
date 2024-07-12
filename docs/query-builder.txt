@@ -191,7 +191,8 @@ the ``title`` value ``"Back to the Future"``:
    Beginning in {+odm-short+} v4.6, you can use the ``id`` alias to
    represent the ``_id`` field, as shown in the preceding code. When you
    run a find operation using the query builder, {+odm-short+}
-   automatically converts between ``id`` and ``_id``.
+   automatically converts between ``id`` and ``_id``. You cannot have
+   two separate ``id`` and ``_id`` fields in your documents.
 
 .. _laravel-query-builder-logical-and:
 
