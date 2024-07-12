@@ -7,10 +7,10 @@ namespace App\Http\Controllers;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
+use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Tests\TestCase;
-use MongoDB\BSON\ObjectId;
 
 use function file_get_contents;
 use function json_decode;
