@@ -582,7 +582,7 @@ field.
                 public function show()
                 {
                     $movie = Movie::where('runtime', 30)
-                        ->orderBy('id')
+                        ->orderBy('_id')
                         ->first();
 
                     return view('browse_movies', [
