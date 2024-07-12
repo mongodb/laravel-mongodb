@@ -176,14 +176,22 @@ Logical OR Example
 
 The following example shows how to chain the ``orWhere()``
 query builder method to retrieve documents from the
-``movies`` collection that either match the ``year``
-value of ``1955`` or match the ``title`` value ``"Back to the Future"``:
+``movies`` collection that either match the ``_id``
+value of ``ObjectId('573a1398f29313caabce9682')`` or match
+the ``title`` value ``"Back to the Future"``:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query orWhere
    :end-before: end query orWhere
+
+.. note::
+
+   Beginning in {+odm-short+} v4.6, you can use the ``id`` alias to
+   represent the ``_id`` field, as shown in the preceding code. When you
+   run a find operation using the query builder, {+odm-short+}
+   automatically converts between ``id`` and ``_id``.
 
 .. _laravel-query-builder-logical-and:
 

@@ -552,6 +552,11 @@ This example queries for documents in which the value of the ``runtime`` field i
 ``30`` and returns the first matching document according to the value of the ``_id``
 field.
 
+.. note::
+
+   This example uses the ``id`` alias to represent the ``_id`` field, since {+odm-short+}
+   converts from ``id`` to ``_id`` automatically.
+
 .. tabs::
 
    .. tab:: Query Syntax
@@ -582,7 +587,7 @@ field.
                 public function show()
                 {
                     $movie = Movie::where('runtime', 30)
-                        ->orderBy('_id')
+                        ->orderBy('id')
                         ->first();
 
                     return view('browse_movies', [
