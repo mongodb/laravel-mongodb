@@ -32,7 +32,6 @@ use function key;
 use function md5;
 use function sort;
 use function strlen;
-use function strtotime;
 
 class QueryBuilderTest extends TestCase
 {

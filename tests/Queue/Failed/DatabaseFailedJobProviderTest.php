@@ -2,11 +2,11 @@
 
 namespace MongoDB\Laravel\Tests\Queue\Failed;
 
+use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 use MongoDB\Laravel\Tests\TestCase;
 use OutOfBoundsException;
 
@@ -14,7 +14,10 @@ use function array_map;
 use function range;
 use function sprintf;
 
-class MongoFailedJobProviderTest extends TestCase
+/**
+ * Test the Laravel class with MongoDB's Query Builder
+ */
+class DatabaseFailedJobProviderTest extends TestCase
 {
     public function setUp(): void
     {
@@ -142,8 +145,8 @@ class MongoFailedJobProviderTest extends TestCase
         $this->assertEquals(3, $provider->count());
     }
 
-    private function getProvider(): MongoFailedJobProvider
+    private function getProvider(): DatabaseFailedJobProvider
     {
-        return new MongoFailedJobProvider(DB::getFacadeRoot(), '', 'failed_jobs');
+        return new DatabaseFailedJobProvider(DB::getFacadeRoot(), '', 'failed_jobs');
     }
 }

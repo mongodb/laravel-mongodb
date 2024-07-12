@@ -20,6 +20,7 @@ use MongoDB\Collection as MongoDBCollection;
 use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
+use stdClass;
 
 class AggregationBuilderTest extends TestCase
 {
@@ -84,7 +85,7 @@ class AggregationBuilderTest extends TestCase
 
         // Execute the pipeline and return the first result
         $result = $pipeline->first();
-        $this->assertInstanceOf(\stdClass::class, $result);
+        $this->assertInstanceOf(stdClass::class, $result);
         $this->assertInstanceOf(ObjectId::class, $result->_id);
         $this->assertSame('John Doe', $result->name);
     }

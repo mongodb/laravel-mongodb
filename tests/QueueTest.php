@@ -10,8 +10,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Mockery;
-use MongoDB\BSON\UTCDateTime;
-use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 use MongoDB\Laravel\Queue\MongoJob;
 use MongoDB\Laravel\Queue\MongoQueue;
 

@@ -6,7 +6,6 @@ namespace MongoDB\Laravel;
 
 use Exception;
 use MongoDB\BSON\ObjectID;
-use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection as MongoCollection;
 
 use function array_walk_recursive;

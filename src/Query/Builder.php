@@ -595,7 +595,7 @@ class Builder extends BaseBuilder
         if (isset($results[0])) {
             $result = (array) $results[0];
 
-            return $this->aliasIdForResult($result['aggregate']);
+            return $result['aggregate'];
         }
     }
 

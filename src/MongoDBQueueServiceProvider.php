@@ -7,12 +7,8 @@ namespace MongoDB\Laravel;
 use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
 use Illuminate\Queue\Failed\NullFailedJobProvider;
 use Illuminate\Queue\QueueServiceProvider;
-use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 
 use function array_key_exists;
-use function trigger_error;
-
-use const E_USER_DEPRECATED;
 
 class MongoDBQueueServiceProvider extends QueueServiceProvider
 {
@@ -56,7 +52,6 @@ class MongoDBQueueServiceProvider extends QueueServiceProvider
     protected function mongoFailedJobProvider(array $config): DatabaseFailedJobProvider
     {
         if (! isset($config['collection']) && isset($config['table'])) {
-            trigger_error('Since mongodb/laravel-mongodb 4.4: Using "table" option for the queue is deprecated. Use "collection" instead.', E_USER_DEPRECATED);
             $config['collection'] = $config['table'];
         }
 
