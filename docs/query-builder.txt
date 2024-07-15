@@ -188,7 +188,7 @@ the ``title`` value ``"Back to the Future"``:
 
 .. note::
 
-   Beginning in {+odm-short+} v4.6, you can use the ``id`` alias to
+   Beginning in {+odm-short+} v5.0, you can use the ``id`` alias to
    represent the ``_id`` field, as shown in the preceding code. When you
    run a find operation using the query builder, {+odm-short+}
    automatically converts between ``id`` and ``_id``. You cannot have
