@@ -6,11 +6,17 @@ namespace MongoDB\Laravel\Schema;
 
 use Closure;
 use MongoDB\Model\CollectionInfo;
+use MongoDB\Model\IndexInfo;
+use stdClass;
 
+use function array_keys;
+use function assert;
 use function count;
 use function current;
+use function implode;
 use function iterator_to_array;
 use function sort;
+use function sprintf;
 use function usort;
 
 class Builder extends \Illuminate\Database\Schema\Builder
@@ -144,6 +150,70 @@ class Builder extends \Illuminate\Database\Schema\Builder
         sort($collections);
 
         return $collections;
+    }
+
+    public function getColumns($table)
+    {
+        $stats = $this->connection->getMongoDB()->selectCollection($table)->aggregate([
+            ['$project' => ['fields' => ['$objectToArray' => '$$ROOT']]],
+            ['$unwind' => '$fields'],
+            [
+                '$group' => [
+                    '_id' => '$fields.k',
+                    'total' => ['$count' => new stdClass()],
+                    'types' => ['$addToSet' => ['$type' => '$fields.v']],
+                ],
+            ],
+            ['$sort' => ['_id' => 1]],
+        ], ['typeMap' => ['array' => 'array']])->toArray();
+
+        $columns = [];
+        foreach ($stats as $stat) {
+            sort($stat->types);
+            $type = implode(', ', $stat->types);
+            $columns[] = [
+                'name' => $stat->_id,
+                'type_name' => $type,
+                'type' => $type,
+                'collation' => null,
+                'nullable' => $stat->_id !== '_id',
+                'default' => null,
+                'auto_increment' => false,
+                'comment' => sprintf('%d occurrences', $stat->total),
+                'generation' => $stat->_id === '_id' ? ['type' => 'objectId', 'expression' => null] : null,
+            ];
+        }
+
+        return $columns;
+    }
+
+    public function getIndexes($table)
+    {
+        $indexes = $this->connection->getMongoDB()->selectCollection($table)->listIndexes();
+
+        $indexList = [];
+        foreach ($indexes as $index) {
+            assert($index instanceof IndexInfo);
+            $indexList[] = [
+                'name' => $index->getName(),
+                'columns' => array_keys($index->getKey()),
+                'primary' => $index->getKey() === ['_id' => 1],
+                'type' => match (true) {
+                    $index->isText() => 'text',
+                    $index->is2dSphere() => '2dsphere',
+                    $index->isTtl() => 'ttl',
+                    default => 'default',
+                },
+                'unique' => $index->isUnique(),
+            ];
+        }
+
+        return $indexList;
+    }
+
+    public function getForeignKeys($table)
+    {
+        return [];
     }
 
     /** @inheritdoc */
