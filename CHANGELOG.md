@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.9.0] - coming soon
+
+* Add `Connection::getServerVersion()` by @GromNaN in [#3043](https://github.com/mongodb/laravel-mongodb/pull/3043)
+
 ## [4.6.0] - 2024-07-09
 
 * Add `DocumentModel` trait to use any 3rd party model with MongoDB @GromNaN in [#2580](https://github.com/mongodb/laravel-mongodb/pull/2580)

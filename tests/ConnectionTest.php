@@ -299,4 +299,10 @@ class ConnectionTest extends TestCase
         $instance = new Connection($config);
         $instance->ping();
     }
+
+    public function testServerVersion()
+    {
+        $version = DB::connection('mongodb')->getServerVersion();
+        $this->assertIsString($version);
+    }
 }
