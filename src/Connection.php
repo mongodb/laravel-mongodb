@@ -327,6 +327,17 @@ class Connection extends BaseConnection
         return $this->db->$method(...$parameters);
     }
 
+    /**
+     * Return the server version of one of the MongoDB servers: primary for
+     * replica sets and standalone, and the selected server for sharded clusters.
+     *
+     * @internal
+     */
+    public function getServerVersion(): string
+    {
+        return $this->db->command(['buildInfo' => 1])->toArray()[0]['version'];
+    }
+
     private static function getVersion(): string
     {
         return self::$version ?? self::lookupVersion();
