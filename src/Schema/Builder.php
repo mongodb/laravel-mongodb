@@ -7,7 +7,6 @@ namespace MongoDB\Laravel\Schema;
 use Closure;
 use MongoDB\Model\CollectionInfo;
 use MongoDB\Model\IndexInfo;
-use stdClass;
 
 use function array_keys;
 use function assert;
@@ -160,7 +159,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
             [
                 '$group' => [
                     '_id' => '$fields.k',
-                    'total' => ['$count' => new stdClass()],
+                    'total' => ['$sum' => 1],
                     'types' => ['$addToSet' => ['$type' => '$fields.v']],
                 ],
             ],
