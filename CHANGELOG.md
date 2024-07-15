@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [4.9.0] - coming soon
 
 * Add `Connection::getServerVersion()` by @GromNaN in [#3043](https://github.com/mongodb/laravel-mongodb/pull/3043)
+* Add `Schema\Builder::getTables()` and `getTableListing` by @GromNaN in [#3044](https://github.com/mongodb/laravel-mongodb/pull/3044)
 
 ## [4.6.0] - 2024-07-09
 
