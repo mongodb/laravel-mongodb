@@ -327,6 +327,11 @@ class Connection extends BaseConnection
         return $this->db->$method(...$parameters);
     }
 
+    public function getServerVersion(): string
+    {
+        return $this->db->command(['buildInfo' => 1])->toArray()[0]['version'];
+    }
+
     private static function getVersion(): string
     {
         return self::$version ?? self::lookupVersion();
