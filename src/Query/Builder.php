@@ -6,7 +6,6 @@ namespace MongoDB\Laravel\Query;
 
 use ArgumentCountError;
 use BadMethodCallException;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonPeriod;
 use Closure;
 use DateTimeInterface;
@@ -41,7 +40,6 @@ use function call_user_func;
 use function call_user_func_array;
 use function count;
 use function ctype_xdigit;
-use function date_default_timezone_get;
 use function dd;
 use function dump;
 use function end;

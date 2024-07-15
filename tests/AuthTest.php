@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
-use DateTimeInterface;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
