@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use MongoDB\Laravel\Schema\Blueprint;
 
+use function count;
+
 class SchemaTest extends TestCase
 {
     public function tearDown(): void
@@ -375,6 +377,43 @@ class SchemaTest extends TestCase
         $this->assertArrayNotHasKey('test', $check2[2]);
         $this->assertArrayNotHasKey('newtest', $check2[2]);
         $this->assertSame($check[2]['column'], $check2[2]['column']);
+    }
+
+    public function testGetTables()
+    {
+        DB::connection('mongodb')->collection('newcollection')->insert(['test' => 'value']);
+        DB::connection('mongodb')->collection('newcollection_two')->insert(['test' => 'value']);
+
+        $tables = Schema::getTables();
+        $this->assertIsArray($tables);
+        $this->assertGreaterThanOrEqual(2, count($tables));
+        $found = false;
+        foreach ($tables as $table) {
+            $this->assertArrayHasKey('name', $table);
+            $this->assertArrayHasKey('size', $table);
+
+            if ($table['name'] === 'newcollection') {
+                $this->assertEquals(8192, $table['size']);
+                $found = true;
+            }
+        }
+
+        if (! $found) {
+            $this->fail('Collection "newcollection" not found');
+        }
+    }
+
+    public function testGetTableListing()
+    {
+        DB::connection('mongodb')->collection('newcollection')->insert(['test' => 'value']);
+        DB::connection('mongodb')->collection('newcollection_two')->insert(['test' => 'value']);
+
+        $tables = Schema::getTableListing();
+
+        $this->assertIsArray($tables);
+        $this->assertGreaterThanOrEqual(2, count($tables));
+        $this->assertContains('newcollection', $tables);
+        $this->assertContains('newcollection_two', $tables);
     }
 
     protected function getIndex(string $collection, string $name)

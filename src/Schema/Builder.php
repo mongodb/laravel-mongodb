@@ -10,6 +10,8 @@ use MongoDB\Model\CollectionInfo;
 use function count;
 use function current;
 use function iterator_to_array;
+use function sort;
+use function usort;
 
 class Builder extends \Illuminate\Database\Schema\Builder
 {
@@ -105,6 +107,48 @@ class Builder extends \Illuminate\Database\Schema\Builder
         foreach ($this->getAllCollections() as $collection) {
             $this->drop($collection);
         }
+    }
+
+    public function getTables()
+    {
+        $db = $this->connection->getMongoDB();
+        $collections = [];
+
+        foreach ($db->listCollections() as $collectionInfos) {
+            $stats = $db->selectCollection($collectionInfos->getName())->aggregate([
+                ['$collStats' => ['storageStats' => ['scale' => 1]]],
+                ['$project' => ['storageStats.totalSize' => 1]],
+            ])->toArray();
+
+            $collections[] = [
+                'name' => $collectionInfos->getName(),
+                'schema' => null,
+                'size' => $stats[0]?->storageStats?->totalSize ?? null,
+                'comment' => null,
+                'collation' => null,
+                'engine' => null,
+            ];
+        }
+
+        usort($collections, function ($a, $b) {
+            return $a['name'] <=> $b['name'];
+        });
+
+        return $collections;
+    }
+
+    public function getTableListing()
+    {
+        $db = $this->connection->getMongoDB();
+        $collections = [];
+
+        foreach ($db->listCollections() as $collectionInfos) {
+            $collections[] = $collectionInfos->getName();
+        }
+
+        sort($collections);
+
+        return $collections;
     }
 
     /** @inheritdoc */
