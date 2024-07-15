@@ -1593,9 +1593,7 @@ class Builder extends BaseBuilder
             }
 
             foreach ($values as $key => $value) {
-                if ($value instanceof UTCDateTime) {
-                    $values[$key] = CarbonImmutable::createFromTimestamp($value->toDateTime()->getTimestamp(), 'UTC')->setTimezone(date_default_timezone_get());
-                } elseif (is_array($value) || $value instanceof stdClass) {
+                if (is_array($value) || $value instanceof stdClass) {
                     $values[$key] = $this->aliasIdForResult($value);
                 }
             }
@@ -1606,9 +1604,7 @@ class Builder extends BaseBuilder
             }
 
             foreach (get_object_vars($values) as $key => $value) {
-                if ($value instanceof UTCDateTime) {
-                    $values->{$key} = CarbonImmutable::createFromTimestamp($value->toDateTime()->getTimestamp(), 'UTC')->setTimezone(date_default_timezone_get());
-                } elseif (is_array($value) || $value instanceof stdClass) {
+                if (is_array($value) || $value instanceof stdClass) {
                     $values->{$key} = $this->aliasIdForResult($value);
                 }
             }

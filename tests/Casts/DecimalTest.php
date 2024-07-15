@@ -120,7 +120,7 @@ class DecimalTest extends TestCase
         return Casting::raw(function (Collection $collection) use ($id, $value) {
             if (! empty($id)) {
                 return $collection->updateOne(
-                    ['id' => $id],
+                    ['_id' => $id], // "id" is not translated to "_id" by the raw method
                     ['$set' => ['decimalNumber' => $value]],
                 );
             }
