@@ -114,14 +114,14 @@ class Builder extends \Illuminate\Database\Schema\Builder
         $db = $this->connection->getMongoDB();
         $collections = [];
 
-        foreach ($db->listCollections() as $collectionInfos) {
-            $stats = $db->selectCollection($collectionInfos->getName())->aggregate([
+        foreach ($db->listCollectionNames() as $collectionName) {
+            $stats = $db->selectCollection($collectionName)->aggregate([
                 ['$collStats' => ['storageStats' => ['scale' => 1]]],
                 ['$project' => ['storageStats.totalSize' => 1]],
             ])->toArray();
 
             $collections[] = [
-                'name' => $collectionInfos->getName(),
+                'name' => $collectionName,
                 'schema' => null,
                 'size' => $stats[0]?->storageStats?->totalSize ?? null,
                 'comment' => null,
@@ -139,12 +139,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     public function getTableListing()
     {
-        $db = $this->connection->getMongoDB();
-        $collections = [];
-
-        foreach ($db->listCollections() as $collectionInfos) {
-            $collections[] = $collectionInfos->getName();
-        }
+        $collections = iterator_to_array($this->connection->getMongoDB()->listCollectionNames());
 
         sort($collections);
 
