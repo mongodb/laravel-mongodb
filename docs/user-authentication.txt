@@ -97,8 +97,58 @@ manage user authentication, as shown in the following code:
    :language: php
    :dedent:
 
-Enable Password Reminders 
--------------------------
+Customize User Authentication
+-----------------------------
+
+In this section, you can learn how to use the following features to
+customize your MongoDB user authentication process:
+
+- :ref:`laravel-user-auth-sanctum`
+- :ref:`laravel-user-auth-reminders`
+
+.. _laravel-user-auth-sanctum:
+
+Laravel Sanctum
+~~~~~~~~~~~~~~~
+
+You can install the Laravel Sanctum package to provide API tokens to users
+and authenticate single-page applications. To manage API tokens, Sanctum stores
+each token in a database table and authenticates incoming HTTP requests through
+the ``Authorization`` header. To authenticate single-page applications, Sanctum
+uses Laravel's cookie-based authentication services.
+
+Run the following commands from your project root to install Laravel Sanctum,
+then publish and run its migration files:
+
+.. code-block:: php
+
+   composer require laravel/sanctum
+   php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+   php artisan migrate
+
+To use Laravel Sanctum with {+odm-short+}, you must modify the ``PersonalAccessToken``
+model provided by Sanctum.
+
+Example
+```````
+
+The following code extends the ``PersonalAccessToken`` model provided by Sanctum
+to enable MongoDB:
+
+.. literalinclude:: /includes/auth/PersonalAccessToken.php
+   :language: php
+   :dedent:
+
+After modifying the ``PersonalAccessToken`` model, instruct Sanctum to use the custom
+model by calling the ``usePersonalAccessTokenModel()`` method in one of your application's
+service providers. To learn more, see the `Overriding Default Models
+<https://laravel.com/docs/{+laravel-docs-version+}/sanctum#overriding-default-models>`__
+section of the Sanctum documentation.
+
+.. _laravel-user-auth-reminders:
+
+Password Reminders 
+~~~~~~~~~~~~~~~~~~
 
 To add support for MongoDB-based password reminders, register the following service
 provider in your application:
@@ -111,7 +161,7 @@ This service provider modifies the internal ``DatabaseReminderRepository``
 to enable password reminders.
 
 Example
-~~~~~~~
+```````
 
 The following code updates the ``providers.php`` file in the ``bootstrap`` directory
 of a Laravel application to register the ``PasswordResetServiceProvider`` provider:
