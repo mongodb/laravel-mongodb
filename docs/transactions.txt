@@ -46,6 +46,12 @@ Learn how to perform transactions in the following sections of this guide:
 - :ref:`laravel-transaction-commit`
 - :ref:`laravel-transaction-rollback`
 
+.. tip:: Transactions Learning Byte
+
+   You practice using {+odm-short+} to perform transactions
+   in the `Laravel Transactions Learning Byte
+   <https://learn.mongodb.com/courses/laravel-transactions>`__.
+
 .. tip::
 
    To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
@@ -156,4 +162,3 @@ transaction is rolled back, and none of the models are updated:
    :emphasize-lines: 1,18,20
    :start-after: begin rollback transaction
    :end-before: end rollback transaction
-
