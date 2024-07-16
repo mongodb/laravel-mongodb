@@ -29,8 +29,8 @@ how users are retrieved. To learn more about these services, see `Authentication
 <https://laravel.com/docs/{+laravel-docs-version+}/authentication>`__ in the
 Laravel documentation.
 
-User Model
-----------
+Modify the User Model
+---------------------
 
 By default, Laravel generates the ``User`` Eloquent model in your ``App/Models``
 directory. To enable authentication for users stored in MongoDB, your ``User`` model
@@ -68,8 +68,8 @@ class:
 
 .. _laravel-auth-controller:
 
-User Controller 
----------------
+Create the User Controller 
+--------------------------
 
 To store functions that manage authentication, create an authentication controller for
 your ``User`` model. 
