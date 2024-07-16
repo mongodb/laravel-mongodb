@@ -4,11 +4,16 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 
-class Location extends Eloquent
+class Location extends Model
 {
-    protected $connection       = 'mongodb';
-    protected $collection       = 'locations';
+    use DocumentModel;
+
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
+    protected $connection = 'mongodb';
+    protected string $collection = 'locations';
     protected static $unguarded = true;
 }

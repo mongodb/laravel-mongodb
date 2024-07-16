@@ -8,6 +8,7 @@ use Generator;
 use MongoDB\BSON\Binary;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function hex2bin;
 
@@ -20,7 +21,7 @@ class BinaryUuidTest extends TestCase
         Casting::truncate();
     }
 
-    /** @dataProvider provideBinaryUuidCast */
+    #[DataProvider('provideBinaryUuidCast')]
     public function testBinaryUuidCastModel(string $expectedUuid, string|Binary $saveUuid, Binary $queryUuid): void
     {
         Casting::create(['uuid' => $saveUuid]);

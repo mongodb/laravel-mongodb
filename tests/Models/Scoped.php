@@ -4,14 +4,19 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
+use Illuminate\Database\Eloquent\Model;
 use MongoDB\Laravel\Eloquent\Builder;
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 
-class Scoped extends Eloquent
+class Scoped extends Model
 {
+    use DocumentModel;
+
+    protected $primaryKey = '_id';
+    protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected $collection = 'scoped';
-    protected $fillable   = ['name', 'favorite'];
+    protected string $collection = 'scoped';
+    protected $fillable = ['name', 'favorite'];
 
     protected static function boot()
     {

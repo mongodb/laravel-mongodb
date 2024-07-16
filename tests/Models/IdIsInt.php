@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Models;
 
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
+use Illuminate\Database\Eloquent\Model;
+use MongoDB\Laravel\Eloquent\DocumentModel;
 
-class IdIsInt extends Eloquent
+class IdIsInt extends Model
 {
-    protected $keyType          = 'int';
-    protected $connection       = 'mongodb';
+    use DocumentModel;
+
+    protected $primaryKey = '_id';
+    protected $keyType = 'int';
+    protected $connection = 'mongodb';
     protected static $unguarded = true;
-    protected $casts            = ['_id' => 'int'];
+    protected $casts = ['_id' => 'int'];
 }

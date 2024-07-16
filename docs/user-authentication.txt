@@ -1,7 +1,7 @@
 .. _laravel-user-authentication:
 
 ===================
-User authentication
+User Authentication
 ===================
 
 .. facet::
@@ -11,14 +11,124 @@ User authentication
 .. meta::
    :keywords: php framework, odm, code example
 
-If you want to use Laravel's native Auth functionality, register this included
-service provider:
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+Overview
+--------
+
+In this guide, you can learn how to authenticate MongoDB users
+by using Laravel's native authentication functionality. 
+
+Laravel provides a native ``Auth`` module that includes authentication services,
+such as guards that define how users are authenticated and providers that define
+how users are retrieved. To learn more about these services, see `Authentication 
+<https://laravel.com/docs/{+laravel-docs-version+}/authentication>`__ in the
+Laravel documentation.
+
+Modify the User Model
+---------------------
+
+By default, Laravel generates the ``User`` Eloquent model in your ``App/Models``
+directory. To enable authentication for MongoDB users, your ``User`` model
+must extend the ``MongoDB\Laravel\Auth\User`` class. 
+
+To extend this class, navigate to your ``app/Models/User.php`` file and replace the
+``use Illuminate\Foundation\Auth\User as Authenticatable`` statement with the following
+code:
 
 .. code-block:: php
 
-   MongoDB\Laravel\Auth\PasswordResetServiceProvider::class,
+   use MongoDB\Laravel\Auth\User as Authenticatable;
 
-This service provider will slightly modify the internal ``DatabaseReminderRepository``
-to add support for MongoDB based password reminders.
+Next, ensure that your ``User`` class extends ``Authenticatable``, as shown in the following
+code:
 
-If you don't use password reminders, you can omit this service provider.
+.. code-block:: php
+
+   class User extends Authenticatable
+   {
+   ...
+   }
+
+After configuring your ``User`` model, create a corresponding controller. To learn how to
+create a controller, see the :ref:`laravel-auth-controller` section on this page.
+
+Example
+~~~~~~~
+
+The following code shows a ``User.php`` file that extends the ``MongoDB\Laravel\Auth\User``
+class:
+
+.. literalinclude:: /includes/auth/AuthUser.php
+   :language: php
+   :dedent:
+
+.. _laravel-auth-controller:
+
+Create the User Controller 
+--------------------------
+
+To store functions that manage authentication, create an authentication controller for
+your ``User`` model. 
+
+Run the following command from your project root to create a controller:
+
+.. code-block:: php
+
+   php artisan make:controller <filename>
+
+Example
+~~~~~~~
+
+The following command creates a controller file called ``AuthController.php``:
+
+.. code-block:: php
+
+   php artisan make:controller AuthController
+
+The ``AuthController.php`` file can store ``login()`` and ``logout()`` functions to
+manage user authentication, as shown in the following code: 
+
+.. literalinclude:: /includes/auth/AuthController.php
+   :language: php
+   :dedent:
+
+Enable Password Reminders 
+-------------------------
+
+To add support for MongoDB-based password reminders, register the following service
+provider in your application:
+
+.. code-block:: php
+
+   MongoDB\Laravel\Auth\PasswordResetServiceProvider::class
+
+This service provider modifies the internal ``DatabaseReminderRepository``
+to enable password reminders.
+
+Example
+~~~~~~~
+
+The following code updates the ``providers.php`` file in the ``bootstrap`` directory
+of a Laravel application to register the ``PasswordResetServiceProvider`` provider:
+
+.. code-block:: php
+   :emphasize-lines: 4
+
+   return [
+     App\Providers\AppServiceProvider::class,
+     MongoDB\Laravel\MongoDBServiceProvider::class,
+     MongoDB\Laravel\Auth\PasswordResetServiceProvider::class
+   ];
+
+Additional Information
+----------------------
+
+To learn more about user authentication, see `Authentication <https://laravel.com/docs/{+laravel-docs-version+}/authentication>`__
+in the Laravel documentation.
+
+To learn more about Eloquent models, see the :ref:`laravel-eloquent-model-class` guide.

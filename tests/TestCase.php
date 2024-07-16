@@ -21,10 +21,8 @@ class TestCase extends OrchestraTestCase
      * Get application providers.
      *
      * @param  Application $app
-     *
-     * @return array
      */
-    protected function getApplicationProviders($app)
+    protected function getApplicationProviders($app): array
     {
         $providers = parent::getApplicationProviders($app);
 
@@ -37,10 +35,8 @@ class TestCase extends OrchestraTestCase
      * Get package providers.
      *
      * @param  Application $app
-     *
-     * @return array
      */
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             MongoDBServiceProvider::class,
@@ -54,10 +50,8 @@ class TestCase extends OrchestraTestCase
      * Define environment setup.
      *
      * @param  Application $app
-     *
-     * @return void
      */
-    protected function getEnvironmentSetUp($app)
+    protected function getEnvironmentSetUp($app): void
     {
         // reset base path to point to our package's src directory
         //$app['path.base'] = __DIR__ . '/../src';

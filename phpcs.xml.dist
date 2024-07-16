@@ -49,4 +49,8 @@
             <exclude-pattern>docs/**/*.php</exclude-pattern>
         </exclude>
     </rule>
+
+    <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
+        <exclude-pattern>tests/Ticket/*.php</exclude-pattern>
+    </rule>
 </ruleset>

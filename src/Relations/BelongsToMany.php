@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
+use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 
 use function array_diff;
 use function array_keys;
@@ -125,7 +126,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
         // if they exist in the array of current ones, and if not we will insert.
-        $current = match ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+        $current = match (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
             true => $this->parent->{$this->relatedPivotKey} ?: [],
             false => $this->parent->{$this->relationName} ?: [],
         };
@@ -201,7 +202,7 @@ class BelongsToMany extends EloquentBelongsToMany
         }
 
         // Attach the new ids to the parent model.
-        if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+        if (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
             $this->parent->push($this->relatedPivotKey, (array) $id, true);
         } else {
             $instance = new $this->related();
@@ -232,7 +233,7 @@ class BelongsToMany extends EloquentBelongsToMany
         $ids = (array) $ids;
 
         // Detach all ids from the parent model.
-        if ($this->parent instanceof \MongoDB\Laravel\Eloquent\Model) {
+        if (DocumentModel::isDocumentModel($this->parent)) {
             $this->parent->pull($this->relatedPivotKey, $ids);
         } else {
             $value = $this->parent->{$this->relationName}

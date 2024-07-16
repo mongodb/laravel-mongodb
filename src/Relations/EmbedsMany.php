@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Relations;
 
+use Closure;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use MongoDB\BSON\ObjectID;
 use MongoDB\Driver\Exception\LogicException;
-use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 
 use function array_key_exists;
 use function array_values;
@@ -19,6 +19,7 @@ use function in_array;
 use function is_array;
 use function method_exists;
 use function throw_if;
+use function value;
 
 class EmbedsMany extends EmbedsOneOrMany
 {
@@ -231,9 +232,9 @@ class EmbedsMany extends EmbedsOneOrMany
     /**
      * Save alias.
      *
-     * @return MongoDBModel
+     * @return Model
      */
-    public function attach(MongoDBModel $model)
+    public function attach(Model $model)
     {
         return $this->save($model);
     }
@@ -289,21 +290,22 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /**
-     * @param  int|null $perPage
-     * @param  array    $columns
-     * @param  string   $pageName
-     * @param  int|null $page
+     * @param int|Closure      $perPage
+     * @param array|string     $columns
+     * @param string           $pageName
+     * @param int|null         $page
+     * @param Closure|int|null $total
      *
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null)
+    public function paginate($perPage = null, $columns = ['*'], $pageName = 'page', $page = null, $total = null)
     {
         $page    = $page ?: Paginator::resolveCurrentPage($pageName);
-        $perPage = $perPage ?: $this->related->getPerPage();
-
         $results = $this->getEmbedded();
         $results = $this->toCollection($results);
-        $total   = $results->count();
+        $total   = value($total) ?? $results->count();
+        $perPage = $perPage ?: $this->related->getPerPage();
+        $perPage = $perPage instanceof Closure ? $perPage($total) : $perPage;
         $start   = ($page - 1) * $perPage;
 
         $sliced = $results->slice(

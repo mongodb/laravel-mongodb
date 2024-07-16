@@ -925,6 +925,12 @@ class EmbeddedRelationsTest extends TestCase
         $results = $user->addresses()->paginate(2);
         $this->assertEquals(2, $results->count());
         $this->assertEquals(3, $results->total());
+
+        // With Closures
+        $results = $user->addresses()->paginate(fn () => 3, page: 1, total: fn () => 5);
+        $this->assertEquals(3, $results->count());
+        $this->assertEquals(5, $results->total());
+        $this->assertEquals(3, $results->perPage());
     }
 
     public function testGetQueueableRelationsEmbedsMany()

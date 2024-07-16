@@ -40,7 +40,7 @@ class TransactionTest extends TestCase
         $this->assertInstanceOf(User::class, $klinson);
         DB::commit();
 
-        $this->assertInstanceOf(Model::class, $klinson);
+        $this->assertTrue(Model::isDocumentModel($klinson));
         $this->assertTrue($klinson->exists);
         $this->assertEquals('klinson', $klinson->name);
 
@@ -56,7 +56,7 @@ class TransactionTest extends TestCase
         $this->assertInstanceOf(User::class, $klinson);
         DB::rollBack();
 
-        $this->assertInstanceOf(Model::class, $klinson);
+        $this->assertTrue(Model::isDocumentModel($klinson));
         $this->assertTrue($klinson->exists);
         $this->assertEquals('klinson', $klinson->name);
 

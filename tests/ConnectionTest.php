@@ -14,6 +14,7 @@ use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 use function env;
 use function spl_object_hash;
@@ -186,7 +187,7 @@ class ConnectionTest extends TestCase
         ];
     }
 
-    /** @dataProvider dataConnectionConfig */
+    #[DataProvider('dataConnectionConfig')]
     public function testConnectionConfig(string $expectedUri, string $expectedDatabaseName, array $config): void
     {
         $connection = new Connection($config);
@@ -297,5 +298,11 @@ class ConnectionTest extends TestCase
 
         $instance = new Connection($config);
         $instance->ping();
+    }
+
+    public function testServerVersion()
+    {
+        $version = DB::connection('mongodb')->getServerVersion();
+        $this->assertIsString($version);
     }
 }

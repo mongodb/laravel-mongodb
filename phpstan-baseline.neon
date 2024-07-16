@@ -7,12 +7,12 @@ parameters:
 
 		-
 			message: "#^Method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:push\\(\\) invoked with 3 parameters, 0 required\\.$#"
-			count: 2
+			count: 3
 			path: src/Relations/BelongsToMany.php
 
 		-
 			message: "#^Method Illuminate\\\\Database\\\\Eloquent\\\\Model\\:\\:push\\(\\) invoked with 3 parameters, 0 required\\.$#"
-			count: 2
+			count: 6
 			path: src/Relations/MorphToMany.php
 
 		-

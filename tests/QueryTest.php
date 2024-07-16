@@ -12,6 +12,7 @@ use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Tests\Models\Birthday;
 use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function str;
 
@@ -662,10 +663,8 @@ class QueryTest extends TestCase
         $this->assertEquals(0, User::count());
     }
 
-    /**
-     * @testWith [0]
-     *           [2]
-     */
+    #[TestWith([0])]
+    #[TestWith([2])]
     public function testDeleteException(int $limit): void
     {
         $this->expectException(LogicException::class);

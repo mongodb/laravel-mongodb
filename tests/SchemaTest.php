@@ -6,7 +6,12 @@ namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use MongoDB\BSON\Binary;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Schema\Blueprint;
+
+use function collect;
+use function count;
 
 class SchemaTest extends TestCase
 {
@@ -394,6 +399,107 @@ class SchemaTest extends TestCase
 
         $this->assertTrue(Schema::hasColumns('newcollection', ['column1', 'column2']));
         $this->assertFalse(Schema::hasColumns('newcollection', ['column1', 'column3']));
+    }
+
+    public function testGetTables()
+    {
+        DB::connection('mongodb')->collection('newcollection')->insert(['test' => 'value']);
+        DB::connection('mongodb')->collection('newcollection_two')->insert(['test' => 'value']);
+
+        $tables = Schema::getTables();
+        $this->assertIsArray($tables);
+        $this->assertGreaterThanOrEqual(2, count($tables));
+        $found = false;
+        foreach ($tables as $table) {
+            $this->assertArrayHasKey('name', $table);
+            $this->assertArrayHasKey('size', $table);
+
+            if ($table['name'] === 'newcollection') {
+                $this->assertEquals(8192, $table['size']);
+                $found = true;
+            }
+        }
+
+        if (! $found) {
+            $this->fail('Collection "newcollection" not found');
+        }
+    }
+
+    public function testGetTableListing()
+    {
+        DB::connection('mongodb')->collection('newcollection')->insert(['test' => 'value']);
+        DB::connection('mongodb')->collection('newcollection_two')->insert(['test' => 'value']);
+
+        $tables = Schema::getTableListing();
+
+        $this->assertIsArray($tables);
+        $this->assertGreaterThanOrEqual(2, count($tables));
+        $this->assertContains('newcollection', $tables);
+        $this->assertContains('newcollection_two', $tables);
+    }
+
+    public function testGetColumns()
+    {
+        $collection = DB::connection('mongodb')->collection('newcollection');
+        $collection->insert(['text' => 'value', 'mixed' => ['key' => 'value']]);
+        $collection->insert(['date' => new UTCDateTime(), 'binary' => new Binary('binary'), 'mixed' => true]);
+
+        $columns = Schema::getColumns('newcollection');
+        $this->assertIsArray($columns);
+        $this->assertCount(5, $columns);
+
+        $columns = collect($columns)->keyBy('name');
+
+        $columns->each(function ($column) {
+            $this->assertIsString($column['name']);
+            $this->assertEquals($column['type'], $column['type_name']);
+            $this->assertNull($column['collation']);
+            $this->assertIsBool($column['nullable']);
+            $this->assertNull($column['default']);
+            $this->assertFalse($column['auto_increment']);
+            $this->assertIsString($column['comment']);
+        });
+
+        $this->assertEquals('objectId', $columns->get('_id')['type']);
+        $this->assertEquals('objectId', $columns->get('_id')['generation']['type']);
+        $this->assertNull($columns->get('text')['generation']);
+        $this->assertEquals('string', $columns->get('text')['type']);
+        $this->assertEquals('date', $columns->get('date')['type']);
+        $this->assertEquals('binData', $columns->get('binary')['type']);
+        $this->assertEquals('bool, object', $columns->get('mixed')['type']);
+        $this->assertEquals('2 occurrences', $columns->get('mixed')['comment']);
+
+        // Non-existent collection
+        $columns = Schema::getColumns('missing');
+        $this->assertSame([], $columns);
+    }
+
+    public function testGetIndexes()
+    {
+        Schema::create('newcollection', function (Blueprint $collection) {
+            $collection->index('mykey1');
+            $collection->string('mykey2')->unique('unique_index');
+            $collection->string('mykey3')->index();
+        });
+        $indexes = Schema::getIndexes('newcollection');
+        $this->assertIsArray($indexes);
+        $this->assertCount(4, $indexes);
+
+        $indexes = collect($indexes)->keyBy('name');
+
+        $indexes->each(function ($index) {
+            $this->assertIsString($index['name']);
+            $this->assertIsString($index['type']);
+            $this->assertIsArray($index['columns']);
+            $this->assertIsBool($index['unique']);
+            $this->assertIsBool($index['primary']);
+        });
+        $this->assertTrue($indexes->get('_id_')['primary']);
+        $this->assertTrue($indexes->get('unique_index_1')['unique']);
+
+        // Non-existent collection
+        $indexes = Schema::getIndexes('missing');
+        $this->assertSame([], $indexes);
     }
 
     protected function getIndex(string $collection, string $name)

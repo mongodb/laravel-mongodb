@@ -99,7 +99,8 @@ to another account:
    :start-after: begin transaction callback
    :end-before: end transaction callback
 
-You can optionally pass the maximum number of times to retry a failed transaction as the second parameter as shown in the following code example:
+You can optionally pass the maximum number of times to retry a failed transaction
+as the second parameter, as shown in the following code example:
 
 .. code-block:: php
    :emphasize-lines: 4
@@ -107,7 +108,7 @@ You can optionally pass the maximum number of times to retry a failed transactio
    DB::transaction(function() {
            // transaction code
        },
-       retries: 5,
+       attempts: 5,
    );
 
 .. _laravel-transaction-commit:
