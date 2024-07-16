@@ -51,7 +51,7 @@ This guide contains the following sections:
 
 .. tip:: Transactions Learning Byte
 
-   You practice using {+odm-short+} to perform transactions
+   Practice using {+odm-short+} to perform transactions
    in the `Laravel Transactions Learning Byte
    <https://learn.mongodb.com/courses/laravel-transactions>`__.
 
