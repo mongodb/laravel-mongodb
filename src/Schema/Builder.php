@@ -154,8 +154,13 @@ class Builder extends \Illuminate\Database\Schema\Builder
     public function getColumns($table)
     {
         $stats = $this->connection->getMongoDB()->selectCollection($table)->aggregate([
+            // Sample 10,000 documents to get a representative sample of the collection
+            ['$sample' => ['size' => 10_000]],
+            // Convert each document to an array of fields
             ['$project' => ['fields' => ['$objectToArray' => '$$ROOT']]],
+            // Unwind to get one document per field
             ['$unwind' => '$fields'],
+            // Group by field name, count the number of occurrences and get the types
             [
                 '$group' => [
                     '_id' => '$fields.k',
@@ -163,7 +168,10 @@ class Builder extends \Illuminate\Database\Schema\Builder
                     'types' => ['$addToSet' => ['$type' => '$fields.v']],
                 ],
             ],
+            // Sort by field name
             ['$sort' => ['_id' => 1]],
+            // Limit to 1,000 fields
+            ['$limit' => 1000],
         ], ['typeMap' => ['array' => 'array']])->toArray();
 
         $columns = [];
