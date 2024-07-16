@@ -6,31 +6,33 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\ValidationException;
 
+use function response;
+
 class AuthController extends Controller
 {
-   public function login(Request $request)
-   {
-      $request->validate([
+    public function login(Request $request)
+    {
+        $request->validate([
             'email' => 'required|email',
             'password' => 'required',
-      ]);
+        ]);
 
-      if (Auth::attempt($request->only('email', 'password'))) {
+        if (Auth::attempt($request->only('email', 'password'))) {
             return response()->json([
-               'user' => Auth::user(),
-               'message' => 'Successfully logged in',
+                'user' => Auth::user(),
+                'message' => 'Successfully logged in',
             ]);
-      }
+        }
 
-      throw ValidationException::withMessages([
+        throw ValidationException::withMessages([
             'email' => ['The provided credentials are incorrect.'],
-      ]);
-   }
+        ]);
+    }
 
-   public function logout()
-   {
-      Auth::logout();
+    public function logout()
+    {
+        Auth::logout();
 
-      return response()->json(['message' => 'Successfully logged out']);
-   }
+        return response()->json(['message' => 'Successfully logged out']);
+    }
 }
