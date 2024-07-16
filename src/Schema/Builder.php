@@ -23,8 +23,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Check if column exists in the collection schema.
      *
-     * @param $table
-     * @param $column
+     * @param string $table
+     * @param string $column
+     *
      * @return bool
      */
     public function hasColumn($table, $column): bool
@@ -39,8 +40,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Check if columns exists in the collection schema.
      *
-     * @param       $table
-     * @param array $columns
+     * @param string   $table
+     * @param string[] $columns
      *
      * @return bool
      */
