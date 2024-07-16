@@ -176,9 +176,9 @@ Logical OR Example
 
 The following example shows how to chain the ``orWhere()``
 query builder method to retrieve documents from the
-``movies`` collection that either match the ``_id``
-value of ``ObjectId('573a1398f29313caabce9682')`` or match
-the ``title`` value ``"Back to the Future"``:
+``movies`` collection in which the value of the ``_id``
+field is ``ObjectId('573a1398f29313caabce9682')`` or
+the value of the ``title`` field is ``"Back to the Future"``:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
@@ -188,11 +188,11 @@ the ``title`` value ``"Back to the Future"``:
 
 .. note::
 
-   Beginning in {+odm-short+} v5.0, you can use the ``id`` alias to
-   represent the ``_id`` field, as shown in the preceding code. When you
-   run a find operation using the query builder, {+odm-short+}
-   automatically converts between ``id`` and ``_id``. You cannot have
-   two separate ``id`` and ``_id`` fields in your documents.
+	You can use the ``id`` alias in your queries to represent
+	the ``_id`` field in MongoDB documents, as shown in the preceding
+   code. When you run a find operation using the query builder, {+odm-short+}
+	automatically converts between ``id`` and ``_id``. Because of this behavior,
+	you cannot have two separate ``id`` and ``_id`` fields in your documents.
 
 .. _laravel-query-builder-logical-and:
 
