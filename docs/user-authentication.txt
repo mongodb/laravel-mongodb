@@ -126,6 +126,12 @@ then publish and run its migration files:
    php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
    php artisan migrate
 
+.. tip::
+
+   To learn more about installing and configuring Laravel Sanctum, see the
+   `Installation <https://laravel.com/docs/{+laravel-docs-version+}/sanctum#installation>`__
+    section of the Laravel Sanctum guide.
+    
 To use Laravel Sanctum with {+odm-short+}, you must modify the ``PersonalAccessToken``
 model provided by Sanctum.
 
@@ -143,7 +149,7 @@ After modifying the ``PersonalAccessToken`` model, instruct Sanctum to use the c
 model by calling the ``usePersonalAccessTokenModel()`` method in one of your application's
 service providers. To learn more, see the `Overriding Default Models
 <https://laravel.com/docs/{+laravel-docs-version+}/sanctum#overriding-default-models>`__
-section of the Sanctum documentation.
+section of the Laravel Sanctum guide.
 
 .. _laravel-user-auth-reminders:
 
