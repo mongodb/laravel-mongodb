@@ -14,7 +14,7 @@ User Authentication
 .. contents:: On this page
    :local:
    :backlinks: none
-   :depth: 1
+   :depth: 2
    :class: singlecol
 
 Overview
@@ -120,7 +120,7 @@ uses Laravel's cookie-based authentication services.
 Run the following commands from your project root to install Laravel Sanctum,
 then publish and run its migration files:
 
-.. code-block:: php
+.. code-block:: bash
 
    composer require laravel/sanctum
    php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
@@ -130,8 +130,8 @@ then publish and run its migration files:
 
    To learn more about installing and configuring Laravel Sanctum, see the
    `Installation <https://laravel.com/docs/{+laravel-docs-version+}/sanctum#installation>`__
-    section of the Laravel Sanctum guide.
-    
+   section of the Laravel Sanctum guide.
+
 To use Laravel Sanctum with {+odm-short+}, you must modify the ``PersonalAccessToken``
 model provided by Sanctum.
 
