@@ -39,17 +39,21 @@ Multi-document transactions are **ACID compliant** because MongoDB
 guarantees that the data in your transaction operations remains consistent,
 even if the driver encounters unexpected errors.
 
-Learn how to perform transactions in the following sections of this guide:
+To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
+in the {+server-docs-name+}.
+
+This guide contains the following sections:
 
 - :ref:`laravel-transaction-requirements`
 - :ref:`laravel-transaction-callback`
 - :ref:`laravel-transaction-commit`
 - :ref:`laravel-transaction-rollback`
 
-.. tip::
+.. tip:: Transactions Learning Byte
 
-   To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
-   in the {+server-docs-name+}.
+   Practice using {+odm-short+} to perform transactions
+   in the `Laravel Transactions Learning Byte
+   <https://learn.mongodb.com/courses/laravel-transactions>`__.
 
 .. _laravel-transaction-requirements:
 
@@ -156,4 +160,3 @@ transaction is rolled back, and none of the models are updated:
    :emphasize-lines: 1,18,20
    :start-after: begin rollback transaction
    :end-before: end rollback transaction
-
