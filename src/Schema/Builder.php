@@ -8,6 +8,7 @@ use Closure;
 use MongoDB\Model\CollectionInfo;
 use MongoDB\Model\IndexInfo;
 
+use function array_fill_keys;
 use function array_keys;
 use function assert;
 use function count;
@@ -20,16 +21,31 @@ use function usort;
 
 class Builder extends \Illuminate\Database\Schema\Builder
 {
-    /** @inheritdoc */
-    public function hasColumn($table, $column)
+    /**
+     * Check if column exists in the collection schema.
+     *
+     * @param string $table
+     * @param string $column
+     */
+    public function hasColumn($table, $column): bool
     {
-        return true;
+        return $this->hasColumns($table, [$column]);
     }
 
-    /** @inheritdoc */
-    public function hasColumns($table, array $columns)
+    /**
+     * Check if columns exists in the collection schema.
+     *
+     * @param string   $table
+     * @param string[] $columns
+     */
+    public function hasColumns($table, array $columns): bool
     {
-        return true;
+        $collection = $this->connection->table($table);
+
+        return $collection
+            ->where(array_fill_keys($columns, ['$exists' => true]))
+            ->project(['_id' => 1])
+            ->exists();
     }
 
     /**

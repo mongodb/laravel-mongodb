@@ -382,6 +382,26 @@ class SchemaTest extends TestCase
         $this->assertSame($check[2]['column'], $check2[2]['column']);
     }
 
+    public function testHasColumn(): void
+    {
+        DB::connection()->collection('newcollection')->insert(['column1' => 'value']);
+
+        $this->assertTrue(Schema::hasColumn('newcollection', 'column1'));
+        $this->assertFalse(Schema::hasColumn('newcollection', 'column2'));
+    }
+
+    public function testHasColumns(): void
+    {
+        // Insert documents with both column1 and column2
+        DB::connection()->collection('newcollection')->insert([
+            ['column1' => 'value1', 'column2' => 'value2'],
+            ['column1' => 'value3'],
+        ]);
+
+        $this->assertTrue(Schema::hasColumns('newcollection', ['column1', 'column2']));
+        $this->assertFalse(Schema::hasColumns('newcollection', ['column1', 'column3']));
+    }
+
     public function testGetTables()
     {
         DB::connection('mongodb')->collection('newcollection')->insert(['test' => 'value']);
