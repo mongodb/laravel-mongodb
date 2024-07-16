@@ -20,10 +20,10 @@ User Authentication
 Overview
 --------
 
-In this guide, you can learn how to authenticate users stored in MongoDB
+In this guide, you can learn how to authenticate MongoDB users
 by using Laravel's native authentication functionality. 
 
-Laravel provides a native Auth module that includes authentication services,
+Laravel provides a native ``Auth`` module that includes authentication services,
 such as guards that define how users are authenticated and providers that define
 how users are retrieved. To learn more about these services, see `Authentication 
 <https://laravel.com/docs/{+laravel-docs-version+}/authentication>`__ in the
@@ -33,18 +33,19 @@ Modify the User Model
 ---------------------
 
 By default, Laravel generates the ``User`` Eloquent model in your ``App/Models``
-directory. To enable authentication for users stored in MongoDB, your ``User`` model
+directory. To enable authentication for MongoDB users, your ``User`` model
 must extend the ``MongoDB\Laravel\Auth\User`` class. 
 
 To extend this class, navigate to your ``app/Models/User.php`` file and replace the
-``use Illuminate\Foundation\Auth\User as Authenticatable`` use statement with the following
+``use Illuminate\Foundation\Auth\User as Authenticatable`` statement with the following
 code:
 
 .. code-block:: php
 
    use MongoDB\Laravel\Auth\User as Authenticatable;
 
-Ensure that your ``User`` class extends ``Authenticatable``, as shown in the following code:
+Next, ensure that your ``User`` class extends ``Authenticatable``, as shown in the following
+code:
 
 .. code-block:: php
 
@@ -53,13 +54,13 @@ Ensure that your ``User`` class extends ``Authenticatable``, as shown in the fol
    ...
    }
 
-After configuring your ``User`` model, create a corresponding controller. For instructions on
-creating a controller, see the :ref:`laravel-auth-controller` section on this page.
+After configuring your ``User`` model, create a corresponding controller. To learn how to
+create a controller, see the :ref:`laravel-auth-controller` section on this page.
 
 Example
 ~~~~~~~
 
-The following code demonstrates a ``User.php`` file that extends the ``MongoDB\Laravel\Auth\User``
+The following code shows a ``User.php`` file that extends the ``MongoDB\Laravel\Auth\User``
 class:
 
 .. literalinclude:: /includes/auth/AuthUser.php
