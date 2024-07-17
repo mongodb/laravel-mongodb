@@ -348,7 +348,7 @@ collection that contains data with different schemas.
 
    To learn more about schema versioning, see the :manual:`Model Data for
    Schema Versioning </tutorial/model-data-for-schema-versioning/>`
-   tutorial in the Server manual.
+   tutorial in the {+server-docs-name+}.
 
 To use this feature with models that use MongoDB as a database, add the
 ``MongoDB\Laravel\Eloquent\HasSchemaVersion`` import to your model.
@@ -376,12 +376,12 @@ The example class is defined with the following behavior:
    :emphasize-lines: 10,12,14
    :dedent:
 
-When you save a model in which the ``schema_version`` field value is
-less than ``2``, Laravel adds the ``galaxy`` field and updates the schema
-version to the current version (``2``).
+When you save a model in which the ``schema_version`` field is
+absent or the value is less than ``2``, Laravel adds the ``galaxy``
+field and updates the schema version to the current version (``2``).
 
-The following code creates and saves instances of the ``Planet`` model that are
-not at the current schema version, then retrieves the planets from the
+The following code inserts instances of the ``Planet`` model that are
+not at the current schema version, then retrieves the models from the
 collection to demonstrate the migration changes:
 
 .. io-code-block::
