@@ -100,8 +100,11 @@ manage user authentication, as shown in the following code:
 Customize User Authentication
 -----------------------------
 
-In this section, you can learn how to use the following features to
-customize your MongoDB user authentication process:
+You can customize your authentication files to align with your application's
+needs and enable additional authentication features.
+
+This section describes how to use the following features to customize the MongoDB user
+authentication process:
 
 - :ref:`laravel-user-auth-sanctum`
 - :ref:`laravel-user-auth-reminders`
@@ -111,45 +114,40 @@ customize your MongoDB user authentication process:
 Laravel Sanctum
 ~~~~~~~~~~~~~~~
 
-You can install the Laravel Sanctum package to provide API tokens to users
-and authenticate single-page applications. To manage API tokens, Sanctum stores
-each token in a database table and authenticates incoming HTTP requests through
-the ``Authorization`` header. To authenticate single-page applications, Sanctum
-uses Laravel's cookie-based authentication services.
+Laravel Sanctum is an authentication package that can manage API requests and
+single-page application authentication. To manage API requests, Sanctum issues
+API tokens that are stored in a database table and authenticates incoming HTTP
+requests by using the ``Authorization`` header. To authenticate single-page applications,
+Sanctum uses Laravel's cookie-based authentication services.
 
-Run the following commands from your project root to install Laravel Sanctum,
-then publish and run its migration files:
+You can install Laravel Sanctum to manage your application's authentication
+process. Run the following commands from your project root to install Laravel
+Sanctum and publish its migration file:
 
 .. code-block:: bash
 
    composer require laravel/sanctum
    php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
-   php artisan migrate
 
-.. tip::
-
-   To learn more about installing and configuring Laravel Sanctum, see the
-   `Installation <https://laravel.com/docs/{+laravel-docs-version+}/sanctum#installation>`__
-   section of the Laravel Sanctum guide.
-
-To use Laravel Sanctum with {+odm-short+}, you must modify the ``PersonalAccessToken``
-model provided by Sanctum.
-
-Example
-```````
-
-The following code extends the ``PersonalAccessToken`` model provided by Sanctum
+Next, modify the ``PersonalAccessToken`` model provided by Laravel Sanctum to use
+Sanctum with {+odm-short+}. The following code extends the ``PersonalAccessToken`` model
 to enable MongoDB:
 
 .. literalinclude:: /includes/auth/PersonalAccessToken.php
    :language: php
    :dedent:
 
-After modifying the ``PersonalAccessToken`` model, instruct Sanctum to use the custom
-model by calling the ``usePersonalAccessTokenModel()`` method in one of your application's
-service providers. To learn more, see the `Overriding Default Models
+Then, run the following command to modify the database schema to handle API tokens:
+
+.. code-block:: bash
+
+   php artisan migrate
+   
+You can now instruct Sanctum to use the custom ``PersonalAccessToken`` model by calling
+the ``usePersonalAccessTokenModel()`` method in one of your application's
+service providers. To learn more, see `Overriding Default Models
 <https://laravel.com/docs/{+laravel-docs-version+}/sanctum#overriding-default-models>`__
-section of the Laravel Sanctum guide.
+in the Laravel Sanctum guide.
 
 .. _laravel-user-auth-reminders:
 
