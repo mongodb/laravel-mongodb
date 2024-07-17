@@ -33,6 +33,8 @@ to {+odm-short+} models:
 - :ref:`laravel-model-customize` explains several model class customizations.
 - :ref:`laravel-model-pruning` shows how to periodically remove models that
   you no longer need.
+- :ref:`laravel-schema-versioning` shows how to implement model schema
+  versioning.
 
 .. _laravel-model-define:
 
@@ -66,7 +68,6 @@ This model is stored in the ``planets`` MongoDB collection.
 
 To learn how to specify the database name that your Laravel application uses,
 :ref:`laravel-quick-start-connect-to-mongodb`.
-
 
 .. _laravel-authenticatable-model:
 
@@ -333,3 +334,93 @@ models that the prune action deletes:
    :emphasize-lines: 5,10,12
    :dedent:
 
+.. _laravel-schema-versioning:
+
+Create a Versioned Model Schema
+-------------------------------
+
+You can implement a schema versioning pattern into your application by
+using the ``HasSchemaVersion`` trait on an Eloquent model. You might
+choose to implement a schema version to organize or standardize a
+collection that contains data with different schemas.
+
+.. tip::
+
+   To learn more about schema versioning, see the :manual:`Model Data for
+   Schema Versioning </tutorial/model-data-for-schema-versioning/>`
+   tutorial in the Server manual.
+
+To use this feature with models that use MongoDB as a database, add the
+``MongoDB\Laravel\Eloquent\HasSchemaVersion`` import to your model.
+Then, set the ``SCHEMA_VERSION`` constant to set the current schema
+version for your collection.
+
+When creating your model, you can define the ``migrateSchema()`` method
+to specify a migration to the current schema version upon saving a
+model.
+
+Schema Versioning Example
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The example class is defined with the following behavior:
+
+- Implements the ``HasSchemaVersion`` trait and sets the current
+  ``SCHEMA_VERSION`` to ``2``
+
+- Defines the ``migrateSchema()`` method to migrate models in which the
+  schema version is less than ``2`` to have a ``galaxy`` field that has a value
+  of ``'Milky Way'``
+
+.. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion.php
+   :language: php
+   :emphasize-lines: 10,12,14
+   :dedent:
+
+When you save a model in which the ``schema_version`` field value is
+less than ``2``, Laravel adds the ``galaxy`` field and updates the schema
+version to the current version (``2``).
+
+The following code creates and saves instances of the ``Planet`` model that are
+not at the current schema version, then retrieves the planets from the
+collection to demonstrate the migration changes:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input::
+      :language: php
+
+      $saturn = Planet::create([
+          'name' => 'Saturn',
+          'type' => 'gas',
+      ]);
+
+      $wasp = Planet::create([
+          'name' => 'WASP-39 b',
+          'type' => 'gas',
+          'schema_version' => 1,
+      ]);
+
+      $planets = Planet::where('type', 'gas')
+          ->get();
+
+   .. output::
+      :language: none
+      :visible: false
+
+      [
+        {
+          "_id": ...,
+          "name": "Saturn",
+          "type": "gas",
+          "galaxy": "Milky Way",
+          "schema_version": 2,
+        },
+        {
+          "_id": ...,
+          "name": "WASP-39 b",
+          "type": "gas",
+          "galaxy": "Milky Way",
+          "schema_version": 2,
+        }
+      ]
