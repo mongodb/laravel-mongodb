@@ -32,9 +32,20 @@ class SchemaVersionTest extends TestCase
 
         $planets = Planet::where('type', 'gas')
             ->get();
-        echo 'After migration:\n' . $planets[0];
+
+        echo 'After migration:\n' . $planets;
 
         $this->assertCount(2, $planets);
-        $this->assertEquals(2, $planets[0]->schema_version);
+
+        $p1 = Planet::where('name', 'Saturn')
+            ->get();
+
+        $this->assertEquals(2, $p1->schema_version);
+
+        $p2 = Planet::where('name', 'WASP-39 b')
+            ->get();
+
+        $this->assertEquals(2, $p2->schema_version);
+        $this->assertEquals('Milky Way', $p2->galaxy);
     }
 }
