@@ -352,8 +352,9 @@ collection that contains data with different schemas.
 
 To use this feature with models that use MongoDB as a database, add the
 ``MongoDB\Laravel\Eloquent\HasSchemaVersion`` import to your model.
-Then, set the ``SCHEMA_VERSION`` constant to set the current schema
-version for your collection.
+Then, set the ``SCHEMA_VERSION`` constant to ``1`` to set the first
+schema version on your collection. If your collection evolves to contain
+multiple schemas, you can change the value of the ``SCHEMA_VERSION`` constant.
 
 When creating your model, you can define the ``migrateSchema()`` method
 to specify a migration to the current schema version upon saving a
@@ -373,33 +374,28 @@ The example class is defined with the following behavior:
 
 .. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion.php
    :language: php
-   :emphasize-lines: 10,12,14
+   :emphasize-lines: 10,12,16
    :dedent:
 
-When you save a model in which the ``schema_version`` field is
-absent or the value is less than ``2``, Laravel adds the ``galaxy``
+When you save a model that does not have a schema version specified,
+Laravel uses the latest schema version, but does not perform the
+migration.
+
+When you save a model in which the ``schema_version`` field value is
+less than ``2``, Laravel adds the ``galaxy``
 field and updates the schema version to the current version (``2``).
 
-The following code inserts instances of the ``Planet`` model that are
-not at the current schema version, then retrieves the models from the
-collection to demonstrate the migration changes:
+The following code inserts two instances of the ``Planet`` model, then
+retrieves the models from the collection to demonstrate the changes:
 
 .. io-code-block::
    :copyable: true
 
-   .. input::
+   .. input:: /includes/eloquent-models/SchemaVersionTest.php
       :language: php
-
-      $saturn = Planet::create([
-          'name' => 'Saturn',
-          'type' => 'gas',
-      ]);
-
-      $wasp = Planet::create([
-          'name' => 'WASP-39 b',
-          'type' => 'gas',
-          'schema_version' => 1,
-      ]);
+      :dedent:
+      :start-after: begin-schema-version
+      :end-before: end-schema-version
 
       $planets = Planet::where('type', 'gas')
           ->get();

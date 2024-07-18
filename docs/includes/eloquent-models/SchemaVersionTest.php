@@ -19,6 +19,7 @@ class SchemaVersionTest extends TestCase
 
         Planet::truncate();
 
+        // begin-schema-version
         $saturn = Planet::create([
             'name' => 'Saturn',
             'type' => 'gas',
@@ -32,8 +33,7 @@ class SchemaVersionTest extends TestCase
 
         $planets = Planet::where('type', 'gas')
             ->get();
-
-        echo 'After migration:\n' . $planets;
+        // end-schema-version
 
         $this->assertCount(2, $planets);
 
