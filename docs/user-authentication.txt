@@ -116,7 +116,7 @@ Laravel Sanctum
 
 Laravel Sanctum is an authentication package that can manage API requests and
 single-page application authentication. To manage API requests, Sanctum issues
-API tokens that are stored in a database table and authenticates incoming HTTP
+API tokens that are stored in the database and authenticates incoming HTTP
 requests by using the ``Authorization`` header. To authenticate single-page applications,
 Sanctum uses Laravel's cookie-based authentication services.
 
