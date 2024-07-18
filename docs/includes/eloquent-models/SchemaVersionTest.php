@@ -23,7 +23,7 @@ class SchemaVersionTest extends TestCase
             'name' => 'Saturn',
             'type' => 'gas',
         ]);
-  
+
         $wasp = Planet::create([
             'name' => 'WASP-39 b',
             'type' => 'gas',
