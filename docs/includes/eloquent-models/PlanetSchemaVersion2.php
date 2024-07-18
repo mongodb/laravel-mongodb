@@ -11,8 +11,12 @@ class Planet extends Model
 
     public const SCHEMA_VERSION = 2;
 
-    /* Migrate documents with a lower schema version to the most current
-    schema when inserting new data or retrieving from the database */
+    protected $fillable = ['name', 'type', 'galaxy'];
+
+    /**
+     * Migrate documents with a lower schema version to the most current
+     * schema when inserting new data or retrieving from the database.
+     */
     public function migrateSchema(int $fromVersion): void
     {
         if ($fromVersion < 2) {

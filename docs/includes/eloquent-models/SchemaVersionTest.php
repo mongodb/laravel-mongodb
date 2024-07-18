@@ -15,20 +15,23 @@ class SchemaVersionTest extends TestCase
      */
     public function testSchemaVersion(): void
     {
-        require_once __DIR__ . '/PlanetSchemaVersion.php';
+        require_once __DIR__ . '/PlanetSchemaVersion2.php';
 
         Planet::truncate();
+
+        // Simulate a document stored with schema version 1, before schema update
+        Planet::insert([
+            [
+                'name' => 'WASP-39 b',
+                'type' => 'gas',
+                'schema_version' => 1,
+            ],
+        ]);
 
         // begin-schema-version
         $saturn = Planet::create([
             'name' => 'Saturn',
             'type' => 'gas',
-        ]);
-
-        $wasp = Planet::create([
-            'name' => 'WASP-39 b',
-            'type' => 'gas',
-            'schema_version' => 1,
         ]);
 
         $planets = Planet::where('type', 'gas')
@@ -37,13 +40,11 @@ class SchemaVersionTest extends TestCase
 
         $this->assertCount(2, $planets);
 
-        $p1 = Planet::where('name', 'Saturn')
-            ->get();
+        $p1 = Planet::where('name', 'Saturn')->first();
 
         $this->assertEquals(2, $p1->schema_version);
 
-        $p2 = Planet::where('name', 'WASP-39 b')
-            ->get();
+        $p2 = Planet::where('name', 'WASP-39 b')->first();
 
         $this->assertEquals(2, $p2->schema_version);
         $this->assertEquals('Milky Way', $p2->galaxy);
