@@ -726,6 +726,48 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    public function upsert(array $values, $uniqueBy, $update = null): int
+    {
+        if ($values === []) {
+            return 0;
+        }
+
+        $this->applyBeforeQueryCallbacks();
+
+        $options = $this->inheritConnectionOptions();
+        $options['upsert'] = true;
+        $uniqueBy = array_fill_keys((array) $uniqueBy, 1);
+
+        // If no update fields are specified, all fields are updated
+        if ($update !== null) {
+            $update = array_fill_keys((array) $update, 1);
+        }
+
+        $bulk = [];
+
+        foreach ($values as $value) {
+            $filter = $operation = [];
+            foreach ($value as $key => $val) {
+                if (isset($uniqueBy[$key])) {
+                    $filter[$key] = $val;
+                }
+
+                if ($update === null || isset($update[$key])) {
+                    $operation['$set'][$key] = $val;
+                } else {
+                    $operation['$setOnInsert'][$key] = $val;
+                }
+            }
+
+            $bulk[] = ['updateOne' => [$filter, $operation, ['upsert' => true]]];
+        }
+
+        $result = $this->collection->bulkWrite($bulk, $options);
+
+        return $result->getInsertedCount() + $result->getUpsertedCount() + $result->getModifiedCount();
+    }
+
+    /** @inheritdoc */
     public function increment($column, $amount = 1, array $extra = [], array $options = [])
     {
         $query = ['$inc' => [(string) $column => $amount]];
