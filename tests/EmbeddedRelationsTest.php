@@ -10,12 +10,6 @@ use Illuminate\Events\Dispatcher;
 use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
-use MongoDB\Laravel\Tests\Models\Book;
-use MongoDB\Laravel\Tests\Models\Client;
-use MongoDB\Laravel\Tests\Models\Group;
-use MongoDB\Laravel\Tests\Models\Item;
-use MongoDB\Laravel\Tests\Models\Photo;
-use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\User;
 
 use function array_merge;
@@ -25,14 +19,7 @@ class EmbeddedRelationsTest extends TestCase
     public function tearDown(): void
     {
         Mockery::close();
-
         User::truncate();
-        Book::truncate();
-        Item::truncate();
-        Role::truncate();
-        Client::truncate();
-        Group::truncate();
-        Photo::truncate();
     }
 
     public function testEmbedsManySave()
@@ -950,5 +937,37 @@ class EmbeddedRelationsTest extends TestCase
 
         $this->assertEquals(['father'], $user->getQueueableRelations());
         $this->assertEquals([], $user->father->getQueueableRelations());
+    }
+
+    public function testUnsetPropertyOnEmbed()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'New York']));
+        $user->addresses()->save(new Address(['city' => 'Tokyo']));
+
+        // Set property
+        $user->addresses->first()->city = 'Paris';
+        $user->addresses->first()->save();
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertSame('Paris', $user->addresses->get(0)->city);
+        $this->assertSame('Tokyo', $user->addresses->get(1)->city);
+
+        // Unset property
+        unset($user->addresses->first()->city);
+        $user->addresses->first()->save();
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertSame(null, $user->addresses->get(0)->city);
+        $this->assertSame('Tokyo', $user->addresses->get(1)->city);
+
+        // Unset and reset property
+        unset($user->addresses->get(1)->city);
+        $user->addresses->get(1)->city = 'Kyoto';
+        $user->addresses->get(1)->save();
+
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertSame(null, $user->addresses->get(0)->city);
+        $this->assertSame('Kyoto', $user->addresses->get(1)->city);
     }
 }
