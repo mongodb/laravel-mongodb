@@ -397,9 +397,6 @@ retrieves the models from the collection to demonstrate the changes:
       :start-after: begin-schema-version
       :end-before: end-schema-version
 
-      $planets = Planet::where('type', 'gas')
-          ->get();
-
    .. output::
       :language: none
       :visible: false
