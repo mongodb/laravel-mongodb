@@ -358,9 +358,15 @@ multiple schemas, you can update the value of the ``SCHEMA_VERSION``
 constant in subsequent model classes.
 
 When creating your model, you can define the ``migrateSchema()`` method
-to specify a migration to the current schema version upon saving a
+to specify a migration to the current schema version upon retrieving a
 model. In this method, you can specify the changes to make to an older
 model to update it to match the current schema version.
+
+When you save a model that does not have a schema version
+specified, Laravel assumes that it follows the latest schema version.
+When you retrieve a model that does not contain the ``schema_version``
+field, Laravel assumes that its schema version is ``0`` and performs the
+migration.
 
 Schema Versioning Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -387,15 +393,16 @@ You can define the new model class with the following behavior:
    :emphasize-lines: 10,12,20
    :dedent:
 
-When you save or retrieve a model that does not have a schema version
-specified, Laravel assumes that it follows the latest schema version.
+In the ``"WASP-39 b"`` document in the following code, the
+``schema_version`` field value is less than ``2``. When you retrieve the
+document, Laravel adds the ``galaxy`` field and updates the schema
+version to the current version, ``2``.
 
-When you save or retrieve a model in which the ``schema_version`` field
-value is less than ``2``, Laravel adds the ``galaxy``
-field and updates the schema version to the current version (``2``).
+The ``"Saturn"`` document does not contain the ``schema_version`` field,
+so Laravel assigns it the current schema version upon saving.
 
-The following code inserts two instances of the ``Planet`` model, then
-retrieves the models from the collection to demonstrate the changes:
+Finally, the code retrieves the models from the collection to
+demonstrate the changes:
 
 .. io-code-block::
    :copyable: true
