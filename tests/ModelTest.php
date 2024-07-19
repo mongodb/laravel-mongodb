@@ -143,6 +143,40 @@ class ModelTest extends TestCase
         $this->assertEquals('Hans Thomas', $check->fullname);
     }
 
+    public function testUpsert()
+    {
+        $result = User::upsert([
+            ['email' => 'foo', 'name' => 'bar'],
+            ['name' => 'bar2', 'email' => 'foo2'],
+        ], ['email']);
+
+        $this->assertSame(2, $result);
+
+        $this->assertSame(2, $result);
+        $this->assertSame(2, User::count());
+        $this->assertSame('bar', User::where('email', 'foo')->first()->name);
+
+        // Update 1 document
+        $result = User::upsert([
+            ['email' => 'foo', 'name' => 'bar2'],
+            ['name' => 'bar2', 'email' => 'foo2'],
+        ], 'email', ['name']);
+
+        // Even if the same value is set for the 2nd document, the "updated_at" field is updated
+        $this->assertSame(2, $result);
+        $this->assertSame(2, User::count());
+        $this->assertSame('bar2', User::where('email', 'foo')->first()->name);
+
+        // If no update fields are specified, all fields are updated
+        $result = User::upsert([
+            ['email' => 'foo', 'name' => 'bar3'],
+        ], 'email');
+
+        $this->assertSame(1, $result);
+        $this->assertSame(2, User::count());
+        $this->assertSame('bar3', User::where('email', 'foo')->first()->name);
+    }
+
     public function testManualStringId(): void
     {
         $user        = new User();

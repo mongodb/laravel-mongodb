@@ -3,6 +3,7 @@ All notable changes to this project will be documented in this file.
 
 ## [4.7.0] - coming soon
 
+* Add `Query\Builder::upsert()` method by @GromNaN in [#3052](https://github.com/mongodb/laravel-mongodb/pull/3052)
 * Add `Connection::getServerVersion()` by @GromNaN in [#3043](https://github.com/mongodb/laravel-mongodb/pull/3043)
 * Add `Schema\Builder::getTables()` and `getTableListing()` by @GromNaN in [#3044](https://github.com/mongodb/laravel-mongodb/pull/3044)
 * Add `Schema\Builder::getColumns()` and `getIndexes()` by @GromNaN in [#3045](https://github.com/mongodb/laravel-mongodb/pull/3045)
