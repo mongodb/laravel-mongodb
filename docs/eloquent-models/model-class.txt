@@ -354,16 +354,26 @@ To use this feature with models that use MongoDB as a database, add the
 ``MongoDB\Laravel\Eloquent\HasSchemaVersion`` import to your model.
 Then, set the ``SCHEMA_VERSION`` constant to ``1`` to set the first
 schema version on your collection. If your collection evolves to contain
-multiple schemas, you can change the value of the ``SCHEMA_VERSION`` constant.
+multiple schemas, you can update the value of the ``SCHEMA_VERSION``
+constant in subsequent model classes.
 
 When creating your model, you can define the ``migrateSchema()`` method
 to specify a migration to the current schema version upon saving a
-model.
+model. In this method, you can specify the changes to make to an older
+model to update it to match the current schema version.
 
 Schema Versioning Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The example class is defined with the following behavior:
+In this sample situation, you are working with a collection that was
+first modeled by the following class:
+
+.. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion1.php
+   :language: php
+   :dedent:
+
+Now, you want to implement a new schema version on the collection.
+You can define the new model class with the following behavior:
 
 - Implements the ``HasSchemaVersion`` trait and sets the current
   ``SCHEMA_VERSION`` to ``2``
@@ -372,14 +382,13 @@ The example class is defined with the following behavior:
   schema version is less than ``2`` to have a ``galaxy`` field that has a value
   of ``'Milky Way'``
 
-.. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion.php
+.. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion2.php
    :language: php
-   :emphasize-lines: 10,12,16
+   :emphasize-lines: 10,12,20
    :dedent:
 
 When you save a model that does not have a schema version specified,
-Laravel uses the latest schema version, but does not perform the
-migration.
+Laravel assumes that it follows the latest schema version.
 
 When you save a model in which the ``schema_version`` field value is
 less than ``2``, Laravel adds the ``galaxy``
@@ -406,7 +415,6 @@ retrieves the models from the collection to demonstrate the changes:
           "_id": ...,
           "name": "Saturn",
           "type": "gas",
-          "galaxy": "Milky Way",
           "schema_version": 2,
         },
         {

@@ -19,7 +19,8 @@ class SchemaVersionTest extends TestCase
 
         Planet::truncate();
 
-        // Simulate a document stored with schema version 1, before schema update
+        // begin-schema-version
+        // Simulates a document in the collection with schema version 1
         Planet::insert([
             [
                 'name' => 'WASP-39 b',
@@ -28,12 +29,13 @@ class SchemaVersionTest extends TestCase
             ],
         ]);
 
-        // begin-schema-version
+        // Saves a document with no specified schema version
         $saturn = Planet::create([
             'name' => 'Saturn',
             'type' => 'gas',
         ]);
 
+        // Retrieves both models from the collection
         $planets = Planet::where('type', 'gas')
             ->get();
         // end-schema-version

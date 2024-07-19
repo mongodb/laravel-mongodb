@@ -6,5 +6,5 @@ use MongoDB\Laravel\Eloquent\Model;
 
 class Planet extends Model
 {
-    protected $fillable = ['name', 'type', 'galaxy'];
+    protected $fillable = ['name', 'type'];
 }
