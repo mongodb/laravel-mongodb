@@ -752,7 +752,7 @@ class Builder extends BaseBuilder
                     $filter[$key] = $val;
                 }
 
-                if ($update === null || isset($update[$key])) {
+                if ($update === null || array_key_exists($key, $update)) {
                     $operation['$set'][$key] = $val;
                 } else {
                     $operation['$setOnInsert'][$key] = $val;
