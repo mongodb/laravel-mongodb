@@ -33,6 +33,8 @@ to {+odm-short+} models:
 - :ref:`laravel-model-customize` explains several model class customizations.
 - :ref:`laravel-model-pruning` shows how to periodically remove models that
   you no longer need.
+- :ref:`laravel-schema-versioning` shows how to implement model schema
+  versioning.
 
 .. _laravel-model-define:
 
@@ -66,7 +68,6 @@ This model is stored in the ``planets`` MongoDB collection.
 
 To learn how to specify the database name that your Laravel application uses,
 :ref:`laravel-quick-start-connect-to-mongodb`.
-
 
 .. _laravel-authenticatable-model:
 
@@ -333,3 +334,101 @@ models that the prune action deletes:
    :emphasize-lines: 5,10,12
    :dedent:
 
+.. _laravel-schema-versioning:
+
+Create a Versioned Model Schema
+-------------------------------
+
+You can implement a schema versioning pattern into your application by
+using the ``HasSchemaVersion`` trait on an Eloquent model. You might
+choose to implement a schema version to organize or standardize a
+collection that contains data with different schemas.
+
+.. tip::
+
+   To learn more about schema versioning, see the :manual:`Model Data for
+   Schema Versioning </tutorial/model-data-for-schema-versioning/>`
+   tutorial in the {+server-docs-name+}.
+
+To use this feature with models that use MongoDB as a database, add the
+``MongoDB\Laravel\Eloquent\HasSchemaVersion`` import to your model.
+Then, set the ``SCHEMA_VERSION`` constant to ``1`` to set the first
+schema version on your collection. If your collection evolves to contain
+multiple schemas, you can update the value of the ``SCHEMA_VERSION``
+constant in subsequent model classes.
+
+When creating your model, you can define the ``migrateSchema()`` method
+to specify a migration to the current schema version upon retrieving a
+model. In this method, you can specify the changes to make to an older
+model to update it to match the current schema version.
+
+When you save a model that does not have a schema version
+specified, the ``HasSchemaVersion`` trait assumes that it follows the
+latest schema version. When you retrieve a model that does not contain
+the ``schema_version`` field, the trait assumes that its schema version
+is ``0`` and performs the migration.
+
+Schema Versioning Example
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this sample situation, you are working with a collection that was
+first modeled by the following class:
+
+.. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion1.php
+   :language: php
+   :dedent:
+
+Now, you want to implement a new schema version on the collection.
+You can define the new model class with the following behavior:
+
+- Implements the ``HasSchemaVersion`` trait and sets the current
+  ``SCHEMA_VERSION`` to ``2``
+
+- Defines the ``migrateSchema()`` method to migrate models in which the
+  schema version is less than ``2`` to have a ``galaxy`` field that has a value
+  of ``'Milky Way'``
+
+.. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion2.php
+   :language: php
+   :emphasize-lines: 10,12,20
+   :dedent:
+
+In the ``"WASP-39 b"`` document in the following code, the
+``schema_version`` field value is less than ``2``. When you retrieve the
+document, {+odm-short+} adds the ``galaxy`` field and updates the schema
+version to the current version, ``2``.
+
+The ``"Saturn"`` document does not contain the ``schema_version`` field,
+so {+odm-short+} assigns it the current schema version upon saving.
+
+Finally, the code retrieves the models from the collection to
+demonstrate the changes:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/eloquent-models/SchemaVersionTest.php
+      :language: php
+      :dedent:
+      :start-after: begin-schema-version
+      :end-before: end-schema-version
+
+   .. output::
+      :language: none
+      :visible: false
+
+      [
+        {
+          "_id": ...,
+          "name": "WASP-39 b",
+          "type": "gas",
+          "galaxy": "Milky Way",
+          "schema_version": 2,
+        },
+        {
+          "_id": ...,
+          "name": "Saturn",
+          "type": "gas",
+          "schema_version": 2,
+        }
+      ]
