@@ -958,7 +958,7 @@ class EmbeddedRelationsTest extends TestCase
         $user->addresses->first()->save();
 
         $user = User::where('name', 'John Doe')->first();
-        $this->assertSame(null, $user->addresses->get(0)->city);
+        $this->assertNull($user->addresses->get(0)->city);
         $this->assertSame('Tokyo', $user->addresses->get(1)->city);
 
         // Unset and reset property
@@ -967,7 +967,7 @@ class EmbeddedRelationsTest extends TestCase
         $user->addresses->get(1)->save();
 
         $user = User::where('name', 'John Doe')->first();
-        $this->assertSame(null, $user->addresses->get(0)->city);
+        $this->assertNull($user->addresses->get(0)->city);
         $this->assertSame('Kyoto', $user->addresses->get(1)->city);
     }
 }
