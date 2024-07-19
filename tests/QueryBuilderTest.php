@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\LazyCollection;
 use Illuminate\Support\Str;
 use Illuminate\Testing\Assert;
+use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
@@ -588,7 +589,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(12, DB::collection('items')->avg('amount.*.hidden'));
     }
 
-    public function testUpsert()
+    public function testUpdateWithUpsert()
     {
         DB::collection('items')->where('name', 'knife')
             ->update(
@@ -605,6 +606,39 @@ class QueryBuilderTest extends TestCase
             );
 
         $this->assertEquals(2, DB::collection('items')->count());
+    }
+
+    public function testUpsert()
+    {
+        /** @see DatabaseQueryBuilderTest::testUpsertMethod() */
+        // Insert 2 documents
+        $result = DB::collection('users')->upsert([
+            ['email' => 'foo', 'name' => 'bar'],
+            ['name' => 'bar2', 'email' => 'foo2'],
+        ], 'email', 'name');
+
+        $this->assertSame(2, $result);
+        $this->assertSame(2, DB::collection('users')->count());
+        $this->assertSame('bar', DB::collection('users')->where('email', 'foo')->first()['name']);
+
+        // Update 1 document
+        $result = DB::collection('users')->upsert([
+            ['email' => 'foo', 'name' => 'bar2'],
+            ['name' => 'bar2', 'email' => 'foo2'],
+        ], 'email', 'name');
+
+        $this->assertSame(1, $result);
+        $this->assertSame(2, DB::collection('users')->count());
+        $this->assertSame('bar2', DB::collection('users')->where('email', 'foo')->first()['name']);
+
+        // If no update fields are specified, all fields are updated
+        $result = DB::collection('users')->upsert([
+            ['email' => 'foo', 'name' => 'bar3'],
+        ], 'email');
+
+        $this->assertSame(1, $result);
+        $this->assertSame(2, DB::collection('users')->count());
+        $this->assertSame('bar3', DB::collection('users')->where('email', 'foo')->first()['name']);
     }
 
     public function testUnset()
