@@ -1,13 +1,13 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [4.7.0] - coming soon
+## [4.7.0] - 2024-07-19
 
 * Add `Query\Builder::upsert()` method by @GromNaN in [#3052](https://github.com/mongodb/laravel-mongodb/pull/3052)
 * Add `Connection::getServerVersion()` by @GromNaN in [#3043](https://github.com/mongodb/laravel-mongodb/pull/3043)
 * Add `Schema\Builder::getTables()` and `getTableListing()` by @GromNaN in [#3044](https://github.com/mongodb/laravel-mongodb/pull/3044)
 * Add `Schema\Builder::getColumns()` and `getIndexes()` by @GromNaN in [#3045](https://github.com/mongodb/laravel-mongodb/pull/3045)
-* Add `Schema\Builder::hasColumn` and `hasColumns` method by @Alex-Belyi in [#3001](https://github.com/mongodb/laravel-mongodb/pull/3001)
+* Add `Schema\Builder::hasColumn()` and `hasColumns()` method by @Alex-Belyi in [#3001](https://github.com/mongodb/laravel-mongodb/pull/3001)
 * Fix unsetting a field in an embedded model by @GromNaN in [#3052](https://github.com/mongodb/laravel-mongodb/pull/3052)
 
 ## [4.6.0] - 2024-07-09
