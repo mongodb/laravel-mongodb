@@ -387,11 +387,11 @@ You can define the new model class with the following behavior:
    :emphasize-lines: 10,12,20
    :dedent:
 
-When you save a model that does not have a schema version specified,
-Laravel assumes that it follows the latest schema version.
+When you save or retrieve a model that does not have a schema version
+specified, Laravel assumes that it follows the latest schema version.
 
-When you save a model in which the ``schema_version`` field value is
-less than ``2``, Laravel adds the ``galaxy``
+When you save or retrieve a model in which the ``schema_version`` field
+value is less than ``2``, Laravel adds the ``galaxy``
 field and updates the schema version to the current version (``2``).
 
 The following code inserts two instances of the ``Planet`` model, then
@@ -413,15 +413,15 @@ retrieves the models from the collection to demonstrate the changes:
       [
         {
           "_id": ...,
-          "name": "Saturn",
+          "name": "WASP-39 b",
           "type": "gas",
+          "galaxy": "Milky Way",
           "schema_version": 2,
         },
         {
           "_id": ...,
-          "name": "WASP-39 b",
+          "name": "Saturn",
           "type": "gas",
-          "galaxy": "Milky Way",
           "schema_version": 2,
         }
       ]
