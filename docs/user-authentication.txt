@@ -14,7 +14,7 @@ User Authentication
 .. contents:: On this page
    :local:
    :backlinks: none
-   :depth: 1
+   :depth: 2
    :class: singlecol
 
 Overview
@@ -97,8 +97,62 @@ manage user authentication, as shown in the following code:
    :language: php
    :dedent:
 
-Enable Password Reminders 
--------------------------
+Customize User Authentication
+-----------------------------
+
+You can customize your authentication files to align with your application's
+needs and enable additional authentication features.
+
+This section describes how to use the following features to customize the MongoDB user
+authentication process:
+
+- :ref:`laravel-user-auth-sanctum`
+- :ref:`laravel-user-auth-reminders`
+
+.. _laravel-user-auth-sanctum:
+
+Laravel Sanctum
+~~~~~~~~~~~~~~~
+
+Laravel Sanctum is an authentication package that can manage API requests and
+single-page application authentication. To manage API requests, Sanctum issues
+API tokens that are stored in the database and authenticates incoming HTTP
+requests by using the ``Authorization`` header. To authenticate single-page applications,
+Sanctum uses Laravel's cookie-based authentication services.
+
+You can install Laravel Sanctum to manage your application's authentication
+process. Run the following commands from your project root to install Laravel
+Sanctum and publish its migration file:
+
+.. code-block:: bash
+
+   composer require laravel/sanctum
+   php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+
+To use Laravel Sanctum with {+odm-short+}, modify the ``PersonalAccessToken`` model provided
+by Sanctum to use the ``DocumentModel`` trait from the ``MongoDB\Laravel\Eloquent`` namespace.
+The following code modifies the ``PersonalAccessToken`` model to enable MongoDB:
+
+.. literalinclude:: /includes/auth/PersonalAccessToken.php
+   :language: php
+   :dedent:
+
+Next, run the following command to modify the database schema:
+
+.. code-block:: bash
+
+   php artisan migrate
+   
+You can now instruct Sanctum to use the custom ``PersonalAccessToken`` model by calling
+the ``usePersonalAccessTokenModel()`` method in one of your application's
+service providers. To learn more, see `Overriding Default Models
+<https://laravel.com/docs/{+laravel-docs-version+}/sanctum#overriding-default-models>`__
+in the Laravel Sanctum guide.
+
+.. _laravel-user-auth-reminders:
+
+Password Reminders 
+~~~~~~~~~~~~~~~~~~
 
 To add support for MongoDB-based password reminders, register the following service
 provider in your application:
@@ -111,7 +165,7 @@ This service provider modifies the internal ``DatabaseReminderRepository``
 to enable password reminders.
 
 Example
-~~~~~~~
+```````
 
 The following code updates the ``providers.php`` file in the ``bootstrap`` directory
 of a Laravel application to register the ``PasswordResetServiceProvider`` provider:
