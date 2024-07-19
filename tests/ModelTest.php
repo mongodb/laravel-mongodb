@@ -145,7 +145,6 @@ class ModelTest extends TestCase
 
     public function testUpsert()
     {
-
         $result = User::upsert([
             ['email' => 'foo', 'name' => 'bar'],
             ['name' => 'bar2', 'email' => 'foo2'],

@@ -735,7 +735,6 @@ class Builder extends BaseBuilder
         $this->applyBeforeQueryCallbacks();
 
         $options = $this->inheritConnectionOptions();
-        $options['upsert'] = true;
         $uniqueBy = array_fill_keys((array) $uniqueBy, 1);
 
         // If no update fields are specified, all fields are updated
