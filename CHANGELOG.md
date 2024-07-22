@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [4.8.0] - next
 
 * Add `Query\Builder::incrementEach()` and `decrementEach()` methods by @SmallRuralDog in [#2550](https://github.com/mongodb/laravel-mongodb/pull/2550)
+* Deprecate `Connection::collection()` and `Schema\Builder::collection()` methods by @GromNaN in [#3062](https://github.com/mongodb/laravel-mongodb/pull/3062)
 
 ## [4.7.0] - 2024-07-19
 
