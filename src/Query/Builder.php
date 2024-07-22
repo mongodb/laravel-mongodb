@@ -789,24 +789,18 @@ class Builder extends BaseBuilder
 
     public function incrementEach(array $columns, array $extra = [], array $options = [])
     {
-        $query = ['$inc' => $columns];
+        $stage['$addFields'] = $extra;
 
-        if ($extra) {
-            $query['$set'] = $extra;
-        }
-
-        // Protect
+        // Not using $inc for each column, because it would fail if one column is null.
         foreach ($columns as $column => $amount) {
-            $this->where(function ($query) use ($column) {
-                $query->where($column, 'exists', false);
-
-                $query->orWhereNotNull($column);
-            });
+            $stage['$addFields'][$column] = [
+                '$add' => [$amount, ['$ifNull' => ['$' . $column, 0]]],
+            ];
         }
 
         $options = $this->inheritConnectionOptions($options);
 
-        return $this->performUpdate($query, $options);
+        return $this->performUpdate([$stage], $options);
     }
 
     /** @inheritdoc */

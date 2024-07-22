@@ -1020,8 +1020,8 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(8, $user['note']);
 
         $user = DB::collection('users')->where('name', 'Robert Roe')->first();
-        $this->assertNull($user['age']);
-        $this->assertArrayNotHasKey('note', $user);
+        $this->assertSame(1, $user['age']);
+        $this->assertSame(2, $user['note']);
 
         DB::collection('users')->where('name', 'Jane Doe')->incrementEach([
             'age' => 1,
