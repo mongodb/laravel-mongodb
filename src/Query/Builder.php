@@ -791,7 +791,7 @@ class Builder extends BaseBuilder
     {
         $query = ['$inc' => $columns];
 
-        if (! empty($extra)) {
+        if ($extra) {
             $query['$set'] = $extra;
         }
 

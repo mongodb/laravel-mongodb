@@ -998,4 +998,54 @@ class QueryBuilderTest extends TestCase
         $user = DB::collection('users')->where($ageColumn, 29)->first();
         $this->assertEquals('John Doe', $user['name']);
     }
+
+    public function testIncrementEach()
+    {
+        DB::collection('users')->insert([
+            ['name' => 'John Doe', 'age' => 30, 'note' => 5],
+            ['name' => 'Jane Doe', 'age' => 10, 'note' => 6],
+            ['name' => 'Robert Roe', 'age' => null],
+        ]);
+
+        DB::collection('users')->incrementEach([
+            'age' => 1,
+            'note' => 2,
+        ]);
+        $user = DB::collection('users')->where('name', 'John Doe')->first();
+        $this->assertEquals(31, $user['age']);
+        $this->assertEquals(7, $user['note']);
+
+        $user = DB::collection('users')->where('name', 'Jane Doe')->first();
+        $this->assertEquals(11, $user['age']);
+        $this->assertEquals(8, $user['note']);
+
+        $user = DB::collection('users')->where('name', 'Robert Roe')->first();
+        $this->assertNull($user['age']);
+        $this->assertArrayNotHasKey('note', $user);
+
+        DB::collection('users')->where('name', 'Jane Doe')->incrementEach([
+            'age' => 1,
+            'note' => 2,
+        ], ['extra' => 'foo']);
+
+        $user = DB::collection('users')->where('name', 'Jane Doe')->first();
+        $this->assertEquals(12, $user['age']);
+        $this->assertEquals(10, $user['note']);
+        $this->assertEquals('foo', $user['extra']);
+
+        $user = DB::collection('users')->where('name', 'John Doe')->first();
+        $this->assertEquals(31, $user['age']);
+        $this->assertEquals(7, $user['note']);
+        $this->assertArrayNotHasKey('extra', $user);
+
+        DB::collection('users')->decrementEach([
+            'age' => 1,
+            'note' => 2,
+        ], ['extra' => 'foo']);
+
+        $user = DB::collection('users')->where('name', 'John Doe')->first();
+        $this->assertEquals(30, $user['age']);
+        $this->assertEquals(5, $user['note']);
+        $this->assertEquals('foo', $user['extra']);
+    }
 }

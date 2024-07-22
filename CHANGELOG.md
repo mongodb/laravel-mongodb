@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.8.0] - next
+
+* Add `Query\Builder::incrementEach()` and `decrementEach()` methods by @SmallRuralDog in [#2550](https://github.com/mongodb/laravel-mongodb/pull/2550)
+
 ## [4.7.0] - 2024-07-19
 
 * Add `Query\Builder::upsert()` method by @GromNaN in [#3052](https://github.com/mongodb/laravel-mongodb/pull/3052)
