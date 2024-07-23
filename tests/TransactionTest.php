@@ -66,19 +66,19 @@ class TransactionTest extends TestCase
     public function testInsertWithCommit(): void
     {
         DB::beginTransaction();
-        DB::collection('users')->insert(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+        DB::table('users')->insert(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
         DB::commit();
 
-        $this->assertTrue(DB::collection('users')->where('name', 'klinson')->exists());
+        $this->assertTrue(DB::table('users')->where('name', 'klinson')->exists());
     }
 
     public function testInsertWithRollBack(): void
     {
         DB::beginTransaction();
-        DB::collection('users')->insert(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+        DB::table('users')->insert(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
         DB::rollBack();
 
-        $this->assertFalse(DB::collection('users')->where('name', 'klinson')->exists());
+        $this->assertFalse(DB::table('users')->where('name', 'klinson')->exists());
     }
 
     public function testEloquentCreateWithCommit(): void
@@ -116,23 +116,23 @@ class TransactionTest extends TestCase
     public function testInsertGetIdWithCommit(): void
     {
         DB::beginTransaction();
-        $userId = DB::collection('users')->insertGetId(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+        $userId = DB::table('users')->insertGetId(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
         DB::commit();
 
         $this->assertInstanceOf(ObjectId::class, $userId);
 
-        $user = DB::collection('users')->find((string) $userId);
+        $user = DB::table('users')->find((string) $userId);
         $this->assertEquals('klinson', $user['name']);
     }
 
     public function testInsertGetIdWithRollBack(): void
     {
         DB::beginTransaction();
-        $userId = DB::collection('users')->insertGetId(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+        $userId = DB::table('users')->insertGetId(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
         DB::rollBack();
 
         $this->assertInstanceOf(ObjectId::class, $userId);
-        $this->assertFalse(DB::collection('users')->where('_id', (string) $userId)->exists());
+        $this->assertFalse(DB::table('users')->where('_id', (string) $userId)->exists());
     }
 
     public function testUpdateWithCommit(): void
@@ -140,11 +140,11 @@ class TransactionTest extends TestCase
         User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
 
         DB::beginTransaction();
-        $updated = DB::collection('users')->where('name', 'klinson')->update(['age' => 21]);
+        $updated = DB::table('users')->where('name', 'klinson')->update(['age' => 21]);
         DB::commit();
 
         $this->assertEquals(1, $updated);
-        $this->assertTrue(DB::collection('users')->where('name', 'klinson')->where('age', 21)->exists());
+        $this->assertTrue(DB::table('users')->where('name', 'klinson')->where('age', 21)->exists());
     }
 
     public function testUpdateWithRollback(): void
@@ -152,11 +152,11 @@ class TransactionTest extends TestCase
         User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
 
         DB::beginTransaction();
-        $updated = DB::collection('users')->where('name', 'klinson')->update(['age' => 21]);
+        $updated = DB::table('users')->where('name', 'klinson')->update(['age' => 21]);
         DB::rollBack();
 
         $this->assertEquals(1, $updated);
-        $this->assertFalse(DB::collection('users')->where('name', 'klinson')->where('age', 21)->exists());
+        $this->assertFalse(DB::table('users')->where('name', 'klinson')->where('age', 21)->exists());
     }
 
     public function testEloquentUpdateWithCommit(): void
@@ -254,10 +254,10 @@ class TransactionTest extends TestCase
         User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
 
         DB::beginTransaction();
-        DB::collection('users')->where('name', 'klinson')->increment('age');
+        DB::table('users')->where('name', 'klinson')->increment('age');
         DB::commit();
 
-        $this->assertTrue(DB::collection('users')->where('name', 'klinson')->where('age', 21)->exists());
+        $this->assertTrue(DB::table('users')->where('name', 'klinson')->where('age', 21)->exists());
     }
 
     public function testIncrementWithRollBack(): void
@@ -265,10 +265,10 @@ class TransactionTest extends TestCase
         User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
 
         DB::beginTransaction();
-        DB::collection('users')->where('name', 'klinson')->increment('age');
+        DB::table('users')->where('name', 'klinson')->increment('age');
         DB::rollBack();
 
-        $this->assertTrue(DB::collection('users')->where('name', 'klinson')->where('age', 20)->exists());
+        $this->assertTrue(DB::table('users')->where('name', 'klinson')->where('age', 20)->exists());
     }
 
     public function testDecrementWithCommit(): void
@@ -276,10 +276,10 @@ class TransactionTest extends TestCase
         User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
 
         DB::beginTransaction();
-        DB::collection('users')->where('name', 'klinson')->decrement('age');
+        DB::table('users')->where('name', 'klinson')->decrement('age');
         DB::commit();
 
-        $this->assertTrue(DB::collection('users')->where('name', 'klinson')->where('age', 19)->exists());
+        $this->assertTrue(DB::table('users')->where('name', 'klinson')->where('age', 19)->exists());
     }
 
     public function testDecrementWithRollBack(): void
@@ -287,36 +287,36 @@ class TransactionTest extends TestCase
         User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
 
         DB::beginTransaction();
-        DB::collection('users')->where('name', 'klinson')->decrement('age');
+        DB::table('users')->where('name', 'klinson')->decrement('age');
         DB::rollBack();
 
-        $this->assertTrue(DB::collection('users')->where('name', 'klinson')->where('age', 20)->exists());
+        $this->assertTrue(DB::table('users')->where('name', 'klinson')->where('age', 20)->exists());
     }
 
     public function testQuery()
     {
         /** rollback test */
         DB::beginTransaction();
-        $count = DB::collection('users')->count();
+        $count = DB::table('users')->count();
         $this->assertEquals(0, $count);
-        DB::collection('users')->insert(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
-        $count = DB::collection('users')->count();
+        DB::table('users')->insert(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+        $count = DB::table('users')->count();
         $this->assertEquals(1, $count);
         DB::rollBack();
 
-        $count = DB::collection('users')->count();
+        $count = DB::table('users')->count();
         $this->assertEquals(0, $count);
 
         /** commit test */
         DB::beginTransaction();
-        $count = DB::collection('users')->count();
+        $count = DB::table('users')->count();
         $this->assertEquals(0, $count);
-        DB::collection('users')->insert(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
-        $count = DB::collection('users')->count();
+        DB::table('users')->insert(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
+        $count = DB::table('users')->count();
         $this->assertEquals(1, $count);
         DB::commit();
 
-        $count = DB::collection('users')->count();
+        $count = DB::table('users')->count();
         $this->assertEquals(1, $count);
     }
 

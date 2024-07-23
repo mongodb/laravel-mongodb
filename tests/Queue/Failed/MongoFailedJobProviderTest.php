@@ -21,7 +21,7 @@ class MongoFailedJobProviderTest extends TestCase
         parent::setUp();
 
         DB::connection('mongodb')
-            ->collection('failed_jobs')
+            ->table('failed_jobs')
             ->raw()
             ->insertMany(array_map(static fn ($i) => [
                 '_id' => new ObjectId(sprintf('%024d', $i)),
@@ -34,7 +34,7 @@ class MongoFailedJobProviderTest extends TestCase
     public function tearDown(): void
     {
         DB::connection('mongodb')
-            ->collection('failed_jobs')
+            ->table('failed_jobs')
             ->raw()
             ->drop();
 
