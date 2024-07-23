@@ -39,7 +39,6 @@ class MongoDBBusServiceProvider extends ServiceProvider implements DeferrablePro
     public function provides()
     {
         return [
-            BatchRepository::class,
             MongoBatchRepository::class,
         ];
     }
