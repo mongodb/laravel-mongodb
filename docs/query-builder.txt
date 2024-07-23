@@ -36,8 +36,8 @@ lets you perform database operations. Facades, which are static interfaces to
 classes, make the syntax more concise, avoid runtime errors, and improve
 testability.
 
-{+odm-short+} aliases the ``DB`` method ``table()`` as the ``collection()``
-method. Chain methods to specify commands and any constraints. Then, chain
+{+odm-short+} provides the ``DB`` method ``table()`` to access a collection.
+Chain methods to specify commands and any constraints. Then, chain
 the ``get()`` method at the end to run the methods and retrieve the results.
 The following example shows the syntax of a query builder call:
 
