@@ -15,7 +15,7 @@ class Scoped extends Model
     protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'scoped';
+    protected $table = 'scoped';
     protected $fillable = ['name', 'favorite'];
 
     protected static function boot()

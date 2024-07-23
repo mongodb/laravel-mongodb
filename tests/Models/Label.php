@@ -20,7 +20,7 @@ class Label extends Model
     protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'labels';
+    protected $table = 'labels';
     protected static $unguarded = true;
 
     protected $fillable = [

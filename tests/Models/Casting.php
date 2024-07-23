@@ -10,7 +10,7 @@ use MongoDB\Laravel\Eloquent\Model;
 class Casting extends Model
 {
     protected $connection = 'mongodb';
-    protected string $collection = 'casting';
+    protected $table = 'casting';
 
     protected $fillable = [
         'uuid',

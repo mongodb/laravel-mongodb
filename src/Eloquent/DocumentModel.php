@@ -46,7 +46,10 @@ use function sprintf;
 use function str_contains;
 use function str_starts_with;
 use function strcmp;
+use function trigger_error;
 use function var_export;
+
+use const E_USER_DEPRECATED;
 
 trait DocumentModel
 {
@@ -141,7 +144,13 @@ trait DocumentModel
     /** @inheritdoc */
     public function getTable()
     {
-        return $this->collection ?? parent::getTable();
+        if (isset($this->collection)) {
+            trigger_error('Since mongodb/laravel-mongodb 4.8: Using "$collection" property is deprecated. Use "$table" instead.', E_USER_DEPRECATED);
+
+            return $this->collection;
+        }
+
+        return parent::getTable();
     }
 
     /** @inheritdoc */
