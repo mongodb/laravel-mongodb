@@ -30,7 +30,10 @@ to {+odm-short+} models:
 - :ref:`laravel-model-define` demonstrates how to create a model class.
 - :ref:`laravel-authenticatable-model` shows how to set MongoDB as the
   authentication user provider.
-- :ref:`laravel-model-customize` explains several model class customizations.
+- :ref:`laravel-model-customize` explains several model class
+  customizations.
+- :ref:`laravel-third-party-model` explains how to make third-party
+  model classes compatible with MongoDB.
 - :ref:`laravel-model-pruning` shows how to periodically remove models that
   you no longer need.
 - :ref:`laravel-schema-versioning` shows how to implement model schema
@@ -180,7 +183,7 @@ in the Laravel docs.
 .. _laravel-model-cast-data-types:
 
 Cast Data Types
----------------
+~~~~~~~~~~~~~~~
 
 Eloquent lets you convert model attribute data types before storing or
 retrieving data by using a casting helper. This helper is a convenient
@@ -280,6 +283,45 @@ fields since ``day_length`` is omitted from the ``$fillable`` attribute.
 To learn how to change the behavior when attempting to fill a field omitted
 from the ``$fillable`` array, see `Mass Assignment Exceptions <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#mass-assignment-exceptions>`__
 in the Laravel docs.
+
+.. _laravel-third-party-model:
+
+Extend Third-Party Model Classes
+--------------------------------
+
+You can use {+odm-short+} to extend a third-party model class by
+including the ``DocumentModel`` trait when defining your model class. By
+including this trait, you can make the third-party class compatible with
+MongoDB.
+
+When you apply the ``DocumentModel`` trait to a model class, you must
+declare the following properties in your class:
+
+- ``$primaryKey = '_id'``, because the ``_id`` field uniquely
+  identifies MongoDB documents
+- ``$keyType = 'string'``, because {+odm-short+} casts MongoDB
+  ``ObjectId`` values to type ``string``
+
+Extended Class Example
+~~~~~~~~~~~~~~~~~~~~~~
+
+This example creates a ``Planet`` model class that extends the
+``CelestialBody`` class from a package called ``ThirdPartyPackage``. The
+``Post`` class includes the ``DocumentModel`` trait and defines
+properties including ``$primaryKey`` and ``$keyType``:
+
+.. literalinclude:: /includes/eloquent-models/PlanetThirdParty.php
+   :language: php
+   :emphasize-lines: 10,13-14
+   :dedent:
+
+After defining your class, you can perform MongoDB operations as usual.
+
+.. tip::
+
+   To view another example that uses the ``DocumentModel`` trait, see
+   the :ref:`laravel-user-auth-sanctum` section of the User
+   Authentication guide.
 
 .. _laravel-model-pruning:
 
