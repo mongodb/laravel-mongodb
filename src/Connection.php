@@ -88,7 +88,7 @@ class Connection extends BaseConnection
      */
     public function collection($collection)
     {
-        @trigger_error('Since mongodb/laravel-mongodb 4.8, the method Connection::collection() is deprecated and will be removed in version 5.0. Use the function table() instead.', E_USER_DEPRECATED);
+        @trigger_error('Since mongodb/laravel-mongodb 4.8, the method Connection::collection() is deprecated and will be removed in version 5.0. Use the table() method instead.', E_USER_DEPRECATED);
 
         return $this->table($collection);
     }
