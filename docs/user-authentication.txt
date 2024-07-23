@@ -149,6 +149,11 @@ service providers. To learn more, see `Overriding Default Models
 <https://laravel.com/docs/{+laravel-docs-version+}/sanctum#overriding-default-models>`__
 in the Laravel Sanctum guide.
 
+.. tip::
+
+   To learn more about the ``DocumentModel`` trait, see
+   :ref:`laravel-third-party-model` in the Eloquent Model Class guide.
+
 .. _laravel-user-auth-reminders:
 
 Password Reminders 
