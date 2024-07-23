@@ -145,8 +145,14 @@ Laravel retrieves results from the ``flowers`` collection:
 
    Flower::where('name', 'Water Lily')->get()
 
+.. note::
+
+   Starting in {+odm-short+} v4.8, the ``DB::collection()`` method
+   is deprecated. As shown in the following example, you can use the ``DB::table()``
+   method to access a MongoDB collection.
+
 If you are unable to accomplish your operation by using an Eloquent
-model, you can access the query builder by calling the ``collection()``
+model, you can access the query builder by calling the ``table()``
 method on the ``DB`` facade. The following example shows the same query
 as in the preceding example, but the query is constructed by using the
 ``DB::table()`` method:
