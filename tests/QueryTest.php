@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Tests;
 
 use BadMethodCallException;
 use DateTimeImmutable;
+use Illuminate\Support\Facades\Schema;
 use LogicException;
 use MongoDB\BSON\Regex;
 use MongoDB\Laravel\Eloquent\Builder;
@@ -44,7 +45,9 @@ class QueryTest extends TestCase
 
     public function tearDown(): void
     {
-        User::truncate();
+        Schema::table('users', function ($table) {
+            $table->drop();
+        });
         Scoped::truncate();
         Birthday::truncate();
 
@@ -576,6 +579,9 @@ class QueryTest extends TestCase
 
     public function testPaginateNear(): void
     {
+        Schema::table('users', function ($table) {
+            $table->geospatial('position', '2dsphere');
+        });
         User::insert([
             ['name' => 'Store A', 'position' => [9.224596977233887, 52.03082275390625]],
             ['name' => 'Store B', 'position' => [9.224596977233887, 52.03082275390625]],
