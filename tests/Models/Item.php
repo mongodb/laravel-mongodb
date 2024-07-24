@@ -18,7 +18,7 @@ class Item extends Model
     protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'items';
+    protected $table = 'items';
     protected static $unguarded = true;
 
     public function user(): BelongsTo

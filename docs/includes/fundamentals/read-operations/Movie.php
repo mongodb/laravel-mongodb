@@ -7,6 +7,6 @@ use MongoDB\Laravel\Eloquent\Model;
 class Movie extends Model
 {
     protected $connection = 'mongodb';
-    protected $collection = 'movies';
+    protected $table = 'movies';
     protected $fillable = ['title', 'year', 'runtime', 'imdb', 'plot'];
 }

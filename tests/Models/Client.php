@@ -17,7 +17,7 @@ class Client extends Model
     protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'clients';
+    protected $table = 'clients';
     protected static $unguarded = true;
 
     public function users(): BelongsToMany

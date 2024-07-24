@@ -6,5 +6,5 @@ use MongoDB\Laravel\Eloquent\Model;
 
 class Planet extends Model
 {
-    protected $collection = 'celestial_body';
+    protected $table = 'celestial_body';
 }
