@@ -297,10 +297,9 @@ class Builder extends BaseBuilder
             $columns = [];
         }
 
-        $wheres = $this->compileWheres();
-
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups || $this->aggregate) {
+            $wheres = $this->compileWheres(true);
             $group   = [];
             $unwinds = [];
 
@@ -403,6 +402,8 @@ class Builder extends BaseBuilder
 
             return ['aggregate' => [$pipeline, $options]];
         }
+
+        $wheres = $this->compileWheres();
 
         // Distinct query
         if ($this->distinct) {
@@ -1133,7 +1134,7 @@ class Builder extends BaseBuilder
      *
      * @return array
      */
-    protected function compileWheres(): array
+    protected function compileWheres(bool $aggregation = false): array
     {
         // The wheres to compile.
         $wheres = $this->wheres ?: [];
@@ -1149,6 +1150,18 @@ class Builder extends BaseBuilder
                 // Convert aliased operators
                 if (isset($this->conversion[$where['operator']])) {
                     $where['operator'] = $this->conversion[$where['operator']];
+                }
+
+                // Convert $near to $geoWithin for aggregations
+                if ($aggregation && $where['operator'] === 'near' && isset($where['value']['$geometry']) && isset($where['value']['$maxDistance'])) {
+                    $where['operator'] = 'geoWithin';
+                    $where['value'] = [
+                        '$centerSphere' => [
+                            $where['value']['$geometry']['coordinates'],
+                            // Convert meters to radians
+                            $where['value']['$maxDistance'] / 6378100,
+                        ],
+                    ];
                 }
             }
 

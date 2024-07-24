@@ -574,6 +574,27 @@ class QueryTest extends TestCase
         User::distinct('age')->paginate(2);
     }
 
+    public function testPaginateNear(): void
+    {
+        User::insert([
+            ['name' => 'Store A', 'position' => [9.224596977233887, 52.03082275390625]],
+            ['name' => 'Store B', 'position' => [9.224596977233887, 52.03082275390625]],
+            ['name' => 'Store C', 'position' => [9.3731451034548, 52.10194]],
+        ]);
+
+        $query = User::where('position', 'near', [
+            '$geometry' => [
+                'type' => 'Point',
+                'coordinates' => [9.3731451034546, 52.1019308],
+            ],
+            '$maxDistance' => 50,
+        ]);
+        $result = $query->paginate();
+
+        $this->assertCount(1, $result->items());
+        $this->assertSame('Store C', $result->first()->name);
+    }
+
     public function testUpdate(): void
     {
         $this->assertEquals(1, User::where(['name' => 'John Doe'])->update(['name' => 'Jim Morrison']));
