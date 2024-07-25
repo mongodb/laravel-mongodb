@@ -157,7 +157,7 @@ For a MongoDB database connection, you can specify the following details:
        connection behavior. To learn more about connection options, see
        :ref:`laravel-connection-auth-options`.
 
-   * - ``driverOptions``
+   * - ``driver_options``
      - Specifies options specific to pass to the {+php-library+} that
        determine the driver behavior for that connection. To learn more about
        driver options, see :ref:`laravel-driver-options`.
@@ -170,7 +170,7 @@ For a MongoDB database connection, you can specify the following details:
    - ``host``
    - ``username``
    - ``password``
-   - ``options`` and ``driverOptions``, which are specified by the option name
+   - ``options`` and ``driver_options``, which are specified by the option name
 
 The following example shows how you can specify your MongoDB connection details
 in the ``connections`` array item:
@@ -187,7 +187,7 @@ in the ``connections`` array item:
                'maxPoolSize' => 20,
                'w' => 'majority',
            ],
-           'driverOptions' => [
+           'driver_options' => [
                'serverApi' => 1,
            ],
        ],
