@@ -38,7 +38,7 @@ class SchemaVersionTest extends TestCase
 
         // The migrated version is saved
         $data = DB::connection('mongodb')
-            ->collection('documentVersion')
+            ->table('documentVersion')
             ->where('name', 'Vador')
             ->get();
 
