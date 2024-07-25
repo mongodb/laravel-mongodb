@@ -7,6 +7,10 @@ All notable changes to this project will be documented in this file.
 * Deprecate `Connection::collection()` and `Schema\Builder::collection()` methods by @GromNaN in [#3062](https://github.com/mongodb/laravel-mongodb/pull/3062)
 * Deprecate `Model::$collection` property to customize collection name. Use `$table` instead by @GromNaN in [#3064](https://github.com/mongodb/laravel-mongodb/pull/3064)
 
+## [4.7.1] - 2024-07-25
+
+* Fix registration of `BusServiceProvider` for compatibility with Horizon by @GromNaN in [#3071](https://github.com/mongodb/laravel-mongodb/pull/3071)
+
 ## [4.7.0] - 2024-07-19
 
 * Add `Query\Builder::upsert()` method by @GromNaN in [#3052](https://github.com/mongodb/laravel-mongodb/pull/3052)
