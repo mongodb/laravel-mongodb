@@ -161,16 +161,104 @@ as in the preceding example, but the query is constructed by using the
 List Collections
 ----------------
 
-To see information about each of the collections in a database, call the 
-``listCollections()`` method.
+This section describes how to see information about each collection in a database
+in the following ways:
 
-The following example accesses a database connection, then
-calls the ``listCollections()`` method to retrieve information about the
-collections in the database:
+- :ref:`laravel-list-coll-command`
+- :ref:`laravel-list-coll-methods`
+
+.. _laravel-list-coll-command:
+
+Run a Shell Command
+~~~~~~~~~~~~~~~~~~~
+
+You can list the collections in a database by running the following shell
+command from your project root:
+
+.. code-block:: bash
+
+   php artisan db:show
+
+This command outputs information about the configured database and lists its
+collections under the ``Table`` header. For more information about the ``db:show``
+command, see `Laravel: New DB Commands <https://blog.laravel.com/laravel-new-db-commands-and-more>`__.
+
+.. _laravel-list-coll-methods:
+
+Call Database or Schema Methods
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can list the collections in a database by calling the following
+methods in your application:
+
+- ``DB::listCollections()``: lists information about each collection by
+   using the query builder
+- ``Schema::getTablesListing()``: lists the name of each collection by
+   using the schema builder
+- ``Schema::getTables()``: lists the name and size of each collection by
+   using the schema builder
+
+Example
+```````
+
+The following example accesses a database connection, then calls the
+``listCollections()`` query builder method to retrieve information about
+the collections in the database:
 
 .. code-block:: php
 
    $collections = DB::connection('mongodb')->getMongoDB()->listCollections();
+
+List Collection Fields
+----------------------
+
+This section describes how to see information about each field in a collection
+in the following ways:
+
+- :ref:`laravel-list-fields-command`
+- :ref:`laravel-list-fields-methods`
+
+.. _laravel-list-fields-command:
+
+Run a Shell Command
+~~~~~~~~~~~~~~~~~~~
+
+You can see a list of fields in a collection by running the following shell
+command from your project root:
+
+.. code-block:: bash
+
+   php artisan db:table <collection name>
+
+This command outputs each collection field and its corresponding data type
+under the ``Column`` header. For more information about the ``db:table``
+command, see `Laravel: New DB Commands <https://blog.laravel.com/laravel-new-db-commands-and-more>`__.
+
+.. _laravel-list-fields-methods:
+
+Call Schema Methods
+~~~~~~~~~~~~~~~~~~~
+
+You can list the collections in a database by calling the ``Schema::getColumns()``
+schema builder method in your application.
+
+You can also call the following methods to return more information about the
+collection fields:
+
+- ``Schema::hasColumn(string $field)``: checks if the specified field exists
+  in at least one document
+- ``Schema::hasColumns(string[] $fields)``: checks if each specified field exists
+  in at least one document
+
+Example
+```````
+
+The following example passes a collection name to the ``Schema::getColumns()``
+method to retrieve each field in the ``flowers`` collection:
+
+.. code-block:: php
+
+   $fields = Schema::getColumns('flowers');
 
 Create and Drop Collections
 ---------------------------
