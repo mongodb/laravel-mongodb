@@ -189,6 +189,3 @@ View MongoDB Data
          root directory to view a list of available routes.
 
 .. include:: /includes/quick-start/troubleshoot.rst
-
-.. button:: Next: Write Data
-   :uri: /quick-start/write-data/
