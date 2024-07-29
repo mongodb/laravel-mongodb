@@ -114,6 +114,3 @@ to a Laravel web application.
       {+odm-short+} dependencies installed.
 
 .. include:: /includes/quick-start/troubleshoot.rst
-
-.. button:: Create a MongoDB Deployment
-   :uri: /quick-start/create-a-deployment/
