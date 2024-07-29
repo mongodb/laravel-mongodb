@@ -103,6 +103,3 @@ Write Data to MongoDB
       the top of the results.
 
 .. include:: /includes/quick-start/troubleshoot.rst
-
-.. button:: Next Steps
-   :uri: /quick-start/next-steps/
