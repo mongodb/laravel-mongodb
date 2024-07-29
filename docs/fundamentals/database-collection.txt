@@ -192,11 +192,11 @@ You can list the collections in a database by calling the following
 methods in your application:
 
 - ``DB::listCollections()``: lists information about each collection by
-   using the query builder
+  using the query builder
 - ``Schema::getTablesListing()``: lists the name of each collection by
-   using the schema builder
+  using the schema builder
 - ``Schema::getTables()``: lists the name and size of each collection by
-   using the schema builder
+  using the schema builder
 
 Example
 ```````
@@ -239,7 +239,7 @@ command, see `Laravel: New DB Commands <https://blog.laravel.com/laravel-new-db-
 Call Schema Methods
 ~~~~~~~~~~~~~~~~~~~
 
-You can list the collections in a database by calling the ``Schema::getColumns()``
+You can list the fields in a collection by calling the ``Schema::getColumns()``
 schema builder method in your application.
 
 You can also call the following methods to return more information about the
