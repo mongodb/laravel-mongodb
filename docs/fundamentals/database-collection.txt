@@ -161,8 +161,8 @@ as in the preceding example, but the query is constructed by using the
 List Collections
 ----------------
 
-This section describes how to see information about each collection in a database
-in the following ways:
+You can take either of the following actions to see information
+about the collections in a database:
 
 - :ref:`laravel-list-coll-command`
 - :ref:`laravel-list-coll-methods`
@@ -172,8 +172,8 @@ in the following ways:
 Run a Shell Command
 ~~~~~~~~~~~~~~~~~~~
 
-You can list the collections in a database by running the following shell
-command from your project root:
+You can list the collections in a database by running the following
+command in your shell from your project's root directory:
 
 .. code-block:: bash
 
@@ -181,7 +181,8 @@ command from your project root:
 
 This command outputs information about the configured database and lists its
 collections under the ``Table`` header. For more information about the ``db:show``
-command, see `Laravel: New DB Commands <https://blog.laravel.com/laravel-new-db-commands-and-more>`__.
+command, see `Laravel: New DB Commands <https://blog.laravel.com/laravel-new-db-commands-and-more>`__
+on the official Laravel blog.
 
 .. _laravel-list-coll-methods:
 
@@ -212,8 +213,8 @@ the collections in the database:
 List Collection Fields
 ----------------------
 
-This section describes how to see information about each field in a collection
-in the following ways:
+You can take either of the following actions to see information
+about each field in a collection:
 
 - :ref:`laravel-list-fields-command`
 - :ref:`laravel-list-fields-methods`
@@ -223,8 +224,8 @@ in the following ways:
 Run a Shell Command
 ~~~~~~~~~~~~~~~~~~~
 
-You can see a list of fields in a collection by running the following shell
-command from your project root:
+You can see a list of fields in a collection by running the following
+command in your shell from your project's root directory:
 
 .. code-block:: bash
 
@@ -232,7 +233,8 @@ command from your project root:
 
 This command outputs each collection field and its corresponding data type
 under the ``Column`` header. For more information about the ``db:table``
-command, see `Laravel: New DB Commands <https://blog.laravel.com/laravel-new-db-commands-and-more>`__.
+command, see `Laravel: New DB Commands <https://blog.laravel.com/laravel-new-db-commands-and-more>`__
+on the official Laravel blog.
 
 .. _laravel-list-fields-methods:
 
@@ -242,12 +244,12 @@ Call Schema Methods
 You can list the fields in a collection by calling the ``Schema::getColumns()``
 schema builder method in your application.
 
-You can also call the following methods to return more information about the
+You can also use the following methods to return more information about the
 collection fields:
 
-- ``Schema::hasColumn(string $field)``: checks if the specified field exists
+- ``Schema::hasColumn(string $<field name>)``: checks if the specified field exists
   in at least one document
-- ``Schema::hasColumns(string[] $fields)``: checks if each specified field exists
+- ``Schema::hasColumns(string[] $<field names>)``: checks if each specified field exists
   in at least one document
 
 Example
