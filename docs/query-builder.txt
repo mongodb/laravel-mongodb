@@ -1068,6 +1068,23 @@ the ``imdb.votes`` field in the matched document:
 The ``increment()`` query builder method returns the number of documents that the
 operation updated.
 
+You can also use the ``incrementEach()`` query builder method to increment multiple
+values in a single operation. The following example uses the ``incrementEach()``
+method to increase the values of the ``awards.wins`` and ``imdb.votes`` fields in the
+matched document:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin increment each
+   :end-before: end increment each
+
+.. note::
+
+   If you pass a field to the ``increment()`` or ``incrementEach()`` method that
+   has no value or doesn't exist in the matched documents, these methods initialize
+   the specified field with the increment value.
+
 .. _laravel-mongodb-query-builder-decrement:
 
 Decrement a Numerical Value Example
@@ -1085,6 +1102,23 @@ matched document:
 
 The ``decrement()`` query builder method returns the number of documents that the
 operation updated.
+
+You can also use the ``decrementEach()`` query builder method to decrement multiple
+values in a single operation. The following example uses the ``decrementEach()``
+method to decrease the values of the ``metacritic`` and ``imdb.rating`` fields in the
+matched document:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin decrement each
+   :end-before: end decrement each
+
+.. note::
+
+   If you pass a field to the ``decrement()`` or ``decrementEach()`` method that
+   has no value or doesn't exist in the matched documents, these methods initialize
+   the specified field with the decrement value.
 
 .. _laravel-mongodb-query-builder-push:
 
