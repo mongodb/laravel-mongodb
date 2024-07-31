@@ -1035,6 +1035,52 @@ following MongoDB-specific write operations:
 Upsert a Document Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+You can perform an upsert operation by taking either of the following
+actions:
+
+- Use the ``upsert()`` query builder method. When you use this method,
+  you can perform a batch upsert to change or insert multiple documents
+  in one operation.
+- Use the ``update()`` query builder method and specify the ``upsert`` option.
+
+Upsert Method
+`````````````
+
+The ``upsert()`` query builder method accepts the following parameters:
+
+- Array of fields and values that specify documents to update or insert.
+- Array of fields that uniquely identify documents in your first array parameter.
+- Array of fields to update if a matching document exists. If you omit
+  this parameter, {+odm-short+} updates all fields.
+
+The following example shows how to use the ``upsert()`` query builder method
+to update or insert documents based on the following instructions:
+
+- Specify a document in which the value of the ``title`` field is
+  ``'Inspector Maigret'``, the value of the ``recommended`` field is ``false``,
+  and the value of the ``runtime`` field is ``128``.
+
+- Specify a document in which the value of the ``title`` field is
+  ``'Petit Maman'``, the value of the ``recommended`` field is
+  ``true``, and the value of the ``runtime`` field is ``72``.
+
+- Indicate that the ``title`` field uniquely identifies documents in the
+  scope of your operation.
+
+- Update only the ``runtime`` field in matched documents.
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin upsert
+   :end-before: end upsert
+
+The ``upsert()`` query builder method returns the sum of the number of documents that the
+operation updated, inserted, and modified.
+
+Update Method
+`````````````
+
 The following example shows how to use the ``update()`` query builder method
 and ``upsert`` option to update the matching document or insert one with the
 specified data if it does not exist. When you set the ``upsert`` option to
@@ -1044,8 +1090,8 @@ and the ``title`` field and value specified in the ``where()`` query operation:
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
-   :start-after: begin upsert
-   :end-before: end upsert
+   :start-after: begin update upsert
+   :end-before: end update upsert
 
 The ``update()`` query builder method returns the number of documents that the
 operation updated or inserted.
