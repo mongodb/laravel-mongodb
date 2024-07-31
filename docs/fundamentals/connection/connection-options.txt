@@ -9,7 +9,7 @@ Connection Options
    :values: reference
 
 .. meta::
-   :keywords: code example, data source name, dsn, authentication, configuration, options, driverOptions
+   :keywords: code example, data source name, dsn, authentication, configuration, options, driver_options
 
 .. contents:: On this page
    :local:
@@ -329,7 +329,7 @@ connections and all operations between a Laravel application and MongoDB.
 
 You can specify driver options in your Laravel web application's
 ``config/database.php`` configuration file. To add driver options,
-add the setting and value as an array item in the ``driverOptions`` array
+add the setting and value as an array item in the ``driver_options`` array
 item, as shown in the following example:
 
 .. code-block:: php
@@ -340,7 +340,7 @@ item, as shown in the following example:
            'dsn' => 'mongodb+srv://mongodb0.example.com/',
            'driver' => 'mongodb',
            'database' => 'sample_mflix',
-           'driverOptions' => [
+           'driver_options' => [
                'serverApi' => 1,
                'allow_invalid_hostname' => false,
            ],
