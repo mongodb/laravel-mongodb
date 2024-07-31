@@ -1083,7 +1083,7 @@ and ``imdb.votes`` fields in the matched document:
 
    If you pass a field to the ``increment()`` or ``incrementEach()`` method that
    has no value or doesn't exist in the matched documents, these methods initialize
-   the specified field with the increment value.
+   the specified field to the increment value.
 
 .. _laravel-mongodb-query-builder-decrement:
 
@@ -1118,7 +1118,7 @@ fields in the matched document:
 
    If you pass a field to the ``decrement()`` or ``decrementEach()`` method that
    has no value or doesn't exist in the matched documents, these methods initialize
-   the specified field with the decrement value.
+   the specified field to the decrement value.
 
 .. _laravel-mongodb-query-builder-push:
 
