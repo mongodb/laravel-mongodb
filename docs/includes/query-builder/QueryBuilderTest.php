@@ -511,9 +511,9 @@ class QueryBuilderTest extends TestCase
                 [
                     ['title' => 'Inspector Maigret', 'recommended' => 'false', 'runtime' => '128'],
                     ['title' => 'Petit Maman', 'recommended' => 'true', 'runtime' => '72'],
-                ], 
-                'title', 
-                'runtime'
+                ],
+                'title',
+                'runtime',
             );
         // end upsert
 
