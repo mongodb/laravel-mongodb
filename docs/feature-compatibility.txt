@@ -216,7 +216,7 @@ Eloquent Features
      - ✓
 
    * - Upserts
-     - ✓ See :ref:`laravel-mongodb-query-builder-upsert`.
+     - ✓ See :ref:`laravel-modify-documents-upsert`.
 
    * - Deleting Models
      - ✓

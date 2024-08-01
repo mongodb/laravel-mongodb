@@ -217,7 +217,7 @@ class WriteOperationsTest extends TestCase
         }
     }
 
-    /**
+        /**
      * @runInSeparateProcess
      * @preserveGlobalState disabled
      */
@@ -226,13 +226,46 @@ class WriteOperationsTest extends TestCase
         require_once __DIR__ . '/Concert.php';
         Concert::truncate();
 
+        // Pre-existing sample document
+        Concert::create([
+            'performer' => 'Angel Olsen',
+            'venue' => 'State Theatre',
+            'genres' => [ 'indie', 'rock' ],
+            'ticketsSold' => 150,
+        ]);
+
         // begin model upsert
+        Concert::upsert([
+            ['performer' => 'Angel Olsen', 'venue' => 'Academy of Music', 'ticketsSold' => 275],
+            ['performer' => 'Darondo', 'venue' => 'Cafe du Nord', 'ticketsSold' => 300],
+        ], 'performer', ['ticketsSold']);
+        // end model upsert
+
+        $this->assertSame(2, Concert::count());
+
+        $this->assertSame(275, Concert::where('performer', 'Angel Olsen')->first()->ticketsSold);
+        $this->assertSame('State Theatre', Concert::where('performer', 'Angel Olsen')->first()->venue);
+
+        $this->assertSame(300, Concert::where('performer', 'Darondo')->first()->ticketsSold);
+        $this->assertSame('Cafe du Nord', Concert::where('performer', 'Darondo')->first()->venue);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testModelUpdateUpsert(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        // begin model update upsert
         Concert::where(['performer' => 'Jon Batiste', 'venue' => 'Radio City Music Hall'])
             ->update(
                 ['genres' => ['R&B', 'soul'], 'ticketsSold' => 4000],
                 ['upsert' => true],
             );
-        // end model upsert
+        // end model update upsert
 
         $result = Concert::first();
 
