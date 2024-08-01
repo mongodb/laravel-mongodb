@@ -399,7 +399,7 @@ of the ``year`` field for documents in the ``movies`` collections.
 .. _laravel-query-builder-aggregations:
 
 Aggregations
-~~~~~~~~~~~~
+------------
 
 The examples in this section show the query builder syntax you
 can use to perform **aggregations**. Aggregations are operations
@@ -417,7 +417,7 @@ aggregations to compute and return the following information:
 .. _laravel-query-builder-aggregation-groupby:
 
 Results Grouped by Common Field Values Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``groupBy()`` query builder method
 to retrieve document data grouped by shared values of the ``runtime`` field.
@@ -476,7 +476,7 @@ This example chains the following operations to match documents from the
 .. _laravel-query-builder-aggregation-count:
 
 Number of Results Example
-^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``count()``
 query builder method to return the number of documents
@@ -491,7 +491,7 @@ contained in the ``movies`` collection:
 .. _laravel-query-builder-aggregation-max:
 
 Maximum Value of a Field Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``max()``
 query builder method to return the highest numerical
@@ -507,7 +507,7 @@ value of the ``runtime`` field from the entire
 .. _laravel-query-builder-aggregation-min:
 
 Minimum Value of a Field Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``min()``
 query builder method to return the lowest numerical
@@ -523,7 +523,7 @@ collection:
 .. _laravel-query-builder-aggregation-avg:
 
 Average Value of a Field Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``avg()``
 query builder method to return the numerical average, or
@@ -539,7 +539,7 @@ the entire ``movies`` collection.
 .. _laravel-query-builder-aggregation-sum:
 
 Summed Value of a Field Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``sum()``
 query builder method to return the numerical total of
@@ -556,7 +556,7 @@ collection:
 .. _laravel-query-builder-aggregate-matched:
 
 Aggregate Matched Results Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to aggregate data
 from results that match a query. The query matches all
@@ -1035,16 +1035,20 @@ following MongoDB-specific write operations:
 Upsert a Document Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can perform an upsert operation by taking either of the following
-actions:
+Starting in v4.7, you can perform an upsert operation by using either of
+the following methods:
 
 - Use the ``upsert()`` query builder method. When you use this method,
-  you can perform a batch upsert to change or insert multiple documents
+  you can perform a **batch upsert** to change or insert multiple documents
   in one operation.
-- Use the ``update()`` query builder method and specify the ``upsert`` option.
+
+- Use the ``update()`` query builder method and specify the ``upsert``
+  option to update all documents that match the query filter or insert
+  one document if no documents are matched. Only this method is
+  supported in versions v4.6 and earlier.
 
 Upsert Method
-`````````````
+^^^^^^^^^^^^^
 
 The ``upsert()`` query builder method accepts the following parameters:
 
@@ -1079,7 +1083,7 @@ The ``upsert()`` query builder method returns the sum of the number of documents
 operation updated, inserted, and modified.
 
 Update Method
-`````````````
+^^^^^^^^^^^^^
 
 The following example shows how to use the ``update()`` query builder method
 and ``upsert`` option to update the matching document or insert one with the
