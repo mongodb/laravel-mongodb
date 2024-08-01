@@ -509,8 +509,8 @@ class QueryBuilderTest extends TestCase
         $result = DB::collection('movies')
             ->upsert(
                 [
-                    ['title' => 'Inspector Maigret', 'recommended' => 'false', 'runtime' => '128'],
-                    ['title' => 'Petit Maman', 'recommended' => 'true', 'runtime' => '72'],
+                    ['title' => 'Inspector Maigret', 'recommended' => false, 'runtime' => 128],
+                    ['title' => 'Petit Maman', 'recommended' => true, 'runtime' => 72],
                 ],
                 'title',
                 'recommended',
