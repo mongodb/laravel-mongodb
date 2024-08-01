@@ -29,11 +29,11 @@ class MorphTo extends EloquentMorphTo
     {
         $instance = $this->createModelByType($type);
 
-        $key = $instance->getKeyName();
+        $ownerKey = $this->ownerKey ?? $instance->getKeyName();
 
         $query = $instance->newQuery();
 
-        return $query->whereIn($key, $this->gatherKeysByType($type, $instance->getKeyType()))->get();
+        return $query->whereIn($ownerKey, $this->gatherKeysByType($type, $instance->getKeyType()))->get();
     }
 
     /**
