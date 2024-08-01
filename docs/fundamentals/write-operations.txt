@@ -284,12 +284,11 @@ To specify an upsert in the ``upsert()`` method, set parameters
 as shown in the following code example:
 
 .. code-block:: php
-   :emphasize-lines: 4
    :copyable: false
 
    YourModel::upsert(
       [/* documents to update or insert */],
-      '/* unique field */', [/* fields to update */']
+      '/* unique field */', [/* fields to update */]
    );
 
 Example
