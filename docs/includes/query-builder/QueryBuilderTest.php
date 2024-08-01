@@ -513,12 +513,15 @@ class QueryBuilderTest extends TestCase
                     ['title' => 'Petit Maman', 'recommended' => 'true', 'runtime' => '72'],
                 ],
                 'title',
-                'runtime',
+                'recommended',
             );
         // end upsert
 
         $this->assertSame(2, $result);
+
         $this->assertSame(119, DB::collection('movies')->where('title', 'Inspector Maigret')->first()['runtime']);
+        $this->assertSame(false, DB::collection('movies')->where('title', 'Inspector Maigret')->first()['recommended']);
+
         $this->assertSame(true, DB::collection('movies')->where('title', 'Petit Maman')->first()['recommended']);
         $this->assertSame(72, DB::collection('movies')->where('title', 'Petit Maman')->first()['runtime']);
     }

@@ -1071,7 +1071,7 @@ to update or insert documents based on the following instructions:
 - Indicate that the ``title`` field uniquely identifies documents in the
   scope of your operation.
 
-- Update only the ``runtime`` field in matched documents.
+- Update only the ``recommended`` field in matched documents.
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
