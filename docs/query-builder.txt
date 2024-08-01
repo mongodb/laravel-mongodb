@@ -1036,16 +1036,15 @@ Upsert a Document Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Starting in v4.7, you can perform an upsert operation by using either of
-the following methods:
+the following query builder methods:
 
-- Use the ``upsert()`` query builder method. When you use this method,
-  you can perform a **batch upsert** to change or insert multiple documents
-  in one operation.
+- ``upsert()``: When you use this method, you can perform a **batch
+  upsert** to change or insert multiple documents in one operation.
 
-- Use the ``update()`` query builder method and specify the ``upsert``
-  option to update all documents that match the query filter or insert
-  one document if no documents are matched. Only this method is
-  supported in versions v4.6 and earlier.
+- ``update()``: When you use this method, you must specify the
+  ``upsert`` option to update all documents that match the query filter
+  or insert one document if no documents are matched. Only this upsert method
+  is supported in versions v4.6 and earlier.
 
 Upsert Method
 ^^^^^^^^^^^^^
@@ -1079,8 +1078,8 @@ to update or insert documents based on the following instructions:
    :start-after: begin upsert
    :end-before: end upsert
 
-The ``upsert()`` query builder method returns the sum of the number of documents that the
-operation updated, inserted, and modified.
+The ``upsert()`` query builder method returns the number of
+documents that the operation updated, inserted, and modified.
 
 Update Method
 ^^^^^^^^^^^^^

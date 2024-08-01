@@ -261,14 +261,13 @@ inserting one if it does not exist.
 Starting in v4.7, you can perform an upsert operation by using either of
 the following methods:
 
-- Use the ``upsert()`` method. When you use this method,
-  you can perform a **batch upsert** to change or insert multiple documents
-  in one operation.
+- ``upsert()``: When you use this method, you can perform a **batch
+  upsert** to change or insert multiple documents in one operation.
 
-- Use the ``update()`` method and specify the ``upsert``
-  option to update all documents that match the query filter or insert
-  one document if no documents are matched. Only this method is
-  supported in versions v4.6 and earlier.
+- ``update()``: When you use this method, you must specify the
+  ``upsert`` option to update all documents that match the query filter
+  or insert one document if no documents are matched. Only this upsert method
+  is supported in versions v4.6 and earlier.
 
 Upsert Method
 ~~~~~~~~~~~~~
@@ -296,8 +295,9 @@ Example
 
 This example shows how to use the  ``upsert()``
 method to perform an update or insert in a single operation. Click the
-:guilabel:`{+code-output-label+}` button to see the resulting data changes if
-there is an ``'Angel Olson'`` document in the collection already:
+:guilabel:`{+code-output-label+}` button to see the resulting data changes when
+there is a document in which the value of ``performer`` is ``'Angel
+Olsen'`` in the collection already:
 
 .. io-code-block::
 
@@ -330,9 +330,9 @@ there is an ``'Angel Olson'`` document in the collection already:
         "updated_at": ...
       }
 
-In the ``'Angel Olsen'`` document, the ``venue`` field value is not
-changed, as the upsert specifies that the update only applies to the
-``ticketsSold`` field.
+In the document in which the value of ``performer`` is ``'Angel
+Olsen'``, the ``venue`` field value is not updated, as the upsert
+specifies that the update applies only to the ``ticketsSold`` field.
 
 Update Method
 ~~~~~~~~~~~~~
