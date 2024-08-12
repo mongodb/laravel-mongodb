@@ -201,7 +201,7 @@ methods in your application:
 
 .. note::
 
-   MongoDB is a schemaless database, so the preceding schema builder functions
+   MongoDB is a schemaless database, so the preceding schema builder methods
    query the database data rather than the schema.
 
 Example
@@ -259,9 +259,9 @@ collection fields:
 
 .. note::
 
-   MongoDB is a schemaless database, so the preceding functions query the collection
+   MongoDB is a schemaless database, so the preceding methods query the collection
    data rather than the database schema. If the specified collection doesn't exist
-   or is empty, these functions return a value of ``false``.
+   or is empty, these methods return a value of ``false``.
 
 Example
 ```````
