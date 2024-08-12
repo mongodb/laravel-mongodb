@@ -555,6 +555,20 @@ class QueryBuilderTest extends TestCase
         $this->assertIsInt($result);
     }
 
+    public function testIncrementEach(): void
+    {
+        // begin increment each
+        $result = DB::table('movies')
+            ->where('title', 'Lost in Translation')
+            ->incrementEach([
+                'awards.wins' => 2,
+                'imdb.votes' => 1050,
+            ]);
+        // end increment each
+
+        $this->assertIsInt($result);
+    }
+
     public function testDecrement(): void
     {
         // begin decrement
@@ -562,6 +576,20 @@ class QueryBuilderTest extends TestCase
             ->where('title', 'Sharknado')
             ->decrement('imdb.rating', 0.2);
         // end decrement
+
+        $this->assertIsInt($result);
+    }
+
+    public function testDecrementEach(): void
+    {
+        // begin decrement each
+        $result = DB::table('movies')
+            ->where('title', 'Dunkirk')
+            ->decrementEach([
+                'metacritic' => 1,
+                'imdb.rating' => 0.4,
+            ]);
+        // end decrement each
 
         $this->assertIsInt($result);
     }
