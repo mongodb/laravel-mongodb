@@ -56,7 +56,7 @@ create a database connection to the ``animals`` database in the
 
 .. code-block:: php
    :emphasize-lines: 1,8
-   
+
    'default' => 'mongodb',
 
    'connections' => [
@@ -77,7 +77,7 @@ The following example shows how to specify multiple database connections
 ``plants`` databases:
 
 .. code-block:: php
-   
+
    'connections' => [
 
        'mongodb' => [
@@ -145,23 +145,29 @@ Laravel retrieves results from the ``flowers`` collection:
 
    Flower::where('name', 'Water Lily')->get()
 
+.. note::
+
+   Starting in {+odm-short+} v4.8, the ``DB::collection()`` method
+   is deprecated. As shown in the following example, you can use the ``DB::table()``
+   method to access a MongoDB collection.
+
 If you are unable to accomplish your operation by using an Eloquent
-model, you can access the query builder by calling the ``collection()``
+model, you can access the query builder by calling the ``table()``
 method on the ``DB`` facade. The following example shows the same query
 as in the preceding example, but the query is constructed by using the
-``DB::collection()`` method:
+``DB::table()`` method:
 
 .. code-block:: php
 
    DB::connection('mongodb')
-       ->collection('flowers')
+       ->table('flowers')
        ->where('name', 'Water Lily')
        ->get()
 
 List Collections
 ----------------
 
-To see information about each of the collections in a database, call the 
+To see information about each of the collections in a database, call the
 ``listCollections()`` method.
 
 The following example accesses a database connection, then

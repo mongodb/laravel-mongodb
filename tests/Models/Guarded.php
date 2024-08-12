@@ -14,6 +14,6 @@ class Guarded extends Model
     protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'guarded';
+    protected $table = 'guarded';
     protected $guarded = ['foobar', 'level1->level2'];
 }

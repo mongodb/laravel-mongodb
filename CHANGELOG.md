@@ -1,6 +1,12 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.8.0] - next
+
+* Add `Query\Builder::incrementEach()` and `decrementEach()` methods by @SmallRuralDog in [#2550](https://github.com/mongodb/laravel-mongodb/pull/2550)
+* Deprecate `Connection::collection()` and `Schema\Builder::collection()` methods by @GromNaN in [#3062](https://github.com/mongodb/laravel-mongodb/pull/3062)
+* Deprecate `Model::$collection` property to customize collection name. Use `$table` instead by @GromNaN in [#3064](https://github.com/mongodb/laravel-mongodb/pull/3064)
+
 ## [4.7.1] - 2024-07-25
 
 * Fix registration of `BusServiceProvider` for compatibility with Horizon by @GromNaN in [#3071](https://github.com/mongodb/laravel-mongodb/pull/3071)

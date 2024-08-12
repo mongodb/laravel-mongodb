@@ -21,7 +21,7 @@ class Soft extends Model
     protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'soft';
+    protected $table = 'soft';
     protected static $unguarded = true;
     protected $casts = ['deleted_at' => 'datetime'];
 
