@@ -199,6 +199,11 @@ methods in your application:
 - ``Schema::getTables()``: lists the name and size of each collection by
   using the schema builder
 
+.. note::
+
+   MongoDB is a schemaless database, so the preceding schema builder functions
+   query the database data rather than the schema.
+
 Example
 ```````
 
@@ -254,8 +259,8 @@ collection fields:
 
 .. note::
 
-   MongoDB is a schemaless database, so the preceding functions query the specified
-   collection rather than the database schema. If the collection doesn't exist
+   MongoDB is a schemaless database, so the preceding functions query the collection
+   data rather than the database schema. If the specified collection doesn't exist
    or is empty, these functions return a value of ``false``.
 
 Example
