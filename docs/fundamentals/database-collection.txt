@@ -247,10 +247,16 @@ schema builder method in your application.
 You can also use the following methods to return more information about the
 collection fields:
 
-- ``Schema::hasColumn(string $<field name>)``: checks if the specified field exists
+- ``Schema::hasColumn(string $<collection>, string $<field name>)``: checks if the specified field exists
   in at least one document
-- ``Schema::hasColumns(string[] $<field names>)``: checks if each specified field exists
+- ``Schema::hasColumns(string $<collection>, string[] $<field names>)``: checks if each specified field exists
   in at least one document
+
+.. note::
+
+   MongoDB is a schemaless database, so the preceding functions query the specified
+   collection rather than the database schema. If the collection doesn't exist
+   or is empty, these functions return a value of ``false``.
 
 Example
 ```````
