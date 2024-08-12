@@ -1,17 +1,10 @@
 [
     {
-        "genres": [
-            "Short"
-        ],
+        "genres": ["Short"],
         "runtime": 1,
-        "cast": [
-            "Charles Kayser",
-            "John Ott"
-        ],
+        "cast": ["Charles Kayser", "John Ott"],
         "title": "Blacksmith Scene",
-        "directors": [
-            "William K.L. Dickson"
-        ],
+        "directors": ["William K.L. Dickson"],
         "rated": "UNRATED",
         "year": 1893,
         "imdb": {
@@ -28,10 +21,7 @@
         }
     },
     {
-        "genres": [
-            "Short",
-            "Western"
-        ],
+        "genres": ["Short", "Western"],
         "runtime": 11,
         "cast": [
             "A.C. Abadie",
@@ -40,9 +30,7 @@
             "Justus D. Barnes"
         ],
         "title": "The Great Train Robbery",
-        "directors": [
-            "Edwin S. Porter"
-        ],
+        "directors": ["Edwin S. Porter"],
         "rated": "TV-G",
         "year": 1903,
         "imdb": {
@@ -59,11 +47,7 @@
         }
     },
     {
-        "genres": [
-            "Short",
-            "Drama",
-            "Fantasy"
-        ],
+        "genres": ["Short", "Drama", "Fantasy"],
         "runtime": 14,
         "rated": "UNRATED",
         "cast": [
@@ -73,12 +57,8 @@
             "Ethel Jewett"
         ],
         "title": "The Land Beyond the Sunset",
-        "directors": [
-            "Harold M. Shaw"
-        ],
-        "writers": [
-            "Dorothy G. Shore"
-        ],
+        "directors": ["Harold M. Shaw"],
+        "writers": ["Dorothy G. Shore"],
         "year": 1912,
         "imdb": {
             "rating": 7.1,
@@ -94,10 +74,7 @@
         }
     },
     {
-        "genres": [
-            "Short",
-            "Drama"
-        ],
+        "genres": ["Short", "Drama"],
         "runtime": 14,
         "cast": [
             "Frank Powell",
@@ -106,9 +83,7 @@
             "Linda Arvidson"
         ],
         "title": "A Corner in Wheat",
-        "directors": [
-            "D.W. Griffith"
-        ],
+        "directors": ["D.W. Griffith"],
         "rated": "G",
         "year": 1909,
         "imdb": {
@@ -125,20 +100,11 @@
         }
     },
     {
-        "genres": [
-            "Animation",
-            "Short",
-            "Comedy"
-        ],
+        "genres": ["Animation", "Short", "Comedy"],
         "runtime": 7,
-        "cast": [
-            "Winsor McCay"
-        ],
+        "cast": ["Winsor McCay"],
         "title": "Winsor McCay, the Famous Cartoonist of the N.Y. Herald and His Moving Comics",
-        "directors": [
-            "Winsor McCay",
-            "J. Stuart Blackton"
-        ],
+        "directors": ["Winsor McCay", "J. Stuart Blackton"],
         "writers": [
             "Winsor McCay (comic strip \"Little Nemo in Slumberland\")",
             "Winsor McCay (screenplay)"
@@ -158,22 +124,11 @@
         }
     },
     {
-        "genres": [
-            "Comedy",
-            "Fantasy",
-            "Romance"
-        ],
+        "genres": ["Comedy", "Fantasy", "Romance"],
         "runtime": 118,
-        "cast": [
-            "Meg Ryan",
-            "Hugh Jackman",
-            "Liev Schreiber",
-            "Breckin Meyer"
-        ],
+        "cast": ["Meg Ryan", "Hugh Jackman", "Liev Schreiber", "Breckin Meyer"],
         "title": "Kate & Leopold",
-        "directors": [
-            "James Mangold"
-        ],
+        "directors": ["James Mangold"],
         "writers": [
             "Steven Rogers (story)",
             "James Mangold (screenplay)",
@@ -190,6 +145,46 @@
                 "rating": 3,
                 "numReviews": 189426,
                 "meter": 62
+            }
+        }
+    },
+    {
+        "genres": ["Crime", "Drama"],
+        "runtime": 119,
+        "cast": [
+            "Jean Gabin",
+            "Annie Girardot",
+            "Olivier Hussenot",
+            "Jeanne Boitel"
+        ],
+        "title": "Inspector Maigret",
+        "directors": ["Jean Delannoy"],
+        "writers": [
+            "Georges Simenon (novel)",
+            "Jean Delannoy (adaptation)",
+            "Rodolphe-Maurice Arlaud (adaptation)",
+            "Michel Audiard (adaptation)",
+            "Michel Audiard (dialogue)"
+        ],
+        "year": 1958,
+        "imdb": {
+            "rating": 7.1,
+            "votes": 690,
+            "id": 50669
+        },
+        "countries": ["France", "Italy"],
+        "type": "movie",
+        "tomatoes": {
+            "viewer": {
+                "rating": 2.7,
+                "numReviews": 77,
+                "meter": 14
+            },
+            "dvd": {
+                "$date": "2007-01-23T00:00:00.000Z"
+            },
+            "lastUpdated": {
+                "$date": "2015-09-14T22:31:29.000Z"
             }
         }
     }

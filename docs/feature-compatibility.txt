@@ -151,7 +151,7 @@ The following Eloquent methods are not supported in {+odm-short+}:
      - *Unsupported as MongoDB uses ObjectIDs*
 
    * - Upserts
-     - *Unsupported*
+     - ✓ See :ref:`laravel-mongodb-query-builder-upsert`.
 
    * - Update Statements
      - ✓
@@ -216,7 +216,7 @@ Eloquent Features
      - ✓
 
    * - Upserts
-     - *Unsupported, but you can use the createOneOrFirst() method*
+     - ✓ See :ref:`laravel-modify-documents-upsert`.
 
    * - Deleting Models
      - ✓
