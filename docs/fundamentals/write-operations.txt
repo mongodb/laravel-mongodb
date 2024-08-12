@@ -272,12 +272,14 @@ the following methods:
 Upsert Method
 ~~~~~~~~~~~~~
 
-The ``upsert()`` query builder method accepts the following parameters:
+The ``upsert(array $values, array|string $uniqueBy, array|null
+$update)`` method accepts the following parameters:
 
-- Array of fields and values that specify documents to update or insert.
-- Array of fields that uniquely identify documents in your first array parameter.
-- Array of fields to update if a matching document exists. If you omit
-  this parameter, {+odm-short+} updates all fields.
+- ``$values``: Array of fields and values that specify documents to update or insert.
+- ``$uniqueBy``: List of fields that uniquely identify documents in your
+  first array parameter.
+- ``$update``: Optional list of fields to update if a matching document
+  exists. If you omit this parameter, {+odm-short+} updates all fields.
 
 To specify an upsert in the ``upsert()`` method, set parameters
 as shown in the following code example:
@@ -287,7 +289,8 @@ as shown in the following code example:
 
    YourModel::upsert(
       [/* documents to update or insert */],
-      '/* unique field */', [/* fields to update */]
+      '/* unique field */',
+      [/* fields to update */],
    );
 
 Example

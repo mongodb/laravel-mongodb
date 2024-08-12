@@ -1049,12 +1049,14 @@ the following query builder methods:
 Upsert Method
 ^^^^^^^^^^^^^
 
-The ``upsert()`` query builder method accepts the following parameters:
+The ``upsert(array $values, array|string $uniqueBy, array|null
+$update)`` query builder method accepts the following parameters:
 
-- Array of fields and values that specify documents to update or insert.
-- Array of fields that uniquely identify documents in your first array parameter.
-- Array of fields to update if a matching document exists. If you omit
-  this parameter, {+odm-short+} updates all fields.
+- ``$values``: Array of fields and values that specify documents to update or insert.
+- ``$uniqueBy``: List of fields that uniquely identify documents in your
+  first array parameter.
+- ``$update``: Optional list of fields to update if a matching document
+  exists. If you omit this parameter, {+odm-short+} updates all fields.
 
 The following example shows how to use the ``upsert()`` query builder method
 to update or insert documents based on the following instructions:
@@ -1080,6 +1082,12 @@ to update or insert documents based on the following instructions:
 
 The ``upsert()`` query builder method returns the number of
 documents that the operation updated, inserted, and modified.
+
+.. note::
+
+   The ``upsert()`` method does not trigger events. To trigger events
+   from an upsert operation, you can use the ``createOrFirst()`` method
+   instead.
 
 Update Method
 ^^^^^^^^^^^^^
