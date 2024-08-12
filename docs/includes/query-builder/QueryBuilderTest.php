@@ -507,6 +507,29 @@ class QueryBuilderTest extends TestCase
     {
         // begin upsert
         $result = DB::table('movies')
+            ->upsert(
+                [
+                    ['title' => 'Inspector Maigret', 'recommended' => false, 'runtime' => 128],
+                    ['title' => 'Petit Maman', 'recommended' => true, 'runtime' => 72],
+                ],
+                'title',
+                'recommended',
+            );
+        // end upsert
+
+        $this->assertSame(2, $result);
+
+        $this->assertSame(119, DB::table('movies')->where('title', 'Inspector Maigret')->first()['runtime']);
+        $this->assertSame(false, DB::table('movies')->where('title', 'Inspector Maigret')->first()['recommended']);
+
+        $this->assertSame(true, DB::table('movies')->where('title', 'Petit Maman')->first()['recommended']);
+        $this->assertSame(72, DB::table('movies')->where('title', 'Petit Maman')->first()['runtime']);
+    }
+
+    public function testUpdateUpsert(): void
+    {
+        // begin update upsert
+        $result = DB::table('movies')
             ->where('title', 'Will Hunting')
             ->update(
                 [
@@ -516,7 +539,7 @@ class QueryBuilderTest extends TestCase
                 ],
                 ['upsert' => true],
             );
-        // end upsert
+        // end update upsert
 
         $this->assertIsInt($result);
     }
