@@ -516,7 +516,9 @@ class Builder extends BaseBuilder
         }
 
         foreach ($result as &$document) {
-            $document = $this->aliasIdForResult($document);
+            if (is_array($document)) {
+                $document = $this->aliasIdForResult($document);
+            }
         }
 
         return new Collection($result);
@@ -709,6 +711,8 @@ class Builder extends BaseBuilder
     public function insertGetId(array $values, $sequence = null)
     {
         $options = $this->inheritConnectionOptions();
+
+        $values = $this->aliasIdForQuery($values);
 
         $result = $this->collection->insertOne($values, $options);
 

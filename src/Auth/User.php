@@ -11,6 +11,5 @@ class User extends BaseUser
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
 }

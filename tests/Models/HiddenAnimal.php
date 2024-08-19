@@ -22,7 +22,6 @@ final class HiddenAnimal extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $fillable = [
         'name',
