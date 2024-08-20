@@ -124,10 +124,9 @@ class BuilderTest extends TestCase
         ];
 
         // Nested array are not flattened like in the Eloquent builder. MongoDB can compare objects.
-        $array = [['issue' => 45582], ['id' => 2], [3]];
         yield 'whereIn nested array' => [
-            ['find' => [['_id' => ['$in' => $array]], []]],
-            fn (Builder $builder) => $builder->whereIn('id', $array),
+            ['find' => [['_id' => ['$in' => [['issue' => 45582], ['_id' => 2], [3]]]], []]],
+            fn (Builder $builder) => $builder->whereIn('id', [['issue' => 45582], ['id' => 2], [3]]),
         ];
 
         yield 'orWhereIn' => [

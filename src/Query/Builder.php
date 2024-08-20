@@ -298,6 +298,7 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
+        $wheres = $this->aliasIdForQuery($wheres);
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups || $this->aggregate) {
@@ -1629,9 +1630,22 @@ class Builder extends BaseBuilder
 
     private function aliasIdForQuery(array $values): array
     {
-        if (isset($values['id'])) {
+        if (array_key_exists('id', $values)) {
             $values['_id'] = $values['id'];
             unset($values['id']);
+        }
+
+        foreach ($values as $key => $value) {
+            if (is_string($key) && str_ends_with($key, '.id')) {
+                $values[substr($key, 0, -3) . '._id'] = $value;
+                unset($values[$key]);
+            }
+        }
+
+        foreach ($values as &$value) {
+            if (is_array($value)) {
+                $value = $this->aliasIdForQuery($value);
+            }
         }
 
         return $values;
@@ -1639,8 +1653,15 @@ class Builder extends BaseBuilder
 
     private function aliasIdForResult(array $values): array
     {
-        if (isset($values['_id'])) {
+        if (array_key_exists('_id', $values) && ! array_key_exists('id', $values)) {
             $values['id'] = $values['_id'];
+            //unset($values['_id']);
+        }
+
+        foreach ($values as $key => $value) {
+            if (is_array($value)) {
+                $values[$key] = $this->aliasIdForResult($value);
+            }
         }
 
         return $values;

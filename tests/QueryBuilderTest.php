@@ -1058,7 +1058,7 @@ class QueryBuilderTest extends TestCase
         DB::collection('items')->insert([$insertId => 'abc', 'name' => 'Karting']);
         $item = DB::collection('items')->where($queryId, '=', 'abc')->first();
         $this->assertNotNull($item);
-        $this->assertSame('abc', $item['_id']);
+        $this->assertSame('abc', $item['id']);
         $this->assertSame('Karting', $item['name']);
 
         DB::collection('items')->where($insertId, '=', 'abc')->update(['name' => 'Bike']);
