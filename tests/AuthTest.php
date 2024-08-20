@@ -52,7 +52,7 @@ class AuthTest extends TestCase
             $broker->sendResetLink(
                 ['email' => 'john.doe@example.com'],
                 function ($actualUser, $actualToken) use ($user, &$token) {
-                    $this->assertEquals($user->_id, $actualUser->_id);
+                    $this->assertEquals($user->id, $actualUser->id);
                     // Store token for later use
                     $token = $actualToken;
                 },

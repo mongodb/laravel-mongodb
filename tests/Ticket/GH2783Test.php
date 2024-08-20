@@ -32,7 +32,7 @@ class GH2783Test extends TestCase
 
         $queriedImageWithPost = GH2783Image::with('imageable')->find($imageWithPost->getKey());
         $this->assertInstanceOf(GH2783Post::class, $queriedImageWithPost->imageable);
-        $this->assertEquals($post->_id, $queriedImageWithPost->imageable->getKey());
+        $this->assertEquals($post->id, $queriedImageWithPost->imageable->getKey());
 
         $queriedImageWithUser = GH2783Image::with('imageable')->find($imageWithUser->getKey());
         $this->assertInstanceOf(GH2783User::class, $queriedImageWithUser->imageable);

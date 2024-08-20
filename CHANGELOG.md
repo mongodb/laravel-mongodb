@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [5.0.0] - next
+
+* **BREAKING CHANGE** Use `id` as an alias for `_id` in commands and queries for compatibility with Eloquent packages by @GromNaN in [#3040](https://github.com/mongodb/laravel-mongodb/pull/3040)
+
 ## [4.8.0] - next
 
 * Add `Query\Builder::incrementEach()` and `decrementEach()` methods by @SmallRuralDog in [#2550](https://github.com/mongodb/laravel-mongodb/pull/2550)

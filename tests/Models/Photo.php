@@ -12,7 +12,6 @@ class Photo extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
     protected $table = 'photos';

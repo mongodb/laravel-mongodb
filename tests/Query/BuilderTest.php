@@ -124,10 +124,9 @@ class BuilderTest extends TestCase
         ];
 
         // Nested array are not flattened like in the Eloquent builder. MongoDB can compare objects.
-        $array = [['issue' => 45582], ['id' => 2], [3]];
         yield 'whereIn nested array' => [
-            ['find' => [['id' => ['$in' => $array]], []]],
-            fn (Builder $builder) => $builder->whereIn('id', $array),
+            ['find' => [['_id' => ['$in' => [['issue' => 45582], ['_id' => 2], [3]]]], []]],
+            fn (Builder $builder) => $builder->whereIn('id', [['issue' => 45582], ['id' => 2], [3]]),
         ];
 
         yield 'orWhereIn' => [
@@ -135,21 +134,21 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$in' => [1, 2, 3]]],
+                            ['foo' => 1],
+                            ['foo' => ['$in' => [1, 2, 3]]],
                         ],
                     ],
                     [], // options
                 ],
             ],
-            fn (Builder $builder) => $builder->where('id', '=', 1)
-                ->orWhereIn('id', [1, 2, 3]),
+            fn (Builder $builder) => $builder->where('foo', '=', 1)
+                ->orWhereIn('foo', [1, 2, 3]),
         ];
 
         /** @see DatabaseQueryBuilderTest::testBasicWhereNotIns */
         yield 'whereNotIn' => [
-            ['find' => [['id' => ['$nin' => [1, 2, 3]]], []]],
-            fn (Builder $builder) => $builder->whereNotIn('id', [1, 2, 3]),
+            ['find' => [['foo' => ['$nin' => [1, 2, 3]]], []]],
+            fn (Builder $builder) => $builder->whereNotIn('foo', [1, 2, 3]),
         ];
 
         yield 'orWhereNotIn' => [
@@ -157,20 +156,20 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$nin' => [1, 2, 3]]],
+                            ['foo' => 1],
+                            ['foo' => ['$nin' => [1, 2, 3]]],
                         ],
                     ],
                     [], // options
                 ],
             ],
-            fn (Builder $builder) => $builder->where('id', '=', 1)
-                ->orWhereNotIn('id', [1, 2, 3]),
+            fn (Builder $builder) => $builder->where('foo', '=', 1)
+                ->orWhereNotIn('foo', [1, 2, 3]),
         ];
 
         /** @see DatabaseQueryBuilderTest::testEmptyWhereIns */
         yield 'whereIn empty array' => [
-            ['find' => [['id' => ['$in' => []]], []]],
+            ['find' => [['_id' => ['$in' => []]], []]],
             fn (Builder $builder) => $builder->whereIn('id', []),
         ];
 
@@ -220,7 +219,7 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
+                            ['age' => 1],
                             ['email' => 'foo'],
                         ],
                     ],
@@ -228,7 +227,7 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
+                ->where('age', '=', 1)
                 ->orWhere('email', '=', 'foo'),
         ];
 
@@ -497,6 +496,11 @@ class BuilderTest extends TestCase
                 ->orderBy('age', 'desc'),
         ];
 
+        yield 'orders by id field' => [
+            ['find' => [[], ['sort' => ['_id' => 1]]]],
+            fn (Builder $builder) => $builder->orderBy('id'),
+        ];
+
         yield 'orders = null' => [
             ['find' => [[], []]],
             function (Builder $builder) {
@@ -553,12 +557,12 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testWhereBetweens() */
         yield 'whereBetween array of numbers' => [
-            ['find' => [['id' => ['$gte' => 1, '$lte' => 2]], []]],
+            ['find' => [['_id' => ['$gte' => 1, '$lte' => 2]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', [1, 2]),
         ];
 
         yield 'whereBetween nested array of numbers' => [
-            ['find' => [['id' => ['$gte' => [1], '$lte' => [2, 3]]], []]],
+            ['find' => [['_id' => ['$gte' => [1], '$lte' => [2, 3]]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', [[1], [2, 3]]),
         ];
 
@@ -579,7 +583,7 @@ class BuilderTest extends TestCase
         ];
 
         yield 'whereBetween collection' => [
-            ['find' => [['id' => ['$gte' => 1, '$lte' => 2]], []]],
+            ['find' => [['_id' => ['$gte' => 1, '$lte' => 2]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', collect([1, 2])),
         ];
 
@@ -589,16 +593,16 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => 3, '$lte' => 5]],
+                            ['age' => 1],
+                            ['age' => ['$gte' => 3, '$lte' => 5]],
                         ],
                     ],
                     [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereBetween('id', [3, 5]),
+                ->where('age', '=', 1)
+                ->orWhereBetween('age', [3, 5]),
         ];
 
         /** @link https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order/#arrays */
@@ -607,16 +611,16 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => [4], '$lte' => [6, 8]]],
+                            ['age' => 1],
+                            ['age' => ['$gte' => [4], '$lte' => [6, 8]]],
                         ],
                     ],
                     [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereBetween('id', [[4], [6, 8]]),
+                ->where('age', '=', 1)
+                ->orWhereBetween('age', [[4], [6, 8]]),
         ];
 
         yield 'orWhereBetween collection' => [
@@ -624,16 +628,16 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => 3, '$lte' => 4]],
+                            ['age' => 1],
+                            ['age' => ['$gte' => 3, '$lte' => 4]],
                         ],
                     ],
                     [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereBetween('id', collect([3, 4])),
+                ->where('age', '=', 1)
+                ->orWhereBetween('age', collect([3, 4])),
         ];
 
         yield 'whereNotBetween array of numbers' => [
@@ -641,14 +645,14 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => ['$lte' => 1]],
-                            ['id' => ['$gte' => 2]],
+                            ['age' => ['$lte' => 1]],
+                            ['age' => ['$gte' => 2]],
                         ],
                     ],
                     [], // options
                 ],
             ],
-            fn (Builder $builder) => $builder->whereNotBetween('id', [1, 2]),
+            fn (Builder $builder) => $builder->whereNotBetween('age', [1, 2]),
         ];
 
         /** @see DatabaseQueryBuilderTest::testOrWhereNotBetween() */
@@ -657,11 +661,11 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
+                            ['age' => 1],
                             [
                                 '$or' => [
-                                    ['id' => ['$lte' => 3]],
-                                    ['id' => ['$gte' => 5]],
+                                    ['age' => ['$lte' => 3]],
+                                    ['age' => ['$gte' => 5]],
                                 ],
                             ],
                         ],
@@ -670,8 +674,8 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereNotBetween('id', [3, 5]),
+                ->where('age', '=', 1)
+                ->orWhereNotBetween('age', [3, 5]),
         ];
 
         yield 'orWhereNotBetween nested array of numbers' => [
@@ -679,11 +683,11 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
+                            ['age' => 1],
                             [
                                 '$or' => [
-                                    ['id' => ['$lte' => [2, 3]]],
-                                    ['id' => ['$gte' => [5]]],
+                                    ['age' => ['$lte' => [2, 3]]],
+                                    ['age' => ['$gte' => [5]]],
                                 ],
                             ],
                         ],
@@ -692,8 +696,8 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereNotBetween('id', [[2, 3], [5]]),
+                ->where('age', '=', 1)
+                ->orWhereNotBetween('age', [[2, 3], [5]]),
         ];
 
         yield 'orWhereNotBetween collection' => [
@@ -701,11 +705,11 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
+                            ['age' => 1],
                             [
                                 '$or' => [
-                                    ['id' => ['$lte' => 3]],
-                                    ['id' => ['$gte' => 4]],
+                                    ['age' => ['$lte' => 3]],
+                                    ['age' => ['$gte' => 4]],
                                 ],
                             ],
                         ],
@@ -714,8 +718,8 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereNotBetween('id', collect([3, 4])),
+                ->where('age', '=', 1)
+                ->orWhereNotBetween('age', collect([3, 4])),
         ];
 
         yield 'where like' => [
@@ -1158,6 +1162,21 @@ class BuilderTest extends TestCase
                     $elemMatchQuery->where([ 'search_by' => 'by search', 'value' => 'foo' ]);
                 },
             ),
+        ];
+
+        yield 'id alias for _id' => [
+            ['find' => [['_id' => 1], []]],
+            fn (Builder $builder) => $builder->where('id', 1),
+        ];
+
+        yield 'id alias for _id with $or' => [
+            ['find' => [['$or' => [['_id' => 1], ['_id' => 2]]], []]],
+            fn (Builder $builder) => $builder->where('id', 1)->orWhere('id', 2),
+        ];
+
+        yield 'select colums with id alias' => [
+            ['find' => [[], ['projection' => ['name' => 1, 'email' => 1, '_id' => 1]]]],
+            fn (Builder $builder) => $builder->select('name', 'email', 'id'),
         ];
 
         // Method added in Laravel v10.47.0

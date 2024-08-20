@@ -25,6 +25,7 @@ use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\TestWith;
 use Stringable;
 
 use function count;
@@ -59,7 +60,7 @@ class QueryBuilderTest extends TestCase
 
         $product = DB::table('items')->first();
 
-        $pid = (string) ($product['_id']);
+        $pid = (string) ($product['id']);
 
         DB::table('items')->where('user_id', $userId)->delete($pid);
 
@@ -67,7 +68,7 @@ class QueryBuilderTest extends TestCase
 
         $product = DB::table('items')->first();
 
-        $pid = $product['_id'];
+        $pid = $product['id'];
 
         DB::table('items')->where('user_id', $userId)->delete($pid);
 
@@ -100,7 +101,7 @@ class QueryBuilderTest extends TestCase
         $item = DB::table('items')->where('name', 'nothing')->first();
         $this->assertNull($item);
 
-        $item = DB::table('items')->where('_id', '51c33d8981fec6813e00000a')->first();
+        $item = DB::table('items')->where('id', '51c33d8981fec6813e00000a')->first();
         $this->assertNull($item);
     }
 
@@ -339,37 +340,37 @@ class QueryBuilderTest extends TestCase
             'messages' => [],
         ]);
 
-        DB::table('users')->where('_id', $id)->push('tags', 'tag1');
+        DB::table('users')->where('id', $id)->push('tags', 'tag1');
 
         $user = DB::table('users')->find($id);
         $this->assertIsArray($user['tags']);
         $this->assertCount(1, $user['tags']);
         $this->assertEquals('tag1', $user['tags'][0]);
 
-        DB::table('users')->where('_id', $id)->push('tags', 'tag2');
+        DB::table('users')->where('id', $id)->push('tags', 'tag2');
         $user = DB::table('users')->find($id);
         $this->assertCount(2, $user['tags']);
         $this->assertEquals('tag2', $user['tags'][1]);
 
         // Add duplicate
-        DB::table('users')->where('_id', $id)->push('tags', 'tag2');
+        DB::table('users')->where('id', $id)->push('tags', 'tag2');
         $user = DB::table('users')->find($id);
         $this->assertCount(3, $user['tags']);
 
         // Add unique
-        DB::table('users')->where('_id', $id)->push('tags', 'tag1', true);
+        DB::table('users')->where('id', $id)->push('tags', 'tag1', true);
         $user = DB::table('users')->find($id);
         $this->assertCount(3, $user['tags']);
 
         $message = ['from' => 'Jane', 'body' => 'Hi John'];
-        DB::table('users')->where('_id', $id)->push('messages', $message);
+        DB::table('users')->where('id', $id)->push('messages', $message);
         $user = DB::table('users')->find($id);
         $this->assertIsArray($user['messages']);
         $this->assertCount(1, $user['messages']);
         $this->assertEquals($message, $user['messages'][0]);
 
         // Raw
-        DB::table('users')->where('_id', $id)->push([
+        DB::table('users')->where('id', $id)->push([
             'tags' => 'tag3',
             'messages' => ['from' => 'Mark', 'body' => 'Hi John'],
         ]);
@@ -377,7 +378,7 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(4, $user['tags']);
         $this->assertCount(2, $user['messages']);
 
-        DB::table('users')->where('_id', $id)->push([
+        DB::table('users')->where('id', $id)->push([
             'messages' => [
                 'date' => new DateTime(),
                 'body' => 'Hi John',
@@ -406,21 +407,21 @@ class QueryBuilderTest extends TestCase
             'messages' => [$message1, $message2],
         ]);
 
-        DB::table('users')->where('_id', $id)->pull('tags', 'tag3');
+        DB::table('users')->where('id', $id)->pull('tags', 'tag3');
 
         $user = DB::table('users')->find($id);
         $this->assertIsArray($user['tags']);
         $this->assertCount(3, $user['tags']);
         $this->assertEquals('tag4', $user['tags'][2]);
 
-        DB::table('users')->where('_id', $id)->pull('messages', $message1);
+        DB::table('users')->where('id', $id)->pull('messages', $message1);
 
         $user = DB::table('users')->find($id);
         $this->assertIsArray($user['messages']);
         $this->assertCount(1, $user['messages']);
 
         // Raw
-        DB::table('users')->where('_id', $id)->pull(['tags' => 'tag2', 'messages' => $message2]);
+        DB::table('users')->where('id', $id)->pull(['tags' => 'tag2', 'messages' => $message2]);
         $user = DB::table('users')->find($id);
         $this->assertCount(2, $user['tags']);
         $this->assertCount(0, $user['messages']);
@@ -449,24 +450,24 @@ class QueryBuilderTest extends TestCase
     public function testCustomId()
     {
         DB::table('items')->insert([
-            ['_id' => 'knife', 'type' => 'sharp', 'amount' => 34],
-            ['_id' => 'fork', 'type' => 'sharp', 'amount' => 20],
-            ['_id' => 'spoon', 'type' => 'round', 'amount' => 3],
+            ['id' => 'knife', 'type' => 'sharp', 'amount' => 34],
+            ['id' => 'fork', 'type' => 'sharp', 'amount' => 20],
+            ['id' => 'spoon', 'type' => 'round', 'amount' => 3],
         ]);
 
         $item = DB::table('items')->find('knife');
-        $this->assertEquals('knife', $item['_id']);
+        $this->assertEquals('knife', $item['id']);
 
-        $item = DB::table('items')->where('_id', 'fork')->first();
-        $this->assertEquals('fork', $item['_id']);
+        $item = DB::table('items')->where('id', 'fork')->first();
+        $this->assertEquals('fork', $item['id']);
 
         DB::table('users')->insert([
-            ['_id' => 1, 'name' => 'Jane Doe'],
-            ['_id' => 2, 'name' => 'John Doe'],
+            ['id' => 1, 'name' => 'Jane Doe'],
+            ['id' => 2, 'name' => 'John Doe'],
         ]);
 
         $item = DB::table('users')->find(1);
-        $this->assertEquals(1, $item['_id']);
+        $this->assertEquals(1, $item['id']);
     }
 
     public function testTake()
@@ -526,7 +527,7 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(3, $list);
         $this->assertEquals(['knife' => 'sharp', 'fork' => 'sharp', 'spoon' => 'round'], $list);
 
-        $list = DB::table('items')->pluck('name', '_id')->toArray();
+        $list = DB::table('items')->pluck('name', 'id')->toArray();
         $this->assertCount(4, $list);
         $this->assertEquals(24, strlen(key($list)));
     }
@@ -667,7 +668,7 @@ class QueryBuilderTest extends TestCase
     {
         $id = DB::table('users')->insertGetId(['name' => 'John Doe', 'address' => ['country' => 'Belgium']]);
 
-        DB::table('users')->where('_id', $id)->update(['address.country' => 'England']);
+        DB::table('users')->where('id', $id)->update(['address.country' => 'England']);
 
         $check = DB::table('users')->find($id);
         $this->assertEquals('England', $check['address']['country']);
@@ -932,7 +933,7 @@ class QueryBuilderTest extends TestCase
         ];
         DB::table('items')->insert($data);
 
-        $results = DB::table('items')->orderBy('_id', 'asc')->cursor();
+        $results = DB::table('items')->orderBy('id', 'asc')->cursor();
 
         $this->assertInstanceOf(LazyCollection::class, $results);
         foreach ($results as $i => $result) {
@@ -1047,5 +1048,21 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(30, $user['age']);
         $this->assertEquals(5, $user['note']);
         $this->assertEquals('foo', $user['extra']);
+    }
+
+    #[TestWith(['id', 'id'])]
+    #[TestWith(['id', '_id'])]
+    #[TestWith(['_id', 'id'])]
+    public function testIdAlias($insertId, $queryId): void
+    {
+        DB::collection('items')->insert([$insertId => 'abc', 'name' => 'Karting']);
+        $item = DB::collection('items')->where($queryId, '=', 'abc')->first();
+        $this->assertNotNull($item);
+        $this->assertSame('abc', $item['id']);
+        $this->assertSame('Karting', $item['name']);
+
+        DB::collection('items')->where($insertId, '=', 'abc')->update(['name' => 'Bike']);
+        $item = DB::collection('items')->where($queryId, '=', 'abc')->first();
+        $this->assertSame('Bike', $item['name']);
     }
 }

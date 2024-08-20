@@ -10,6 +10,5 @@ class Planet extends CelestialBody
     use DocumentModel;
 
     protected $fillable = ['name', 'diameter'];
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
 }

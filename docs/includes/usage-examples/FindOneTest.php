@@ -24,13 +24,13 @@ class FindOneTest extends TestCase
 
         // begin-find-one
         $movie = Movie::where('directors', 'Rob Reiner')
-          ->orderBy('_id')
+          ->orderBy('id')
           ->first();
 
         echo $movie->toJson();
         // end-find-one
 
         $this->assertInstanceOf(Movie::class, $movie);
-        $this->expectOutputRegex('/^{"_id":"[a-z0-9]{24}","title":"The Shawshank Redemption","directors":\["Frank Darabont","Rob Reiner"\]}$/');
+        $this->expectOutputRegex('/^{"_id":"[a-z0-9]{24}","title":"The Shawshank Redemption","directors":\["Frank Darabont","Rob Reiner"\],"id":"[a-z0-9]{24}"}$/');
     }
 }
