@@ -32,7 +32,6 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_values;
-use function array_walk_recursive;
 use function assert;
 use function blank;
 use function call_user_func;
@@ -689,17 +688,7 @@ class Builder extends BaseBuilder
             $values = [$values];
         }
 
-        // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
-        foreach ($values as &$document) {
-            if (isset($document['id'])) {
-                if (isset($document['_id']) && $document['_id'] !== $document['id']) {
-                    throw new InvalidArgumentException('Cannot insert document with different "id" and "_id" values');
-                }
-
-                $document['_id'] = $document['id'];
-                unset($document['id']);
-            }
-        }
+        $values = $this->aliasIdForQuery($values);
 
         $options = $this->inheritConnectionOptions();
 
@@ -876,6 +865,7 @@ class Builder extends BaseBuilder
         }
 
         $wheres  = $this->compileWheres();
+        $wheres  = $this->aliasIdForQuery($wheres);
         $options = $this->inheritConnectionOptions();
 
         if (is_int($this->limit)) {
@@ -1080,6 +1070,7 @@ class Builder extends BaseBuilder
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
+        $wheres = $this->aliasIdForQuery($wheres);
         $result = $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
@@ -1191,32 +1182,12 @@ class Builder extends BaseBuilder
                 }
             }
 
-            // Convert DateTime values to UTCDateTime.
-            if (isset($where['value'])) {
-                if (is_array($where['value'])) {
-                    array_walk_recursive($where['value'], function (&$item, $key) {
-                        if ($item instanceof DateTimeInterface) {
-                            $item = new UTCDateTime($item);
-                        }
-                    });
-                } else {
-                    if ($where['value'] instanceof DateTimeInterface) {
-                        $where['value'] = new UTCDateTime($where['value']);
-                    }
-                }
-            } elseif (isset($where['values'])) {
-                if (is_array($where['values'])) {
-                    array_walk_recursive($where['values'], function (&$item, $key) {
-                        if ($item instanceof DateTimeInterface) {
-                            $item = new UTCDateTime($item);
-                        }
-                    });
-                } elseif ($where['values'] instanceof CarbonPeriod) {
-                    $where['values'] = [
-                        new UTCDateTime($where['values']->getStartDate()),
-                        new UTCDateTime($where['values']->getEndDate()),
-                    ];
-                }
+            // Convert CarbonPeriod to DateTime interval.
+            if (isset($where['values']) && $where['values'] instanceof CarbonPeriod) {
+                $where['values'] = [
+                    $where['values']->getStartDate(),
+                    $where['values']->getEndDate(),
+                ];
             }
 
             // In a sequence of "where" clauses, the logical operator of the
@@ -1631,12 +1602,21 @@ class Builder extends BaseBuilder
     private function aliasIdForQuery(array $values): array
     {
         if (array_key_exists('id', $values)) {
+            if (array_key_exists('_id', $values)) {
+                throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
+            }
+
             $values['_id'] = $values['id'];
             unset($values['id']);
         }
 
         foreach ($values as $key => $value) {
             if (is_string($key) && str_ends_with($key, '.id')) {
+                $newkey = substr($key, 0, -3) . '._id';
+                if (array_key_exists($newkey, $values)) {
+                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
+                }
+
                 $values[substr($key, 0, -3) . '._id'] = $value;
                 unset($values[$key]);
             }
@@ -1645,6 +1625,8 @@ class Builder extends BaseBuilder
         foreach ($values as &$value) {
             if (is_array($value)) {
                 $value = $this->aliasIdForQuery($value);
+            } elseif ($value instanceof DateTimeInterface) {
+                $value = new UTCDateTime($value);
             }
         }
 

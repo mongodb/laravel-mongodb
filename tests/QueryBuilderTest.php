@@ -1053,16 +1053,20 @@ class QueryBuilderTest extends TestCase
     #[TestWith(['id', 'id'])]
     #[TestWith(['id', '_id'])]
     #[TestWith(['_id', 'id'])]
+    #[TestWith(['_id', '_id'])]
     public function testIdAlias($insertId, $queryId): void
     {
-        DB::collection('items')->insert([$insertId => 'abc', 'name' => 'Karting']);
-        $item = DB::collection('items')->where($queryId, '=', 'abc')->first();
+        DB::table('items')->insert([$insertId => 'abc', 'name' => 'Karting']);
+        $item = DB::table('items')->where($queryId, '=', 'abc')->first();
         $this->assertNotNull($item);
         $this->assertSame('abc', $item['id']);
         $this->assertSame('Karting', $item['name']);
 
-        DB::collection('items')->where($insertId, '=', 'abc')->update(['name' => 'Bike']);
-        $item = DB::collection('items')->where($queryId, '=', 'abc')->first();
+        DB::table('items')->where($insertId, '=', 'abc')->update(['name' => 'Bike']);
+        $item = DB::table('items')->where($queryId, '=', 'abc')->first();
         $this->assertSame('Bike', $item['name']);
+
+        $result = DB::table('items')->where($queryId, '=', 'abc')->delete();
+        $this->assertSame(1, $result);
     }
 }

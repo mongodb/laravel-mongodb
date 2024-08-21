@@ -566,6 +566,12 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->whereBetween('id', [[1], [2, 3]]),
         ];
 
+        $date = new DateTimeImmutable('2018-09-30 15:00:00 +02:00');
+        yield 'where $lt DateTimeInterface' => [
+            ['find' => [['created_at' => ['$lt' => new UTCDateTime($date)]], []]],
+            fn (Builder $builder) => $builder->where('created_at', '<', $date),
+        ];
+
         $period = now()->toPeriod(now()->addMonth());
         yield 'whereBetween CarbonPeriod' => [
             [
