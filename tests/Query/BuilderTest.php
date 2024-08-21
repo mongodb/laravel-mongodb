@@ -748,6 +748,36 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where('name', 'like', '_ac__me_'),
         ];
 
+        yield 'whereLike' => [
+            ['find' => [['name' => new Regex('^1$', 'i')], []]],
+            fn (Builder $builder) => $builder->whereLike('name', '1'),
+        ];
+
+        yield 'whereLike case not sensitive' => [
+            ['find' => [['name' => new Regex('^1$', 'i')], []]],
+            fn (Builder $builder) => $builder->whereLike('name', '1', false),
+        ];
+
+        yield 'whereLike case sensitive' => [
+            ['find' => [['name' => new Regex('^1$', '')], []]],
+            fn (Builder $builder) => $builder->whereLike('name', '1', true),
+        ];
+
+        yield 'whereNotLike' => [
+            ['find' => [['name' => ['$not' => new Regex('^1$', 'i')]], []]],
+            fn (Builder $builder) => $builder->whereNotLike('name', '1'),
+        ];
+
+        yield 'whereNotLike case not sensitive' => [
+            ['find' => [['name' => ['$not' => new Regex('^1$', 'i')]], []]],
+            fn (Builder $builder) => $builder->whereNotLike('name', '1', false),
+        ];
+
+        yield 'whereNotLike case sensitive' => [
+            ['find' => [['name' => ['$not' => new Regex('^1$', '')]], []]],
+            fn (Builder $builder) => $builder->whereNotLike('name', '1', true),
+        ];
+
         $regex = new Regex('^acme$', 'si');
         yield 'where BSON\Regex' => [
             ['find' => [['name' => $regex], []]],
