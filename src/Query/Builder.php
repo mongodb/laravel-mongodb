@@ -1060,12 +1060,7 @@ class Builder extends BaseBuilder
             $options['multiple'] = true;
         }
 
-        // Since "id" is an alias for "_id", we prevent updating it
-        foreach ($update as $operator => $fields) {
-            if (array_key_exists('id', $fields)) {
-                throw new InvalidArgumentException('Cannot update "id" field.');
-            }
-        }
+        $update = $this->aliasIdForQuery($update);
 
         $options = $this->inheritConnectionOptions($options);
 
