@@ -116,7 +116,7 @@ class MongoQueue extends DatabaseQueue
             ->get();
 
         foreach ($reserved as $job) {
-            $this->releaseJob($job['_id'], $job['attempts']);
+            $this->releaseJob($job->id, $job->attempts);
         }
     }
 

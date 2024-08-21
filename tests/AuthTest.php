@@ -61,9 +61,9 @@ class AuthTest extends TestCase
 
         $this->assertEquals(1, DB::table('password_reset_tokens')->count());
         $reminder = DB::table('password_reset_tokens')->first();
-        $this->assertEquals('john.doe@example.com', $reminder['email']);
-        $this->assertNotNull($reminder['token']);
-        $this->assertInstanceOf(UTCDateTime::class, $reminder['created_at']);
+        $this->assertEquals('john.doe@example.com', $reminder->email);
+        $this->assertNotNull($reminder->token);
+        $this->assertInstanceOf(UTCDateTime::class, $reminder->created_at);
 
         $credentials = [
             'email' => 'john.doe@example.com',
