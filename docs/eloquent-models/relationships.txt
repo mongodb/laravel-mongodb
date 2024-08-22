@@ -32,7 +32,7 @@ related model by using the same syntax as you use to access a property on the
 model.
 
 The following sections describe the Laravel Eloquent and MongoDB-specific
-relationships available in {+odm-short+} and show examples of how to define
+relationships available in the {+odm-short+} and show examples of how to define
 and use them:
 
 - :ref:`One to one relationship <laravel-eloquent-relationship-one-to-one>`,
@@ -59,7 +59,7 @@ When you add a one to one relationship, Eloquent lets you access the model by
 using a dynamic property and stores the model's document ID on the related
 model.
 
-In {+odm-short+}, you can define a one to one relationship by using the
+In {+odm-long+}, you can define a one to one relationship by using the
 ``hasOne()`` method or ``belongsTo()`` method.
 
 When you add the inverse of the relationship by using the ``belongsTo()``
@@ -143,7 +143,7 @@ When you add a one to many relationship method, Eloquent lets you access the
 model by using a dynamic property and stores the parent model's document ID
 on each child model document.
 
-In {+odm-short+}, you can define a one to many relationship by adding the
+In {+odm-long+}, you can define a one to many relationship by adding the
 ``hasMany()`` method on the parent class and, optionally, the ``belongsTo()``
 method on the child class.
 
@@ -234,17 +234,17 @@ A many to many relationship consists of a relationship between two different
 model types in which, for each type of model, an instance of the model can
 be related to multiple instances of the other type.
 
-In {+odm-short+}, you can define a many to many relationship by adding the
+In {+odm-long+}, you can define a many to many relationship by adding the
 ``belongsToMany()`` method to both related classes.
 
 When you define a many to many relationship in a relational database, Laravel
-creates a pivot table to track the relationships. When you use {+odm-short+},
+creates a pivot table to track the relationships. When you use the {+odm-short+},
 it omits the pivot table creation and adds the related document IDs to a
 document field derived from the related model class name.
 
 .. tip::
 
-   Since {+odm-short+} uses a document field instead of a pivot table, omit
+   Since the {+odm-short+} uses a document field instead of a pivot table, omit
    the pivot table parameter from the ``belongsToMany()`` constructor or set
    it to ``null``.
 
@@ -365,7 +365,7 @@ to meet one or more of the following requirements:
   data
 - Reducing the number of reads required to fetch the data
 
-In {+odm-short+}, you can define embedded documents by adding one of the
+In {+odm-long+}, you can define embedded documents by adding one of the
 following methods:
 
 - ``embedsOne()`` to embed a single document
@@ -446,13 +446,13 @@ running the code:
 Cross-Database Relationships
 ----------------------------
 
-A cross-database relationship in {+odm-short+} is a relationship between models
+A cross-database relationship in {+odm-long+} is a relationship between models
 stored in a relational database and models stored in a MongoDB database.
 
 When you add a cross-database relationship, Eloquent lets you access the
 related models by using a dynamic property.
 
-{+odm-short+} supports the following cross-database relationship methods:
+The {+odm-short+} supports the following cross-database relationship methods:
 
 - ``hasOne()``
 - ``hasMany()``

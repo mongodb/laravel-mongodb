@@ -86,5 +86,5 @@ The example calls the following methods on the ``Movie`` model:
 
 .. tip::
 
-   To learn about other ways to retrieve documents with {+odm-short+}, see the
+   To learn about other ways to retrieve documents with the {+odm-short+}, see the
    :ref:`laravel-fundamentals-retrieve` guide.

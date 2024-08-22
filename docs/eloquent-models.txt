@@ -13,12 +13,12 @@ Eloquent Models
 
 Eloquent models are part of the Laravel Eloquent object-relational
 mapping (ORM) framework, which lets you to work with data in a relational
-database by using model classes and Eloquent syntax. {+odm-short+} extends
+database by using model classes and Eloquent syntax. The {+odm-short+} extends
 this framework so that you can use Eloquent syntax to work with data in a
 MongoDB database.
 
 This section contains guidance on how to use Eloquent models in
-{+odm-short+} to work with MongoDB in the following ways:
+the {+odm-short+} to work with MongoDB in the following ways:
 
 - :ref:`laravel-eloquent-model-class` shows how to define models and customize
   their behavior

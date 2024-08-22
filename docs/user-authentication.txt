@@ -129,7 +129,7 @@ Sanctum and publish its migration file:
    composer require laravel/sanctum
    php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
 
-To use Laravel Sanctum with {+odm-short+}, modify the ``PersonalAccessToken`` model provided
+To use Laravel Sanctum with the {+odm-short+}, modify the ``PersonalAccessToken`` model provided
 by Sanctum to use the ``DocumentModel`` trait from the ``MongoDB\Laravel\Eloquent`` namespace.
 The following code modifies the ``PersonalAccessToken`` model to enable MongoDB:
 

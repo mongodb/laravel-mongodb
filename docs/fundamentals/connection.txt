@@ -26,7 +26,7 @@ Connections
 Overview
 --------
 
-Learn how to use {+odm-short+} to set up a connection to a MongoDB deployment
+Learn how to use {+odm-long+} to set up a connection to a MongoDB deployment
 and specify connection behavior in the following sections:
 
 - :ref:`laravel-connect-to-mongodb`

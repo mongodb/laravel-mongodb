@@ -27,7 +27,7 @@ supported database.
 
 .. note::
 
-   {+odm-short+} extends Laravel's query builder and Eloquent ORM, which can
+   The {+odm-short+} extends Laravel's query builder and Eloquent ORM, which can
    run similar database operations. To learn more about retrieving documents
    by using Eloquent models, see :ref:`laravel-fundamentals-retrieve`.
 
@@ -36,7 +36,7 @@ lets you perform database operations. Facades, which are static interfaces to
 classes, make the syntax more concise, avoid runtime errors, and improve
 testability.
 
-{+odm-short+} aliases the ``DB`` method ``table()`` as the ``collection()``
+The {+odm-short+} aliases the ``DB`` method ``table()`` as the ``collection()``
 method. Chain methods to specify commands and any constraints. Then, chain
 the ``get()`` method at the end to run the methods and retrieve the results.
 The following example shows the syntax of a query builder call:
@@ -1056,7 +1056,7 @@ $update)`` query builder method accepts the following parameters:
 - ``$uniqueBy``: List of fields that uniquely identify documents in your
   first array parameter.
 - ``$update``: Optional list of fields to update if a matching document
-  exists. If you omit this parameter, {+odm-short+} updates all fields.
+  exists. If you omit this parameter, the {+odm-short+} updates all fields.
 
 The following example shows how to use the ``upsert()`` query builder method
 to update or insert documents based on the following instructions:

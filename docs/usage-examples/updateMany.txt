@@ -61,6 +61,6 @@ The example calls the following methods on the ``Movie`` model:
 
 .. tip::
 
-   To learn more about updating data with {+odm-short+}, see the :ref:`laravel-fundamentals-modify-documents`
+   To learn more about updating data with the {+odm-short+}, see the :ref:`laravel-fundamentals-modify-documents`
    section of the Write Operations guide.
 

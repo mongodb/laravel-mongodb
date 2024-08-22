@@ -21,11 +21,11 @@ Overview
 --------
 
 In this guide, you can learn how to perform a **transaction** in MongoDB by
-using the {+odm-long+}. Transactions let you run a sequence of write operations
+using {+odm-long+}. Transactions let you run a sequence of write operations
 that update the data only after the transaction is committed.
 
 If the transaction fails, the {+php-library+} that manages MongoDB operations
-for {+odm-short+} ensures that MongoDB discards all the changes made within
+for the {+odm-short+} ensures that MongoDB discards all the changes made within
 the transaction before they become visible. This property of transactions
 that ensures that all changes within a transaction are either applied or
 discarded is called **atomicity**.
@@ -51,7 +51,7 @@ This guide contains the following sections:
 
 .. tip:: Transactions Learning Byte
 
-   Practice using {+odm-short+} to perform transactions
+   Practice using the {+odm-short+} to perform transactions
    in the `Laravel Transactions Learning Byte
    <https://learn.mongodb.com/courses/laravel-transactions>`__.
 
@@ -66,7 +66,7 @@ version and topology:
 - MongoDB version 4.0 or later
 - A replica set deployment or sharded cluster
 
-MongoDB server and {+odm-short+} have the following limitations:
+MongoDB server and the {+odm-short+} have the following limitations:
 
 - In MongoDB versions 4.2 and earlier, write operations performed within a
   transaction must be on existing collections. In MongoDB versions 4.4 and
@@ -78,7 +78,7 @@ MongoDB server and {+odm-short+} have the following limitations:
   transaction within another one, the extension raises a ``RuntimeException``.
   To learn more about this limitation, see :manual:`Transactions and Sessions </core/transactions/#transactions-and-sessions>`
   in the {+server-docs-name+}.
-- The {+odm-long+} does not support the database testing traits
+- {+odm-long+} does not support the database testing traits
   ``Illuminate\Foundation\Testing\DatabaseTransactions`` and ``Illuminate\Foundation\Testing\RefreshDatabase``.
   As a workaround, you can create migrations with the ``Illuminate\Foundation\Testing\DatabaseMigrations``
   trait to reset the database after each test.

@@ -20,14 +20,14 @@ Databases and Collections
 Overview
 --------
 
-In this guide, you can learn how to use {+odm-short+} to access
+In this guide, you can learn how to use {+odm-long+} to access
 and manage MongoDB databases and collections.
 
 MongoDB organizes data in a hierarchical structure. A MongoDB
 deployment contains one or more **databases**, and each database
 contains one or more **collections**. In each collection, MongoDB stores
 data as **documents** that contain field-and-value pairs. In
-{+odm-short+}, you can access documents through Eloquent models.
+the {+odm-short+}, you can access documents through Eloquent models.
 
 To learn more about the document data format,
 see :manual:`Documents </core/document/>` in the {+server-docs-name+}.
@@ -68,7 +68,7 @@ create a database connection to the ``animals`` database in the
        ], ...
    ]
 
-When you set a default database connection, {+odm-short+} uses that
+When you set a default database connection, the {+odm-short+} uses that
 connection for operations, but you can specify multiple database connections
 in your ``config/database.php`` file.
 
@@ -107,7 +107,7 @@ to store your model in a database other than the default, override the
 
 The following example shows how to override the ``$connection`` property
 on the ``Flower`` model class to use the ``mongodb_alt`` connection.
-This directs {+odm-short+} to store the model in the ``flowers``
+This directs the {+odm-short+} to store the model in the ``flowers``
 collection of the ``plants`` database, instead of in the default database:
 
 .. code-block:: php
@@ -123,7 +123,7 @@ Access a Collection
 -------------------
 
 When you create model class that extends
-``MongoDB\Laravel\Eloquent\Model``, {+odm-short+} stores the model data
+``MongoDB\Laravel\Eloquent\Model``, the {+odm-short+} stores the model data
 in a collection with a name formatted as the snake case plural form of your
 model class name.
 
