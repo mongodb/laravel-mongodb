@@ -381,6 +381,41 @@ wildcard characters:
          ...
       ]
 
+whereLike() and whereNotLike() Methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+You can perform queries to match string patterns by using the
+following methods:
+
+- ``whereLike()``: Matches a specified pattern. By default, this method
+  performs a case-insensitive match. You can enable case-sensitivity by
+  passing ``true`` as the last parameter to the method.
+- ``whereNotLike()``: Matches documents in which the field
+  value does not contain the specified string pattern.
+
+The following example shows how to use the ``whereLike()`` method to
+match documents in which the ``title`` field has a value that matches the
+pattern ``'Start%'`` with case-sensitivity enabled:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query whereLike
+      :end-before: end query whereLike
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+         { "title": "Start-Up", ... },
+         { "title": "Start the Revolution Without Me", ... },
+         ...
+      ]
+
 .. _laravel-query-builder-distinct:
 
 Retrieve Distinct Values
@@ -846,45 +881,6 @@ field that matches the specified regular expression:
 To learn more about regular expression queries in MongoDB, see
 :manual:`$regex </reference/operator/query/regex/>`
 in the {+server-docs-name+}.
-
-whereLike() and whereNotLike() Methods
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-You can perform queries to match string patterns by using the
-following methods:
-
-- ``whereLike()``: Matches a specified pattern. By default, this method
-  performs a case-insensitive match. You can enable case-sensitivity by
-  passing ``true`` as the last parameter to the method.
-- ``whereNotLike()``: Matches documents in which the field
-  value does not contain the specified string pattern.
-
-The following example shows how to use the ``whereLike()`` method to
-match documents in which the ``title`` field has a value that matches the
-pattern ``'Start%'`` with case-sensitivity enabled:
-
-.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
-   :language: php
-   :dedent:
-   :start-after: begin query whereLike
-   :end-before: end query whereLike
-
-The preceding query matches documents with the following ``title``
-field values:
-
-.. code-block:: none
-    
-   Start-Up
-   Start the Revolution Without Me
-   Starting Over
-
-The query doesn't match the following ``title`` values:
-
-.. code-block:: none
-    
-   Restart
-   starting over
-   I Start Counting
 
 .. _laravel-query-builder-whereRaw:
 
