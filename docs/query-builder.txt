@@ -848,7 +848,7 @@ To learn more about regular expression queries in MongoDB, see
 in the {+server-docs-name+}.
 
 whereLike() and whereNotLike() Methods
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 You can perform queries to match string patterns by using the
 following methods:
