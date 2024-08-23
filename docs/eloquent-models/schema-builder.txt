@@ -24,14 +24,14 @@ Laravel provides a **facade** to access the schema builder class ``Schema``,
 which lets you create and modify tables. Facades are static interfaces to
 classes that make the syntax more concise and improve testability.
 
-{+odm-short+} supports a subset of the index and collection management methods
+The {+odm-short+} supports a subset of the index and collection management methods
 in the Laravel ``Schema`` facade.
 
 To learn more about facades, see `Facades <https://laravel.com/docs/{+laravel-docs-version+}/facades>`__
 in the Laravel documentation.
 
 The following sections describe the Laravel schema builder features available
-in {+odm-short+} and show examples of how to use them:
+in the {+odm-short+} and show examples of how to use them:
 
 - :ref:`<laravel-eloquent-migrations>`
 - :ref:`<laravel-eloquent-collection-exists>`
@@ -39,7 +39,7 @@ in {+odm-short+} and show examples of how to use them:
 
 .. note::
 
-   {+odm-short+} supports managing indexes and collections, but
+   The {+odm-short+} supports managing indexes and collections, but
    excludes support for MongoDB JSON schemas for data validation. To learn
    more about JSON schema validation, see :manual:`Schema Validation </core/schema-validation/>`
    in the {+server-docs-name+}.
@@ -67,7 +67,7 @@ following changes to perform the schema changes on your MongoDB database:
 
 - Replace the ``Illuminate\Database\Schema\Blueprint`` import with
   ``MongoDB\Laravel\Schema\Blueprint`` if it is referenced in your migration
-- Use only commands and syntax supported by {+odm-short+}
+- Use only commands and syntax supported by the {+odm-short+}
 
 .. tip::
 
@@ -251,7 +251,7 @@ in the {+server-docs-name+}.
 Create Sparse, TTL, and Unique Indexes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can use {+odm-short+} helper methods to create the following types of
+You can use {+odm-long+} helper methods to create the following types of
 indexes:
 
 - Sparse indexes, which allow index entries only for documents that contain the

@@ -20,7 +20,7 @@ Quick Start
 Overview
 --------
 
-This guide shows you how to add the {+odm-long+} to a new Laravel web
+This guide shows you how to add {+odm-long+} to a new Laravel web
 application, connect to a MongoDB cluster hosted on MongoDB Atlas, and perform
 read and write operations on the data.
 
@@ -40,7 +40,7 @@ read and write operations on the data.
    Laravel, see `Connecting to MongoDB <https://www.mongodb.com/docs/php-library/current/tutorial/connecting/>`__
    in the {+php-library+} documentation.
 
-{+odm-short+} extends the Laravel Eloquent and Query Builder syntax to
+The {+odm-short+} extends the Laravel Eloquent and Query Builder syntax to
 store and retrieve data from MongoDB.
 
 MongoDB Atlas is a fully managed cloud database service that hosts your

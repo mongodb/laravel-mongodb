@@ -21,7 +21,7 @@ Fundamentals
    /fundamentals/write-operations
    /fundamentals/aggregation-builder
 
-Learn more about the following concepts related to the {+odm-long+}:
+Learn more about the following concepts related to {+odm-long+}:
 
 - :ref:`laravel-fundamentals-connection`
 - :ref:`laravel-db-coll`
