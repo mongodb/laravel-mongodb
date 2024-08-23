@@ -384,8 +384,8 @@ wildcard characters:
 whereLike() and whereNotLike() Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-You can perform queries to match string patterns by using the
-following methods:
+The following methods provide the same functionality as using the
+``like`` query operator to match patterns:
 
 - ``whereLike()``: Matches a specified pattern. By default, this method
   performs a case-insensitive match. You can enable case-sensitivity by
