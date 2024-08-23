@@ -107,6 +107,7 @@ This section describes how to use the following features to customize the MongoD
 authentication process:
 
 - :ref:`laravel-user-auth-sanctum`
+- :ref:`laravel-user-auth-passport`
 - :ref:`laravel-user-auth-reminders`
 
 .. _laravel-user-auth-sanctum:
@@ -153,6 +154,53 @@ in the Laravel Sanctum guide.
 
    To learn more about the ``DocumentModel`` trait, see
    :ref:`laravel-third-party-model` in the Eloquent Model Class guide.
+
+.. _laravel-user-auth-passport:
+
+Laravel Passport
+~~~~~~~~~~~~~~~~
+
+Laravel Passport is an OAuth 2.0 server implementation that offers
+API authentication for Laravel applications. The Laravel MongoDB Passport
+service provider enables Laravel Passport support for applications that
+use MongoDB.
+
+To install Laravel MongoDB Passport, run the following command from
+your project root:
+
+.. code-block:: bash
+
+   composer require designmynight/laravel-mongodb-passport
+
+Next, navigate to your application's ``config/app.php`` file and
+add the following service provider to the ``providers`` array:
+
+.. code-block:: php
+
+   DesignMyNight\Mongodb\MongodbPassportServiceProvider::class,
+
+Then, ensure your ``User`` class extends ``DesignMyNight\Mongodb\Auth\User.php``
+instead of the default ``Illuminate\Foundation\Auth\User``. The following code
+shows how to modify your ``app\Models\User.php`` file to extend ``DesignMyNight\Mongodb\Auth\User.php``:
+
+.. code-block:: php
+
+   <?php
+
+   namespace App\Models;
+
+   use Illuminate\Notifications\Notifiable;
+   use DesignMyNight\Mongodb\Auth\User as Authenticatable;
+
+   class User extends Authenticatable
+   {
+      use Notifiable;
+      ...
+   }
+
+You can now use Laravel Passport in your application. For more information, see
+`Laravel Passport <https://laravel.com/docs/{+laravel-docs-version+}/passport>`__ in the
+Laravel documentation.
 
 .. _laravel-user-auth-reminders:
 
