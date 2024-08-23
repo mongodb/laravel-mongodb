@@ -20,12 +20,12 @@ Eloquent Model Class
 Overview
 --------
 
-This guide shows you how to use the {+odm-long+} to define and
+This guide shows you how to use {+odm-long+} to define and
 customize Laravel Eloquent models. You can use these models to work with
 MongoDB data by using the Laravel Eloquent object-relational mapper (ORM).
 
 The following sections explain how to add Laravel Eloquent ORM behaviors
-to {+odm-short+} models:
+to {+odm-long+} models:
 
 - :ref:`laravel-model-define` demonstrates how to create a model class.
 - :ref:`laravel-authenticatable-model` shows how to set MongoDB as the
@@ -47,7 +47,7 @@ Define an Eloquent Model Class
 Eloquent models are classes that represent your data. They include methods
 that perform database operations such as inserts, updates, and deletes.
 
-To declare a {+odm-short+} model, create a class in the ``app/Models``
+To declare a {+odm-long+} model, create a class in the ``app/Models``
 directory of your Laravel application that extends
 ``MongoDB\Laravel\Eloquent\Model`` as shown in the following code example:
 
@@ -78,8 +78,8 @@ Extend the Authenticatable Model
 --------------------------------
 
 To configure MongoDB as the Laravel user provider, you can extend the
-{+odm-short+} ``MongoDB\Laravel\Auth\User`` class. The following code example
-shows how to extend this class:
+{+odm-short+} ``MongoDB\Laravel\Auth\User`` class. The following code
+example shows how to extend this class:
 
 .. literalinclude:: /includes/eloquent-models/AuthenticatableUser.php
    :language: php
@@ -155,7 +155,7 @@ To learn more about primary key behavior and customization options, see
 in the Laravel docs.
 
 To learn more about the ``_id`` field, ObjectIDs, and the MongoDB document
-structure, see :manual:`Documents </core/document>` in the MongoDB server docs.
+structure, see :manual:`Documents </core/document>` in the Server manual.
 
 .. _laravel-model-soft-delete:
 
@@ -227,7 +227,7 @@ less than three years ago:
    Planet::where( 'discovery_dt', '>', new DateTime('-3 years'))->get();
 
 To learn more about MongoDB's data types, see :manual:`BSON Types </reference/bson-types/>`
-in the MongoDB server docs.
+in the Server manual.
 
 To learn more about the Laravel casting helper and supported types, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
 in the Laravel docs.
@@ -289,7 +289,7 @@ in the Laravel docs.
 Extend Third-Party Model Classes
 --------------------------------
 
-You can use {+odm-short+} to extend a third-party model class by
+You can use the {+odm-short+} to extend a third-party model class by
 including the ``DocumentModel`` trait when defining your model class. By
 including this trait, you can make the third-party class compatible with
 MongoDB.
@@ -299,7 +299,7 @@ declare the following properties in your class:
 
 - ``$primaryKey = '_id'``, because the ``_id`` field uniquely
   identifies MongoDB documents
-- ``$keyType = 'string'``, because {+odm-short+} casts MongoDB
+- ``$keyType = 'string'``, because the {+odm-short+} casts MongoDB
   ``ObjectId`` values to type ``string``
 
 Extended Class Example
@@ -344,7 +344,7 @@ appropriate import to your model:
 .. note::
 
    When enabling soft deletes on a mass prunable model, you must import the
-   following {+odm-short+} packages:
+   following {+odm-long+} packages:
 
    - ``MongoDB\Laravel\Eloquent\SoftDeletes``
    - ``MongoDB\Laravel\Eloquent\MassPrunable``
@@ -437,11 +437,11 @@ You can define the new model class with the following behavior:
 
 In the ``"WASP-39 b"`` document in the following code, the
 ``schema_version`` field value is less than ``2``. When you retrieve the
-document, {+odm-short+} adds the ``galaxy`` field and updates the schema
+document, the {+odm-short+} adds the ``galaxy`` field and updates the schema
 version to the current version, ``2``.
 
 The ``"Saturn"`` document does not contain the ``schema_version`` field,
-so {+odm-short+} assigns it the current schema version upon saving.
+so the {+odm-short+} assigns it the current schema version upon saving.
 
 Finally, the code retrieves the models from the collection to
 demonstrate the changes:

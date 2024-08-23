@@ -56,7 +56,6 @@ Write Data to MongoDB
              'store'
          ]);
 
-
    .. step:: Update the model fields
 
       Update the ``Movie`` model in the ``app/Models`` directory to
@@ -79,14 +78,14 @@ Write Data to MongoDB
       .. code-block:: json
 
          {
-           "title": "The {+odm-short+} Quick Start",
+           "title": "The {+odm-long+} Quick Start",
            "year": 2024,
            "runtime": 15,
            "imdb": {
              "rating": 9.5,
              "votes": 1
            },
-           "plot": "This movie entry was created by running through the {+odm-short+} Quick Start tutorial."
+           "plot": "This movie entry was created by running through the {+odm-long+} Quick Start tutorial."
          }
 
       Send the JSON payload to the endpoint as a ``POST`` request by running

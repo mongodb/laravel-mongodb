@@ -150,7 +150,7 @@ adds 5, and removes 2.
 
 .. note::
 
-   {+odm-short+} supports incrementing and decrementing with integer and float values.
+   The {+odm-short+} supports incrementing and decrementing with integer and float values.
 
 For more information about using the cache, see the `Laravel Cache documentation
 <https://laravel.com/docs/{+laravel-docs-version+}/cache#cache-usage>`__.

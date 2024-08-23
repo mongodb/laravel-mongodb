@@ -20,7 +20,7 @@ Write Operations
 Overview
 --------
 
-In this guide, you can learn how to use {+odm-short+} to perform
+In this guide, you can learn how to use {+odm-long+} to perform
 **write operations** on your MongoDB collections. Write operations include
 inserting, updating, and deleting data based on specified criteria.
 
@@ -58,7 +58,7 @@ Insert Documents
 ----------------
 
 In this section, you can learn how to insert documents into MongoDB collections
-from your Laravel application by using the {+odm-long+}.
+from your Laravel application by using {+odm-long+}.
 
 When you insert the documents, ensure the data does not violate any
 unique indexes on the collection. When inserting the first document of a
@@ -69,7 +69,7 @@ For more information on creating indexes on MongoDB collections by using the
 Laravel schema builder, see the :ref:`laravel-eloquent-indexes` section
 of the Schema Builder documentation.
 
-To learn more about Eloquent models in {+odm-short+}, see the :ref:`laravel-eloquent-models`
+To learn more about Eloquent models in the {+odm-short+}, see the :ref:`laravel-eloquent-models`
 section.
 
 Insert a Document Examples
@@ -195,7 +195,7 @@ of the model and calling its ``save()`` method:
 When the ``save()`` method succeeds, the model instance on which you called the
 method contains the updated values.
 
-If the operation fails, {+odm-short+} assigns the model instance a ``null`` value.
+If the operation fails, the {+odm-short+} assigns the model instance a ``null`` value.
 
 The following example shows how to update a document by chaining methods to
 retrieve and update the first matching document:
@@ -212,7 +212,7 @@ retrieve and update the first matching document:
 When the ``update()`` method succeeds, the operation returns the number of
 documents updated.
 
-If the retrieve part of the call does not match any documents, {+odm-short+}
+If the retrieve part of the call does not match any documents, the {+odm-short+}
 returns the following error:
 
 .. code-block:: none
@@ -242,7 +242,7 @@ When the ``update()`` method succeeds, the operation returns the number of
 documents updated.
 
 If the retrieve part of the call does not match any documents in the
-collection, {+odm-short+} returns the following error:
+collection, the {+odm-short+} returns the following error:
 
 .. code-block:: none
    :copyable: false
@@ -279,7 +279,7 @@ $update)`` method accepts the following parameters:
 - ``$uniqueBy``: List of fields that uniquely identify documents in your
   first array parameter.
 - ``$update``: Optional list of fields to update if a matching document
-  exists. If you omit this parameter, {+odm-short+} updates all fields.
+  exists. If you omit this parameter, the {+odm-short+} updates all fields.
 
 To specify an upsert in the ``upsert()`` method, set parameters
 as shown in the following code example:
@@ -518,7 +518,7 @@ structure of a positional operator update call on a single matching document:
 
 .. note::
 
-   Currently, {+odm-short+} offers this operation only on the ``DB`` facade
+   Currently, the {+odm-short+} offers this operation only on the ``DB`` facade
    and not on the Eloquent ORM.
 
 .. code-block:: none
@@ -567,7 +567,7 @@ Delete Documents
 ----------------
 
 In this section, you can learn how to delete documents from a MongoDB collection
-by using {+odm-short+}. Use delete operations to remove data from your MongoDB
+by using the {+odm-short+}. Use delete operations to remove data from your MongoDB
 database.
 
 This section provides examples of the following delete operations:
@@ -575,7 +575,7 @@ This section provides examples of the following delete operations:
 - :ref:`Delete one document <laravel-fundamentals-delete-one>`
 - :ref:`Delete multiple documents <laravel-fundamentals-delete-many>`
 
-To learn about the Laravel features available in {+odm-short+} that modify
+To learn about the Laravel features available in the {+odm-short+} that modify
 delete behavior, see the following sections:
 
 - :ref:`Soft delete <laravel-model-soft-delete>`, which lets you mark

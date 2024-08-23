@@ -59,6 +59,6 @@ The example calls the following methods on the ``Movie`` model:
 
 .. tip::
 
-   To learn more about deleting documents with {+odm-short+}, see the :ref:`laravel-fundamentals-delete-documents`
+   To learn more about deleting documents with the {+odm-short+}, see the :ref:`laravel-fundamentals-delete-documents`
    section of the Write Operations guide.
 

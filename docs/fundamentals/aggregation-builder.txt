@@ -33,7 +33,7 @@ An aggregation pipeline is composed of **aggregation stages**. Aggregation
 stages use operators to process input data and produce data that the next 
 stage uses as its input.
 
-The {+odm-short+} aggregation builder lets you build aggregation stages and
+The {+odm-long+} aggregation builder lets you build aggregation stages and
 aggregation pipelines. The following sections show examples of how to use the
 aggregation builder to create the stages of an aggregation pipeline:
 
@@ -43,7 +43,7 @@ aggregation builder to create the stages of an aggregation pipeline:
 
 .. tip::
 
-   The aggregation builder feature is available only in {+odm-short+} versions
+   The aggregation builder feature is available only in {+odm-long+} versions
    4.3 and later. To learn more about running aggregations without using the
    aggregation builder, see :ref:`laravel-query-builder-aggregations` in the
    Query Builder guide.
@@ -136,7 +136,7 @@ available indexes and reduce the amount of data the subsequent stages process.
    aggregation stages.
 
 This example constructs a query filter for a **match** aggregation stage by
-using the ``MongoDB\Builder\Query`` builder. The match stage includes the the
+using the ``MongoDB\Builder\Query`` builder. The match stage includes the
 following criteria:
 
 - Returns results that match either of the query filters by using the

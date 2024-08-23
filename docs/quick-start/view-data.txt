@@ -33,7 +33,7 @@ View MongoDB Data
 
          INFO  Controller [app/Http/Controllers/MovieController.php] created successfully.
 
-   .. step:: Edit the model to use {+odm-short+}
+   .. step:: Edit the model to use the {+odm-short+}
 
       Open the ``Movie.php`` model in your ``app/Models`` directory and
       make the following edits:

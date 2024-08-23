@@ -60,7 +60,7 @@ The example calls the following methods on the ``Movie`` model:
 
 .. tip::
 
-   To learn more about deleting documents with {+odm-short+}, see the `Deleting Models
+   To learn more about deleting documents with the {+odm-short+}, see the `Deleting Models
    <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#deleting-models>`__ section of the
    Laravel documentation.
 

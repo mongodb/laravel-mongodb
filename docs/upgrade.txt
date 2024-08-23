@@ -20,7 +20,7 @@ Upgrade Library Version
 Overview
 --------
 
-On this page, you can learn how to upgrade {+odm-short+} to a new major version.
+On this page, you can learn how to upgrade {+odm-long+} to a new major version.
 This page also includes the changes you must make to your application to upgrade
 your object-document mapper (ODM) version without losing functionality, if applicable.
 
@@ -33,7 +33,7 @@ Before you upgrade, perform the following actions:
   your application connects to and the version of Laravel that your
   application runs on. See the :ref:`<laravel-compatibility>`
   page for this information.
-- Address any breaking changes between the version of {+odm-short+} that
+- Address any breaking changes between the version of the {+odm-short+} that
   your application now uses and your planned upgrade version in the
   :ref:`<laravel-breaking-changes>` section of this guide.
 
@@ -53,7 +53,7 @@ Breaking Changes
 ----------------
 
 A breaking change is a modification in a convention or behavior in
-a specific version of {+odm-short+} that might prevent your application
+a specific version of the {+odm-short+} that might prevent your application
 from working as expected.
 
 The breaking changes in this section are categorized by the major
