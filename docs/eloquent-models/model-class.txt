@@ -155,7 +155,7 @@ To learn more about primary key behavior and customization options, see
 in the Laravel docs.
 
 To learn more about the ``_id`` field, ObjectIDs, and the MongoDB document
-structure, see :manual:`Documents </core/document>` in the MongoDB server docs.
+structure, see :manual:`Documents </core/document>` in the Server manual.
 
 .. _laravel-model-soft-delete:
 
@@ -227,7 +227,7 @@ less than three years ago:
    Planet::where( 'discovery_dt', '>', new DateTime('-3 years'))->get();
 
 To learn more about MongoDB's data types, see :manual:`BSON Types </reference/bson-types/>`
-in the MongoDB server docs.
+in the Server manual.
 
 To learn more about the Laravel casting helper and supported types, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
 in the Laravel docs.

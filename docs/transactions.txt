@@ -66,7 +66,7 @@ version and topology:
 - MongoDB version 4.0 or later
 - A replica set deployment or sharded cluster
 
-MongoDB server and the {+odm-short+} have the following limitations:
+MongoDB Server and the {+odm-short+} have the following limitations:
 
 - In MongoDB versions 4.2 and earlier, write operations performed within a
   transaction must be on existing collections. In MongoDB versions 4.4 and

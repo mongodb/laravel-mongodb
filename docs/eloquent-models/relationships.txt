@@ -377,7 +377,7 @@ following methods:
    objects.
 
 To learn more about the MongoDB embedded document pattern, see the following
-MongoDB server tutorials:
+MongoDB Server tutorials:
 
 - :manual:`Model One-to-One Relationships with Embedded Documents </tutorial/model-embedded-one-to-one-relationships-between-documents/>`
 - :manual:`Model One-to-Many Relationships with Embedded Documents </tutorial/model-embedded-one-to-many-relationships-between-documents/>`
