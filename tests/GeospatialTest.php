@@ -13,7 +13,7 @@ class GeospatialTest extends TestCase
     {
         parent::setUp();
 
-        Schema::collection('locations', function ($collection) {
+        Schema::table('locations', function ($collection) {
             $collection->geospatial('location', '2dsphere');
         });
 

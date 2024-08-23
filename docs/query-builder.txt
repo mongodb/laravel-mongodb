@@ -36,28 +36,28 @@ lets you perform database operations. Facades, which are static interfaces to
 classes, make the syntax more concise, avoid runtime errors, and improve
 testability.
 
-The {+odm-short+} aliases the ``DB`` method ``table()`` as the ``collection()``
-method. Chain methods to specify commands and any constraints. Then, chain
+The {+odm-short+} provides the ``DB`` method ``table()`` to access a collection.
+Chain methods to specify commands and any constraints. Then, chain
 the ``get()`` method at the end to run the methods and retrieve the results.
 The following example shows the syntax of a query builder call:
 
 .. code-block:: php
 
-   DB::collection('<collection name>')
+   DB::table('<collection name>')
        // chain methods by using the "->" object operator
        ->get();
 .. tip::
 
-   Before using the ``DB::collection()`` method, ensure that you specify MongoDB as your application's
+   Before using the ``DB::table()`` method, ensure that you specify MongoDB as your application's
    default database connection. For instructions on setting the database connection,
    see the :ref:`laravel-quick-start-connect-to-mongodb` step in the Quick Start.
 
    If MongoDB is not your application's default database, you can use the ``DB::connection()`` method
    to specify a MongoDB connection. Pass the name of the connection to the ``connection()`` method,
    as shown in the following code:
-   
+
    .. code-block:: php
-   
+
       $connection = DB::connection('mongodb');
 
 This guide provides examples of the following types of query builder operations:
@@ -1125,6 +1125,23 @@ the ``imdb.votes`` field in the matched document:
 The ``increment()`` query builder method returns the number of documents that the
 operation updated.
 
+Starting in {+odm-short+} v4.8, you can also use the ``incrementEach()`` query
+builder method to increment multiple values in a single operation. The following
+example uses the ``incrementEach()`` method to increase the values of the ``awards.wins``
+and ``imdb.votes`` fields in the matched document:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin increment each
+   :end-before: end increment each
+
+.. note::
+
+   If you pass a field to the ``increment()`` or ``incrementEach()`` method that
+   has no value or doesn't exist in the matched documents, these methods initialize
+   the specified field to the increment value.
+
 .. _laravel-mongodb-query-builder-decrement:
 
 Decrement a Numerical Value Example
@@ -1142,6 +1159,23 @@ matched document:
 
 The ``decrement()`` query builder method returns the number of documents that the
 operation updated.
+
+Starting in {+odm-short+} v4.8, you can also use the ``decrementEach()`` query builder
+method to decrement multiple values in a single operation. The following example uses
+the ``decrementEach()`` method to decrease the values of the ``metacritic`` and ``imdb.rating``
+fields in the matched document:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin decrement each
+   :end-before: end decrement each
+
+.. note::
+
+   If you pass a field to the ``decrement()`` or ``decrementEach()`` method that
+   has no value or doesn't exist in the matched documents, these methods initialize
+   the specified field to the decrement value.
 
 .. _laravel-mongodb-query-builder-push:
 

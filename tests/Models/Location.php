@@ -14,6 +14,6 @@ class Location extends Model
     protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'locations';
+    protected $table = 'locations';
     protected static $unguarded = true;
 }

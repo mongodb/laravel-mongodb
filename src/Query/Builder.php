@@ -787,10 +787,38 @@ class Builder extends BaseBuilder
         return $this->performUpdate($query, $options);
     }
 
+    public function incrementEach(array $columns, array $extra = [], array $options = [])
+    {
+        $stage['$addFields'] = $extra;
+
+        // Not using $inc for each column, because it would fail if one column is null.
+        foreach ($columns as $column => $amount) {
+            $stage['$addFields'][$column] = [
+                '$add' => [$amount, ['$ifNull' => ['$' . $column, 0]]],
+            ];
+        }
+
+        $options = $this->inheritConnectionOptions($options);
+
+        return $this->performUpdate([$stage], $options);
+    }
+
     /** @inheritdoc */
     public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
         return $this->increment($column, -1 * $amount, $extra, $options);
+    }
+
+    /** @inheritdoc */
+    public function decrementEach(array $columns, array $extra = [], array $options = [])
+    {
+        $decrement = [];
+
+        foreach ($columns as $column => $amount) {
+            $decrement[$column] = -1 * $amount;
+        }
+
+        return $this->incrementEach($decrement, $extra, $options);
     }
 
     /** @inheritdoc */
