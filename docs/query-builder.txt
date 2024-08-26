@@ -385,7 +385,8 @@ whereLike() and whereNotLike() Methods
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The following methods provide the same functionality as using the
-``like`` query operator to match patterns:
+:ref:`like <laravel-query-builder-pattern>` query operator to match
+patterns:
 
 - ``whereLike()``: Matches a specified pattern. By default, this method
   performs a case-insensitive match. You can enable case-sensitivity by
