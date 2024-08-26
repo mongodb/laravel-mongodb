@@ -1266,7 +1266,8 @@ class Builder extends BaseBuilder
                 // All backslashes are converted to \\, which are needed in matching regexes.
                 preg_quote($value),
             );
-            $value = new Regex('^' . $regex . '$', 'i');
+            $flags = $where['caseSensitive'] ?? false ? '' : 'i';
+            $value = new Regex('^' . $regex . '$', $flags);
 
             // For inverse like operations, we can just use the $not operator with the Regex
             $operator = $operator === 'like' ? '=' : 'not';
@@ -1322,6 +1323,13 @@ class Builder extends BaseBuilder
     protected function compileWhereNotIn(array $where): array
     {
         return [$where['column'] => ['$nin' => array_values($where['values'])]];
+    }
+
+    protected function compileWhereLike(array $where): array
+    {
+        $where['operator'] = $where['not'] ? 'not like' : 'like';
+
+        return $this->compileWhereBasic($where);
     }
 
     protected function compileWhereNull(array $where): array
