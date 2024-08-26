@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [4.7.2] - coming soon
+
+* Add `Query\Builder::upsert()` method with a single document by @GromNaN in [#3100](https://github.com/mongodb/laravel-mongodb/pull/3100)
+
 ## [4.7.1] - 2024-07-25
 
 * Fix registration of `BusServiceProvider` for compatibility with Horizon by @GromNaN in [#3071](https://github.com/mongodb/laravel-mongodb/pull/3071)

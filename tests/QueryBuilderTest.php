@@ -632,9 +632,8 @@ class QueryBuilderTest extends TestCase
         $this->assertSame('bar2', DB::collection('users')->where('email', 'foo')->first()['name']);
 
         // If no update fields are specified, all fields are updated
-        $result = DB::collection('users')->upsert([
-            ['email' => 'foo', 'name' => 'bar3'],
-        ], 'email');
+        // Test single document update
+        $result = DB::collection('users')->upsert(['email' => 'foo', 'name' => 'bar3'], 'email');
 
         $this->assertSame(1, $result);
         $this->assertSame(2, DB::collection('users')->count());
