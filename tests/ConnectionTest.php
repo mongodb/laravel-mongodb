@@ -25,6 +25,9 @@ class ConnectionTest extends TestCase
     {
         $connection = DB::connection('mongodb');
         $this->assertInstanceOf(Connection::class, $connection);
+
+        $this->assertSame('mongodb', $connection->getDriverName());
+        $this->assertSame('MongoDB', $connection->getDriverTitle());
     }
 
     public function testReconnect()
@@ -304,5 +307,13 @@ class ConnectionTest extends TestCase
     {
         $version = DB::connection('mongodb')->getServerVersion();
         $this->assertIsString($version);
+    }
+
+    public function testThreadsCount()
+    {
+        $threads = DB::connection('mongodb')->threadCount();
+
+        $this->assertIsInt($threads);
+        $this->assertGreaterThanOrEqual(1, $threads);
     }
 }

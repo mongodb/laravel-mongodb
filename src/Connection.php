@@ -295,6 +295,12 @@ class Connection extends BaseConnection
     }
 
     /** @inheritdoc */
+    public function getDriverTitle()
+    {
+        return 'MongoDB';
+    }
+
+    /** @inheritdoc */
     protected function getDefaultPostProcessor()
     {
         return new Query\Processor();
@@ -318,6 +324,14 @@ class Connection extends BaseConnection
     public function setDatabase(Database $db)
     {
         $this->db = $db;
+    }
+
+    /** @inheritdoc  */
+    public function threadCount()
+    {
+        $status = $this->db->command(['serverStatus' => 1])->toArray();
+
+        return $status[0]['connections']['current'];
     }
 
     /**
