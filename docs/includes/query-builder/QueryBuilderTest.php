@@ -374,6 +374,18 @@ class QueryBuilderTest extends TestCase
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
     }
 
+    public function testWhereLike(): void
+    {
+        // begin query whereLike
+        $result = DB::connection('mongodb')
+            ->table('movies')
+            ->whereLike('title', 'Start%', true)
+            ->get();
+        // end query whereLike
+
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
+    }
+
     public function testWhereRaw(): void
     {
         // begin query raw

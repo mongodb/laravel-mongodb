@@ -381,6 +381,42 @@ wildcard characters:
          ...
       ]
 
+whereLike() and whereNotLike() Methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following methods provide the same functionality as using the
+:ref:`like <laravel-query-builder-pattern>` query operator to match
+patterns:
+
+- ``whereLike()``: Matches a specified pattern. By default, this method
+  performs a case-insensitive match. You can enable case-sensitivity by
+  passing ``true`` as the last parameter to the method.
+- ``whereNotLike()``: Matches documents in which the field
+  value does not contain the specified string pattern.
+
+The following example shows how to use the ``whereLike()`` method to
+match documents in which the ``title`` field has a value that matches the
+pattern ``'Start%'`` with case-sensitivity enabled:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query whereLike
+      :end-before: end query whereLike
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+         { "title": "Start-Up", ... },
+         { "title": "Start the Revolution Without Me", ... },
+         ...
+      ]
+
 .. _laravel-query-builder-distinct:
 
 Retrieve Distinct Values
