@@ -22,9 +22,7 @@ use function implode;
 use function is_array;
 use function preg_match;
 use function str_contains;
-use function trigger_error;
 
-use const E_USER_DEPRECATED;
 use const FILTER_FLAG_IPV6;
 use const FILTER_VALIDATE_IP;
 
@@ -75,22 +73,6 @@ class Connection extends BaseConnection
         $this->useDefaultSchemaGrammar();
 
         $this->useDefaultQueryGrammar();
-    }
-
-    /**
-     * Begin a fluent query against a database collection.
-     *
-     * @deprecated since mongodb/laravel-mongodb 4.8, use the function table() instead
-     *
-     * @param  string $collection
-     *
-     * @return Query\Builder
-     */
-    public function collection($collection)
-    {
-        @trigger_error('Since mongodb/laravel-mongodb 4.8, the method Connection::collection() is deprecated and will be removed in version 5.0. Use the table() method instead.', E_USER_DEPRECATED);
-
-        return $this->table($collection);
     }
 
     /**

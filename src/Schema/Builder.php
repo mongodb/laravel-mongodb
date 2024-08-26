@@ -17,10 +17,7 @@ use function implode;
 use function iterator_to_array;
 use function sort;
 use function sprintf;
-use function trigger_error;
 use function usort;
-
-use const E_USER_DEPRECATED;
 
 class Builder extends \Illuminate\Database\Schema\Builder
 {
@@ -73,22 +70,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
     public function hasTable($table)
     {
         return $this->hasCollection($table);
-    }
-
-    /**
-     * Modify a collection on the schema.
-     *
-     * @deprecated since mongodb/laravel-mongodb 4.8, use the function table() instead
-     *
-     * @param string $collection
-     *
-     * @return void
-     */
-    public function collection($collection, Closure $callback)
-    {
-        @trigger_error('Since mongodb/laravel-mongodb 4.8, the method Schema\Builder::collection() is deprecated and will be removed in version 5.0. Use the function table() instead.', E_USER_DEPRECATED);
-
-        $this->table($collection, $callback);
     }
 
     /** @inheritdoc */
