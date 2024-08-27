@@ -249,7 +249,7 @@ in the following code:
 
 .. literalinclude:: /includes/auth/AuthServiceProvider.php
    :language: php
-   :emphasize-lines: 6,23
+   :emphasize-lines: 6,22
    :dedent:
 
 You can now use Laravel Passport and MongoDB in your application. For more information, see
