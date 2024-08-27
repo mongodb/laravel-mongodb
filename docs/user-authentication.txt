@@ -164,6 +164,9 @@ Laravel Passport is an OAuth 2.0 server implementation that offers
 API authentication for Laravel applications. Use Laravel Passport if
 your application requires OAuth2 support.
 
+Install Laravel Passport
+````````````````````````
+
 To install Laravel Passport and run the database migrations required
 to store OAuth2 clients, run the following command from your project root:
 
@@ -212,10 +215,23 @@ to the ``guards`` array:
       ],
    ],
 
-Lastly, you must override the default Laravel Passport models by defining a custom model
-that extends the corresponding Laravel Passport model. by including the ``DocumentModel`` trait. This trait allows you
-to make Laravel Passport compatible with MongoDB. The following code defines
-a series of model classes that extend the corresponding ``Laravel\Passport`` models:
+Use Laravel Passport with {+odm-short+}
+```````````````````````````````````````
+
+After installing Laravel Passport, you must enable Passport compatibility with MongoDB by
+defining custom {+odm-short+} models that extend the corresponding Passport models.
+To extend each Passport model class, include the ``DocumentModel`` trait in the custom models.
+You can define the following {+odm-short+} model classes:
+
+- ``MongoDB\Laravel\Passport\AuthCode``, which extends ``Laravel\Passport\AuthCode``
+- ``MongoDB\Laravel\Passport\Client``, which extends ``Laravel\Passport\Client``
+- ``MongoDB\Laravel\Passport\PersonalAccessClient``, which extends ``Laravel\Passport\PersonalAccessClient``
+- ``MongoDB\Laravel\Passport\RefreshToken``, which extends ``Laravel\Passport\RefreshToken``
+- ``MongoDB\Laravel\Passport\Token``, which extends ``Laravel\Passport\Token``
+
+For example, the following code overrides the default ``Laravel\Passport\AuthCode``
+model class by defining a ``MongoDB\Laravel\Passport\AuthCode`` class and including
+the ``DocumentModel`` trait:
 
 .. code-block:: php
 
@@ -227,10 +243,14 @@ a series of model classes that extend the corresponding ``Laravel\Passport`` mod
       protected $keyType = 'string';
    }
 
-   class MongoDB\Laravel\Passport\Client extends Laravel\Passport\Client;
-   class MongoDB\Laravel\Passport\PersonalAccessClient extends Laravel\Passport\PersonalAccessClient;
-   class MongoDB\Laravel\Passport\RefreshToken extends Laravel\Passport\RefreshToken;
-   class MongoDB\Laravel\Passport\Token extends Laravel\Passport\Token;
+After defining a custom model, instruct Passport to use the model in the ``boot`` 
+method of your application's ``App\Providers\AppServiceProvider`` class, as shown
+in the following code:
+
+.. literalinclude:: /includes/auth/PersonalAccessToken.php
+   :language: php
+   :emphasize-lines: 6,23
+   :dedent:
 
 You can now use Laravel Passport and MongoDB in your application. For more information, see
 `Laravel Passport <https://laravel.com/docs/{+laravel-docs-version+}/passport>`__ in the
