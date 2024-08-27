@@ -27,7 +27,7 @@ class DeleteOneTest extends TestCase
 
         // begin-delete-one
         $deleted = Movie::where('title', 'Quiz Show')
-            ->orderBy('_id')
+            ->orderBy('id')
             ->limit(1)
             ->delete();
 

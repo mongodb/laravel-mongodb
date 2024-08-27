@@ -162,7 +162,7 @@ class WriteOperationsTest extends TestCase
 
         // begin model update one fluent
         $concert = Concert::where(['performer' => 'Brad Mehldau'])
-            ->orderBy('_id')
+            ->orderBy('id')
             ->first()
             ->update(['venue' => 'Manchester Arena', 'ticketsSold' => 9543]);
         // end model update one fluent
@@ -370,7 +370,7 @@ class WriteOperationsTest extends TestCase
 
         $data = [
             [
-                '_id' => 'CH-0401242000',
+                'id' => 'CH-0401242000',
                 'performer' => 'Mitsuko Uchida',
                 'venue' => 'Carnegie Hall',
                 'genres' => ['classical'],
@@ -378,7 +378,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2024, 4, 1, 20, 0, 0, 'EST')),
             ],
             [
-                '_id' => 'MSG-0212252000',
+                'id' => 'MSG-0212252000',
                 'performer' => 'Brad Mehldau',
                 'venue' => 'Philharmonie de Paris',
                 'genres' => [ 'jazz', 'post-bop' ],
@@ -386,7 +386,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
             ],
             [
-                '_id' => 'MSG-021222000',
+                'id' => 'MSG-021222000',
                 'performer' => 'Billy Joel',
                 'venue' => 'Madison Square Garden',
                 'genres' => [ 'rock', 'soft rock', 'pop rock' ],
@@ -394,7 +394,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
             ],
             [
-                '_id' => 'SF-06302000',
+                'id' => 'SF-06302000',
                 'performer' => 'The Rolling Stones',
                 'venue' => 'Soldier Field',
                 'genres' => [ 'rock', 'pop', 'blues' ],
@@ -478,22 +478,22 @@ class WriteOperationsTest extends TestCase
         Concert::truncate();
         $data = [
             [
-                '_id' => 3,
+                'id' => 3,
                 'performer' => 'Mitsuko Uchida',
                 'venue' => 'Carnegie Hall',
             ],
             [
-                '_id' => 5,
+                'id' => 5,
                 'performer' => 'Brad Mehldau',
                 'venue' => 'Philharmonie de Paris',
             ],
             [
-                '_id' => 7,
+                'id' => 7,
                 'performer' => 'Billy Joel',
                 'venue' => 'Madison Square Garden',
             ],
             [
-                '_id' => 9,
+                'id' => 9,
                 'performer' => 'The Rolling Stones',
                 'venue' => 'Soldier Field',
             ],

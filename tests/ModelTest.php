@@ -63,7 +63,7 @@ class ModelTest extends TestCase
         $this->assertInstanceOf(Connection::class, $user->getConnection());
         $this->assertFalse($user->exists);
         $this->assertEquals('users', $user->getTable());
-        $this->assertEquals('_id', $user->getKeyName());
+        $this->assertEquals('id', $user->getKeyName());
     }
 
     public function testQualifyColumn(): void
@@ -89,14 +89,14 @@ class ModelTest extends TestCase
         $this->assertTrue($user->exists);
         $this->assertEquals(1, User::count());
 
-        $this->assertTrue(isset($user->_id));
-        $this->assertIsString($user->_id);
-        $this->assertNotEquals('', (string) $user->_id);
-        $this->assertNotEquals(0, strlen((string) $user->_id));
+        $this->assertTrue(isset($user->id));
+        $this->assertIsString($user->id);
+        $this->assertNotEquals('', (string) $user->id);
+        $this->assertNotEquals(0, strlen((string) $user->id));
         $this->assertInstanceOf(Carbon::class, $user->created_at);
 
         $raw = $user->getAttributes();
-        $this->assertInstanceOf(ObjectID::class, $raw['_id']);
+        $this->assertInstanceOf(ObjectID::class, $raw['id']);
 
         $this->assertEquals('John Doe', $user->name);
         $this->assertEquals(35, $user->age);
@@ -111,9 +111,9 @@ class ModelTest extends TestCase
         $user->save();
 
         $raw = $user->getAttributes();
-        $this->assertInstanceOf(ObjectID::class, $raw['_id']);
+        $this->assertInstanceOf(ObjectID::class, $raw['id']);
 
-        $check = User::find($user->_id);
+        $check = User::find($user->id);
         $this->assertInstanceOf(User::class, $check);
         $check->age = 36;
         $check->save();
@@ -129,16 +129,16 @@ class ModelTest extends TestCase
         $user->update(['age' => 20]);
 
         $raw = $user->getAttributes();
-        $this->assertInstanceOf(ObjectID::class, $raw['_id']);
+        $this->assertInstanceOf(ObjectID::class, $raw['id']);
 
-        $check = User::find($user->_id);
+        $check = User::find($user->id);
         $this->assertEquals(20, $check->age);
 
         $check->age      = 24;
         $check->fullname = 'Hans Thomas'; // new field
         $check->save();
 
-        $check = User::find($user->_id);
+        $check = User::find($user->id);
         $this->assertEquals(24, $check->age);
         $this->assertEquals('Hans Thomas', $check->fullname);
     }
@@ -179,46 +179,46 @@ class ModelTest extends TestCase
     public function testManualStringId(): void
     {
         $user        = new User();
-        $user->_id   = '4af9f23d8ead0e1d32000000';
+        $user->id   = '4af9f23d8ead0e1d32000000';
         $user->name  = 'John Doe';
         $user->title = 'admin';
         $user->age   = 35;
         $user->save();
 
         $this->assertTrue($user->exists);
-        $this->assertEquals('4af9f23d8ead0e1d32000000', $user->_id);
+        $this->assertEquals('4af9f23d8ead0e1d32000000', $user->id);
 
         $raw = $user->getAttributes();
-        $this->assertInstanceOf(ObjectID::class, $raw['_id']);
+        $this->assertInstanceOf(ObjectID::class, $raw['id']);
 
         $user        = new User();
-        $user->_id   = 'customId';
+        $user->id   = 'customId';
         $user->name  = 'John Doe';
         $user->title = 'admin';
         $user->age   = 35;
         $user->save();
 
         $this->assertTrue($user->exists);
-        $this->assertEquals('customId', $user->_id);
+        $this->assertEquals('customId', $user->id);
 
         $raw = $user->getAttributes();
-        $this->assertIsString($raw['_id']);
+        $this->assertIsString($raw['id']);
     }
 
     public function testManualIntId(): void
     {
         $user        = new User();
-        $user->_id   = 1;
+        $user->id   = 1;
         $user->name  = 'John Doe';
         $user->title = 'admin';
         $user->age   = 35;
         $user->save();
 
         $this->assertTrue($user->exists);
-        $this->assertEquals(1, $user->_id);
+        $this->assertEquals(1, $user->id);
 
         $raw = $user->getAttributes();
-        $this->assertIsInt($raw['_id']);
+        $this->assertIsInt($raw['id']);
     }
 
     public function testDelete(): void
@@ -266,11 +266,11 @@ class ModelTest extends TestCase
         $user->age   = 35;
         $user->save();
 
-        $check = User::find($user->_id);
+        $check = User::find($user->id);
         $this->assertInstanceOf(User::class, $check);
         $this->assertTrue(Model::isDocumentModel($check));
         $this->assertTrue($check->exists);
-        $this->assertEquals($user->_id, $check->_id);
+        $this->assertEquals($user->id, $check->id);
 
         $this->assertEquals('John Doe', $check->name);
         $this->assertEquals(35, $check->age);
@@ -338,7 +338,7 @@ class ModelTest extends TestCase
 
         $check = User::where('name', 'Jane Poe')->first();
         $this->assertInstanceOf(User::class, $check);
-        $this->assertEquals($user->_id, $check->_id);
+        $this->assertEquals($user->id, $check->id);
     }
 
     public function testDestroy(): void
@@ -349,7 +349,7 @@ class ModelTest extends TestCase
         $user->age   = 35;
         $user->save();
 
-        User::destroy((string) $user->_id);
+        User::destroy((string) $user->id);
 
         $this->assertEquals(0, User::count());
     }
@@ -366,7 +366,7 @@ class ModelTest extends TestCase
         sleep(1);
         $user->touch();
 
-        $check = User::find($user->_id);
+        $check = User::find($user->id);
         $this->assertInstanceOf(User::class, $check);
 
         $this->assertNotEquals($old, $check->updated_at);
@@ -411,12 +411,12 @@ class ModelTest extends TestCase
         $expectedType = get_debug_type($expected);
 
         $document = new $model();
-        $this->assertEquals('_id', $document->getKeyName());
+        $this->assertEquals('id', $document->getKeyName());
 
-        $document->_id = $id;
+        $document->id = $id;
         $document->save();
-        $this->assertSame($expectedType, get_debug_type($document->_id));
-        $this->assertEquals($expected, $document->_id);
+        $this->assertSame($expectedType, get_debug_type($document->id));
+        $this->assertEquals($expected, $document->id);
         $this->assertSame($expectedType, get_debug_type($document->getKey()));
         $this->assertEquals($expected, $document->getKey());
 
@@ -424,8 +424,8 @@ class ModelTest extends TestCase
 
         if ($expectedFound) {
             $this->assertNotNull($check, 'Not found');
-            $this->assertSame($expectedType, get_debug_type($check->_id));
-            $this->assertEquals($id, $check->_id);
+            $this->assertSame($expectedType, get_debug_type($check->id));
+            $this->assertEquals($id, $check->id);
             $this->assertSame($expectedType, get_debug_type($check->getKey()));
             $this->assertEquals($id, $check->getKey());
         } else {
@@ -533,10 +533,10 @@ class ModelTest extends TestCase
         $array = $item->toArray();
         $keys  = array_keys($array);
         sort($keys);
-        $this->assertEquals(['_id', 'created_at', 'name', 'type', 'updated_at'], $keys);
+        $this->assertEquals(['created_at', 'id', 'name', 'type', 'updated_at'], $keys);
         $this->assertIsString($array['created_at']);
         $this->assertIsString($array['updated_at']);
-        $this->assertIsString($array['_id']);
+        $this->assertIsString($array['id']);
     }
 
     public function testUnset(): void
@@ -558,8 +558,8 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user2->note2));
 
         // Re-fetch to be sure
-        $user1 = User::find($user1->_id);
-        $user2 = User::find($user2->_id);
+        $user1 = User::find($user1->id);
+        $user2 = User::find($user2->id);
 
         $this->assertFalse(isset($user1->note1));
         $this->assertTrue(isset($user1->note2));
@@ -573,7 +573,7 @@ class ModelTest extends TestCase
         $this->assertFalse(isset($user2->note2));
 
         // Re-re-fetch to be sure
-        $user2 = User::find($user2->_id);
+        $user2 = User::find($user2->id);
 
         $this->assertFalse(isset($user2->note1));
         $this->assertFalse(isset($user2->note2));
@@ -621,14 +621,14 @@ class ModelTest extends TestCase
         $this->assertSame(['note1' => 'GHI'], $user->getDirty());
 
         // Fetch to be sure the changes are not persisted yet
-        $userCheck = User::find($user->_id);
+        $userCheck = User::find($user->id);
         $this->assertSame('ABC', $userCheck['note1']);
 
         // Persist the changes
         $user->save();
 
         // Re-fetch to be sure
-        $user = User::find($user->_id);
+        $user = User::find($user->id);
 
         $this->assertTrue(isset($user->note1));
         $this->assertSame('GHI', $user->note1);
@@ -655,7 +655,7 @@ class ModelTest extends TestCase
         $this->assertTrue(isset($user->notes['note2']));
 
         // Re-fetch to be sure
-        $user = User::find($user->_id);
+        $user = User::find($user->id);
 
         $this->assertFalse(isset($user->notes['note1']));
         $this->assertTrue(isset($user->notes['note2']));
@@ -672,7 +672,7 @@ class ModelTest extends TestCase
         $this->assertFalse(isset($user->notes));
 
         // Re-fetch to be sure
-        $user = User::find($user->_id);
+        $user = User::find($user->id);
 
         $this->assertFalse(isset($user->notes));
     }
@@ -704,7 +704,7 @@ class ModelTest extends TestCase
         $this->assertSame(['note2' => 'DEF', 'note1' => 'ABC'], $user->notes);
 
         // Re-fetch to be sure
-        $user = User::find($user->_id);
+        $user = User::find($user->id);
 
         $this->assertSame(['note2' => 'DEF', 'note1' => 'ABC'], $user->notes);
     }
@@ -721,14 +721,14 @@ class ModelTest extends TestCase
         $this->assertEquals($tz, $user->birthday->getTimezone()->getName());
         $user->save();
 
-        $user = User::find($user->_id);
+        $user = User::find($user->id);
         $this->assertEquals($date, $user->birthday);
         $this->assertEquals($tz, $user->birthday->getTimezone()->getName());
         $this->assertSame('1965-03-02T15:30:10+10:00', $user->birthday->format(DATE_ATOM));
 
         $tz = 'America/New_York';
         date_default_timezone_set($tz);
-        $user = User::find($user->_id);
+        $user = User::find($user->id);
         $this->assertEquals($date, $user->birthday);
         $this->assertEquals($tz, $user->birthday->getTimezone()->getName());
         $this->assertSame('1965-03-02T00:30:10-05:00', $user->birthday->format(DATE_ATOM));
@@ -747,7 +747,7 @@ class ModelTest extends TestCase
         $user = User::create(['name' => 'John Doe', 'birthday' => new DateTime('1980/1/1')]);
         $this->assertInstanceOf(Carbon::class, $user->birthday);
 
-        $check = User::find($user->_id);
+        $check = User::find($user->id);
         $this->assertInstanceOf(Carbon::class, $check->birthday);
         $this->assertEquals($user->birthday, $check->birthday);
 
@@ -832,7 +832,7 @@ class ModelTest extends TestCase
         $user->save();
 
         // Re-fetch to be sure
-        $user = User::find($user->_id);
+        $user = User::find($user->id);
         $this->assertNull($user->birthday);
 
         // Nested field with dot notation
@@ -844,7 +844,7 @@ class ModelTest extends TestCase
         $this->assertNull($user->getAttribute('entry.date'));
 
         // Re-fetch to be sure
-        $user = User::find($user->_id);
+        $user = User::find($user->id);
         $this->assertNull($user->getAttribute('entry.date'));
     }
 
@@ -862,10 +862,10 @@ class ModelTest extends TestCase
     {
         $user = User::create(['name' => 'John Doe']);
         $this->assertInstanceOf(User::class, $user);
-        $this->assertEquals($user->id, $user->_id);
+        $this->assertSame($user->id, $user->_id);
 
         $user = User::create(['id' => 'custom_id', 'name' => 'John Doe']);
-        $this->assertNotEquals($user->id, $user->_id);
+        $this->assertSame($user->id, $user->_id);
     }
 
     public function testPushPull(): void
@@ -878,20 +878,20 @@ class ModelTest extends TestCase
         $user->push('tags', 'tag2', true);
 
         $this->assertEquals(['tag1', 'tag1', 'tag2'], $user->tags);
-        $user = User::where('_id', $user->_id)->first();
+        $user = User::where('id', $user->id)->first();
         $this->assertEquals(['tag1', 'tag1', 'tag2'], $user->tags);
 
         $user->pull('tags', 'tag1');
 
         $this->assertEquals(['tag2'], $user->tags);
-        $user = User::where('_id', $user->_id)->first();
+        $user = User::where('id', $user->id)->first();
         $this->assertEquals(['tag2'], $user->tags);
 
         $user->push('tags', 'tag3');
         $user->pull('tags', ['tag2', 'tag3']);
 
         $this->assertEquals([], $user->tags);
-        $user = User::where('_id', $user->_id)->first();
+        $user = User::where('id', $user->id)->first();
         $this->assertEquals([], $user->tags);
     }
 
@@ -1047,7 +1047,7 @@ class ModelTest extends TestCase
 
         $check = User::where('name', $name)->first();
         $this->assertInstanceOf(User::class, $check);
-        $this->assertEquals($user->_id, $check->_id);
+        $this->assertEquals($user->id, $check->id);
     }
 
     public function testEnumCast(): void
@@ -1162,6 +1162,7 @@ class ModelTest extends TestCase
     }
 
     #[TestWith([['_id' => new ObjectID()]])]
+    #[TestWith([['id' => new ObjectID()]])]
     #[TestWith([['foo' => 'bar']])]
     public function testUpdateOrCreate(array $criteria)
     {
@@ -1214,9 +1215,11 @@ class ModelTest extends TestCase
         $this->assertEquals($updatedAt, $checkUser->updated_at->getTimestamp());
     }
 
-    public function testCreateWithNullId()
+    #[TestWith(['_id'])]
+    #[TestWith(['id'])]
+    public function testCreateWithNullId(string $id)
     {
-        $user = User::create(['_id' => null, 'email' => 'foo@bar']);
+        $user = User::create([$id => null, 'email' => 'foo@bar']);
         $this->assertNotNull(ObjectId::class, $user->id);
         $this->assertSame(1, User::count());
     }

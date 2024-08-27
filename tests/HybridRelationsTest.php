@@ -83,7 +83,7 @@ class HybridRelationsTest extends TestCase
         // MongoDB has many
         $book = new SqlBook(['title' => 'Game of Thrones']);
         $user->sqlBooks()->save($book);
-        $user = User::find($user->_id); // refetch
+        $user = User::find($user->id); // refetch
         $this->assertCount(1, $user->sqlBooks);
 
         // SQL belongs to
@@ -93,7 +93,7 @@ class HybridRelationsTest extends TestCase
         // MongoDB has one
         $role = new SqlRole(['type' => 'admin']);
         $user->sqlRole()->save($role);
-        $user = User::find($user->_id); // refetch
+        $user = User::find($user->id); // refetch
         $this->assertEquals('admin', $user->sqlRole->type);
 
         // SQL belongs to
@@ -239,16 +239,16 @@ class HybridRelationsTest extends TestCase
 
         // sync (pivot is empty)
         $skill->sqlUsers()->sync([$user->id, $user2->id]);
-        $check = Skill::query()->find($skill->_id);
+        $check = Skill::query()->find($skill->id);
         $this->assertEquals(2, $check->sqlUsers->count());
 
         // sync (pivot is not empty)
         $skill->sqlUsers()->sync($user);
-        $check = Skill::query()->find($skill->_id);
+        $check = Skill::query()->find($skill->id);
         $this->assertEquals(1, $check->sqlUsers->count());
 
         // Inverse sync (pivot is empty)
-        $user->skills()->sync([$skill->_id, $skill2->_id]);
+        $user->skills()->sync([$skill->id, $skill2->id]);
         $check = SqlUser::find($user->id);
         $this->assertEquals(2, $check->skills->count());
 
@@ -288,7 +288,7 @@ class HybridRelationsTest extends TestCase
         $label2 = Label::query()->create(['name' => 'MongoDB']);
 
         // MorphToMany (pivot is empty)
-        $user->labels()->sync([$label->_id, $label2->_id]);
+        $user->labels()->sync([$label->id, $label2->id]);
         $check = SqlUser::query()->find($user->id);
         $this->assertEquals(2, $check->labels->count());
 
@@ -308,12 +308,12 @@ class HybridRelationsTest extends TestCase
 
         // Inverse MorphToMany (pivot is empty)
         $label->sqlUsers()->sync([$user->id, $user2->id]);
-        $check = Label::query()->find($label->_id);
+        $check = Label::query()->find($label->id);
         $this->assertEquals(2, $check->sqlUsers->count());
 
         // Inverse MorphToMany (pivot is empty)
         $label->sqlUsers()->sync([$user->id, $user2->id]);
-        $check = Label::query()->find($label->_id);
+        $check = Label::query()->find($label->id);
         $this->assertEquals(2, $check->sqlUsers->count());
     }
 
@@ -340,21 +340,21 @@ class HybridRelationsTest extends TestCase
 
         // MorphToMany (pivot is empty)
         $experience->sqlUsers()->sync([$user->id, $user2->id]);
-        $check = Experience::query()->find($experience->_id);
+        $check = Experience::query()->find($experience->id);
         $this->assertEquals(2, $check->sqlUsers->count());
 
         // MorphToMany (pivot is not empty)
         $experience->sqlUsers()->sync([$user->id]);
-        $check = Experience::query()->find($experience->_id);
+        $check = Experience::query()->find($experience->id);
         $this->assertEquals(1, $check->sqlUsers->count());
 
         // Inverse MorphToMany (pivot is empty)
-        $user->experiences()->sync([$experience->_id, $experience2->_id]);
+        $user->experiences()->sync([$experience->id, $experience2->id]);
         $check = SqlUser::query()->find($user->id);
         $this->assertEquals(2, $check->experiences->count());
 
         // Inverse MorphToMany (pivot is not empty)
-        $user->experiences()->sync([$experience->_id]);
+        $user->experiences()->sync([$experience->id]);
         $check = SqlUser::query()->find($user->id);
         $this->assertEquals(1, $check->experiences->count());
 
