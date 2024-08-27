@@ -168,9 +168,8 @@ class ModelTest extends TestCase
         $this->assertSame('bar2', User::where('email', 'foo')->first()->name);
 
         // If no update fields are specified, all fields are updated
-        $result = User::upsert([
-            ['email' => 'foo', 'name' => 'bar3'],
-        ], 'email');
+        // Test single document update
+        $result = User::upsert(['email' => 'foo', 'name' => 'bar3'], 'email');
 
         $this->assertSame(1, $result);
         $this->assertSame(2, User::count());

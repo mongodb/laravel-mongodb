@@ -746,6 +746,11 @@ class Builder extends BaseBuilder
             return 0;
         }
 
+        // Single document provided
+        if (! array_is_list($values)) {
+            $values = [$values];
+        }
+
         $this->applyBeforeQueryCallbacks();
 
         $options = $this->inheritConnectionOptions();
