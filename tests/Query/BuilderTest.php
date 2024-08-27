@@ -44,11 +44,11 @@ class BuilderTest extends TestCase
 
         // Operations that return a Cursor expect a "typeMap" option.
         if (isset($expected['find'][1])) {
-            $expected['find'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
+            $expected['find'][1]['typeMap'] = ['root' => 'object', 'document' => 'array'];
         }
 
         if (isset($expected['aggregate'][1])) {
-            $expected['aggregate'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
+            $expected['aggregate'][1]['typeMap'] = ['root' => 'object', 'document' => 'array'];
         }
 
         // Compare with assertEquals because the query can contain BSON objects.

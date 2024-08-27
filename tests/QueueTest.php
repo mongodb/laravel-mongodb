@@ -114,7 +114,7 @@ class QueueTest extends TestCase
             ->get();
 
         $this->assertCount(1, $othersJobs);
-        $this->assertEquals(0, $othersJobs[0]['attempts']);
+        $this->assertEquals(0, $othersJobs[0]->attempts);
     }
 
     public function testJobRelease(): void
@@ -131,7 +131,7 @@ class QueueTest extends TestCase
             ->get();
 
         $this->assertCount(1, $jobs);
-        $this->assertEquals(1, $jobs[0]['attempts']);
+        $this->assertEquals(1, $jobs[0]->attempts);
     }
 
     public function testQueueDeleteReserved(): void
@@ -161,15 +161,15 @@ class QueueTest extends TestCase
             ->where('id', $releasedJobId)
             ->first();
 
-        $this->assertEquals($queue, $releasedJob['queue']);
-        $this->assertEquals(1, $releasedJob['attempts']);
-        $this->assertNull($releasedJob['reserved_at']);
+        $this->assertEquals($queue, $releasedJob->queue);
+        $this->assertEquals(1, $releasedJob->attempts);
+        $this->assertNull($releasedJob->reserved_at);
         $this->assertEquals(
             Carbon::now()->addRealSeconds($delay)->getTimestamp(),
-            $releasedJob['available_at'],
+            $releasedJob->available_at,
         );
-        $this->assertEquals(Carbon::now()->getTimestamp(), $releasedJob['created_at']);
-        $this->assertEquals($job->getRawBody(), $releasedJob['payload']);
+        $this->assertEquals(Carbon::now()->getTimestamp(), $releasedJob->created_at);
+        $this->assertEquals($job->getRawBody(), $releasedJob->payload);
     }
 
     public function testQueueDeleteAndRelease(): void
@@ -194,10 +194,10 @@ class QueueTest extends TestCase
 
         $failedJob = Queue::getDatabase()->table(Config::get('queue.failed.table'))->first();
 
-        $this->assertSame('test_connection', $failedJob['connection']);
-        $this->assertSame('test_queue', $failedJob['queue']);
-        $this->assertSame('test_payload', $failedJob['payload']);
-        $this->assertEquals(new UTCDateTime(Carbon::now()), $failedJob['failed_at']);
-        $this->assertStringStartsWith('Exception: test_exception in ', $failedJob['exception']);
+        $this->assertSame('test_connection', $failedJob->connection);
+        $this->assertSame('test_queue', $failedJob->queue);
+        $this->assertSame('test_payload', $failedJob->payload);
+        $this->assertEquals(new UTCDateTime(Carbon::now()), $failedJob->failed_at);
+        $this->assertStringStartsWith('Exception: test_exception in ', $failedJob->exception);
     }
 }

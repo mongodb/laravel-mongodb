@@ -25,6 +25,7 @@ use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Driver\Cursor;
 use Override;
 use RuntimeException;
+use stdClass;
 
 use function array_fill_keys;
 use function array_is_list;
@@ -45,6 +46,7 @@ use function explode;
 use function func_get_args;
 use function func_num_args;
 use function get_debug_type;
+use function get_object_vars;
 use function implode;
 use function in_array;
 use function is_array;
@@ -52,11 +54,13 @@ use function is_bool;
 use function is_callable;
 use function is_float;
 use function is_int;
+use function is_object;
 use function is_string;
 use function md5;
 use function preg_match;
 use function preg_quote;
 use function preg_replace;
+use function property_exists;
 use function serialize;
 use function sprintf;
 use function str_ends_with;
@@ -391,7 +395,7 @@ class Builder extends BaseBuilder
             }
 
             $options = [
-                'typeMap' => ['root' => 'array', 'document' => 'array'],
+                'typeMap' => ['root' => 'object', 'document' => 'array'],
             ];
 
             // Add custom query options
@@ -450,8 +454,7 @@ class Builder extends BaseBuilder
             $options['projection'] = $projection;
         }
 
-        // Fix for legacy support, converts the results to arrays instead of objects.
-        $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
+        $options['typeMap'] = ['root' => 'object', 'document' => 'array'];
 
         // Add custom query options
         if (count($this->options)) {
@@ -516,7 +519,7 @@ class Builder extends BaseBuilder
         }
 
         foreach ($result as &$document) {
-            if (is_array($document)) {
+            if (is_array($document) || is_object($document)) {
                 $document = $this->aliasIdForResult($document);
             }
         }
@@ -1641,16 +1644,38 @@ class Builder extends BaseBuilder
         return $values;
     }
 
-    private function aliasIdForResult(array $values): array
+    /**
+     * @psalm-param T $values
+     *
+     * @psalm-return T
+     *
+     * @template T of array|object
+     */
+    private function aliasIdForResult(array|object $values): array|object
     {
-        if (array_key_exists('_id', $values) && ! array_key_exists('id', $values)) {
-            $values['id'] = $values['_id'];
-            //unset($values['_id']);
+        if (is_array($values)) {
+            if (array_key_exists('_id', $values) && ! array_key_exists('id', $values)) {
+                $values['id'] = $values['_id'];
+                //unset($values['_id']);
+            }
+
+            foreach ($values as $key => $value) {
+                if (is_array($value) || is_object($value)) {
+                    $values[$key] = $this->aliasIdForResult($value);
+                }
+            }
         }
 
-        foreach ($values as $key => $value) {
-            if (is_array($value)) {
-                $values[$key] = $this->aliasIdForResult($value);
+        if ($values instanceof stdClass) {
+            if (property_exists($values, '_id') && ! property_exists($values, 'id')) {
+                $values->id = $values->_id;
+                //unset($values->_id);
+            }
+
+            foreach (get_object_vars($values) as $key => $value) {
+                if (is_array($value) || is_object($value)) {
+                    $values->{$key} = $this->aliasIdForResult($value);
+                }
             }
         }
 

@@ -122,7 +122,7 @@ class TransactionTest extends TestCase
         $this->assertInstanceOf(ObjectId::class, $userId);
 
         $user = DB::table('users')->find((string) $userId);
-        $this->assertEquals('klinson', $user['name']);
+        $this->assertEquals('klinson', $user->name);
     }
 
     public function testInsertGetIdWithRollBack(): void
