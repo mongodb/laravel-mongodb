@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 * Remove support for Laravel 10 by @GromNaN in [#3123](https://github.com/mongodb/laravel-mongodb/pull/3123)
 * **BREAKING CHANGE** Use `id` as an alias for `_id` in commands and queries for compatibility with Eloquent packages by @GromNaN in [#3040](https://github.com/mongodb/laravel-mongodb/pull/3040)
 * **BREAKING CHANGE** Make Query\Builder return objects instead of array to match Laravel behavior by @GromNaN in [#3107](https://github.com/mongodb/laravel-mongodb/pull/3107)
+* **BREAKING CHANGE** In DB query results, convert BSON `UTCDateTime` objects into `Carbon` date with the default timezone by @GromNaN in [#3119](https://github.com/mongodb/laravel-mongodb/pull/3119)
 * Remove `MongoFailedJobProvider`, replaced by Laravel `DatabaseFailedJobProvider` by @GromNaN in [#3122](https://github.com/mongodb/laravel-mongodb/pull/3122)
 
 ## [4.8.0] - 2024-08-27

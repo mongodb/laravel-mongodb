@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use BackedEnum;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Concerns\HasAttributes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -97,8 +99,14 @@ trait DocumentModel
         return $this->getKeyName();
     }
 
-    /** @inheritdoc */
-    public function fromDateTime($value)
+    /**
+     * Convert a DateTime to a storable UTCDateTime.
+     *
+     * @see HasAttributes::fromDateTime()
+     *
+     * @param  mixed $value
+     */
+    public function fromDateTime($value): UTCDateTime
     {
         // If the value is already a UTCDateTime instance, we don't need to parse it.
         if ($value instanceof UTCDateTime) {
@@ -113,8 +121,14 @@ trait DocumentModel
         return new UTCDateTime($value);
     }
 
-    /** @inheritdoc */
-    protected function asDateTime($value)
+    /**
+     * Return a timestamp as DateTime object.
+     *
+     * @see HasAttributes::asDateTime()
+     *
+     * @param  mixed $value
+     */
+    protected function asDateTime($value): Carbon
     {
         // Convert UTCDateTime instances to Carbon.
         if ($value instanceof UTCDateTime) {

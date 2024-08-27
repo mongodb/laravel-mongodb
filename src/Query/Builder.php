@@ -14,6 +14,7 @@ use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LogicException;
@@ -1660,7 +1661,9 @@ class Builder extends BaseBuilder
             }
 
             foreach ($values as $key => $value) {
-                if (is_array($value) || is_object($value)) {
+                if ($value instanceof UTCDateTime) {
+                    $values[$key] = Date::instance($value->toDateTime());
+                } elseif (is_array($value) || $value instanceof stdClass) {
                     $values[$key] = $this->aliasIdForResult($value);
                 }
             }
@@ -1673,7 +1676,9 @@ class Builder extends BaseBuilder
             }
 
             foreach (get_object_vars($values) as $key => $value) {
-                if (is_array($value) || is_object($value)) {
+                if ($value instanceof UTCDateTime) {
+                    $values->{$key} = Date::instance($value->toDateTime());
+                } elseif (is_array($value) || $value instanceof stdClass) {
                     $values->{$key} = $this->aliasIdForResult($value);
                 }
             }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use Carbon\Carbon;
 use DateTime;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Date;
@@ -33,7 +34,6 @@ use function key;
 use function md5;
 use function sort;
 use function strlen;
-use function strtotime;
 
 class QueryBuilderTest extends TestCase
 {
@@ -676,27 +676,32 @@ class QueryBuilderTest extends TestCase
     public function testDates()
     {
         DB::table('users')->insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse('1980-01-01 00:00:00'))],
-            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse('1982-01-01 00:00:00'))],
-            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse('1983-01-01 00:00:00.1'))],
-            ['name' => 'Frank White', 'birthday' => new UTCDateTime(Date::parse('1960-01-01 12:12:12.1'))],
+            ['name' => 'John Doe', 'birthday' => Date::parse('1980-01-01 00:00:00')],
+            ['name' => 'Robert Roe', 'birthday' => Date::parse('1982-01-01 00:00:00')],
+            ['name' => 'Mark Moe', 'birthday' => Date::parse('1983-01-01 00:00:00.1')],
+            ['name' => 'Frank White', 'birthday' => Date::parse('1975-01-01 12:12:12.1')],
         ]);
 
         $user = DB::table('users')
-            ->where('birthday', new UTCDateTime(Date::parse('1980-01-01 00:00:00')))
+            ->where('birthday', Date::parse('1980-01-01 00:00:00'))
             ->first();
         $this->assertEquals('John Doe', $user->name);
 
         $user = DB::table('users')
-            ->where('birthday', new UTCDateTime(Date::parse('1960-01-01 12:12:12.1')))
+            ->where('birthday', Date::parse('1975-01-01 12:12:12.1'))
             ->first();
+
         $this->assertEquals('Frank White', $user->name);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+        $this->assertSame('1975-01-01 12:12:12.100000', $user->birthday->format('Y-m-d H:i:s.u'));
 
         $user = DB::table('users')->where('birthday', '=', new DateTime('1980-01-01 00:00:00'))->first();
         $this->assertEquals('John Doe', $user->name);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+        $this->assertSame('1980-01-01 00:00:00.000000', $user->birthday->format('Y-m-d H:i:s.u'));
 
-        $start = new UTCDateTime(1000 * strtotime('1950-01-01 00:00:00'));
-        $stop  = new UTCDateTime(1000 * strtotime('1981-01-01 00:00:00'));
+        $start = new UTCDateTime(new DateTime('1950-01-01 00:00:00'));
+        $stop  = new UTCDateTime(new DateTime('1981-01-01 00:00:00'));
 
         $users = DB::table('users')->whereBetween('birthday', [$start, $stop])->get();
         $this->assertCount(2, $users);
