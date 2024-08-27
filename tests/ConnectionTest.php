@@ -25,6 +25,9 @@ class ConnectionTest extends TestCase
     {
         $connection = DB::connection('mongodb');
         $this->assertInstanceOf(Connection::class, $connection);
+
+        $this->assertSame('mongodb', $connection->getDriverName());
+        $this->assertSame('MongoDB', $connection->getDriverTitle());
     }
 
     public function testReconnect()
@@ -196,7 +199,7 @@ class ConnectionTest extends TestCase
         $this->assertSame($expectedUri, (string) $client);
         $this->assertSame($expectedDatabaseName, $connection->getMongoDB()->getDatabaseName());
         $this->assertSame('foo', $connection->getCollection('foo')->getCollectionName());
-        $this->assertSame('foo', $connection->collection('foo')->raw()->getCollectionName());
+        $this->assertSame('foo', $connection->table('foo')->raw()->getCollectionName());
     }
 
     public function testConnectionWithoutConfiguredDatabase(): void
@@ -220,7 +223,7 @@ class ConnectionTest extends TestCase
         $collection = DB::connection('mongodb')->getCollection('unittest');
         $this->assertInstanceOf(Collection::class, $collection);
 
-        $collection = DB::connection('mongodb')->collection('unittests');
+        $collection = DB::connection('mongodb')->table('unittests');
         $this->assertInstanceOf(Builder::class, $collection);
 
         $collection = DB::connection('mongodb')->table('unittests');
@@ -238,7 +241,7 @@ class ConnectionTest extends TestCase
         $connection = new Connection($config);
 
         $this->assertSame('prefix_foo', $connection->getCollection('foo')->getCollectionName());
-        $this->assertSame('prefix_foo', $connection->collection('foo')->raw()->getCollectionName());
+        $this->assertSame('prefix_foo', $connection->table('foo')->raw()->getCollectionName());
     }
 
     public function testQueryLog()
@@ -247,19 +250,19 @@ class ConnectionTest extends TestCase
 
         $this->assertCount(0, DB::getQueryLog());
 
-        DB::collection('items')->get();
+        DB::table('items')->get();
         $this->assertCount(1, DB::getQueryLog());
 
-        DB::collection('items')->insert(['name' => 'test']);
+        DB::table('items')->insert(['name' => 'test']);
         $this->assertCount(2, DB::getQueryLog());
 
-        DB::collection('items')->count();
+        DB::table('items')->count();
         $this->assertCount(3, DB::getQueryLog());
 
-        DB::collection('items')->where('name', 'test')->update(['name' => 'test']);
+        DB::table('items')->where('name', 'test')->update(['name' => 'test']);
         $this->assertCount(4, DB::getQueryLog());
 
-        DB::collection('items')->where('name', 'test')->delete();
+        DB::table('items')->where('name', 'test')->delete();
         $this->assertCount(5, DB::getQueryLog());
     }
 
@@ -304,5 +307,13 @@ class ConnectionTest extends TestCase
     {
         $version = DB::connection('mongodb')->getServerVersion();
         $this->assertIsString($version);
+    }
+
+    public function testThreadsCount()
+    {
+        $threads = DB::connection('mongodb')->threadCount();
+
+        $this->assertIsInt($threads);
+        $this->assertGreaterThanOrEqual(1, $threads);
     }
 }

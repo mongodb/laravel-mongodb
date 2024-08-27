@@ -10,7 +10,7 @@ class PersonalAccessToken extends SanctumToken
     use DocumentModel;
 
     protected $connection = 'mongodb';
-    protected $collection = 'personal_access_tokens';
+    protected $table = 'personal_access_tokens';
     protected $primaryKey = '_id';
     protected $keyType = 'string';
 }

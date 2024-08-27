@@ -344,11 +344,11 @@ class SchemaTest extends TestCase
 
     public function testRenameColumn(): void
     {
-        DB::connection()->collection('newcollection')->insert(['test' => 'value']);
-        DB::connection()->collection('newcollection')->insert(['test' => 'value 2']);
-        DB::connection()->collection('newcollection')->insert(['column' => 'column value']);
+        DB::connection()->table('newcollection')->insert(['test' => 'value']);
+        DB::connection()->table('newcollection')->insert(['test' => 'value 2']);
+        DB::connection()->table('newcollection')->insert(['column' => 'column value']);
 
-        $check = DB::connection()->collection('newcollection')->get();
+        $check = DB::connection()->table('newcollection')->get();
         $this->assertCount(3, $check);
 
         $this->assertArrayHasKey('test', $check[0]);
@@ -365,7 +365,7 @@ class SchemaTest extends TestCase
             $collection->renameColumn('test', 'newtest');
         });
 
-        $check2 = DB::connection()->collection('newcollection')->get();
+        $check2 = DB::connection()->table('newcollection')->get();
         $this->assertCount(3, $check2);
 
         $this->assertArrayHasKey('newtest', $check2[0]);
@@ -384,7 +384,7 @@ class SchemaTest extends TestCase
 
     public function testHasColumn(): void
     {
-        DB::connection()->collection('newcollection')->insert(['column1' => 'value']);
+        DB::connection()->table('newcollection')->insert(['column1' => 'value']);
 
         $this->assertTrue(Schema::hasColumn('newcollection', 'column1'));
         $this->assertFalse(Schema::hasColumn('newcollection', 'column2'));
@@ -393,7 +393,7 @@ class SchemaTest extends TestCase
     public function testHasColumns(): void
     {
         // Insert documents with both column1 and column2
-        DB::connection()->collection('newcollection')->insert([
+        DB::connection()->table('newcollection')->insert([
             ['column1' => 'value1', 'column2' => 'value2'],
             ['column1' => 'value3'],
         ]);
@@ -404,8 +404,8 @@ class SchemaTest extends TestCase
 
     public function testGetTables()
     {
-        DB::connection('mongodb')->collection('newcollection')->insert(['test' => 'value']);
-        DB::connection('mongodb')->collection('newcollection_two')->insert(['test' => 'value']);
+        DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
+        DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
 
         $tables = Schema::getTables();
         $this->assertIsArray($tables);
@@ -428,8 +428,8 @@ class SchemaTest extends TestCase
 
     public function testGetTableListing()
     {
-        DB::connection('mongodb')->collection('newcollection')->insert(['test' => 'value']);
-        DB::connection('mongodb')->collection('newcollection_two')->insert(['test' => 'value']);
+        DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
+        DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
 
         $tables = Schema::getTableListing();
 
@@ -441,7 +441,7 @@ class SchemaTest extends TestCase
 
     public function testGetColumns()
     {
-        $collection = DB::connection('mongodb')->collection('newcollection');
+        $collection = DB::connection('mongodb')->table('newcollection');
         $collection->insert(['text' => 'value', 'mixed' => ['key' => 'value']]);
         $collection->insert(['date' => new UTCDateTime(), 'binary' => new Binary('binary'), 'mixed' => true]);
 

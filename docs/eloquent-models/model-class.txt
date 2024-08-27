@@ -111,7 +111,7 @@ Change the Model Collection Name
 
 By default, the model uses the snake case plural form of your model
 class name. To change the name of the collection the model uses to retrieve
-and save data in MongoDB, override the ``$collection`` property of the model
+and save data in MongoDB, override the ``$table`` property of the model
 class.
 
 .. note::
@@ -127,7 +127,7 @@ The following example specifies the custom MongoDB collection name,
    :emphasize-lines: 9
    :dedent:
 
-Without overriding the ``$collection`` property, this model maps to the
+Without overriding the ``$table`` property, this model maps to the
 ``planets`` collection. With the overridden property, the example class stores
 the model in the ``celestial_body`` collection.
 

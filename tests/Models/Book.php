@@ -20,7 +20,7 @@ class Book extends Model
     protected $primaryKey = 'title';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'books';
+    protected $table = 'books';
     protected static $unguarded = true;
 
     public function author(): BelongsTo

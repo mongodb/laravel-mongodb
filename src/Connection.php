@@ -22,7 +22,9 @@ use function implode;
 use function is_array;
 use function preg_match;
 use function str_contains;
+use function trigger_error;
 
+use const E_USER_DEPRECATED;
 use const FILTER_FLAG_IPV6;
 use const FILTER_VALIDATE_IP;
 
@@ -78,28 +80,32 @@ class Connection extends BaseConnection
     /**
      * Begin a fluent query against a database collection.
      *
+     * @deprecated since mongodb/laravel-mongodb 4.8, use the function table() instead
+     *
      * @param  string $collection
      *
      * @return Query\Builder
      */
     public function collection($collection)
     {
-        $query = new Query\Builder($this, $this->getQueryGrammar(), $this->getPostProcessor());
+        @trigger_error('Since mongodb/laravel-mongodb 4.8, the method Connection::collection() is deprecated and will be removed in version 5.0. Use the table() method instead.', E_USER_DEPRECATED);
 
-        return $query->from($collection);
+        return $this->table($collection);
     }
 
     /**
      * Begin a fluent query against a database collection.
      *
-     * @param  string      $table
-     * @param  string|null $as
+     * @param  string      $table The name of the MongoDB collection
+     * @param  string|null $as    Ignored. Not supported by MongoDB
      *
      * @return Query\Builder
      */
     public function table($table, $as = null)
     {
-        return $this->collection($table);
+        $query = new Query\Builder($this, $this->getQueryGrammar(), $this->getPostProcessor());
+
+        return $query->from($table);
     }
 
     /**
@@ -289,6 +295,12 @@ class Connection extends BaseConnection
     }
 
     /** @inheritdoc */
+    public function getDriverTitle()
+    {
+        return 'MongoDB';
+    }
+
+    /** @inheritdoc */
     protected function getDefaultPostProcessor()
     {
         return new Query\Processor();
@@ -312,6 +324,14 @@ class Connection extends BaseConnection
     public function setDatabase(Database $db)
     {
         $this->db = $db;
+    }
+
+    /** @inheritdoc  */
+    public function threadCount()
+    {
+        $status = $this->db->command(['serverStatus' => 1])->toArray();
+
+        return $status[0]['connections']['current'];
     }
 
     /**
