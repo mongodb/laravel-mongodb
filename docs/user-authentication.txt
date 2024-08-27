@@ -215,8 +215,8 @@ to the ``guards`` array:
       ],
    ],
 
-Use Laravel Passport with {+odm-short+}
-```````````````````````````````````````
+Use Laravel Passport with Laravel MongoDB
+`````````````````````````````````````````
 
 After installing Laravel Passport, you must enable Passport compatibility with MongoDB by
 defining custom {+odm-short+} models that extend the corresponding Passport models.
@@ -247,7 +247,7 @@ After defining a custom model, instruct Passport to use the model in the ``boot`
 method of your application's ``App\Providers\AppServiceProvider`` class, as shown
 in the following code:
 
-.. literalinclude:: /includes/auth/PersonalAccessToken.php
+.. literalinclude:: /includes/auth/AuthServiceProvider.php
    :language: php
    :emphasize-lines: 6,23
    :dedent:
