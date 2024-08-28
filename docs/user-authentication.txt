@@ -243,13 +243,13 @@ the ``DocumentModel`` trait:
       protected $keyType = 'string';
    }
 
-After defining a custom model, instruct Passport to use the model in the ``boot`` 
+After defining each custom model, instruct Passport to use the models in the ``boot()`` 
 method of your application's ``App\Providers\AppServiceProvider`` class, as shown
 in the following code:
 
 .. literalinclude:: /includes/auth/AppServiceProvider.php
    :language: php
-   :emphasize-lines: 6,22
+   :emphasize-lines: 26-30
    :dedent:
 
 You can now use Laravel Passport and MongoDB in your application. For more information, see
