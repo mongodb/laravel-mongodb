@@ -876,11 +876,11 @@ class Builder extends BaseBuilder
         $wheres  = $this->aliasIdForQuery($wheres);
         $options = $this->inheritConnectionOptions();
 
-        if (is_int($this->limit)) {
-            if ($this->limit !== 1) {
-                throw new LogicException(sprintf('Delete limit can be 1 or null (unlimited). Got %d', $this->limit));
-            }
-
+        /**
+         * Ignore the limit if it is set to more than 1, as it is not supported by the deleteMany method.
+         * Required for {@see DatabaseFailedJobProvider::prune()}
+         */
+        if ($this->limit === 1) {
             $result = $this->collection->deleteOne($wheres, $options);
         } else {
             $result = $this->collection->deleteMany($wheres, $options);
