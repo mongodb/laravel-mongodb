@@ -9,6 +9,7 @@ use BadMethodCallException;
 use Carbon\CarbonPeriod;
 use Closure;
 use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
@@ -40,6 +41,7 @@ use function call_user_func;
 use function call_user_func_array;
 use function count;
 use function ctype_xdigit;
+use function date_default_timezone_get;
 use function dd;
 use function dump;
 use function end;
@@ -1662,8 +1664,9 @@ class Builder extends BaseBuilder
 
             foreach ($values as $key => $value) {
                 if ($value instanceof UTCDateTime) {
-                    $values[$key] = Date::instance($value->toDateTime());
-                } elseif (is_array($value) || $value instanceof stdClass) {
+                    $values[$key] = Date::instance($value->toDateTime())
+                        ->setTimezone(new DateTimeZone(date_default_timezone_get()));
+                } elseif (is_array($value) || is_object($value)) {
                     $values[$key] = $this->aliasIdForResult($value);
                 }
             }
@@ -1677,8 +1680,9 @@ class Builder extends BaseBuilder
 
             foreach (get_object_vars($values) as $key => $value) {
                 if ($value instanceof UTCDateTime) {
-                    $values->{$key} = Date::instance($value->toDateTime());
-                } elseif (is_array($value) || $value instanceof stdClass) {
+                    $values->{$key} = Date::instance($value->toDateTime())
+                        ->setTimezone(new DateTimeZone(date_default_timezone_get()));
+                } elseif (is_array($value) || is_object($value)) {
                     $values->{$key} = $this->aliasIdForResult($value);
                 }
             }

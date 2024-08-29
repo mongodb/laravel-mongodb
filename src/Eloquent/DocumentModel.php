@@ -100,7 +100,7 @@ trait DocumentModel
     }
 
     /**
-     * Convert a DateTime to a storable UTCDateTime.
+     * Convert a DateTimeInterface (including Carbon) to a storable UTCDateTime.
      *
      * @see HasAttributes::fromDateTime()
      *
@@ -122,7 +122,7 @@ trait DocumentModel
     }
 
     /**
-     * Return a timestamp as DateTime object.
+     * Return a timestamp as Carbon object.
      *
      * @see HasAttributes::asDateTime()
      *

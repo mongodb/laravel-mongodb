@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Mockery;
-use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Queue\MongoJob;
 use MongoDB\Laravel\Queue\MongoQueue;
 
@@ -197,7 +196,7 @@ class QueueTest extends TestCase
         $this->assertSame('test_connection', $failedJob->connection);
         $this->assertSame('test_queue', $failedJob->queue);
         $this->assertSame('test_payload', $failedJob->payload);
-        $this->assertEquals(new UTCDateTime(Carbon::now()), $failedJob->failed_at);
+        $this->assertEquals(Carbon::now(), $failedJob->failed_at);
         $this->assertStringStartsWith('Exception: test_exception in ', $failedJob->exception);
     }
 }
