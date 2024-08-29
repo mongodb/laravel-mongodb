@@ -262,9 +262,7 @@ model to the ``boot()`` method:
    :emphasize-lines: 26-30
    :dedent:
 
-You can now use Laravel Passport and MongoDB in your application. For more information, see
-`Laravel Passport <https://laravel.com/docs/{+laravel-docs-version+}/passport>`__ in the
-Laravel documentation.
+Then, you can use Laravel Passport and MongoDB in your application.
 
 .. _laravel-user-auth-reminders:
 
