@@ -107,6 +107,7 @@ This section describes how to use the following features to customize the MongoD
 authentication process:
 
 - :ref:`laravel-user-auth-sanctum`
+- :ref:`laravel-user-auth-passport`
 - :ref:`laravel-user-auth-reminders`
 
 .. _laravel-user-auth-sanctum:
@@ -153,6 +154,115 @@ in the Laravel Sanctum guide.
 
    To learn more about the ``DocumentModel`` trait, see
    :ref:`laravel-third-party-model` in the Eloquent Model Class guide.
+
+.. _laravel-user-auth-passport:
+
+Laravel Passport
+~~~~~~~~~~~~~~~~
+
+Laravel Passport is an OAuth 2.0 server implementation that offers
+API authentication for Laravel applications. Use Laravel Passport if
+your application requires OAuth2 support.
+
+.. tip::
+
+   To learn more about Laravel Passport and the OAuth 2.0 protocol, see
+   the following resources:
+
+   - `Laravel Passport <https://laravel.com/docs/{+laravel-docs-version+}/passport>`__ in the
+     Laravel documentation.
+
+   - `OAuth 2.0 <https://oauth.net/2/>`__ on the OAuth website.
+
+Install Laravel Passport
+````````````````````````
+
+To install Laravel Passport and run the database migrations required
+to store OAuth2 clients, run the following command from your project root:
+
+.. code-block:: bash
+
+   php artisan install:api --passport
+
+Next, navigate to your ``User`` model and add the ``Laravel\Passport\HasApiTokens``
+trait. This trait provides helper methods that allow you to inspect a user's
+authentication token and scopes. The following code shows how to add ``Laravel\Passport\HasApiTokens``
+to your ``app\Models\User.php`` file:
+
+.. code-block:: php
+
+   <?php
+
+   namespace App\Models;
+
+   use MongoDB\Laravel\Auth\User as Authenticatable;
+   use Laravel\Passport\HasApiTokens;
+
+   class User extends Authenticatable
+   {
+      use HasApiTokens;
+      ...
+   }
+
+Then, define an ``api`` authentication guard in your ``config\auth.php``
+file and set the ``driver`` option to ``passport``. This instructs your
+application to use Laravel Passport's ``TokenGuard`` class to authenticate
+API requests. The following example adds the ``api`` authentication guard
+to the ``guards`` array:
+
+.. code-block:: php
+   :emphasize-lines: 6-9
+
+   'guards' => [
+      'web' => [
+         'driver' => 'session',
+         'provider' => 'users',
+      ],
+      'api' => [
+         'driver' => 'passport',
+         'provider' => 'users',
+      ],
+   ],
+
+Use Laravel Passport with Laravel MongoDB
+`````````````````````````````````````````
+
+After installing Laravel Passport, you must enable Passport compatibility with MongoDB by
+defining custom {+odm-short+} models that extend the corresponding Passport models.
+To extend each Passport model class, include the ``DocumentModel`` trait in the custom models.
+You can define the following {+odm-short+} model classes:
+
+- ``MongoDB\Laravel\Passport\AuthCode``, which extends ``Laravel\Passport\AuthCode``
+- ``MongoDB\Laravel\Passport\Client``, which extends ``Laravel\Passport\Client``
+- ``MongoDB\Laravel\Passport\PersonalAccessClient``, which extends ``Laravel\Passport\PersonalAccessClient``
+- ``MongoDB\Laravel\Passport\RefreshToken``, which extends ``Laravel\Passport\RefreshToken``
+- ``MongoDB\Laravel\Passport\Token``, which extends ``Laravel\Passport\Token``
+
+The following example code extends the default ``Laravel\Passport\AuthCode``
+model class when defining a ``MongoDB\Laravel\Passport\AuthCode`` class and includes
+the ``DocumentModel`` trait:
+
+.. code-block:: php
+
+   class MongoDB\Laravel\Passport\AuthCode extends Laravel\Passport\AuthCode
+   {
+      use MongoDB\Laravel\Eloquent\DocumentModel;
+
+      protected $primaryKey = '_id';
+      protected $keyType = 'string';
+   }
+
+After defining custom models that extend each ``Laravel\Passport`` class, instruct
+Passport to use the models in the ``boot()`` method of your application's
+``App\Providers\AppServiceProvider`` class. The following example adds each custom
+model to the ``boot()`` method:
+
+.. literalinclude:: /includes/auth/AppServiceProvider.php
+   :language: php
+   :emphasize-lines: 26-30
+   :dedent:
+
+Then, you can use Laravel Passport and MongoDB in your application.
 
 .. _laravel-user-auth-reminders:
 
