@@ -188,7 +188,7 @@ the value of the ``title`` field is ``"Back to the Future"``:
 
 .. note::
 
-	You can use the ``id`` alias in your queries to represent
+	Starting in v5.0, you can use the ``id`` alias in your queries to represent
 	the ``_id`` field in MongoDB documents, as shown in the preceding
    code. When you run a find operation using the query builder, {+odm-short+}
 	automatically converts between ``id`` and ``_id``. Because of this behavior,
