@@ -12,10 +12,9 @@ class Skill extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'skills';
+    protected $table = 'skills';
     protected static $unguarded = true;
 
     public function sqlUsers(): BelongsToMany

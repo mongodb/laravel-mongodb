@@ -78,28 +78,16 @@ class Connection extends BaseConnection
     /**
      * Begin a fluent query against a database collection.
      *
-     * @param  string $collection
-     *
-     * @return Query\Builder
-     */
-    public function collection($collection)
-    {
-        $query = new Query\Builder($this, $this->getQueryGrammar(), $this->getPostProcessor());
-
-        return $query->from($collection);
-    }
-
-    /**
-     * Begin a fluent query against a database collection.
-     *
-     * @param  string      $table
-     * @param  string|null $as
+     * @param  string      $table The name of the MongoDB collection
+     * @param  string|null $as    Ignored. Not supported by MongoDB
      *
      * @return Query\Builder
      */
     public function table($table, $as = null)
     {
-        return $this->collection($table);
+        $query = new Query\Builder($this, $this->getQueryGrammar(), $this->getPostProcessor());
+
+        return $query->from($table);
     }
 
     /**
@@ -289,6 +277,12 @@ class Connection extends BaseConnection
     }
 
     /** @inheritdoc */
+    public function getDriverTitle()
+    {
+        return 'MongoDB';
+    }
+
+    /** @inheritdoc */
     protected function getDefaultPostProcessor()
     {
         return new Query\Processor();
@@ -312,6 +306,14 @@ class Connection extends BaseConnection
     public function setDatabase(Database $db)
     {
         $this->db = $db;
+    }
+
+    /** @inheritdoc  */
+    public function threadCount()
+    {
+        $status = $this->db->command(['serverStatus' => 1])->toArray();
+
+        return $status[0]['connections']['current'];
     }
 
     /**

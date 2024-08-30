@@ -30,6 +30,6 @@ class InsertOneTest extends TestCase
         // end-insert-one
 
         $this->assertInstanceOf(Movie::class, $movie);
-        $this->expectOutputRegex('/^{"title":"Marriage Story","year":2019,"runtime":136,"updated_at":".{27}","created_at":".{27}","_id":"[a-z0-9]{24}"}$/');
+        $this->expectOutputRegex('/^{"title":"Marriage Story","year":2019,"runtime":136,"updated_at":".{27}","created_at":".{27}","id":"[a-z0-9]{24}"}$/');
     }
 }

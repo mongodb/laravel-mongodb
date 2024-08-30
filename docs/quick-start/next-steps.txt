@@ -14,14 +14,14 @@ Next Steps
 Congratulations on completing the Quick Start tutorial!
 
 After you complete these steps, you have a Laravel web application that
-uses the {+odm-long+} to connect to your MongoDB deployment, run a query on
+uses {+odm-long+} to connect to your MongoDB deployment, run a query on
 the sample data, and render a retrieved result.
 
 You can download the web application project by cloning the
 `laravel-quickstart <https://github.com/mongodb-university/laravel-quickstart>`__
 GitHub repository.
 
-Learn more about {+odm-short+} features from the following resources:
+Learn more about {+odm-long+} features from the following resources:
 
 - :ref:`laravel-fundamentals-connection`: learn how to configure your MongoDB
   connection.

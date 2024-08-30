@@ -162,7 +162,7 @@ class WriteOperationsTest extends TestCase
 
         // begin model update one fluent
         $concert = Concert::where(['performer' => 'Brad Mehldau'])
-            ->orderBy('_id')
+            ->orderBy('id')
             ->first()
             ->update(['venue' => 'Manchester Arena', 'ticketsSold' => 9543]);
         // end model update one fluent
@@ -217,22 +217,55 @@ class WriteOperationsTest extends TestCase
         }
     }
 
-    /**
-     * @runInSeparateProcess
-     * @preserveGlobalState disabled
-     */
+        /**
+         * @runInSeparateProcess
+         * @preserveGlobalState disabled
+         */
     public function testModelUpsert(): void
     {
         require_once __DIR__ . '/Concert.php';
         Concert::truncate();
 
+        // Pre-existing sample document
+        Concert::create([
+            'performer' => 'Angel Olsen',
+            'venue' => 'State Theatre',
+            'genres' => [ 'indie', 'rock' ],
+            'ticketsSold' => 150,
+        ]);
+
         // begin model upsert
+        Concert::upsert([
+            ['performer' => 'Angel Olsen', 'venue' => 'Academy of Music', 'ticketsSold' => 275],
+            ['performer' => 'Darondo', 'venue' => 'Cafe du Nord', 'ticketsSold' => 300],
+        ], 'performer', ['ticketsSold']);
+        // end model upsert
+
+        $this->assertSame(2, Concert::count());
+
+        $this->assertSame(275, Concert::where('performer', 'Angel Olsen')->first()->ticketsSold);
+        $this->assertSame('State Theatre', Concert::where('performer', 'Angel Olsen')->first()->venue);
+
+        $this->assertSame(300, Concert::where('performer', 'Darondo')->first()->ticketsSold);
+        $this->assertSame('Cafe du Nord', Concert::where('performer', 'Darondo')->first()->venue);
+    }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testModelUpdateUpsert(): void
+    {
+        require_once __DIR__ . '/Concert.php';
+        Concert::truncate();
+
+        // begin model update upsert
         Concert::where(['performer' => 'Jon Batiste', 'venue' => 'Radio City Music Hall'])
             ->update(
                 ['genres' => ['R&B', 'soul'], 'ticketsSold' => 4000],
                 ['upsert' => true],
             );
-        // end model upsert
+        // end model update upsert
 
         $result = Concert::first();
 
@@ -337,7 +370,7 @@ class WriteOperationsTest extends TestCase
 
         $data = [
             [
-                '_id' => 'CH-0401242000',
+                'id' => 'CH-0401242000',
                 'performer' => 'Mitsuko Uchida',
                 'venue' => 'Carnegie Hall',
                 'genres' => ['classical'],
@@ -345,7 +378,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2024, 4, 1, 20, 0, 0, 'EST')),
             ],
             [
-                '_id' => 'MSG-0212252000',
+                'id' => 'MSG-0212252000',
                 'performer' => 'Brad Mehldau',
                 'venue' => 'Philharmonie de Paris',
                 'genres' => [ 'jazz', 'post-bop' ],
@@ -353,7 +386,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
             ],
             [
-                '_id' => 'MSG-021222000',
+                'id' => 'MSG-021222000',
                 'performer' => 'Billy Joel',
                 'venue' => 'Madison Square Garden',
                 'genres' => [ 'rock', 'soft rock', 'pop rock' ],
@@ -361,7 +394,7 @@ class WriteOperationsTest extends TestCase
                 'performanceDate' => new UTCDateTime(Carbon::create(2025, 2, 12, 20, 0, 0, 'CET')),
             ],
             [
-                '_id' => 'SF-06302000',
+                'id' => 'SF-06302000',
                 'performer' => 'The Rolling Stones',
                 'venue' => 'Soldier Field',
                 'genres' => [ 'rock', 'pop', 'blues' ],
@@ -445,22 +478,22 @@ class WriteOperationsTest extends TestCase
         Concert::truncate();
         $data = [
             [
-                '_id' => 3,
+                'id' => 3,
                 'performer' => 'Mitsuko Uchida',
                 'venue' => 'Carnegie Hall',
             ],
             [
-                '_id' => 5,
+                'id' => 5,
                 'performer' => 'Brad Mehldau',
                 'venue' => 'Philharmonie de Paris',
             ],
             [
-                '_id' => 7,
+                'id' => 7,
                 'performer' => 'Billy Joel',
                 'venue' => 'Madison Square Garden',
             ],
             [
-                '_id' => 9,
+                'id' => 9,
                 'performer' => 'The Rolling Stones',
                 'venue' => 'Soldier Field',
             ],

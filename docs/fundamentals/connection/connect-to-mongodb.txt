@@ -21,7 +21,7 @@ Overview
 --------
 
 In this guide, you can learn how to connect your Laravel application to a
-MongoDB instance or replica set deployment by using {+odm-short+}.
+MongoDB instance or replica set deployment by using {+odm-long+}.
 
 This guide includes the following sections:
 
@@ -41,7 +41,7 @@ Connection URI
 --------------
 
 A **connection URI**, also known as a connection string, specifies how
-{+odm-short+} connects to MongoDB and how to behave while connected.
+the {+odm-short+} connects to MongoDB and how to behave while connected.
 
 Parts of a Connection URI
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -86,7 +86,7 @@ To learn more about connection options, see
 Laravel Database Connection Configuration
 ------------------------------------------
 
-{+odm-short+} lets you configure your MongoDB database connection in the
+The {+odm-short+} lets you configure your MongoDB database connection in the
 ``config/database.php`` Laravel application file. You can specify the following
 connection details in this file:
 
@@ -157,7 +157,7 @@ For a MongoDB database connection, you can specify the following details:
        connection behavior. To learn more about connection options, see
        :ref:`laravel-connection-auth-options`.
 
-   * - ``driverOptions``
+   * - ``driver_options``
      - Specifies options specific to pass to the {+php-library+} that
        determine the driver behavior for that connection. To learn more about
        driver options, see :ref:`laravel-driver-options`.
@@ -170,7 +170,7 @@ For a MongoDB database connection, you can specify the following details:
    - ``host``
    - ``username``
    - ``password``
-   - ``options`` and ``driverOptions``, which are specified by the option name
+   - ``options`` and ``driver_options``, which are specified by the option name
 
 The following example shows how you can specify your MongoDB connection details
 in the ``connections`` array item:
@@ -187,7 +187,7 @@ in the ``connections`` array item:
                'maxPoolSize' => 20,
                'w' => 'majority',
            ],
-           'driverOptions' => [
+           'driver_options' => [
                'serverApi' => 1,
            ],
        ],
@@ -308,7 +308,7 @@ following sample values:
 
    DB_URI="mongodb://myUser:myPass123@host1:27017,host2:27017,host3:27017/?replicaSet=myRS"
 
-When connecting to a replica set, the library that {+odm-short+} uses to manage
+When connecting to a replica set, the library that the {+odm-short+} uses to manage
 connections with MongoDB performs the following actions unless otherwise
 specified:
 

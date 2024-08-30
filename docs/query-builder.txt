@@ -27,7 +27,7 @@ supported database.
 
 .. note::
 
-   {+odm-short+} extends Laravel's query builder and Eloquent ORM, which can
+   The {+odm-short+} extends Laravel's query builder and Eloquent ORM, which can
    run similar database operations. To learn more about retrieving documents
    by using Eloquent models, see :ref:`laravel-fundamentals-retrieve`.
 
@@ -36,28 +36,28 @@ lets you perform database operations. Facades, which are static interfaces to
 classes, make the syntax more concise, avoid runtime errors, and improve
 testability.
 
-{+odm-short+} aliases the ``DB`` method ``table()`` as the ``collection()``
-method. Chain methods to specify commands and any constraints. Then, chain
+The {+odm-short+} provides the ``DB`` method ``table()`` to access a collection.
+Chain methods to specify commands and any constraints. Then, chain
 the ``get()`` method at the end to run the methods and retrieve the results.
 The following example shows the syntax of a query builder call:
 
 .. code-block:: php
 
-   DB::collection('<collection name>')
+   DB::table('<collection name>')
        // chain methods by using the "->" object operator
        ->get();
 .. tip::
 
-   Before using the ``DB::collection()`` method, ensure that you specify MongoDB as your application's
+   Before using the ``DB::table()`` method, ensure that you specify MongoDB as your application's
    default database connection. For instructions on setting the database connection,
    see the :ref:`laravel-quick-start-connect-to-mongodb` step in the Quick Start.
 
    If MongoDB is not your application's default database, you can use the ``DB::connection()`` method
    to specify a MongoDB connection. Pass the name of the connection to the ``connection()`` method,
    as shown in the following code:
-   
+
    .. code-block:: php
-   
+
       $connection = DB::connection('mongodb');
 
 This guide provides examples of the following types of query builder operations:
@@ -390,6 +390,42 @@ wildcard characters:
          ...
       ]
 
+whereLike() and whereNotLike() Methods
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The following methods provide the same functionality as using the
+:ref:`like <laravel-query-builder-pattern>` query operator to match
+patterns:
+
+- ``whereLike()``: Matches a specified pattern. By default, this method
+  performs a case-insensitive match. You can enable case-sensitivity by
+  passing ``true`` as the last parameter to the method.
+- ``whereNotLike()``: Matches documents in which the field
+  value does not contain the specified string pattern.
+
+The following example shows how to use the ``whereLike()`` method to
+match documents in which the ``title`` field has a value that matches the
+pattern ``'Start%'`` with case-sensitivity enabled:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/query-builder/QueryBuilderTest.php
+      :language: php
+      :dedent:
+      :start-after: begin query whereLike
+      :end-before: end query whereLike
+
+   .. output::
+      :language: json
+      :visible: false
+
+      [
+         { "title": "Start-Up", ... },
+         { "title": "Start the Revolution Without Me", ... },
+         ...
+      ]
+
 .. _laravel-query-builder-distinct:
 
 Retrieve Distinct Values
@@ -408,7 +444,7 @@ of the ``year`` field for documents in the ``movies`` collections.
 .. _laravel-query-builder-aggregations:
 
 Aggregations
-~~~~~~~~~~~~
+------------
 
 The examples in this section show the query builder syntax you
 can use to perform **aggregations**. Aggregations are operations
@@ -426,7 +462,7 @@ aggregations to compute and return the following information:
 .. _laravel-query-builder-aggregation-groupby:
 
 Results Grouped by Common Field Values Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``groupBy()`` query builder method
 to retrieve document data grouped by shared values of the ``runtime`` field.
@@ -485,7 +521,7 @@ This example chains the following operations to match documents from the
 .. _laravel-query-builder-aggregation-count:
 
 Number of Results Example
-^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``count()``
 query builder method to return the number of documents
@@ -500,7 +536,7 @@ contained in the ``movies`` collection:
 .. _laravel-query-builder-aggregation-max:
 
 Maximum Value of a Field Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``max()``
 query builder method to return the highest numerical
@@ -516,7 +552,7 @@ value of the ``runtime`` field from the entire
 .. _laravel-query-builder-aggregation-min:
 
 Minimum Value of a Field Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``min()``
 query builder method to return the lowest numerical
@@ -532,7 +568,7 @@ collection:
 .. _laravel-query-builder-aggregation-avg:
 
 Average Value of a Field Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``avg()``
 query builder method to return the numerical average, or
@@ -548,7 +584,7 @@ the entire ``movies`` collection.
 .. _laravel-query-builder-aggregation-sum:
 
 Summed Value of a Field Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``sum()``
 query builder method to return the numerical total of
@@ -565,7 +601,7 @@ collection:
 .. _laravel-query-builder-aggregate-matched:
 
 Aggregate Matched Results Example
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to aggregate data
 from results that match a query. The query matches all
@@ -1044,6 +1080,63 @@ following MongoDB-specific write operations:
 Upsert a Document Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Starting in v4.7, you can perform an upsert operation by using either of
+the following query builder methods:
+
+- ``upsert()``: When you use this method, you can perform a **batch
+  upsert** to change or insert multiple documents in one operation.
+
+- ``update()``: When you use this method, you must specify the
+  ``upsert`` option to update all documents that match the query filter
+  or insert one document if no documents are matched. Only this upsert method
+  is supported in versions v4.6 and earlier.
+
+Upsert Method
+^^^^^^^^^^^^^
+
+The ``upsert(array $values, array|string $uniqueBy, array|null
+$update)`` query builder method accepts the following parameters:
+
+- ``$values``: Array of fields and values that specify documents to update or insert.
+- ``$uniqueBy``: List of fields that uniquely identify documents in your
+  first array parameter.
+- ``$update``: Optional list of fields to update if a matching document
+  exists. If you omit this parameter, the {+odm-short+} updates all fields.
+
+The following example shows how to use the ``upsert()`` query builder method
+to update or insert documents based on the following instructions:
+
+- Specify a document in which the value of the ``title`` field is
+  ``'Inspector Maigret'``, the value of the ``recommended`` field is ``false``,
+  and the value of the ``runtime`` field is ``128``.
+
+- Specify a document in which the value of the ``title`` field is
+  ``'Petit Maman'``, the value of the ``recommended`` field is
+  ``true``, and the value of the ``runtime`` field is ``72``.
+
+- Indicate that the ``title`` field uniquely identifies documents in the
+  scope of your operation.
+
+- Update only the ``recommended`` field in matched documents.
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin upsert
+   :end-before: end upsert
+
+The ``upsert()`` query builder method returns the number of
+documents that the operation updated, inserted, and modified.
+
+.. note::
+
+   The ``upsert()`` method does not trigger events. To trigger events
+   from an upsert operation, you can use the ``createOrFirst()`` method
+   instead.
+
+Update Method
+^^^^^^^^^^^^^
+
 The following example shows how to use the ``update()`` query builder method
 and ``upsert`` option to update the matching document or insert one with the
 specified data if it does not exist. When you set the ``upsert`` option to
@@ -1053,8 +1146,8 @@ and the ``title`` field and value specified in the ``where()`` query operation:
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
-   :start-after: begin upsert
-   :end-before: end upsert
+   :start-after: begin update upsert
+   :end-before: end update upsert
 
 The ``update()`` query builder method returns the number of documents that the
 operation updated or inserted.
@@ -1077,6 +1170,23 @@ the ``imdb.votes`` field in the matched document:
 The ``increment()`` query builder method returns the number of documents that the
 operation updated.
 
+Starting in {+odm-short+} v4.8, you can also use the ``incrementEach()`` query
+builder method to increment multiple values in a single operation. The following
+example uses the ``incrementEach()`` method to increase the values of the ``awards.wins``
+and ``imdb.votes`` fields in the matched document:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin increment each
+   :end-before: end increment each
+
+.. note::
+
+   If you pass a field to the ``increment()`` or ``incrementEach()`` method that
+   has no value or doesn't exist in the matched documents, these methods initialize
+   the specified field to the increment value.
+
 .. _laravel-mongodb-query-builder-decrement:
 
 Decrement a Numerical Value Example
@@ -1094,6 +1204,23 @@ matched document:
 
 The ``decrement()`` query builder method returns the number of documents that the
 operation updated.
+
+Starting in {+odm-short+} v4.8, you can also use the ``decrementEach()`` query builder
+method to decrement multiple values in a single operation. The following example uses
+the ``decrementEach()`` method to decrease the values of the ``metacritic`` and ``imdb.rating``
+fields in the matched document:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin decrement each
+   :end-before: end decrement each
+
+.. note::
+
+   If you pass a field to the ``decrement()`` or ``decrementEach()`` method that
+   has no value or doesn't exist in the matched documents, these methods initialize
+   the specified field to the decrement value.
 
 .. _laravel-mongodb-query-builder-push:
 

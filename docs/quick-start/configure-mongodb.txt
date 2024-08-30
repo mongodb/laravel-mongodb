@@ -68,6 +68,7 @@ Configure Your MongoDB Connection
              'dsn' => env('DB_URI'),
              'database' => 'sample_mflix',
            ],
+         ],
 
          // ...
 
@@ -89,6 +90,3 @@ After completing these steps, your Laravel web application is ready to
 connect to MongoDB.
 
 .. include:: /includes/quick-start/troubleshoot.rst
-
-.. button:: Next: View Sample MongoDB Data
-   :uri: /quick-start/view-data/

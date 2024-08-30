@@ -12,10 +12,9 @@ class Experience extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'experiences';
+    protected $table = 'experiences';
     protected static $unguarded = true;
 
     protected $casts = ['years' => 'int'];

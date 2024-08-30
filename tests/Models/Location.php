@@ -11,9 +11,8 @@ class Location extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'locations';
+    protected $table = 'locations';
     protected static $unguarded = true;
 }

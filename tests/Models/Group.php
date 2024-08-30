@@ -12,14 +12,13 @@ class Group extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'groups';
+    protected $table = 'groups';
     protected static $unguarded = true;
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'users', 'groups', 'users', '_id', '_id', 'users');
+        return $this->belongsToMany(User::class, 'users', 'groups', 'users', 'id', 'id', 'users');
     }
 }

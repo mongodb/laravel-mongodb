@@ -8,7 +8,10 @@ use Illuminate\Bus\BusServiceProvider;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
+use InvalidArgumentException;
 use MongoDB\Laravel\Bus\MongoBatchRepository;
+
+use function sprintf;
 
 class MongoDBBusServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -18,14 +21,21 @@ class MongoDBBusServiceProvider extends ServiceProvider implements DeferrablePro
     public function register()
     {
         $this->app->singleton(MongoBatchRepository::class, function (Container $app) {
+            $connection = $app->make('db')->connection($app->config->get('queue.batching.database'));
+
+            if (! $connection instanceof Connection) {
+                throw new InvalidArgumentException(sprintf('The "mongodb" batch driver requires a MongoDB connection. The "%s" connection uses the "%s" driver.', $connection->getName(), $connection->getDriverName()));
+            }
+
             return new MongoBatchRepository(
                 $app->make(BatchFactory::class),
-                $app->make('db')->connection($app->config->get('queue.batching.database')),
+                $connection,
                 $app->config->get('queue.batching.collection', 'job_batches'),
             );
         });
 
-        /** @see BusServiceProvider::registerBatchServices() */
+        /** The {@see BatchRepository} service is registered in {@see BusServiceProvider} */
+        $this->app->register(BusServiceProvider::class);
         $this->app->extend(BatchRepository::class, function (BatchRepository $repository, Container $app) {
             $driver = $app->config->get('queue.batching.driver');
 

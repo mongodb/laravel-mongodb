@@ -21,10 +21,10 @@ Laravel Compatibility
 ---------------------
 
 The following compatibility table specifies the versions of Laravel and
-{+odm-short+} that you can use together.
+the {+odm-short+} that you can use together.
 
 .. include:: /includes/framework-compatibility-laravel.rst
 
-To find compatibility information for unmaintained versions of {+odm-short+},
+To find compatibility information for unmaintained versions of the {+odm-short+},
 see `Laravel Version Compatibility <{+mongodb-laravel-gh+}/blob/3.9/README.md#installation>`__
 on GitHub.

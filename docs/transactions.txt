@@ -21,11 +21,11 @@ Overview
 --------
 
 In this guide, you can learn how to perform a **transaction** in MongoDB by
-using the {+odm-long+}. Transactions let you run a sequence of write operations
+using {+odm-long+}. Transactions let you run a sequence of write operations
 that update the data only after the transaction is committed.
 
 If the transaction fails, the {+php-library+} that manages MongoDB operations
-for {+odm-short+} ensures that MongoDB discards all the changes made within
+for the {+odm-short+} ensures that MongoDB discards all the changes made within
 the transaction before they become visible. This property of transactions
 that ensures that all changes within a transaction are either applied or
 discarded is called **atomicity**.
@@ -39,17 +39,21 @@ Multi-document transactions are **ACID compliant** because MongoDB
 guarantees that the data in your transaction operations remains consistent,
 even if the driver encounters unexpected errors.
 
-Learn how to perform transactions in the following sections of this guide:
+To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
+in the {+server-docs-name+}.
+
+This guide contains the following sections:
 
 - :ref:`laravel-transaction-requirements`
 - :ref:`laravel-transaction-callback`
 - :ref:`laravel-transaction-commit`
 - :ref:`laravel-transaction-rollback`
 
-.. tip::
+.. tip:: Transactions Learning Byte
 
-   To learn more about transactions in MongoDB, see :manual:`Transactions </core/transactions/>`
-   in the {+server-docs-name+}.
+   Practice using the {+odm-short+} to perform transactions
+   in the `Laravel Transactions Learning Byte
+   <https://learn.mongodb.com/courses/laravel-transactions>`__.
 
 .. _laravel-transaction-requirements:
 
@@ -62,7 +66,7 @@ version and topology:
 - MongoDB version 4.0 or later
 - A replica set deployment or sharded cluster
 
-MongoDB server and {+odm-short+} have the following limitations:
+MongoDB Server and the {+odm-short+} have the following limitations:
 
 - In MongoDB versions 4.2 and earlier, write operations performed within a
   transaction must be on existing collections. In MongoDB versions 4.4 and
@@ -74,7 +78,7 @@ MongoDB server and {+odm-short+} have the following limitations:
   transaction within another one, the extension raises a ``RuntimeException``.
   To learn more about this limitation, see :manual:`Transactions and Sessions </core/transactions/#transactions-and-sessions>`
   in the {+server-docs-name+}.
-- The {+odm-long+} does not support the database testing traits
+- {+odm-long+} does not support the database testing traits
   ``Illuminate\Foundation\Testing\DatabaseTransactions`` and ``Illuminate\Foundation\Testing\RefreshDatabase``.
   As a workaround, you can create migrations with the ``Illuminate\Foundation\Testing\DatabaseMigrations``
   trait to reset the database after each test.
@@ -156,4 +160,3 @@ transaction is rolled back, and none of the models are updated:
    :emphasize-lines: 1,18,20
    :start-after: begin rollback transaction
    :end-before: end rollback transaction
-

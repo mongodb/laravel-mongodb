@@ -20,7 +20,7 @@ class AuthTest extends TestCase
         parent::setUp();
 
         User::truncate();
-        DB::collection('password_reset_tokens')->truncate();
+        DB::table('password_reset_tokens')->truncate();
     }
 
     public function testAuthAttempt()
@@ -52,18 +52,18 @@ class AuthTest extends TestCase
             $broker->sendResetLink(
                 ['email' => 'john.doe@example.com'],
                 function ($actualUser, $actualToken) use ($user, &$token) {
-                    $this->assertEquals($user->_id, $actualUser->_id);
+                    $this->assertEquals($user->id, $actualUser->id);
                     // Store token for later use
                     $token = $actualToken;
                 },
             ),
         );
 
-        $this->assertEquals(1, DB::collection('password_reset_tokens')->count());
-        $reminder = DB::collection('password_reset_tokens')->first();
-        $this->assertEquals('john.doe@example.com', $reminder['email']);
-        $this->assertNotNull($reminder['token']);
-        $this->assertInstanceOf(UTCDateTime::class, $reminder['created_at']);
+        $this->assertEquals(1, DB::table('password_reset_tokens')->count());
+        $reminder = DB::table('password_reset_tokens')->first();
+        $this->assertEquals('john.doe@example.com', $reminder->email);
+        $this->assertNotNull($reminder->token);
+        $this->assertInstanceOf(UTCDateTime::class, $reminder->created_at);
 
         $credentials = [
             'email' => 'john.doe@example.com',
@@ -78,6 +78,6 @@ class AuthTest extends TestCase
         });
 
         $this->assertEquals('passwords.reset', $response);
-        $this->assertEquals(0, DB::collection('password_resets')->count());
+        $this->assertEquals(0, DB::table('password_resets')->count());
     }
 }

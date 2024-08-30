@@ -12,10 +12,9 @@ class Scoped extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'scoped';
+    protected $table = 'scoped';
     protected $fillable = ['name', 'favorite'];
 
     protected static function boot()

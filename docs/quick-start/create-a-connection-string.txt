@@ -58,6 +58,3 @@ After completing these steps, you have a connection string that
 contains your database username and password.
 
 .. include:: /includes/quick-start/troubleshoot.rst
-
-.. button:: Next: Configure Your MongoDB Connection
-   :uri: /quick-start/configure-mongodb/

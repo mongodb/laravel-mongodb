@@ -14,10 +14,9 @@ class Client extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'clients';
+    protected $table = 'clients';
     protected static $unguarded = true;
 
     public function users(): BelongsToMany

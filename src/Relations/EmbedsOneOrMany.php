@@ -15,8 +15,10 @@ use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use Throwable;
 
 use function array_merge;
+use function assert;
 use function count;
 use function is_array;
+use function str_starts_with;
 use function throw_if;
 
 abstract class EmbedsOneOrMany extends Relation
@@ -392,7 +394,12 @@ abstract class EmbedsOneOrMany extends Relation
         $results = [];
 
         foreach ($array as $key => $value) {
-            $results[$prepend . $key] = $value;
+            if (str_starts_with($key, '$')) {
+                assert(is_array($value), 'Update operator value must be an array.');
+                $results[$key] = static::getUpdateValues($value, $prepend);
+            } else {
+                $results[$prepend . $key] = $value;
+            }
         }
 
         return $results;

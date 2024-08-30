@@ -1,5 +1,5 @@
 ===============
-{+odm-short+}
+{+odm-long+}
 ===============
 
 .. facet::
@@ -32,10 +32,11 @@
 Introduction
 ------------
 
-Welcome to the documentation site for the official {+odm-long+}.
-This package extends methods in the PHP Laravel API to work with MongoDB as
-a datastore in your Laravel application. {+odm-short+} allows you to use
-Laravel Eloquent and Query Builder syntax to work with your MongoDB data.
+Welcome to the documentation site for {+odm-long+}, the official
+Laravel integration for MongoDB. This package extends methods in the PHP
+Laravel API to work with MongoDB as a datastore in your Laravel
+application. The {+odm-short+} allows you to use Laravel Eloquent and
+Query Builder syntax to work with your MongoDB data.
 
 .. note::
 
@@ -47,7 +48,7 @@ Laravel Eloquent and Query Builder syntax to work with your MongoDB data.
 Quick Start
 -----------
 
-Learn how to add {+odm-short+} to a Laravel web application, connect to
+Learn how to add the {+odm-short+} to a Laravel web application, connect to
 MongoDB hosted on MongoDB Atlas, and begin working with data in the
 :ref:`laravel-quick-start` section.
 
@@ -60,7 +61,7 @@ MongoDB operations in the :ref:`laravel-usage-examples` section.
 Fundamentals
 ------------
 
-To learn how to perform the following tasks by using {+odm-short+},
+To learn how to perform the following tasks by using the {+odm-short+},
 see the following content:
 
 - :ref:`laravel-fundamentals-connection`
@@ -85,13 +86,13 @@ more resources in the :ref:`laravel-issues-and-help` section.
 Feature Compatibility
 ---------------------
 
-Learn about Laravel features that {+odm-short+} supports in the
+Learn about Laravel features that the {+odm-short+} supports in the
 :ref:`laravel-feature-compat` section.
 
 Compatibility
 -------------
 
-To learn more about which versions of the {+odm-long+} and Laravel are
+To learn more about which versions of {+odm-long+} and Laravel are
 compatible, see the :ref:`laravel-compatibility` section.
 
 Upgrade Versions

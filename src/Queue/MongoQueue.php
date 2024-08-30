@@ -109,14 +109,14 @@ class MongoQueue extends DatabaseQueue
     {
         $expiration = Carbon::now()->subSeconds($this->retryAfter)->getTimestamp();
 
-        $reserved = $this->database->collection($this->table)
+        $reserved = $this->database->table($this->table)
             ->where('queue', $this->getQueue($queue))
             ->whereNotNull('reserved_at')
             ->where('reserved_at', '<=', $expiration)
             ->get();
 
         foreach ($reserved as $job) {
-            $this->releaseJob($job['_id'], $job['attempts']);
+            $this->releaseJob($job->id, $job->attempts);
         }
     }
 
@@ -140,7 +140,7 @@ class MongoQueue extends DatabaseQueue
     /** @inheritdoc */
     public function deleteReserved($queue, $id)
     {
-        $this->database->collection($this->table)->where('_id', $id)->delete();
+        $this->database->table($this->table)->where('_id', $id)->delete();
     }
 
     /** @inheritdoc */

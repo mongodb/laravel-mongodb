@@ -25,6 +25,7 @@ use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Driver\Cursor;
 use Override;
 use RuntimeException;
+use stdClass;
 
 use function array_fill_keys;
 use function array_is_list;
@@ -32,7 +33,6 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_values;
-use function array_walk_recursive;
 use function assert;
 use function blank;
 use function call_user_func;
@@ -46,6 +46,7 @@ use function explode;
 use function func_get_args;
 use function func_num_args;
 use function get_debug_type;
+use function get_object_vars;
 use function implode;
 use function in_array;
 use function is_array;
@@ -53,11 +54,13 @@ use function is_bool;
 use function is_callable;
 use function is_float;
 use function is_int;
+use function is_object;
 use function is_string;
 use function md5;
 use function preg_match;
 use function preg_quote;
 use function preg_replace;
+use function property_exists;
 use function serialize;
 use function sprintf;
 use function str_ends_with;
@@ -298,6 +301,7 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
+        $wheres = $this->aliasIdForQuery($wheres);
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups || $this->aggregate) {
@@ -375,7 +379,7 @@ class Builder extends BaseBuilder
 
             // Apply order and limit
             if ($this->orders) {
-                $pipeline[] = ['$sort' => $this->orders];
+                $pipeline[] = ['$sort' => $this->aliasIdForQuery($this->orders)];
             }
 
             if ($this->offset) {
@@ -391,7 +395,7 @@ class Builder extends BaseBuilder
             }
 
             $options = [
-                'typeMap' => ['root' => 'array', 'document' => 'array'],
+                'typeMap' => ['root' => 'object', 'document' => 'array'],
             ];
 
             // Add custom query options
@@ -416,7 +420,7 @@ class Builder extends BaseBuilder
 
         // Normal query
         // Convert select columns to simple projections.
-        $projection = array_fill_keys($columns, true);
+        $projection = $this->aliasIdForQuery(array_fill_keys($columns, true));
 
         // Add custom projections.
         if ($this->projections) {
@@ -431,7 +435,7 @@ class Builder extends BaseBuilder
         }
 
         if ($this->orders) {
-            $options['sort'] = $this->orders;
+            $options['sort'] = $this->aliasIdForQuery($this->orders);
         }
 
         if ($this->offset) {
@@ -450,8 +454,7 @@ class Builder extends BaseBuilder
             $options['projection'] = $projection;
         }
 
-        // Fix for legacy support, converts the results to arrays instead of objects.
-        $options['typeMap'] = ['root' => 'array', 'document' => 'array'];
+        $options['typeMap'] = ['root' => 'object', 'document' => 'array'];
 
         // Add custom query options
         if (count($this->options)) {
@@ -506,13 +509,19 @@ class Builder extends BaseBuilder
         if ($returnLazy) {
             return LazyCollection::make(function () use ($result) {
                 foreach ($result as $item) {
-                    yield $item;
+                    yield $this->aliasIdForResult($item);
                 }
             });
         }
 
         if ($result instanceof Cursor) {
             $result = $result->toArray();
+        }
+
+        foreach ($result as &$document) {
+            if (is_array($document) || is_object($document)) {
+                $document = $this->aliasIdForResult($document);
+            }
         }
 
         return new Collection($result);
@@ -593,7 +602,7 @@ class Builder extends BaseBuilder
     /** @inheritdoc */
     public function exists()
     {
-        return $this->first(['_id']) !== null;
+        return $this->first(['id']) !== null;
     }
 
     /** @inheritdoc */
@@ -682,6 +691,8 @@ class Builder extends BaseBuilder
             $values = [$values];
         }
 
+        $values = $this->aliasIdForQuery($values);
+
         $options = $this->inheritConnectionOptions();
 
         $result = $this->collection->insertMany($values, $options);
@@ -694,17 +705,18 @@ class Builder extends BaseBuilder
     {
         $options = $this->inheritConnectionOptions();
 
+        $values = $this->aliasIdForQuery($values);
+
         $result = $this->collection->insertOne($values, $options);
 
         if (! $result->isAcknowledged()) {
             return null;
         }
 
-        if ($sequence === null || $sequence === '_id') {
-            return $result->getInsertedId();
-        }
-
-        return $values[$sequence];
+        return match ($sequence) {
+            '_id', 'id', null => $result->getInsertedId(),
+            default => $values[$sequence],
+        };
     }
 
     /** @inheritdoc */
@@ -720,9 +732,60 @@ class Builder extends BaseBuilder
             unset($values[$key]);
         }
 
-        $options = $this->inheritConnectionOptions($options);
+        // Since "id" is an alias for "_id", we prevent updating it
+        foreach ($values as $fields) {
+            if (array_key_exists('id', $fields)) {
+                throw new InvalidArgumentException('Cannot update "id" field.');
+            }
+        }
 
         return $this->performUpdate($values, $options);
+    }
+
+    /** @inheritdoc */
+    public function upsert(array $values, $uniqueBy, $update = null): int
+    {
+        if ($values === []) {
+            return 0;
+        }
+
+        // Single document provided
+        if (! array_is_list($values)) {
+            $values = [$values];
+        }
+
+        $this->applyBeforeQueryCallbacks();
+
+        $options = $this->inheritConnectionOptions();
+        $uniqueBy = array_fill_keys((array) $uniqueBy, 1);
+
+        // If no update fields are specified, all fields are updated
+        if ($update !== null) {
+            $update = array_fill_keys((array) $update, 1);
+        }
+
+        $bulk = [];
+
+        foreach ($values as $value) {
+            $filter = $operation = [];
+            foreach ($value as $key => $val) {
+                if (isset($uniqueBy[$key])) {
+                    $filter[$key] = $val;
+                }
+
+                if ($update === null || array_key_exists($key, $update)) {
+                    $operation['$set'][$key] = $val;
+                } else {
+                    $operation['$setOnInsert'][$key] = $val;
+                }
+            }
+
+            $bulk[] = ['updateOne' => [$filter, $operation, ['upsert' => true]]];
+        }
+
+        $result = $this->collection->bulkWrite($bulk, $options);
+
+        return $result->getInsertedCount() + $result->getUpsertedCount() + $result->getModifiedCount();
     }
 
     /** @inheritdoc */
@@ -746,6 +809,22 @@ class Builder extends BaseBuilder
         return $this->performUpdate($query, $options);
     }
 
+    public function incrementEach(array $columns, array $extra = [], array $options = [])
+    {
+        $stage['$addFields'] = $extra;
+
+        // Not using $inc for each column, because it would fail if one column is null.
+        foreach ($columns as $column => $amount) {
+            $stage['$addFields'][$column] = [
+                '$add' => [$amount, ['$ifNull' => ['$' . $column, 0]]],
+            ];
+        }
+
+        $options = $this->inheritConnectionOptions($options);
+
+        return $this->performUpdate([$stage], $options);
+    }
+
     /** @inheritdoc */
     public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
@@ -753,15 +832,15 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
-    public function chunkById($count, callable $callback, $column = '_id', $alias = null)
+    public function decrementEach(array $columns, array $extra = [], array $options = [])
     {
-        return parent::chunkById($count, $callback, $column, $alias);
-    }
+        $decrement = [];
 
-    /** @inheritdoc */
-    public function forPageAfterId($perPage = 15, $lastId = 0, $column = '_id')
-    {
-        return parent::forPageAfterId($perPage, $lastId, $column);
+        foreach ($columns as $column => $amount) {
+            $decrement[$column] = -1 * $amount;
+        }
+
+        return $this->incrementEach($decrement, $extra, $options);
     }
 
     /** @inheritdoc */
@@ -794,6 +873,7 @@ class Builder extends BaseBuilder
         }
 
         $wheres  = $this->compileWheres();
+        $wheres  = $this->aliasIdForQuery($wheres);
         $options = $this->inheritConnectionOptions();
 
         if (is_int($this->limit)) {
@@ -979,21 +1059,22 @@ class Builder extends BaseBuilder
     /**
      * Perform an update query.
      *
-     * @param  array $query
-     *
      * @return int
      */
-    protected function performUpdate($query, array $options = [])
+    protected function performUpdate(array $update, array $options = [])
     {
         // Update multiple items by default.
         if (! array_key_exists('multiple', $options)) {
             $options['multiple'] = true;
         }
 
+        $update = $this->aliasIdForQuery($update);
+
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
-        $result = $this->collection->updateMany($wheres, $query, $options);
+        $wheres = $this->aliasIdForQuery($wheres);
+        $result = $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
             return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
         }
@@ -1086,45 +1167,30 @@ class Builder extends BaseBuilder
             // Convert column name to string to use as array key
             if (isset($where['column'])) {
                 $where['column'] = (string) $where['column'];
-            }
 
-            // Convert id's.
-            if (isset($where['column']) && ($where['column'] === '_id' || str_ends_with($where['column'], '._id'))) {
-                if (isset($where['values'])) {
-                    // Multiple values.
-                    $where['values'] = array_map($this->convertKey(...), $where['values']);
-                } elseif (isset($where['value'])) {
-                    // Single value.
-                    $where['value'] = $this->convertKey($where['value']);
+                // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
+                if ($where['column'] === 'id') {
+                    $where['column'] = '_id';
                 }
-            }
 
-            // Convert DateTime values to UTCDateTime.
-            if (isset($where['value'])) {
-                if (is_array($where['value'])) {
-                    array_walk_recursive($where['value'], function (&$item, $key) {
-                        if ($item instanceof DateTimeInterface) {
-                            $item = new UTCDateTime($item);
-                        }
-                    });
-                } else {
-                    if ($where['value'] instanceof DateTimeInterface) {
-                        $where['value'] = new UTCDateTime($where['value']);
+                // Convert id's.
+                if ($where['column'] === '_id' || str_ends_with($where['column'], '._id')) {
+                    if (isset($where['values'])) {
+                        // Multiple values.
+                        $where['values'] = array_map($this->convertKey(...), $where['values']);
+                    } elseif (isset($where['value'])) {
+                        // Single value.
+                        $where['value'] = $this->convertKey($where['value']);
                     }
                 }
-            } elseif (isset($where['values'])) {
-                if (is_array($where['values'])) {
-                    array_walk_recursive($where['values'], function (&$item, $key) {
-                        if ($item instanceof DateTimeInterface) {
-                            $item = new UTCDateTime($item);
-                        }
-                    });
-                } elseif ($where['values'] instanceof CarbonPeriod) {
-                    $where['values'] = [
-                        new UTCDateTime($where['values']->getStartDate()),
-                        new UTCDateTime($where['values']->getEndDate()),
-                    ];
-                }
+            }
+
+            // Convert CarbonPeriod to DateTime interval.
+            if (isset($where['values']) && $where['values'] instanceof CarbonPeriod) {
+                $where['values'] = [
+                    $where['values']->getStartDate(),
+                    $where['values']->getEndDate(),
+                ];
             }
 
             // In a sequence of "where" clauses, the logical operator of the
@@ -1197,7 +1263,8 @@ class Builder extends BaseBuilder
                 // All backslashes are converted to \\, which are needed in matching regexes.
                 preg_quote($value),
             );
-            $value = new Regex('^' . $regex . '$', 'i');
+            $flags = $where['caseSensitive'] ?? false ? '' : 'i';
+            $value = new Regex('^' . $regex . '$', $flags);
 
             // For inverse like operations, we can just use the $not operator with the Regex
             $operator = $operator === 'like' ? '=' : 'not';
@@ -1253,6 +1320,13 @@ class Builder extends BaseBuilder
     protected function compileWhereNotIn(array $where): array
     {
         return [$where['column'] => ['$nin' => array_values($where['values'])]];
+    }
+
+    protected function compileWhereLike(array $where): array
+    {
+        $where['operator'] = $where['not'] ? 'not like' : 'like';
+
+        return $this->compileWhereBasic($where);
     }
 
     protected function compileWhereNull(array $where): array
@@ -1534,5 +1608,77 @@ class Builder extends BaseBuilder
     public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    private function aliasIdForQuery(array $values): array
+    {
+        if (array_key_exists('id', $values)) {
+            if (array_key_exists('_id', $values)) {
+                throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
+            }
+
+            $values['_id'] = $values['id'];
+            unset($values['id']);
+        }
+
+        foreach ($values as $key => $value) {
+            if (is_string($key) && str_ends_with($key, '.id')) {
+                $newkey = substr($key, 0, -3) . '._id';
+                if (array_key_exists($newkey, $values)) {
+                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
+                }
+
+                $values[substr($key, 0, -3) . '._id'] = $value;
+                unset($values[$key]);
+            }
+        }
+
+        foreach ($values as &$value) {
+            if (is_array($value)) {
+                $value = $this->aliasIdForQuery($value);
+            } elseif ($value instanceof DateTimeInterface) {
+                $value = new UTCDateTime($value);
+            }
+        }
+
+        return $values;
+    }
+
+    /**
+     * @psalm-param T $values
+     *
+     * @psalm-return T
+     *
+     * @template T of array|object
+     */
+    private function aliasIdForResult(array|object $values): array|object
+    {
+        if (is_array($values)) {
+            if (array_key_exists('_id', $values) && ! array_key_exists('id', $values)) {
+                $values['id'] = $values['_id'];
+                //unset($values['_id']);
+            }
+
+            foreach ($values as $key => $value) {
+                if (is_array($value) || is_object($value)) {
+                    $values[$key] = $this->aliasIdForResult($value);
+                }
+            }
+        }
+
+        if ($values instanceof stdClass) {
+            if (property_exists($values, '_id') && ! property_exists($values, 'id')) {
+                $values->id = $values->_id;
+                //unset($values->_id);
+            }
+
+            foreach (get_object_vars($values) as $key => $value) {
+                if (is_array($value) || is_object($value)) {
+                    $values->{$key} = $this->aliasIdForResult($value);
+                }
+            }
+        }
+
+        return $values;
     }
 }

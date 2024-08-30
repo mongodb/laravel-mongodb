@@ -21,11 +21,11 @@ Overview
 --------
 
 This guide describes the Laravel features that are supported by
-the {+odm-long+}. This page discusses Laravel version 11.x feature
-availability in {+odm-short+}.
+{+odm-long+}. This page discusses Laravel version 11.x feature
+availability in the {+odm-short+}.
 
 The following sections contain tables that describe whether individual
-features are available in {+odm-short+}.
+features are available in the {+odm-short+}.
 
 Database Features
 -----------------
@@ -66,7 +66,7 @@ Database Features
 Query Features
 --------------
 
-The following Eloquent methods are not supported in {+odm-short+}:
+The following Eloquent methods are not supported in the {+odm-short+}:
 
 - ``toSql()``
 - ``toRawSql()``
@@ -151,7 +151,7 @@ The following Eloquent methods are not supported in {+odm-short+}:
      - *Unsupported as MongoDB uses ObjectIDs*
 
    * - Upserts
-     - *Unsupported*
+     - ✓ See :ref:`laravel-mongodb-query-builder-upsert`.
 
    * - Update Statements
      - ✓
@@ -168,19 +168,19 @@ The following Eloquent methods are not supported in {+odm-short+}:
 Pagination Features
 -------------------
 
-{+odm-short+} supports all Laravel pagination features.
+The {+odm-short+} supports all Laravel pagination features.
 
 
 Migration Features
 ------------------
 
-{+odm-short+} supports all Laravel migration features, but the
+The {+odm-short+} supports all Laravel migration features, but the
 implementation is specific to MongoDB's schemaless model.
 
 Seeding Features
 ----------------
 
-{+odm-short+} supports all Laravel seeding features.
+The {+odm-short+} supports all Laravel seeding features.
 
 Eloquent Features
 -----------------
@@ -216,7 +216,7 @@ Eloquent Features
      - ✓
 
    * - Upserts
-     - *Unsupported, but you can use the createOneOrFirst() method*
+     - ✓ See :ref:`laravel-modify-documents-upsert`.
 
    * - Deleting Models
      - ✓
@@ -268,7 +268,7 @@ Eloquent Relationship Features
 Eloquent Collection Features
 ----------------------------
 
-{+odm-short+} supports all Eloquent collection features.
+The {+odm-short+} supports all Eloquent collection features.
 
 Eloquent Mutator Features
 -------------------------
@@ -304,4 +304,4 @@ Eloquent Mutator Features
 Eloquent Model Factory Features
 -------------------------------
 
-{+odm-short+} supports all Eloquent factory features.
+The {+odm-short+} supports all Eloquent factory features.

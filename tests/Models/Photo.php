@@ -12,10 +12,9 @@ class Photo extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'string';
     protected $connection = 'mongodb';
-    protected string $collection = 'photos';
+    protected $table = 'photos';
     protected static $unguarded = true;
 
     public function hasImage(): MorphTo

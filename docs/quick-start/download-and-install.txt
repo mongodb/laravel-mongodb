@@ -33,7 +33,7 @@ to a Laravel web application.
 
    .. step:: Install the {+php-extension+}
 
-      {+odm-short+} requires the {+php-extension+} to manage MongoDB
+      {+odm-long+} requires the {+php-extension+} to manage MongoDB
       connections and commands.
       Follow the `Installing the MongoDB PHP Driver with PECL <https://www.php.net/manual/en/mongodb.installation.pecl.php>`__
       guide to install the {+php-extension+}.
@@ -41,7 +41,7 @@ to a Laravel web application.
    .. step:: Install Laravel
 
       Ensure that the version of Laravel you install is compatible with the
-      version of {+odm-short+}. To learn which versions are compatible,
+      version of the {+odm-short+}. To learn which versions are compatible,
       see the :ref:`laravel-compatibility` page.
 
       Run the following command to install Laravel:
@@ -93,9 +93,9 @@ to a Laravel web application.
 
          php artisan key:generate
 
-   .. step:: Add {+odm-short+} to the dependencies
+   .. step:: Add {+odm-long+} to the dependencies
 
-      Run the following command to add the {+odm-short+} dependency to
+      Run the following command to add the {+odm-long+} dependency to
       your application:
 
       .. code-block:: bash
@@ -110,10 +110,7 @@ to a Laravel web application.
 
          "mongodb/laravel-mongodb": "^{+package-version+}"
 
-      After completing these steps, you have a new Laravel project with the
-      {+odm-short+} dependencies installed.
+      After completing these steps, you have a new Laravel project with
+      the {+odm-short+} dependencies installed.
 
 .. include:: /includes/quick-start/troubleshoot.rst
-
-.. button:: Create a MongoDB Deployment
-   :uri: /quick-start/create-a-deployment/

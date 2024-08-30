@@ -26,24 +26,29 @@ use stdClass;
 use function collect;
 use function method_exists;
 use function now;
+use function sprintf;
 use function var_export;
 
 class BuilderTest extends TestCase
 {
     #[DataProvider('provideQueryBuilderToMql')]
-    public function testMql(array $expected, Closure $build): void
+    public function testMql(array $expected, Closure $build, ?string $requiredMethod = null): void
     {
+        if ($requiredMethod && ! method_exists(Builder::class, $requiredMethod)) {
+            $this->markTestSkipped(sprintf('Method "%s::%s()" does not exist.', Builder::class, $requiredMethod));
+        }
+
         $builder = $build(self::getBuilder());
         $this->assertInstanceOf(Builder::class, $builder);
         $mql = $builder->toMql();
 
         // Operations that return a Cursor expect a "typeMap" option.
         if (isset($expected['find'][1])) {
-            $expected['find'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
+            $expected['find'][1]['typeMap'] = ['root' => 'object', 'document' => 'array'];
         }
 
         if (isset($expected['aggregate'][1])) {
-            $expected['aggregate'][1]['typeMap'] = ['root' => 'array', 'document' => 'array'];
+            $expected['aggregate'][1]['typeMap'] = ['root' => 'object', 'document' => 'array'];
         }
 
         // Compare with assertEquals because the query can contain BSON objects.
@@ -124,10 +129,9 @@ class BuilderTest extends TestCase
         ];
 
         // Nested array are not flattened like in the Eloquent builder. MongoDB can compare objects.
-        $array = [['issue' => 45582], ['id' => 2], [3]];
         yield 'whereIn nested array' => [
-            ['find' => [['id' => ['$in' => $array]], []]],
-            fn (Builder $builder) => $builder->whereIn('id', $array),
+            ['find' => [['_id' => ['$in' => [['issue' => 45582], ['_id' => 2], [3]]]], []]],
+            fn (Builder $builder) => $builder->whereIn('id', [['issue' => 45582], ['id' => 2], [3]]),
         ];
 
         yield 'orWhereIn' => [
@@ -135,21 +139,21 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$in' => [1, 2, 3]]],
+                            ['foo' => 1],
+                            ['foo' => ['$in' => [1, 2, 3]]],
                         ],
                     ],
                     [], // options
                 ],
             ],
-            fn (Builder $builder) => $builder->where('id', '=', 1)
-                ->orWhereIn('id', [1, 2, 3]),
+            fn (Builder $builder) => $builder->where('foo', '=', 1)
+                ->orWhereIn('foo', [1, 2, 3]),
         ];
 
         /** @see DatabaseQueryBuilderTest::testBasicWhereNotIns */
         yield 'whereNotIn' => [
-            ['find' => [['id' => ['$nin' => [1, 2, 3]]], []]],
-            fn (Builder $builder) => $builder->whereNotIn('id', [1, 2, 3]),
+            ['find' => [['foo' => ['$nin' => [1, 2, 3]]], []]],
+            fn (Builder $builder) => $builder->whereNotIn('foo', [1, 2, 3]),
         ];
 
         yield 'orWhereNotIn' => [
@@ -157,20 +161,20 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$nin' => [1, 2, 3]]],
+                            ['foo' => 1],
+                            ['foo' => ['$nin' => [1, 2, 3]]],
                         ],
                     ],
                     [], // options
                 ],
             ],
-            fn (Builder $builder) => $builder->where('id', '=', 1)
-                ->orWhereNotIn('id', [1, 2, 3]),
+            fn (Builder $builder) => $builder->where('foo', '=', 1)
+                ->orWhereNotIn('foo', [1, 2, 3]),
         ];
 
         /** @see DatabaseQueryBuilderTest::testEmptyWhereIns */
         yield 'whereIn empty array' => [
-            ['find' => [['id' => ['$in' => []]], []]],
+            ['find' => [['_id' => ['$in' => []]], []]],
             fn (Builder $builder) => $builder->whereIn('id', []),
         ];
 
@@ -220,7 +224,7 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
+                            ['age' => 1],
                             ['email' => 'foo'],
                         ],
                     ],
@@ -228,7 +232,7 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
+                ->where('age', '=', 1)
                 ->orWhere('email', '=', 'foo'),
         ];
 
@@ -497,6 +501,11 @@ class BuilderTest extends TestCase
                 ->orderBy('age', 'desc'),
         ];
 
+        yield 'orders by id field' => [
+            ['find' => [[], ['sort' => ['_id' => 1]]]],
+            fn (Builder $builder) => $builder->orderBy('id'),
+        ];
+
         yield 'orders = null' => [
             ['find' => [[], []]],
             function (Builder $builder) {
@@ -553,13 +562,19 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testWhereBetweens() */
         yield 'whereBetween array of numbers' => [
-            ['find' => [['id' => ['$gte' => 1, '$lte' => 2]], []]],
+            ['find' => [['_id' => ['$gte' => 1, '$lte' => 2]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', [1, 2]),
         ];
 
         yield 'whereBetween nested array of numbers' => [
-            ['find' => [['id' => ['$gte' => [1], '$lte' => [2, 3]]], []]],
+            ['find' => [['_id' => ['$gte' => [1], '$lte' => [2, 3]]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', [[1], [2, 3]]),
+        ];
+
+        $date = new DateTimeImmutable('2018-09-30 15:00:00 +02:00');
+        yield 'where $lt DateTimeInterface' => [
+            ['find' => [['created_at' => ['$lt' => new UTCDateTime($date)]], []]],
+            fn (Builder $builder) => $builder->where('created_at', '<', $date),
         ];
 
         $period = now()->toPeriod(now()->addMonth());
@@ -579,7 +594,7 @@ class BuilderTest extends TestCase
         ];
 
         yield 'whereBetween collection' => [
-            ['find' => [['id' => ['$gte' => 1, '$lte' => 2]], []]],
+            ['find' => [['_id' => ['$gte' => 1, '$lte' => 2]], []]],
             fn (Builder $builder) => $builder->whereBetween('id', collect([1, 2])),
         ];
 
@@ -589,16 +604,16 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => 3, '$lte' => 5]],
+                            ['age' => 1],
+                            ['age' => ['$gte' => 3, '$lte' => 5]],
                         ],
                     ],
                     [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereBetween('id', [3, 5]),
+                ->where('age', '=', 1)
+                ->orWhereBetween('age', [3, 5]),
         ];
 
         /** @link https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order/#arrays */
@@ -607,16 +622,16 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => [4], '$lte' => [6, 8]]],
+                            ['age' => 1],
+                            ['age' => ['$gte' => [4], '$lte' => [6, 8]]],
                         ],
                     ],
                     [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereBetween('id', [[4], [6, 8]]),
+                ->where('age', '=', 1)
+                ->orWhereBetween('age', [[4], [6, 8]]),
         ];
 
         yield 'orWhereBetween collection' => [
@@ -624,16 +639,16 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
-                            ['id' => ['$gte' => 3, '$lte' => 4]],
+                            ['age' => 1],
+                            ['age' => ['$gte' => 3, '$lte' => 4]],
                         ],
                     ],
                     [], // options
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereBetween('id', collect([3, 4])),
+                ->where('age', '=', 1)
+                ->orWhereBetween('age', collect([3, 4])),
         ];
 
         yield 'whereNotBetween array of numbers' => [
@@ -641,14 +656,14 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => ['$lte' => 1]],
-                            ['id' => ['$gte' => 2]],
+                            ['age' => ['$lte' => 1]],
+                            ['age' => ['$gte' => 2]],
                         ],
                     ],
                     [], // options
                 ],
             ],
-            fn (Builder $builder) => $builder->whereNotBetween('id', [1, 2]),
+            fn (Builder $builder) => $builder->whereNotBetween('age', [1, 2]),
         ];
 
         /** @see DatabaseQueryBuilderTest::testOrWhereNotBetween() */
@@ -657,11 +672,11 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
+                            ['age' => 1],
                             [
                                 '$or' => [
-                                    ['id' => ['$lte' => 3]],
-                                    ['id' => ['$gte' => 5]],
+                                    ['age' => ['$lte' => 3]],
+                                    ['age' => ['$gte' => 5]],
                                 ],
                             ],
                         ],
@@ -670,8 +685,8 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereNotBetween('id', [3, 5]),
+                ->where('age', '=', 1)
+                ->orWhereNotBetween('age', [3, 5]),
         ];
 
         yield 'orWhereNotBetween nested array of numbers' => [
@@ -679,11 +694,11 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
+                            ['age' => 1],
                             [
                                 '$or' => [
-                                    ['id' => ['$lte' => [2, 3]]],
-                                    ['id' => ['$gte' => [5]]],
+                                    ['age' => ['$lte' => [2, 3]]],
+                                    ['age' => ['$gte' => [5]]],
                                 ],
                             ],
                         ],
@@ -692,8 +707,8 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereNotBetween('id', [[2, 3], [5]]),
+                ->where('age', '=', 1)
+                ->orWhereNotBetween('age', [[2, 3], [5]]),
         ];
 
         yield 'orWhereNotBetween collection' => [
@@ -701,11 +716,11 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$or' => [
-                            ['id' => 1],
+                            ['age' => 1],
                             [
                                 '$or' => [
-                                    ['id' => ['$lte' => 3]],
-                                    ['id' => ['$gte' => 4]],
+                                    ['age' => ['$lte' => 3]],
+                                    ['age' => ['$gte' => 4]],
                                 ],
                             ],
                         ],
@@ -714,8 +729,8 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder
-                ->where('id', '=', 1)
-                ->orWhereNotBetween('id', collect([3, 4])),
+                ->where('age', '=', 1)
+                ->orWhereNotBetween('age', collect([3, 4])),
         ];
 
         yield 'where like' => [
@@ -746,6 +761,48 @@ class BuilderTest extends TestCase
         yield 'where like _' => [
             ['find' => [['name' => new Regex('^.ac..me.$', 'i')], []]],
             fn (Builder $builder) => $builder->where('name', 'like', '_ac__me_'),
+        ];
+
+        yield 'whereLike' => [
+            ['find' => [['name' => new Regex('^1$', 'i')], []]],
+            fn
+        (Builder $builder) => $builder->whereLike('name', '1'),
+            'whereLike',
+        ];
+
+        yield 'whereLike case not sensitive' => [
+            ['find' => [['name' => new Regex('^1$', 'i')], []]],
+            fn
+        (Builder $builder) => $builder->whereLike('name', '1', false),
+            'whereLike',
+        ];
+
+        yield 'whereLike case sensitive' => [
+            ['find' => [['name' => new Regex('^1$', '')], []]],
+            fn
+        (Builder $builder) => $builder->whereLike('name', '1', true),
+            'whereLike',
+        ];
+
+        yield 'whereNotLike' => [
+            ['find' => [['name' => ['$not' => new Regex('^1$', 'i')]], []]],
+            fn
+        (Builder $builder) => $builder->whereNotLike('name', '1'),
+            'whereNotLike',
+        ];
+
+        yield 'whereNotLike case not sensitive' => [
+            ['find' => [['name' => ['$not' => new Regex('^1$', 'i')]], []]],
+            fn
+        (Builder $builder) => $builder->whereNotLike('name', '1', false),
+            'whereNotLike',
+        ];
+
+        yield 'whereNotLike case sensitive' => [
+            ['find' => [['name' => ['$not' => new Regex('^1$', '')]], []]],
+            fn
+        (Builder $builder) => $builder->whereNotLike('name', '1', true),
+            'whereNotLike',
         ];
 
         $regex = new Regex('^acme$', 'si');
@@ -1160,143 +1217,170 @@ class BuilderTest extends TestCase
             ),
         ];
 
+        yield 'id alias for _id' => [
+            ['find' => [['_id' => 1], []]],
+            fn (Builder $builder) => $builder->where('id', 1),
+        ];
+
+        yield 'id alias for _id with $or' => [
+            ['find' => [['$or' => [['_id' => 1], ['_id' => 2]]], []]],
+            fn (Builder $builder) => $builder->where('id', 1)->orWhere('id', 2),
+        ];
+
+        yield 'select colums with id alias' => [
+            ['find' => [[], ['projection' => ['name' => 1, 'email' => 1, '_id' => 1]]]],
+            fn (Builder $builder) => $builder->select('name', 'email', 'id'),
+        ];
+
         // Method added in Laravel v10.47.0
-        if (method_exists(Builder::class, 'whereAll')) {
-            /** @see DatabaseQueryBuilderTest::testWhereAll */
-            yield 'whereAll' => [
-                [
-                    'find' => [
-                        ['$and' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
-                        [], // options
-                    ],
+        /** @see DatabaseQueryBuilderTest::testWhereAll */
+        yield 'whereAll' => [
+            [
+                'find' => [
+                    ['$and' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
+                    [], // options
                 ],
-                fn(Builder $builder) => $builder->whereAll(['last_name', 'email'], 'Doe'),
-            ];
+            ],
+            fn
+            (Builder $builder) => $builder->whereAll(['last_name', 'email'], 'Doe'),
+            'whereAll',
+        ];
 
-            yield 'whereAll operator' => [
-                [
-                    'find' => [
-                        [
-                            '$and' => [
-                                ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                            ],
+        yield 'whereAll operator' => [
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
+                            ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
                         ],
-                        [], // options
                     ],
+                    [], // options
                 ],
-                fn(Builder $builder) => $builder->whereAll(['last_name', 'email'], 'not like', '%Doe%'),
-            ];
+            ],
+            fn
+            (Builder $builder) => $builder->whereAll(['last_name', 'email'], 'not like', '%Doe%'),
+            'whereAll',
+        ];
 
-            /** @see DatabaseQueryBuilderTest::testOrWhereAll */
-            yield 'orWhereAll' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['first_name' => 'John'],
-                                ['$and' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
-                            ],
+        /** @see DatabaseQueryBuilderTest::testOrWhereAll */
+        yield 'orWhereAll' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['first_name' => 'John'],
+                            ['$and' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
                         ],
-                        [], // options
                     ],
+                    [], // options
                 ],
-                fn(Builder $builder) => $builder
-                    ->where('first_name', 'John')
-                    ->orWhereAll(['last_name', 'email'], 'Doe'),
-            ];
+            ],
+            fn
+            (Builder $builder) => $builder
+                ->where('first_name', 'John')
+                ->orWhereAll(['last_name', 'email'], 'Doe'),
+            'orWhereAll',
+        ];
 
-            yield 'orWhereAll operator' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['first_name' => new Regex('^.*John.*$', 'i')],
-                                [
-                                    '$and' => [
-                                        ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                        ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                    ],
+        yield 'orWhereAll operator' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['first_name' => new Regex('^.*John.*$', 'i')],
+                            [
+                                '$and' => [
+                                    ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
+                                    ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
                                 ],
                             ],
                         ],
-                        [], // options
                     ],
+                    [], // options
                 ],
-                fn(Builder $builder) => $builder
-                    ->where('first_name', 'like', '%John%')
-                    ->orWhereAll(['last_name', 'email'], 'not like', '%Doe%'),
-            ];
-        }
+            ],
+            fn
+            (Builder $builder) => $builder
+                ->where('first_name', 'like', '%John%')
+                ->orWhereAll(['last_name', 'email'], 'not like', '%Doe%'),
+            'orWhereAll',
+        ];
 
         // Method added in Laravel v10.47.0
-        if (method_exists(Builder::class, 'whereAny')) {
-            /** @see DatabaseQueryBuilderTest::testWhereAny */
-            yield 'whereAny' => [
-                [
-                    'find' => [
-                        ['$or' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
-                        [], // options
-                    ],
+        /** @see DatabaseQueryBuilderTest::testWhereAny */
+        yield 'whereAny' => [
+            [
+                'find' => [
+                    ['$or' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
+                    [], // options
                 ],
-                fn(Builder $builder) => $builder->whereAny(['last_name', 'email'], 'Doe'),
-            ];
+            ],
+            fn
+            (Builder $builder) => $builder->whereAny(['last_name', 'email'], 'Doe'),
+            'whereAny',
+        ];
 
-            yield 'whereAny operator' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                            ],
+        yield 'whereAny operator' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
+                            ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
                         ],
-                        [], // options
                     ],
+                    [], // options
                 ],
-                fn(Builder $builder) => $builder->whereAny(['last_name', 'email'], 'not like', '%Doe%'),
-            ];
+            ],
+            fn
+            (Builder $builder) => $builder->whereAny(['last_name', 'email'], 'not like', '%Doe%'),
+            'whereAny',
+        ];
 
-            /** @see DatabaseQueryBuilderTest::testOrWhereAny */
-            yield 'orWhereAny' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['first_name' => 'John'],
-                                ['$or' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
-                            ],
+        /** @see DatabaseQueryBuilderTest::testOrWhereAny */
+        yield 'orWhereAny' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['first_name' => 'John'],
+                            ['$or' => [['last_name' => 'Doe'], ['email' => 'Doe']]],
                         ],
-                        [], // options
                     ],
+                    [], // options
                 ],
-                fn(Builder $builder) => $builder
-                    ->where('first_name', 'John')
-                    ->orWhereAny(['last_name', 'email'], 'Doe'),
-            ];
+            ],
+            fn
+            (Builder $builder) => $builder
+                ->where('first_name', 'John')
+                ->orWhereAny(['last_name', 'email'], 'Doe'),
+            'whereAny',
+        ];
 
-            yield 'orWhereAny operator' => [
-                [
-                    'find' => [
-                        [
-                            '$or' => [
-                                ['first_name' => new Regex('^.*John.*$', 'i')],
-                                [
-                                    '$or' => [
-                                        ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                        ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
-                                    ],
+        yield 'orWhereAny operator' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['first_name' => new Regex('^.*John.*$', 'i')],
+                            [
+                                '$or' => [
+                                    ['last_name' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
+                                    ['email' => ['$not' => new Regex('^.*Doe.*$', 'i')]],
                                 ],
                             ],
                         ],
-                        [], // options
                     ],
+                    [], // options
                 ],
-                fn(Builder $builder) => $builder
-                    ->where('first_name', 'like', '%John%')
-                    ->orWhereAny(['last_name', 'email'], 'not like', '%Doe%'),
-            ];
-        }
+            ],
+            fn
+            (Builder $builder) => $builder
+                ->where('first_name', 'like', '%John%')
+                ->orWhereAny(['last_name', 'email'], 'not like', '%Doe%'),
+            'orWhereAny',
+        ];
     }
 
     #[DataProvider('provideExceptions')]

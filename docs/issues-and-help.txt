@@ -12,7 +12,7 @@ Issues & Help
    :keywords: debug, report bug, request, contribute, github, support
 
 We are lucky to have a vibrant PHP community that includes users of varying
-experience with {+php-library+} and {+odm-short+}. To get support for
+experience with {+php-library+} and the {+odm-short+}. To get support for
 general questions, search or post in the
 :community-forum:`MongoDB PHP Community Forums </tag/php>`.
 
@@ -22,7 +22,7 @@ To learn more about MongoDB support options, see the
 Bugs / Feature Requests
 -----------------------
 
-If you find a bug or want to see a new feature in {+odm-short+},
+If you find a bug or want to see a new feature in the {+odm-short+},
 please report it as a GitHub issue in the `mongodb/laravel-mongodb
 <{+mongodb-laravel-gh+}>`__ repository.
 
@@ -53,7 +53,7 @@ For general questions and support requests, please use one of MongoDB's
 Pull Requests
 -------------
 
-We are happy to accept contributions to help improve {+odm-short+}.
+We are happy to accept contributions to help improve {+odm-long+}.
 
 We track current development in `PHPORM <https://jira.mongodb.org/projects/PHPORM/summary>`__
 MongoDB JIRA project.

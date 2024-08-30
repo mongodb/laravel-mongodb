@@ -20,19 +20,24 @@ Eloquent Model Class
 Overview
 --------
 
-This guide shows you how to use the {+odm-long+} to define and
+This guide shows you how to use {+odm-long+} to define and
 customize Laravel Eloquent models. You can use these models to work with
 MongoDB data by using the Laravel Eloquent object-relational mapper (ORM).
 
 The following sections explain how to add Laravel Eloquent ORM behaviors
-to {+odm-short+} models:
+to {+odm-long+} models:
 
 - :ref:`laravel-model-define` demonstrates how to create a model class.
 - :ref:`laravel-authenticatable-model` shows how to set MongoDB as the
   authentication user provider.
-- :ref:`laravel-model-customize` explains several model class customizations.
+- :ref:`laravel-model-customize` explains several model class
+  customizations.
+- :ref:`laravel-third-party-model` explains how to make third-party
+  model classes compatible with MongoDB.
 - :ref:`laravel-model-pruning` shows how to periodically remove models that
   you no longer need.
+- :ref:`laravel-schema-versioning` shows how to implement model schema
+  versioning.
 
 .. _laravel-model-define:
 
@@ -42,7 +47,7 @@ Define an Eloquent Model Class
 Eloquent models are classes that represent your data. They include methods
 that perform database operations such as inserts, updates, and deletes.
 
-To declare a {+odm-short+} model, create a class in the ``app/Models``
+To declare a {+odm-long+} model, create a class in the ``app/Models``
 directory of your Laravel application that extends
 ``MongoDB\Laravel\Eloquent\Model`` as shown in the following code example:
 
@@ -67,15 +72,14 @@ This model is stored in the ``planets`` MongoDB collection.
 To learn how to specify the database name that your Laravel application uses,
 :ref:`laravel-quick-start-connect-to-mongodb`.
 
-
 .. _laravel-authenticatable-model:
 
 Extend the Authenticatable Model
 --------------------------------
 
 To configure MongoDB as the Laravel user provider, you can extend the
-{+odm-short+} ``MongoDB\Laravel\Auth\User`` class. The following code example
-shows how to extend this class:
+{+odm-short+} ``MongoDB\Laravel\Auth\User`` class. The following code
+example shows how to extend this class:
 
 .. literalinclude:: /includes/eloquent-models/AuthenticatableUser.php
    :language: php
@@ -107,7 +111,7 @@ Change the Model Collection Name
 
 By default, the model uses the snake case plural form of your model
 class name. To change the name of the collection the model uses to retrieve
-and save data in MongoDB, override the ``$collection`` property of the model
+and save data in MongoDB, override the ``$table`` property of the model
 class.
 
 .. note::
@@ -123,7 +127,7 @@ The following example specifies the custom MongoDB collection name,
    :emphasize-lines: 9
    :dedent:
 
-Without overriding the ``$collection`` property, this model maps to the
+Without overriding the ``$table`` property, this model maps to the
 ``planets`` collection. With the overridden property, the example class stores
 the model in the ``celestial_body`` collection.
 
@@ -151,7 +155,7 @@ To learn more about primary key behavior and customization options, see
 in the Laravel docs.
 
 To learn more about the ``_id`` field, ObjectIDs, and the MongoDB document
-structure, see :manual:`Documents </core/document>` in the MongoDB server docs.
+structure, see :manual:`Documents </core/document>` in the Server manual.
 
 .. _laravel-model-soft-delete:
 
@@ -179,7 +183,7 @@ in the Laravel docs.
 .. _laravel-model-cast-data-types:
 
 Cast Data Types
----------------
+~~~~~~~~~~~~~~~
 
 Eloquent lets you convert model attribute data types before storing or
 retrieving data by using a casting helper. This helper is a convenient
@@ -223,7 +227,7 @@ less than three years ago:
    Planet::where( 'discovery_dt', '>', new DateTime('-3 years'))->get();
 
 To learn more about MongoDB's data types, see :manual:`BSON Types </reference/bson-types/>`
-in the MongoDB server docs.
+in the Server manual.
 
 To learn more about the Laravel casting helper and supported types, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
 in the Laravel docs.
@@ -280,6 +284,45 @@ To learn how to change the behavior when attempting to fill a field omitted
 from the ``$fillable`` array, see `Mass Assignment Exceptions <https://laravel.com/docs/{+laravel-docs-version+}/eloquent#mass-assignment-exceptions>`__
 in the Laravel docs.
 
+.. _laravel-third-party-model:
+
+Extend Third-Party Model Classes
+--------------------------------
+
+You can use the {+odm-short+} to extend a third-party model class by
+including the ``DocumentModel`` trait when defining your model class. By
+including this trait, you can make the third-party class compatible with
+MongoDB.
+
+When you apply the ``DocumentModel`` trait to a model class, you must
+declare the following properties in your class:
+
+- ``$primaryKey = '_id'``, because the ``_id`` field uniquely
+  identifies MongoDB documents
+- ``$keyType = 'string'``, because the {+odm-short+} casts MongoDB
+  ``ObjectId`` values to type ``string``
+
+Extended Class Example
+~~~~~~~~~~~~~~~~~~~~~~
+
+This example creates a ``Planet`` model class that extends the
+``CelestialBody`` class from a package called ``ThirdPartyPackage``. The
+``Post`` class includes the ``DocumentModel`` trait and defines
+properties including ``$primaryKey`` and ``$keyType``:
+
+.. literalinclude:: /includes/eloquent-models/PlanetThirdParty.php
+   :language: php
+   :emphasize-lines: 10,13-14
+   :dedent:
+
+After defining your class, you can perform MongoDB operations as usual.
+
+.. tip::
+
+   To view another example that uses the ``DocumentModel`` trait, see
+   the :ref:`laravel-user-auth-sanctum` section of the User
+   Authentication guide.
+
 .. _laravel-model-pruning:
 
 Specify Pruning Behavior
@@ -301,7 +344,7 @@ appropriate import to your model:
 .. note::
 
    When enabling soft deletes on a mass prunable model, you must import the
-   following {+odm-short+} packages:
+   following {+odm-long+} packages:
 
    - ``MongoDB\Laravel\Eloquent\SoftDeletes``
    - ``MongoDB\Laravel\Eloquent\MassPrunable``
@@ -333,3 +376,101 @@ models that the prune action deletes:
    :emphasize-lines: 5,10,12
    :dedent:
 
+.. _laravel-schema-versioning:
+
+Create a Versioned Model Schema
+-------------------------------
+
+You can implement a schema versioning pattern into your application by
+using the ``HasSchemaVersion`` trait on an Eloquent model. You might
+choose to implement a schema version to organize or standardize a
+collection that contains data with different schemas.
+
+.. tip::
+
+   To learn more about schema versioning, see the :manual:`Model Data for
+   Schema Versioning </tutorial/model-data-for-schema-versioning/>`
+   tutorial in the {+server-docs-name+}.
+
+To use this feature with models that use MongoDB as a database, add the
+``MongoDB\Laravel\Eloquent\HasSchemaVersion`` import to your model.
+Then, set the ``SCHEMA_VERSION`` constant to ``1`` to set the first
+schema version on your collection. If your collection evolves to contain
+multiple schemas, you can update the value of the ``SCHEMA_VERSION``
+constant in subsequent model classes.
+
+When creating your model, you can define the ``migrateSchema()`` method
+to specify a migration to the current schema version upon retrieving a
+model. In this method, you can specify the changes to make to an older
+model to update it to match the current schema version.
+
+When you save a model that does not have a schema version
+specified, the ``HasSchemaVersion`` trait assumes that it follows the
+latest schema version. When you retrieve a model that does not contain
+the ``schema_version`` field, the trait assumes that its schema version
+is ``0`` and performs the migration.
+
+Schema Versioning Example
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In this sample situation, you are working with a collection that was
+first modeled by the following class:
+
+.. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion1.php
+   :language: php
+   :dedent:
+
+Now, you want to implement a new schema version on the collection.
+You can define the new model class with the following behavior:
+
+- Implements the ``HasSchemaVersion`` trait and sets the current
+  ``SCHEMA_VERSION`` to ``2``
+
+- Defines the ``migrateSchema()`` method to migrate models in which the
+  schema version is less than ``2`` to have a ``galaxy`` field that has a value
+  of ``'Milky Way'``
+
+.. literalinclude:: /includes/eloquent-models/PlanetSchemaVersion2.php
+   :language: php
+   :emphasize-lines: 10,12,20
+   :dedent:
+
+In the ``"WASP-39 b"`` document in the following code, the
+``schema_version`` field value is less than ``2``. When you retrieve the
+document, the {+odm-short+} adds the ``galaxy`` field and updates the schema
+version to the current version, ``2``.
+
+The ``"Saturn"`` document does not contain the ``schema_version`` field,
+so the {+odm-short+} assigns it the current schema version upon saving.
+
+Finally, the code retrieves the models from the collection to
+demonstrate the changes:
+
+.. io-code-block::
+   :copyable: true
+
+   .. input:: /includes/eloquent-models/SchemaVersionTest.php
+      :language: php
+      :dedent:
+      :start-after: begin-schema-version
+      :end-before: end-schema-version
+
+   .. output::
+      :language: none
+      :visible: false
+
+      [
+        {
+          "_id": ...,
+          "name": "WASP-39 b",
+          "type": "gas",
+          "galaxy": "Milky Way",
+          "schema_version": 2,
+        },
+        {
+          "_id": ...,
+          "name": "Saturn",
+          "type": "gas",
+          "schema_version": 2,
+        }
+      ]
