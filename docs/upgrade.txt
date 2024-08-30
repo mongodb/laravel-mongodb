@@ -61,6 +61,17 @@ version releases that introduced them. When upgrading library versions,
 address all the breaking changes between your current version and the
 planned upgrade version.
 
+.. _laravel-breaking-changes-v5.x:
+
+Version 5.x Breaking Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This library version introduces the following breaking changes:
+
+- Removes support for the ``Auth\DatabaseTokenRepository`` class. Instead,
+  use the ``Illuminate\Queue\Failed\DatabaseFailedJobProvider`` class and
+  specify a connection to MongoDB.
+
 .. _laravel-breaking-changes-v4.x:
 
 Version 4.x Breaking Changes
