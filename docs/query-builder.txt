@@ -188,11 +188,11 @@ the value of the ``title`` field is ``"Back to the Future"``:
 
 .. note::
 
-	You can use the ``id`` alias in your queries to represent the
-	``_id`` field in MongoDB documents, as shown in the preceding
+   You can use the ``id`` alias in your queries to represent the
+   ``_id`` field in MongoDB documents, as shown in the preceding
    code. When you run a find operation using the query builder, {+odm-short+}
-	automatically converts between ``id`` and ``_id``. Because of this behavior,
-	you cannot have two separate ``id`` and ``_id`` fields in your documents.
+   automatically converts between ``id`` and ``_id``. Because of this behavior,
+   you cannot have two separate ``id`` and ``_id`` fields in your documents.
 
 .. _laravel-query-builder-logical-and:
 
