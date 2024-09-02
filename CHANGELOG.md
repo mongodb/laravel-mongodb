@@ -5,6 +5,7 @@ All notable changes to this project will be documented in this file.
 
 * **BREAKING CHANGE** Use `id` as an alias for `_id` in commands and queries for compatibility with Eloquent packages by @GromNaN in [#3040](https://github.com/mongodb/laravel-mongodb/pull/3040)
 * **BREAKING CHANGE** Make Query\Builder return objects instead of array to match Laravel behavior by @GromNaN in [#3107](https://github.com/mongodb/laravel-mongodb/pull/3107)
+* Remove `MongoFailedJobProvider`, replaced by Laravel `DatabaseFailedJobProvider` by @GromNaN in [#3122](https://github.com/mongodb/laravel-mongodb/pull/3122)
 
 ## [4.8.0] - 2024-08-27
 
