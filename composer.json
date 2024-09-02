@@ -68,7 +68,6 @@
         "laravel": {
             "providers": [
                 "MongoDB\\Laravel\\MongoDBServiceProvider",
-                "MongoDB\\Laravel\\MongoDBQueueServiceProvider",
                 "MongoDB\\Laravel\\MongoDBBusServiceProvider"
             ]
         }
