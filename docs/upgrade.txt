@@ -70,7 +70,7 @@ This library version introduces the following breaking changes:
 
 - Removes support for the following classes:
 
-  - ``Auth\DatabaseTokenRepository``. Instead, use the
+  - ``Auth\DatabaseTokenRepository``. Instead, use the default
     ``Illuminate\Queue\Failed\DatabaseFailedJobProvider`` class and
     specify a connection to MongoDB.
 
