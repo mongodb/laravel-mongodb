@@ -178,22 +178,6 @@ class Blueprint extends SchemaBlueprint
     }
 
     /**
-     * Specify a non blocking index for the collection.
-     *
-     * @param string|array $columns
-     *
-     * @return Blueprint
-     */
-    public function background($columns = null)
-    {
-        $columns = $this->fluent($columns);
-
-        $this->index($columns, null, null, ['background' => true]);
-
-        return $this;
-    }
-
-    /**
      * Specify a sparse index for the collection.
      *
      * @param string|array $columns

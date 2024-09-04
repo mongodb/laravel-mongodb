@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 * **BREAKING CHANGE** Make Query\Builder return objects instead of array to match Laravel behavior by @GromNaN in [#3107](https://github.com/mongodb/laravel-mongodb/pull/3107)
 * **BREAKING CHANGE** In DB query results, convert BSON `UTCDateTime` objects into `Carbon` date with the default timezone by @GromNaN in [#3119](https://github.com/mongodb/laravel-mongodb/pull/3119)
 * Remove `MongoFailedJobProvider`, replaced by Laravel `DatabaseFailedJobProvider` by @GromNaN in [#3122](https://github.com/mongodb/laravel-mongodb/pull/3122)
+* Remove `Blueprint::background()` method by @GromNaN in [#3132](https://github.com/mongodb/laravel-mongodb/pull/3132)
 
 ## [4.8.0] - 2024-08-27
 
