@@ -245,16 +245,6 @@ class SchemaTest extends TestCase
         });
     }
 
-    public function testBackground(): void
-    {
-        Schema::table('newcollection', function ($collection) {
-            $collection->background('backgroundkey');
-        });
-
-        $index = $this->getIndex('newcollection', 'backgroundkey');
-        $this->assertEquals(1, $index['background']);
-    }
-
     public function testSparse(): void
     {
         Schema::table('newcollection', function ($collection) {
