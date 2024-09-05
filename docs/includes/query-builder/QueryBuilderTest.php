@@ -63,7 +63,7 @@ class QueryBuilderTest extends TestCase
     {
         // begin query orWhere
         $result = DB::connection('mongodb')
-            ->collection('movies')
+            ->table('movies')
             ->where('id', new ObjectId('573a1398f29313caabce9682'))
             ->orWhere('title', 'Back to the Future')
             ->get();
