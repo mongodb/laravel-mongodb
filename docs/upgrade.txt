@@ -75,9 +75,9 @@ This library version introduces the following breaking changes:
   date classes, applying the default timezone.
 
 - ``id`` is an alias for the ``_id`` field in MongoDB documents, and the library
-   automatically converts between ``id`` and ``_id`` when querying data. Because
-   of this behavior, you cannot have two separate ``id`` and ``_id`` fields in your
-   documents.
+  automatically converts between ``id`` and ``_id`` when querying data. Because
+  of this behavior, you cannot have two separate ``id`` and ``_id`` fields in your
+  documents.
 
 .. _laravel-breaking-changes-v4.x:
 
