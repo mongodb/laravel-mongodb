@@ -71,6 +71,21 @@ Version 5.x Breaking Changes
 
 This library version introduces the following breaking changes:
 
+- The query builder returns results as objects, instead of as arrays.
+  This change requires that you change array access to property access
+  when interacting with query results.
+
+  The following code shows how to retrieve a query result and access a
+  property from the result object:
+
+  .. code-block:: php
+     :emphasize-lines: 4
+
+     DB::table('accounts')
+         ->where('name', 'Anita Charles')
+         ->first()
+         ->balance
+
 - In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
   date classes, applying the default timezone.
 
