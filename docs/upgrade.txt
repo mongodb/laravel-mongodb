@@ -22,7 +22,7 @@ Overview
 
 On this page, you can learn how to upgrade {+odm-long+} to a new major version.
 This page also includes the changes you must make to your application to upgrade
-your object-document mapper (ODM) version without losing functionality, if applicable.
+your version of the {+odm-short+} without losing functionality, if applicable.
 
 How to Upgrade
 --------------
@@ -60,6 +60,19 @@ The breaking changes in this section are categorized by the major
 version releases that introduced them. When upgrading library versions,
 address all the breaking changes between your current version and the
 planned upgrade version.
+
+- :ref:`laravel-breaking-changes-v5.x`
+- :ref:`laravel-breaking-changes-v4.x`
+
+.. _laravel-breaking-changes-v5.x:
+
+Version 5.x Breaking Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This library version introduces the following breaking changes:
+
+- In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
+  date, applying the default timezone.
 
 .. _laravel-breaking-changes-v4.x:
 
