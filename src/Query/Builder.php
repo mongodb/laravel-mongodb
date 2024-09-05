@@ -9,11 +9,13 @@ use BadMethodCallException;
 use Carbon\CarbonPeriod;
 use Closure;
 use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LogicException;
@@ -39,6 +41,7 @@ use function call_user_func;
 use function call_user_func_array;
 use function count;
 use function ctype_xdigit;
+use function date_default_timezone_get;
 use function dd;
 use function dump;
 use function end;
@@ -876,11 +879,11 @@ class Builder extends BaseBuilder
         $wheres  = $this->aliasIdForQuery($wheres);
         $options = $this->inheritConnectionOptions();
 
-        if (is_int($this->limit)) {
-            if ($this->limit !== 1) {
-                throw new LogicException(sprintf('Delete limit can be 1 or null (unlimited). Got %d', $this->limit));
-            }
-
+        /**
+         * Ignore the limit if it is set to more than 1, as it is not supported by the deleteMany method.
+         * Required for {@see DatabaseFailedJobProvider::prune()}
+         */
+        if ($this->limit === 1) {
             $result = $this->collection->deleteOne($wheres, $options);
         } else {
             $result = $this->collection->deleteMany($wheres, $options);
@@ -1660,7 +1663,10 @@ class Builder extends BaseBuilder
             }
 
             foreach ($values as $key => $value) {
-                if (is_array($value) || is_object($value)) {
+                if ($value instanceof UTCDateTime) {
+                    $values[$key] = Date::instance($value->toDateTime())
+                        ->setTimezone(new DateTimeZone(date_default_timezone_get()));
+                } elseif (is_array($value) || is_object($value)) {
                     $values[$key] = $this->aliasIdForResult($value);
                 }
             }
@@ -1673,7 +1679,10 @@ class Builder extends BaseBuilder
             }
 
             foreach (get_object_vars($values) as $key => $value) {
-                if (is_array($value) || is_object($value)) {
+                if ($value instanceof UTCDateTime) {
+                    $values->{$key} = Date::instance($value->toDateTime())
+                        ->setTimezone(new DateTimeZone(date_default_timezone_get()));
+                } elseif (is_array($value) || is_object($value)) {
                     $values->{$key} = $this->aliasIdForResult($value);
                 }
             }

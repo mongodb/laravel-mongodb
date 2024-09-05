@@ -6,13 +6,11 @@ namespace MongoDB\Laravel\Tests;
 
 use BadMethodCallException;
 use DateTimeImmutable;
-use LogicException;
 use MongoDB\BSON\Regex;
 use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Tests\Models\Birthday;
 use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\User;
-use PHPUnit\Framework\Attributes\TestWith;
 
 use function str;
 
@@ -661,14 +659,5 @@ class QueryTest extends TestCase
         // Delete all
         User::limit(null)->delete();
         $this->assertEquals(0, User::count());
-    }
-
-    #[TestWith([0])]
-    #[TestWith([2])]
-    public function testDeleteException(int $limit): void
-    {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Delete limit can be 1 or null (unlimited).');
-        User::limit($limit)->delete();
     }
 }

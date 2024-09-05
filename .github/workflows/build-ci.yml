@@ -20,15 +20,15 @@ jobs:
                     - "6.0"
                     - "7.0"
                 php:
-                    - "8.1"
                     - "8.2"
                     - "8.3"
                 laravel:
-                    - "10.*"
                     - "11.*"
+                mode:
+                    - ""
                 include:
-                    - php: "8.1"
-                      laravel: "10.*"
+                    - php: "8.2"
+                      laravel: "11.*"
                       mongodb: "5.0"
                       mode: "low-deps"
                       os: "ubuntu-latest"
@@ -37,9 +37,6 @@ jobs:
                       mongodb: "7.0"
                       mode: "ignore-php-req"
                       os: "ubuntu-latest"
-                exclude:
-                    - php: "8.1"
-                      laravel: "11.*"
 
         steps:
             -   uses: "actions/checkout@v4"
