@@ -6,7 +6,7 @@ namespace MongoDB\Laravel\Schema;
 
 use Illuminate\Database\Connection;
 use Illuminate\Database\Schema\Blueprint as SchemaBlueprint;
-use MongoDB\Laravel\Collection;
+use MongoDB\Collection;
 
 use function array_flip;
 use function implode;
@@ -21,14 +21,14 @@ class Blueprint extends SchemaBlueprint
     /**
      * The MongoConnection object for this blueprint.
      *
-     * @var \MongoDB\Laravel\Connection
+     * @var Connection
      */
     protected $connection;
 
     /**
-     * The MongoCollection object for this blueprint.
+     * The Collection object for this blueprint.
      *
-     * @var Collection|\MongoDB\Collection
+     * @var Collection
      */
     protected $collection;
 

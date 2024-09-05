@@ -30,7 +30,7 @@
         "illuminate/database": "^11",
         "illuminate/events": "^11",
         "illuminate/support": "^11",
-        "mongodb/mongodb": "^1.15"
+        "mongodb/mongodb": "^1.18"
     },
     "require-dev": {
         "mongodb/builder": "^0.2",

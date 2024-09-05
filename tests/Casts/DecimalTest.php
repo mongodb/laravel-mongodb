@@ -10,7 +10,7 @@ use MongoDB\BSON\Decimal128;
 use MongoDB\BSON\Int64;
 use MongoDB\BSON\Javascript;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Laravel\Collection;
+use MongoDB\Collection;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
 

@@ -82,7 +82,7 @@ class Builder extends BaseBuilder
     /**
      * The database collection.
      *
-     * @var \MongoDB\Laravel\Collection
+     * @var \MongoDB\Collection
      */
     protected $collection;
 
