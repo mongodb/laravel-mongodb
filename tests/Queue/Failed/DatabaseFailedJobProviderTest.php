@@ -77,8 +77,9 @@ class DatabaseFailedJobProviderTest extends TestCase
         $all = $this->getProvider()->all();
 
         $this->assertCount(5, $all);
+        $this->assertInstanceOf(ObjectId::class, $all[0]->id);
         $this->assertEquals(new ObjectId(sprintf('%024d', 5)), $all[0]->id);
-        $this->assertEquals(sprintf('%024d', 5), $all[0]->id, 'id field is added for compatibility with DatabaseFailedJobProvider');
+        $this->assertEquals(sprintf('%024d', 5), (string) $all[0]->id, 'id field is added for compatibility with DatabaseFailedJobProvider');
     }
 
     public function testFindAndForget(): void
@@ -89,6 +90,7 @@ class DatabaseFailedJobProviderTest extends TestCase
         $found = $provider->find($id);
 
         $this->assertIsObject($found, 'The job is found');
+        $this->assertInstanceOf(ObjectId::class, $found->id);
         $this->assertEquals(new ObjectId($id), $found->id);
         $this->assertObjectHasProperty('failed_at', $found);
 
