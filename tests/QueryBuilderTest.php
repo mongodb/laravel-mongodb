@@ -465,8 +465,15 @@ class QueryBuilderTest extends TestCase
         $item = DB::table('items')->where('id', 'fork')->first();
         $this->assertEquals('fork', $item->id);
 
+        $item = DB::table('items')->where('_id', 'fork')->first();
+        $this->assertEquals('fork', $item->id);
+
         // tags.id is translated into tags._id in query
         $items = DB::table('items')->whereIn('tags.id', ['sharp'])->get();
+        $this->assertCount(2, $items);
+
+        // Ensure the field _id is stored in the database
+        $items = DB::table('items')->whereIn('tags._id', ['sharp'])->get();
         $this->assertCount(2, $items);
 
         DB::table('users')->insert([
