@@ -83,6 +83,7 @@ This library version introduces the following breaking changes:
   methods:
   
   - ``Model::collection()``. Instead, use ``Model::table()``.
+  - ``DB::collection()``. Instead, use ``DB::table()``.
   - ``Connection::collection()``. Instead, use ``Connection::table()``.
   - ``Schema::collection()``. Instead, use ``Schema::table()``.
 
