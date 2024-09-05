@@ -72,7 +72,7 @@ Version 5.x Breaking Changes
 This library version introduces the following breaking changes:
 
 - In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
-  date, applying the default timezone.
+  date classes, applying the default timezone.
 
 .. _laravel-breaking-changes-v4.x:
 
