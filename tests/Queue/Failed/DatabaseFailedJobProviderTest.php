@@ -77,7 +77,7 @@ class DatabaseFailedJobProviderTest extends TestCase
         $all = $this->getProvider()->all();
 
         $this->assertCount(5, $all);
-        $this->assertEquals(new ObjectId(sprintf('%024d', 5)), $all[0]->_id);
+        $this->assertEquals(new ObjectId(sprintf('%024d', 5)), $all[0]->id);
         $this->assertEquals(sprintf('%024d', 5), $all[0]->id, 'id field is added for compatibility with DatabaseFailedJobProvider');
     }
 
@@ -89,7 +89,7 @@ class DatabaseFailedJobProviderTest extends TestCase
         $found = $provider->find($id);
 
         $this->assertIsObject($found, 'The job is found');
-        $this->assertEquals(new ObjectId($id), $found->_id);
+        $this->assertEquals(new ObjectId($id), $found->id);
         $this->assertObjectHasProperty('failed_at', $found);
 
         // Delete the job
