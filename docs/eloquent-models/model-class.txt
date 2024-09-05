@@ -302,12 +302,8 @@ including this trait, you can make the third-party class compatible with
 MongoDB.
 
 When you apply the ``DocumentModel`` trait to a model class, you must
-declare the following properties in your class:
-
-- ``$primaryKey = '_id'``, because the ``_id`` field uniquely
-  identifies MongoDB documents
-- ``$keyType = 'string'``, because the {+odm-short+} casts MongoDB
-  ``ObjectId`` values to type ``string``
+set the  ``$keyType`` property to ``'string'`` as the {+odm-short+}
+casts MongoDB ``ObjectId`` values to type ``string``.
 
 Extended Class Example
 ~~~~~~~~~~~~~~~~~~~~~~

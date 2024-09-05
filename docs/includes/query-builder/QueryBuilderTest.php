@@ -7,6 +7,7 @@ namespace App\Http\Controllers;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
+use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Tests\TestCase;
@@ -63,7 +64,7 @@ class QueryBuilderTest extends TestCase
         // begin query orWhere
         $result = DB::connection('mongodb')
             ->table('movies')
-            ->where('year', 1955)
+            ->where('id', new ObjectId('573a1398f29313caabce9682'))
             ->orWhere('title', 'Back to the Future')
             ->get();
         // end query orWhere
