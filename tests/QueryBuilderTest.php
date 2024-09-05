@@ -449,17 +449,32 @@ class QueryBuilderTest extends TestCase
 
     public function testCustomId()
     {
+        $tags = [['id' => 'sharp', 'name' => 'Sharp']];
         DB::table('items')->insert([
-            ['id' => 'knife', 'type' => 'sharp', 'amount' => 34],
-            ['id' => 'fork', 'type' => 'sharp', 'amount' => 20],
+            ['id' => 'knife', 'type' => 'sharp', 'amount' => 34, 'tags' => $tags],
+            ['id' => 'fork', 'type' => 'sharp', 'amount' => 20, 'tags' => $tags],
             ['id' => 'spoon', 'type' => 'round', 'amount' => 3],
         ]);
 
         $item = DB::table('items')->find('knife');
         $this->assertEquals('knife', $item->id);
+        $this->assertObjectNotHasProperty('_id', $item);
+        $this->assertEquals('sharp', $item->tags[0]['id']);
+        $this->assertArrayNotHasKey('_id', $item->tags[0]);
 
         $item = DB::table('items')->where('id', 'fork')->first();
         $this->assertEquals('fork', $item->id);
+
+        $item = DB::table('items')->where('_id', 'fork')->first();
+        $this->assertEquals('fork', $item->id);
+
+        // tags.id is translated into tags._id in query
+        $items = DB::table('items')->whereIn('tags.id', ['sharp'])->get();
+        $this->assertCount(2, $items);
+
+        // Ensure the field _id is stored in the database
+        $items = DB::table('items')->whereIn('tags._id', ['sharp'])->get();
+        $this->assertCount(2, $items);
 
         DB::table('users')->insert([
             ['id' => 1, 'name' => 'Jane Doe'],
@@ -468,6 +483,7 @@ class QueryBuilderTest extends TestCase
 
         $item = DB::table('users')->find(1);
         $this->assertEquals(1, $item->id);
+        $this->assertObjectNotHasProperty('_id', $item);
     }
 
     public function testTake()

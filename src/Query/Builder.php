@@ -1616,7 +1616,7 @@ class Builder extends BaseBuilder
     private function aliasIdForQuery(array $values): array
     {
         if (array_key_exists('id', $values)) {
-            if (array_key_exists('_id', $values)) {
+            if (array_key_exists('_id', $values) && $values['id'] !== $values['_id']) {
                 throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
             }
 
@@ -1627,7 +1627,7 @@ class Builder extends BaseBuilder
         foreach ($values as $key => $value) {
             if (is_string($key) && str_ends_with($key, '.id')) {
                 $newkey = substr($key, 0, -3) . '._id';
-                if (array_key_exists($newkey, $values)) {
+                if (array_key_exists($newkey, $values) && $value !== $values[$newkey]) {
                     throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
                 }
 
@@ -1659,7 +1659,7 @@ class Builder extends BaseBuilder
         if (is_array($values)) {
             if (array_key_exists('_id', $values) && ! array_key_exists('id', $values)) {
                 $values['id'] = $values['_id'];
-                //unset($values['_id']);
+                unset($values['_id']);
             }
 
             foreach ($values as $key => $value) {
@@ -1675,7 +1675,7 @@ class Builder extends BaseBuilder
         if ($values instanceof stdClass) {
             if (property_exists($values, '_id') && ! property_exists($values, 'id')) {
                 $values->id = $values->_id;
-                //unset($values->_id);
+                unset($values->_id);
             }
 
             foreach (get_object_vars($values) as $key => $value) {
