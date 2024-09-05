@@ -79,6 +79,13 @@ This library version introduces the following breaking changes:
   of this behavior, you cannot have two separate ``id`` and ``_id`` fields in your
   documents.
 
+- Removes support for the ``$collection`` property and the following associated
+  methods:
+  
+  - ``Model::collection()``. Instead, use ``Model::table()``.
+  - ``Connection::collection()``. Instead, use ``Connection::table()``.
+  - ``Schema::collection()``. Instead, use ``Schema::table()``.
+
 .. _laravel-breaking-changes-v4.x:
 
 Version 4.x Breaking Changes
