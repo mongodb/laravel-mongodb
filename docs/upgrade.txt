@@ -22,7 +22,7 @@ Overview
 
 On this page, you can learn how to upgrade {+odm-long+} to a new major version.
 This page also includes the changes you must make to your application to upgrade
-your object-document mapper (ODM) version without losing functionality, if applicable.
+your version of the {+odm-short+} without losing functionality, if applicable.
 
 How to Upgrade
 --------------
@@ -61,6 +61,9 @@ version releases that introduced them. When upgrading library versions,
 address all the breaking changes between your current version and the
 planned upgrade version.
 
+- :ref:`laravel-breaking-changes-v5.x`
+- :ref:`laravel-breaking-changes-v4.x`
+
 .. _laravel-breaking-changes-v5.x:
 
 Version 5.x Breaking Changes
@@ -77,6 +80,14 @@ This library version introduces the following breaking changes:
   - ``MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider``. Instead,
     use the default ``Illuminate\Queue\Failed\DatabaseFailedJobProvider``
     class and specify a connection to MongoDB.
+    
+- In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
+  date classes, applying the default timezone.
+
+- ``id`` is an alias for the ``_id`` field in MongoDB documents, and the library
+  automatically converts between ``id`` and ``_id`` when querying data. Because
+  of this behavior, you cannot have two separate ``id`` and ``_id`` fields in your
+  documents.
 
 .. _laravel-breaking-changes-v4.x:
 

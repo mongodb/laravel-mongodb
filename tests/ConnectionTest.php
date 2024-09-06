@@ -7,10 +7,12 @@ namespace MongoDB\Laravel\Tests;
 use Generator;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use MongoDB\BSON\ObjectId;
 use MongoDB\Client;
+use MongoDB\Collection;
 use MongoDB\Database;
+use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Driver\Exception\ConnectionTimeoutException;
-use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
@@ -225,9 +227,6 @@ class ConnectionTest extends TestCase
 
         $collection = DB::connection('mongodb')->table('unittests');
         $this->assertInstanceOf(Builder::class, $collection);
-
-        $collection = DB::connection('mongodb')->table('unittests');
-        $this->assertInstanceOf(Builder::class, $collection);
     }
 
     public function testPrefix()
@@ -251,10 +250,12 @@ class ConnectionTest extends TestCase
         $this->assertCount(0, DB::getQueryLog());
 
         DB::table('items')->get();
-        $this->assertCount(1, DB::getQueryLog());
+        $this->assertCount(1, $logs = DB::getQueryLog());
+        $this->assertJsonStringEqualsJsonString('{"find":"items","filter":{}}', $logs[0]['query']);
 
-        DB::table('items')->insert(['name' => 'test']);
-        $this->assertCount(2, DB::getQueryLog());
+        DB::table('items')->insert(['id' => $id = new ObjectId(), 'name' => 'test']);
+        $this->assertCount(2, $logs = DB::getQueryLog());
+        $this->assertJsonStringEqualsJsonString('{"insert":"items","ordered":true,"documents":[{"name":"test","_id":{"$oid":"' . $id . '"}}]}', $logs[1]['query']);
 
         DB::table('items')->count();
         $this->assertCount(3, DB::getQueryLog());
@@ -264,6 +265,16 @@ class ConnectionTest extends TestCase
 
         DB::table('items')->where('name', 'test')->delete();
         $this->assertCount(5, DB::getQueryLog());
+
+        // Error
+        try {
+            DB::table('items')->where('name', 'test')->update(
+                ['$set' => ['embed' => ['foo' => 'bar']], '$unset' => ['embed' => ['foo']]],
+            );
+            self::fail('Expected BulkWriteException');
+        } catch (BulkWriteException) {
+            $this->assertCount(6, DB::getQueryLog());
+        }
     }
 
     public function testSchemaBuilder()

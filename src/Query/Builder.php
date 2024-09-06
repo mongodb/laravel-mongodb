@@ -9,11 +9,13 @@ use BadMethodCallException;
 use Carbon\CarbonPeriod;
 use Closure;
 use DateTimeInterface;
+use DateTimeZone;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LogicException;
@@ -39,6 +41,7 @@ use function call_user_func;
 use function call_user_func_array;
 use function count;
 use function ctype_xdigit;
+use function date_default_timezone_get;
 use function dd;
 use function dump;
 use function end;
@@ -79,7 +82,7 @@ class Builder extends BaseBuilder
     /**
      * The database collection.
      *
-     * @var \MongoDB\Laravel\Collection
+     * @var \MongoDB\Collection
      */
     protected $collection;
 
@@ -876,11 +879,11 @@ class Builder extends BaseBuilder
         $wheres  = $this->aliasIdForQuery($wheres);
         $options = $this->inheritConnectionOptions();
 
-        if (is_int($this->limit)) {
-            if ($this->limit !== 1) {
-                throw new LogicException(sprintf('Delete limit can be 1 or null (unlimited). Got %d', $this->limit));
-            }
-
+        /**
+         * Ignore the limit if it is set to more than 1, as it is not supported by the deleteMany method.
+         * Required for {@see DatabaseFailedJobProvider::prune()}
+         */
+        if ($this->limit === 1) {
             $result = $this->collection->deleteOne($wheres, $options);
         } else {
             $result = $this->collection->deleteMany($wheres, $options);
@@ -1076,7 +1079,7 @@ class Builder extends BaseBuilder
         $wheres = $this->aliasIdForQuery($wheres);
         $result = $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
-            return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
+            return $result->getModifiedCount() ?: $result->getUpsertedCount();
         }
 
         return 0;
@@ -1613,7 +1616,7 @@ class Builder extends BaseBuilder
     private function aliasIdForQuery(array $values): array
     {
         if (array_key_exists('id', $values)) {
-            if (array_key_exists('_id', $values)) {
+            if (array_key_exists('_id', $values) && $values['id'] !== $values['_id']) {
                 throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
             }
 
@@ -1624,7 +1627,7 @@ class Builder extends BaseBuilder
         foreach ($values as $key => $value) {
             if (is_string($key) && str_ends_with($key, '.id')) {
                 $newkey = substr($key, 0, -3) . '._id';
-                if (array_key_exists($newkey, $values)) {
+                if (array_key_exists($newkey, $values) && $value !== $values[$newkey]) {
                     throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
                 }
 
@@ -1656,11 +1659,14 @@ class Builder extends BaseBuilder
         if (is_array($values)) {
             if (array_key_exists('_id', $values) && ! array_key_exists('id', $values)) {
                 $values['id'] = $values['_id'];
-                //unset($values['_id']);
+                unset($values['_id']);
             }
 
             foreach ($values as $key => $value) {
-                if (is_array($value) || is_object($value)) {
+                if ($value instanceof UTCDateTime) {
+                    $values[$key] = Date::instance($value->toDateTime())
+                        ->setTimezone(new DateTimeZone(date_default_timezone_get()));
+                } elseif (is_array($value) || is_object($value)) {
                     $values[$key] = $this->aliasIdForResult($value);
                 }
             }
@@ -1669,11 +1675,14 @@ class Builder extends BaseBuilder
         if ($values instanceof stdClass) {
             if (property_exists($values, '_id') && ! property_exists($values, 'id')) {
                 $values->id = $values->_id;
-                //unset($values->_id);
+                unset($values->_id);
             }
 
             foreach (get_object_vars($values) as $key => $value) {
-                if (is_array($value) || is_object($value)) {
+                if ($value instanceof UTCDateTime) {
+                    $values->{$key} = Date::instance($value->toDateTime())
+                        ->setTimezone(new DateTimeZone(date_default_timezone_get()));
+                } elseif (is_array($value) || is_object($value)) {
                     $values->{$key} = $this->aliasIdForResult($value);
                 }
             }

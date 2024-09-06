@@ -14,8 +14,8 @@ use Illuminate\Bus\UpdatedBatchJobCounts;
 use Illuminate\Support\Carbon;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Collection;
 use MongoDB\Driver\ReadPreference;
-use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
 use Override;
@@ -28,7 +28,7 @@ use function unserialize;
 // are called by PruneBatchesCommand
 class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBatchRepository
 {
-    private Collection $collection;
+    private readonly Collection $collection;
 
     public function __construct(
         BatchFactory $factory,

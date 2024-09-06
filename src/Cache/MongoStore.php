@@ -7,7 +7,7 @@ use Illuminate\Contracts\Cache\LockProvider;
 use Illuminate\Contracts\Cache\Store;
 use Illuminate\Support\Carbon;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Laravel\Collection;
+use MongoDB\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
 use Override;

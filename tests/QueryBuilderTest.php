@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use Carbon\Carbon;
 use DateTime;
 use DateTimeImmutable;
 use Illuminate\Support\Facades\Date;
@@ -16,12 +17,12 @@ use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Collection;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber;
 use MongoDB\Driver\Monitoring\CommandSucceededEvent;
-use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\User;
@@ -33,7 +34,6 @@ use function key;
 use function md5;
 use function sort;
 use function strlen;
-use function strtotime;
 
 class QueryBuilderTest extends TestCase
 {
@@ -449,17 +449,32 @@ class QueryBuilderTest extends TestCase
 
     public function testCustomId()
     {
+        $tags = [['id' => 'sharp', 'name' => 'Sharp']];
         DB::table('items')->insert([
-            ['id' => 'knife', 'type' => 'sharp', 'amount' => 34],
-            ['id' => 'fork', 'type' => 'sharp', 'amount' => 20],
+            ['id' => 'knife', 'type' => 'sharp', 'amount' => 34, 'tags' => $tags],
+            ['id' => 'fork', 'type' => 'sharp', 'amount' => 20, 'tags' => $tags],
             ['id' => 'spoon', 'type' => 'round', 'amount' => 3],
         ]);
 
         $item = DB::table('items')->find('knife');
         $this->assertEquals('knife', $item->id);
+        $this->assertObjectNotHasProperty('_id', $item);
+        $this->assertEquals('sharp', $item->tags[0]['id']);
+        $this->assertArrayNotHasKey('_id', $item->tags[0]);
 
         $item = DB::table('items')->where('id', 'fork')->first();
         $this->assertEquals('fork', $item->id);
+
+        $item = DB::table('items')->where('_id', 'fork')->first();
+        $this->assertEquals('fork', $item->id);
+
+        // tags.id is translated into tags._id in query
+        $items = DB::table('items')->whereIn('tags.id', ['sharp'])->get();
+        $this->assertCount(2, $items);
+
+        // Ensure the field _id is stored in the database
+        $items = DB::table('items')->whereIn('tags._id', ['sharp'])->get();
+        $this->assertCount(2, $items);
 
         DB::table('users')->insert([
             ['id' => 1, 'name' => 'Jane Doe'],
@@ -468,6 +483,7 @@ class QueryBuilderTest extends TestCase
 
         $item = DB::table('users')->find(1);
         $this->assertEquals(1, $item->id);
+        $this->assertObjectNotHasProperty('_id', $item);
     }
 
     public function testTake()
@@ -676,27 +692,32 @@ class QueryBuilderTest extends TestCase
     public function testDates()
     {
         DB::table('users')->insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(Date::parse('1980-01-01 00:00:00'))],
-            ['name' => 'Robert Roe', 'birthday' => new UTCDateTime(Date::parse('1982-01-01 00:00:00'))],
-            ['name' => 'Mark Moe', 'birthday' => new UTCDateTime(Date::parse('1983-01-01 00:00:00.1'))],
-            ['name' => 'Frank White', 'birthday' => new UTCDateTime(Date::parse('1960-01-01 12:12:12.1'))],
+            ['name' => 'John Doe', 'birthday' => Date::parse('1980-01-01 00:00:00')],
+            ['name' => 'Robert Roe', 'birthday' => Date::parse('1982-01-01 00:00:00')],
+            ['name' => 'Mark Moe', 'birthday' => Date::parse('1983-01-01 00:00:00.1')],
+            ['name' => 'Frank White', 'birthday' => Date::parse('1975-01-01 12:12:12.1')],
         ]);
 
         $user = DB::table('users')
-            ->where('birthday', new UTCDateTime(Date::parse('1980-01-01 00:00:00')))
+            ->where('birthday', Date::parse('1980-01-01 00:00:00'))
             ->first();
         $this->assertEquals('John Doe', $user->name);
 
         $user = DB::table('users')
-            ->where('birthday', new UTCDateTime(Date::parse('1960-01-01 12:12:12.1')))
+            ->where('birthday', Date::parse('1975-01-01 12:12:12.1'))
             ->first();
+
         $this->assertEquals('Frank White', $user->name);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+        $this->assertSame('1975-01-01 12:12:12.100000', $user->birthday->format('Y-m-d H:i:s.u'));
 
         $user = DB::table('users')->where('birthday', '=', new DateTime('1980-01-01 00:00:00'))->first();
         $this->assertEquals('John Doe', $user->name);
+        $this->assertInstanceOf(Carbon::class, $user->birthday);
+        $this->assertSame('1980-01-01 00:00:00.000000', $user->birthday->format('Y-m-d H:i:s.u'));
 
-        $start = new UTCDateTime(1000 * strtotime('1950-01-01 00:00:00'));
-        $stop  = new UTCDateTime(1000 * strtotime('1981-01-01 00:00:00'));
+        $start = new UTCDateTime(new DateTime('1950-01-01 00:00:00'));
+        $stop  = new UTCDateTime(new DateTime('1981-01-01 00:00:00'));
 
         $users = DB::table('users')->whereBetween('birthday', [$start, $stop])->get();
         $this->assertCount(2, $users);

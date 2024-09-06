@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use Carbon\Carbon;
 use Illuminate\Auth\Passwords\PasswordBroker;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\Models\User;
 
 use function bcrypt;
@@ -63,7 +63,7 @@ class AuthTest extends TestCase
         $reminder = DB::table('password_reset_tokens')->first();
         $this->assertEquals('john.doe@example.com', $reminder->email);
         $this->assertNotNull($reminder->token);
-        $this->assertInstanceOf(UTCDateTime::class, $reminder->created_at);
+        $this->assertInstanceOf(Carbon::class, $reminder->created_at);
 
         $credentials = [
             'email' => 'john.doe@example.com',

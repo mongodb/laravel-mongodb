@@ -2,11 +2,11 @@
 
 namespace MongoDB\Laravel\Tests\Queue\Failed;
 
+use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 use MongoDB\Laravel\Tests\TestCase;
 use OutOfBoundsException;
 
@@ -14,7 +14,10 @@ use function array_map;
 use function range;
 use function sprintf;
 
-class MongoFailedJobProviderTest extends TestCase
+/**
+ * Ensure the Laravel class {@see DatabaseFailedJobProvider} works with a MongoDB connection.
+ */
+class DatabaseFailedJobProviderTest extends TestCase
 {
     public function setUp(): void
     {
@@ -57,8 +60,7 @@ class MongoFailedJobProviderTest extends TestCase
         $this->assertSame('default', $inserted->queue);
         $this->assertSame('{"foo":"bar"}', $inserted->payload);
         $this->assertStringContainsString('OutOfBoundsException: This is the error', $inserted->exception);
-        $this->assertInstanceOf(ObjectId::class, $inserted->_id);
-        $this->assertSame((string) $inserted->_id, $inserted->id);
+        $this->assertInstanceOf(ObjectId::class, $inserted->id);
     }
 
     public function testCount(): void
@@ -75,8 +77,9 @@ class MongoFailedJobProviderTest extends TestCase
         $all = $this->getProvider()->all();
 
         $this->assertCount(5, $all);
-        $this->assertEquals(new ObjectId(sprintf('%024d', 5)), $all[0]->_id);
-        $this->assertEquals(sprintf('%024d', 5), $all[0]->id, 'id field is added for compatibility with DatabaseFailedJobProvider');
+        $this->assertInstanceOf(ObjectId::class, $all[0]->id);
+        $this->assertEquals(new ObjectId(sprintf('%024d', 5)), $all[0]->id);
+        $this->assertEquals(sprintf('%024d', 5), (string) $all[0]->id, 'id field is added for compatibility with DatabaseFailedJobProvider');
     }
 
     public function testFindAndForget(): void
@@ -87,7 +90,8 @@ class MongoFailedJobProviderTest extends TestCase
         $found = $provider->find($id);
 
         $this->assertIsObject($found, 'The job is found');
-        $this->assertEquals(new ObjectId($id), $found->_id);
+        $this->assertInstanceOf(ObjectId::class, $found->id);
+        $this->assertEquals(new ObjectId($id), $found->id);
         $this->assertObjectHasProperty('failed_at', $found);
 
         // Delete the job
@@ -143,8 +147,8 @@ class MongoFailedJobProviderTest extends TestCase
         $this->assertEquals(3, $provider->count());
     }
 
-    private function getProvider(): MongoFailedJobProvider
+    private function getProvider(): DatabaseFailedJobProvider
     {
-        return new MongoFailedJobProvider(DB::getFacadeRoot(), '', 'failed_jobs');
+        return new DatabaseFailedJobProvider(DB::getFacadeRoot(), '', 'failed_jobs');
     }
 }

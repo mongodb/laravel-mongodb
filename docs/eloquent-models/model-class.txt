@@ -216,8 +216,8 @@ type, to the Laravel ``datetime`` type.
    To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
    in the Laravel documentation.
    
-This conversion lets you use the PHP `DateTime <https://www.php.net/manual/en/class.datetime.php>`__
-or the `Carbon class <https://carbon.nesbot.com/docs/>`__ to work with dates
+This conversion lets you use the PHP `DateTime
+<https://www.php.net/manual/en/class.datetime.php>`__ class to work with dates
 in this field. The following example shows a Laravel query that uses the
 casting helper on the model to query for planets with a ``discovery_dt`` of
 less than three years ago:
@@ -225,6 +225,13 @@ less than three years ago:
 .. code-block:: php
 
    Planet::where( 'discovery_dt', '>', new DateTime('-3 years'))->get();
+
+.. note:: Carbon Date Class
+
+   Starting in {+odm-long+} v5.0, ``UTCDateTime`` BSON values in MongoDB
+   are returned as `Carbon <https://carbon.nesbot.com/docs/>`__ date
+   classes in query results. The {+odm-short+} applies the default
+   timezone when performing this conversion.
 
 To learn more about MongoDB's data types, see :manual:`BSON Types </reference/bson-types/>`
 in the Server manual.
@@ -295,12 +302,8 @@ including this trait, you can make the third-party class compatible with
 MongoDB.
 
 When you apply the ``DocumentModel`` trait to a model class, you must
-declare the following properties in your class:
-
-- ``$primaryKey = '_id'``, because the ``_id`` field uniquely
-  identifies MongoDB documents
-- ``$keyType = 'string'``, because the {+odm-short+} casts MongoDB
-  ``ObjectId`` values to type ``string``
+set the  ``$keyType`` property to ``'string'`` as the {+odm-short+}
+casts MongoDB ``ObjectId`` values to type ``string``.
 
 Extended Class Example
 ~~~~~~~~~~~~~~~~~~~~~~
