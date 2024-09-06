@@ -273,7 +273,7 @@ class ConnectionTest extends TestCase
             );
             self::fail('Expected BulkWriteException');
         } catch (BulkWriteException) {
-            $this->assertCount(6, $logs = DB::getQueryLog());
+            $this->assertCount(6, DB::getQueryLog());
         }
     }
 
