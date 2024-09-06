@@ -83,10 +83,8 @@ This library version introduces the following breaking changes:
   The following list contains the removed methods and provides alternative methods
   that you can use to replace the functionality:
   
-  - ``Model::collection()``: use ``Model::table()``
   - ``DB::collection()``: use ``DB::table()``
-  - ``Connection::collection()``: use ``Connection::table()``
-  - ``Schema::collection()``: use ``Schema::table()``
+	- ``Schema::collection()``: use ``Schema::table()``
 
 .. _laravel-breaking-changes-v4.x:
 
