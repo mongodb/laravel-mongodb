@@ -71,6 +71,16 @@ Version 5.x Breaking Changes
 
 This library version introduces the following breaking changes:
 
+- Removes support for the following classes:
+
+  - ``MongoDB\Laravel\Auth\DatabaseTokenRepository``. Instead, use the default
+    ``Illuminate\Queue\Failed\DatabaseFailedJobProvider`` class and
+    specify a connection to MongoDB.
+
+  - ``MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider``. Instead,
+    use the default ``Illuminate\Queue\Failed\DatabaseFailedJobProvider``
+    class and specify a connection to MongoDB.
+    
 - In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
   date classes, applying the default timezone.
 
