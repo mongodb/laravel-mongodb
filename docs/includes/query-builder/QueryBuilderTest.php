@@ -9,7 +9,7 @@ use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
-use MongoDB\Laravel\Collection;
+use MongoDB\Collection;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function file_get_contents;

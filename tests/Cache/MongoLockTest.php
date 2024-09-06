@@ -8,8 +8,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Collection;
 use MongoDB\Laravel\Cache\MongoLock;
-use MongoDB\Laravel\Collection;
 use MongoDB\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\TestWith;
 

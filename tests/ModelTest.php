@@ -15,7 +15,7 @@ use Illuminate\Support\Str;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Laravel\Collection;
+use MongoDB\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Tests\Models\Book;

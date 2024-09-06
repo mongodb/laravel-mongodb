@@ -6,7 +6,7 @@ use Illuminate\Cache\Lock;
 use Illuminate\Support\Carbon;
 use InvalidArgumentException;
 use MongoDB\BSON\UTCDateTime;
-use MongoDB\Laravel\Collection;
+use MongoDB\Collection;
 use MongoDB\Operation\FindOneAndUpdate;
 use Override;
 
