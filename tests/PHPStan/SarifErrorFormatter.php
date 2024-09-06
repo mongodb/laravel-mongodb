@@ -26,9 +26,9 @@ class SarifErrorFormatter implements ErrorFormatter
     private const URI_BASE_ID = 'WORKINGDIR';
 
     public function __construct(
-        private RelativePathHelper $relativePathHelper,
-        private string $currentWorkingDirectory,
-        private bool $pretty,
+        private readonly RelativePathHelper $relativePathHelper,
+        private readonly string $currentWorkingDirectory,
+        private readonly bool $pretty,
     ) {
     }
 

@@ -28,7 +28,7 @@ use function unserialize;
 // are called by PruneBatchesCommand
 class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBatchRepository
 {
-    private Collection $collection;
+    private readonly Collection $collection;
 
     public function __construct(
         BatchFactory $factory,

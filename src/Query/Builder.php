@@ -1079,7 +1079,7 @@ class Builder extends BaseBuilder
         $wheres = $this->aliasIdForQuery($wheres);
         $result = $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
-            return $result->getModifiedCount() ? $result->getModifiedCount() : $result->getUpsertedCount();
+            return $result->getModifiedCount() ?: $result->getUpsertedCount();
         }
 
         return 0;
