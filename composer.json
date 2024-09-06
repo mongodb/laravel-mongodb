@@ -74,7 +74,8 @@
         "test": "phpunit",
         "test:coverage": "phpunit --coverage-clover ./coverage.xml",
         "cs": "phpcs",
-        "cs:fix": "phpcbf"
+        "cs:fix": "phpcbf",
+        "rector": "rector"
     },
     "config": {
         "allow-plugins": {
