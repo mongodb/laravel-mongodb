@@ -84,7 +84,7 @@ This library version introduces the following breaking changes:
   that you can use to replace the functionality:
   
   - ``DB::collection()``: use ``DB::table()``
-	- ``Schema::collection()``: use ``Schema::table()``
+  - ``Schema::collection()``: use ``Schema::table()``
 
 .. _laravel-breaking-changes-v4.x:
 
