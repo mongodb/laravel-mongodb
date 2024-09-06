@@ -21,12 +21,11 @@ use function array_keys;
 use function array_map;
 use function class_basename;
 use function collect;
-use function get_class;
 use function in_array;
 use function is_array;
 use function is_string;
 use function method_exists;
-use function strpos;
+use function str_contains;
 
 trait QueriesRelationships
 {
@@ -45,7 +44,7 @@ trait QueriesRelationships
     public function has($relation, $operator = '>=', $count = 1, $boolean = 'and', ?Closure $callback = null)
     {
         if (is_string($relation)) {
-            if (strpos($relation, '.') !== false) {
+            if (str_contains($relation, '.')) {
                 return $this->hasNested($relation, $operator, $count, $boolean, $callback);
             }
 
@@ -139,7 +138,7 @@ trait QueriesRelationships
     {
         // First we select the parent models that have a relation to our related model,
         // Then extracts related model's ids from the pivot column
-        $hasQuery->where($relation->getTable() . '.' . $relation->getMorphType(), get_class($relation->getParent()));
+        $hasQuery->where($relation->getTable() . '.' . $relation->getMorphType(), $relation->getParent()::class);
         $relations = $hasQuery->pluck($relation->getTable());
         $relations = $relation->extractIds($relations->flatten(1)->toArray(), $relation->getForeignPivotKeyName());
 
