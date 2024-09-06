@@ -89,6 +89,9 @@ This library version introduces the following breaking changes:
   of this behavior, you cannot have two separate ``id`` and ``_id`` fields in your
   documents.
 
+- When using a ``DateTimeInterface`` object in a query, the library converts
+  the ``DateTimeInterface`` to a ``MongoDB\BSON\UTCDateTime`` object.
+
 .. _laravel-breaking-changes-v4.x:
 
 Version 4.x Breaking Changes
