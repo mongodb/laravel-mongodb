@@ -41,7 +41,7 @@ Chain methods to specify commands and any constraints. Then, chain
 the ``get()`` method at the end to run the methods and retrieve the
 results. To retrieve only the first matching result, chain the
 ``first()`` method instead of the ``get()`` method. Starting in
-{+odm-long+} v5.0, the query builder returns results as objects.
+{+odm-long+} v5.0, the query builder returns results as ``stdClass`` objects.
 
 The following example shows the syntax of a query builder call:
 
