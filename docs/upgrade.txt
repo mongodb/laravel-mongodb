@@ -14,7 +14,7 @@ Upgrade Library Version
 .. contents:: On this page
    :local:
    :backlinks: none
-   :depth: 1
+   :depth: 2
    :class: singlecol
 
 Overview
@@ -70,6 +70,26 @@ Version 5.x Breaking Changes
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 This library version introduces the following breaking changes:
+
+- The query builder returns results as as ``stdClass`` objects instead
+  of as arrays. This change requires that you change array access to
+  property access when interacting with query results.
+
+  The following code shows how to retrieve a query result and access a
+  property from the result object in older versions compared to v5.0:
+
+  .. code-block:: php
+     :emphasize-lines: 8-9
+
+     $document = DB::table('accounts')
+         ->where('name', 'Anita Charles')
+         ->first();
+
+     // older versions
+     $document['balance'];
+
+     // v5.0
+     $document->balance;
 
 - Removes support for the following classes:
 

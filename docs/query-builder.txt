@@ -38,7 +38,11 @@ testability.
 
 The {+odm-short+} provides the ``DB`` method ``table()`` to access a collection.
 Chain methods to specify commands and any constraints. Then, chain
-the ``get()`` method at the end to run the methods and retrieve the results.
+the ``get()`` method at the end to run the methods and retrieve the
+results. To retrieve only the first matching result, chain the
+``first()`` method instead of the ``get()`` method. Starting in
+{+odm-long+} v5.0, the query builder returns results as ``stdClass`` objects.
+
 The following example shows the syntax of a query builder call:
 
 .. code-block:: php
@@ -46,7 +50,8 @@ The following example shows the syntax of a query builder call:
    DB::table('<collection name>')
        // chain methods by using the "->" object operator
        ->get();
-.. tip::
+
+.. tip:: Set Database Connection
 
    Before using the ``DB::table()`` method, ensure that you specify MongoDB as your application's
    default database connection. For instructions on setting the database connection,
