@@ -91,8 +91,23 @@ This library version introduces the following breaking changes:
      // v5.0
      $document->balance;
 
+- Removes support for the following classes:
+
+  - ``MongoDB\Laravel\Auth\DatabaseTokenRepository``. Instead, use the default
+    ``Illuminate\Queue\Failed\DatabaseFailedJobProvider`` class and
+    specify a connection to MongoDB.
+
+  - ``MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider``. Instead,
+    use the default ``Illuminate\Queue\Failed\DatabaseFailedJobProvider``
+    class and specify a connection to MongoDB.
+    
 - In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
   date classes, applying the default timezone.
+
+- ``id`` is an alias for the ``_id`` field in MongoDB documents, and the library
+  automatically converts between ``id`` and ``_id`` when querying data. Because
+  of this behavior, you cannot have two separate ``id`` and ``_id`` fields in your
+  documents.
 
 .. _laravel-breaking-changes-v4.x:
 

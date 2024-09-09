@@ -10,9 +10,8 @@ use InvalidArgumentException;
 use Iterator;
 use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
-use MongoDB\Collection as MongoDBCollection;
+use MongoDB\Collection;
 use MongoDB\Driver\CursorInterface;
-use MongoDB\Laravel\Collection as LaravelMongoDBCollection;
 
 use function array_replace;
 use function collect;
@@ -24,7 +23,7 @@ class AggregationBuilder
     use FluentFactoryTrait;
 
     public function __construct(
-        private MongoDBCollection|LaravelMongoDBCollection $collection,
+        private Collection $collection,
         private readonly array $options = [],
     ) {
     }
