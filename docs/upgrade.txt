@@ -80,11 +80,11 @@ This library version introduces the following breaking changes:
   documents.
 
 - Removes support for the ``$collection`` property. The following code shows
-  how to specify a MongoDB collection name in your User class in older versions
-  compared to v5.0:
+  how to assign a MongoDB collection to a variable in your ``User`` class in
+  older versions compared to v5.0:
   
   .. code-block:: php
-    :emphasize-lines: 11-12
+    :emphasize-lines: 10-11
 
     use MongoDB\Laravel\Eloquent\Model;
 
@@ -101,12 +101,12 @@ This library version introduces the following breaking changes:
         ...
     }
   
-  This release also updates the associated ``DB`` and ``Schema`` methods for
+  This release also modifies the associated ``DB`` and ``Schema`` methods for
   accessing a MongoDB collection. The following code shows how to access the
   ``app_user`` collection in older versions compared to v5.0:
   
   .. code-block:: php
-    :emphasize-lines: 10-12
+    :emphasize-lines: 9-11
 
     use Illuminate\Support\Facades\Schema;
     use Illuminate\Support\Facades\DB;
