@@ -148,14 +148,26 @@ class QueryBuilderTest extends TestCase
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
     }
 
-    public function testWhereDate(): void
+    public function testWhereCarbon(): void
     {
         // begin query where date
         $result = DB::connection('mongodb')
             ->table('movies')
-            ->where('released', Carbon::create(2010, 1, 15, 0, 0, 0, 'UTC'))
+            ->where('released', Carbon::create(2010, 1, 15))
             ->get();
         // end query where date
+
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
+    }
+
+    public function testWhereDate(): void
+    {
+        // begin query whereDate string
+        $result = DB::connection('mongodb')
+            ->table('movies')
+            ->whereDate('released', '2010-1-15')
+            ->get();
+        // end query whereDate string
 
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
     }

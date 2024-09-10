@@ -369,6 +369,18 @@ is January 15, 2010, specified in a ``Carbon`` object:
    objects. The {+odm-short+} applies the default timezone when performing
    this conversion.
 
+If you want to represent a date as a string in your query filter
+rather than as a ``Carbon`` object, use the ``whereDate()`` query
+builder method. The following example retrieves documents from
+the ``movies`` collection in which the ``released`` value
+is January 15, 2010 and specifies the date as a string:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereDate string
+   :end-before: end query whereDate string
+
 .. _laravel-query-builder-pattern:
 
 Text Pattern Match Example
