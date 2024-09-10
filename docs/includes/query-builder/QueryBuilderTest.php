@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
@@ -148,14 +149,26 @@ class QueryBuilderTest extends TestCase
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
     }
 
+    public function testWhereCarbon(): void
+    {
+        // begin query where date
+        $result = DB::connection('mongodb')
+            ->table('movies')
+            ->where('released', Carbon::create(2010, 1, 15))
+            ->get();
+        // end query where date
+
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
+    }
+
     public function testWhereDate(): void
     {
-        // begin query whereDate
+        // begin query whereDate string
         $result = DB::connection('mongodb')
             ->table('movies')
             ->whereDate('released', '2010-1-15')
             ->get();
-        // end query whereDate
+        // end query whereDate string
 
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
     }

@@ -101,6 +101,16 @@ This library version introduces the following breaking changes:
     use the default ``Illuminate\Queue\Failed\DatabaseFailedJobProvider``
     class and specify a connection to MongoDB.
     
+- When using a ``DateTimeInterface`` object, including ``Carbon``, in a query,
+  the library converts the ``DateTimeInterface`` to a ``MongoDB\BSON\UTCDateTime``
+  object. This conversion applies to ``DateTimeInterface`` objects passed as query
+  filters to the ``where()`` method or as data passed to the ``insert()`` and
+  ``update()`` methods. 
+  
+  To view an example that passes a ``Carbon`` object to the
+  ``DB::where()`` method, see the :ref:`laravel-query-builder-wheredate`
+  section of the Query Builder guide.
+
 - In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
   date classes, applying the default timezone.
 
