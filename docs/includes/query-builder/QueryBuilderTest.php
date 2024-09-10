@@ -154,7 +154,7 @@ class QueryBuilderTest extends TestCase
         $result = DB::connection('mongodb')
             ->table('movies')
             ->where('released', new UTCDateTime(
-                Carbon::create(2010, 1, 15, 0, 0, 0, 'UTC')
+                Carbon::create(2010, 1, 15, 0, 0, 0, 'UTC'),
             ))->get();
         // end query where date
 
