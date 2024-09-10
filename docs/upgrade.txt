@@ -87,7 +87,7 @@ This library version introduces the following breaking changes:
   filters to the ``where()`` method or as data passed to the ``insert()`` and
   ``update()`` methods. 
   
-  For an example that passes a ``Carbon`` object to the
+  To view an example that passes a ``Carbon`` object to the
   ``DB::where()`` method, see the :ref:`laravel-query-builder-wheredate`
   section of the Query Builder guide.
 

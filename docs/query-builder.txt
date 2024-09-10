@@ -351,7 +351,7 @@ Match Dates Example
 The following example shows how to use the ``where()``
 query builder method to retrieve documents from the
 ``movies`` collection in which the ``released`` value
-is ``2010, 1, 15, 0, 0, 0``, specified in a ``Carbon`` object:
+is January 15, 2010, specified in a ``Carbon`` object:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
