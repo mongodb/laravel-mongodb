@@ -359,10 +359,10 @@ is ``2010, 1, 15, 0, 0, 0``, specified in a ``Carbon`` object:
    :start-after: begin query where date
    :end-before: end query where date
 
-.. note:: Date Query Result Type
+.. note:: Date Query Filter and Result Type
 
    Starting in {+odm-long+} v5.0, `Carbon <https://carbon.nesbot.com/docs/>`__
-   objects passed as query filters, as shown in the preceding code example, are
+   objects passed as query filters, as shown in the preceding code, are
    converted to ``UTCDateTime`` BSON values.
    
    In query results, ``UTCDateTime`` BSON values in MongoDB are returned as ``Carbon``
