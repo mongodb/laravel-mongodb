@@ -348,23 +348,26 @@ query builder method to retrieve documents from the
 Match Dates Example
 ^^^^^^^^^^^^^^^^^^^
 
-The following example shows how to use the ``whereDate()``
+The following example shows how to use the ``where()``
 query builder method to retrieve documents from the
-``movies`` collection that match the specified date of
-``2010-1-15`` in the ``released`` field:
+``movies`` collection in which the ``released`` value
+is ``2010, 1, 15, 0, 0, 0``, specified in a ``Carbon`` object:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
-   :start-after: begin query whereDate
-   :end-before: end query whereDate
+   :start-after: begin query where date
+   :end-before: end query where date
 
 .. note:: Date Query Result Type
 
-   Starting in {+odm-long+} v5.0, ``UTCDateTime`` BSON values in MongoDB
-   are returned as `Carbon <https://carbon.nesbot.com/docs/>`__ date
-   classes in query results. The {+odm-short+} applies the default
-   timezone when performing this conversion.
+   Starting in {+odm-long+} v5.0, `Carbon <https://carbon.nesbot.com/docs/>`__
+   objects passed as query filters, as shown in the preceding code example, are
+   converted to ``UTCDateTime`` BSON values.
+   
+   In query results, ``UTCDateTime`` BSON values in MongoDB are returned as ``Carbon``
+   objects. The {+odm-short+} applies the default timezone when performing
+   this conversion.
 
 .. _laravel-query-builder-pattern:
 

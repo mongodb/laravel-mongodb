@@ -150,12 +150,13 @@ class QueryBuilderTest extends TestCase
 
     public function testWhereDate(): void
     {
-        // begin query whereDate
+        // begin query where date
         $result = DB::connection('mongodb')
             ->table('movies')
-            ->whereDate('released', '2010-1-15')
-            ->get();
-        // end query whereDate
+            ->where('released', new UTCDateTime(
+                Carbon::create(2010, 1, 15, 0, 0, 0, 'UTC')
+            ))->get();
+        // end query where date
 
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
     }
