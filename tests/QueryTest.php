@@ -660,4 +660,13 @@ class QueryTest extends TestCase
         User::limit(null)->delete();
         $this->assertEquals(0, User::count());
     }
+
+    public function testLimitCount(): void
+    {
+        $count = User::where('age', '>=', 20)->count();
+        $this->assertEquals(7, $count);
+
+        $count = User::where('age', '>=', 20)->options(['limit' => 3])->count();
+        $this->assertEquals(3, $count);
+    }
 }

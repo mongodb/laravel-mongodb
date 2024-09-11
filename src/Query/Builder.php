@@ -346,7 +346,7 @@ class Builder extends BaseBuilder
                     $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
 
                     if (in_array('*', $aggregations) && $function === 'count') {
-                        $options = $this->inheritConnectionOptions();
+                        $options = $this->inheritConnectionOptions($this->options);
 
                         return ['countDocuments' => [$wheres, $options]];
                     }
