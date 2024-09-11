@@ -11,6 +11,7 @@ All notable changes to this project will be documented in this file.
 * Remove custom `PasswordResetServiceProvider`, use the default `DatabaseTokenRepository` by @GromNaN in [#3124](https://github.com/mongodb/laravel-mongodb/pull/3124)
 * Remove `Blueprint::background()` method by @GromNaN in [#3132](https://github.com/mongodb/laravel-mongodb/pull/3132)
 * Replace `Collection` proxy class with Driver monitoring by @GromNaN in [#3137]((https://github.com/mongodb/laravel-mongodb/pull/3137)
+* Support options in `count()` queries by @verduck in [#3142](https://github.com/mongodb/laravel-mongodb/pull/3142)
 
 ## [4.8.0] - 2024-08-27
 
