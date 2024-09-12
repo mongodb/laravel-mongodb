@@ -3,7 +3,7 @@ name: Merge up
 on:
   push:
     branches:
-      - "[0-9]+.[0-9]+"
+      - "[0-9]+.[0-9x]+"
 
 env:
   GH_TOKEN: ${{ secrets.MERGE_UP_TOKEN }}
@@ -28,4 +28,5 @@ jobs:
         with:
           ref: ${{ github.ref_name }}
           branchNamePattern: '<major>.<minor>'
+          devBranchNamePattern: '<major>.x'
           enableAutoMerge: true
