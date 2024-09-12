@@ -32,6 +32,7 @@ jobs:
         run: |
           echo RELEASE_VERSION=${{ inputs.version }} >> $GITHUB_ENV
           echo RELEASE_BRANCH=$(echo ${{ inputs.version }} | cut -d '.' -f-2) >> $GITHUB_ENV
+          echo DEV_BRANCH=$(echo ${{ inputs.version }} | cut -d '.' - f-1).x >> $GITHUB_ENV
 
       - name: "Ensure release tag does not already exist"
         run: |
@@ -40,11 +41,30 @@ jobs:
             exit 1
           fi
 
-      - name: "Fail if branch names don't match"
-        if: ${{ github.ref_name != env.RELEASE_BRANCH }}
+      # For patch releases (A.B.C where C != 0), we expect the release to be
+      # triggered from the A.B maintenance branch
+      - name: "Fail if patch release is created from wrong release branch"
+        if: ${{ !endsWith(inputs.version, '.0') && env.RELEASE_BRANCH != github.ref_name }}
         run: |
           echo '❌ Release failed due to branch mismatch: expected ${{ inputs.version }} to be released from ${{ env.RELEASE_BRANCH }}, got ${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
           exit 1
+
+      # For non-patch releases (A.B.C where C == 0), we expect the release to
+      # be triggered from the A.x maintenance branch
+      - name: "Fail if non-patch release is created from wrong release branch"
+        if: ${{ endsWith(inputs.version, '.0') && env.RELEASE_BRANCH != github.ref_name && env.DEV_BRANCH != github.ref_name }}
+        run: |
+          echo '❌ Release failed due to branch mismatch: expected ${{ inputs.version }} to be released from ${{ env.RELEASE_BRANCH }} or ${{ env.DEV_BRANCH }}, got ${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+          exit 1
+
+      # If a non-patch release is created from a branch other than its
+      # maintenance branch, create that branch from the current one and push it
+      - name: "Create new and push release branch for non-patch release"
+        if: ${{ endsWith(inputs.version, '.0') && env.RELEASE_BRANCH != github.ref_name }}
+        run: |
+          echo '🆕 Creating new release branch ${RELEASE_BRANCH} from ${{ github.ref_name }}' >> $GITHUB_STEP_SUMMARY
+          git checkout -b ${RELEASE_BRANCH}
+          git push origin ${RELEASE_BRANCH}
 
       #
       # Preliminary checks done - commence the release process
