@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [5.0.1] - 2024-09-13
+
+* Restore support for Laravel 10 by @GromNaN in [#3148](https://github.com/mongodb/laravel-mongodb/pull/3148)
+
 ## [5.0.0] - 2024-09-12
 
 * **BREAKING CHANGE** Use `id` as an alias for `_id` in commands and queries for compatibility with Eloquent packages by @GromNaN in [#3040](https://github.com/mongodb/laravel-mongodb/pull/3040) and [#3136](https://github.com/mongodb/laravel-mongodb/pull/3136)
