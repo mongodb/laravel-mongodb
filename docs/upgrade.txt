@@ -124,41 +124,41 @@ This library version introduces the following breaking changes:
   older versions compared to v5.0:
   
   .. code-block:: php
-    :emphasize-lines: 10-11
-
-    use MongoDB\Laravel\Eloquent\Model;
-
-    class User extends Model
-    {
-        protected $keyType = 'string';
-
-        // older versions
-        protected $collection = 'app_user';
-
-        // v5.0
-        protected $table = 'app_user';
-
-        ...
-    }
+     :emphasize-lines: 10-11
+ 
+     use MongoDB\Laravel\Eloquent\Model;
+ 
+     class User extends Model
+     {
+         protected $keyType = 'string';
+ 
+         // older versions
+         protected $collection = 'app_user';
+ 
+         // v5.0
+         protected $table = 'app_user';
+ 
+         ...
+     }
   
   This release also modifies the associated ``DB`` and ``Schema`` methods for
   accessing a MongoDB collection. The following code shows how to access the
   ``app_user`` collection in older versions compared to v5.0:
   
   .. code-block:: php
-    :emphasize-lines: 9-11
-
-    use Illuminate\Support\Facades\Schema;
-    use Illuminate\Support\Facades\DB;
-    use MongoDB\Laravel\Schema\Blueprint;
-      
-      // older versions
-      Schema::collection('app_user', function (Blueprint $collection) { ... });
-      DB::collection('app_user')->find($id);
-
-      // v5.0
-      Schema::table('app_user', function (Blueprint $table) { ... });
-      DB::table('app_user')->find($id);
+     :emphasize-lines: 9-11
+ 
+     use Illuminate\Support\Facades\Schema;
+     use Illuminate\Support\Facades\DB;
+     use MongoDB\Laravel\Schema\Blueprint;
+       
+     // older versions
+     Schema::collection('app_user', function (Blueprint $collection) { ... });
+     DB::collection('app_user')->find($id);
+ 
+     // v5.0
+     Schema::table('app_user', function (Blueprint $table) { ... });
+     DB::table('app_user')->find($id);
 
 .. _laravel-breaking-changes-v4.x:
 
