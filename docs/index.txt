@@ -14,8 +14,9 @@
    :maxdepth: 1
 
    /quick-start
-   /usage-examples
    Release Notes <https://github.com/mongodb/laravel-mongodb/releases/>
+   /upgrade
+   /usage-examples
    /fundamentals
    /eloquent-models
    /query-builder
@@ -27,7 +28,6 @@
    /issues-and-help
    /feature-compatibility
    /compatibility
-   /upgrade
 
 Introduction
 ------------
@@ -51,6 +51,17 @@ Quick Start
 Learn how to add the {+odm-short+} to a Laravel web application, connect to
 MongoDB hosted on MongoDB Atlas, and begin working with data in the
 :ref:`laravel-quick-start` section.
+
+Upgrade Versions
+----------------
+
+.. important::
+
+   {+odm-long+} v5.0 introduces breaking changes that might affect how you
+   upgrade your application from a v4.x version.
+
+Learn what changes you must make to your application to upgrade between
+major versions in the :ref:`laravel-upgrading` section.
 
 Usage Examples
 --------------
@@ -94,10 +105,3 @@ Compatibility
 
 To learn more about which versions of {+odm-long+} and Laravel are
 compatible, see the :ref:`laravel-compatibility` section.
-
-Upgrade Versions
-----------------
-
-Learn what changes you must make to your application to upgrade versions in
-the :ref:`laravel-upgrading` section.
-
