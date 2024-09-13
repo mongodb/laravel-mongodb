@@ -1,7 +1,7 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [5.0.1] - next
+## [5.0.1] - 2024-09-13
 
 * Restore support for Laravel 10 by @GromNaN in [#3148](https://github.com/mongodb/laravel-mongodb/pull/3148)
 
