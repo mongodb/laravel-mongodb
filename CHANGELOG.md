@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [5.0.2] - 2024-09-17
+
+* Fix missing return types in CommandSubscriber by @GromNaN in [#3158](https://github.com/mongodb/laravel-mongodb/pull/3158)
+
 ## [5.0.1] - 2024-09-13
 
 * Restore support for Laravel 10 by @GromNaN in [#3148](https://github.com/mongodb/laravel-mongodb/pull/3148)
