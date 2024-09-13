@@ -25,6 +25,7 @@ use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Driver\Cursor;
+use MongoDB\Driver\CursorInterface;
 use Override;
 use RuntimeException;
 use stdClass;
@@ -934,7 +935,17 @@ class Builder extends BaseBuilder
     {
         // Execute the closure on the mongodb collection
         if ($value instanceof Closure) {
-            return call_user_func($value, $this->collection);
+            $results = call_user_func($value, $this->collection);
+
+            if ($results instanceof CursorInterface) {
+                $results = $results->toArray();
+            }
+
+            if (is_array($results) || is_object($results)) {
+                $results = $this->aliasIdForResult($results);
+            }
+
+            return $results;
         }
 
         // Create an expression for the given value

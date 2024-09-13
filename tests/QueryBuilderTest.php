@@ -18,7 +18,6 @@ use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
-use MongoDB\Driver\Cursor;
 use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber;
@@ -314,12 +313,16 @@ class QueryBuilderTest extends TestCase
             ['name' => 'John Doe', 'age' => 25],
         ]);
 
-        $cursor = DB::table('users')->raw(function ($collection) {
-            return $collection->find(['age' => 20]);
+        $results = DB::table('users')->raw(function ($collection) {
+            return $collection->find(['age' => 20], ['typeMap' => ['root' => 'array', 'document' => 'array']]);
         });
 
-        $this->assertInstanceOf(Cursor::class, $cursor);
-        $this->assertCount(1, $cursor->toArray());
+        $this->assertIsArray($results);
+        $this->assertCount(1, $results);
+        $this->assertArrayNotHasKey('_id', $results[0]);
+        $this->assertArrayHasKey('id', $results[0]);
+        $this->assertInstanceOf(ObjectId::class, $results[0]['id']);
+        $this->assertSame(20, $results[0]['age']);
 
         $collection = DB::table('users')->raw();
         $this->assertInstanceOf(Collection::class, $collection);

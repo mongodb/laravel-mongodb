@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use MongoDB\Driver\Cursor;
+use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Exception\WriteException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
@@ -177,7 +177,7 @@ class Builder extends EloquentBuilder
         $results = $this->query->raw($value);
 
         // Convert MongoCursor results to a collection of models.
-        if ($results instanceof Cursor) {
+        if ($results instanceof CursorInterface) {
             $results = iterator_to_array($results, false);
 
             return $this->model->hydrate($results);
