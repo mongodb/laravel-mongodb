@@ -20,7 +20,6 @@ use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LogicException;
 use MongoDB\BSON\Binary;
-use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
