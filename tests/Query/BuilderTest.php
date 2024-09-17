@@ -1381,6 +1381,31 @@ class BuilderTest extends TestCase
                 ->orWhereAny(['last_name', 'email'], 'not like', '%Doe%'),
             'orWhereAny',
         ];
+
+        yield 'raw filter with _id and date' => [
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            [
+                                '$or' => [
+                                    ['foo._id' => 1],
+                                    ['created_at' => ['$gte' => new UTCDateTime(new DateTimeImmutable('2018-09-30 00:00:00.000 +00:00'))]],
+                                ],
+                            ],
+                            ['age' => 15],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder->where([
+                '$or' => [
+                    ['foo.id' => 1],
+                    ['created_at' => ['$gte' => new DateTimeImmutable('2018-09-30 00:00:00 +00:00')]],
+                ],
+            ])->where('age', 15),
+        ];
     }
 
     #[DataProvider('provideExceptions')]
