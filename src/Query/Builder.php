@@ -20,12 +20,12 @@ use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LogicException;
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Driver\Cursor;
-use MongoDB\Driver\CursorInterface;
 use Override;
 use RuntimeException;
 use stdClass;
@@ -935,17 +935,7 @@ class Builder extends BaseBuilder
     {
         // Execute the closure on the mongodb collection
         if ($value instanceof Closure) {
-            $results = call_user_func($value, $this->collection);
-
-            if ($results instanceof CursorInterface) {
-                $results = $results->toArray();
-            }
-
-            if (is_array($results) || is_object($results)) {
-                $results = $this->aliasIdForResult($results);
-            }
-
-            return $results;
+            return call_user_func($value, $this->collection);
         }
 
         // Create an expression for the given value
@@ -1659,13 +1649,15 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * @internal
+     *
      * @psalm-param T $values
      *
      * @psalm-return T
      *
      * @template T of array|object
      */
-    private function aliasIdForResult(array|object $values): array|object
+    public function aliasIdForResult(array|object $values): array|object
     {
         if (is_array($values)) {
             if (array_key_exists('_id', $values) && ! array_key_exists('id', $values)) {

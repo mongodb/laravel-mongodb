@@ -908,10 +908,17 @@ class ModelTest extends TestCase
         $this->assertInstanceOf(User::class, $users[0]);
 
         $user = User::raw(function (Collection $collection) {
-            return $collection->findOne(['age' => 35]);
+            return $collection->findOne(
+                ['age' => 35],
+                ['projection' => ['_id' => 1, 'name' => 1, 'age' => 1, 'now' => '$$NOW']],
+            );
         });
 
-        $this->assertTrue(Model::isDocumentModel($user));
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertArrayNotHasKey('_id', $user->getAttributes());
+        $this->assertArrayHasKey('id', $user->getAttributes());
+        $this->assertNotEmpty($user->id);
+        $this->assertInstanceOf(Carbon::class, $user->now);
 
         $count = User::raw(function (Collection $collection) {
             return $collection->count();
@@ -922,6 +929,22 @@ class ModelTest extends TestCase
             return $collection->insertOne(['name' => 'Yvonne Yoe', 'age' => 35]);
         });
         $this->assertNotNull($result);
+
+        $result = User::raw(function (Collection $collection) {
+            return $collection->aggregate([
+                ['$set' => ['now' => '$$NOW']],
+                ['$limit' => 2],
+            ]);
+        });
+
+        $this->assertInstanceOf(EloquentCollection::class, $result);
+        $this->assertCount(2, $result);
+        $user = $result->first();
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertArrayNotHasKey('_id', $user->getAttributes());
+        $this->assertArrayHasKey('id', $user->getAttributes());
+        $this->assertNotEmpty($user->id);
+        $this->assertInstanceOf(Carbon::class, $user->now);
     }
 
     public function testDotNotation(): void
