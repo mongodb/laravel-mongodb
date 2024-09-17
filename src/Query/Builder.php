@@ -1648,13 +1648,15 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * @internal
+     *
      * @psalm-param T $values
      *
      * @psalm-return T
      *
      * @template T of array|object
      */
-    private function aliasIdForResult(array|object $values): array|object
+    public function aliasIdForResult(array|object $values): array|object
     {
         if (is_array($values)) {
             if (array_key_exists('_id', $values) && ! array_key_exists('id', $values)) {

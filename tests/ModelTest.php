@@ -28,6 +28,8 @@ use MongoDB\Laravel\Tests\Models\MemberStatus;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
+use MongoDB\Model\BSONArray;
+use MongoDB\Model\BSONDocument;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -907,14 +909,8 @@ class ModelTest extends TestCase
         $this->assertInstanceOf(EloquentCollection::class, $users);
         $this->assertInstanceOf(User::class, $users[0]);
 
-        $user = User::raw(function (Collection $collection) {
-            return $collection->findOne(['age' => 35]);
-        });
-
-        $this->assertTrue(Model::isDocumentModel($user));
-
         $count = User::raw(function (Collection $collection) {
-            return $collection->count();
+            return $collection->estimatedDocumentCount();
         });
         $this->assertEquals(3, $count);
 
@@ -922,6 +918,59 @@ class ModelTest extends TestCase
             return $collection->insertOne(['name' => 'Yvonne Yoe', 'age' => 35]);
         });
         $this->assertNotNull($result);
+    }
+
+    #[DataProvider('provideTypeMap')]
+    public function testRawHyradeModel(array $typeMap): void
+    {
+        User::insert([
+            ['name' => 'John Doe', 'age' => 35, 'embed' => ['foo' => 'bar'], 'list' => [1, 2, 3]],
+            ['name' => 'Jane Doe', 'age' => 35, 'embed' => ['foo' => 'bar'], 'list' => [1, 2, 3]],
+            ['name' => 'Harry Hoe', 'age' => 15, 'embed' => ['foo' => 'bar'], 'list' => [1, 2, 3]],
+        ]);
+
+        // Single document result
+        $user = User::raw(fn (Collection $collection) => $collection->findOne(
+            ['age' => 35],
+            [
+                'projection' => ['_id' => 1, 'name' => 1, 'age' => 1, 'now' => '$$NOW', 'embed' => 1, 'list' => 1],
+                'typeMap' => $typeMap,
+            ],
+        ));
+
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertArrayNotHasKey('_id', $user->getAttributes());
+        $this->assertArrayHasKey('id', $user->getAttributes());
+        $this->assertNotEmpty($user->id);
+        $this->assertInstanceOf(Carbon::class, $user->now);
+        $this->assertEquals(['foo' => 'bar'], (array) $user->embed);
+        $this->assertEquals([1, 2, 3], (array) $user->list);
+
+        // Cursor result
+        $result = User::raw(fn (Collection $collection) => $collection->aggregate([
+            ['$set' => ['now' => '$$NOW']],
+            ['$limit' => 2],
+        ], ['typeMap' => $typeMap]));
+
+        $this->assertInstanceOf(EloquentCollection::class, $result);
+        $this->assertCount(2, $result);
+        $user = $result->first();
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertArrayNotHasKey('_id', $user->getAttributes());
+        $this->assertArrayHasKey('id', $user->getAttributes());
+        $this->assertNotEmpty($user->id);
+        $this->assertInstanceOf(Carbon::class, $user->now);
+        $this->assertEquals(['foo' => 'bar'], $user->embed);
+        $this->assertEquals([1, 2, 3], $user->list);
+    }
+
+    public static function provideTypeMap(): Generator
+    {
+        yield 'default' => [[]];
+        yield 'array' => [['root' => 'array', 'document' => 'array', 'array' => 'array']];
+        yield 'object' => [['root' => 'object', 'document' => 'object', 'array' => 'array']];
+        yield 'Library BSON' => [['root' => BSONDocument::class, 'document' => BSONDocument::class, 'array' => BSONArray::class]];
+        yield 'Driver BSON' => [['root' => 'bson', 'document' => 'bson', 'array' => 'bson']];
     }
 
     public function testDotNotation(): void

@@ -1,6 +1,10 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [5.1.0] - next
+
+* Convert `_id` and `UTCDateTime` in results of `Model::raw()` before hydratation by @GromNaN in [#3152](https://github.com/mongodb/laravel-mongodb/pull/3152)
+
 ## [5.0.2] - 2024-09-17
 
 * Fix missing return types in CommandSubscriber by @GromNaN in [#3158](https://github.com/mongodb/laravel-mongodb/pull/3158)

@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
-use MongoDB\Driver\Cursor;
+use MongoDB\BSON\Document;
+use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Exception\WriteException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
@@ -16,7 +17,9 @@ use function array_key_exists;
 use function array_merge;
 use function collect;
 use function is_array;
+use function is_object;
 use function iterator_to_array;
+use function property_exists;
 
 /** @method \MongoDB\Laravel\Query\Builder toBase() */
 class Builder extends EloquentBuilder
@@ -177,22 +180,27 @@ class Builder extends EloquentBuilder
         $results = $this->query->raw($value);
 
         // Convert MongoCursor results to a collection of models.
-        if ($results instanceof Cursor) {
-            $results = iterator_to_array($results, false);
+        if ($results instanceof CursorInterface) {
+            $results->setTypeMap(['root' => 'array', 'document' => 'array', 'array' => 'array']);
+            $results = $this->query->aliasIdForResult(iterator_to_array($results));
 
             return $this->model->hydrate($results);
         }
 
-        // Convert MongoDB BSONDocument to a single object.
-        if ($results instanceof BSONDocument) {
-            $results = $results->getArrayCopy();
-
-            return $this->model->newFromBuilder((array) $results);
+        // Convert MongoDB Document to a single object.
+        if (is_object($results) && (property_exists($results, '_id') || property_exists($results, 'id'))) {
+            $results = (array) match (true) {
+                $results instanceof BSONDocument => $results->getArrayCopy(),
+                $results instanceof Document => $results->toPHP(['root' => 'array', 'document' => 'array', 'array' => 'array']),
+                default => $results,
+            };
         }
 
         // The result is a single object.
-        if (is_array($results) && array_key_exists('_id', $results)) {
-            return $this->model->newFromBuilder((array) $results);
+        if (is_array($results) && (array_key_exists('_id', $results) || array_key_exists('id', $results))) {
+            $results = $this->query->aliasIdForResult($results);
+
+            return $this->model->newFromBuilder($results);
         }
 
         return $results;
