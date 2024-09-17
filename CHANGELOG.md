@@ -1,9 +1,9 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
-## [5.0.2] - next
+## [5.0.2] - 2024-09-17
 
-* Fix missing return types in CommandSubscriber by @GromNaN in [#3157](https://github.com/mongodb/laravel-mongodb/pull/3157)
+* Fix missing return types in CommandSubscriber by @GromNaN in [#3158](https://github.com/mongodb/laravel-mongodb/pull/3158)
 
 ## [5.0.1] - 2024-09-13
 
