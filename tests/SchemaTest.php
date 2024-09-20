@@ -377,10 +377,12 @@ class SchemaTest extends TestCase
         $this->assertTrue(Schema::hasColumn('newcollection', '_id'));
         $this->assertTrue(Schema::hasColumn('newcollection', 'id'));
 
-        DB::connection()->table('newcollection')->insert(['column1' => 'value']);
+        DB::connection()->table('newcollection')->insert(['column1' => 'value', 'embed' => ['_id' => 1]]);
 
         $this->assertTrue(Schema::hasColumn('newcollection', 'column1'));
         $this->assertFalse(Schema::hasColumn('newcollection', 'column2'));
+        $this->assertTrue(Schema::hasColumn('newcollection', 'embed._id'));
+        $this->assertTrue(Schema::hasColumn('newcollection', 'embed.id'));
     }
 
     public function testHasColumns(): void

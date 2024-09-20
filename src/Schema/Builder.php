@@ -11,6 +11,7 @@ use MongoDB\Model\IndexInfo;
 use function array_fill_keys;
 use function array_filter;
 use function array_keys;
+use function array_map;
 use function assert;
 use function count;
 use function current;
@@ -19,6 +20,8 @@ use function in_array;
 use function iterator_to_array;
 use function sort;
 use function sprintf;
+use function str_ends_with;
+use function substr;
 use function usort;
 
 class Builder extends \Illuminate\Database\Schema\Builder
@@ -42,8 +45,11 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function hasColumns($table, array $columns): bool
     {
-        // The field "id" (alias of "_id") is required for all MongoDB documents
+        // The field "id" (alias of "_id") always exist on MongoDB collections
         $columns = array_filter($columns, fn (string $column): bool => ! in_array($column, ['_id', 'id'], true));
+
+        // Any subfield named "*.id" is an alias of "*._id"
+        $columns = array_map(fn (string $column): string => str_ends_with($column, '.id') ? substr($column, 0, -3) . '._id' : $column, $columns);
 
         if ($columns === []) {
             return true;
