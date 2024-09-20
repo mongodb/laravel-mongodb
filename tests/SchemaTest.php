@@ -374,6 +374,9 @@ class SchemaTest extends TestCase
 
     public function testHasColumn(): void
     {
+        $this->assertTrue(Schema::hasColumn('newcollection', '_id'));
+        $this->assertTrue(Schema::hasColumn('newcollection', 'id'));
+
         DB::connection()->table('newcollection')->insert(['column1' => 'value']);
 
         $this->assertTrue(Schema::hasColumn('newcollection', 'column1'));
@@ -382,6 +385,9 @@ class SchemaTest extends TestCase
 
     public function testHasColumns(): void
     {
+        $this->assertTrue(Schema::hasColumns('newcollection', ['_id']));
+        $this->assertTrue(Schema::hasColumns('newcollection', ['id']));
+
         // Insert documents with both column1 and column2
         DB::connection()->table('newcollection')->insert([
             ['column1' => 'value1', 'column2' => 'value2'],
@@ -451,8 +457,9 @@ class SchemaTest extends TestCase
             $this->assertIsString($column['comment']);
         });
 
-        $this->assertEquals('objectId', $columns->get('_id')['type']);
-        $this->assertEquals('objectId', $columns->get('_id')['generation']['type']);
+        $this->assertNull($columns->get('_id'), '_id is renamed to id');
+        $this->assertEquals('objectId', $columns->get('id')['type']);
+        $this->assertEquals('objectId', $columns->get('id')['generation']['type']);
         $this->assertNull($columns->get('text')['generation']);
         $this->assertEquals('string', $columns->get('text')['type']);
         $this->assertEquals('date', $columns->get('date')['type']);

@@ -9,11 +9,13 @@ use MongoDB\Model\CollectionInfo;
 use MongoDB\Model\IndexInfo;
 
 use function array_fill_keys;
+use function array_filter;
 use function array_keys;
 use function assert;
 use function count;
 use function current;
 use function implode;
+use function in_array;
 use function iterator_to_array;
 use function sort;
 use function sprintf;
@@ -40,6 +42,13 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function hasColumns($table, array $columns): bool
     {
+        // The field "id" (alias of "_id") is required for all MongoDB documents
+        $columns = array_filter($columns, fn (string $column): bool => ! in_array($column, ['_id', 'id'], true));
+
+        if ($columns === []) {
+            return true;
+        }
+
         $collection = $this->connection->table($table);
 
         return $collection
@@ -187,16 +196,21 @@ class Builder extends \Illuminate\Database\Schema\Builder
         foreach ($stats as $stat) {
             sort($stat->types);
             $type = implode(', ', $stat->types);
+            $name = $stat->_id;
+            if ($name === '_id') {
+                $name = 'id';
+            }
+
             $columns[] = [
-                'name' => $stat->_id,
+                'name' => $name,
                 'type_name' => $type,
                 'type' => $type,
                 'collation' => null,
-                'nullable' => $stat->_id !== '_id',
+                'nullable' => $name !== 'id',
                 'default' => null,
                 'auto_increment' => false,
                 'comment' => sprintf('%d occurrences', $stat->total),
-                'generation' => $stat->_id === '_id' ? ['type' => 'objectId', 'expression' => null] : null,
+                'generation' => $name === 'id' ? ['type' => 'objectId', 'expression' => null] : null,
             ];
         }
 
