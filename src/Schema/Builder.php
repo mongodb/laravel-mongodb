@@ -45,7 +45,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function hasColumns($table, array $columns): bool
     {
-        // The field "id" (alias of "_id") always exist on MongoDB collections
+        // The field "id" (alias of "_id") always exists in MongoDB documents
         $columns = array_filter($columns, fn (string $column): bool => ! in_array($column, ['_id', 'id'], true));
 
         // Any subfield named "*.id" is an alias of "*._id"
