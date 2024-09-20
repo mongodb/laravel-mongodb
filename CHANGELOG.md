@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 ## [5.1.0] - next
 
 * Convert `_id` and `UTCDateTime` in results of `Model::raw()` before hydratation by @GromNaN in [#3152](https://github.com/mongodb/laravel-mongodb/pull/3152)
+* Alias `_id` to `id` in `Schema::getColumns()` by @GromNaN in [#3160](https://github.com/mongodb/laravel-mongodb/pull/3160)
 
 ## [5.0.2] - 2024-09-17
 
