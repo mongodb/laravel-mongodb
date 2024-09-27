@@ -675,7 +675,6 @@ class RelationsTest extends TestCase
         $relations = $check->getRelations();
         $this->assertArrayHasKey('hasImageWithCustomOwnerKey', $relations);
         $this->assertInstanceOf(Client::class, $check->hasImageWithCustomOwnerKey);
-
     }
 
     public function testMorphToMany(): void
