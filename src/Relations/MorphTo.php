@@ -29,7 +29,7 @@ class MorphTo extends EloquentMorphTo
     {
         $instance = $this->createModelByType($type);
 
-        $key = $instance->getKeyName();
+        $key = $this->ownerKey ?? $instance->getKeyName();
 
         $query = $instance->newQuery();
 
