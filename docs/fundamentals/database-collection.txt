@@ -258,16 +258,21 @@ schema builder method in your application.
 You can also use the following methods to return more information about the
 collection fields:
 
-- ``Schema::hasColumn(string $<collection>, string $<field name>)``: checks if the specified field exists
-  in at least one document
-- ``Schema::hasColumns(string $<collection>, string[] $<field names>)``: checks if each specified field exists
-  in at least one document
+- ``Schema::hasColumn(string $<collection>, string $<field name>)``:
+  checks if the specified field exists in at least one document
+- ``Schema::hasColumns(string $<collection>, string[] $<field names>)``:
+  checks if each specified field exists in at least one document
 
-.. note::
+MongoDB is a schemaless database, so the preceding methods query the collection
+data rather than the database schema. If the specified collection doesn't exist
+or is empty, these methods return a value of ``false``.
 
-   MongoDB is a schemaless database, so the preceding methods query the collection
-   data rather than the database schema. If the specified collection doesn't exist
-   or is empty, these methods return a value of ``false``.
+.. note:: id Alias
+
+   Starting in {+odm-long+} v5.1, the ``getColumns()`` method returns
+   the ``_id`` field name as the alias ``id``. You can pass either
+   ``_id`` or ``id`` to the ``hasColumn()`` and ``hasColumns()``
+   methods.
 
 Example
 ```````
