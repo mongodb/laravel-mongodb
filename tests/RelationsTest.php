@@ -634,11 +634,13 @@ class RelationsTest extends TestCase
         $photo = Photo::first();
         $this->assertEquals($photo->hasImage->name, $user->name);
 
+        // eager load
         $user      = User::with('photos')->find($user->id);
         $relations = $user->getRelations();
         $this->assertArrayHasKey('photos', $relations);
         $this->assertEquals(1, $relations['photos']->count());
 
+        // inverse eager load
         $photos    = Photo::with('hasImage')->get();
         $relations = $photos[0]->getRelations();
         $this->assertArrayHasKey('hasImage', $relations);
@@ -648,7 +650,7 @@ class RelationsTest extends TestCase
         $this->assertArrayHasKey('hasImage', $relations);
         $this->assertInstanceOf(Client::class, $photos[1]->hasImage);
 
-        // inverse
+        // inverse relationship
         $photo = Photo::query()->create(['url' => 'https://graph.facebook.com/hans.thomas/picture']);
         $client = Client::create(['name' => 'Hans Thomas']);
         $photo->hasImage()->associate($client)->save();
@@ -666,6 +668,13 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(Client::class, $photo->hasImageWithCustomOwnerKey);
         $this->assertEquals($client->cclient_id, $photo->has_image_with_custom_owner_key_id);
         $this->assertEquals($client->id, $photo->hasImageWithCustomOwnerKey->id);
+
+        // inverse eager load with custom ownerKey
+        $photos    = Photo::with('hasImageWithCustomOwnerKey')->get();
+        $check = $photos->last();
+        $relations = $check->getRelations();
+        $this->assertArrayHasKey('hasImageWithCustomOwnerKey', $relations);
+        $this->assertInstanceOf(Client::class, $check->hasImageWithCustomOwnerKey);
     }
 
     public function testMorphToMany(): void
