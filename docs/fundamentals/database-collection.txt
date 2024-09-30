@@ -269,10 +269,10 @@ or is empty, these methods return a value of ``false``.
 
 .. note:: id Alias
 
-   Starting in {+odm-long+} v5.1, the ``getColumns()`` method returns
-   the ``_id`` field name as the alias ``id``. You can pass either
-   ``_id`` or ``id`` to the ``hasColumn()`` and ``hasColumns()``
-   methods.
+   Starting in {+odm-long+} v5.1, the ``getColumns()`` method represents
+   the ``_id`` field name in a MongoDB collection as the alias ``id`` in
+   the returned list of field names. You can pass either ``_id`` or
+   ``id`` to the ``hasColumn()`` and ``hasColumns()`` methods.
 
 Example
 ```````
