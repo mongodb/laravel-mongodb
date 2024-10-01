@@ -6,4 +6,3 @@ This will help reviewers and should be a good start for the documentation.
 ### Checklist
 
 - [ ] Add tests and ensure they pass
-- [ ] Add an entry to the CHANGELOG.md file

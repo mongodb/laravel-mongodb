@@ -70,8 +70,7 @@ If the project maintainer has any additional requirements, you will find them li
 
 - **Add tests!** - Your patch won't be accepted if it doesn't have tests.
 
-- **Document any change in behaviour** - Make sure the documentation is kept up-to-date, and update the changelog for
-new features and bug fixes.
+- **Document any change in behaviour** - Make sure the documentation is kept up-to-date.
 
 - **Consider our release cycle** - We try to follow [SemVer v2.0.0](https://semver.org/). Randomly breaking public APIs is not an option.
 
