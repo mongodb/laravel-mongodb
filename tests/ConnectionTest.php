@@ -277,6 +277,21 @@ class ConnectionTest extends TestCase
         }
     }
 
+    public function testDisableQueryLog()
+    {
+        // Disabled by default
+        DB::table('items')->get();
+        $this->assertCount(0, DB::getQueryLog());
+
+        DB::enableQueryLog();
+        DB::table('items')->get();
+        $this->assertCount(1, DB::getQueryLog());
+
+        DB::disableQueryLog();
+        DB::table('items')->get();
+        $this->assertCount(1, DB::getQueryLog());
+    }
+
     public function testSchemaBuilder()
     {
         $schema = DB::connection('mongodb')->getSchemaBuilder();
