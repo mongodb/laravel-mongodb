@@ -851,15 +851,6 @@ class Builder extends BaseBuilder
     {
         $results = $this->get($key === null ? [$column] : [$column, $key]);
 
-        // Convert ObjectID's to strings
-        if (((string) $key) === '_id') {
-            $results = $results->map(function ($item) {
-                $item['_id'] = (string) $item['_id'];
-
-                return $item;
-            });
-        }
-
         $p = Arr::pluck($results, $column, $key);
 
         return new Collection($p);

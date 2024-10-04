@@ -525,6 +525,17 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals([25], $age);
     }
 
+    public function testPluckObjectId()
+    {
+        $id = new ObjectId();
+        DB::table('users')->insert([
+            ['id' => $id, 'name' => 'Jane Doe'],
+        ]);
+
+        $names = DB::table('users')->pluck('name', 'id')->toArray();
+        $this->assertEquals([(string) $id => 'Jane Doe'], $names);
+    }
+
     public function testList()
     {
         DB::table('items')->insert([
