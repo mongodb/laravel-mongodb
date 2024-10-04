@@ -287,9 +287,19 @@ class ConnectionTest extends TestCase
         DB::table('items')->get();
         $this->assertCount(1, DB::getQueryLog());
 
+        // Enable twice should only log once
+        DB::enableQueryLog();
+        DB::table('items')->get();
+        $this->assertCount(2, DB::getQueryLog());
+
         DB::disableQueryLog();
         DB::table('items')->get();
-        $this->assertCount(1, DB::getQueryLog());
+        $this->assertCount(2, DB::getQueryLog());
+
+        // Disable twice should not log
+        DB::disableQueryLog();
+        DB::table('items')->get();
+        $this->assertCount(2, DB::getQueryLog());
     }
 
     public function testSchemaBuilder()
