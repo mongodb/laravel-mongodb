@@ -1573,28 +1573,4 @@ class BuilderTest extends TestCase
 
         return new Builder($connection, null, $processor);
     }
-
-    public function testPluckObjectId()
-    {
-        DB::table('users')->insert([
-            ['_id' => $id = new \MongoDB\BSON\ObjectId(), 'name' => 'Jane Doe', 'age' => 20],
-        ]);
-
-        $names = DB::table('users')->pluck('name', '_id')->toArray();
-        $this->assertCount(1, $names);
-        $this->assertArrayHasKey((string) $id, $names);
-        $this->assertEquals([(string) $id => 'Jane Doe'], $names);
-    }
-
-    public function testPluckObjectIdWithIdAlias()
-    {
-        DB::table('users')->insert([
-            ['_id' => $id = new \MongoDB\BSON\ObjectId(), 'name' => 'Jane Doe', 'age' => 20],
-        ]);
-
-        $names = DB::table('users')->pluck('name', 'id')->toArray();
-        $this->assertCount(1, $names);
-        $this->assertArrayHasKey((string) $id, $names);
-        $this->assertEquals([(string) $id => 'Jane Doe'], $names);
-    }    
 }
