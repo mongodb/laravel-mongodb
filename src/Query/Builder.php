@@ -854,7 +854,7 @@ class Builder extends BaseBuilder
         // Convert ObjectID's to strings
         if (((string) $key) === '_id') {
             $results = $results->map(function ($item) {
-                $item['_id'] = (string) $item['_id'];
+                $item->_id = (string) $item->id;
 
                 return $item;
             });
