@@ -48,7 +48,7 @@ class Connection extends BaseConnection
      */
     protected $connection;
 
-    private ?CommandSubscriber $commandSubscriber;
+    private ?CommandSubscriber $commandSubscriber = null;
 
     /**
      * Create a new database connection instance.
@@ -65,8 +65,6 @@ class Connection extends BaseConnection
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
-        $this->commandSubscriber = new CommandSubscriber($this);
-        $this->connection->addSubscriber($this->commandSubscriber);
 
         // Select database
         $this->db = $this->connection->selectDatabase($this->getDefaultDatabaseName($dsn, $config));
@@ -141,6 +139,40 @@ class Connection extends BaseConnection
         return $this->getMongoDB()->getDatabaseName();
     }
 
+    public function enableQueryLog()
+    {
+        parent::enableQueryLog();
+
+        if (! $this->commandSubscriber) {
+            $this->commandSubscriber = new CommandSubscriber($this);
+            $this->connection->addSubscriber($this->commandSubscriber);
+        }
+    }
+
+    public function disableQueryLog()
+    {
+        parent::disableQueryLog();
+
+        if ($this->commandSubscriber) {
+            $this->connection->removeSubscriber($this->commandSubscriber);
+            $this->commandSubscriber = null;
+        }
+    }
+
+    protected function withFreshQueryLog($callback)
+    {
+        try {
+            return parent::withFreshQueryLog($callback);
+        } finally {
+            // The parent method enable query log using enableQueryLog()
+            // but disables it by setting $loggingQueries to false. We need to
+            // remove the subscriber for performance.
+            if (! $this->loggingQueries) {
+                $this->disableQueryLog();
+            }
+        }
+    }
+
     /**
      * Get the name of the default database based on db config or try to detect it from dsn.
      *
@@ -203,8 +235,7 @@ class Connection extends BaseConnection
     /** @inheritdoc */
     public function disconnect()
     {
-        $this->connection?->removeSubscriber($this->commandSubscriber);
-        $this->commandSubscriber = null;
+        $this->disableQueryLog();
         $this->connection = null;
     }
 
