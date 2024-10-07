@@ -66,6 +66,7 @@ use function preg_replace;
 use function property_exists;
 use function serialize;
 use function sprintf;
+use function str_contains;
 use function str_ends_with;
 use function str_replace;
 use function str_starts_with;
@@ -1616,7 +1617,24 @@ class Builder extends BaseBuilder
         }
 
         foreach ($values as $key => $value) {
-            if (is_string($key) && str_ends_with($key, '.id')) {
+            if (! is_string($key)) {
+                continue;
+            }
+
+            // "->" arrow notation for subfields is an alias for "." dot notation
+            if (str_contains($key, '->')) {
+                $newkey = str_replace('->', '.', $key);
+                if (array_key_exists($newkey, $values) && $value !== $values[$newkey]) {
+                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
+                }
+
+                $values[$newkey] = $value;
+                unset($values[$key]);
+                $key = $newkey;
+            }
+
+            // ".id" subfield are alias for "._id"
+            if (str_ends_with($key, '.id')) {
                 $newkey = substr($key, 0, -3) . '._id';
                 if (array_key_exists($newkey, $values) && $value !== $values[$newkey]) {
                     throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));

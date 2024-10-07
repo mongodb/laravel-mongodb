@@ -1406,6 +1406,16 @@ class BuilderTest extends TestCase
                 ],
             ])->where('age', 15),
         ];
+
+        yield 'arrow notation' => [
+            ['find' => [['data.format' => 1], []]],
+            fn (Builder $builder) => $builder->where('data->format', 1),
+        ];
+
+        yield 'arrow notation with id' => [
+            ['find' => [['embedded._id' => 1], []]],
+            fn (Builder $builder) => $builder->where('embedded->id', 1),
+        ];
     }
 
     #[DataProvider('provideExceptions')]
