@@ -28,6 +28,13 @@ Download and Install the Dependencies
 Complete the following steps to install and add the {+odm-short+} dependencies
 to a Laravel web application.
 
+.. tip::
+
+   Alternatively, you can use Laravel Herd to install MongoDB and configure a
+   Laravel MongoDB development environment. For more information about using
+   Laravel Herd with MongoDB, visit the `Herd documentation
+   <https://herd.laravel.com/docs/1/herd-pro-services/mongodb>`__.
+
 .. procedure::
    :style: connected
 
