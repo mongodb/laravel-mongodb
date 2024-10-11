@@ -15,7 +15,7 @@ Compatibility
    :class: singlecol
 
 .. meta::
-   :keywords: laravel 9, laravel 10, laravel 11, 4.0, 4.1, 4.2, 5.0
+   :keywords: laravel 9, laravel 10, laravel 11, 4.0, 4.1, 4.2, 5.0, 5.1
 
 Laravel Compatibility
 ---------------------
