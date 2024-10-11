@@ -120,6 +120,10 @@ This library version introduces the following breaking changes:
   Because of this behavior, you cannot have two separate ``id`` and ``_id`` fields
   in your documents.
 
+  In v5.1, {+odm-short+} also performs this conversion if you use the ``Model::raw()``
+  method to hydrate a Model instance. When passing a complex query filter, use the
+  ``DB::where()`` method instead of ``Model::raw()``.
+
 - Removes support for the ``$collection`` property. The following code shows
   how to assign a MongoDB collection to a variable in your ``User`` class in
   older versions compared to v5.0:
