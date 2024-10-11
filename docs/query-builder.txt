@@ -221,6 +221,13 @@ value greater than ``8.5`` and a ``year`` value of less than
    :start-after: begin query andWhere
    :end-before: end query andWhere
 
+.. tip::
+
+   For compatibility with Laravel, Laravel MongoDB v5.1 supports both arrow
+   (``->``) and dot (``.``) notation to access nested fields in a query
+   filter. The preceding example uses dot notation to query the ``imdb.rating``
+   nested field, which is the recommended syntax.
+
 .. _laravel-query-builder-logical-not:
 
 Logical NOT Example
