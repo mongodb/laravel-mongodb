@@ -221,6 +221,13 @@ value greater than ``8.5`` and a ``year`` value of less than
    :start-after: begin query andWhere
    :end-before: end query andWhere
 
+.. tip::
+
+   In v5.1, you can use the arrow (``->``) or dot (``.``) notation
+   to access nested fields in a query filter. The preceding example
+   uses the dot notation to query the ``imdb.rating`` nested field, but
+   ``imdb->rating`` achieves the same result.
+
 .. _laravel-query-builder-logical-not:
 
 Logical NOT Example
