@@ -114,15 +114,18 @@ This library version introduces the following breaking changes:
 - In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
   date classes, applying the default timezone.
 
+  In v5.1, {+odm-short+} also performs this conversion to the ``Model::raw()``
+  method results before hydrating a Model instance.
+
 - ``id`` is an alias for the ``_id`` field in MongoDB documents, and the library
   automatically converts between ``id`` and ``_id`` when querying data. The query
   result object includes an ``id`` field to represent the document's ``_id`` field.
   Because of this behavior, you cannot have two separate ``id`` and ``_id`` fields
   in your documents.
 
-  In v5.1, {+odm-short+} also performs this conversion if you use the ``Model::raw()``
-  method to hydrate a Model instance. When passing a complex query filter, use the
-  ``DB::where()`` method instead of ``Model::raw()``.
+  In v5.1, {+odm-short+} also performs this conversion to the ``Model::raw()``
+  method results before hydrating a Model instance. When passing a complex query
+  filter, use the ``DB::where()`` method instead of ``Model::raw()``.
 
 - Removes support for the ``$collection`` property. The following code shows
   how to assign a MongoDB collection to a variable in your ``User`` class in
