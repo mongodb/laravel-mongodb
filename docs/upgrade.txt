@@ -71,7 +71,7 @@ Version 5.x Breaking Changes
 
 This library version introduces the following breaking changes:
 
-- The query builder returns results as as ``stdClass`` objects instead
+- The query builder returns results as ``stdClass`` objects instead
   of as arrays. This change requires that you change array access to
   property access when interacting with query results.
 
