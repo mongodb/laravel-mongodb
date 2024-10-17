@@ -28,6 +28,7 @@ use MongoDB\Driver\Cursor;
 use Override;
 use RuntimeException;
 use stdClass;
+use TypeError;
 
 use function array_fill_keys;
 use function array_is_list;
@@ -335,7 +336,7 @@ class Builder extends BaseBuilder
             if ($this->aggregate) {
                 $function = $this->aggregate['function'];
 
-                foreach ((array) $this->aggregate['columns'] as $column) {
+                foreach ($this->aggregate['columns'] as $column) {
                     // Add unwind if a subdocument array should be aggregated
                     // column: subarray.price => {$unwind: '$subarray'}
                     $splitColumns = explode('.*.', $column);
@@ -344,7 +345,7 @@ class Builder extends BaseBuilder
                         $column    = implode('.', $splitColumns);
                     }
 
-                    $aggregations = blank($this->aggregate['columns']) ? [] : (array) $this->aggregate['columns'];
+                    $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
 
                     if (in_array('*', $aggregations) && $function === 'count' && empty($group['_id'])) {
                         $options = $this->inheritConnectionOptions($this->options);
@@ -484,11 +485,11 @@ class Builder extends BaseBuilder
         // here to either the passed columns, or the standard default of retrieving
         // all of the columns on the table using the "wildcard" column character.
         if ($this->columns === null) {
-            $this->columns = (array) $columns;
+            $this->columns = $columns;
         }
 
         // Drop all columns if * is present, MongoDB does not work this way.
-        if (in_array('*', (array) $this->columns)) {
+        if (in_array('*', $this->columns)) {
             $this->columns = [];
         }
 
@@ -556,6 +557,8 @@ class Builder extends BaseBuilder
     /** @return ($function is null ? AggregationBuilder : mixed) */
     public function aggregate($function = null, $columns = ['*'])
     {
+        assert(is_array($columns), new TypeError(sprintf('Argument #2 ($columns) must be of type array, %s given', get_debug_type($columns))));
+
         if ($function === null) {
             if (! trait_exists(FluentFactoryTrait::class)) {
                 // This error will be unreachable when the mongodb/builder package will be merged into mongodb/mongodb
