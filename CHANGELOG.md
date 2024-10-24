@@ -1,6 +1,25 @@
 # Changelog
 All notable changes to this project will be documented in this file.
 
+## [5.0.2] - 2024-09-17
+
+* Fix missing return types in CommandSubscriber by @GromNaN in [#3158](https://github.com/mongodb/laravel-mongodb/pull/3158)
+
+## [5.0.1] - 2024-09-13
+
+* Restore support for Laravel 10 by @GromNaN in [#3148](https://github.com/mongodb/laravel-mongodb/pull/3148)
+
+## [5.0.0] - 2024-09-12
+
+* **BREAKING CHANGE** Use `id` as an alias for `_id` in commands and queries for compatibility with Eloquent packages by @GromNaN in [#3040](https://github.com/mongodb/laravel-mongodb/pull/3040) and [#3136](https://github.com/mongodb/laravel-mongodb/pull/3136)
+* **BREAKING CHANGE** Make Query\Builder return objects instead of array to match Laravel behavior by @GromNaN in [#3107](https://github.com/mongodb/laravel-mongodb/pull/3107)
+* **BREAKING CHANGE** In DB query results, convert BSON `UTCDateTime` objects into `Carbon` date with the default timezone by @GromNaN in [#3119](https://github.com/mongodb/laravel-mongodb/pull/3119)
+* Remove `MongoFailedJobProvider`, replaced by Laravel `DatabaseFailedJobProvider` by @GromNaN in [#3122](https://github.com/mongodb/laravel-mongodb/pull/3122)
+* Remove custom `PasswordResetServiceProvider`, use the default `DatabaseTokenRepository` by @GromNaN in [#3124](https://github.com/mongodb/laravel-mongodb/pull/3124)
+* Remove `Blueprint::background()` method by @GromNaN in [#3132](https://github.com/mongodb/laravel-mongodb/pull/3132)
+* Replace `Collection` proxy class with Driver monitoring by @GromNaN in [#3137]((https://github.com/mongodb/laravel-mongodb/pull/3137)
+* Support options in `count()` queries by @verduck in [#3142](https://github.com/mongodb/laravel-mongodb/pull/3142)
+
 ## [4.8.0] - 2024-08-27
 
 * Add `Query\Builder::incrementEach()` and `decrementEach()` methods by @SmallRuralDog in [#2550](https://github.com/mongodb/laravel-mongodb/pull/2550)

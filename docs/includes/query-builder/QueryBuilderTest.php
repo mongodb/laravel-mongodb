@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use Carbon\Carbon;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Facades\DB;
+use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
-use MongoDB\Laravel\Collection;
+use MongoDB\Collection;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function file_get_contents;
@@ -63,7 +65,7 @@ class QueryBuilderTest extends TestCase
         // begin query orWhere
         $result = DB::connection('mongodb')
             ->table('movies')
-            ->where('year', 1955)
+            ->where('id', new ObjectId('573a1398f29313caabce9682'))
             ->orWhere('title', 'Back to the Future')
             ->get();
         // end query orWhere
@@ -147,14 +149,26 @@ class QueryBuilderTest extends TestCase
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
     }
 
+    public function testWhereCarbon(): void
+    {
+        // begin query where date
+        $result = DB::connection('mongodb')
+            ->table('movies')
+            ->where('released', Carbon::create(2010, 1, 15))
+            ->get();
+        // end query where date
+
+        $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
+    }
+
     public function testWhereDate(): void
     {
-        // begin query whereDate
+        // begin query whereDate string
         $result = DB::connection('mongodb')
             ->table('movies')
             ->whereDate('released', '2010-1-15')
             ->get();
-        // end query whereDate
+        // end query whereDate string
 
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
     }
@@ -531,11 +545,11 @@ class QueryBuilderTest extends TestCase
 
         $this->assertSame(2, $result);
 
-        $this->assertSame(119, DB::table('movies')->where('title', 'Inspector Maigret')->first()['runtime']);
-        $this->assertSame(false, DB::table('movies')->where('title', 'Inspector Maigret')->first()['recommended']);
+        $this->assertSame(119, DB::table('movies')->where('title', 'Inspector Maigret')->first()->runtime);
+        $this->assertSame(false, DB::table('movies')->where('title', 'Inspector Maigret')->first()->recommended);
 
-        $this->assertSame(true, DB::table('movies')->where('title', 'Petit Maman')->first()['recommended']);
-        $this->assertSame(72, DB::table('movies')->where('title', 'Petit Maman')->first()['runtime']);
+        $this->assertSame(true, DB::table('movies')->where('title', 'Petit Maman')->first()->recommended);
+        $this->assertSame(72, DB::table('movies')->where('title', 'Petit Maman')->first()->runtime);
     }
 
     public function testUpdateUpsert(): void

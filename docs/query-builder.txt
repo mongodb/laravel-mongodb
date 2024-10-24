@@ -38,7 +38,11 @@ testability.
 
 The {+odm-short+} provides the ``DB`` method ``table()`` to access a collection.
 Chain methods to specify commands and any constraints. Then, chain
-the ``get()`` method at the end to run the methods and retrieve the results.
+the ``get()`` method at the end to run the methods and retrieve the
+results. To retrieve only the first matching result, chain the
+``first()`` method instead of the ``get()`` method. Starting in
+{+odm-long+} v5.0, the query builder returns results as ``stdClass`` objects.
+
 The following example shows the syntax of a query builder call:
 
 .. code-block:: php
@@ -46,7 +50,8 @@ The following example shows the syntax of a query builder call:
    DB::table('<collection name>')
        // chain methods by using the "->" object operator
        ->get();
-.. tip::
+
+.. tip:: Set Database Connection
 
    Before using the ``DB::table()`` method, ensure that you specify MongoDB as your application's
    default database connection. For instructions on setting the database connection,
@@ -176,14 +181,28 @@ Logical OR Example
 
 The following example shows how to chain the ``orWhere()``
 query builder method to retrieve documents from the
-``movies`` collection that either match the ``year``
-value of ``1955`` or match the ``title`` value ``"Back to the Future"``:
+``movies`` collection in which the value of the ``_id``
+field is ``ObjectId('573a1398f29313caabce9682')`` or
+the value of the ``title`` field is ``"Back to the Future"``:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
    :start-after: begin query orWhere
    :end-before: end query orWhere
+
+.. note::
+
+   You can use the ``id`` alias in your queries to represent the
+   ``_id`` field in MongoDB documents, as shown in the preceding
+   code. When you use the query builder to run a find operation, the {+odm-short+}
+   automatically converts between ``_id`` and ``id`` field names. In query results,
+   the ``_id`` field is presented as ``id``. This provides better
+   consistency with Laravel, as the framework assumes that each record has a
+   primary key named ``id`` by default.
+   
+   Because of this behavior, you cannot have two separate ``id`` and ``_id``
+   fields in your documents.
 
 .. _laravel-query-builder-logical-and:
 
@@ -335,16 +354,38 @@ query builder method to retrieve documents from the
 Match Dates Example
 ^^^^^^^^^^^^^^^^^^^
 
-The following example shows how to use the ``whereDate()``
+The following example shows how to use the ``where()``
 query builder method to retrieve documents from the
-``movies`` collection that match the specified date of
-``2010-1-15`` in the ``released`` field:
+``movies`` collection in which the ``released`` value
+is January 15, 2010, specified in a ``Carbon`` object:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
    :dedent:
-   :start-after: begin query whereDate
-   :end-before: end query whereDate
+   :start-after: begin query where date
+   :end-before: end query where date
+
+.. note:: Date Query Filter and Result Type
+
+   Starting in {+odm-long+} v5.0, `Carbon <https://carbon.nesbot.com/docs/>`__
+   objects passed as query filters, as shown in the preceding code, are
+   converted to ``UTCDateTime`` BSON values.
+   
+   In query results, ``UTCDateTime`` BSON values in MongoDB are returned as ``Carbon``
+   objects. The {+odm-short+} applies the default timezone when performing
+   this conversion.
+
+If you want to represent a date as a string in your query filter
+rather than as a ``Carbon`` object, use the ``whereDate()`` query
+builder method. The following example retrieves documents from
+the ``movies`` collection in which the ``released`` value
+is January 15, 2010 and specifies the date as a string:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin query whereDate string
+   :end-before: end query whereDate string
 
 .. _laravel-query-builder-pattern:
 

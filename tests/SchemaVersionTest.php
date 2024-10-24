@@ -42,7 +42,7 @@ class SchemaVersionTest extends TestCase
             ->where('name', 'Vador')
             ->get();
 
-        $this->assertEquals(2, $data[0]['schema_version']);
+        $this->assertEquals(2, $data[0]->schema_version);
     }
 
     public function testIncompleteImplementation(): void

@@ -11,7 +11,6 @@ use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectId;
-use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Expression;
 use MongoDB\Builder\Pipeline;
@@ -33,8 +32,8 @@ class AggregationBuilderTest extends TestCase
     public function testCreateAggregationBuilder(): void
     {
         User::insert([
-            ['name' => 'John Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1989-01-01'))],
-            ['name' => 'Jane Doe', 'birthday' => new UTCDateTime(new DateTimeImmutable('1990-01-01'))],
+            ['name' => 'John Doe', 'birthday' => new DateTimeImmutable('1989-01-01')],
+            ['name' => 'Jane Doe', 'birthday' => new DateTimeImmutable('1990-01-01')],
         ]);
 
         // Create the aggregation pipeline from the query builder

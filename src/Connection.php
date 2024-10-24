@@ -8,6 +8,7 @@ use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
 use InvalidArgumentException;
 use MongoDB\Client;
+use MongoDB\Collection;
 use MongoDB\Database;
 use MongoDB\Driver\Exception\AuthenticationException;
 use MongoDB\Driver\Exception\ConnectionException;
@@ -22,9 +23,7 @@ use function implode;
 use function is_array;
 use function preg_match;
 use function str_contains;
-use function trigger_error;
 
-use const E_USER_DEPRECATED;
 use const FILTER_FLAG_IPV6;
 use const FILTER_VALIDATE_IP;
 
@@ -49,6 +48,8 @@ class Connection extends BaseConnection
      */
     protected $connection;
 
+    private ?CommandSubscriber $commandSubscriber;
+
     /**
      * Create a new database connection instance.
      */
@@ -64,6 +65,8 @@ class Connection extends BaseConnection
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
+        $this->commandSubscriber = new CommandSubscriber($this);
+        $this->connection->addSubscriber($this->commandSubscriber);
 
         // Select database
         $this->db = $this->connection->selectDatabase($this->getDefaultDatabaseName($dsn, $config));
@@ -75,22 +78,6 @@ class Connection extends BaseConnection
         $this->useDefaultSchemaGrammar();
 
         $this->useDefaultQueryGrammar();
-    }
-
-    /**
-     * Begin a fluent query against a database collection.
-     *
-     * @deprecated since mongodb/laravel-mongodb 4.8, use the function table() instead
-     *
-     * @param  string $collection
-     *
-     * @return Query\Builder
-     */
-    public function collection($collection)
-    {
-        @trigger_error('Since mongodb/laravel-mongodb 4.8, the method Connection::collection() is deprecated and will be removed in version 5.0. Use the table() method instead.', E_USER_DEPRECATED);
-
-        return $this->table($collection);
     }
 
     /**
@@ -115,9 +102,9 @@ class Connection extends BaseConnection
      *
      * @return Collection
      */
-    public function getCollection($name)
+    public function getCollection($name): Collection
     {
-        return new Collection($this, $this->db->selectCollection($this->tablePrefix . $name));
+        return $this->db->selectCollection($this->tablePrefix . $name);
     }
 
     /** @inheritdoc */
@@ -216,6 +203,8 @@ class Connection extends BaseConnection
     /** @inheritdoc */
     public function disconnect()
     {
+        $this->connection?->removeSubscriber($this->commandSubscriber);
+        $this->commandSubscriber = null;
         $this->connection = null;
     }
 
@@ -280,12 +269,6 @@ class Connection extends BaseConnection
         }
 
         throw new InvalidArgumentException('MongoDB connection configuration requires "dsn" or "host" key.');
-    }
-
-    /** @inheritdoc */
-    public function getElapsedTime($start)
-    {
-        return parent::getElapsedTime($start);
     }
 
     /** @inheritdoc */

@@ -44,7 +44,7 @@ class TransactionTest extends TestCase
         $this->assertTrue($klinson->exists);
         $this->assertEquals('klinson', $klinson->name);
 
-        $check = User::find($klinson->_id);
+        $check = User::find($klinson->id);
         $this->assertInstanceOf(User::class, $check);
         $this->assertEquals($klinson->name, $check->name);
     }
@@ -60,7 +60,7 @@ class TransactionTest extends TestCase
         $this->assertTrue($klinson->exists);
         $this->assertEquals('klinson', $klinson->name);
 
-        $this->assertFalse(User::where('_id', $klinson->_id)->exists());
+        $this->assertFalse(User::where('id', $klinson->id)->exists());
     }
 
     public function testInsertWithCommit(): void
@@ -93,7 +93,7 @@ class TransactionTest extends TestCase
         $this->assertTrue($klinson->exists);
         $this->assertNotNull($klinson->getIdAttribute());
 
-        $check = User::find($klinson->_id);
+        $check = User::find($klinson->id);
         $this->assertInstanceOf(User::class, $check);
         $this->assertEquals($check->name, $klinson->name);
     }
@@ -110,7 +110,7 @@ class TransactionTest extends TestCase
         $this->assertTrue($klinson->exists);
         $this->assertNotNull($klinson->getIdAttribute());
 
-        $this->assertFalse(User::where('_id', $klinson->_id)->exists());
+        $this->assertFalse(User::where('id', $klinson->id)->exists());
     }
 
     public function testInsertGetIdWithCommit(): void
@@ -122,7 +122,7 @@ class TransactionTest extends TestCase
         $this->assertInstanceOf(ObjectId::class, $userId);
 
         $user = DB::table('users')->find((string) $userId);
-        $this->assertEquals('klinson', $user['name']);
+        $this->assertEquals('klinson', $user->name);
     }
 
     public function testInsertGetIdWithRollBack(): void
@@ -132,7 +132,7 @@ class TransactionTest extends TestCase
         DB::rollBack();
 
         $this->assertInstanceOf(ObjectId::class, $userId);
-        $this->assertFalse(DB::table('users')->where('_id', (string) $userId)->exists());
+        $this->assertFalse(DB::table('users')->where('id', (string) $userId)->exists());
     }
 
     public function testUpdateWithCommit(): void
@@ -176,8 +176,8 @@ class TransactionTest extends TestCase
         $this->assertEquals(21, $klinson->age);
         $this->assertEquals(39, $alcaeus->age);
 
-        $this->assertTrue(User::where('_id', $klinson->_id)->where('age', 21)->exists());
-        $this->assertTrue(User::where('_id', $alcaeus->_id)->where('age', 39)->exists());
+        $this->assertTrue(User::where('id', $klinson->id)->where('age', 21)->exists());
+        $this->assertTrue(User::where('id', $alcaeus->id)->where('age', 39)->exists());
     }
 
     public function testEloquentUpdateWithRollBack(): void
@@ -197,8 +197,8 @@ class TransactionTest extends TestCase
         $this->assertEquals(21, $klinson->age);
         $this->assertEquals(39, $alcaeus->age);
 
-        $this->assertFalse(User::where('_id', $klinson->_id)->where('age', 21)->exists());
-        $this->assertFalse(User::where('_id', $alcaeus->_id)->where('age', 39)->exists());
+        $this->assertFalse(User::where('id', $klinson->id)->where('age', 21)->exists());
+        $this->assertFalse(User::where('id', $alcaeus->id)->where('age', 39)->exists());
     }
 
     public function testDeleteWithCommit(): void
@@ -234,7 +234,7 @@ class TransactionTest extends TestCase
         $klinson->delete();
         DB::commit();
 
-        $this->assertFalse(User::where('_id', $klinson->_id)->exists());
+        $this->assertFalse(User::where('id', $klinson->id)->exists());
     }
 
     public function testEloquentDeleteWithRollBack(): void
@@ -246,7 +246,7 @@ class TransactionTest extends TestCase
         $klinson->delete();
         DB::rollBack();
 
-        $this->assertTrue(User::where('_id', $klinson->_id)->exists());
+        $this->assertTrue(User::where('id', $klinson->id)->exists());
     }
 
     public function testIncrementWithCommit(): void
@@ -390,7 +390,7 @@ class TransactionTest extends TestCase
 
         $this->assertSame(2, $timesRun);
 
-        $check = User::find($klinson->_id);
+        $check = User::find($klinson->id);
         $this->assertInstanceOf(User::class, $check);
 
         // Age is expected to be 24: the callback is executed twice, incrementing age by 2 every time

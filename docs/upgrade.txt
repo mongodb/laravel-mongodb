@@ -14,7 +14,7 @@ Upgrade Library Version
 .. contents:: On this page
    :local:
    :backlinks: none
-   :depth: 1
+   :depth: 2
    :class: singlecol
 
 Overview
@@ -22,7 +22,7 @@ Overview
 
 On this page, you can learn how to upgrade {+odm-long+} to a new major version.
 This page also includes the changes you must make to your application to upgrade
-your object-document mapper (ODM) version without losing functionality, if applicable.
+your version of the {+odm-short+} without losing functionality, if applicable.
 
 How to Upgrade
 --------------
@@ -60,6 +60,106 @@ The breaking changes in this section are categorized by the major
 version releases that introduced them. When upgrading library versions,
 address all the breaking changes between your current version and the
 planned upgrade version.
+
+- :ref:`laravel-breaking-changes-v5.x`
+- :ref:`laravel-breaking-changes-v4.x`
+
+.. _laravel-breaking-changes-v5.x:
+
+Version 5.x Breaking Changes
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This library version introduces the following breaking changes:
+
+- The query builder returns results as as ``stdClass`` objects instead
+  of as arrays. This change requires that you change array access to
+  property access when interacting with query results.
+
+  The following code shows how to retrieve a query result and access a
+  property from the result object in older versions compared to v5.0:
+
+  .. code-block:: php
+     :emphasize-lines: 8-9
+
+     $document = DB::table('accounts')
+         ->where('name', 'Anita Charles')
+         ->first();
+
+     // older versions
+     $document['balance'];
+
+     // v5.0
+     $document->balance;
+
+- Removes support for the following classes:
+
+  - ``MongoDB\Laravel\Auth\DatabaseTokenRepository``. Instead, use the default
+    ``Illuminate\Queue\Failed\DatabaseFailedJobProvider`` class and
+    specify a connection to MongoDB.
+
+  - ``MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider``. Instead,
+    use the default ``Illuminate\Queue\Failed\DatabaseFailedJobProvider``
+    class and specify a connection to MongoDB.
+    
+- When using a ``DateTimeInterface`` object, including ``Carbon``, in a query,
+  the library converts the ``DateTimeInterface`` to a ``MongoDB\BSON\UTCDateTime``
+  object. This conversion applies to ``DateTimeInterface`` objects passed as query
+  filters to the ``where()`` method or as data passed to the ``insert()`` and
+  ``update()`` methods. 
+  
+  To view an example that passes a ``Carbon`` object to the
+  ``DB::where()`` method, see the :ref:`laravel-query-builder-wheredate`
+  section of the Query Builder guide.
+
+- In query results, the library converts BSON ``UTCDateTime`` objects to ``Carbon``
+  date classes, applying the default timezone.
+
+- ``id`` is an alias for the ``_id`` field in MongoDB documents, and the library
+  automatically converts between ``id`` and ``_id`` when querying data. The query
+  result object includes an ``id`` field to represent the document's ``_id`` field.
+  Because of this behavior, you cannot have two separate ``id`` and ``_id`` fields
+  in your documents.
+
+- Removes support for the ``$collection`` property. The following code shows
+  how to assign a MongoDB collection to a variable in your ``User`` class in
+  older versions compared to v5.0:
+  
+  .. code-block:: php
+     :emphasize-lines: 10-11
+ 
+     use MongoDB\Laravel\Eloquent\Model;
+ 
+     class User extends Model
+     {
+         protected $keyType = 'string';
+ 
+         // older versions
+         protected $collection = 'app_user';
+ 
+         // v5.0
+         protected $table = 'app_user';
+ 
+         ...
+     }
+  
+  This release also modifies the associated ``DB`` and ``Schema`` methods for
+  accessing a MongoDB collection. The following code shows how to access the
+  ``app_user`` collection in older versions compared to v5.0:
+  
+  .. code-block:: php
+     :emphasize-lines: 9-11
+ 
+     use Illuminate\Support\Facades\Schema;
+     use Illuminate\Support\Facades\DB;
+     use MongoDB\Laravel\Schema\Blueprint;
+       
+     // older versions
+     Schema::collection('app_user', function (Blueprint $collection) { ... });
+     DB::collection('app_user')->find($id);
+ 
+     // v5.0
+     Schema::table('app_user', function (Blueprint $table) { ... });
+     DB::table('app_user')->find($id);
 
 .. _laravel-breaking-changes-v4.x:
 

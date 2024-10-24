@@ -6,13 +6,11 @@ namespace MongoDB\Laravel\Tests;
 
 use BadMethodCallException;
 use DateTimeImmutable;
-use LogicException;
 use MongoDB\BSON\Regex;
 use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Tests\Models\Birthday;
 use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\User;
-use PHPUnit\Framework\Attributes\TestWith;
 
 use function str;
 
@@ -405,7 +403,7 @@ class QueryTest extends TestCase
         $this->assertEquals(6, $count);
 
         // Test for issue #165
-        $count = User::select('_id', 'age', 'title')->where('age', '<>', 35)->count();
+        $count = User::select('id', 'age', 'title')->where('age', '<>', 35)->count();
         $this->assertEquals(6, $count);
     }
 
@@ -663,12 +661,12 @@ class QueryTest extends TestCase
         $this->assertEquals(0, User::count());
     }
 
-    #[TestWith([0])]
-    #[TestWith([2])]
-    public function testDeleteException(int $limit): void
+    public function testLimitCount(): void
     {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Delete limit can be 1 or null (unlimited).');
-        User::limit($limit)->delete();
+        $count = User::where('age', '>=', 20)->count();
+        $this->assertEquals(7, $count);
+
+        $count = User::where('age', '>=', 20)->options(['limit' => 3])->count();
+        $this->assertEquals(3, $count);
     }
 }

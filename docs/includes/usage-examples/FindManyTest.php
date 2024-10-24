@@ -35,7 +35,7 @@ class FindManyTest extends TestCase
 
         // begin-find
         $movies = Movie::where('runtime', '>', 900)
-            ->orderBy('_id')
+            ->orderBy('id')
             ->get();
         // end-find
 

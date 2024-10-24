@@ -6,12 +6,11 @@ namespace MongoDB\Laravel\Tests;
 
 use Carbon\Carbon;
 use Exception;
+use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Mockery;
-use MongoDB\BSON\UTCDateTime;
-use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 use MongoDB\Laravel\Queue\MongoJob;
 use MongoDB\Laravel\Queue\MongoQueue;
 
@@ -71,7 +70,7 @@ class QueueTest extends TestCase
         $expiry = Carbon::now()->subSeconds(Config::get('queue.connections.database.expire'))->getTimestamp();
         Queue::getDatabase()
             ->table(Config::get('queue.connections.database.table'))
-            ->where('_id', $id)
+            ->where('id', $id)
             ->update(['reserved' => 1, 'reserved_at' => $expiry]);
 
         // Expect an attempted older job in the queue
@@ -87,7 +86,7 @@ class QueueTest extends TestCase
     {
         $provider = app('queue.failer');
 
-        $this->assertInstanceOf(MongoFailedJobProvider::class, $provider);
+        $this->assertInstanceOf(DatabaseFailedJobProvider::class, $provider);
     }
 
     public function testFindFailJobNull(): void
@@ -114,7 +113,7 @@ class QueueTest extends TestCase
             ->get();
 
         $this->assertCount(1, $othersJobs);
-        $this->assertEquals(0, $othersJobs[0]['attempts']);
+        $this->assertEquals(0, $othersJobs[0]->attempts);
     }
 
     public function testJobRelease(): void
@@ -131,7 +130,7 @@ class QueueTest extends TestCase
             ->get();
 
         $this->assertCount(1, $jobs);
-        $this->assertEquals(1, $jobs[0]['attempts']);
+        $this->assertEquals(1, $jobs[0]->attempts);
     }
 
     public function testQueueDeleteReserved(): void
@@ -158,18 +157,18 @@ class QueueTest extends TestCase
 
         $releasedJob = Queue::getDatabase()
             ->table(Config::get('queue.connections.database.table'))
-            ->where('_id', $releasedJobId)
+            ->where('id', $releasedJobId)
             ->first();
 
-        $this->assertEquals($queue, $releasedJob['queue']);
-        $this->assertEquals(1, $releasedJob['attempts']);
-        $this->assertNull($releasedJob['reserved_at']);
+        $this->assertEquals($queue, $releasedJob->queue);
+        $this->assertEquals(1, $releasedJob->attempts);
+        $this->assertNull($releasedJob->reserved_at);
         $this->assertEquals(
             Carbon::now()->addRealSeconds($delay)->getTimestamp(),
-            $releasedJob['available_at'],
+            $releasedJob->available_at,
         );
-        $this->assertEquals(Carbon::now()->getTimestamp(), $releasedJob['created_at']);
-        $this->assertEquals($job->getRawBody(), $releasedJob['payload']);
+        $this->assertEquals(Carbon::now()->getTimestamp(), $releasedJob->created_at);
+        $this->assertEquals($job->getRawBody(), $releasedJob->payload);
     }
 
     public function testQueueDeleteAndRelease(): void
@@ -194,10 +193,10 @@ class QueueTest extends TestCase
 
         $failedJob = Queue::getDatabase()->table(Config::get('queue.failed.table'))->first();
 
-        $this->assertSame('test_connection', $failedJob['connection']);
-        $this->assertSame('test_queue', $failedJob['queue']);
-        $this->assertSame('test_payload', $failedJob['payload']);
-        $this->assertEquals(new UTCDateTime(Carbon::now()), $failedJob['failed_at']);
-        $this->assertStringStartsWith('Exception: test_exception in ', $failedJob['exception']);
+        $this->assertSame('test_connection', $failedJob->connection);
+        $this->assertSame('test_queue', $failedJob->queue);
+        $this->assertSame('test_payload', $failedJob->payload);
+        $this->assertEquals(Carbon::now(), $failedJob->failed_at);
+        $this->assertStringStartsWith('Exception: test_exception in ', $failedJob->exception);
     }
 }

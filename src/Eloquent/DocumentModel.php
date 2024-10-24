@@ -5,12 +5,14 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use BackedEnum;
+use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use DateTimeZone;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Concerns\HasAttributes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -46,10 +48,8 @@ use function sprintf;
 use function str_contains;
 use function str_starts_with;
 use function strcmp;
-use function trigger_error;
+use function strlen;
 use function var_export;
-
-use const E_USER_DEPRECATED;
 
 trait DocumentModel
 {
@@ -79,9 +79,7 @@ trait DocumentModel
     {
         // If we don't have a value for 'id', we will use the MongoDB '_id' value.
         // This allows us to work with models in a more sql-like way.
-        if (! $value && array_key_exists('_id', $this->attributes)) {
-            $value = $this->attributes['_id'];
-        }
+        $value ??= $this->attributes['id'] ?? $this->attributes['_id'] ?? null;
 
         // Convert ObjectID to string.
         if ($value instanceof ObjectID) {
@@ -101,8 +99,14 @@ trait DocumentModel
         return $this->getKeyName();
     }
 
-    /** @inheritdoc */
-    public function fromDateTime($value)
+    /**
+     * Convert a DateTimeInterface (including Carbon) to a storable UTCDateTime.
+     *
+     * @see HasAttributes::fromDateTime()
+     *
+     * @param  mixed $value
+     */
+    public function fromDateTime($value): UTCDateTime
     {
         // If the value is already a UTCDateTime instance, we don't need to parse it.
         if ($value instanceof UTCDateTime) {
@@ -117,8 +121,14 @@ trait DocumentModel
         return new UTCDateTime($value);
     }
 
-    /** @inheritdoc */
-    protected function asDateTime($value)
+    /**
+     * Return a timestamp as Carbon object.
+     *
+     * @see HasAttributes::asDateTime()
+     *
+     * @param  mixed $value
+     */
+    protected function asDateTime($value): Carbon
     {
         // Convert UTCDateTime instances to Carbon.
         if ($value instanceof UTCDateTime) {
@@ -139,18 +149,6 @@ trait DocumentModel
     public function freshTimestamp()
     {
         return new UTCDateTime(Date::now());
-    }
-
-    /** @inheritdoc */
-    public function getTable()
-    {
-        if (isset($this->collection)) {
-            trigger_error('Since mongodb/laravel-mongodb 4.8: Using "$collection" property is deprecated. Use "$table" instead.', E_USER_DEPRECATED);
-
-            return $this->collection;
-        }
-
-        return parent::getTable();
     }
 
     /** @inheritdoc */
@@ -248,10 +246,8 @@ trait DocumentModel
         }
 
         // Convert _id to ObjectID.
-        if ($key === '_id' && is_string($value)) {
-            $builder = $this->newBaseQueryBuilder();
-
-            $value = $builder->convertKey($value);
+        if (($key === '_id' || $key === 'id') && is_string($value) && strlen($value) === 24) {
+            $value = $this->newBaseQueryBuilder()->convertKey($value);
         }
 
         // Support keys in dot notation.
@@ -729,10 +725,14 @@ trait DocumentModel
      */
     public function save(array $options = [])
     {
-        // SQL databases would use autoincrement the id field if set to null.
+        // SQL databases would autoincrement the id field if set to null.
         // Apply the same behavior to MongoDB with _id only, otherwise null would be stored.
         if (array_key_exists('_id', $this->attributes) && $this->attributes['_id'] === null) {
             unset($this->attributes['_id']);
+        }
+
+        if (array_key_exists('id', $this->attributes) && $this->attributes['id'] === null) {
+            unset($this->attributes['id']);
         }
 
         $saved = parent::save($options);

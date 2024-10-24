@@ -30,7 +30,7 @@
         "illuminate/database": "^10.30|^11",
         "illuminate/events": "^10.0|^11",
         "illuminate/support": "^10.0|^11",
-        "mongodb/mongodb": "^1.15"
+        "mongodb/mongodb": "^1.18"
     },
     "require-dev": {
         "mongodb/builder": "^0.2",
@@ -41,7 +41,8 @@
         "mockery/mockery": "^1.4.4",
         "doctrine/coding-standard": "12.0.x-dev",
         "spatie/laravel-query-builder": "^5.6",
-        "phpstan/phpstan": "^1.10"
+        "phpstan/phpstan": "^1.10",
+        "rector/rector": "^1.2"
     },
     "conflict": {
         "illuminate/bus": "< 10.37.2"
@@ -68,7 +69,6 @@
         "laravel": {
             "providers": [
                 "MongoDB\\Laravel\\MongoDBServiceProvider",
-                "MongoDB\\Laravel\\MongoDBQueueServiceProvider",
                 "MongoDB\\Laravel\\MongoDBBusServiceProvider"
             ]
         }
@@ -77,7 +77,8 @@
         "test": "phpunit",
         "test:coverage": "phpunit --coverage-clover ./coverage.xml",
         "cs": "phpcs",
-        "cs:fix": "phpcbf"
+        "cs:fix": "phpcbf",
+        "rector": "rector"
     },
     "config": {
         "allow-plugins": {

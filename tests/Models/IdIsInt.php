@@ -11,9 +11,8 @@ class IdIsInt extends Model
 {
     use DocumentModel;
 
-    protected $primaryKey = '_id';
     protected $keyType = 'int';
     protected $connection = 'mongodb';
     protected static $unguarded = true;
-    protected $casts = ['_id' => 'int'];
+    protected $casts = ['id' => 'int'];
 }
