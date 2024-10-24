@@ -188,8 +188,9 @@ The following example configures a connection with TLS enabled:
 Additional Information
 ----------------------
 
-To learn more about setting URI options, see the `MongoDB\Driver\Manager::__construct()
-<https://www.php.net/manual/en/mongodb-driver-manager.construct.php>`__
+To learn more about setting URI options, see the
+:php:`MongoDB\\Driver\\Manager::__construct()
+<mongodb-driver-manager.construct>`
 API documentation.
 
 To learn more about enabling TLS on a connection, see the
