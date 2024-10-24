@@ -190,8 +190,8 @@ retrieving data by using a casting helper. This helper is a convenient
 alternative to defining equivalent accessor and mutator methods on your model.
 
 In the following example, the casting helper converts the ``discovery_dt``
-model attribute, stored in MongoDB as a `MongoDB\\BSON\\UTCDateTime <https://www.php.net/manual/en/class.mongodb-bson-utcdatetime.php>`__
-type, to the Laravel ``datetime`` type.
+model attribute, stored in MongoDB as a :php:`MongoDB\\BSON\\UTCDateTime
+<class.mongodb-bson-utcdatetime>` type, to the Laravel ``datetime`` type.
 
 .. literalinclude:: /includes/eloquent-models/PlanetDate.php
    :language: php
@@ -216,8 +216,8 @@ type, to the Laravel ``datetime`` type.
    To learn more, see `Attribute Casting <https://laravel.com/docs/{+laravel-docs-version+}/eloquent-mutators#attribute-casting>`__
    in the Laravel documentation.
    
-This conversion lets you use the PHP `DateTime
-<https://www.php.net/manual/en/class.datetime.php>`__ class to work with dates
+This conversion lets you use the PHP :php:`DateTime
+<class.datetime>` class to work with dates
 in this field. The following example shows a Laravel query that uses the
 casting helper on the model to query for planets with a ``discovery_dt`` of
 less than three years ago:
