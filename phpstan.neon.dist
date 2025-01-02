@@ -6,6 +6,7 @@ parameters:
 
     paths:
         - src
+        - tests/PHPStan
 
     level: 2
 

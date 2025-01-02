@@ -18,7 +18,104 @@ use function is_int;
 use function is_string;
 use function key;
 
-/** @property Connection $connection */
+/**
+ * @property Connection $connection
+ * @link https://www.mongodb.com/docs/atlas/atlas-search/define-field-mappings/#std-label-fts-field-mappings
+ * @phpstan-type TypeSearchIndexField array{
+ *     type: 'boolean'|'date'|'dateFacet'|'objectId'|'stringFacet'|'uuid',
+ * } | array{
+ *     type: 'autocomplete',
+ *     analyzer?: string,
+ *     maxGrams?: int,
+ *     minGrams?: int,
+ *     tokenization?: 'edgeGram'|'rightEdgeGram'|'nGram',
+ *     foldDiacritics?: bool,
+ *     similarity?: array{type: 'bm25'|'boolean'|'stableTfl'},
+ * } | array{
+ *     type: 'document'|'embeddedDocuments',
+ *     dynamic?: bool,
+ *     fields: array<string, array<mixed>>,
+ * } | array{
+ *     type: 'geo',
+ *     indexShapes?: bool,
+ * } | array{
+ *     type: 'number'|'numberFacet',
+ *     representation?: 'int64'|'double',
+ *     indexIntegers?: bool,
+ *     indexDoubles?: bool,
+ * } | array{
+ *     type: 'token',
+ *     normalizer?: 'lowercase'|'none',
+ * } | array{
+ *     type: 'string',
+ *     analyzer?: string,
+ *     searchAnalyzer?: string,
+ *     indexOptions?: 'docs'|'freqs'|'positions'|'offsets',
+ *     store?: bool,
+ *     ignoreAbove?: int,
+ *     multi?: array<string, array<string, mixed>>,
+ *     norms?: 'include'|'omit',
+ *     similarity?: array{type: 'bm25'|'boolean'|'stableTfl'},
+ * }
+ * @link https://www.mongodb.com/docs/atlas/atlas-search/analyzers/character-filters/
+ * @phpstan-type TypeSearchIndexCharFilter array{
+ *      type: 'icuNormalize'|'persian',
+ *  } | array{
+ *     type: 'htmlStrip',
+ *     ignoredTags?: string[],
+ * } | array{
+ *     type: 'mapping',
+ *     mappings?: array<string, string>,
+ * }
+ * @link https://www.mongodb.com/docs/atlas/atlas-search/analyzers/token-filters/
+ * @phpstan-type TypeSearchIndexTokenFilter array{type: string, ...}
+ * @link https://www.mongodb.com/docs/atlas/atlas-search/analyzers/custom/
+ * @phpstan-type TypeSearchIndexAnalyzer array{
+ *     name: string,
+ *     charFilters?: TypeSearchIndexCharFilter[],
+ *     tokenizer: array{type: string},
+ *     tokenFilters?: TypeSearchIndexTokenFilter[],
+ * }
+ * @link https://www.mongodb.com/docs/atlas/atlas-search/stored-source-definition/#std-label-fts-stored-source-definition
+ * @phpstan-type TypeSearchIndexStoredSource bool | array{
+ *     include: array<string>,
+ * } | array{
+ *     exclude: array<string>,
+ * }
+ * @link https://www.mongodb.com/docs/atlas/atlas-search/synonyms/#std-label-synonyms-ref
+ * @phpstan-type TypeSearchIndexSynonyms array{
+ *     analyzer: string,
+ *     name: string,
+ *     source?: array{collection: string},
+ * }
+ * @link https://www.mongodb.com/docs/manual/reference/command/createSearchIndexes/#std-label-search-index-definition-create
+ * @phpstan-type TypeSearchIndexDefinition array{
+ *     analyzer?: string,
+ *     analyzers?: TypeSearchIndexAnalyzer[],
+ *     searchAnalyzer?: string,
+ *     mappings: array{dynamic: true} | array{dynamic?: bool|array{typeSet: string}, fields: array<string, TypeSearchIndexField|TypeSearchIndexField[]>},
+ *     storedSource?: TypeSearchIndexStoredSource,
+ *     synonyms?: TypeSearchIndexSynonyms[],
+ *     typeSets?: array<array{name: string, types: array<array{type: string, ...}>}>,
+ * }
+ * @link https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/#atlas-vector-search-index-fields
+ * @phpstan-type TypeVectorSearchIndexField array{
+ *     type: 'vector',
+ *     path: string,
+ *     numDimensions: int,
+ *     similarity: 'euclidean'|'cosine'|'dotProduct',
+ *     quantization?: 'none'|'scalar'|'binary',
+ *     indexingMethod?: 'flat'|'hnsw',
+ *     hnswOptions?: array{maxEdges?: int, numEdgeCandidates?: int},
+ * } | array{
+ *     type: 'filter',
+ *     path: string,
+ * }
+ * @link https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/#atlas-vector-search-index-fields
+ * @phpstan-type TypeVectorSearchIndexDefinition array{
+ *     fields: TypeVectorSearchIndexField[],
+ * }
+ */
 class Blueprint extends BaseBlueprint
 {
     // Import $connection property and constructor for Laravel 12 compatibility
@@ -319,15 +416,7 @@ class Blueprint extends BaseBlueprint
      *
      * @see https://www.mongodb.com/docs/manual/reference/command/createSearchIndexes/#std-label-search-index-definition-create
      *
-     * @phpstan-param array{
-     *      analyzer?: string,
-     *      analyzers?: list<array>,
-     *      searchAnalyzer?: string,
-     *      mappings: array{dynamic: true} | array{dynamic?: bool, fields: array<string, array>},
-     *      storedSource?: bool|array,
-     *      synonyms?: list<array>,
-     *      ...
-     *  } $definition
+     * @phpstan-param TypeSearchIndexDefinition $definition
      */
     public function searchIndex(array $definition, string $name = 'default'): static
     {
@@ -341,7 +430,7 @@ class Blueprint extends BaseBlueprint
      *
      * @see https://www.mongodb.com/docs/manual/reference/command/createSearchIndexes/#std-label-vector-search-index-definition-create
      *
-     * @phpstan-param array{fields: array<string, array{type: string, ...}>} $definition
+     * @phpstan-param TypeVectorSearchIndexDefinition $definition
      */
     public function vectorSearchIndex(array $definition, string $name = 'default'): static
     {
