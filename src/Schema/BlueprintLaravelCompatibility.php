@@ -14,6 +14,8 @@ use function property_exists;
  * and not break projects that would extend the MongoDB Blueprint class.
  *
  * @see https://github.com/laravel/framework/commit/f29df4740d724f1c36385c9989569e3feb9422df#diff-68f714a9f1b751481b993414d3f1300ad55bcef12084ec0eb8f47f350033c24bR107
+ *
+ * phpcs:disable PSR1.Classes.ClassDeclaration.MultipleClasses
  */
 if (! property_exists(BaseBlueprint::class, 'connection')) {
     /** @internal For compatibility with Laravel 10 and 11 */
