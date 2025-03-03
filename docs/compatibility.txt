@@ -32,4 +32,5 @@ on GitHub.
 PHP Driver Compatibility
 ------------------------
 
-To use {+odm-long+}, you must use v1.21 of the {+php-library+} and {+php-extension+}.
+To use {+odm-long+} v5.2 or later, you must use v1.21 of the
+{+php-library+} and {+php-extension+}.
