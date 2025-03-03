@@ -47,7 +47,7 @@ read and write operations on the data.
    MongoDB University Learning Byte.
 
    If you prefer to connect to MongoDB by using the {+php-library+} without
-   Laravel, see `Connecting to MongoDB <https://www.mongodb.com/docs/php-library/current/tutorial/connecting/>`__
+   Laravel, see `Connect to MongoDB <https://www.mongodb.com/docs/php-library/current/connect/>`__
    in the {+php-library+} documentation.
 
 The {+odm-short+} extends the Laravel Eloquent and Query Builder syntax to
