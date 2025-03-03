@@ -186,14 +186,15 @@ documents for MongoDB Atlas Search from Eloquent models (MongoDB or SQL).
       To customize the index definition, add the ``index-definitions``
       configuration to the ``mongodb`` entry in your
       ``config/scout.php`` file. The following code demonstrates how to
-      specify a custom index definition for the ``scout_index`` index:
+      specify a custom index definition to create on the
+      ``scout_movies`` collection:
 
       .. code-block:: php
       
          'mongodb' => [
              'connection' => env('SCOUT_MONGODB_CONNECTION', 'mongodb'),
              'index-definitions' => [
-                 'scout_index' => [
+                 'scout_movies' => [
                      'mappings' => [
                          'dynamic' => false, 
                          'fields' => ['title' => ['type' => 'string']]
