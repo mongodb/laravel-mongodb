@@ -224,7 +224,7 @@ to the ``guards`` array:
       ],
    ],
 
-Use Laravel Passport with Laravel MongoDB
+Use Laravel Passport with {+odm-long+}
 `````````````````````````````````````````
 
 After installing Laravel Passport, you must enable Passport compatibility with MongoDB by
@@ -300,4 +300,5 @@ Additional Information
 To learn more about user authentication, see `Authentication <https://laravel.com/docs/{+laravel-docs-version+}/authentication>`__
 in the Laravel documentation.
 
-To learn more about Eloquent models, see the :ref:`laravel-eloquent-model-class` guide.
+To learn more about Eloquent models, see the
+:ref:`laravel-eloquent-model-class` guide.

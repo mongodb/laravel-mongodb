@@ -79,7 +79,7 @@ You can configure the following settings in ``config/filesystems.php``:
 
    * - ``throw``
      - If ``true``, exceptions are thrown when an operation cannot be performed. If ``false``,
-	   operations return ``true`` on success and ``false`` on error. Defaults to ``false``.
+       operations return ``true`` on success and ``false`` on error. Defaults to ``false``.
 
 You can also use a factory or a service name to create an instance of ``MongoDB\GridFS\Bucket``.
 In this case, the options ``connection`` and ``database`` are ignored:
@@ -133,7 +133,7 @@ metadata, including the file name and a unique ObjectId. If multiple documents
 share the same file name, they are considered "revisions" and further
 distinguished by creation timestamps.
 
-The Laravel MongoDB integration uses the GridFS Flysystem adapter. It interacts
+{+odm-long+} uses the GridFS Flysystem adapter. It interacts
 with file revisions in the following ways:
 
 - Reading a file reads the last revision of this file name

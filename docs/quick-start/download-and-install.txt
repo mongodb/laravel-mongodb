@@ -31,7 +31,7 @@ to a Laravel web application.
 .. tip::
 
    As an alternative to the following installation steps, you can use Laravel Herd
-   to install MongoDB and configure a Laravel MongoDB development environment. For
+   to install MongoDB and configure a development environment for {+odm-long+}. For
    more information about using Laravel Herd with MongoDB, see the following resources:
    
    - `Installing MongoDB via Herd Pro
