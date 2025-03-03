@@ -15,7 +15,7 @@ Compatibility
    :class: singlecol
 
 .. meta::
-   :keywords: laravel 9, laravel 10, laravel 11, 4.0, 4.1, 4.2, 5.0, 5.1, 5.2
+   :keywords: laravel 9, laravel 10, laravel 11, laravel 12, 4.0, 4.1, 4.2, 5.0, 5.1, 5.2
 
 Laravel Compatibility
 ---------------------
@@ -32,5 +32,5 @@ on GitHub.
 PHP Driver Compatibility
 ------------------------
 
-To use {+odm-long+} v5.2 or later, you must use v1.21 of the
+To use {+odm-long+} v5.2 or later, you must install v1.21 of the
 {+php-library+} and {+php-extension+}.
