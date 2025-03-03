@@ -21,7 +21,7 @@ Overview
 --------
 
 In this guide, you can learn how to use the Laravel Scout feature in
-your {+odm-long+} application. Scout allows you to implement full-text
+your {+odm-long+} application. Scout enables you to implement full-text
 search on your Eloquent models. To learn more, see `Laravel Scout
 <https://laravel.com/docs/{+laravel-docs-version+}/scout>`__ in the
 Laravel documentation.
@@ -40,7 +40,7 @@ functionality:
      indexes, see the :ref:`laravel-as-index` section of the Atlas
      Search guide.
 
-- Allows you to automatically replicate data from MongoDB into a
+- Enables you to automatically replicate data from MongoDB into a
   search engine such as `Meilisearch <https://www.meilisearch.com/>`__
   or `Algolia <https://www.algolia.com/>`__. You can use a MongoDB Eloquent
   model as the source to import and index. To learn more about indexing
@@ -97,7 +97,7 @@ documents for MongoDB Atlas Search from Eloquent models (MongoDB or SQL).
              protected $connection = 'mongodb';
          }
 
-      The ``Searchable`` trait also allows you to reformat documents,
+      You can also use the ``Searchable`` trait to reformat documents,
       embed related documents, or transform document values. To learn
       more, see the `Configuring Searchable Data
       <https://laravel.com/docs/{+laravel-docs-version+}/scout#configuring-searchable-data>`__
@@ -202,6 +202,11 @@ documents for MongoDB Atlas Search from Eloquent models (MongoDB or SQL).
                  ]
              ]
          ], ...
+
+      To learn more about defining Atlas Search index definitions, see the
+      :atlas:`Define Field Mappings
+      </atlas-search/define-field-mappings/>` guide in the Atlas
+      documentation.
 
       .. note::
       
