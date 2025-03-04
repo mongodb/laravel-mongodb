@@ -32,7 +32,7 @@ jobs:
         run: |
           echo RELEASE_VERSION=${{ inputs.version }} >> $GITHUB_ENV
           echo RELEASE_BRANCH=$(echo ${{ inputs.version }} | cut -d '.' -f-2) >> $GITHUB_ENV
-          echo DEV_BRANCH=$(echo ${{ inputs.version }} | cut -d '.' - f-1).x >> $GITHUB_ENV
+          echo DEV_BRANCH=$(echo ${{ inputs.version }} | cut -d '.' -f-1).x >> $GITHUB_ENV
 
       - name: "Ensure release tag does not already exist"
         run: |
