@@ -869,8 +869,8 @@ Contains All Fields Example
 
 The following example shows how to use the ``all`` query
 operator with the ``where()`` query builder method to match
-documents that have a ``cast`` field containing all the specified
-array values:
+documents that have a ``writers`` array field containing all
+the specified values:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php

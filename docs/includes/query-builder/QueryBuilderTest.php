@@ -351,7 +351,7 @@ class QueryBuilderTest extends TestCase
     {
         // begin query all
         $result = DB::table('movies')
-            ->where('cast', 'all', ['Meg Ryan', 'Tom Hanks'])
+            ->where('writers', 'all', ['Ben Affleck', 'Matt Damon'])
             ->get();
         // end query all
 
