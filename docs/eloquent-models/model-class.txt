@@ -200,9 +200,10 @@ model attribute, stored in MongoDB as a :php:`MongoDB\\BSON\\UTCDateTime
 
 .. tip:: Casts in Laravel 11
 
-   In Laravel 11, you can define a ``casts()`` method to specify data type conversions
-   instead of using the ``$casts`` attribute. The following code performs the same
-   conversion as the preceding example by using a ``casts()`` method:
+   Starting in Laravel 11, you can define a ``casts()`` method to
+   specify data type conversions instead of using the ``$casts``
+   attribute. The following code performs the same conversion as the
+   preceding example by using a ``casts()`` method:
 
    .. code-block:: php
 
