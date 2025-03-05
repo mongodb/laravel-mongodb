@@ -868,8 +868,9 @@ Contains All Fields Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The following example shows how to use the ``all`` query
-operator with the ``where()`` query builder method to match
-documents that contain all the specified fields:
+operator with the ``where()`` query builder method to match documents in the
+``movies`` collection where the array stored in the ``genres`` field contains
+all the elements in the query array: 
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php
    :language: php
