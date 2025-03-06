@@ -350,7 +350,7 @@ class RelationsTest extends TestCase
         $this->assertCount(2, $retrievedUser->roles);
         $this->assertEqualsCanonicalizing(
             [$role1->id, $role2->id],
-            $retrievedUser->roles->pluck('id')->toArray()
+            $retrievedUser->roles->pluck('id')->toArray(),
         );
     }
 

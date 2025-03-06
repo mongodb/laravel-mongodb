@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
+use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 
 use function array_diff;
@@ -20,6 +21,7 @@ use function assert;
 use function count;
 use function in_array;
 use function is_numeric;
+use function is_object;
 
 /**
  * @template TRelatedModel of Model
@@ -208,11 +210,12 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Attach the new ids to the parent model.
         if (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
-            if ($id instanceof \MongoDB\BSON\ObjectId) {
+            if ($id instanceof ObjectId) {
                 $id = [$id];
             } else {
                 $id = (array) $id;
             }
+
             $this->parent->push($this->relatedPivotKey, $id, true);
         } else {
             $instance = new $this->related();
