@@ -338,6 +338,22 @@ class RelationsTest extends TestCase
         $this->assertCount(2, $user->clients);
     }
 
+    public function testBelongsToManyRelationSupportsArrayForeignKeys(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $role1 = Role::create(['name' => 'Admin']);
+        $role2 = Role::create(['name' => 'Editor']);
+
+        $user->roles()->attach([$role1->id, $role2->id]);
+
+        $retrievedUser = User::with('roles')->find($user->id);
+        $this->assertCount(2, $retrievedUser->roles);
+        $this->assertEqualsCanonicalizing(
+            [$role1->id, $role2->id],
+            $retrievedUser->roles->pluck('id')->toArray()
+        );
+    }
+
     public function testBelongsToManyAttachEloquentCollection(): void
     {
         User::create(['name' => 'John Doe']);

@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Eloquent\DocumentModel;
 use MongoDB\Laravel\Eloquent\MassPrunable;
+use MongoDB\Laravel\Relations\BelongsToMany;
 
 /**
  * @property string $id
@@ -85,6 +86,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
     public function role()
     {
         return $this->hasOne(Role::class);
+    }
+
+    public function roles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, null, 'user_id', 'role_id');
     }
 
     public function sqlRole()
