@@ -66,12 +66,6 @@ to build aggregation stages:
 - ``MongoDB\Builder\Query``
 - ``MongoDB\Builder\Type``
 
-.. tip::
-
-   To learn more about builder classes, see the
-   :github:`mongodb/mongodb-php-builder <mongodb/mongo-php-builder>`
-   GitHub repository.
-
 This section features the following examples that show how to use common
 aggregation stages:
 
