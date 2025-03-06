@@ -255,6 +255,26 @@ in the Laravel documentation.
 The following section shows an example of how to create a many to many
 relationship between model classes.
 
+.. note::
+
+   In previous versions, the `foreignPivotKey` in a `BelongsToMany` relationship
+   was expected to be a single `ObjectId` or `string`. However, in some MongoDB
+   schemas, it is common to store multiple related IDs as an array. As of this update,
+   `BelongsToMany` now supports array values for the `foreignPivotKey`.
+
+   Example:
+
+   .. code-block:: php
+
+       class User extends Model {
+           public function roles() {
+               return $this->belongsToMany(Role::class, null, 'role_ids', '_id');
+           }
+       }
+
+   Here, `role_ids` can be an array of `ObjectId`s, and the relationship will work correctly.
+
+
 Many to Many Example
 ~~~~~~~~~~~~~~~~~~~~
 
