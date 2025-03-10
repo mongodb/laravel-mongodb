@@ -65,10 +65,11 @@ Database Features
      - *Unsupported*
 
    * - Multi-database Support / Multiple Schemas
-     - *Unsupported* Laravel uses a dot separator (``.``)
-       between SQL schema and table names, but MongoDB allows ``.``
-       characters within collection names, which might lead to
-       unexpected namespace parsing.
+     - | *Unsupported* 
+       | Laravel uses a dot separator (``.``)
+         between SQL schema and table names, but MongoDB allows ``.``
+         characters within collection names, which might lead to
+         unexpected namespace parsing.
 
 Query Features
 --------------
