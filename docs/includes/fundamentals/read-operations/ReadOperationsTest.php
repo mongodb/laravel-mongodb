@@ -208,6 +208,8 @@ class ReadOperationsTest extends TestCase
 
         // end-query-log
 
+        $this->expectOutputRegex('/^{"title":"Marriage Story","year":2019,"runtime":136,"updated_at":".{27}","created_at":".{27}","id":"[a-z0-9]{24}"}$/');
+        $this->expectOutputString('{ "query": "{ \"find\" : \"movies\", \"filter\" : { \"title\" : \"Carrie\" } }", "bindings": [], "time": 35366 }{ "query": "{ \"find\" : \"movies\", \"filter\" : { \"year\" : { \"$lt\" : { \"$numberInt\" : \"2005\" } } } }", "bindings": [], "time": 31571 }{ "query": "{ \"find\" : \"movies\", \"filter\" : { \"imdb.rating\" : { \"$gt\" : { \"$numberDouble\" : \"8.5\" } } } }", "bindings": [], "time": 26469 }');
         $this->assertNotNull($logs);
     }
 }
