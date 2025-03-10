@@ -17,7 +17,8 @@ Read Operations
    Retrieve Data </fundamentals/read-operations/retrieve>
    Search Text </fundamentals/read-operations/search-text>
    Modify Query Results </fundamentals/read-operations/modify-results>
-   Set Read Preference </fundamentals/read-operations/read-pref>
+   Read Preference </fundamentals/read-operations/read-pref>
+   Query Logging </fundamentals/read-operations/query-logging>
 
 .. contents:: On this page
    :local:

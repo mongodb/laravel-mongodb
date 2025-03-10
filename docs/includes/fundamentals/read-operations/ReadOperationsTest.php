@@ -183,4 +183,26 @@ class ReadOperationsTest extends TestCase
         $this->assertNotNull($movies);
         $this->assertCount(2, $movies);
     }
+
+    /**
+     * @runInSeparateProcess
+     * @preserveGlobalState disabled
+     */
+    public function testQueryLog(): void
+    {
+        // start-query-log
+        DB::connection('mongodb')->enableQueryLog();
+
+        Movie::where('title', 'Carrie')->get();
+        Movie::where('year', '<', 2005)->get();
+        Movie::where('imdb.rating', '>', 8.5)->get();
+
+        $logs = DB::connection('mongodb')->getQueryLog();
+        foreach ($logs as $log) {
+            echo json_encode($log, JSON_PRETTY_PRINT);
+        }
+        // end-query-log
+
+        $this->assertNotNull($logs);
+    }
 }
