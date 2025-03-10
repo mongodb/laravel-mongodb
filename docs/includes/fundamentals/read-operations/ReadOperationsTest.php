@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\DB;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Tests\TestCase;
 
+use function json_encode;
+
+use const JSON_PRETTY_PRINT;
+
 class ReadOperationsTest extends TestCase
 {
     protected function setUp(): void
@@ -201,6 +205,7 @@ class ReadOperationsTest extends TestCase
         foreach ($logs as $log) {
             echo json_encode($log, JSON_PRETTY_PRINT);
         }
+
         // end-query-log
 
         $this->assertNotNull($logs);
