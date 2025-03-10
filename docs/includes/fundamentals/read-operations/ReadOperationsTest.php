@@ -209,6 +209,5 @@ class ReadOperationsTest extends TestCase
         // end-query-log
 
         $this->expectOutputRegex('\{ "query": "\{ \\"find\\" : \\"movies\\", \\"filter\\" : \{ \\"title\\" : \\"Carrie\\" \} \}", "bindings": \[\], "time": [0-9]+ \}\{ "query": "\{ \\"find\\" : \\"movies\\", \\"filter\\" : \{ \\"year\\" : \{ \\"\$lt\\" : \{ \\"\$numberInt\\" : \\"2005\\" \} \} \} \}", "bindings": \[\], "time": [0-9]+ \}\{ "query": "\{ \\"find\\" : \\"movies\\", \\"filter\\" : \{ \\"imdb\.rating\\" : \{ \\"\$gt\\" : \{ \\"\$numberDouble\\" : \\"8\.5\\" \} \} \} \}", "bindings": \[\], "time": [0-9]+ \}');
-        $this->assertNotNull($logs);
     }
 }
