@@ -11,13 +11,11 @@ use Illuminate\Support\LazyCollection;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Jobs\RemoveFromSearch;
 use LogicException;
-use Mockery as m;
 use MongoDB\BSON\Document;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 use MongoDB\Database;
 use MongoDB\Driver\CursorInterface;
-use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Scout\ScoutEngine;
 use MongoDB\Laravel\Tests\Scout\Models\ScoutUser;
 use MongoDB\Laravel\Tests\Scout\Models\SearchableModel;
@@ -36,7 +34,7 @@ class ScoutEngineTest extends TestCase
 
     public function testCreateIndexInvalidDefinition(): void
     {
-        $database = m::mock(Database::class);
+        $database = $this->createMock(Database::class);
         $engine = new ScoutEngine($database, false, ['collection_invalid' => ['foo' => 'bar']]);
 
         $this->expectException(LogicException::class);
@@ -53,21 +51,22 @@ class ScoutEngineTest extends TestCase
             ],
         ];
 
-        $database = m::mock(Database::class);
-        $collection = m::mock(Collection::class);
-        $database->shouldReceive('createCollection')
-            ->once()
+        $database = $this->createMock(Database::class);
+        $collection = $this->createMock(Collection::class);
+        $database->expects($this->once())
+            ->method('createCollection')
             ->with($collectionName);
-        $database->shouldReceive('selectCollection')
+        $database->expects($this->once())
+            ->method('selectCollection')
             ->with($collectionName)
-            ->andReturn($collection);
-        $collection->shouldReceive('createSearchIndex')
-            ->once()
+            ->willReturn($collection);
+        $collection->expects($this->once())
+            ->method('createSearchIndex')
             ->with($expectedDefinition, ['name' => 'scout']);
-        $collection->shouldReceive('listSearchIndexes')
-            ->once()
+        $collection->expects($this->once())
+            ->method('listSearchIndexes')
             ->with(['name' => 'scout', 'typeMap' => ['root' => 'bson']])
-            ->andReturn(new ArrayIterator([Document::fromPHP(['name' => 'scout', 'status' => 'READY'])]));
+            ->willReturn(new ArrayIterator([Document::fromPHP(['name' => 'scout', 'status' => 'READY'])]));
 
         $engine = new ScoutEngine($database, false, []);
         $engine->createIndex($collectionName);
@@ -90,21 +89,22 @@ class ScoutEngineTest extends TestCase
             ],
         ];
 
-        $database = m::mock(Database::class);
-        $collection = m::mock(Collection::class);
-        $database->shouldReceive('createCollection')
-            ->once()
+        $database = $this->createMock(Database::class);
+        $collection = $this->createMock(Collection::class);
+        $database->expects($this->once())
+            ->method('createCollection')
             ->with($collectionName);
-        $database->shouldReceive('selectCollection')
+        $database->expects($this->once())
+            ->method('selectCollection')
             ->with($collectionName)
-            ->andReturn($collection);
-        $collection->shouldReceive('createSearchIndex')
-            ->once()
+            ->willReturn($collection);
+        $collection->expects($this->once())
+            ->method('createSearchIndex')
             ->with($expectedDefinition, ['name' => 'scout']);
-        $collection->shouldReceive('listSearchIndexes')
-            ->once()
+        $collection->expects($this->once())
+            ->method('listSearchIndexes')
             ->with(['name' => 'scout', 'typeMap' => ['root' => 'bson']])
-            ->andReturn(new ArrayIterator([Document::fromPHP(['name' => 'scout', 'status' => 'READY'])]));
+            ->willReturn(new ArrayIterator([Document::fromPHP(['name' => 'scout', 'status' => 'READY'])]));
 
         $engine = new ScoutEngine($database, false, [$collectionName => $expectedDefinition]);
         $engine->createIndex($collectionName);
@@ -115,26 +115,28 @@ class ScoutEngineTest extends TestCase
     public function testSearch(Closure $builder, array $expectedPipeline): void
     {
         $data = [['_id' => 'key_1', '__count' => 15], ['_id' => 'key_2', '__count' => 15]];
-        $database = m::mock(Database::class);
-        $collection = m::mock(Collection::class);
-        $database->shouldReceive('selectCollection')
+        $database = $this->createMock(Database::class);
+        $collection = $this->createMock(Collection::class);
+        $database->expects($this->once())
+            ->method('selectCollection')
             ->with('collection_searchable')
-            ->andReturn($collection);
-        $cursor = m::mock(CursorInterface::class);
-        $cursor->shouldReceive('setTypeMap')->once()->with(self::EXPECTED_TYPEMAP);
-        $cursor->shouldReceive('toArray')->once()->with()->andReturn($data);
+            ->willReturn($collection);
+        $cursor = $this->createMock(CursorInterface::class);
+        $cursor->expects($this->once())
+            ->method('setTypeMap')
+            ->with(self::EXPECTED_TYPEMAP);
+        $cursor->expects($this->once())
+            ->method('toArray')
+            ->with()
+            ->willReturn($data);
 
-        $collection->shouldReceive('getCollectionName')
-            ->zeroOrMoreTimes()
-            ->andReturn('collection_searchable');
-        $collection->shouldReceive('aggregate')
-            ->once()
-            ->withArgs(function ($pipeline) use ($expectedPipeline) {
-                self::assertEquals($expectedPipeline, $pipeline);
-
-                return true;
-            })
-            ->andReturn($cursor);
+        $collection->expects($this->any())
+            ->method('getCollectionName')
+            ->willReturn('collection_searchable');
+        $collection->expects($this->once())
+            ->method('aggregate')
+            ->with($expectedPipeline)
+            ->willReturn($cursor);
 
         $engine = new ScoutEngine($database, softDelete: false);
         $result = $engine->search($builder());
@@ -414,15 +416,15 @@ class ScoutEngineTest extends TestCase
         $perPage = 5;
         $page = 3;
 
-        $database = m::mock(Database::class);
-        $collection = m::mock(Collection::class);
-        $cursor = m::mock(CursorInterface::class);
-        $database->shouldReceive('selectCollection')
+        $database = $this->createMock(Database::class);
+        $collection = $this->createMock(Collection::class);
+        $cursor = $this->createMock(CursorInterface::class);
+        $database->method('selectCollection')
             ->with('collection_searchable')
-            ->andReturn($collection);
-        $collection->shouldReceive('aggregate')
-            ->once()
-            ->withArgs(function (...$args) {
+            ->willReturn($collection);
+        $collection->expects($this->once())
+            ->method('aggregate')
+            ->willReturnCallback(function (...$args) use ($cursor) {
                 self::assertSame([
                     [
                         '$search' => [
@@ -468,14 +470,11 @@ class ScoutEngineTest extends TestCase
                     ],
                 ], $args[0]);
 
-                return true;
-            })
-            ->andReturn($cursor);
-        $cursor->shouldReceive('setTypeMap')->once()->with(self::EXPECTED_TYPEMAP);
-        $cursor->shouldReceive('toArray')
-            ->once()
-            ->with()
-            ->andReturn([['_id' => 'key_1', '__count' => 17], ['_id' => 'key_2', '__count' => 17]]);
+                return $cursor;
+            });
+        $cursor->expects($this->once())->method('setTypeMap')->with(self::EXPECTED_TYPEMAP);
+        $cursor->expects($this->once())->method('toArray')->with()
+            ->willReturn([['_id' => 'key_1', '__count' => 17], ['_id' => 'key_2', '__count' => 17]]);
 
         $engine = new ScoutEngine($database, softDelete: false);
         $builder = new Builder(new SearchableModel(), 'mustang');
@@ -485,20 +484,27 @@ class ScoutEngineTest extends TestCase
 
     public function testMapMethodRespectsOrder()
     {
-        $database = m::mock(Database::class);
+        $database = $this->createMock(Database::class);
+        $query = $this->createMock(Builder::class);
         $engine = new ScoutEngine($database, false);
 
-        $model = m::mock(Model::class);
-        $model->shouldReceive(['getScoutKeyName' => 'id']);
-        $model->shouldReceive('queryScoutModelsByIds->get')
-            ->andReturn(LaravelCollection::make([
+        $model = $this->createMock(SearchableModel::class);
+        $model->expects($this->any())
+            ->method('getScoutKeyName')
+            ->willReturn('id');
+        $model->expects($this->once())
+            ->method('queryScoutModelsByIds')
+            ->willReturn($query);
+        $query->expects($this->once())
+            ->method('get')
+            ->willReturn(LaravelCollection::make([
                 new ScoutUser(['id' => 1]),
                 new ScoutUser(['id' => 2]),
                 new ScoutUser(['id' => 3]),
                 new ScoutUser(['id' => 4]),
             ]));
 
-        $builder = m::mock(Builder::class);
+        $builder = $this->createMock(Builder::class);
 
         $results = $engine->map($builder, [
             ['_id' => 1, '__count' => 4],
@@ -518,21 +524,27 @@ class ScoutEngineTest extends TestCase
 
     public function testLazyMapMethodRespectsOrder()
     {
-        $lazy = false;
-        $database = m::mock(Database::class);
+        $database = $this->createMock(Database::class);
+        $query = $this->createMock(Builder::class);
         $engine = new ScoutEngine($database, false);
 
-        $model = m::mock(Model::class);
-        $model->shouldReceive(['getScoutKeyName' => 'id']);
-        $model->shouldReceive('queryScoutModelsByIds->cursor')
-            ->andReturn(LazyCollection::make([
+        $model = $this->createMock(SearchableModel::class);
+        $model->expects($this->any())
+            ->method('getScoutKeyName')
+            ->willReturn('id');
+        $model->expects($this->once())
+            ->method('queryScoutModelsByIds')
+            ->willReturn($query);
+        $query->expects($this->once())
+            ->method('cursor')
+            ->willReturn(LazyCollection::make([
                 new ScoutUser(['id' => 1]),
                 new ScoutUser(['id' => 2]),
                 new ScoutUser(['id' => 3]),
                 new ScoutUser(['id' => 4]),
             ]));
 
-        $builder = m::mock(Builder::class);
+        $builder = $this->createMock(Builder::class);
 
         $results = $engine->lazyMap($builder, [
             ['_id' => 1, '__count' => 4],
@@ -553,13 +565,14 @@ class ScoutEngineTest extends TestCase
     public function testUpdate(): void
     {
         $date = new DateTimeImmutable('2000-01-02 03:04:05');
-        $database = m::mock(Database::class);
-        $collection = m::mock(Collection::class);
-        $database->shouldReceive('selectCollection')
+        $database = $this->createMock(Database::class);
+        $collection = $this->createMock(Collection::class);
+        $database->expects($this->once())
+            ->method('selectCollection')
             ->with('collection_indexable')
-            ->andReturn($collection);
-        $collection->shouldReceive('bulkWrite')
-            ->once()
+            ->willReturn($collection);
+        $collection->expects($this->once())
+            ->method('bulkWrite')
             ->with([
                 [
                     'updateOne' => [
@@ -592,26 +605,23 @@ class ScoutEngineTest extends TestCase
     public function testUpdateWithSoftDelete(): void
     {
         $date = new DateTimeImmutable('2000-01-02 03:04:05');
-        $database = m::mock(Database::class);
-        $collection = m::mock(Collection::class);
-        $database->shouldReceive('selectCollection')
+        $database = $this->createMock(Database::class);
+        $collection = $this->createMock(Collection::class);
+        $database->expects($this->once())
+            ->method('selectCollection')
             ->with('collection_indexable')
-            ->andReturn($collection);
-        $collection->shouldReceive('bulkWrite')
-            ->once()
-            ->withArgs(function ($pipeline) {
-                $this->assertSame([
-                    [
-                        'updateOne' => [
-                            ['_id' => 'key_1'],
-                            ['$set' => ['id' => 1, '__soft_deleted' => false]],
-                            ['upsert' => true],
-                        ],
+            ->willReturn($collection);
+        $collection->expects($this->once())
+            ->method('bulkWrite')
+            ->with([
+                [
+                    'updateOne' => [
+                        ['_id' => 'key_1'],
+                        ['$set' => ['id' => 1, '__soft_deleted' => false]],
+                        ['upsert' => true],
                     ],
-                ], $pipeline);
-
-                return true;
-            });
+                ],
+            ]);
 
         $model = new SearchableModel(['id' => 1]);
         $model->delete();
@@ -622,13 +632,14 @@ class ScoutEngineTest extends TestCase
 
     public function testDelete(): void
     {
-        $database = m::mock(Database::class);
-        $collection = m::mock(Collection::class);
-        $database->shouldReceive('selectCollection')
+        $database = $this->createMock(Database::class);
+        $collection = $this->createMock(Collection::class);
+        $database->expects($this->once())
+            ->method('selectCollection')
             ->with('collection_indexable')
-            ->andReturn($collection);
-        $collection->shouldReceive('deleteMany')
-            ->once()
+            ->willReturn($collection);
+        $collection->expects($this->once())
+            ->method('deleteMany')
             ->with(['_id' => ['$in' => ['key_1', 'key_2']]]);
 
         $engine = new ScoutEngine($database, softDelete: false);
@@ -646,13 +657,14 @@ class ScoutEngineTest extends TestCase
 
         $job = unserialize(serialize($job));
 
-        $database = m::mock(Database::class);
-        $collection = m::mock(Collection::class);
-        $database->shouldReceive('selectCollection')
+        $database = $this->createMock(Database::class);
+        $collection = $this->createMock(Collection::class);
+        $database->expects($this->once())
+            ->method('selectCollection')
             ->with('collection_indexable')
-            ->andReturn($collection);
-        $collection->shouldReceive('deleteMany')
-            ->once()
+            ->willReturn($collection);
+        $collection->expects($this->once())
+            ->method('deleteMany')
             ->with(['_id' => ['$in' => ['key_5']]]);
 
         $engine = new ScoutEngine($database, softDelete: false);

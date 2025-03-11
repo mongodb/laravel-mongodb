@@ -16,6 +16,7 @@ env:
 
 jobs:
   phpstan:
+    name: "PHP ${{ matrix.php }} driver ${{ matrix.driver }}"
     runs-on: "ubuntu-22.04"
     continue-on-error: true
     strategy:
@@ -24,6 +25,12 @@ jobs:
           - '8.1'
           - '8.2'
           - '8.3'
+          - '8.4'
+        driver:
+          - "1.21.0"
+        include:
+          - php: '8.4'
+            driver: 'mongodb/mongo-php-driver@v2.x'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -35,11 +42,19 @@ jobs:
         run: |
           echo CHECKED_OUT_SHA=$(git rev-parse HEAD) >> $GITHUB_ENV
 
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: "mongodb-${{ matrix.driver }}"
+          key: "extcache-v1"
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: curl, mbstring
+          extensions: "curl,mbstring,mongodb-${{ matrix.driver }}"
           tools: composer:v2
           coverage: none
 

@@ -23,14 +23,14 @@
     "license": "MIT",
     "require": {
         "php": "^8.1",
-        "ext-mongodb": "^1.21",
+        "ext-mongodb": "^1.21|^2",
         "composer-runtime-api": "^2.0.0",
         "illuminate/cache": "^10.36|^11|^12",
         "illuminate/container": "^10.0|^11|^12",
         "illuminate/database": "^10.30|^11|^12",
         "illuminate/events": "^10.0|^11|^12",
         "illuminate/support": "^10.0|^11|^12",
-        "mongodb/mongodb": "^1.21",
+        "mongodb/mongodb": "^1.21|^2",
         "symfony/http-foundation": "^6.4|^7"
     },
     "require-dev": {
