@@ -265,7 +265,14 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $collections = [];
         foreach ($this->connection->getMongoDB()->listCollections() as $collection) {
-            $collections[] = $collection->getName();
+            $name = $collection->getName();
+
+            // Skip system collections
+            if (str_starts_with($name, 'system.')) {
+                continue;
+            }
+
+            $collections[] = $name;
         }
 
         return $collections;
