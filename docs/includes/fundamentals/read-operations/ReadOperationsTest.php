@@ -209,8 +209,23 @@ class ReadOperationsTest extends TestCase
 
         // end-query-log
 
-        ob_flush();
-        $logs = DB::connection('mongodb')->getQueryLog();
         $this->assertNotNull($logs);
+        $this->expectOutputRegex('/^'
+            . '\{'
+            . '\s*"query"\s*:\s*"\{\\\"find\\\"\s*:\s*\\\"movies\\\",\s*\\\"filter\\\"\s*:\s*\{\\\"title\\\"\s*:\s*\\\"Carrie\\\"\}\}",'
+            . '\s*"bindings"\s*:\s*\[\],'
+            . '\s*"time"\s*:\s*\d+'
+            . '\}'
+            . '\{'
+            . '\s*"query"\s*:\s*"\{\\\"find\\\"\s*:\s*\\\"movies\\\",\s*\\\"filter\\\"\s*:\s*\{\\\"year\\\"\s*:\s*\{\\\"\\$lt\\\"\s*:\s*\{\\\"\\$numberInt\\\"\s*:\s*\\\"2005\\\"\}\}\}\}",'
+            . '\s*"bindings"\s*:\s*\[\],'
+            . '\s*"time"\s*:\s*\d+'
+            . '\}'
+            . '\{'
+            . '\s*"query"\s*:\s*"\{\\\"find\\\"\s*:\s*\\\"movies\\\",\s*\\\"filter\\\"\s*:\s*\{\\\"imdb.rating\\\"\s*:\s*\{\\\"\\$gt\\\"\s*:\s*\{\\\"\\$numberDouble\\\"\s*:\s*\\\"8\.5\\\"\}\}\}\}",'
+            . '\s*"bindings"\s*:\s*\[\],'
+            . '\s*"time"\s*:\s*\d+'
+            . '\}'
+            . '$/x');
     }
 }
