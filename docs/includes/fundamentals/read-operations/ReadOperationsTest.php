@@ -206,6 +206,7 @@ class ReadOperationsTest extends TestCase
         foreach ($logs as $log) {
             echo json_encode($log, JSON_PRETTY_PRINT);
         }
+
         // end-query-log
 
         ob_flush();
