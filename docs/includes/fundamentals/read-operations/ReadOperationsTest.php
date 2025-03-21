@@ -10,7 +10,6 @@ use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function json_encode;
-use function ob_flush;
 
 use const JSON_PRETTY_PRINT;
 
