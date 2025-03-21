@@ -55,7 +55,7 @@ prints the query log:
    .. output::
       :language: json
       :visible: false
-            
+
       {
         "query": "{ \"find\" : \"movies\", \"filter\" : { \"title\" : \"Carrie\" } }",
         "bindings": [],

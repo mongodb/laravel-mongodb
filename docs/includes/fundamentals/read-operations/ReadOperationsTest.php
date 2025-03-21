@@ -9,8 +9,6 @@ use Illuminate\Support\Facades\DB;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Tests\TestCase;
 
-use function json_encode;
-
 class ReadOperationsTest extends TestCase
 {
     protected function setUp(): void
@@ -200,12 +198,8 @@ class ReadOperationsTest extends TestCase
         Movie::where('imdb.rating', '>', 8.5)->get();
 
         $logs = DB::connection('mongodb')->getQueryLog();
-        foreach ($logs as $log) {
-            echo json_encode($log);
-        }
-
         // end-query-log
 
-        $this->expectOutputRegex('');
+        $this->assertNotNull($logs);
     }
 }
