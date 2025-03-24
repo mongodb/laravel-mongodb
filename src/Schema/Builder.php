@@ -117,52 +117,77 @@ class Builder extends \Illuminate\Database\Schema\Builder
             $this->drop($collection);
         }
     }
-
-    public function getTables()
-    {
-        $db = $this->connection->getMongoDB();
-        $collections = [];
-    
-        foreach ($db->listCollectionNames() as $collectionName) {
-            // Skip system collections
-            if (str_starts_with($collectionName, 'system.')) {
-                continue;
-            }
-    
-            $stats = $db->selectCollection($collectionName)->aggregate([
-                ['$collStats' => ['storageStats' => ['scale' => 1]]],
-                ['$project' => ['storageStats.totalSize' => 1]],
-            ])->toArray();
-    
-            $collections[] = [
-                'name' => $collectionName,
-                'schema' => null,
-                'size' => $stats[0]?->storageStats?->totalSize ?? null,
-                'comment' => null,
-                'collation' => null,
-                'engine' => null,
-            ];
-        }
-    
-        usort($collections, function ($a, $b) {
-            return $a['name'] <=> $b['name'];
-        });
-    
-        return $collections;
-    }
-    
-    public function getTableListing()
-    {
-        $collections = array_filter(
-            iterator_to_array($this->connection->getMongoDB()->listCollectionNames()),
-            // Skip system collections
-            fn($name) => !str_starts_with($name, 'system.')
-        );
-    
-        sort($collections);
-    
-        return $collections;
-    }
+      /** @param string|null $schema Database name */
+      public function getTables($schema = null)
+      {
+          $db = $this->connection->getDatabase($schema);
+          $collections = [];
+  
+          foreach ($db->listCollections() as $collectionInfo) {
+              $collectionName = $collectionInfo->getName();
+  
+              // Skip system collections
+              if (str_starts_with($collectionName, 'system.')) {
+                  continue;
+              }
+              // Skip views it doesnt suport aggregate
+              $isView = ($collectionInfo['type'] ?? '') === 'view';
+              $stats = null;
+  
+              if (! $isView) {
+                  // Only run aggregation if it's a normal collection
+                  $stats = $db->selectCollection($collectionName)->aggregate([
+                      ['$collStats' => ['storageStats' => ['scale' => 1]]],
+                      ['$project' => ['storageStats.totalSize' => 1]],
+                  ])->toArray();
+              }
+  
+              $collections[] = [
+                  'name' => $collectionName,
+                  'schema' => $db->getDatabaseName(),
+                  'schema_qualified_name' => $db->getDatabaseName().'.'.$collectionName,
+                  'size' => $stats[0]?->storageStats?->totalSize ?? null,
+                  'comment' => null,
+                  'collation' => null,
+                  'engine' => $isView ? 'view' : 'collection',
+              ];
+          }
+  
+          usort($collections, fn ($a, $b) => $a['name'] <=> $b['name']);
+  
+          return $collections;
+      }
+  
+      /**
+       * @param  string|null  $schema
+       * @param  bool  $schemaQualified  If a schema is provided, prefix the collection names with the schema name
+       * @return array
+       */
+      public function getTableListing($schema = null, $schemaQualified = false)
+      {
+          $collections = [];
+  
+          if ($schema === null || is_string($schema)) {
+              $collections[$schema ?? 0] = iterator_to_array($this->connection->getDatabase($schema)->listCollectionNames());
+          } elseif (is_array($schema)) {
+              foreach ($schema as $db) {
+                  $collections[$db] = iterator_to_array($this->connection->getDatabase($db)->listCollectionNames());
+              }
+          }
+  
+          if ($schema && $schemaQualified) {
+              $collections = array_map(fn ($db, $collections) => array_map(static fn ($collection) => $db.'.'.$collection, $collections), array_keys($collections), $collections);
+          }
+  
+          $collections = array_merge(...array_values($collections));
+  
+          // Exclude system collections before sorting
+          $collections = array_filter($collections, fn ($name) => ! str_starts_with($name, 'system.'));
+  
+          sort($collections);
+  
+          return $collections;
+      }
 
     public function getColumns($table)
     {
