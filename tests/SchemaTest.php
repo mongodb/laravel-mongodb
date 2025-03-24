@@ -431,6 +431,44 @@ class SchemaTest extends TestCase
             $this->fail('Collection "newcollection" not found');
         }
     }
+    public function testGetViews()
+    {
+        DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
+        DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
+        $dbName = DB::connection('mongodb')->getDatabaseName();
+
+      
+        DB::connection('mongodb')->getDatabase()->command([
+            'create' => 'test_view',
+            'viewOn' => 'newcollection',
+            'pipeline' => [],
+        ]);
+
+        $tables = Schema::getViews();
+        
+        $this->assertIsArray($tables);
+        $this->assertGreaterThanOrEqual(1, count($tables));
+        $found = false;
+        foreach ($tables as $table) {
+            $this->assertArrayHasKey('name', $table);
+            $this->assertArrayHasKey('size', $table);
+            $this->assertArrayHasKey('schema', $table);
+            $this->assertArrayHasKey('schema_qualified_name', $table);
+
+            if ($table['name'] === 'test_view') {
+                $this->assertEquals($dbName, $table['schema']);
+                $this->assertEquals($dbName . '.test_view', $table['schema_qualified_name']);
+                $found = true;
+            }
+
+            // Ensure system collections are excluded
+            $this->assertFalse(str_starts_with($table['name'], 'system.'));
+        }
+
+        if (! $found) {
+            $this->fail('Collection "test_view" not found');
+        }
+    }
 
     public function testGetTableListing()
     {

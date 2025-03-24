@@ -143,7 +143,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
     }
 
-    /** @param string|null $schema Database name */
+    /** @param  string|null $schema Database name */
     public function getTables($schema = null)
     {
         $db = $this->connection->getDatabase($schema);
@@ -161,12 +161,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
             $isView = ($collectionInfo['type'] ?? '') === 'view';
             $stats = null;
 
-            if (! $isView) {
-                // Only run aggregation if it's a normal collection
-                $stats = $db->selectCollection($collectionName)->aggregate([
-                    ['$collStats' => ['storageStats' => ['scale' => 1]]],
-                    ['$project' => ['storageStats.totalSize' => 1]],
-                ])->toArray();
+            if ($isView) {
+                continue;
             }
 
             $collections[] = [
@@ -176,7 +172,45 @@ class Builder extends \Illuminate\Database\Schema\Builder
                 'size' => $stats[0]?->storageStats?->totalSize ?? null,
                 'comment' => null,
                 'collation' => null,
-                'engine' => $isView ? 'view' : 'collection',
+                'engine' => null,
+            ];
+        }
+
+        usort($collections, fn ($a, $b) => $a['name'] <=> $b['name']);
+
+        return $collections;
+    }
+
+    /** @param  string|null $schema Database name */
+    public function getViews($schema = null)
+    {
+        $db = $this->connection->getDatabase($schema);
+        $collections = [];
+
+        foreach ($db->listCollections() as $collectionInfo) {
+            $collectionName = $collectionInfo->getName();
+
+            // Skip system collections
+            if (str_starts_with($collectionName, 'system.')) {
+                continue;
+            }
+
+            // Skip views it doesnt suport aggregate
+            $isView = ($collectionInfo['type'] ?? '') === 'view';
+            $stats = null;
+
+            if (! $isView) {
+                continue;
+            }
+
+            $collections[] = [
+                'name' => $collectionName,
+                'schema' => $db->getDatabaseName(),
+                'schema_qualified_name' => $db->getDatabaseName() . '.' . $collectionName,
+                'size' => null,
+                'comment' => null,
+                'collation' => null,
+                'engine' => null,
             ];
         }
 
