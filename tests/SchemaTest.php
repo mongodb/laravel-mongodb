@@ -17,15 +17,17 @@ use function assert;
 use function collect;
 use function count;
 use function sprintf;
+use function str_starts_with;
 
 class SchemaTest extends TestCase
 {
     public function tearDown(): void
     {
-        $database = $this->getConnection('mongodb')->getMongoDB();
+        $database = $this->getConnection('mongodb')->getDatabase();
         assert($database instanceof Database);
         $database->dropCollection('newcollection');
         $database->dropCollection('newcollection_two');
+        $database->dropCollection('test_view');
 
         parent::tearDown();
     }
@@ -397,6 +399,13 @@ class SchemaTest extends TestCase
         DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
         $dbName = DB::connection('mongodb')->getDatabaseName();
 
+        // Create a view (this creates system.views)
+        DB::connection('mongodb')->getDatabase()->command([
+            'create' => 'test_view',
+            'viewOn' => 'newcollection',
+            'pipeline' => [],
+        ]);
+
         $tables = Schema::getTables();
         $this->assertIsArray($tables);
         $this->assertGreaterThanOrEqual(2, count($tables));
@@ -413,6 +422,9 @@ class SchemaTest extends TestCase
                 $this->assertEquals($dbName . '.newcollection', $table['schema_qualified_name']);
                 $found = true;
             }
+
+            // Ensure system collections are excluded
+            $this->assertFalse(str_starts_with($table['name'], 'system.'));
         }
 
         if (! $found) {
@@ -425,12 +437,22 @@ class SchemaTest extends TestCase
         DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
         DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
 
+         // Create a view (this creates system.views)
+        DB::connection('mongodb')->getDatabase()->command([
+            'create' => 'test_view',
+            'viewOn' => 'newcollection',
+            'pipeline' => [],
+        ]);
+
         $tables = Schema::getTableListing();
 
         $this->assertIsArray($tables);
         $this->assertGreaterThanOrEqual(2, count($tables));
         $this->assertContains('newcollection', $tables);
         $this->assertContains('newcollection_two', $tables);
+
+        // Ensure system collections are excluded
+        $this->assertNotContains('system.views', $tables);
     }
 
     public function testGetTableListingBySchema()
@@ -452,6 +474,58 @@ class SchemaTest extends TestCase
         $this->assertGreaterThanOrEqual(2, count($tables));
         $this->assertContains('newcollection', $tables);
         $this->assertContains('newcollection_two', $tables);
+    }
+// Protected method cannot test
+    // public function testGetAllCollections()
+    // {
+    //     // Insert test data into normal collections
+    //     DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
+    //     DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
+
+    //     // Create a view (this creates system.views)
+    //     DB::connection('mongodb')->getDatabase()->command([
+    //         'create' => 'test_view',
+    //         'viewOn' => 'newcollection',
+    //         'pipeline' => [],
+    //     ]);
+
+    //     $collections = Schema::getAllCollections();
+
+    //     $this->assertIsArray($collections);
+    //     $this->assertGreaterThanOrEqual(2, count($collections));
+
+    //     // Ensure normal collections are present
+    //     $this->assertContains('newcollection', $collections);
+    //     $this->assertContains('newcollection_two', $collections);
+
+    //     // Ensure system collections are excluded
+    //     $this->assertNotContains('system.views', $collections);
+    // }
+
+    public function testSystemCollectionsArePresentButFiltered()
+    {
+        // Create a view to trigger system.views collection
+        DB::connection('mongodb')->getDatabase()->command([
+            'create' => 'test_view',
+            'viewOn' => 'newcollection',
+            'pipeline' => [],
+        ]);
+
+        // Get all collections directly from MongoDB
+        $allCollections = DB::connection('mongodb')->getDatabase()->listCollectionNames();
+
+        // Ensure the system.views collection exists in MongoDB
+        $this->assertContains('system.views', $allCollections);
+
+        // Ensure Schema::getTables does NOT include system collections
+        $tables = Schema::getTables();
+        foreach ($tables as $table) {
+            $this->assertFalse(str_starts_with($table['name'], 'system.'));
+        }
+
+        // Ensure Schema::getTableListing does NOT include system collections
+        $tableListing = Schema::getTableListing();
+        $this->assertNotContains('system.views', $tableListing);
     }
 
     public function testGetColumns()

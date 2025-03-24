@@ -29,6 +29,7 @@ use function iterator_to_array;
 use function sort;
 use function sprintf;
 use function str_ends_with;
+use function str_starts_with;
 use function substr;
 use function usort;
 
@@ -148,11 +149,25 @@ class Builder extends \Illuminate\Database\Schema\Builder
         $db = $this->connection->getDatabase($schema);
         $collections = [];
 
-        foreach ($db->listCollectionNames() as $collectionName) {
-            $stats = $db->selectCollection($collectionName)->aggregate([
-                ['$collStats' => ['storageStats' => ['scale' => 1]]],
-                ['$project' => ['storageStats.totalSize' => 1]],
-            ])->toArray();
+        foreach ($db->listCollections() as $collectionInfo) {
+            $collectionName = $collectionInfo->getName();
+
+            // Skip system collections
+            if (str_starts_with($collectionName, 'system.')) {
+                continue;
+            }
+
+            // Skip views it doesnt suport aggregate
+            $isView = ($collectionInfo['type'] ?? '') === 'view';
+            $stats = null;
+
+            if (! $isView) {
+                // Only run aggregation if it's a normal collection
+                $stats = $db->selectCollection($collectionName)->aggregate([
+                    ['$collStats' => ['storageStats' => ['scale' => 1]]],
+                    ['$project' => ['storageStats.totalSize' => 1]],
+                ])->toArray();
+            }
 
             $collections[] = [
                 'name' => $collectionName,
@@ -161,13 +176,11 @@ class Builder extends \Illuminate\Database\Schema\Builder
                 'size' => $stats[0]?->storageStats?->totalSize ?? null,
                 'comment' => null,
                 'collation' => null,
-                'engine' => null,
+                'engine' => $isView ? 'view' : 'collection',
             ];
         }
 
-        usort($collections, function ($a, $b) {
-            return $a['name'] <=> $b['name'];
-        });
+        usort($collections, fn ($a, $b) => $a['name'] <=> $b['name']);
 
         return $collections;
     }
@@ -195,6 +208,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
 
         $collections = array_merge(...array_values($collections));
+
+        // Exclude system collections before sorting
+        $collections = array_filter($collections, fn ($name) => ! str_starts_with($name, 'system.'));
 
         sort($collections);
 
@@ -346,7 +362,14 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $collections = [];
         foreach ($this->connection->getDatabase()->listCollections() as $collection) {
-            $collections[] = $collection->getName();
+            $name = $collection->getName();
+
+            // Skip system collections
+            if (str_starts_with($name, 'system.')) {
+                continue;
+            }
+
+            $collections[] = $name;
         }
 
         return $collections;
