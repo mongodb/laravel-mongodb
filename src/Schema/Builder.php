@@ -165,6 +165,11 @@ class Builder extends \Illuminate\Database\Schema\Builder
                 continue;
             }
 
+            $stats = $db->selectCollection($collectionName)->aggregate([
+                ['$collStats' => ['storageStats' => ['scale' => 1]]],
+                ['$project' => ['storageStats.totalSize' => 1]],
+            ])->toArray();
+
             $collections[] = [
                 'name' => $collectionName,
                 'schema' => $db->getDatabaseName(),
