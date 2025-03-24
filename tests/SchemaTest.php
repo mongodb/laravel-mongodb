@@ -431,13 +431,13 @@ class SchemaTest extends TestCase
             $this->fail('Collection "newcollection" not found');
         }
     }
+
     public function testGetViews()
     {
         DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
         DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
         $dbName = DB::connection('mongodb')->getDatabaseName();
 
-      
         DB::connection('mongodb')->getDatabase()->command([
             'create' => 'test_view',
             'viewOn' => 'newcollection',
@@ -445,7 +445,7 @@ class SchemaTest extends TestCase
         ]);
 
         $tables = Schema::getViews();
-        
+
         $this->assertIsArray($tables);
         $this->assertGreaterThanOrEqual(1, count($tables));
         $found = false;
