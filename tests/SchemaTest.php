@@ -400,11 +400,7 @@ class SchemaTest extends TestCase
         $dbName = DB::connection('mongodb')->getDatabaseName();
 
         // Create a view (this creates system.views)
-        DB::connection('mongodb')->getDatabase()->command([
-            'create' => 'test_view',
-            'viewOn' => 'newcollection',
-            'pipeline' => [],
-        ]);
+        DB::connection('mongodb')->getDatabase()->createCollection('test_view', ['viewOn' => 'newcollection']);
 
         $tables = Schema::getTables();
         $this->assertIsArray($tables);
@@ -438,11 +434,7 @@ class SchemaTest extends TestCase
         DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
         $dbName = DB::connection('mongodb')->getDatabaseName();
 
-        DB::connection('mongodb')->getDatabase()->command([
-            'create' => 'test_view',
-            'viewOn' => 'newcollection',
-            'pipeline' => [],
-        ]);
+        DB::connection('mongodb')->getDatabase()->createCollection('test_view', ['viewOn' => 'newcollection']);
 
         $tables = Schema::getViews();
 
@@ -476,11 +468,7 @@ class SchemaTest extends TestCase
         DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
 
          // Create a view (this creates system.views)
-        DB::connection('mongodb')->getDatabase()->command([
-            'create' => 'test_view',
-            'viewOn' => 'newcollection',
-            'pipeline' => [],
-        ]);
+        DB::connection('mongodb')->getDatabase()->createCollection('test_view', ['viewOn' => 'newcollection']);
 
         $tables = Schema::getTableListing();
 
@@ -517,11 +505,7 @@ class SchemaTest extends TestCase
     public function testSystemCollectionsArePresentButFiltered()
     {
         // Create a view to trigger system.views collection
-        DB::connection('mongodb')->getDatabase()->command([
-            'create' => 'test_view',
-            'viewOn' => 'newcollection',
-            'pipeline' => [],
-        ]);
+        DB::connection('mongodb')->getDatabase()->createCollection('test_view', ['viewOn' => 'newcollection']);
 
         // Get all collections directly from MongoDB
         $allCollections = DB::connection('mongodb')->getDatabase()->listCollectionNames();
