@@ -475,32 +475,6 @@ class SchemaTest extends TestCase
         $this->assertContains('newcollection', $tables);
         $this->assertContains('newcollection_two', $tables);
     }
-// Protected method cannot test
-    // public function testGetAllCollections()
-    // {
-    //     // Insert test data into normal collections
-    //     DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
-    //     DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
-
-    //     // Create a view (this creates system.views)
-    //     DB::connection('mongodb')->getDatabase()->command([
-    //         'create' => 'test_view',
-    //         'viewOn' => 'newcollection',
-    //         'pipeline' => [],
-    //     ]);
-
-    //     $collections = Schema::getAllCollections();
-
-    //     $this->assertIsArray($collections);
-    //     $this->assertGreaterThanOrEqual(2, count($collections));
-
-    //     // Ensure normal collections are present
-    //     $this->assertContains('newcollection', $collections);
-    //     $this->assertContains('newcollection_two', $collections);
-
-    //     // Ensure system collections are excluded
-    //     $this->assertNotContains('system.views', $collections);
-    // }
 
     public function testSystemCollectionsArePresentButFiltered()
     {

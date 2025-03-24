@@ -3,7 +3,7 @@ services:
         tty: true
         build: .
         working_dir: /var/www/laravel-mongodb
-        command: "bash -c 'composer install && composer run test'"
+        command: "bash -c 'composer install'"
         environment:
             MONGODB_URI: 'mongodb://mongodb/'
         volumes:
