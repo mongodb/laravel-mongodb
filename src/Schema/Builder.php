@@ -158,10 +158,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
             }
 
             // Skip views it doesnt suport aggregate
-            $isView = $collectionInfo->getType() === 'view';
-            $stats = null;
-
-            if ($isView) {
+            if ($collectionInfo->getType() === 'view') {
                 continue;
             }
 
@@ -200,11 +197,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
                 continue;
             }
 
-            // Skip views it doesnt suport aggregate
-            $isNotView = $collectionInfo->getType() !== 'view';
-            $stats = null;
-
-            if ($isNotView) {
+            // Skip normal type collection
+            if ($collectionInfo->getType() !== 'view') {
                 continue;
             }
 
