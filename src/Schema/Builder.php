@@ -122,13 +122,18 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $db = $this->connection->getMongoDB();
         $collections = [];
-
+    
         foreach ($db->listCollectionNames() as $collectionName) {
+            // Skip system collections
+            if (str_starts_with($collectionName, 'system.')) {
+                continue;
+            }
+    
             $stats = $db->selectCollection($collectionName)->aggregate([
                 ['$collStats' => ['storageStats' => ['scale' => 1]]],
                 ['$project' => ['storageStats.totalSize' => 1]],
             ])->toArray();
-
+    
             $collections[] = [
                 'name' => $collectionName,
                 'schema' => null,
@@ -138,20 +143,24 @@ class Builder extends \Illuminate\Database\Schema\Builder
                 'engine' => null,
             ];
         }
-
+    
         usort($collections, function ($a, $b) {
             return $a['name'] <=> $b['name'];
         });
-
+    
         return $collections;
     }
-
+    
     public function getTableListing()
     {
-        $collections = iterator_to_array($this->connection->getMongoDB()->listCollectionNames());
-
+        $collections = array_filter(
+            iterator_to_array($this->connection->getMongoDB()->listCollectionNames()),
+            // Skip system collections
+            fn($name) => !str_starts_with($name, 'system.')
+        );
+    
         sort($collections);
-
+    
         return $collections;
     }
 
