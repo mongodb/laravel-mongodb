@@ -396,6 +396,7 @@ class SchemaTest extends TestCase
     {
         DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
         DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
+        DB::connection('mongodb')->getDatabase()->createCollection('test_view', ['viewOn' => 'newcollection']);
         $dbName = DB::connection('mongodb')->getDatabaseName();
 
         $tables = Schema::getTables();
@@ -407,6 +408,9 @@ class SchemaTest extends TestCase
             $this->assertArrayHasKey('size', $table);
             $this->assertArrayHasKey('schema', $table);
             $this->assertArrayHasKey('schema_qualified_name', $table);
+
+             // Ensure "test_view" is not in the tables list
+            $this->assertNotEquals('test_view', $table['name'], 'Standard views should not be included in the result of getTables.');
 
             if ($table['name'] === 'newcollection') {
                 $this->assertEquals(8192, $table['size']);
@@ -439,6 +443,9 @@ class SchemaTest extends TestCase
             $this->assertArrayHasKey('size', $table);
             $this->assertArrayHasKey('schema', $table);
             $this->assertArrayHasKey('schema_qualified_name', $table);
+
+            // Ensure "normal collections" are not in the views list
+            $this->assertNotEquals('newcollection', $table['name'], 'Normal collections should not be included in the result of getViews.');
 
             if ($table['name'] === 'test_view') {
                 $this->assertEquals($dbName, $table['schema']);
