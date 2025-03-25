@@ -17,7 +17,6 @@ use function assert;
 use function collect;
 use function count;
 use function sprintf;
-use function str_starts_with;
 
 class SchemaTest extends TestCase
 {
@@ -399,9 +398,6 @@ class SchemaTest extends TestCase
         DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
         $dbName = DB::connection('mongodb')->getDatabaseName();
 
-        // Create a view (this creates system.views)
-        DB::connection('mongodb')->getDatabase()->createCollection('test_view', ['viewOn' => 'newcollection']);
-
         $tables = Schema::getTables();
         $this->assertIsArray($tables);
         $this->assertGreaterThanOrEqual(2, count($tables));
@@ -418,9 +414,6 @@ class SchemaTest extends TestCase
                 $this->assertEquals($dbName . '.newcollection', $table['schema_qualified_name']);
                 $found = true;
             }
-
-            // Ensure system collections are excluded
-            $this->assertStringStartsNotWith($table['name'], 'system.');
         }
 
         if (! $found) {
@@ -452,9 +445,6 @@ class SchemaTest extends TestCase
                 $this->assertEquals($dbName . '.test_view', $table['schema_qualified_name']);
                 $found = true;
             }
-
-            // Ensure system collections are excluded
-            $this->assertFalse(str_starts_with($table['name'], 'system.'));
         }
 
         if (! $found) {
@@ -467,18 +457,12 @@ class SchemaTest extends TestCase
         DB::connection('mongodb')->table('newcollection')->insert(['test' => 'value']);
         DB::connection('mongodb')->table('newcollection_two')->insert(['test' => 'value']);
 
-         // Create a view (this creates system.views)
-        DB::connection('mongodb')->getDatabase()->createCollection('test_view', ['viewOn' => 'newcollection']);
-
         $tables = Schema::getTableListing();
 
         $this->assertIsArray($tables);
         $this->assertGreaterThanOrEqual(2, count($tables));
         $this->assertContains('newcollection', $tables);
         $this->assertContains('newcollection_two', $tables);
-
-        // Ensure system collections are excluded
-        $this->assertNotContains('system.views', $tables);
     }
 
     public function testGetTableListingBySchema()
@@ -500,28 +484,6 @@ class SchemaTest extends TestCase
         $this->assertGreaterThanOrEqual(2, count($tables));
         $this->assertContains('newcollection', $tables);
         $this->assertContains('newcollection_two', $tables);
-    }
-
-    public function testSystemCollectionsArePresentButFiltered()
-    {
-        // Create a view to trigger system.views collection
-        DB::connection('mongodb')->getDatabase()->createCollection('test_view', ['viewOn' => 'newcollection']);
-
-        // Get all collections directly from MongoDB
-        $allCollections = DB::connection('mongodb')->getDatabase()->listCollectionNames();
-
-        // Ensure the system.views collection exists in MongoDB
-        $this->assertContains('system.views', $allCollections);
-
-        // Ensure Schema::getTables does NOT include system collections
-        $tables = Schema::getTables();
-        foreach ($tables as $table) {
-            $this->assertStringStartsNotWith($table['name'], 'system.');
-        }
-
-        // Ensure Schema::getTableListing does NOT include system collections
-        $tableListing = Schema::getTableListing();
-        $this->assertNotContains('system.views', $tableListing);
     }
 
     public function testGetColumns()

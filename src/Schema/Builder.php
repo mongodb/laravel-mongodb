@@ -29,7 +29,6 @@ use function iterator_to_array;
 use function sort;
 use function sprintf;
 use function str_ends_with;
-use function str_starts_with;
 use function substr;
 use function usort;
 
@@ -135,12 +134,18 @@ class Builder extends \Illuminate\Database\Schema\Builder
         $blueprint->drop();
     }
 
-    /** @inheritdoc */
+/**
+ * @inheritdoc
+ *
+ * Drops the entire database instead of deleting each collection individually.
+ *
+ * In MongoDB, dropping the whole database is much faster than dropping collections
+ * one by one. The database will be automatically recreated when a new connection
+ * writes to it.
+ */
     public function dropAllTables()
     {
-        foreach ($this->getAllCollections() as $collection) {
-            $this->drop($collection);
-        }
+        $this->connection->getDatabase()->drop();
     }
 
     /** @param  string|null $schema Database name */
@@ -231,10 +236,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
 
         $collections = array_merge(...array_values($collections));
-
-        // Exclude system collections before sorting
-        $collections = array_filter($collections, fn ($name) => ! str_starts_with($name, 'system.'));
-
         sort($collections);
 
         return $collections;
@@ -385,14 +386,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $collections = [];
         foreach ($this->connection->getDatabase()->listCollections() as $collection) {
-            $name = $collection->getName();
-
-            // Skip system collections
-            if (str_starts_with($name, 'system.')) {
-                continue;
-            }
-
-            $collections[] = $name;
+            $collections[] = $collection->getName();
         }
 
         return $collections;
