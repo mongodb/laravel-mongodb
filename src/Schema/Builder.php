@@ -152,11 +152,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
         foreach ($db->listCollections() as $collectionInfo) {
             $collectionName = $collectionInfo->getName();
 
-            // Skip system collections
-            if (str_starts_with($collectionName, 'system.')) {
-                continue;
-            }
-
             // Skip views it doesnt suport aggregate
             if ($collectionInfo->getType() === 'view') {
                 continue;
@@ -191,11 +186,6 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
         foreach ($db->listCollections() as $collectionInfo) {
             $collectionName = $collectionInfo->getName();
-
-            // Skip system collections
-            if (str_starts_with($collectionName, 'system.')) {
-                continue;
-            }
 
             // Skip normal type collection
             if ($collectionInfo->getType() !== 'view') {

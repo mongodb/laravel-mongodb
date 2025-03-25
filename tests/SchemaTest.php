@@ -420,7 +420,7 @@ class SchemaTest extends TestCase
             }
 
             // Ensure system collections are excluded
-            $this->assertFalse(str_starts_with($table['name'], 'system.'));
+            $this->assertStringStartsNotWith($table['name'], 'system.');
         }
 
         if (! $found) {
@@ -516,7 +516,7 @@ class SchemaTest extends TestCase
         // Ensure Schema::getTables does NOT include system collections
         $tables = Schema::getTables();
         foreach ($tables as $table) {
-            $this->assertFalse(str_starts_with($table['name'], 'system.'));
+            $this->assertStringStartsNotWith($table['name'], 'system.');
         }
 
         // Ensure Schema::getTableListing does NOT include system collections
