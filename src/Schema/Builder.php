@@ -152,7 +152,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         foreach ($db->listCollections() as $collectionInfo) {
             $collectionName = $collectionInfo->getName();
 
-            // Skip views it doesnt suport aggregate
+            // Skip views, which don't support aggregate
             if ($collectionInfo->getType() === 'view') {
                 continue;
             }
