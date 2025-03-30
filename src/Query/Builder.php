@@ -783,13 +783,6 @@ class Builder extends BaseBuilder
             unset($values[$key]);
         }
 
-        // Since "id" is an alias for "_id", we prevent updating it
-        foreach ($values as $fields) {
-            if (array_key_exists('id', $fields)) {
-                throw new InvalidArgumentException('Cannot update "id" field.');
-            }
-        }
-
         return $this->performUpdate($values, $options);
     }
 
