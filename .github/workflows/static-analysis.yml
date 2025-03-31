@@ -13,10 +13,12 @@ on:
 env:
   PHP_VERSION: "8.2"
   DRIVER_VERSION: "stable"
+  MONGODB_EXT_V1: mongodb-1.21.0
+  MONGODB_EXT_V2: mongodb-mongodb/mongo-php-driver@v2.x
 
 jobs:
   phpstan:
-    name: "PHP ${{ matrix.php }} driver ${{ matrix.driver }}"
+    name: "PHP/${{ matrix.php }} Driver/${{ matrix.driver }}"
     runs-on: "ubuntu-22.04"
     continue-on-error: true
     strategy:
@@ -27,10 +29,8 @@ jobs:
           - '8.3'
           - '8.4'
         driver:
-          - "1.21.0"
-        include:
-          - php: '8.4'
-            driver: 'mongodb/mongo-php-driver@v2.x'
+          - 1
+          - 2
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -47,14 +47,14 @@ jobs:
         uses: shivammathur/cache-extensions@v1
         with:
           php-version: ${{ matrix.php }}
-          extensions: "mongodb-${{ matrix.driver }}"
+          extensions: ${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
           key: "extcache-v1"
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: "curl,mbstring,mongodb-${{ matrix.driver }}"
+          extensions: "curl,mbstring,${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}"
           tools: composer:v2
           coverage: none
 

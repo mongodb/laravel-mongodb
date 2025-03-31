@@ -5,7 +5,7 @@ on:
   pull_request:
 
 env:
-  PHP_VERSION: "8.2"
+  PHP_VERSION: "8.4"
   DRIVER_VERSION: "stable"
 
 jobs:

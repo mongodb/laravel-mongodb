@@ -4,11 +4,15 @@ on:
     push:
     pull_request:
 
+env:
+  MONGODB_EXT_V1: mongodb-1.21.0
+  MONGODB_EXT_V2: mongodb-mongodb/mongo-php-driver@v2.x
+
 jobs:
     build:
         runs-on: "${{ matrix.os }}"
 
-        name: "PHP ${{ matrix.php }} Laravel ${{ matrix.laravel }} Atlas"
+        name: "PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }}"
 
         strategy:
             matrix:
@@ -21,6 +25,13 @@ jobs:
                 laravel:
                     - "11.*"
                     - "12.*"
+                driver:
+                  - 1
+                include:
+                    -   php: "8.4"
+                        laravel: "12.*"
+                        os: "ubuntu-latest"
+                        driver: 2
 
         steps:
             -   uses: "actions/checkout@v4"
@@ -39,11 +50,19 @@ jobs:
                 run: |
                     docker exec --tty mongodb mongosh --eval "db.runCommand({ serverStatus: 1 })"
 
+            -   name: Setup cache environment
+                id: extcache
+                uses: shivammathur/cache-extensions@v1
+                with:
+                    php-version: ${{ matrix.php }}
+                    extensions: ${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
+                    key: "extcache-v1"
+
             -   name: "Installing php"
                 uses: "shivammathur/setup-php@v2"
                 with:
                     php-version: ${{ matrix.php }}
-                    extensions: "curl,mbstring,xdebug"
+                    extensions: "curl,mbstring,xdebug,${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}"
                     coverage: "xdebug"
                     tools: "composer"
 

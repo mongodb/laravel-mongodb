@@ -4,11 +4,15 @@ on:
     push:
     pull_request:
 
+env:
+  MONGODB_EXT_V1: mongodb-1.21.0
+  MONGODB_EXT_V2: mongodb-mongodb/mongo-php-driver@v2.x
+
 jobs:
     build:
         runs-on: "${{ matrix.os }}"
 
-        name: "PHP ${{ matrix.php }} ext ${{ matrix.driver }} Laravel ${{ matrix.laravel }} MongoDB ${{ matrix.mongodb }} ${{ matrix.mode }}"
+        name: "PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }} Server/${{ matrix.mongodb }} ${{ matrix.mode }}"
 
         strategy:
             matrix:
@@ -30,19 +34,20 @@ jobs:
                     - "11.*"
                     - "12.*"
                 driver:
-                    - "1.21.0"
+                    - 1
                 include:
                     - php: "8.1"
                       laravel: "10.*"
                       mongodb: "5.0"
                       mode: "low-deps"
                       os: "ubuntu-latest"
-                      driver: "1.21.0"
+                      driver: 1.x
+                      driver_version: "1.21.0"
                     - php: "8.4"
                       laravel: "12.*"
                       mongodb: "8.0"
                       os: "ubuntu-latest"
-                      driver: "mongodb/mongo-php-driver@v2.x"
+                      driver: 2
                 exclude:
                     - php: "8.1"
                       laravel: "11.*"
@@ -71,15 +76,15 @@ jobs:
                 id: extcache
                 uses: shivammathur/cache-extensions@v1
                 with:
-                  php-version: ${{ matrix.php }}
-                  extensions: "mongodb-${{ matrix.driver }}"
-                  key: "extcache-v1"
+                    php-version: ${{ matrix.php }}
+                    extensions: ${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
+                    key: "extcache-v1"
 
             -   name: "Installing php"
                 uses: "shivammathur/setup-php@v2"
                 with:
                     php-version: ${{ matrix.php }}
-                    extensions: "curl,mbstring,xdebug,mongodb-${{ matrix.driver }}"
+                    extensions: "curl,mbstring,xdebug,${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}"
                     coverage: "xdebug"
                     tools: "composer"
 
