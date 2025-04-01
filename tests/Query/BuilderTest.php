@@ -12,7 +12,6 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
 use LogicException;
-use Mockery as m;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\ReadPreference;
@@ -39,7 +38,7 @@ class BuilderTest extends TestCase
             $this->markTestSkipped(sprintf('Method "%s::%s()" does not exist.', Builder::class, $requiredMethod));
         }
 
-        $builder = $build(self::getBuilder());
+        $builder = $build($this->getBuilder());
         $this->assertInstanceOf(Builder::class, $builder);
         $mql = $builder->toMql();
 
@@ -1447,7 +1446,7 @@ class BuilderTest extends TestCase
     #[DataProvider('provideExceptions')]
     public function testException($class, $message, Closure $build): void
     {
-        $builder = self::getBuilder();
+        $builder = $this->getBuilder();
 
         $this->expectException($class);
         $this->expectExceptionMessage($message);
@@ -1545,7 +1544,7 @@ class BuilderTest extends TestCase
     #[DataProvider('getEloquentMethodsNotSupported')]
     public function testEloquentMethodsNotSupported(Closure $callback)
     {
-        $builder = self::getBuilder();
+        $builder = $this->getBuilder();
 
         $this->expectException(BadMethodCallException::class);
         $this->expectExceptionMessage('This method is not supported by MongoDB');
@@ -1600,12 +1599,38 @@ class BuilderTest extends TestCase
         yield 'orWhereIntegerNotInRaw' => [fn (Builder $builder) => $builder->orWhereIntegerNotInRaw('id', ['1a', 2])];
     }
 
-    private static function getBuilder(): Builder
+    public function testRenameEmbeddedIdFieldCanBeDisabled()
     {
-        $connection = m::mock(Connection::class);
-        $processor  = m::mock(Processor::class);
-        $connection->shouldReceive('getSession')->andReturn(null);
-        $connection->shouldReceive('getQueryGrammar')->andReturn(new Grammar($connection));
+        $builder = $this->getBuilder(false);
+        $this->assertFalse($builder->getConnection()->getRenameEmbeddedIdField());
+
+        $mql = $builder
+            ->where('id', '=', 10)
+            ->where('nested.id', '=', 20)
+            ->where('embed', '=', ['id' => 30])
+            ->toMql();
+
+        $this->assertEquals([
+            'find' => [
+                [
+                    '$and' => [
+                        ['_id' => 10],
+                        ['nested.id' => 20],
+                        ['embed' => ['id' => 30]],
+                    ],
+                ],
+                ['typeMap' => ['root' => 'object', 'document' => 'array']],
+            ],
+        ], $mql);
+    }
+
+    private function getBuilder(bool $renameEmbeddedIdField = true): Builder
+    {
+        $connection = $this->createStub(Connection::class);
+        $connection->method('getRenameEmbeddedIdField')->willReturn($renameEmbeddedIdField);
+        $processor  = $this->createStub(Processor::class);
+        $connection->method('getSession')->willReturn(null);
+        $connection->method('getQueryGrammar')->willReturn(new Grammar($connection));
 
         return new Builder($connection, null, $processor);
     }

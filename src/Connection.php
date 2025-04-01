@@ -53,6 +53,9 @@ class Connection extends BaseConnection
 
     private ?CommandSubscriber $commandSubscriber = null;
 
+    /** @var bool Whether to rename the rename "id" into "_id" for embedded documents. */
+    private bool $renameEmbeddedIdField = true;
+
     /**
      * Create a new database connection instance.
      */
@@ -393,6 +396,18 @@ class Connection extends BaseConnection
     public function __call($method, $parameters)
     {
         return $this->db->$method(...$parameters);
+    }
+
+    /** Set whether to rename "id" field into "_id" for embedded documents. */
+    public function setRenameEmbeddedIdField(bool $rename): void
+    {
+        $this->renameEmbeddedIdField = $rename;
+    }
+
+    /** Get whether to rename "id" field into "_id" for embedded documents. */
+    public function getRenameEmbeddedIdField(): bool
+    {
+        return $this->renameEmbeddedIdField;
     }
 
     /**
