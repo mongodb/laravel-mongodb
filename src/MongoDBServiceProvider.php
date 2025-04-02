@@ -23,8 +23,8 @@ use MongoDB\Laravel\Cache\MongoStore;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Queue\MongoConnector;
 use MongoDB\Laravel\Scout\ScoutEngine;
+use MongoDB\Laravel\Session\MongoDbSessionHandler;
 use RuntimeException;
-use Symfony\Component\HttpFoundation\Session\Storage\Handler\MongoDbSessionHandler;
 
 use function assert;
 use function class_exists;
@@ -67,12 +67,10 @@ class MongoDBServiceProvider extends ServiceProvider
                 assert($connection instanceof Connection, new InvalidArgumentException(sprintf('The database connection "%s" used for the session does not use the "mongodb" driver.', $connectionName)));
 
                 return new MongoDbSessionHandler(
-                    $connection->getClient(),
-                    $app->config->get('session.options', []) + [
-                        'database' => $connection->getDatabaseName(),
-                        'collection' => $app->config->get('session.table') ?: 'sessions',
-                        'ttl' => $app->config->get('session.lifetime'),
-                    ],
+                    $connection,
+                    $app->config->get('session.table', 'sessions'),
+                    $app->config->get('session.lifetime'),
+                    $app,
                 );
             });
         });
