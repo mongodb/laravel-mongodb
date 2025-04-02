@@ -84,7 +84,7 @@ use function substr;
 use function trait_exists;
 use function var_export;
 
-/** @method Connection getConnection() */
+/** @property Connection $connection */
 class Builder extends BaseBuilder
 {
     private const REGEX_DELIMITERS = ['/', '#', '~'];
@@ -1770,7 +1770,7 @@ class Builder extends BaseBuilder
 
     private function aliasIdForQuery(array $values, bool $root = true): array
     {
-        if (array_key_exists('id', $values) && ($root || $this->getConnection()->getRenameEmbeddedIdField())) {
+        if (array_key_exists('id', $values) && ($root || $this->connection->getRenameEmbeddedIdField())) {
             if (array_key_exists('_id', $values) && $values['id'] !== $values['_id']) {
                 throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
             }
@@ -1797,7 +1797,7 @@ class Builder extends BaseBuilder
             }
 
             // ".id" subfield are alias for "._id"
-            if (str_ends_with($key, '.id') && ($root || $this->getConnection()->getRenameEmbeddedIdField())) {
+            if (str_ends_with($key, '.id') && ($root || $this->connection->getRenameEmbeddedIdField())) {
                 $newkey = substr($key, 0, -3) . '._id';
                 if (array_key_exists($newkey, $values) && $value !== $values[$newkey]) {
                     throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
@@ -1833,7 +1833,7 @@ class Builder extends BaseBuilder
         if (is_array($values)) {
             if (
                 array_key_exists('_id', $values) && ! array_key_exists('id', $values)
-                && ($root || $this->getConnection()->getRenameEmbeddedIdField())
+                && ($root || $this->connection->getRenameEmbeddedIdField())
             ) {
                 $values['id'] = $values['_id'];
                 unset($values['_id']);
@@ -1852,7 +1852,7 @@ class Builder extends BaseBuilder
         if ($values instanceof stdClass) {
             if (
                 property_exists($values, '_id') && ! property_exists($values, 'id')
-                && ($root || $this->getConnection()->getRenameEmbeddedIdField())
+                && ($root || $this->connection->getRenameEmbeddedIdField())
             ) {
                 $values->id = $values->_id;
                 unset($values->_id);
