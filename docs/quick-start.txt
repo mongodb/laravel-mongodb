@@ -41,11 +41,6 @@ read and write operations on the data.
    `How to Build a Laravel + MongoDB Back End Service <https://www.mongodb.com/developer/languages/php/laravel-mongodb-tutorial/>`__
    MongoDB Developer Center tutorial.
 
-   You can learn how to set up a local Laravel development environment
-   and perform CRUD operations by viewing the
-   :mdbu-course:`Getting Started with Laravel and MongoDB </courses/getting-started-with-laravel-and-mongodb>`
-   MongoDB University Learning Byte.
-
    If you prefer to connect to MongoDB by using the {+php-library+} without
    Laravel, see `Connect to MongoDB <https://www.mongodb.com/docs/php-library/current/connect/>`__
    in the {+php-library+} documentation.
