@@ -54,7 +54,7 @@ class Connection extends BaseConnection
     private ?CommandSubscriber $commandSubscriber = null;
 
     /** @var bool Whether to rename the rename "id" into "_id" for embedded documents. */
-    private bool $renameEmbeddedIdField = true;
+    private bool $renameEmbeddedIdField;
 
     /**
      * Create a new database connection instance.
@@ -83,6 +83,8 @@ class Connection extends BaseConnection
         $this->useDefaultSchemaGrammar();
 
         $this->useDefaultQueryGrammar();
+
+        $this->renameEmbeddedIdField = $config['rename_embedded_id_field'] ?? true;
     }
 
     /**

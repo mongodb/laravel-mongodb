@@ -126,8 +126,6 @@ class Builder extends BaseBuilder
      */
     public $options = [];
 
-    private ?bool $renameEmbeddedIdField;
-
     /**
      * All of the available clause operators.
      *
