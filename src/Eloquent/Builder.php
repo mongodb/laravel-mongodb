@@ -309,7 +309,7 @@ class Builder extends EloquentBuilder
         }
 
         $column = $this->model->getUpdatedAtColumn();
-        $values = array_merge(
+        $values = array_replace(
             [$column => $this->model->freshTimestampString()],
             $values,
         );
