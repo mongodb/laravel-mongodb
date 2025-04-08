@@ -20,10 +20,12 @@ use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 use MongoDB\Driver\Cursor;
+use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber;
 use MongoDB\Driver\Monitoring\CommandSucceededEvent;
+use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\User;
@@ -334,6 +336,93 @@ class QueryBuilderTest extends TestCase
         $results = DB::table('users')->whereRaw(['age' => 20])->get();
         $this->assertCount(1, $results);
         $this->assertEquals('Jane Doe', $results[0]->name);
+    }
+
+    public function testRawResultRenameId()
+    {
+        $connection = DB::connection('mongodb');
+        self::assertInstanceOf(Connection::class, $connection);
+
+        $date = Carbon::createFromDate(1986, 12, 31)->setTime(12, 0, 0);
+        User::insert([
+            ['id' => 1, 'name' => 'Jane Doe', 'address' => ['id' => 11, 'city' => 'Ghent'], 'birthday' => $date],
+            ['id' => 2, 'name' => 'John Doe', 'address' => ['id' => 12, 'city' => 'Brussels'], 'birthday' => $date],
+        ]);
+
+        // Using raw database query, result is not altered
+        $results = $connection->table('users')->raw(fn (Collection $collection) => $collection->find([]));
+        self::assertInstanceOf(CursorInterface::class, $results);
+        $results = $results->toArray();
+        self::assertCount(2, $results);
+
+        self::assertObjectHasProperty('_id', $results[0]);
+        self::assertObjectNotHasProperty('id', $results[0]);
+        self::assertSame(1, $results[0]->_id);
+
+        self::assertObjectHasProperty('_id', $results[0]->address);
+        self::assertObjectNotHasProperty('id', $results[0]->address);
+        self::assertSame(11, $results[0]->address->_id);
+
+        self::assertInstanceOf(UTCDateTime::class, $results[0]->birthday);
+
+        // Using Eloquent query, result is transformed
+        self::assertTrue($connection->getRenameEmbeddedIdField());
+        $results = User::raw(fn (Collection $collection) => $collection->find([]));
+        self::assertInstanceOf(LaravelCollection::class, $results);
+        self::assertCount(2, $results);
+
+        $attributes = $results->first()->getAttributes();
+        self::assertArrayHasKey('id', $attributes);
+        self::assertArrayNotHasKey('_id', $attributes);
+        self::assertSame(1, $attributes['id']);
+
+        self::assertArrayHasKey('id', $attributes['address']);
+        self::assertArrayNotHasKey('_id', $attributes['address']);
+        self::assertSame(11, $attributes['address']['id']);
+
+        self::assertEquals($date, $attributes['birthday']);
+
+        // Single result
+        $result = User::raw(fn (Collection $collection) => $collection->findOne([], ['typeMap' => ['root' => 'object', 'document' => 'array']]));
+        self::assertInstanceOf(User::class, $result);
+
+        $attributes = $result->getAttributes();
+        self::assertArrayHasKey('id', $attributes);
+        self::assertArrayNotHasKey('_id', $attributes);
+        self::assertSame(1, $attributes['id']);
+
+        self::assertArrayHasKey('id', $attributes['address']);
+        self::assertArrayNotHasKey('_id', $attributes['address']);
+        self::assertSame(11, $attributes['address']['id']);
+
+        // Change the renameEmbeddedIdField option
+        $connection->setRenameEmbeddedIdField(false);
+
+        $results = User::raw(fn (Collection $collection) => $collection->find([]));
+        self::assertInstanceOf(LaravelCollection::class, $results);
+        self::assertCount(2, $results);
+
+        $attributes = $results->first()->getAttributes();
+        self::assertArrayHasKey('id', $attributes);
+        self::assertArrayNotHasKey('_id', $attributes);
+        self::assertSame(1, $attributes['id']);
+
+        self::assertArrayHasKey('_id', $attributes['address']);
+        self::assertArrayNotHasKey('id', $attributes['address']);
+        self::assertSame(11, $attributes['address']['_id']);
+
+        // Single result
+        $result = User::raw(fn (Collection $collection) => $collection->findOne([]));
+        self::assertInstanceOf(User::class, $result);
+
+        $attributes = $result->getAttributes();
+        self::assertArrayHasKey('id', $attributes);
+        self::assertArrayNotHasKey('_id', $attributes);
+        self::assertSame(1, $attributes['id']);
+
+        self::assertArrayHasKey('_id', $attributes['address']);
+        self::assertArrayNotHasKey('id', $attributes['address']);
+        self::assertSame(11, $attributes['address']['_id']);
     }
 
     public function testPush()

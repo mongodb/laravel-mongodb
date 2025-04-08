@@ -18,6 +18,7 @@ use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
 
 use function array_key_exists;
+use function array_map;
 use function array_replace;
 use function collect;
 use function is_array;
@@ -237,7 +238,7 @@ class Builder extends EloquentBuilder
         // Convert MongoCursor results to a collection of models.
         if ($results instanceof CursorInterface) {
             $results->setTypeMap(['root' => 'array', 'document' => 'array', 'array' => 'array']);
-            $results = $this->query->aliasIdForResult(iterator_to_array($results));
+            $results = array_map(fn ($document) => $this->query->aliasIdForResult($document), iterator_to_array($results));
 
             return $this->model->hydrate($results);
         }
