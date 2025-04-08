@@ -34,3 +34,10 @@ PHP Driver Compatibility
 
 To use {+odm-long+} v5.2 or later, you must install v1.21 of the
 {+php-library+} and {+php-extension+}.
+
+.. important:: {+php-extension+} v2.0 Compatibility
+
+   If you upgrade {+php-extension+} to v2.0, you must upgrade {+odm-long+} to
+   v5.2.1, as this version is the first compatible version with the v2.0
+   extension. {+odm-long+} v5.2.1 still supports v1.x versions
+   of the extension.
