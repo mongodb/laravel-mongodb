@@ -30,7 +30,7 @@ use ValueError;
 
 use function array_key_exists;
 use function array_keys;
-use function array_merge;
+use function array_replace;
 use function array_unique;
 use function array_values;
 use function class_basename;
@@ -192,7 +192,7 @@ trait DocumentModel
         // to a Carbon or CarbonImmutable instance.
         // @see Model::setAttribute()
         if ($this->hasCast($key) && $value instanceof CarbonInterface) {
-            $value->settings(array_merge($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
+            $value->settings(array_replace($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
 
             // "date" cast resets the time to 00:00:00.
             $castType = $this->getCasts()[$key];

@@ -40,6 +40,7 @@ use function array_is_list;
 use function array_key_exists;
 use function array_map;
 use function array_merge;
+use function array_replace;
 use function array_values;
 use function assert;
 use function blank;
@@ -426,7 +427,7 @@ class Builder extends BaseBuilder
 
             // Add custom query options
             if (count($this->options)) {
-                $options = array_merge($options, $this->options);
+                $options = array_replace($options, $this->options);
             }
 
             $options = $this->inheritConnectionOptions($options);
@@ -450,7 +451,7 @@ class Builder extends BaseBuilder
 
         // Add custom projections.
         if ($this->projections) {
-            $projection = array_merge($projection, $this->projections);
+            $projection = array_replace($projection, $this->projections);
         }
 
         $options = [];
@@ -484,7 +485,7 @@ class Builder extends BaseBuilder
 
         // Add custom query options
         if (count($this->options)) {
-            $options = array_merge($options, $this->options);
+            $options = array_replace($options, $this->options);
         }
 
         $options = $this->inheritConnectionOptions($options);

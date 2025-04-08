@@ -15,8 +15,8 @@ use function array_diff;
 use function array_key_exists;
 use function array_keys;
 use function array_map;
-use function array_merge;
 use function array_reduce;
+use function array_replace;
 use function array_values;
 use function collect;
 use function count;
@@ -190,7 +190,7 @@ class MorphToMany extends EloquentMorphToMany
         // Now we are finally ready to attach the new records. Note that we'll disable
         // touching until after the entire operation is complete so we don't fire a
         // ton of touch operations until we are totally done syncing the records.
-        $changes = array_merge(
+        $changes = array_replace(
             $changes,
             $this->attachNew($records, $current, false),
         );

@@ -29,7 +29,7 @@ use TypeError;
 use function array_column;
 use function array_flip;
 use function array_map;
-use function array_merge;
+use function array_replace;
 use function assert;
 use function call_user_func;
 use function class_uses_recursive;
@@ -117,7 +117,7 @@ final class ScoutEngine extends Engine
 
             unset($searchableData['_id']);
 
-            $searchableData = array_merge($searchableData, $model->scoutMetadata());
+            $searchableData = array_replace($searchableData, $model->scoutMetadata());
 
             /** Convert the __soft_deleted set by {@see Searchable::pushSoftDeleteMetadata()}
              * into a boolean for efficient storage and indexing. */

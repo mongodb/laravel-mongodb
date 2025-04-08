@@ -18,7 +18,7 @@ use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
 
 use function array_key_exists;
-use function array_merge;
+use function array_replace;
 use function collect;
 use function is_array;
 use function is_object;
@@ -270,7 +270,7 @@ class Builder extends EloquentBuilder
 
         // createOrFirst is not supported in transaction.
         if ($this->getConnection()->getSession()?->isInTransaction()) {
-            return $this->create(array_merge($attributes, $values));
+            return $this->create(array_replace($attributes, $values));
         }
 
         return $this->createOrFirst($attributes, $values);
@@ -284,7 +284,7 @@ class Builder extends EloquentBuilder
         }
 
         try {
-            return $this->create(array_merge($attributes, $values));
+            return $this->create(array_replace($attributes, $values));
         } catch (BulkWriteException $e) {
             if ($e->getCode() === self::DUPLICATE_KEY_ERROR) {
                 return $this->where($attributes)->first() ?? throw $e;

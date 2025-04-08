@@ -14,7 +14,7 @@ use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use function array_diff;
 use function array_keys;
 use function array_map;
-use function array_merge;
+use function array_replace;
 use function array_values;
 use function assert;
 use function count;
@@ -164,7 +164,7 @@ class BelongsToMany extends EloquentBelongsToMany
         // Now we are finally ready to attach the new records. Note that we'll disable
         // touching until after the entire operation is complete so we don't fire a
         // ton of touch operations until we are totally done syncing the records.
-        $changes = array_merge(
+        $changes = array_replace(
             $changes,
             $this->attachNew($records, $current, false),
         );
