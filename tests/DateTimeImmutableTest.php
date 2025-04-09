@@ -18,7 +18,6 @@ final class DateTimeImmutableTest extends TestCase
     {
         parent::setUp();
 
-        Date::use(CarbonImmutable::class);
         Anniversary::truncate();
     }
 
