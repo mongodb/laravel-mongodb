@@ -6,7 +6,6 @@ namespace MongoDB\Laravel\Tests\Eloquent;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
-use MongoDB\Laravel\Eloquent\DocumentModel;
 use MongoDB\Laravel\Tests\Models\Anniversary;
 use MongoDB\Laravel\Tests\TestCase;
 
