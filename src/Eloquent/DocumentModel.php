@@ -128,7 +128,7 @@ trait DocumentModel
      *
      * @param  mixed $value
      */
-    protected function asDateTime($value): Carbon
+    protected function asDateTime($value): DateTimeInterface
     {
         // Convert UTCDateTime instances to Carbon.
         if ($value instanceof UTCDateTime) {
