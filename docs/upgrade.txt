@@ -128,7 +128,9 @@ This library version introduces the following breaking changes:
   filter, use the ``DB::where()`` method instead of ``Model::raw()``.
 
   Starting in v5.3, you can disable automatic conversion of ``id`` to
-  ``_id`` for embedded documents. To learn more, see the :ref:`laravel-disable-id-alias` section of the Connection Options guide..
+  ``_id`` for embedded documents. To learn more, see the
+  :ref:`laravel-disable-id-alias` section of the Connection Options
+  guide.
 
 - Removes support for the ``$collection`` property. The following code shows
   how to assign a MongoDB collection to a variable in your ``User`` class in
