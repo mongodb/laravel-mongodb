@@ -6,7 +6,7 @@ on:
 
 env:
   MONGODB_EXT_V1: mongodb-1.21.0
-  MONGODB_EXT_V2: mongodb-mongodb/mongo-php-driver@v2.x
+  MONGODB_EXT_V2: stable
 
 jobs:
     build:
