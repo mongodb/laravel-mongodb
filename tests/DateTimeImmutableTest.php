@@ -20,6 +20,11 @@ final class DateTimeImmutableTest extends TestCase
         Anniversary::truncate();
     }
 
+    protected function tearDown(): void
+    {
+        Date::useDefault();
+    }
+
     public function testCanReturnCarbonImmutableObject(): void
     {
         Date::use(CarbonImmutable::class);
@@ -32,7 +37,5 @@ final class DateTimeImmutableTest extends TestCase
         $anniversary = Anniversary::sole();
         assert($anniversary instanceof Anniversary);
         self::assertInstanceOf(CarbonImmutable::class, $anniversary->anniversary);
-
-        Date::useDefault();
     }
 }
