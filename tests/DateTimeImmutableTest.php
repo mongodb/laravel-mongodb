@@ -23,6 +23,8 @@ final class DateTimeImmutableTest extends TestCase
     protected function tearDown(): void
     {
         Date::useDefault();
+
+        parent::tearDown();
     }
 
     public function testCanReturnCarbonImmutableObject(): void
