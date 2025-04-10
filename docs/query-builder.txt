@@ -195,7 +195,7 @@ the value of the ``title`` field is ``"Back to the Future"``:
    :start-after: begin query orWhere
    :end-before: end query orWhere
 
-.. note::
+.. note:: id Alias
 
    You can use the ``id`` alias in your queries to represent the
    ``_id`` field in MongoDB documents, as shown in the preceding
@@ -207,6 +207,9 @@ the value of the ``title`` field is ``"Back to the Future"``:
    
    Because of this behavior, you cannot have two separate ``id`` and ``_id``
    fields in your documents.
+
+   To learn how to disable this behavior for embedded documents, see the
+   :ref:`laravel-disable-id-alias` section of the Connection Options guide.
 
 .. _laravel-query-builder-logical-and:
 
