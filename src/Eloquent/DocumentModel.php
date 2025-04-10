@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use BackedEnum;
-use Carbon\Carbon;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use DateTimeZone;
