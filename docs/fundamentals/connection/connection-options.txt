@@ -387,3 +387,10 @@ perform either of the following actions:
    .. code-block:: php
    
       DB::connection('mongodb')->setRenameEmbeddedIdField(false);
+
+.. important::
+
+   We recommend using this option only to provide backwards
+   compatibility with existing document schemas. In new projects,
+   avoid using ``id`` for field names in embedded documents so that
+   you can maintain {+odm-long+}'s default behavior.
