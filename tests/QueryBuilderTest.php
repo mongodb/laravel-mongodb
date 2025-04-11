@@ -156,7 +156,7 @@ class QueryBuilderTest extends TestCase
         $id = DB::table('users')->insertGetId(['name' => 'John Doe']);
 
         $subscriber = new class implements CommandSubscriber {
-            public function commandStarted(CommandStartedEvent $event)
+            public function commandStarted(CommandStartedEvent $event): void
             {
                 if ($event->getCommandName() !== 'find') {
                     return;
@@ -166,11 +166,11 @@ class QueryBuilderTest extends TestCase
                 Assert::assertSame(1000, $event->getCommand()->maxTimeMS);
             }
 
-            public function commandFailed(CommandFailedEvent $event)
+            public function commandFailed(CommandFailedEvent $event): void
             {
             }
 
-            public function commandSucceeded(CommandSucceededEvent $event)
+            public function commandSucceeded(CommandSucceededEvent $event): void
             {
             }
         };

@@ -143,7 +143,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         $collections = [];
 
         foreach ($db->listCollectionNames() as $collectionName) {
-            $stats = $db->selectCollection($collectionName)->aggregate([
+            $stats = $db->getCollection($collectionName)->aggregate([
                 ['$collStats' => ['storageStats' => ['scale' => 1]]],
                 ['$project' => ['storageStats.totalSize' => 1]],
             ])->toArray();
@@ -176,7 +176,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     public function getColumns($table)
     {
-        $stats = $this->connection->getMongoDB()->selectCollection($table)->aggregate([
+        $stats = $this->connection->getMongoDB()->getCollection($table)->aggregate([
             // Sample 1,000 documents to get a representative sample of the collection
             ['$sample' => ['size' => 1_000]],
             // Convert each document to an array of fields
@@ -224,7 +224,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     public function getIndexes($table)
     {
-        $indexes = $this->connection->getMongoDB()->selectCollection($table)->listIndexes();
+        $indexes = $this->connection->getMongoDB()->getCollection($table)->listIndexes();
 
         $indexList = [];
         foreach ($indexes as $index) {

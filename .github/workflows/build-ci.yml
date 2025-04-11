@@ -4,11 +4,15 @@ on:
     push:
     pull_request:
 
+env:
+  MONGODB_EXT_V1: mongodb-1.21.0
+  MONGODB_EXT_V2: mongodb
+
 jobs:
     build:
         runs-on: "${{ matrix.os }}"
 
-        name: "PHP ${{ matrix.php }} Laravel ${{ matrix.laravel }} MongoDB ${{ matrix.mongodb }} ${{ matrix.mode }}"
+        name: "PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }} Server/${{ matrix.mongodb }} ${{ matrix.mode }}"
 
         strategy:
             matrix:
@@ -19,13 +23,18 @@ jobs:
                     - "5.0"
                     - "6.0"
                     - "7.0"
+                    - "8.0"
                 php:
                     - "8.1"
                     - "8.2"
                     - "8.3"
+                    - "8.4"
                 laravel:
                     - "10.*"
                     - "11.*"
+                driver:
+                    - 1
+                    - 2
                 include:
                     - php: "8.1"
                       laravel: "10.*"
@@ -59,11 +68,19 @@ jobs:
                     if [ "${{ matrix.mongodb }}" = "4.4" ]; then MONGOSH_BIN="mongo"; else MONGOSH_BIN="mongosh"; fi
                     docker exec --tty mongodb $MONGOSH_BIN 127.0.0.1:27017 --eval "db.runCommand({ serverStatus: 1 })"
 
+            -   name: Setup cache environment
+                id: extcache
+                uses: shivammathur/cache-extensions@v1
+                with:
+                    php-version: ${{ matrix.php }}
+                    extensions: ${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
+                    key: "extcache-v${{ matrix.driver }}"
+
             -   name: "Installing php"
                 uses: "shivammathur/setup-php@v2"
                 with:
                     php-version: ${{ matrix.php }}
-                    extensions: "curl,mbstring,xdebug"
+                    extensions: "curl,mbstring,xdebug,${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}"
                     coverage: "xdebug"
                     tools: "composer"
 
