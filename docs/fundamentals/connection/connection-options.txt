@@ -362,10 +362,28 @@ to ``_id`` for both top level and embedded fields when querying and
 storing data.
 
 When using {+odm-long+} v5.3 or later, you can disable the automatic
-conversion of ``id`` to ``_id`` for embedded documents. To do so, set
-the ``renameEmbeddedIdField`` connection setting to ``false``, as
-shown in the following code:
+conversion of ``id`` to ``_id`` for embedded documents. To do so,
+perform either of the following actions:
 
-.. code-block:: php
+1. Set the ``rename_embedded_id_field`` setting to ``false`` in your
+   ``config/database.php`` file:
 
-   DB::connection('mongodb')->setRenameEmbeddedIdField(false);
+   .. code-block:: php
+      :emphasize-lines: 6
+   
+      'connections' => [
+          'mongodb' => [
+              'dsn' => 'mongodb+srv://mongodb0.example.com/',
+              'driver' => 'mongodb',
+              'database' => 'sample_mflix',
+              'rename_embedded_id_field' => false,
+              // Other settings
+          ],
+      ],
+
+#. Pass ``false`` to the ``setRenameEmbeddedIdField()`` method in your
+   application:
+
+   .. code-block:: php
+   
+      DB::connection('mongodb')->setRenameEmbeddedIdField(false);
