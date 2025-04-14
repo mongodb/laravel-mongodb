@@ -6,7 +6,7 @@ namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use MongoDB\Driver\Cursor;
-use MongoDB\Driver\Exception\WriteException;
+use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Query\AggregationBuilder;
@@ -222,7 +222,7 @@ class Builder extends EloquentBuilder
 
         try {
             return $this->create(array_merge($attributes, $values));
-        } catch (WriteException $e) {
+        } catch (BulkWriteException $e) {
             if ($e->getCode() === self::DUPLICATE_KEY_ERROR) {
                 return $this->where($attributes)->first() ?? throw $e;
             }

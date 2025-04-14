@@ -66,7 +66,7 @@ class Connection extends BaseConnection
         $this->connection = $this->createConnection($dsn, $config, $options);
 
         // Select database
-        $this->db = $this->connection->selectDatabase($this->getDefaultDatabaseName($dsn, $config));
+        $this->db = $this->connection->getDatabase($this->getDefaultDatabaseName($dsn, $config));
 
         $this->tablePrefix = $config['prefix'] ?? '';
 
@@ -117,7 +117,7 @@ class Connection extends BaseConnection
      */
     public function getCollection($name)
     {
-        return new Collection($this, $this->db->selectCollection($this->tablePrefix . $name));
+        return new Collection($this, $this->db->getCollection($this->tablePrefix . $name));
     }
 
     /** @inheritdoc */

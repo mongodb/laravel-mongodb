@@ -108,7 +108,7 @@ class MongoDBServiceProvider extends ServiceProvider
                     }
 
                     $bucket = $connection->getMongoClient()
-                        ->selectDatabase($config['database'] ?? $connection->getDatabaseName())
+                        ->getDatabase($config['database'] ?? $connection->getDatabaseName())
                         ->selectGridFSBucket(['bucketName' => $config['bucket'] ?? 'fs', 'disableMD5' => true]);
                 }
 
