@@ -107,6 +107,6 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
 
     private function getUTCDateTime(int $additionalSeconds = 0): UTCDateTime
     {
-        return new UTCDateTime((time() + $additionalSeconds * 60) * 1000);
+        return new UTCDateTime((time() + $additionalSeconds) * 1000);
     }
 }
