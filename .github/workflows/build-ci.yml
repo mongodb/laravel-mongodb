@@ -34,20 +34,24 @@ jobs:
                     - "11.*"
                     - "12.*"
                 driver:
-                    - 1
+                    - 2
                 include:
                     - php: "8.1"
                       laravel: "10.*"
                       mongodb: "5.0"
                       mode: "low-deps"
                       os: "ubuntu-latest"
-                      driver: 1.x
-                      driver_version: "1.21.0"
+                      driver: 1
+                    - php: "8.3"
+                      laravel: "11.*"
+                      mongodb: "8.0"
+                      os: "ubuntu-latest"
+                      driver: 1
                     - php: "8.4"
                       laravel: "12.*"
                       mongodb: "8.0"
                       os: "ubuntu-latest"
-                      driver: 2
+                      driver: 1
                 exclude:
                     - php: "8.1"
                       laravel: "11.*"
