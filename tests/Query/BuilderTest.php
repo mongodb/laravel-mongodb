@@ -868,7 +868,7 @@ class BuilderTest extends TestCase
                     [],
                 ],
             ],
-            fn (Builder $builder) => $builder->whereDate('created_at', '=', new DateTimeImmutable('2018-09-30 15:00:00 +02:00')),
+            fn (Builder $builder) => $builder->whereDate('created_at', '=', new DateTimeImmutable('2018-09-30 15:00:00 +00:00')),
         ];
 
         yield 'where date !=' => [

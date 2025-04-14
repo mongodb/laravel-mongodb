@@ -13,9 +13,11 @@ namespace MongoDB\Laravel\Session;
 
 use Illuminate\Session\DatabaseSessionHandler;
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 
+use function assert;
 use function tap;
 use function time;
 
@@ -54,6 +56,7 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
                 'typeMap' => ['root' => 'bson'],
             ],
         );
+        assert($result instanceof Document);
 
         return $result ? (string) $result->payload : false;
     }
