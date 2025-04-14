@@ -1599,29 +1599,86 @@ class BuilderTest extends TestCase
         yield 'orWhereIntegerNotInRaw' => [fn (Builder $builder) => $builder->orWhereIntegerNotInRaw('id', ['1a', 2])];
     }
 
-    public function testRenameEmbeddedIdFieldCanBeDisabled()
+    #[DataProvider('provideDisableRenameEmbeddedIdField')]
+    public function testDisableRenameEmbeddedIdField(array $expected, Closure $build)
     {
         $builder = $this->getBuilder(false);
         $this->assertFalse($builder->getConnection()->getRenameEmbeddedIdField());
 
-        $mql = $builder
-            ->where('id', '=', 10)
-            ->where('nested.id', '=', 20)
-            ->where('embed', '=', ['id' => 30])
-            ->toMql();
+        $mql = $build($builder)->toMql();
 
-        $this->assertEquals([
-            'find' => [
-                [
-                    '$and' => [
-                        ['_id' => 10],
-                        ['nested.id' => 20],
-                        ['embed' => ['id' => 30]],
+        $this->assertEquals($expected, $mql);
+    }
+
+    public static function provideDisableRenameEmbeddedIdField()
+    {
+        yield 'rename embedded id field' => [
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            ['_id' => 10],
+                            ['nested.id' => 20],
+                            ['embed' => ['id' => 30]],
+                        ],
                     ],
+                    ['typeMap' => ['root' => 'object', 'document' => 'array']],
                 ],
-                ['typeMap' => ['root' => 'object', 'document' => 'array']],
             ],
-        ], $mql);
+            fn (Builder $builder) => $builder->where('id', '=', 10)
+                ->where('nested.id', '=', 20)
+                ->where('embed', '=', ['id' => 30]),
+        ];
+
+        yield 'rename root id' => [
+            ['find' => [['_id' => 10], ['typeMap' => ['root' => 'object', 'document' => 'array']]]],
+            fn (Builder $builder) => $builder->where('id', '=', 10),
+        ];
+
+        yield 'nested id not renamed' => [
+            ['find' => [['nested.id' => 20], ['typeMap' => ['root' => 'object', 'document' => 'array']]]],
+            fn (Builder $builder) => $builder->where('nested.id', '=', 20),
+        ];
+
+        yield 'embed id not renamed' => [
+            ['find' => [['embed' => ['id' => 30]], ['typeMap' => ['root' => 'object', 'document' => 'array']]]],
+            fn (Builder $builder) => $builder->where('embed', '=', ['id' => 30]),
+        ];
+
+        yield 'nested $and in $or' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            [
+                                '$and' => [
+                                    ['_id' => 10],
+                                    ['nested.id' => 20],
+                                    ['embed' => ['id' => 30]],
+                                ],
+                            ],
+                            [
+                                '$and' => [
+                                    ['_id' => 40],
+                                    ['nested.id' => 50],
+                                    ['embed' => ['id' => 60]],
+                                ],
+                            ],
+                        ],
+                    ],
+                    ['typeMap' => ['root' => 'object', 'document' => 'array']],
+                ],
+            ],
+            fn (Builder $builder) => $builder->orWhere(function (Builder $builder) {
+                return $builder->where('id', '=', 10)
+                    ->where('nested.id', '=', 20)
+                    ->where('embed', '=', ['id' => 30]);
+            })->orWhere(function (Builder $builder) {
+                return $builder->where('id', '=', 40)
+                    ->where('nested.id', '=', 50)
+                    ->where('embed', '=', ['id' => 60]);
+            }),
+        ];
     }
 
     private function getBuilder(bool $renameEmbeddedIdField = true): Builder

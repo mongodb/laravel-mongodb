@@ -1795,7 +1795,7 @@ class Builder extends BaseBuilder
             }
 
             // ".id" subfield are alias for "._id"
-            if (str_ends_with($key, '.id') && ($root || $this->connection->getRenameEmbeddedIdField())) {
+            if (str_ends_with($key, '.id') && $this->connection->getRenameEmbeddedIdField()) {
                 $newkey = substr($key, 0, -3) . '._id';
                 if (array_key_exists($newkey, $values) && $value !== $values[$newkey]) {
                     throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
