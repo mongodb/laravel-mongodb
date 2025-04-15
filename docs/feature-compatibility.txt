@@ -27,6 +27,12 @@ availability in the {+odm-short+}.
 The following sections contain tables that describe whether individual
 features are available in the {+odm-short+}.
 
+.. tip:: SQL Concepts in MongoDB 
+
+   To learn about how MongoDB represents SQL terminology, concepts, and
+   functionality, see the :manual:`SQL to MongoDB Mapping Chart
+   </reference/sql-comparison/>`.
+
 Database Features
 -----------------
 
@@ -117,10 +123,18 @@ The following Eloquent methods are not supported in the {+odm-short+}:
      - *Unsupported*
 
    * - Joins
-     - *Unsupported*
+     - Use the ``$lookup`` aggregation stage. To learn more, see the
+       :manual:`$lookup reference
+       </reference/operator/aggregation/lookup/>` in the
+       {+server-docs-name+}. {+odm-long+} provides the
+       :ref:`laravel-aggregation-builder` to perform aggregations.
 
    * - Unions
-     - *Unsupported*
+     - Use the ``$unionWith`` aggregation stage. To learn more, see the
+       :manual:`$unionWith reference
+       </reference/operator/aggregation/unionWith/>` in the
+       {+server-docs-name+}. {+odm-long+} provides the
+       :ref:`laravel-aggregation-builder` to perform aggregations.
 
    * - `Basic Where Clauses <https://laravel.com/docs/{+laravel-docs-version+}/queries#basic-where-clauses>`__
      - ✓
@@ -144,7 +158,11 @@ The following Eloquent methods are not supported in the {+odm-short+}:
      - *Unsupported*
 
    * - Grouping
-     - Partially supported. Use :ref:`Aggregations <laravel-query-builder-aggregations>`.
+     - Use the ``$group`` aggregation stage. To learn more, see the
+       :manual:`$group reference
+       </reference/operator/aggregation/group/>` in the
+       {+server-docs-name+}. {+odm-long+} provides the
+       :ref:`laravel-aggregation-builder` to perform aggregations.
 
    * - Limit and Offset
      - ✓
