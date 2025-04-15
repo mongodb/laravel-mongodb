@@ -78,41 +78,57 @@ trait ManagesTransactions
     }
 
     /**
-     * Static transaction function realize the with_transaction functionality provided by MongoDB.
-     *
-     * @param  int $attempts
+     * @param Closure $callback
+     * @param $attempts
+     * @param Closure|null $onFailure
+     * @return mixed
+     * @throws Throwable
      */
-    public function transaction(Closure $callback, $attempts = 1, array $options = []): mixed
+    public function transaction(Closure $callback, $attempts = 1, ?Closure $onFailure = null): mixed
     {
-        $attemptsLeft   = $attempts;
-        $callbackResult = null;
-        $throwable      = null;
 
-        $callbackFunction = function (Session $session) use ($callback, &$attemptsLeft, &$callbackResult, &$throwable) {
-            $attemptsLeft--;
-
-            if ($attemptsLeft < 0) {
-                $session->abortTransaction();
-
-                return;
-            }
-
-            // Catch, store, and re-throw any exception thrown during execution
-            // of the callable. The last exception is re-thrown if the transaction
-            // was aborted because the number of callback attempts has been exceeded.
-            try {
-                $callbackResult = $callback($this);
-            } catch (Throwable $throwable) {
-                throw $throwable;
-            }
-        };
-
-        with_transaction($this->getSessionOrCreate(), $callbackFunction, $options);
-
-        if ($attemptsLeft < 0 && $throwable) {
-            throw $throwable;
+        if ($attempts <= 0) {
+            throw new \InvalidArgumentException('Attempts must be at least 1');
         }
 
-        return $callbackResult;
+        $attemptsLeft = $attempts;
+        $lastException = null;
+
+        while ($attemptsLeft--) {
+            $this->session = $this->getMongoClient()->startSession();
+
+            try {
+                $this->session->startTransaction();
+                $result = $callback();
+                $this->session->commitTransaction();
+
+                return $result;
+            } catch (\Throwable $e) {
+                if ($this->session->isInTransaction()) {
+                    $this->session->abortTransaction();
+                }
+
+                $lastException = $e;
+
+                if ($e instanceof RuntimeException && $attemptsLeft > 0) {
+                    continue;
+                }
+
+                if ($onFailure) {
+                    return $onFailure($e);
+                }
+
+                throw $e;
+            } finally {
+                $this->session->endSession();
+                $this->session = null;
+            }
+        }
+
+        if ($onFailure) {
+            return $onFailure($lastException);
+        }
+
+        throw $lastException;
     }
 }
