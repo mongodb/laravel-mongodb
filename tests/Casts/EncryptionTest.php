@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Casts;
+namespace MongoDB\Laravel\Tests\Casts;
 
 use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Encryption\Encrypter;

@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace MongoDB\Laravel\Tests\Eloquent;
+namespace MongoDB\Laravel\Tests;
 
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use MongoDB\Laravel\Tests\Models\Anniversary;
-use MongoDB\Laravel\Tests\TestCase;
 
 use function assert;
 

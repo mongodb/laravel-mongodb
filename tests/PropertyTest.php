@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace MongoDB\Laravel\Tests\Eloquent;
+namespace MongoDB\Laravel\Tests;
 
 use MongoDB\Laravel\Tests\Models\HiddenAnimal;
-use MongoDB\Laravel\Tests\TestCase;
 
 use function assert;
 
