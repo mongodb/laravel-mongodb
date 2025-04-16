@@ -446,6 +446,52 @@ class TransactionTest extends TestCase
         DB::rollback();
     }
 
+    public function testOnErrorCallbackIsCalled()
+    {
+        $executed = 0;
+        try {
+            DB::connection('mongodb')->transaction(function () {
+                throw new class extends \MongoDB\Driver\Exception\RuntimeException {
+                    protected $errorLabels = ['TransientTransactionError'];
+                };
+            }, 1, function () use (&$executed) {
+                $executed++;
+            });
+
+            self::fail('Expected an exception to be thrown.');
+        } catch (\MongoDB\Driver\Exception\RuntimeException) {
+        }
+
+        $this->assertSame(1, $executed);
+    }
+
+    public function testOnErrorCallbackIsCalledWithDeadlockRetry()
+    {
+        $executed = $attempts = 0;
+
+        $connection = DB::connection('mongodb');
+        self::assertInstanceOf(Connection::class, $connection);
+
+        try {
+            $connection->transaction(function () use (&$attempts) {
+                $attempts += 1;
+                throw new class extends \MongoDB\Driver\Exception\RuntimeException {
+                    protected $errorLabels = ['TransientTransactionError'];
+                };
+            }, 3, [
+                'onFailure' => function () use (&$executed) {
+                    $executed++;
+                },
+            ]);
+
+            self::fail('Expected an exception to be thrown.');
+        } catch (\MongoDB\Driver\Exception\RuntimeException) {
+        }
+
+        $this->assertSame(3, $attempts);
+        $this->assertSame(1, $executed);
+    }
+
     private function getPrimaryServerType(): int
     {
         return DB::getMongoClient()->getManager()->selectServer()->getType();
