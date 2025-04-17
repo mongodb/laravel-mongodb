@@ -53,6 +53,9 @@ jobs:
         with:
           composer-options: "--no-suggest"
 
+      - name: "Validate PSR class names"
+        run: "composer dump-autoload --optimize --strict-psr"
+
       - name: "Format the code"
         continue-on-error: true
         run: |
