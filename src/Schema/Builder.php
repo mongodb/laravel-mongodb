@@ -21,6 +21,7 @@ use function array_values;
 use function assert;
 use function count;
 use function current;
+use function explode;
 use function implode;
 use function in_array;
 use function is_array;
@@ -28,6 +29,7 @@ use function is_string;
 use function iterator_to_array;
 use function sort;
 use function sprintf;
+use function str_contains;
 use function str_ends_with;
 use function substr;
 use function trigger_error;
@@ -50,7 +52,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * Check if columns exists in the collection schema.
+     * Check if columns exist in the collection schema.
      *
      * @param string   $table
      * @param string[] $columns
@@ -246,7 +248,12 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     public function getColumns($table)
     {
-        $stats = $this->connection->getDatabase()->selectCollection($table)->aggregate([
+        $db = null;
+        if (str_contains($table, '.')) {
+            [$db, $table] = explode('.', $table, 2);
+        }
+
+        $stats = $this->connection->getDatabase($db)->selectCollection($table)->aggregate([
             // Sample 1,000 documents to get a representative sample of the collection
             ['$sample' => ['size' => 1_000]],
             // Convert each document to an array of fields

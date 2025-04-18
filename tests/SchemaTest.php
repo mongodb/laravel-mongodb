@@ -526,6 +526,11 @@ class SchemaTest extends TestCase
         // Non-existent collection
         $columns = Schema::getColumns('missing');
         $this->assertSame([], $columns);
+
+        // Qualified table name
+        $columns = Schema::getColumns(DB::getDatabaseName().'.newcollection');
+        $this->assertIsArray($columns);
+        $this->assertCount(5, $columns);
     }
 
     /** @see AtlasSearchTest::testGetIndexes() */
