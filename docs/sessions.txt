@@ -28,10 +28,13 @@ requests that the user makes.
 
 .. note:: Session Handler Implementation
 
-   Starting in v5.4, {+odm-long+} implements the dedicated
+   The v5.4 {+odm-long+} introduces the dedicated
    ``MongoDbSessionHandler`` class that extends the Laravel
-   ``DatabaseSessionHandler`` class to store session information. In
-   v5.3 and earlier versions, the session driver uses the
+   ``DatabaseSessionHandler`` class to store session information.
+   The ``mongodb`` session driver saves user IDs, IP addresses, and user
+   agents if present.
+
+   In v5.3 and earlier versions, the session driver uses the
    ``MongoDbSessionHandler`` class from the Symfony framework.
 
 To learn more about support for sessions, see `HTTP Session
