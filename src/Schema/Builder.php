@@ -30,7 +30,10 @@ use function sort;
 use function sprintf;
 use function str_ends_with;
 use function substr;
+use function trigger_error;
 use function usort;
+
+use const E_USER_DEPRECATED;
 
 /** @property Connection $connection */
 class Builder extends \Illuminate\Database\Schema\Builder
@@ -380,10 +383,14 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Get all of the collections names for the database.
      *
+     * @deprecated
+     *
      * @return array
      */
     protected function getAllCollections()
     {
+        trigger_error(sprintf('Since mongodb/laravel-mongodb:5.4, Method "%s()" is deprecated without replacement.', __METHOD__), E_USER_DEPRECATED);
+
         $collections = [];
         foreach ($this->connection->getDatabase()->listCollections() as $collection) {
             $collections[] = $collection->getName();
