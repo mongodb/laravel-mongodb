@@ -34,7 +34,7 @@ requests that the user makes.
    The ``mongodb`` session driver saves user IDs, IP addresses, and user
    agents if present.
 
-   In v5.3 and earlier versions, the session driver uses the
+   In v5.3 and earlier, the session driver uses the
    ``MongoDbSessionHandler`` class from the Symfony framework.
 
 To learn more about support for sessions, see `HTTP Session
