@@ -134,15 +134,15 @@ class Builder extends \Illuminate\Database\Schema\Builder
         $blueprint->drop();
     }
 
-/**
- * @inheritdoc
- *
- * Drops the entire database instead of deleting each collection individually.
- *
- * In MongoDB, dropping the whole database is much faster than dropping collections
- * one by one. The database will be automatically recreated when a new connection
- * writes to it.
- */
+    /**
+     * @inheritdoc
+     *
+     * Drops the entire database instead of deleting each collection individually.
+     *
+     * In MongoDB, dropping the whole database is much faster than dropping collections
+     * one by one. The database will be automatically recreated when a new connection
+     * writes to it.
+     */
     public function dropAllTables()
     {
         $this->connection->getDatabase()->drop();
