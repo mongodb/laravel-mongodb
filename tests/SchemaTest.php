@@ -408,8 +408,6 @@ class SchemaTest extends TestCase
             $this->assertArrayHasKey('size', $table);
             $this->assertArrayHasKey('schema', $table);
             $this->assertArrayHasKey('schema_qualified_name', $table);
-
-             // Ensure "test_view" is not in the tables list
             $this->assertNotEquals('test_view', $table['name'], 'Standard views should not be included in the result of getTables.');
 
             if ($table['name'] === 'newcollection') {
