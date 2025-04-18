@@ -528,7 +528,7 @@ class SchemaTest extends TestCase
         $this->assertSame([], $columns);
 
         // Qualified table name
-        $columns = Schema::getColumns(DB::getDatabaseName().'.newcollection');
+        $columns = Schema::getColumns(DB::getDatabaseName() . '.newcollection');
         $this->assertIsArray($columns);
         $this->assertCount(5, $columns);
     }

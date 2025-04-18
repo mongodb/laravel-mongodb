@@ -153,7 +153,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         $this->connection->getDatabase()->drop();
     }
 
-    /** @param  string|null $schema Database name */
+    /** @param string|null $schema Database name */
     public function getTables($schema = null)
     {
         $db = $this->connection->getDatabase($schema);
@@ -241,6 +241,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
 
         $collections = array_merge(...array_values($collections));
+
         sort($collections);
 
         return $collections;
