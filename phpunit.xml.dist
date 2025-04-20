@@ -23,6 +23,7 @@
         <env name="QUEUE_CONNECTION" value="database"/>
         <ini name="xdebug.mode" value="coverage"/>
         <ini name="memory_limit" value="-1"/>
+        <ini name="zend.assertions" value="1"/>
     </php>
 
     <source restrictDeprecations="true"
