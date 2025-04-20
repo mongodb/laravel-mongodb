@@ -17,7 +17,6 @@ use MongoDB\BSON\Document;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 
-use function assert;
 use function tap;
 use function time;
 
@@ -56,9 +55,12 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
                 'typeMap' => ['root' => 'bson'],
             ],
         );
-        assert($result instanceof Document);
 
-        return $result ? (string) $result->payload : false;
+        if ($result instanceof Document) {
+            return (string) $result->payload;
+        }
+
+        return false;
     }
 
     public function write($sessionId, $data): bool

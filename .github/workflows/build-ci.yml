@@ -118,4 +118,4 @@ jobs:
             -   name: "Run tests"
                 run: |
                   export MONGODB_URI="mongodb://127.0.0.1:27017/?replicaSet=rs"
-                  ./vendor/bin/phpunit --coverage-clover coverage.xml --exclude-group atlas-search
+                  php -d zend.assertions=1 ./vendor/bin/phpunit --coverage-clover coverage.xml --exclude-group atlas-search
