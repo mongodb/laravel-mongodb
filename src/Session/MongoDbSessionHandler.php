@@ -56,9 +56,9 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
                 'typeMap' => ['root' => 'bson'],
             ],
         );
-        assert($result instanceof Document);
 
-        return $result ? (string) $result->payload : false;
+
+        return $result?->payload ? (string) $result->payload : false;
     }
 
     public function write($sessionId, $data): bool
