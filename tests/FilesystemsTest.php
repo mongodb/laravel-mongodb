@@ -56,7 +56,7 @@ class FilesystemsTest extends TestCase
                 'driver' => 'gridfs',
                 'bucket' => static fn (Application $app) => $app['db']
                     ->connection('mongodb')
-                    ->getMongoDB()
+                    ->getDatabase()
                     ->selectGridFSBucket(),
             ],
         ];
@@ -68,7 +68,7 @@ class FilesystemsTest extends TestCase
         // Service used by "bucket-service"
         $this->app->singleton('bucket', static fn (Application $app) => $app['db']
             ->connection('mongodb')
-            ->getMongoDB()
+            ->getDatabase()
             ->selectGridFSBucket());
 
         $this->app['config']->set('filesystems.disks.' . $this->dataName(), $options);
@@ -145,6 +145,6 @@ class FilesystemsTest extends TestCase
 
     private function getBucket(): Bucket
     {
-        return DB::connection('mongodb')->getMongoDB()->selectGridFSBucket();
+        return DB::connection('mongodb')->getDatabase()->selectGridFSBucket();
     }
 }
