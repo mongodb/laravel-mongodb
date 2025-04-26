@@ -912,6 +912,12 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    public function divide($column, $amount = 1, array $extra = [], array $options = [])
+    {
+        return $this->multiply($column, 1 / $amount, $extra, $options);
+    }
+
+    /** @inheritdoc */
     public function pluck($column, $key = null)
     {
         $results = $this->get($key === null ? [$column] : [$column, $key]);
