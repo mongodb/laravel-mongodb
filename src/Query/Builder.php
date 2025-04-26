@@ -891,6 +891,27 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    public function multiply($column, $amount = 1, array $extra = [], array $options = [])
+    {
+        $query = ['$mul' => [(string) $column => $amount]];
+
+        if (! empty($extra)) {
+            $query['$set'] = $extra;
+        }
+
+        // Protect
+        $this->where(function ($query) use ($column) {
+            $query->where($column, 'exists', false);
+
+            $query->orWhereNotNull($column);
+        });
+
+        $options = $this->inheritConnectionOptions($options);
+
+        return $this->performUpdate($query, $options);
+    }
+
+    /** @inheritdoc */
     public function pluck($column, $key = null)
     {
         $results = $this->get($key === null ? [$column] : [$column, $key]);

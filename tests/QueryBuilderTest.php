@@ -1052,6 +1052,42 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(1, $user->age);
     }
 
+    public function testMultiply()
+    {
+        DB::table('users')->insert([
+            ['name' => 'John Doe', 'salary' => 3000, 'note' => 'adult'],
+            ['name' => 'Jane Doe', 'salary' => 1000, 'note' => 'minor'],
+            ['name' => 'Robert Roe', 'salary' => null],
+            ['name' => 'Mark Moe'],
+        ]);
+
+        $user = DB::table('users')->where('name', 'John Doe')->first();
+        $this->assertEquals(3000, $user->salary);
+
+        DB::table('users')->where('name', 'John Doe')->multiply('salary');
+        $user = DB::table('users')->where('name', 'John Doe')->first();
+        $this->assertEquals(3000, $user->salary);
+
+        DB::table('users')->where('name', 'John Doe')->multiply('salary', 2);
+        $user = DB::table('users')->where('name', 'John Doe')->first();
+        $this->assertEquals(6000, $user->salary);
+
+        DB::table('users')->where('name', 'Jane Doe')->multiply('salary', 10, ['note' => 'adult']);
+        $user = DB::table('users')->where('name', 'Jane Doe')->first();
+        $this->assertEquals(10000, $user->salary);
+        $this->assertEquals('adult', $user->note);
+
+        DB::table('users')->multiply('salary');
+        $user = DB::table('users')->where('name', 'John Doe')->first();
+        $this->assertEquals(6000, $user->salary);
+        $user = DB::table('users')->where('name', 'Jane Doe')->first();
+        $this->assertEquals(10000, $user->salary);
+        $user = DB::table('users')->where('name', 'Robert Roe')->first();
+        $this->assertNull($user->salary);
+        $user = DB::table('users')->where('name', 'Mark Moe')->first();
+        $this->assertEquals(0, $user->salary);
+    }
+
     public function testProjections()
     {
         DB::table('items')->insert([
