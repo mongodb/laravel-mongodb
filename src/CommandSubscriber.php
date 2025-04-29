@@ -48,6 +48,6 @@ final class CommandSubscriber implements CommandSubscriberInterface
             }
         }
 
-        $this->connection->logQuery(Document::fromPHP($command)->toCanonicalExtendedJSON(), [], $event->getDurationMicros());
+        $this->connection->logQuery(Document::fromPHP($command)->toCanonicalExtendedJSON(), [], $event->getDurationMicros() / 1000);
     }
 }
