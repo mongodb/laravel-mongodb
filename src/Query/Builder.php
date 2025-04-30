@@ -890,7 +890,13 @@ class Builder extends BaseBuilder
         return $this->incrementEach($decrement, $extra, $options);
     }
 
-    /** @inheritdoc */
+    /**
+     * Multiply a column's value by a given amount.
+     *
+     * @param  string     $column
+     * @param  float|int  $amount
+     * @return int
+     */
     public function multiply($column, $amount = 1, array $extra = [], array $options = [])
     {
         $query = ['$mul' => [(string) $column => $amount]];
@@ -911,7 +917,13 @@ class Builder extends BaseBuilder
         return $this->performUpdate($query, $options);
     }
 
-    /** @inheritdoc */
+    /**
+     * Divide a column's value by a given amount.
+     *
+     * @param  string     $column
+     * @param  float|int  $amount
+     * @return int
+     */
     public function divide($column, $amount = 1, array $extra = [], array $options = [])
     {
         return $this->multiply($column, 1 / $amount, $extra, $options);
