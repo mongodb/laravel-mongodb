@@ -15,7 +15,7 @@ use MongoDB\Laravel\Queue\MongoJob;
 use MongoDB\Laravel\Queue\MongoQueue;
 
 use function app;
-use function json_encode;
+use function json_decode;
 
 class QueueTest extends TestCase
 {
@@ -42,17 +42,16 @@ class QueueTest extends TestCase
         $job = Queue::pop('test');
         $this->assertInstanceOf(MongoJob::class, $job);
         $this->assertEquals(1, $job->isReserved());
-        $this->assertEquals(json_encode([
-            'uuid' => $uuid,
-            'displayName' => 'test',
-            'job' => 'test',
-            'maxTries' => null,
-            'maxExceptions' => null,
-            'failOnTimeout' => false,
-            'backoff' => null,
-            'timeout' => null,
-            'data' => ['action' => 'QueueJobLifeCycle'],
-        ]), $job->getRawBody());
+        $payload = json_decode($job->getRawBody(), true);
+        $this->assertEquals($uuid, $payload['uuid']);
+        $this->assertEquals('test', $payload['displayName']);
+        $this->assertEquals('test', $payload['job']);
+        $this->assertNull($payload['maxTries']);
+        $this->assertNull($payload['maxExceptions']);
+        $this->assertFalse($payload['failOnTimeout']);
+        $this->assertNull($payload['backoff']);
+        $this->assertNull($payload['timeout']);
+        $this->assertEquals(['action' => 'QueueJobLifeCycle'], $payload['data']);
 
         // Remove reserved job
         $job->delete();
