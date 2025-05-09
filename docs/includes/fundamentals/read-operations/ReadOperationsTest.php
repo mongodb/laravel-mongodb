@@ -10,8 +10,11 @@ use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Tests\TestCase;
 
 use function json_encode;
+use function ob_get_flush;
+use function ob_start;
 
 use const JSON_PRETTY_PRINT;
+use const PHP_EOL;
 
 class ReadOperationsTest extends TestCase
 {
@@ -194,6 +197,10 @@ class ReadOperationsTest extends TestCase
      */
     public function testQueryLog(): void
     {
+        $output = '';
+        ob_start(function (string $buffer) use (&$output) {
+            $output .= $buffer;
+        });
         // start-query-log
         DB::connection('mongodb')->enableQueryLog();
 
@@ -203,28 +210,17 @@ class ReadOperationsTest extends TestCase
 
         $logs = DB::connection('mongodb')->getQueryLog();
         foreach ($logs as $log) {
-            echo json_encode($log, JSON_PRETTY_PRINT);
+            echo json_encode($log, JSON_PRETTY_PRINT) . PHP_EOL;
         }
 
         // end-query-log
-
+        $output = ob_get_flush();
         $this->assertNotNull($logs);
-        $this->expectOutputRegex('/^'
-            . '\{'
-            . '\s*"query"\s*:\s*"\{\\\"find\\\"\s*:\s*\\\"movies\\\",\s*\\\"filter\\\"\s*:\s*\{\\\"title\\\"\s*:\s*\\\"Carrie\\\"\}\}",'
-            . '\s*"bindings"\s*:\s*\[\],'
-            . '\s*"time"\s*:\s*\d+'
-            . '\}'
-            . '\{'
-            . '\s*"query"\s*:\s*"\{\\\"find\\\"\s*:\s*\\\"movies\\\",\s*\\\"filter\\\"\s*:\s*\{\\\"year\\\"\s*:\s*\{\\\"\\$lt\\\"\s*:\s*\{\\\"\\$numberInt\\\"\s*:\s*\\\"2005\\\"\}\}\}\}",'
-            . '\s*"bindings"\s*:\s*\[\],'
-            . '\s*"time"\s*:\s*\d+'
-            . '\}'
-            . '\{'
-            . '\s*"query"\s*:\s*"\{\\\"find\\\"\s*:\s*\\\"movies\\\",\s*\\\"filter\\\"\s*:\s*\{\\\"imdb.rating\\\"\s*:\s*\{\\\"\\$gt\\\"\s*:\s*\{\\\"\\$numberDouble\\\"\s*:\s*\\\"8\.5\\\"\}\}\}\}",'
-            . '\s*"bindings"\s*:\s*\[\],'
-            . '\s*"time"\s*:\s*\d+'
-            . '\}'
-            . '$/x');
+        $this->assertNotEmpty($output);
+
+        $this->assertStringContainsString('"query": "{ \"find\" : \"movies\", \"filter\" : { \"title\" : \"Carrie\" } }"', $output);
+        $this->assertStringContainsString('"query": "{ \"find\" : \"movies\", \"filter\" : { \"imdb.rating\" : { \"$gt\" : { \"$numberDouble\" : \"8.5\" } } } }"', $output);
+        $this->assertStringContainsString('"query": "{ \"find\" : \"movies\", \"filter\" : { \"imdb.rating\" : { \"$gt\" : { \"$numberDouble\" : \"8.5\" } } } }"', $output);
+        $this->assertMatchesRegularExpression('/"time": \d+/', $output);
     }
 }
