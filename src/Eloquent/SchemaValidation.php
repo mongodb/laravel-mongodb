@@ -12,12 +12,21 @@ trait SchemaValidation
     protected bool $validateBeforeSave = false;
 
     /**
-     * @param bool $validateBeforeSave
      * @return $this
      */
-    public function markForValidation(bool $validateBeforeSave = true): static
+    public function withValidation(): static
     {
-        $this->validateBeforeSave = $validateBeforeSave;
+        $this->validateBeforeSave = true;
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     */
+    public function withoutValidation(): static
+    {
+        $this->validateBeforeSave = false;
 
         return $this;
     }
@@ -52,7 +61,7 @@ trait SchemaValidation
         });
 
         static::saved(function ($model) {
-            $model->validateBeforeSave = false;
+            $model->withoutValidation();
         });
     }
 }
