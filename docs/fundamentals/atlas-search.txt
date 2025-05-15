@@ -20,7 +20,7 @@ Atlas Search
 Overview
 --------
 
-In this guide, you can learn how to perform searches on your documents
+You can learn how to perform searches on your documents
 by using the Atlas Search feature. {+odm-long+} provides an API to
 perform Atlas Search queries directly with your models. This guide
 describes how to create Atlas Search indexes and provides examples of
