@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Support\Facades\Validator;
-use MongoDB\Laravel\Exception\SchemaValidationException;
+use MongoDB\Laravel\Exceptions\SchemaValidationException;
 
 trait SchemaValidation
 {
@@ -39,7 +39,7 @@ trait SchemaValidation
         $validator = Validator::make($this->attributesToArray(), $this->schemaRules());
 
         if ($validator->fails()) {
-            throw new SchemaValidationException($validator);
+            throw new SchemaValidationException($validator, $this);
         }
     }
 
