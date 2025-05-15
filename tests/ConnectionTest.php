@@ -190,6 +190,12 @@ class ConnectionTest extends TestCase
             'expectedDatabaseName' => 'tests',
             'config' => ['dsn' => 'mongodb://some-host:12345/tests'],
         ];
+
+        yield 'Database is extracted from DSN with CA path in options' => [
+            'expectedUri' => 'mongodb://some-host:12345/tests?tls=true&tlsCAFile=/path/to/ca.pem&retryWrites=false',
+            'expectedDatabaseName' => 'tests',
+            'config' => ['dsn' => 'mongodb://some-host:12345/tests?tls=true&tlsCAFile=/path/to/ca.pem&retryWrites=false'],
+        ];
     }
 
     #[DataProvider('dataConnectionConfig')]
