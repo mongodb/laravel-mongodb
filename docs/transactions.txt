@@ -62,6 +62,10 @@ Requirements and Limitations
 
 MongoDB Server and the {+odm-short+} have the following limitations:
 
+- MongoDB standalone deployments do not support transactions. To use
+  transactions, your deployment must be a multiple node replica set or
+  sharded cluster.
+
 - MongoDB does not support nested transactions. If you attempt to start a
   transaction within another one, the extension raises a ``RuntimeException``.
   To learn more about this limitation, see :manual:`Transactions and Sessions </core/transactions/#transactions-and-sessions>`
