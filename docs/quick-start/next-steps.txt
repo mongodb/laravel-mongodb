@@ -21,7 +21,11 @@ You can download the web application project by cloning the
 `laravel-quickstart <https://github.com/mongodb-university/laravel-quickstart>`__
 GitHub repository.
 
-.. tip:: Build a Full Stack Application
+.. tip:: Tutorials
+
+   Learn how to implement more CRUD functionality in a {+odm-long+}
+   application by following the :ref:`Build a Back End Service by Using
+   {+odm-long+} <laravel-tutorial-backend-service>` tutorial.
 
    Learn how to build a full stack application that uses {+odm-long+} by
    following along with the `Full Stack Instagram Clone with Laravel and

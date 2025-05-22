@@ -1,0 +1,68 @@
+.. _laravel-tutorial-backend-service:
+
+==========================================================
+Tutorial: Build a Back End Service by Using {+odm-long+}
+========================================================== 
+
+.. facet::
+   :name: genre
+   :values: tutorial
+
+.. meta::
+   :keywords: php framework, odm, code example, crud
+   :description: Learn how to set up a back end and perform CRUD operations by using Laravel MongoDB .
+
+.. contents:: On this page
+   :local:
+   :backlinks: none
+   :depth: 1
+   :class: singlecol
+
+Overview
+--------
+
+In this tutorial, you create a simple REST back end for a front-end app
+by using {+odm-long+}. The tutorial uses Laravel's built-in API routing.
+
+Prerequisites
+-------------
+
+Before you can start this tutorial, you need the following software
+installed in your development environment:
+
+- MongoDB Atlas cluster with sample data loaded. To learn how to create
+  a cluster, see the :ref:`laravel-quick-start-create-deployment` step
+  of the Quick Start guide.
+- `PHP <https://www.php.net/downloads>`__.
+- `Composer <https://getcomposer.org/doc/00-intro.md>`__.
+- A terminal app and shell. For MacOS users, use Terminal or a similar app.
+  For Windows users, use PowerShell.
+
+Steps
+-----
+
+.. procedure::
+   :style: connected
+
+   .. step:: Create a Laravel project.
+
+      First, create a Laravel project directory. Then, run the following
+      command to create a new Laravel project called ``laraproject``:
+      
+      .. code-block:: bash
+
+         composer create-project laravel/laravel laraproject
+
+   .. step:: Configure your MongoDB connection.
+
+      To check that {+odm-long+} is running in the web server,
+      add a webpage to your Laravel website. In your project,
+      navigate to ``/routes/web.php`` and add the following route:
+
+      .. code-block:: php
+
+         Route::get('/info', function () {
+             phpinfo();
+         });
+
+
