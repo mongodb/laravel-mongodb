@@ -60,20 +60,7 @@ This guide contains the following sections:
 Requirements and Limitations
 ----------------------------
 
-To perform transactions in MongoDB, you must use the following MongoDB
-version and topology:
-
-- MongoDB version 4.0 or later
-- A replica set deployment or sharded cluster
-
 MongoDB Server and the {+odm-short+} have the following limitations:
-
-- In MongoDB versions 4.2 and earlier, write operations performed within a
-  transaction must be on existing collections. In MongoDB versions 4.4 and
-  later, the server automatically creates collections as necessary when
-  you perform write operations in a transaction. To learn more about this
-  limitation, see :manual:`Create Collections and Indexes in a Transaction </core/transactions/#create-collections-and-indexes-in-a-transaction>`
-  in the {+server-docs-name+}.
 
 - MongoDB does not support nested transactions. If you attempt to start a
   transaction within another one, the extension raises a ``RuntimeException``.

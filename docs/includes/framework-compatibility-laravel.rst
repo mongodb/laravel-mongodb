@@ -8,7 +8,7 @@
      - Laravel 10.x
      - Laravel 9.x
 
-   * - 5.2 to 5.3
+   * - 5.2 to 5.4
      - ✓
      - ✓
      - ✓
