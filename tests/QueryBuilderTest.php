@@ -1064,11 +1064,11 @@ class QueryBuilderTest extends TestCase
         $user = DB::table('users')->where('name', 'John Doe')->first();
         $this->assertEquals(88000, $user->salary);
 
-        DB::table('users')->where('name', 'John Doe')->multiply('salary');
+        DB::table('users')->where('name', 'John Doe')->multiply('salary', 1);
         $user = DB::table('users')->where('name', 'John Doe')->first();
         $this->assertEquals(88000, $user->salary);
 
-        DB::table('users')->where('name', 'John Doe')->divide('salary');
+        DB::table('users')->where('name', 'John Doe')->divide('salary', 1);
         $user = DB::table('users')->where('name', 'John Doe')->first();
         $this->assertEquals(88000, $user->salary);
 
@@ -1090,7 +1090,7 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(44000, $user->salary);
         $this->assertEquals('junior', $user->note);
 
-        DB::table('users')->multiply('salary');
+        DB::table('users')->multiply('salary', 1);
         $user = DB::table('users')->where('name', 'John Doe')->first();
         $this->assertEquals(44000, $user->salary);
         $user = DB::table('users')->where('name', 'Jane Doe')->first();

@@ -897,7 +897,7 @@ class Builder extends BaseBuilder
      * @param  float|int  $amount
      * @return int
      */
-    public function multiply($column, $amount = 1, array $extra = [], array $options = [])
+    public function multiply($column, $amount, array $extra = [], array $options = [])
     {
         $query = ['$mul' => [(string) $column => $amount]];
 
@@ -924,7 +924,7 @@ class Builder extends BaseBuilder
      * @param  float|int  $amount
      * @return int
      */
-    public function divide($column, $amount = 1, array $extra = [], array $options = [])
+    public function divide($column, $amount, array $extra = [], array $options = [])
     {
         return $this->multiply($column, 1 / $amount, $extra, $options);
     }
