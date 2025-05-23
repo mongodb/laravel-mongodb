@@ -907,9 +907,9 @@ class Builder extends BaseBuilder
 
         // Protect
         $this->where(function ($query) use ($column) {
-            $query->where($column, 'exists', false);
+            $query->where($column, 'exists', true);
 
-            $query->orWhereNotNull($column);
+            $query->whereNotNull($column);
         });
 
         $options = $this->inheritConnectionOptions($options);

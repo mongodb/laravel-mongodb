@@ -1098,7 +1098,7 @@ class QueryBuilderTest extends TestCase
         $user = DB::table('users')->where('name', 'Robert Roe')->first();
         $this->assertNull($user->salary);
         $user = DB::table('users')->where('name', 'Mark Moe')->first();
-        $this->assertEquals(0, $user->salary);
+        $this->assertFalse(isset($user->salary));
     }
 
     public function testProjections()
