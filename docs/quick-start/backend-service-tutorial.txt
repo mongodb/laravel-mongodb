@@ -188,16 +188,16 @@ Steps
          
          use MongoDB\Laravel\Eloquent\Model;
          
-         class  CustomerMongoDB  extends  Model
-         {         
+         class CustomerMongoDB extends Model
+         {
              // the selected database as defined in /config/database.php
-             protected  $connection = 'mongodb';
+             protected $connection = 'mongodb';
          
              // equivalent to $table for MySQL
-             protected  $collection = 'laracoll';
+             protected $collection = 'laracoll';
          
              // defines the schema for top-level properties (optional).
-             protected  $fillable = ['guid', 'first_name', 'family_name', 'email', 'address'];
+             protected $fillable = ['guid', 'first_name', 'family_name', 'email', 'address'];
          }
 
    .. step:: Perform CRUD operations.
@@ -208,12 +208,12 @@ Steps
 
       .. code-block:: php
 
-         Route::get('/create_eloquent_mongo/', function (Request  $request) {
+         Route::get('/create_eloquent_mongo/', function (Request $request) {
              $success = CustomerMongoDB::create([
                  'guid'=> 'cust_1111',
                  'first_name'=> 'John',
                  'family_name' => 'Doe',
-                 'email' => 'j.doe@gmail.com',          
+                 'email' => 'j.doe@gmail.com',
                  'address' => '123 my street, my city, zip, state, country'
              ]);
          });
@@ -223,7 +223,7 @@ Steps
 
       .. code-block:: php
 
-         Route::get('/find_eloquent/', function (Request  $request) {
+         Route::get('/find_eloquent/', function (Request $request) {
              $customer = CustomerMongoDB::where('guid', 'cust_1111')->get();
          });
 
@@ -234,11 +234,11 @@ Steps
 
       .. code-block:: php
 
-         Route::get('/update_eloquent/', function (Request  $request) {
+         Route::get('/update_eloquent/', function (Request $request) {
              $result = CustomerMongoDB::where('guid', 'cust_1111')->update( ['first_name' => 'Jimmy'] );
          });
 
-         Route::get('/delete_eloquent/', function (Request  $request) {
+         Route::get('/delete_eloquent/', function (Request $request) {
              $result = CustomerMongoDB::where('guid', 'cust_1111')->delete();
          });
 
@@ -262,18 +262,18 @@ Steps
 
       .. code-block:: php
 
-         Route::get('/create_nested/', function (Request  $request) {
+         Route::get('/create_nested/', function (Request $request) {
              $message = "executed";
              $success = null;
 
-             $address = new  stdClass;
+             $address = new stdClass;
              $address->street = '123 my street name';
              $address->city = 'my city';
              $address->zip= '12345';
              $emails = ['j.doe@gmail.com', 'j.doe@work.com'];
 
              try {
-                 $customer = new  CustomerMongoDB();
+                 $customer = new CustomerMongoDB();
                  $customer->guid = 'cust_2222';
                  $customer->first_name = 'John';
                  $customer->family_name= 'Doe';
@@ -281,7 +281,7 @@ Steps
                  $customer->address= $address;
                  $success = $customer->save(); // save() returns 1 or 0
              }
-             catch (\Exception  $e) {
+             catch (\Exception $e) {
                  $message = $e->getMessage();
              }
              return ['msg' => $message, 'data' => $success];
@@ -321,7 +321,7 @@ Steps
       You can begin building a query from a ``collection`` object.
       Eloquent exposes the full capabilities of the underlying database
       by using "raw queries," which Laravel sends to the database
-      without any processing from the Eloquent Query Builder.  
+      without any processing from the Eloquent Query Builder.
 
       You can perform a raw native MongoDB query from the model as shown
       in the following code:
@@ -341,14 +341,14 @@ Steps
 
          $mongodbquery = ['guid' => 'cust_1111', ];
          $mongodb_native_collection = DB::connection('mongodb')->getCollection('laracoll');
-         $document = $mongodb_native_collection->findOne( $mongodbquery );  
-         $cursor = $mongodb_native_collection->find( $mongodbquery );  
+         $document = $mongodb_native_collection->findOne( $mongodbquery );
+         $cursor = $mongodb_native_collection->find( $mongodbquery );
 
       The following code demonstrates multiple ways to perform queries:
 
       .. code-block:: php
 
-         Route::get('/find_native/', function (Request  $request) {
+         Route::get('/find_native/', function (Request $request) {
              // a simple MongoDB query that looks for a customer based on the guid
              $mongodbquery = ['guid' => 'cust_2222'];
 
@@ -387,7 +387,7 @@ Steps
 
       .. code-block:: php
 
-         Route::get('/update_native/', function (Request  $request) {
+         Route::get('/update_native/', function (Request $request) {
              $mdb_collection = DB::connection('mongodb')->getCollection('laracoll');
              $match = ['guid' => 'cust_2222'];
              $update = ['$set' => ['first_name' => 'Henry', 'address.street' => '777 new street name'] ];
@@ -400,7 +400,7 @@ Steps
 
       .. code-block:: php
 
-         Route::get('/delete_native/', function (Request  $request) {
+         Route::get('/delete_native/', function (Request $request) {
              $mdb_collection = DB::connection('mongodb')->getCollection('laracoll');
              $match = ['guid' => 'cust_2222'];
              $result = $mdb_collection->deleteOne($match );
@@ -440,7 +440,7 @@ Steps
 
       .. code-block:: php
 
-         Route::get('/aggregate/', function (Request  $request) {
+         Route::get('/aggregate/', function (Request $request) {
              $mdb_collection = DB::connection('mongodb_mflix')->getCollection('movies');
          
              $stage0 = ['$unwind' => ['path' => '$genres']];
