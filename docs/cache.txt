@@ -14,7 +14,7 @@ Cache and Locks
 Configuration
 -------------
 
-To use MongoDB as a backend for `Laravel Cache and Locks <https://laravel.com/docs/{+laravel-docs-version+}/cache>`__,
+To use MongoDB as a back end for `Laravel Cache and Locks <https://laravel.com/docs/{+laravel-docs-version+}/cache>`__,
 add a store configuration by specifying the ``mongodb`` driver in ``config/cache.php``:
 
 .. code-block:: php

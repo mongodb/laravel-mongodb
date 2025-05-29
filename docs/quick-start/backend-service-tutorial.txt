@@ -10,19 +10,20 @@ Tutorial: Build a Back End Service by Using {+odm-long+}
 
 .. meta::
    :keywords: php framework, odm, code example, crud
-   :description: Learn how to set up a back end and perform CRUD operations by using Laravel MongoDB .
+   :description: Learn how to set up a back end and perform CRUD operations by using Laravel MongoDB.
 
 .. contents:: On this page
    :local:
    :backlinks: none
-   :depth: 1
+   :depth: 2
    :class: singlecol
 
 Overview
 --------
 
 In this tutorial, you create a simple REST back end for a front-end app
-by using {+odm-long+}. The tutorial uses Laravel's built-in API routing.
+by using {+odm-long+}. The tutorial uses Laravel's built-in API routing
+features.
 
 Prerequisites
 -------------
@@ -73,8 +74,10 @@ Steps
 
          php artisan serve
 
-      Navigate to http://127.0.0.1:8000/info to view the PHPinfo page.
-      Verify that the {+php-extension+} is installed.
+      After the application begins running, navigate to
+      http://127.0.0.1:8000/info to view the PHPinfo page. Scroll down
+      to or search for the **mongodb** entry to verify that
+      the {+php-extension+} is installed.
 
       Run the following command in your shell to install {+odm-long+}:
 
@@ -85,20 +88,21 @@ Steps
    .. step:: Configure your MongoDB connection.
 
       Open your project's ``config/database.php`` file and update the
-      ``connection`` array as shown in the following code:
+      ``connections`` array as shown in the following code:
 
       .. code-block:: php
 
          'connections' => [
                  'mongodb' => [
                      'driver' => 'mongodb',
-                     'dsn' => env('MONGODB_URI'),
-                     'database' => '<database name>',
+                     'dsn' => env('MONGODB_URI', '<connection string>'),
+                     'database' => 'db',
                  ],
       
-      Ensure that you set the ``MONGODB_URI`` environment variable to
+      Ensure that you either replace the connection string placeholder
+      in the preceding code or set the ``MONGODB_URI`` environment variable to
       your connection string before you run your application. To learn
-      more about locating your connection string, see
+      how to locate your connection string, see
       :ref:`laravel-quick-start-connection-string` in the Quick Start
       guide.
 
@@ -107,9 +111,10 @@ Steps
 
       .. code-block:: php
 
-         'default' => env('DB_CONNECTION', 'mongodb'),
+         'default' => 'mongodb',
 
-      The Laravel application can now connect to a MongoDB database.
+      The Laravel application can now connect to the ``db`` database in
+      your MongoDB cluster.
 
    .. step:: Create an endpoint to ping your deployment.
 
@@ -138,13 +143,13 @@ Steps
              return ['msg' => $msg];
          });
 
-      Verify that http://127.0.0.1:8000/api/ping shows the succesful
-      ping message.
+      Reload the application, then verify that
+      http://127.0.0.1:8000/api/ping shows the succesful ping message.
 
    .. step:: Create Eloquent models.
       
       Laravel is integrated with Eloquent, an ORM that abstracts the
-      database backend so that you can connect to different databases by
+      database back end so that you can connect to different databases by
       using a common interface.
 
       Eloquent provides a ``Model`` class to serve as the interface
@@ -152,9 +157,13 @@ Steps
       ``Model`` classes represent rows of tables in relational
       databases. In MongoDB, they are documents in the collection.
 
-      Your models can define fillable fields if you want to enforce a
-      document schema in your application and prevent errors such as name
-      typos.
+      .. tip::
+
+         You can define fillable fields in your Eloquent models
+         to enforce a document schema in your application and prevent
+         errors such as name typos. To learn more, see the
+         :ref:`laravel-model-mass-assignment` section of the Eloquent
+         Model Class guide.
 
       Create an Eloquent model called ``CustomerMongoDB`` by running
       the following command from the project root:
@@ -244,8 +253,8 @@ Steps
       the ``embedsMany()`` and ``embedsOne()`` methods.
 
       As shown in the preceding step, you can define top-level schema
-      attributes. However, it is more complicated when using arrays
-      and embedded documents.
+      attributes. However, it is more complicated when to define these
+      attribute if your documents include arrays and embedded documents.
 
       You can create the model's data structures in PHP. In the
       following example, the ``address`` field is an object type.
@@ -461,7 +470,7 @@ Conclusion
 
 In this tutorial, you learned how to create a back-end service by using
 Laravel and MongoDB for a front-end web application.
-This tutorial also showed why the document model leads to higher
+This tutorial also showed how you can use the document model to improve
 database efficiency and scalability. You can use the document model with the
 MongoDB Query API to create better apps with less downtime.
 
@@ -469,5 +478,5 @@ You can access the full code for this tutorial in the
 :github:`laravel-mongodb-tutorial
 </mongodb-developer/laravel-mongodb-tutorial/>` repository on GitHub.
 
-See the :ref:`laravel_fundamentals` guides to learn more about
-{+odm-long+}'s features.
+Navigate through the rest of the :ref:`laravel-docs-landing`
+documentation to learn more about {+odm-long+}'s features.

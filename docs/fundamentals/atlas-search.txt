@@ -179,7 +179,7 @@ following optional parameters to ``search()``:
    * - ``returnStoredSource``
      - ``bool``
      - Specifies whether to perform a full document lookup on the
-       backend database or return only stored source fields directly
+       back end database or return only stored source fields directly
        from Atlas Search
    
    * - ``tracking``

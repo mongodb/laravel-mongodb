@@ -1,3 +1,5 @@
+.. _laravel-docs-landing:
+
 ===============
 {+odm-long+}
 ===============
