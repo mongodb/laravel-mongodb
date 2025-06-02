@@ -964,7 +964,13 @@ class Builder extends BaseBuilder
         return $this->pluck($column, $key);
     }
 
-    /** @inheritdoc */
+    /**
+     * @param (Closure():T)|Expression|null $value
+     *
+     * @return ($value is Closure ? T : ($value is null ? Collection : Expression))
+     *
+     * @template T
+     */
     public function raw($value = null)
     {
         // Execute the closure on the mongodb collection

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
+use Closure;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use MongoDB\BSON\Document;
+use MongoDB\Builder\Expression;
 use MongoDB\Builder\Type\QueryInterface;
 use MongoDB\Builder\Type\SearchOperatorInterface;
 use MongoDB\Driver\CursorInterface;
@@ -229,7 +231,13 @@ class Builder extends EloquentBuilder
         return parent::decrement($column, $amount, $extra);
     }
 
-    /** @inheritdoc */
+    /**
+     * @param (Closure():T)|Expression|null $value
+     *
+     * @return ($value is Closure ? T : ($value is null ? Collection : Expression))
+     *
+     * @template T
+     */
     public function raw($value = null)
     {
         // Get raw results from the query builder.
