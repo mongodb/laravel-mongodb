@@ -95,14 +95,13 @@ Steps
          'connections' => [
                  'mongodb' => [
                      'driver' => 'mongodb',
-                     'dsn' => env('MONGODB_URI', '<connection string>'),
+                     'dsn' => '<connection string>',
                      'database' => 'db',
                  ],
       
-      Ensure that you either replace the connection string placeholder
-      in the preceding code or set the ``MONGODB_URI`` environment variable to
-      your connection string before you run your application. To learn
-      how to locate your connection string, see
+      Ensure that you replace the connection string placeholder
+      in the preceding code with your connection string before you run
+      your application. To learn how to locate your connection string, see
       :ref:`laravel-quick-start-connection-string` in the Quick Start
       guide.
 
@@ -218,7 +217,7 @@ Steps
              ]);
          });
 
-      After inserting the document, you can retrieve it by using the
+      After you insert the document, you can retrieve it by using the
       ``where()`` method as shown in the following code:
 
       .. code-block:: php
@@ -318,7 +317,7 @@ Steps
 
       MongoDB provides the Query API for optimized queries.
 
-      You can begin building a query from a ``collection`` object.
+      You can begin to build a query by using a ``collection`` object.
       Eloquent exposes the full capabilities of the underlying database
       by using "raw queries," which Laravel sends to the database
       without any processing from the Eloquent Query Builder.
@@ -408,7 +407,7 @@ Steps
              $result->getDeletedCount() ];
          });
 
-      To learn more about performing CRUD operations, see the
+      To learn more about how to perform CRUD operations, see the
       :ref:`laravel-fundamentals-write-ops` and
       :ref:`laravel-fundamentals-read-ops` guides.
 
@@ -461,7 +460,7 @@ Steps
    .. step:: Use indexes to optimize query performance.
 
       You can create indexes to support your queries and improve
-      performance. To learn more about creating indexes
+      performance. To learn more about how to create indexes
       programmatically, see the :ref:`laravel-eloquent-indexes` section
       of the Schema Builder guide.
 
