@@ -63,6 +63,39 @@ class SchemaTest extends TestCase
         $this->assertEquals(1024, $collection['options']['size']);
     }
 
+    public function testCreateWithSchemaValidator(): void
+    {
+        $schema = [
+            'bsonType' => 'object',
+            'required' => [ 'username' ],
+            'properties' => [
+                'username' => [
+                    'bsonType' => 'string',
+                    'description' => 'must be a string and is required',
+                ],
+            ],
+        ];
+
+        Schema::create(self::COLL_2, function (Blueprint $collection) use ($schema) {
+            $collection->string('username');
+            $collection->jsonSchema(schema: $schema, validationAction: 'warn');
+        });
+
+        $this->assertTrue(Schema::hasCollection(self::COLL_2));
+        $this->assertTrue(Schema::hasTable(self::COLL_2));
+
+        $collection = Schema::getCollection(self::COLL_2);
+        $this->assertEquals(
+            ['$jsonSchema' => $schema],
+            $collection['options']['validator'],
+        );
+
+        $this->assertEquals(
+            'warn',
+            $collection['options']['validationAction'],
+        );
+    }
+
     public function testDrop(): void
     {
         Schema::create(self::COLL_1);

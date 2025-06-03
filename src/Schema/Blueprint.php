@@ -9,6 +9,7 @@ use MongoDB\Collection;
 use MongoDB\Laravel\Connection;
 
 use function array_flip;
+use function array_merge;
 use function implode;
 use function in_array;
 use function is_array;
@@ -115,6 +116,24 @@ class Blueprint extends BaseBlueprint
         }
 
         return false;
+    }
+
+    public function jsonSchema(
+        array $schema = [],
+        ?string $validationLevel = null,
+        ?string $validationAction = null,
+    ): void {
+        $options = array_merge(
+            [
+                'validator' => [
+                    '$jsonSchema' => $schema,
+                ],
+            ],
+            $validationLevel ? ['validationLevel' => $validationLevel] : [],
+            $validationAction ? ['validationAction' => $validationAction] : [],
+        );
+
+        $this->connection->getDatabase()->modifyCollection($this->collection->getCollectionName(), $options);
     }
 
     /**
