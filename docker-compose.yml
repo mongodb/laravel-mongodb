@@ -14,7 +14,7 @@ services:
 
     mongodb:
         container_name: mongodb
-        image: mongodb/mongodb-atlas-local:latest
+        image: mongodb/mongodb-atlas-local:8
         ports:
             - "27017:27017"
         healthcheck:
