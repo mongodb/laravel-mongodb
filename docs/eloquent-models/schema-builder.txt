@@ -135,21 +135,21 @@ define a JSON schema.
 The schema is a JSON object that contains key-value pairs
 specifying the validation rules for your collection. At the top level,
 this object must include a ``$jsonSchema`` object. The ``$jsonSchema``
-object includes the following fields:
+object can include the following fields:
 
-- ``title``: Sets an optional description for the schema.
+- ``title``: Sets an optional title for the schema.
 - ``required``: Specifies a list of required fields for each document in your collection.
 - ``properties``: Sets property requirements for individual fields.
 
-For a full list of JSON schema object fields, see :manual:`JSON Schema
+To view a full list of JSON schema object fields, see :manual:`JSON Schema
 </reference/operator/query/jsonSchema/#json-schema>` in the {+server-docs-name+}.
 
 You can optionally pass the following parameters to ``jsonSchema()``:
 
 - ``validationLevel``: Sets the level of validation enforcement.
-  Accepted values are ``"strict"`` and ``"moderate"``.
+  Accepted values are ``"strict"`` (default) and ``"moderate"``.
 - ``validationAction``: Specifies the action to take when invalid
-  operations are attempted. Accepted values are ``"error"`` and
+  operations are attempted. Accepted values are ``"error"`` (default) and
   ``"warn"``.
 
 This example demonstrates how to pass a JSON schema to the
