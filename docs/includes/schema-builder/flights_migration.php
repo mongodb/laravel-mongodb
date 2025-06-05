@@ -28,7 +28,7 @@ return new class extends Migration
                     'required' => ['license_number'],
                     'properties' => [
                         'license_number' => [
-                            'bsonType' => 'integer',
+                            'bsonType' => 'int',
                             'minimum' => 1000,
                             'maximum' => 9999,
                         ],
