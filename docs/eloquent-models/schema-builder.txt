@@ -117,12 +117,12 @@ in the Laravel documentation.
 Implement Schema Validation
 ---------------------------
 
-You can use the ``jsonSchema()`` method to implement **:manual:`schema
-validation </core/schema-validation/>`** when using the following schema
+You can use the ``jsonSchema()`` method to implement :manual:`schema
+validation </core/schema-validation/>` when using the following schema
 builder methods:
 
-- ``Schema::create()``: When creating a new collection.
-- ``Schema::table()``: When updating collection properties.
+- ``Schema::create()``: When creating a new collection
+- ``Schema::table()``: When updating collection properties
 
 After you implement schema validation, the server allows you to run only
 those write operations which follow the validation rules. Use schema
@@ -166,8 +166,8 @@ contain the ``license_number`` field with an integer value between
 
 If you attempt to insert a document into the ``pilots`` collection that
 violates the schema validation rule, {+odm-long+} returns a
-:php:`mongodb-driver-exception-bulkwriteexception` because the
-validation action is set to ``"error"``.
+:php:`BulkWriteException <mongodb-driver-exception-bulkwriteexception>`
+because the validation action is set to ``"error"``.
 
 .. _laravel-eloquent-collection-exists:
 
