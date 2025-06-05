@@ -167,7 +167,7 @@ contain the ``license_number`` field with an integer value between
 If you attempt to insert a document into the ``pilots`` collection that
 violates the schema validation rule, {+odm-long+} returns a
 :php:`mongodb-driver-exception-bulkwriteexception` because the
-validation level is set to ``"error"``.
+validation action is set to ``"error"``.
 
 .. _laravel-eloquent-collection-exists:
 
