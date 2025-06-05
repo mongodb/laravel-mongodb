@@ -19,6 +19,26 @@ return new class extends Migration
             $collection->unique('mission_id', options: ['name' => 'unique_mission_id_idx']);
         });
         // end create index
+
+        // begin-json-schema
+        Schema::create('pilots', function (Blueprint $collection) {
+            $collection->jsonSchema(
+                schema: [
+                    'bsonType' => 'object',
+                    'required' => ['license_number'],
+                    'properties' => [
+                        'license_number' => [
+                            'bsonType' => 'integer',
+                            'minimum' => 1000,
+                            'maximum' => 9999,
+                            'description' => 'requires the license_number field with an int value 1000-9999',
+                        ]
+                    ]
+                ],
+                validationAction: 'error'
+            );
+        });
+        // end-json-schema
     }
 
     public function down(): void

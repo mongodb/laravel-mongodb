@@ -21,8 +21,9 @@ Overview
 --------
 
 Laravel provides a **facade** to access the schema builder class ``Schema``,
-which lets you create and modify tables. Facades are static interfaces to
-classes that make the syntax more concise and improve testability.
+which lets you create and modify tables, or collections in MongoDB.
+Facades are static interfaces to classes that make the syntax more
+concise and improve testability.
 
 The {+odm-short+} supports a subset of the index and collection management methods
 in the Laravel ``Schema`` facade.
@@ -33,16 +34,10 @@ in the Laravel documentation.
 The following sections describe the Laravel schema builder features available
 in the {+odm-short+} and show examples of how to use them:
 
-- :ref:`<laravel-eloquent-migrations>`
-- :ref:`<laravel-eloquent-collection-exists>`
-- :ref:`<laravel-eloquent-indexes>`
-
-.. note::
-
-   The {+odm-short+} supports managing indexes and collections, but
-   excludes support for MongoDB JSON schemas for data validation. To learn
-   more about JSON schema validation, see :manual:`Schema Validation </core/schema-validation/>`
-   in the {+server-docs-name+}.
+- :ref:`laravel-eloquent-migrations`
+- :ref:`laravel-eloquent-schema-validation`
+- :ref:`laravel-eloquent-collection-exists`
+- :ref:`laravel-eloquent-indexes`
 
 .. _laravel-eloquent-migrations:
 
@@ -116,6 +111,63 @@ collection and related indexes.
 To learn more about Laravel migrations, see
 `Database: Migrations <https://laravel.com/docs/{+laravel-docs-version+}/migrations>`__
 in the Laravel documentation.
+
+.. _laravel-eloquent-schema-validation:
+
+Implement Schema Validation
+---------------------------
+
+You can use the ``jsonSchema()`` method to implement **:manual:`schema
+validation </core/schema-validation/>`** when using the following schema
+builder methods:
+
+- ``Schema::create()``: When creating a new collection.
+- ``Schema::table()``: When updating collection properties.
+
+After you implement schema validation, the server allows you to run only
+those write operations which follow the validation rules. Use schema
+validation to restrict data types and value ranges of document fields in
+a specified collection.
+
+Before creating a collection with schema validation rules, you must
+define a JSON schema.
+
+The schema is a JSON object that contains key-value pairs
+specifying the validation rules for your collection. At the top level,
+this object must include a ``$jsonSchema`` object. The ``$jsonSchema``
+object includes the following fields:
+
+- ``title``: Sets an optional description for the schema.
+- ``required``: Specifies a list of required fields for each document in your collection.
+- ``properties``: Sets property requirements for individual fields.
+
+For a full list of JSON schema object fields, see :manual:`JSON Schema
+</reference/operator/query/jsonSchema/#json-schema>` in the {+server-docs-name+}.
+
+You can optionally pass the following parameters to ``jsonSchema()``:
+
+- ``validationLevel``: Sets the level of validation enforcement.
+  Accepted values are ``"strict"`` and ``"moderate"``.
+- ``validationAction``: Specifies the action to take when invalid
+  operations are attempted. Accepted values are ``"error"`` and
+  ``"warn"``.
+
+This example demonstrates how to pass a JSON schema to the
+``jsonSchema()`` method when creating a collection. The schema
+validation specifies that documents in the ``pilots`` collection must
+contain the ``license_number`` field with an integer value between
+``1000`` and ``9999``.
+
+.. literalinclude:: /includes/schema-builder/flights_migration.php
+   :language: php
+   :dedent:
+   :start-after: begin-json-schema
+   :end-before: end-json-schema
+
+If you attempt to insert a document into the ``pilots`` collection that
+violates the schema validation rule, {+odm-long+} returns a
+:php:`mongodb-driver-exception-bulkwriteexception` because the
+validation level is set to ``"error"``.
 
 .. _laravel-eloquent-collection-exists:
 
