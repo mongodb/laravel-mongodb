@@ -124,39 +124,37 @@ builder methods:
 - ``Schema::create()``: When creating a new collection
 - ``Schema::table()``: When updating collection properties
 
-After you implement schema validation, the server allows you to run only
-those write operations which follow the validation rules. Use schema
-validation to restrict data types and value ranges of document fields in
-a specified collection.
+You can use schema validation to restrict data types and value ranges of
+document fields in a specified collection. After you implement schema
+validation, the server restricts write operations that don't follow the
+validation rules.
 
-Before creating a collection with schema validation rules, you must
-define a JSON schema.
+You can pass the following parameters to ``jsonSchema()``:
 
-The schema is a JSON object that contains key-value pairs
-specifying the validation rules for your collection. At the top level,
-this object must include a ``$jsonSchema`` object. The ``$jsonSchema``
-object can include the following fields:
-
-- ``title``: Sets an optional title for the schema.
-- ``required``: Specifies a list of required fields for each document in your collection.
-- ``properties``: Sets property requirements for individual fields.
-
-To view a full list of JSON schema object fields, see :manual:`JSON Schema
-</reference/operator/query/jsonSchema/#json-schema>` in the {+server-docs-name+}.
-
-You can optionally pass the following parameters to ``jsonSchema()``:
+- ``schema``: Array that specifies the validation rules for the
+  collection. To learn more about constructing a schema, see
+  the :manual:`$jsonSchema </reference/operator/query/jsonSchema/>`
+  reference in the {+server-docs-name+}.
 
 - ``validationLevel``: Sets the level of validation enforcement.
   Accepted values are ``"strict"`` (default) and ``"moderate"``.
+
 - ``validationAction``: Specifies the action to take when invalid
   operations are attempted. Accepted values are ``"error"`` (default) and
   ``"warn"``.
 
-This example demonstrates how to pass a JSON schema to the
+This example demonstrates how to specify a schema in the
 ``jsonSchema()`` method when creating a collection. The schema
-validation specifies that documents in the ``pilots`` collection must
-contain the ``license_number`` field with an integer value between
-``1000`` and ``9999``.
+validation has the following specifications:
+
+- Documents in the ``pilots`` collection must
+  contain the ``license_number`` field.
+
+- The ``license_number`` field must have an integer value between
+  ``1000`` and ``9999``.
+
+- If you attempt to perform invalid write operations, the server raises
+  an error.
 
 .. literalinclude:: /includes/schema-builder/flights_migration.php
    :language: php
@@ -166,8 +164,7 @@ contain the ``license_number`` field with an integer value between
 
 If you attempt to insert a document into the ``pilots`` collection that
 violates the schema validation rule, {+odm-long+} returns a
-:php:`BulkWriteException <mongodb-driver-exception-bulkwriteexception>`
-because the validation action is set to ``"error"``.
+:php:`BulkWriteException <mongodb-driver-exception-bulkwriteexception>`.
 
 .. _laravel-eloquent-collection-exists:
 
