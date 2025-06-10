@@ -893,8 +893,9 @@ class Builder extends BaseBuilder
     /**
      * Multiply a column's value by a given amount.
      *
-     * @param  string     $column
-     * @param  float|int  $amount
+     * @param  string    $column
+     * @param  float|int $amount
+     *
      * @return int
      */
     public function multiply($column, $amount, array $extra = [], array $options = [])
@@ -920,8 +921,9 @@ class Builder extends BaseBuilder
     /**
      * Divide a column's value by a given amount.
      *
-     * @param  string     $column
-     * @param  float|int  $amount
+     * @param  string    $column
+     * @param  float|int $amount
+     *
      * @return int
      */
     public function divide($column, $amount, array $extra = [], array $options = [])
