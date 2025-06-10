@@ -1774,7 +1774,7 @@ class Builder extends BaseBuilder
 
     private function aliasIdForQuery(array $values, bool $root = true): array
     {
-        if (array_key_exists('id', $values) && ($root || $this->connection->getRenameEmbeddedIdField())) {
+        if (array_key_exists('id', $values) && ($this->connection->getRenameEmbeddedIdField())) {
             if (array_key_exists('_id', $values) && $values['id'] !== $values['_id']) {
                 throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
             }
@@ -1837,7 +1837,7 @@ class Builder extends BaseBuilder
         if (is_array($values)) {
             if (
                 array_key_exists('_id', $values) && ! array_key_exists('id', $values)
-                && ($root || $this->connection->getRenameEmbeddedIdField())
+                && ($this->connection->getRenameEmbeddedIdField())
             ) {
                 $values['id'] = $values['_id'];
                 unset($values['_id']);
@@ -1856,7 +1856,7 @@ class Builder extends BaseBuilder
         if ($values instanceof stdClass) {
             if (
                 property_exists($values, '_id') && ! property_exists($values, 'id')
-                && ($root || $this->connection->getRenameEmbeddedIdField())
+                && ($this->connection->getRenameEmbeddedIdField())
             ) {
                 $values->id = $values->_id;
                 unset($values->_id);
