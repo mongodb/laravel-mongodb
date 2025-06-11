@@ -602,7 +602,10 @@ class QueryBuilderTest extends TestCase
         // begin multiply divide
         $result = DB::table('movies')
             ->where('year', 2001)
-            ->multiply('imdb.votes', 5)
+            ->multiply('imdb.votes', 5);
+
+        $result = DB::table('movies')
+            ->where('year', 2001)
             ->divide('runtime', 2);
         // end multiply divide
 
