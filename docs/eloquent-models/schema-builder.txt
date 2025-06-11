@@ -117,9 +117,9 @@ in the Laravel documentation.
 Implement Schema Validation
 ---------------------------
 
-You can use the ``jsonSchema()`` method to implement :manual:`schema
-validation </core/schema-validation/>` when using the following schema
-builder methods:
+Starting in {+odm-short+} v5.5, you can use the ``jsonSchema()`` method
+to implement :manual:`schema validation </core/schema-validation/>` when
+using the following schema builder methods:
 
 - ``Schema::create()``: When creating a new collection
 - ``Schema::table()``: When updating collection properties

@@ -1258,9 +1258,9 @@ operation updated or inserted.
 Multiply and Divide Numerical Values Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-You can perform multiplication and division operations on numerical
-values by using the ``multiply()`` and ``divide()`` query builder
-methods.
+Starting in {+odm-short+} v5.5, you can perform multiplication and
+division operations on numerical values by using the ``multiply()`` and
+``divide()`` query builder methods.
 
 The following example shows how to use the ``multiply()`` and
 ``divide()`` query builder methods to manipulate the values of the
