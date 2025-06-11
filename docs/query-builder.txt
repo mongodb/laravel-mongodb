@@ -1263,7 +1263,7 @@ division operations on numerical values by using the ``multiply()`` and
 ``divide()`` query builder methods.
 
 The following example shows how to use the ``multiply()`` and
-``divide()`` query builder methods to manipulate the values of the
+``divide()`` methods to manipulate the values of the
 ``imdb.votes`` and ``runtime`` fields:
 
 .. literalinclude:: /includes/query-builder/QueryBuilderTest.php

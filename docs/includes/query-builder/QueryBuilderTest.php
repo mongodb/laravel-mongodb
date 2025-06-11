@@ -614,7 +614,7 @@ class QueryBuilderTest extends TestCase
         // begin multiply with set
         $result = DB::table('movies')
             ->where('year', 1958)
-            ->multiply('runtime', 1.5, ['note' => 'Adds recovered footage & interviews.']);
+            ->multiply('runtime', 1.5, ['note' => 'Adds recovered footage.']);
         // end multiply with set
 
         $this->assertIsInt($result);
