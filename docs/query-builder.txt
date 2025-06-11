@@ -1169,6 +1169,7 @@ This section includes query builder examples that show how to use the
 following MongoDB-specific write operations:
 
 - :ref:`Upsert a document <laravel-mongodb-query-builder-upsert>`
+- :ref:`Multiply and divide values <laravel-mongodb-query-builder-mul-div>`
 - :ref:`Increment a numerical value <laravel-mongodb-query-builder-increment>`
 - :ref:`Decrement a numerical value <laravel-mongodb-query-builder-decrement>`
 - :ref:`Add an array element <laravel-mongodb-query-builder-push>`
@@ -1251,6 +1252,41 @@ and the ``title`` field and value specified in the ``where()`` query operation:
 
 The ``update()`` query builder method returns the number of documents that the
 operation updated or inserted.
+
+.. _laravel-mongodb-query-builder-mul-div:
+
+Multiply and Divide Numerical Values Example
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+You can perform multiplication and division operations on numerical
+values by using the ``multiply()`` and ``divide()`` query builder
+methods.
+
+The following example shows how to use the ``multiply()`` and
+``divide()`` query builder methods to manipulate the values of the
+``imdb.votes`` and ``runtime`` fields:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin multiply divide
+   :end-before: end multiply divide
+
+.. tip:: update() Method
+
+   You can perform the same operations by using the ``update()``
+   method and passing an update document that includes the :manual:`$mul
+   </reference/operator/update/mul/>` operator. To learn more about
+   ``update()``, see the :ref:`laravel-fundamentals-write-modify` guide.
+
+You can optionally pass an array parameter to perform a ``$set`` update
+in the same operation, as shown in the following example:
+
+.. literalinclude:: /includes/query-builder/QueryBuilderTest.php
+   :language: php
+   :dedent:
+   :start-after: begin multiply with set
+   :end-before: end multiply with set
 
 .. _laravel-mongodb-query-builder-increment:
 

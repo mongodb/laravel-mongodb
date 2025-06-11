@@ -213,10 +213,10 @@ class QueryBuilderTest extends TestCase
     {
         // begin query groupBy
         $result = DB::table('movies')
-           ->where('rated', 'G')
-           ->groupBy('runtime')
-           ->orderBy('runtime', 'asc')
-           ->get(['title']);
+            ->where('rated', 'G')
+            ->groupBy('runtime')
+            ->orderBy('runtime', 'asc')
+            ->get(['title']);
         // end query groupBy
 
         $this->assertInstanceOf(\Illuminate\Support\Collection::class, $result);
@@ -420,10 +420,10 @@ class QueryBuilderTest extends TestCase
         // begin query raw
         $result = DB::table('movies')
             ->whereRaw([
-                'imdb.votes' => ['$gte' => 1000 ],
+                'imdb.votes' => ['$gte' => 1000],
                 '$or' => [
                     ['imdb.rating' => ['$gt' => 7]],
-                    ['directors' => ['$in' => [ 'Yasujiro Ozu', 'Sofia Coppola', 'Federico Fellini' ]]],
+                    ['directors' => ['$in' => ['Yasujiro Ozu', 'Sofia Coppola', 'Federico Fellini']]],
                 ],
             ])->get();
         // end query raw
@@ -470,7 +470,7 @@ class QueryBuilderTest extends TestCase
     {
         $this->importTheaters();
 
-       // begin query near
+        // begin query near
         $results = DB::table('theaters')
             ->where('location.geo', 'near', [
                 '$geometry' => [
@@ -588,11 +588,31 @@ class QueryBuilderTest extends TestCase
                 [
                     'plot' => 'An autobiographical movie',
                     'year' => 1998,
-                    'writers' => [ 'Will Hunting' ],
+                    'writers' => ['Will Hunting'],
                 ],
                 ['upsert' => true],
             );
         // end update upsert
+
+        $this->assertIsInt($result);
+    }
+
+    public function testMultiplyDivide(): void
+    {
+        // begin multiply divide
+        $result = DB::table('movies')
+            ->where('year', 2001)
+            ->multiply('imdb.votes', 5)
+            ->divide('runtime', 2);
+        // end multiply divide
+
+        $this->assertIsInt($result);
+
+        // begin multiply with set
+        $result = DB::table('movies')
+            ->where('year', 1958)
+            ->multiply('runtime', 1.5, ['note' => 'Adds recovered footage & interviews.']);
+        // end multiply with set
 
         $this->assertIsInt($result);
     }
