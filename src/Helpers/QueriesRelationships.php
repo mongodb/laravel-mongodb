@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
+use LogicException;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Relations\MorphToMany;
 
@@ -104,6 +105,8 @@ trait QueriesRelationships
      */
     public function addHybridHas(Relation $relation, $operator = '>=', $count = 1, $boolean = 'and', ?Closure $callback = null)
     {
+        $this->assertHybridRelationSupported($relation);
+
         $hasQuery = $relation->getQuery();
         if ($callback) {
             $hasQuery->callScope($callback);
@@ -126,6 +129,26 @@ trait QueriesRelationships
         $relatedIds = $this->getConstrainedRelatedIds($relations, $operator, $count);
 
         return $this->whereIn($this->getRelatedConstraintKey($relation), $relatedIds, $boolean, $not);
+    }
+
+    /**
+     * @param Relation $relation
+     *
+     * @return void
+     *
+     * @throws Exception
+     */
+    private function assertHybridRelationSupported(Relation $relation): void
+    {
+        if (
+            $relation instanceof HasOneOrMany
+            || $relation instanceof BelongsTo
+            || ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation))
+        ) {
+            return;
+        }
+
+        throw new LogicException(class_basename($relation) . ' is not supported for hybrid query constraints.');
     }
 
     /**
@@ -213,6 +236,8 @@ trait QueriesRelationships
      */
     protected function getRelatedConstraintKey(Relation $relation)
     {
+        $this->assertHybridRelationSupported($relation);
+
         if ($relation instanceof HasOneOrMany) {
             return $relation->getLocalKeyName();
         }
@@ -221,7 +246,7 @@ trait QueriesRelationships
             return $relation->getForeignKeyName();
         }
 
-        if ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation)) {
+        if ($relation instanceof BelongsToMany) {
             return $this->model->getKeyName();
         }
 

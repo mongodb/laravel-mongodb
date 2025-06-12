@@ -78,7 +78,7 @@ class HybridRelationsTest extends TestCase
         $this->assertEquals('John Doe', $role->sqlUser->name);
 
         // MongoDB User
-        $user       = new User();
+        $user = new User();
         $user->name = 'John Doe';
         $user->save();
 
@@ -105,7 +105,7 @@ class HybridRelationsTest extends TestCase
 
     public function testHybridWhereHas()
     {
-        $user      = new SqlUser();
+        $user = new SqlUser();
         $otherUser = new SqlUser();
         $this->assertInstanceOf(SqlUser::class, $user);
         $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
@@ -114,11 +114,11 @@ class HybridRelationsTest extends TestCase
 
         // SQL User
         $user->name = 'John Doe';
-        $user->id   = 2;
+        $user->id = 2;
         $user->save();
         // Other user
         $otherUser->name = 'Other User';
-        $otherUser->id   = 3;
+        $otherUser->id = 3;
         $otherUser->save();
         // Make sure they are created
         $this->assertIsInt($user->id);
@@ -159,7 +159,7 @@ class HybridRelationsTest extends TestCase
 
     public function testHybridWith()
     {
-        $user      = new SqlUser();
+        $user = new SqlUser();
         $otherUser = new SqlUser();
         $this->assertInstanceOf(SqlUser::class, $user);
         $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
@@ -168,11 +168,11 @@ class HybridRelationsTest extends TestCase
 
         // SQL User
         $user->name = 'John Doe';
-        $user->id   = 2;
+        $user->id = 2;
         $user->save();
         // Other user
         $otherUser->name = 'Other User';
-        $otherUser->id   = 3;
+        $otherUser->id = 3;
         $otherUser->save();
         // Make sure they are created
         $this->assertIsInt($user->id);
@@ -266,6 +266,23 @@ class HybridRelationsTest extends TestCase
         $user->skills()->attach($skill);
         $check = SqlUser::find($user->id);
         $this->assertEquals(1, $check->skills->count());
+    }
+
+    public function testQueryingHybridBelongsToManyRelationFails()
+    {
+        $user = new SqlUser();
+        $this->assertInstanceOf(SQLiteConnection::class, $user->getConnection());
+
+        // Create Mysql Users
+        $user->fill(['name' => 'John Doe'])->save();
+        $skill = Skill::query()->create(['name' => 'MongoDB']);
+        $user->skills()->save($skill);
+
+        $this->expectExceptionMessage('BelongsToMany is not supported for hybrid query constraints.');
+
+        SqlUser::whereHas('skills', function ($query) {
+            return $query->where('name', 'LIKE', 'MongoDB');
+        });
     }
 
     public function testHybridMorphToManySqlModelToMongoModel()
