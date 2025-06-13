@@ -7,7 +7,6 @@ namespace MongoDB\Laravel\Eloquent;
 use Illuminate\Support\Str;
 use MongoDB\Laravel\Relations\EmbedsMany;
 use MongoDB\Laravel\Relations\EmbedsOne;
-
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use function class_basename;
 use function debug_backtrace;
@@ -90,7 +89,8 @@ trait EmbedsRelations
     /**
      * Determine if the given key is an embed relationship method on the model.
      *
-     * @param  string  $key
+     * @param string $key
+     *
      * @return bool
      */
     public function isEmbedRelation($key)
