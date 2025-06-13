@@ -8,6 +8,7 @@ use Illuminate\Support\Str;
 use MongoDB\Laravel\Relations\EmbedsMany;
 use MongoDB\Laravel\Relations\EmbedsOne;
 
+use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use function class_basename;
 use function debug_backtrace;
 
@@ -84,5 +85,35 @@ trait EmbedsRelations
         $instance = new $related();
 
         return new EmbedsOne($query, $this, $instance, $localKey, $foreignKey, $relation);
+    }
+
+    /**
+     * Determine if the given key is an embed relationship method on the model.
+     *
+     * @param  string  $key
+     * @return bool
+     */
+    public function isEmbedRelation($key)
+    {
+        return $this->isRelation($key)
+            && is_a($this->{$key}(), EmbedsOneOrMany::class, true);
+    }
+
+    /**
+     * @inheritDoc
+     */
+    public function toArray()
+    {
+        $embeds = [];
+
+        foreach (array_keys($this->getAttributes()) as $key) {
+            if ($this->isEmbedRelation($key)) {
+                $embeds[] = $key;
+            }
+        }
+
+        $this->loadMissing($embeds);
+
+        return parent::toArray();
     }
 }
