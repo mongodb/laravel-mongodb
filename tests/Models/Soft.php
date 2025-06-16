@@ -6,10 +6,10 @@ namespace MongoDB\Laravel\Tests\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Eloquent\DocumentModel;
 use MongoDB\Laravel\Eloquent\MassPrunable;
-use MongoDB\Laravel\Eloquent\SoftDeletes;
 
 /** @property Carbon $deleted_at */
 class Soft extends Model

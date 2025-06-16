@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use Illuminate\Database\Eloquent\MassPrunable as EloquentMassPrunable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Events\ModelsPruned;
 
 use function class_uses_recursive;

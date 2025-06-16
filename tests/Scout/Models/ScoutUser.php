@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Scout\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\SQLiteBuilder;
 use Illuminate\Support\Facades\Schema;
 use Laravel\Scout\Searchable;
-use MongoDB\Laravel\Eloquent\SoftDeletes;
 
 use function assert;
 
