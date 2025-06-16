@@ -41,6 +41,7 @@ final class MongoLock extends Lock
     /**
      * Attempt to acquire the lock.
      */
+    #[Override]
     public function acquire(): bool
     {
         // The lock can be acquired if: it doesn't exist, it has expired,
