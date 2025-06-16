@@ -216,6 +216,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     }
 
     /** Prune all the unfinished entries older than the given date. */
+    #[Override]
     public function pruneUnfinished(DateTimeInterface $before): int
     {
         $result = $this->collection->deleteMany(
@@ -229,6 +230,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     }
 
     /** Prune all the cancelled entries older than the given date. */
+    #[Override]
     public function pruneCancelled(DateTimeInterface $before): int
     {
         $result = $this->collection->deleteMany(
