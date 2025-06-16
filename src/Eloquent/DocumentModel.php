@@ -50,6 +50,19 @@ use function strcmp;
 use function strlen;
 use function var_export;
 
+/**
+ * @method static QueryBuilder query()
+ * @method static self sole(array $columns)
+ * @method static bool truncate()
+ * @method static QueryBuilder where(Closure|string|array|Expression $column, mixed $operator = null, mixed $value = null, string $boolean = 'and')
+ * @method static QueryBuilder whereBetween(string $column, iterable $values, string $boolean = null, bool $not = null)
+ * @method static QueryBuilder whereIn(...$parameters, mixed $values, string $boolean = null, bool $not = null)
+ * @method static QueryBuilder whereNot(array|Closure|Expression|string $column, $operator = null, $value = null, $boolean = 'and')
+ * @method static QueryBuilder whereNotIn(...$parameters)
+ * @method static QueryBuilder whereNotNull(...$parameters)
+ * @method static QueryBuilder whereNull(string $value)
+ * @mixin Eloquent
+ */
 trait DocumentModel
 {
     use HybridRelations;
@@ -553,8 +566,12 @@ trait DocumentModel
         return $this->parentRelation ?? null;
     }
 
-    /** @inheritdoc */
-    public function newEloquentBuilder($query)
+    /**
+     * @param $query
+     * @return Builder
+     */
+    #[Override]
+    public function newEloquentBuilder($query): Builder
     {
         return new Builder($query);
     }
@@ -566,7 +583,7 @@ trait DocumentModel
     }
 
     /** @inheritdoc */
-    protected function newBaseQueryBuilder()
+    protected function newBaseQueryBuilder(): QueryBuilder
     {
         $connection = $this->getConnection();
 

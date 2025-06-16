@@ -31,6 +31,9 @@ use function property_exists;
 /**
  * @method \MongoDB\Laravel\Query\Builder toBase()
  * @template TModel of Model
+ * @extends EloquentBuilder<TModel>
+ *
+ * @mixin \MongoDB\Laravel\Query\Builder
  */
 class Builder extends EloquentBuilder
 {
@@ -69,7 +72,7 @@ class Builder extends EloquentBuilder
     ];
 
     /**
-     * @return ($function is null ? AggregationBuilder : self)
+     * @return ($function is null ? AggregationBuilder : $this)
      *
      * @inheritdoc
      */
