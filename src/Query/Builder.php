@@ -243,12 +243,14 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function find($id, $columns = [])
     {
         return $this->where('_id', '=', $this->convertKey($id))->first($columns);
     }
 
     /** @inheritdoc */
+    #[Override]
     public function value($column)
     {
         $result = (array) $this->first([$column]);
@@ -257,12 +259,14 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function get($columns = [])
     {
         return $this->getFresh($columns);
     }
 
     /** @inheritdoc */
+    #[Override]
     public function cursor($columns = [])
     {
         $result = $this->getFresh($columns, true);
@@ -579,6 +583,7 @@ class Builder extends BaseBuilder
     }
 
     /** @return ($function is null ? AggregationBuilder : mixed) */
+    #[Override]
     public function aggregate($function = null, $columns = ['*'])
     {
         assert(is_array($columns), new TypeError(sprintf('Argument #2 ($columns) must be of type array, %s given', get_debug_type($columns))));
@@ -640,9 +645,10 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * {@inheritDoc}
+     * @param string $function
+     * @param array  $columns
      *
-     * @see \Illuminate\Database\Query\Builder::aggregateByGroup()
+     * @return mixed
      */
     public function aggregateByGroup(string $function, array $columns = ['*'])
     {
@@ -654,6 +660,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function exists()
     {
         return $this->first(['id']) !== null;
@@ -676,6 +683,7 @@ class Builder extends BaseBuilder
      *
      * @inheritdoc
      */
+    #[Override]
     public function orderBy($column, $direction = 'asc')
     {
         if (is_string($direction)) {
@@ -697,6 +705,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function whereBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         $type = 'between';
@@ -721,6 +730,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function insert(array $values)
     {
         // Allow empty insert batch for consistency with Eloquent SQL
@@ -755,6 +765,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function insertGetId(array $values, $sequence = null)
     {
         $options = $this->inheritConnectionOptions();
@@ -774,6 +785,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function update(array $values, array $options = [])
     {
         // Use $set as default operator for field names that are not in an operator
@@ -790,6 +802,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function upsert(array $values, $uniqueBy, $update = null): int
     {
         if ($values === []) {
@@ -836,6 +849,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function increment($column, $amount = 1, array $extra = [], array $options = [])
     {
         $query = ['$inc' => [(string) $column => $amount]];
@@ -856,6 +870,12 @@ class Builder extends BaseBuilder
         return $this->performUpdate($query, $options);
     }
 
+    /**
+     * @param array $options
+     *
+     * @inheritdoc
+     */
+    #[Override]
     public function incrementEach(array $columns, array $extra = [], array $options = [])
     {
         $stage['$addFields'] = $extra;
@@ -873,12 +893,14 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function decrement($column, $amount = 1, array $extra = [], array $options = [])
     {
         return $this->increment($column, -1 * $amount, $extra, $options);
     }
 
     /** @inheritdoc */
+    #[Override]
     public function decrementEach(array $columns, array $extra = [], array $options = [])
     {
         $decrement = [];
@@ -932,6 +954,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function pluck($column, $key = null)
     {
         $results = $this->get($key === null ? [$column] : [$column, $key]);
@@ -942,6 +965,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function delete($id = null)
     {
         // If an ID is passed to the method, we will set the where clause to check
@@ -973,6 +997,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function from($collection, $as = null)
     {
         if ($collection) {
@@ -1012,6 +1037,7 @@ class Builder extends BaseBuilder
      *
      * @template T
      */
+    #[Override]
     public function raw($value = null)
     {
         // Execute the closure on the mongodb collection
@@ -1114,11 +1140,13 @@ class Builder extends BaseBuilder
      *
      * @inheritdoc
      */
+    #[Override]
     public function newQuery()
     {
         return new static($this->connection, $this->grammar, $this->processor);
     }
 
+    #[Override]
     public function runPaginationCountQuery($columns = ['*'])
     {
         if ($this->distinct) {
@@ -1201,6 +1229,7 @@ class Builder extends BaseBuilder
      *
      * @return $this
      */
+    #[Override]
     public function where($column, $operator = null, $value = null, $boolean = 'and')
     {
         $params = func_get_args();
@@ -1714,6 +1743,7 @@ class Builder extends BaseBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function __call($method, $parameters)
     {
         if ($method === 'unset') {
@@ -1724,90 +1754,105 @@ class Builder extends BaseBuilder
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function toSql()
     {
         throw new BadMethodCallException('This method is not supported by MongoDB. Try "toMql()" instead.');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function toRawSql()
     {
         throw new BadMethodCallException('This method is not supported by MongoDB. Try "toMql()" instead.');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function whereColumn($first, $operator = null, $second = null, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function whereFullText($columns, $value, array $options = [], $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function groupByRaw($sql, array $bindings = [])
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function orderByRaw($sql, $bindings = [])
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function unionAll($query)
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function union($query, $all = false)
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function having($column, $operator = null, $value = null, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function havingRaw($sql, array $bindings = [], $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function havingBetween($column, iterable $values, $boolean = 'and', $not = false)
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function whereIntegerInRaw($column, $values, $boolean = 'and', $not = false)
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function orWhereIntegerInRaw($column, $values)
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function whereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
     /** @internal This method is not supported by MongoDB. */
+    #[Override]
     public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
