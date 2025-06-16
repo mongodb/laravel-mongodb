@@ -98,22 +98,4 @@ trait EmbedsRelations
         return $this->isRelation($key)
             && is_a($this->{$key}(), EmbedsOneOrMany::class, true);
     }
-
-    /**
-     * @inheritDoc
-     */
-    public function toArray()
-    {
-        $embeds = [];
-
-        foreach (array_keys($this->getAttributes()) as $key) {
-            if ($this->isEmbedRelation($key)) {
-                $embeds[] = $key;
-            }
-        }
-
-        $this->loadMissing($embeds);
-
-        return parent::toArray();
-    }
 }
