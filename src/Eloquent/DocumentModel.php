@@ -755,9 +755,7 @@ trait DocumentModel
         return $this;
     }
 
-    /**
-     * @inheritDoc
-     */
+    /** @inheritDoc */
     public function toArray()
     {
         $embeds = [];

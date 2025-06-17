@@ -8,8 +8,10 @@ use Illuminate\Support\Str;
 use MongoDB\Laravel\Relations\EmbedsMany;
 use MongoDB\Laravel\Relations\EmbedsOne;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
+
 use function class_basename;
 use function debug_backtrace;
+use function is_a;
 
 use const DEBUG_BACKTRACE_IGNORE_ARGS;
 
