@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - "[0-9]+.[0-9x]+"
+      - "feature/*"
   pull_request:
     branches:
       - "[0-9]+.[0-9x]+"
+      - "feature/*"
   workflow_call:
     inputs:
       ref:

@@ -4,9 +4,11 @@ on:
   push:
     branches:
       - "[0-9]+.[0-9x]+"
+      - "feature/*"
   pull_request:
     branches:
       - "[0-9]+.[0-9x]+"
+      - "feature/*"
 
 env:
   MONGODB_EXT_V1: mongodb-1.21.0
