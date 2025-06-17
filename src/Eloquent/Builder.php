@@ -18,6 +18,7 @@ use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
+use Override;
 
 use function array_key_exists;
 use function array_map;
@@ -127,7 +128,12 @@ class Builder extends EloquentBuilder
         return $this->model->hydrate($results->all());
     }
 
-    /** @inheritdoc */
+    /**
+     * @param array $options
+     *
+     * @inheritdoc
+     */
+    #[Override]
     public function update(array $values, array $options = [])
     {
         // Intercept operations on embedded models and delegate logic
@@ -270,6 +276,7 @@ class Builder extends EloquentBuilder
         return $results;
     }
 
+    #[Override]
     public function firstOrCreate(array $attributes = [], array $values = [])
     {
         $instance = (clone $this)->where($attributes)->first();
@@ -285,6 +292,7 @@ class Builder extends EloquentBuilder
         return $this->createOrFirst($attributes, $values);
     }
 
+    #[Override]
     public function createOrFirst(array $attributes = [], array $values = [])
     {
         // The duplicate key error would abort the transaction. Using the regular firstOrCreate in that case.
@@ -308,9 +316,8 @@ class Builder extends EloquentBuilder
      * TODO Remove if https://github.com/laravel/framework/commit/6484744326531829341e1ff886cc9b628b20d73e
      * will be reverted
      * Issue in laravel/frawework https://github.com/laravel/framework/issues/27791.
-     *
-     * @return array
      */
+    #[Override]
     protected function addUpdatedAtColumn(array $values)
     {
         if (! $this->model->usesTimestamps() || $this->model->getUpdatedAtColumn() === null) {
@@ -332,6 +339,7 @@ class Builder extends EloquentBuilder
     }
 
     /** @inheritdoc */
+    #[Override]
     protected function ensureOrderForCursorPagination($shouldReverse = false)
     {
         if (empty($this->query->orders)) {
