@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use Illuminate\Queue\DatabaseQueue;
 use MongoDB\Laravel\Connection;
 use MongoDB\Operation\FindOneAndUpdate;
+use Override;
 use stdClass;
 
 class MongoQueue extends DatabaseQueue
@@ -34,7 +35,12 @@ class MongoQueue extends DatabaseQueue
         $this->retryAfter = $retryAfter;
     }
 
-    /** @inheritdoc */
+    /**
+     * @return MongoJob|null
+     *
+     * @inheritdoc
+     */
+    #[Override]
     public function pop($queue = null)
     {
         $queue = $this->getQueue($queue);
@@ -138,12 +144,14 @@ class MongoQueue extends DatabaseQueue
     }
 
     /** @inheritdoc */
+    #[Override]
     public function deleteReserved($queue, $id)
     {
         $this->database->table($this->table)->where('_id', $id)->delete();
     }
 
     /** @inheritdoc */
+    #[Override]
     public function deleteAndRelease($queue, $job, $delay)
     {
         $this->deleteReserved($queue, $job->getJobId());
