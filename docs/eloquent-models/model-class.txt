@@ -168,7 +168,7 @@ Eloquent includes a soft delete feature that changes the behavior of the
 database. It sets a timestamp on the ``deleted_at`` field to exclude it from
 retrieve operations automatically.
 
-To enable soft deletes on a class, add the ``MongoDB\Laravel\Eloquent\SoftDeletes``
+To enable soft deletes on a class, add the ``Illuminate\Database\Eloquent\SoftDeletes``
 trait as shown in the following code example:
 
 .. literalinclude:: /includes/eloquent-models/PlanetSoftDelete.php

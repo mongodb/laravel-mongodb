@@ -3,7 +3,7 @@
 namespace App\Models;
 
 use MongoDB\Laravel\Eloquent\Model;
-use MongoDB\Laravel\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Planet extends Model
 {
