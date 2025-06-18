@@ -7,6 +7,7 @@ use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber as CommandSubscriberInterface;
 use MongoDB\Driver\Monitoring\CommandSucceededEvent;
+use Override;
 
 use function get_object_vars;
 use function in_array;
@@ -21,16 +22,19 @@ final class CommandSubscriber implements CommandSubscriberInterface
     {
     }
 
+    #[Override]
     public function commandStarted(CommandStartedEvent $event): void
     {
         $this->commands[$event->getOperationId()] = $event;
     }
 
+    #[Override]
     public function commandFailed(CommandFailedEvent $event): void
     {
         $this->logQuery($event);
     }
 
+    #[Override]
     public function commandSucceeded(CommandSucceededEvent $event): void
     {
         $this->logQuery($event);
