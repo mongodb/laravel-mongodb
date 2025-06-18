@@ -16,6 +16,7 @@ use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Concerns\ManagesTransactions;
 use OutOfBoundsException;
+use Override;
 use Throwable;
 
 use function filter_var;
@@ -95,6 +96,7 @@ class Connection extends BaseConnection
      *
      * @return Query\Builder
      */
+    #[Override]
     public function table($table, $as = null)
     {
         $query = new Query\Builder($this, $this->getQueryGrammar(), $this->getPostProcessor());
@@ -115,6 +117,7 @@ class Connection extends BaseConnection
     }
 
     /** @inheritdoc */
+    #[Override]
     public function getSchemaBuilder()
     {
         return new Schema\Builder($this);
@@ -172,6 +175,8 @@ class Connection extends BaseConnection
         return $this->connection;
     }
 
+    /** @inheritdoc  */
+    #[Override]
     public function enableQueryLog()
     {
         parent::enableQueryLog();
@@ -182,6 +187,7 @@ class Connection extends BaseConnection
         }
     }
 
+    #[Override]
     public function disableQueryLog()
     {
         parent::disableQueryLog();
@@ -192,6 +198,7 @@ class Connection extends BaseConnection
         }
     }
 
+    #[Override]
     protected function withFreshQueryLog($callback)
     {
         try {
@@ -340,6 +347,7 @@ class Connection extends BaseConnection
     }
 
     /** @inheritdoc */
+    #[Override]
     public function getDriverName()
     {
         return 'mongodb';
@@ -352,12 +360,14 @@ class Connection extends BaseConnection
     }
 
     /** @inheritdoc */
+    #[Override]
     protected function getDefaultPostProcessor()
     {
         return new Query\Processor();
     }
 
     /** @inheritdoc */
+    #[Override]
     protected function getDefaultQueryGrammar()
     {
         // Argument added in Laravel 12
@@ -365,6 +375,7 @@ class Connection extends BaseConnection
     }
 
     /** @inheritdoc */
+    #[Override]
     protected function getDefaultSchemaGrammar()
     {
         // Argument added in Laravel 12
