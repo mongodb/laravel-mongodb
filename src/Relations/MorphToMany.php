@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany as EloquentMorphToMany;
 use Illuminate\Support\Arr;
 use MongoDB\BSON\ObjectId;
+use Override;
 
 use function array_diff;
 use function array_key_exists;
@@ -31,25 +32,25 @@ use function is_numeric;
  */
 class MorphToMany extends EloquentMorphToMany
 {
-    /** @inheritdoc */
+    #[Override]
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
         return $query;
     }
 
-    /** @inheritdoc */
+    #[Override]
     protected function hydratePivotRelation(array $models)
     {
         // Do nothing.
     }
 
-    /** @inheritdoc */
+    #[Override]
     protected function shouldSelect(array $columns = ['*'])
     {
         return $columns;
     }
 
-    /** @inheritdoc */
+    #[Override]
     public function addConstraints()
     {
         if (static::$constraints) {
@@ -57,7 +58,7 @@ class MorphToMany extends EloquentMorphToMany
         }
     }
 
-    /** @inheritdoc */
+    #[Override]
     public function addEagerConstraints(array $models)
     {
         // To load relation's data, we act normally on MorphToMany relation,
@@ -102,6 +103,7 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
+    #[Override]
     public function save(Model $model, array $pivotAttributes = [], $touch = true)
     {
         $model->save(['touch' => false]);
@@ -112,6 +114,7 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
+    #[Override]
     public function create(array $attributes = [], array $joining = [], $touch = true)
     {
         $instance = $this->related->newInstance($attributes);
@@ -127,6 +130,7 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
+    #[Override]
     public function sync($ids, $detaching = true)
     {
         $changes = [
@@ -203,12 +207,14 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
+    #[Override]
     public function updateExistingPivot($id, array $attributes, $touch = true): void
     {
         // Do nothing, we have no pivot table.
     }
 
     /** @inheritdoc */
+    #[Override]
     public function attach($id, array $attributes = [], $touch = true)
     {
         if ($id instanceof Model) {
@@ -302,6 +308,7 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
+    #[Override]
     public function detach($ids = [], $touch = true)
     {
         if ($ids instanceof Model) {
@@ -376,6 +383,7 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
+    #[Override]
     protected function buildDictionary(Collection $results)
     {
         $foreign = $this->foreignPivotKey;
@@ -403,6 +411,7 @@ class MorphToMany extends EloquentMorphToMany
     }
 
     /** @inheritdoc */
+    #[Override]
     public function newPivotQuery()
     {
         return $this->newRelatedQuery();
@@ -418,19 +427,13 @@ class MorphToMany extends EloquentMorphToMany
         return $this->related->newQuery();
     }
 
-    /** @inheritdoc */
+    #[Override]
     public function getQualifiedRelatedPivotKeyName()
     {
         return $this->relatedPivotKey;
     }
 
-    /**
-     * Get the name of the "where in" method for eager loading.
-     *
-     * @param string $key
-     *
-     * @return string
-     */
+    #[Override]
     protected function whereInMethod(Model $model, $key)
     {
         return 'whereIn';

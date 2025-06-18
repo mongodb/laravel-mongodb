@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Expression;
 use MongoDB\Driver\Exception\LogicException;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
+use Override;
 use Throwable;
 
 use function array_merge;
@@ -78,6 +79,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /** @inheritdoc */
+    #[Override]
     public function addConstraints()
     {
         if (static::$constraints) {
@@ -86,12 +88,14 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /** @inheritdoc */
+    #[Override]
     public function addEagerConstraints(array $models)
     {
         // There are no eager loading constraints.
     }
 
     /** @inheritdoc */
+    #[Override]
     public function match(array $models, Collection $results, $relation)
     {
         foreach ($models as $model) {
@@ -105,13 +109,7 @@ abstract class EmbedsOneOrMany extends Relation
         return $models;
     }
 
-    /**
-     * Shorthand to get the results of the relationship.
-     *
-     * @param  array $columns
-     *
-     * @return Collection
-     */
+    #[Override]
     public function get($columns = ['*'])
     {
         return $this->getResults();
@@ -324,6 +322,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /** @inheritdoc */
+    #[Override]
     public function getQuery()
     {
         // Because we are sharing this relation instance to models, we need
@@ -332,6 +331,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /** @inheritdoc */
+    #[Override]
     public function toBase()
     {
         // Because we are sharing this relation instance to models, we need
@@ -367,6 +367,7 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /** @inheritdoc */
+    #[Override]
     public function getQualifiedParentKeyName()
     {
         $parentRelation = $this->getParentRelation();
@@ -425,10 +426,10 @@ abstract class EmbedsOneOrMany extends Relation
      * Get the name of the "where in" method for eager loading.
      *
      * @param EloquentModel $model
-     * @param  string        $key
      *
-     * @return string
+     * @inheritdoc
      */
+    #[Override]
     protected function whereInMethod(EloquentModel $model, $key)
     {
         return 'whereIn';

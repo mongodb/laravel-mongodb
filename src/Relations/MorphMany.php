@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Relations;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany as EloquentMorphMany;
+use Override;
 
 /**
  * @template TRelatedModel of Model
@@ -14,13 +15,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany as EloquentMorphMany;
  */
 class MorphMany extends EloquentMorphMany
 {
-    /**
-     * Get the name of the "where in" method for eager loading.
-     *
-     * @param string $key
-     *
-     * @return string
-     */
+    #[Override]
     protected function whereInMethod(Model $model, $key)
     {
         return 'whereIn';
