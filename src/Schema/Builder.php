@@ -6,11 +6,11 @@ namespace MongoDB\Laravel\Schema;
 
 use Closure;
 use MongoDB\Collection;
-use MongoDB\Database;
 use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Model\CollectionInfo;
 use MongoDB\Model\IndexInfo;
+use Override;
 
 use function array_column;
 use function array_fill_keys;
@@ -99,12 +99,14 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function hasTable($table)
     {
         return $this->hasCollection($table);
     }
 
     /** @inheritdoc */
+    #[Override]
     public function table($table, Closure $callback)
     {
         $blueprint = $this->createBlueprint($table);
@@ -115,6 +117,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function create($table, ?Closure $callback = null, array $options = [])
     {
         $blueprint = $this->createBlueprint($table);
@@ -127,6 +130,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function dropIfExists($table)
     {
         if ($this->hasCollection($table)) {
@@ -135,6 +139,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /** @inheritdoc */
+    #[Override]
     public function drop($table)
     {
         $blueprint = $this->createBlueprint($table);
@@ -151,18 +156,29 @@ class Builder extends \Illuminate\Database\Schema\Builder
      * one by one. The database will be automatically recreated when a new connection
      * writes to it.
      */
+    #[Override]
     public function dropAllTables()
     {
         $this->connection->getDatabase()->drop();
     }
 
-    /** @param string|null $schema Database name */
+    /**
+     * @param string|null $schema Database name
+     *
+     * @inheritdoc
+     */
+    #[Override]
     public function getTables($schema = null)
     {
         return $this->getCollectionRows('collection', $schema);
     }
 
-    /** @param  string|null $schema Database name */
+    /**
+     * @param  string|null $schema Database name
+     *
+     * @inheritdoc
+     */
+    #[Override]
     public function getViews($schema = null)
     {
         return $this->getCollectionRows('view', $schema);
@@ -174,6 +190,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
      *
      * @return array
      */
+    #[Override]
     public function getTableListing($schema = null, $schemaQualified = false)
     {
         $collections = [];
@@ -197,6 +214,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         return $collections;
     }
 
+    #[Override]
     public function getColumns($table)
     {
         $db = null;
@@ -255,6 +273,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         return $columns;
     }
 
+    #[Override]
     public function getIndexes($table)
     {
         $collection = $this->connection->getDatabase()->selectCollection($table);
@@ -309,12 +328,18 @@ class Builder extends \Illuminate\Database\Schema\Builder
         return $indexList;
     }
 
+    #[Override]
     public function getForeignKeys($table)
     {
         return [];
     }
 
-    /** @inheritdoc */
+    /**
+     * @return Blueprint
+     *
+     * @inheritdoc
+     */
+    #[Override]
     protected function createBlueprint($table, ?Closure $callback = null)
     {
         return new Blueprint($this->connection, $table);

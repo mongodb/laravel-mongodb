@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Schema;
 use Illuminate\Database\Schema\Blueprint as BaseBlueprint;
 use MongoDB\Collection;
 use MongoDB\Laravel\Connection;
+use Override;
 
 use function array_flip;
 use function array_merge;
@@ -38,6 +39,7 @@ class Blueprint extends BaseBlueprint
     protected $columns = [];
 
     /** @inheritdoc */
+    #[Override]
     public function index($columns = null, $name = null, $algorithm = null, $options = [])
     {
         $columns = $this->fluent($columns);
@@ -64,12 +66,14 @@ class Blueprint extends BaseBlueprint
     }
 
     /** @inheritdoc */
+    #[Override]
     public function primary($columns = null, $name = null, $algorithm = null, $options = [])
     {
         return $this->unique($columns, $name, $algorithm, $options);
     }
 
     /** @inheritdoc */
+    #[Override]
     public function dropIndex($index = null)
     {
         $index = $this->transformColumns($index);
@@ -170,6 +174,7 @@ class Blueprint extends BaseBlueprint
     }
 
     /** @inheritdoc */
+    #[Override]
     public function unique($columns = null, $name = null, $algorithm = null, $options = [])
     {
         $columns = $this->fluent($columns);
@@ -251,6 +256,7 @@ class Blueprint extends BaseBlueprint
      *
      * @return void
      */
+    #[Override]
     public function create($options = [])
     {
         $collection = $this->collection->getCollectionName();
@@ -262,6 +268,7 @@ class Blueprint extends BaseBlueprint
     }
 
     /** @inheritdoc */
+    #[Override]
     public function drop()
     {
         $this->collection->drop();
@@ -270,6 +277,7 @@ class Blueprint extends BaseBlueprint
     }
 
     /** @inheritdoc */
+    #[Override]
     public function renameColumn($from, $to)
     {
         $this->collection->updateMany([$from => ['$exists' => true]], ['$rename' => [$from => $to]]);
@@ -278,6 +286,7 @@ class Blueprint extends BaseBlueprint
     }
 
     /** @inheritdoc */
+    #[Override]
     public function addColumn($type, $name, array $parameters = [])
     {
         $this->fluent($name);
