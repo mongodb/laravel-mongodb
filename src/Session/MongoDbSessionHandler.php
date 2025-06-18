@@ -16,6 +16,7 @@ use MongoDB\BSON\Binary;
 use MongoDB\BSON\Document;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
+use Override;
 
 use function tap;
 use function time;
@@ -32,6 +33,7 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
         return true;
     }
 
+    #[Override]
     public function gc($lifetime): int
     {
         $result = $this->getCollection()->deleteMany(['last_activity' => ['$lt' => $this->getUTCDateTime(-$lifetime)]]);
@@ -39,6 +41,7 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
         return $result->getDeletedCount() ?? 0;
     }
 
+    #[Override]
     public function destroy($sessionId): bool
     {
         $this->getCollection()->deleteOne(['_id' => (string) $sessionId]);
@@ -46,6 +49,7 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
         return true;
     }
 
+    #[Override]
     public function read($sessionId): string|false
     {
         $result = $this->getCollection()->findOne(
@@ -63,6 +67,7 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
         return false;
     }
 
+    #[Override]
     public function write($sessionId, $data): bool
     {
         $payload = $this->getDefaultPayload($data);
@@ -87,6 +92,7 @@ final class MongoDbSessionHandler extends DatabaseSessionHandler
         );
     }
 
+    #[Override]
     protected function getDefaultPayload($data): array
     {
         $payload = [
