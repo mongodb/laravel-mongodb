@@ -24,6 +24,7 @@ use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Queue\MongoConnector;
 use MongoDB\Laravel\Scout\ScoutEngine;
 use MongoDB\Laravel\Session\MongoDbSessionHandler;
+use Override;
 use RuntimeException;
 
 use function assert;
@@ -47,6 +48,7 @@ class MongoDBServiceProvider extends ServiceProvider
     /**
      * Register the service provider.
      */
+    #[Override]
     public function register()
     {
         // Add database driver.

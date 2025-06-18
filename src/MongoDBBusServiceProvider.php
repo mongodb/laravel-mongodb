@@ -10,6 +10,7 @@ use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
 use MongoDB\Laravel\Bus\MongoBatchRepository;
+use Override;
 
 use function sprintf;
 
@@ -18,6 +19,7 @@ class MongoDBBusServiceProvider extends ServiceProvider implements DeferrablePro
     /**
      * Register the service provider.
      */
+    #[Override]
     public function register()
     {
         $this->app->singleton(MongoBatchRepository::class, function (Container $app) {
@@ -46,6 +48,8 @@ class MongoDBBusServiceProvider extends ServiceProvider implements DeferrablePro
         });
     }
 
+    /** @inheritdoc */
+    #[Override]
     public function provides()
     {
         return [
