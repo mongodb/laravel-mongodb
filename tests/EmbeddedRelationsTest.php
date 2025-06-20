@@ -972,4 +972,18 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertNull($user->addresses->get(0)->city);
         $this->assertSame('Kyoto', $user->addresses->get(1)->city);
     }
+    
+    public function testEmbedManyToArrayCast()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->saveMany([new Address(['city' => 'London'])]);
+
+        //Reload document
+        $user = User::where('name', 'John Doe')->first();
+        $array = $user->toArray();
+
+        $this->assertIsString($array['addresses'][0]['id']);
+        $this->assertIsString($array['addresses'][0]['created_at']);
+        $this->assertIsString($array['addresses'][0]['updated_at']);
+    }
 }
