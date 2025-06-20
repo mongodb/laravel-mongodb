@@ -972,7 +972,7 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertNull($user->addresses->get(0)->city);
         $this->assertSame('Kyoto', $user->addresses->get(1)->city);
     }
-    
+
     public function testEmbedManyToArrayCast()
     {
         $user = User::create(['name' => 'John Doe']);
