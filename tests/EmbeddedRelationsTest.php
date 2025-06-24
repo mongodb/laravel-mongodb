@@ -11,6 +11,7 @@ use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\User;
+use MongoDB\Laravel\Tests\Models\UserWithEmbeds;
 
 use function array_merge;
 
@@ -20,6 +21,7 @@ class EmbeddedRelationsTest extends TestCase
     {
         Mockery::close();
         User::truncate();
+        UserWithEmbeds::truncate();
 
         parent::tearDown();
     }
@@ -975,11 +977,11 @@ class EmbeddedRelationsTest extends TestCase
 
     public function testEmbedManyToArrayCast()
     {
-        $user = User::create(['name' => 'John Doe']);
+        $user = UserWithEmbeds::create(['name' => 'John Doe']);
         $user->addresses()->saveMany([new Address(['city' => 'London'])]);
 
         //Reload document
-        $user = User::where('name', 'John Doe')->first();
+        $user = UserWithEmbeds::where('name', 'John Doe')->first();
         $array = $user->toArray();
 
         $this->assertIsString($array['addresses'][0]['id']);

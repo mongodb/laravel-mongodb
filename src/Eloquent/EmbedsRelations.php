@@ -4,13 +4,11 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use MongoDB\Laravel\Relations\EmbedsMany;
 use MongoDB\Laravel\Relations\EmbedsOne;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 
-use function array_keys;
 use function class_basename;
 use function debug_backtrace;
 use function is_a;
@@ -22,10 +20,17 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
  */
 trait EmbedsRelations
 {
+    /**
+     * The embeds relations to load on every query.
+     *
+     * @var array
+     */
+    protected $withEmbeds = [];
+
     public static function bootEmbedsRelations(): void
     {
         static::retrieved(function (self $model) {
-            $model->withEmbedded();
+            $model->load($model->withEmbeds);
         });
     }
 
@@ -95,28 +100,6 @@ trait EmbedsRelations
         $instance = new $related();
 
         return new EmbedsOne($query, $this, $instance, $localKey, $foreignKey, $relation);
-    }
-
-    /**
-     * Load embedded relations on the model if they are not already loaded
-     *
-     * @param array|string $relations
-     *
-     * @return Model
-     */
-    public function withEmbedded($relations = [])
-    {
-        if (empty($relations)) {
-            $relations = [];
-
-            foreach (array_keys($this->getAttributes()) as $key) {
-                if ($this->isEmbeddedRelation($key)) {
-                    $relations[] = $key;
-                }
-            }
-        }
-
-        return $this->loadMissing($relations);
     }
 
     /**
