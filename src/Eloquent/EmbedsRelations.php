@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use MongoDB\Laravel\Relations\EmbedsMany;
 use MongoDB\Laravel\Relations\EmbedsOne;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 
+use function array_keys;
 use function class_basename;
 use function debug_backtrace;
 use function is_a;
@@ -20,6 +22,13 @@ use const DEBUG_BACKTRACE_IGNORE_ARGS;
  */
 trait EmbedsRelations
 {
+    public static function bootEmbedsRelations(): void
+    {
+        static::retrieved(function (self $model) {
+            $model->withEmbedded();
+        });
+    }
+
     /**
      * Define an embedded one-to-many relationship.
      *
@@ -89,13 +98,35 @@ trait EmbedsRelations
     }
 
     /**
+     * Load embedded relations on the model if they are not already loaded
+     *
+     * @param array|string $relations
+     *
+     * @return Model
+     */
+    public function withEmbedded($relations = [])
+    {
+        if (empty($relations)) {
+            $relations = [];
+
+            foreach (array_keys($this->getAttributes()) as $key) {
+                if ($this->isEmbeddedRelation($key)) {
+                    $relations[] = $key;
+                }
+            }
+        }
+
+        return $this->loadMissing($relations);
+    }
+
+    /**
      * Determine if the given key is an embed relationship method on the model.
      *
      * @param string $key
      *
      * @return bool
      */
-    public function isEmbedRelation($key)
+    public function isEmbeddedRelation($key)
     {
         return $this->isRelation($key)
             && is_a($this->{$key}(), EmbedsOneOrMany::class, true);
