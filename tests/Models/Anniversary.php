@@ -6,16 +6,10 @@ namespace MongoDB\Laravel\Tests\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use MongoDB\Laravel\Eloquent\DocumentModel;
-use MongoDB\Laravel\Eloquent\Model as Eloquent;
-use MongoDB\Laravel\Query\Builder;
 
 /**
  * @property string $name
  * @property string $anniversary
- * @mixin Eloquent
- * @method static Builder create(...$values)
- * @method static Builder truncate()
- * @method static Eloquent sole(...$parameters)
  */
 class Anniversary extends Model
 {

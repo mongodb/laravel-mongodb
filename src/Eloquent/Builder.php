@@ -69,7 +69,7 @@ class Builder extends EloquentBuilder
     ];
 
     /**
-     * @return ($function is null ? AggregationBuilder : self)
+     * @return ($function is null ? AggregationBuilder : $this)
      *
      * @inheritdoc
      */

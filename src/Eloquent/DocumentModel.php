@@ -50,6 +50,7 @@ use function strcmp;
 use function strlen;
 use function var_export;
 
+/** @mixin Builder */
 trait DocumentModel
 {
     use HybridRelations;
