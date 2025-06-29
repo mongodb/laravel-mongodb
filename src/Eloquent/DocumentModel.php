@@ -11,6 +11,7 @@ use DateTimeZone;
 use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Casts\Json;
 use Illuminate\Database\Eloquent\Concerns\HasAttributes;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -267,6 +268,16 @@ trait DocumentModel
         return parent::setAttribute($key, $value);
     }
 
+    /** @inheritdoc */
+    protected function isJsonCastable($key)
+    {
+        if ($this->hasCast($key, ['array'])) {
+            return false;
+        }
+
+        return parent::isJsonCastable($key);
+    }
+
     /**
      * @param mixed $value
      *
@@ -286,6 +297,15 @@ trait DocumentModel
         }
 
         return parent::asDecimal($value, $decimals);
+    }
+
+    public function fromJson($value, $asObject = false)
+    {
+        if (is_array($value)) {
+            return $value;
+        }
+
+        return parent::fromJson($value, $asObject);
     }
 
     /**
