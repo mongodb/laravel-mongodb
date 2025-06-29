@@ -26,7 +26,7 @@ class ArrayTest extends TestCase
             DB::connection()
               ->table((new Casting())->getTable())
               ->where('id', $model->id)
-              ->first()->arrayValue
+              ->first()->arrayValue,
         );
         self::assertEquals(["Dreamin' 'bout the spot that right now, I'm actually in", 'g-eazy' => 'Still'], $model->arrayValue);
 
@@ -37,7 +37,7 @@ class ArrayTest extends TestCase
             DB::connection()
               ->table((new Casting())->getTable())
               ->where('id', $model->id)
-              ->first()->arrayValue
+              ->first()->arrayValue,
         );
         self::assertEquals(['What if I just said, f*ck it, never followed my dreams?'], $model->arrayValue);
     }
