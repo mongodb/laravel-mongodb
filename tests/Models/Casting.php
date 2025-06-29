@@ -36,6 +36,7 @@ class Casting extends Model
         'encryptedArray',
         'encryptedObject',
         'encryptedCollection',
+        'arrayValue',
     ];
 
     protected $casts = [
@@ -60,5 +61,6 @@ class Casting extends Model
         'encryptedArray' => 'encrypted:array',
         'encryptedObject' => 'encrypted:object',
         'encryptedCollection' => 'encrypted:collection',
+        'arrayValue' => 'array',
     ];
 }
