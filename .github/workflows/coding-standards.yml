@@ -50,20 +50,9 @@ jobs:
 
       - name: "Install dependencies with Composer"
         uses: "ramsey/composer-install@3.1.0"
-        with:
-          composer-options: "--no-suggest"
-
-      - name: "Format the code"
-        continue-on-error: true
-        run: |
-          mkdir .cache
-          ./vendor/bin/phpcbf
 
       # The -q option is required until phpcs v4 is released
       - name: "Run PHP_CodeSniffer"
-        run: "vendor/bin/phpcs -q --no-colors --report=checkstyle | cs2pr"
-
-      - name: "Commit the changes"
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "apply phpcbf formatting"
+        run: |
+          mkdir .cache
+          vendor/bin/phpcs -q --no-colors --report=checkstyle | cs2pr
