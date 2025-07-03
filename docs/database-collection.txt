@@ -213,8 +213,8 @@ methods in your application:
 
 .. note::
 
-   MongoDB is a schemaless database, so the preceding schema builder methods
-   query the database data rather than the schema.
+   MongoDB is a schema-flexible database, so the preceding schema
+   builder methods query the database data rather than the schema.
 
 Example
 ```````
@@ -269,9 +269,10 @@ collection fields:
 - ``Schema::hasColumns(string $<collection>, string[] $<field names>)``:
   checks if each specified field exists in at least one document
 
-MongoDB is a schemaless database, so the preceding methods query the collection
-data rather than the database schema. If the specified collection doesn't exist
-or is empty, these methods return a value of ``false``.
+MongoDB is a schema-flexible database, so the preceding methods query
+the collection data rather than the database schema. If the specified
+collection doesn't exist or is empty, these methods return a value of
+``false``.
 
 .. note:: id Alias
 

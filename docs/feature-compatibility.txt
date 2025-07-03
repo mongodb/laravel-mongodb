@@ -201,7 +201,7 @@ Migration Features
 ------------------
 
 The {+odm-short+} supports all Laravel migration features, but the
-implementation is specific to MongoDB's schemaless model.
+implementation is specific to MongoDB's schema-flexible model.
 
 Seeding Features
 ----------------
