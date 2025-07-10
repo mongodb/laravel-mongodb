@@ -47,9 +47,9 @@ to a Laravel web application.
    .. step:: Install the {+php-extension+}
 
       {+odm-long+} requires the {+php-extension+} to manage MongoDB
-      connections and commands.
-      Follow the :php:`Installing the MongoDB PHP Driver with PECL
-      <mongodb.installation>` guide to install the {+php-extension+}.
+      connections and commands. To learn how to install the {+php-extension+}, see
+      the `Install the MongoDB PHP extension <https://www.mongodb.com/docs/php-library/current/get-started/#install-the-mongodb-php-extension>`__
+      step of the Get Started with the PHP Library guide.
 
    .. step:: Install Laravel
 
