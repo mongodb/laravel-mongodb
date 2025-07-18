@@ -745,7 +745,10 @@ class Builder extends BaseBuilder
             $values = [$values];
         }
 
-        $values = $this->aliasIdForQuery($values);
+        $values = array_map(
+            $this->aliasIdForQuery(...),
+            $values,
+        );
 
         $options = $this->inheritConnectionOptions();
 

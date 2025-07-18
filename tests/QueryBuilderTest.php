@@ -126,6 +126,22 @@ class QueryBuilderTest extends TestCase
         $this->assertIsArray($user->tags);
     }
 
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testInsertWithCustomId(bool $renameEmbeddedIdField)
+    {
+        $connection = DB::connection('mongodb');
+        $connection->setRenameEmbeddedIdField($renameEmbeddedIdField);
+
+        $data = ['id' => 'abcdef', 'name' => 'John Doe'];
+
+        DB::table('users')->insert($data);
+
+        $user = User::find('abcdef');
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertSame('abcdef', $user->id);
+    }
+
     public function testInsertGetId()
     {
         $id = DB::table('users')->insertGetId(['name' => 'John Doe']);
