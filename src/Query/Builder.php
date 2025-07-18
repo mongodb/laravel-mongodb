@@ -1893,7 +1893,7 @@ class Builder extends BaseBuilder
                     throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
                 }
 
-                $values[substr($key, 0, -3) . '._id'] = $value;
+                $values[$newkey] = $value;
                 unset($values[$key]);
             }
         }
