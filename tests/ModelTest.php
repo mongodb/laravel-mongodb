@@ -25,6 +25,7 @@ use MongoDB\Laravel\Tests\Models\IdIsInt;
 use MongoDB\Laravel\Tests\Models\IdIsString;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\MemberStatus;
+use MongoDB\Laravel\Tests\Models\NonIncrementing;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
@@ -56,6 +57,7 @@ class ModelTest extends TestCase
         Book::truncate();
         Item::truncate();
         Guarded::truncate();
+        NonIncrementing::truncate();
 
         parent::tearDown();
     }
@@ -104,6 +106,26 @@ class ModelTest extends TestCase
 
         $this->assertEquals('John Doe', $user->name);
         $this->assertEquals(35, $user->age);
+    }
+
+    public function testInsertNonIncrementable(): void
+    {
+        $connection = DB::connection('mongodb');
+        $connection->setRenameEmbeddedIdField(false);
+
+        $nonIncrementing        = new NonIncrementing();
+        $nonIncrementing->id    = '12345';
+        $nonIncrementing->name  = 'John Doe';
+
+        $nonIncrementing->save();
+
+        $this->assertTrue($nonIncrementing->exists);
+        $this->assertEquals(1, NonIncrementing::count());
+
+        $check = NonIncrementing::find($nonIncrementing->id);
+        $this->assertInstanceOf(NonIncrementing::class, $check);
+        $this->assertSame('12345', $check->id);
+        $this->assertEquals('John Doe', $check->name);
     }
 
     public function testUpdate(): void
