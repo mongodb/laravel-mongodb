@@ -169,6 +169,21 @@ class ModelTest extends TestCase
         $this->assertEquals('Hans Thomas', $check->fullname);
     }
 
+    public function testUpdateTroughSetUpdatedAt(): void
+    {
+        $user        = new User();
+        $user->name  = 'John Doe';
+        $user->title = 'admin';
+        $user->age   = 35;
+        $user->save();
+
+        $updatedAt = Carbon::yesterday();
+        User::query()->update(['$set' => ['updated_at' => new UTCDateTime($updatedAt)]]);
+
+        $user->refresh();
+        $this->assertEquals($updatedAt, $user->updated_at);
+    }
+
     public function testUpsert()
     {
         $result = User::upsert([

@@ -310,6 +310,10 @@ class Builder extends EloquentBuilder
         }
 
         $column = $this->model->getUpdatedAtColumn();
+        if (isset($values['$set'][$column])) {
+            return $values;
+        }
+
         $values = array_replace(
             [$column => $this->model->freshTimestampString()],
             $values,
