@@ -43,6 +43,7 @@ use function is_numeric;
 use function is_string;
 use function ltrim;
 use function method_exists;
+use function serialize;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
@@ -375,6 +376,17 @@ trait DocumentModel
         if ($this->hasCast($key, static::$primitiveCastTypes)) {
             return $this->castAttribute($key, $attribute) ===
                 $this->castAttribute($key, $original);
+        }
+
+        if ($this->isClassCastable($key)) {
+            $attribute = $this->castAttribute($key, $attribute);
+            $original = $this->castAttribute($key, $original);
+
+            if ($attribute === $original) {
+                return true;
+            }
+
+            return serialize($attribute) === serialize($original);
         }
 
         return is_numeric($attribute) && is_numeric($original)

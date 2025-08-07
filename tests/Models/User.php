@@ -29,6 +29,7 @@ use MongoDB\Laravel\Eloquent\MassPrunable;
  * @property Carbon $updated_at
  * @property string $username
  * @property MemberStatus member_status
+ * @property Options $options
  */
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract
 {
@@ -44,6 +45,7 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         'birthday' => 'datetime',
         'entry.date' => 'datetime',
         'member_status' => MemberStatus::class,
+        'options' => OptionsCast::class,
     ];
 
     protected $fillable = [
