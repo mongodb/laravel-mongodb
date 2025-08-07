@@ -29,7 +29,7 @@ class OptionsCast implements CastsAttributes
      * @param Options|null $value
      * @param array        $attributes
      *
-     * @return null[]
+     * @return null[]|object[]
      */
     public function set(Model $model, string $key, mixed $value, array $attributes): array
     {
