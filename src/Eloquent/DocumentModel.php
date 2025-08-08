@@ -379,13 +379,6 @@ trait DocumentModel
         }
 
         if ($this->isClassCastable($key)) {
-            $attribute = $this->castAttribute($key, $attribute);
-            $original = $this->castAttribute($key, $original);
-
-            if ($attribute === $original) {
-                return true;
-            }
-
             return serialize($attribute) === serialize($original);
         }
 

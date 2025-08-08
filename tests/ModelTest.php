@@ -1074,6 +1074,9 @@ class ModelTest extends TestCase
 
         $user->save();
         $this->assertEmpty($user->getDirty());
+
+        $user->options = (new Options())->setOption1('Value1');
+        $this->assertNotEmpty($user->getDirty());
     }
 
     public function testChunkById(): void
