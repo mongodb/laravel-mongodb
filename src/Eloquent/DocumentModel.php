@@ -40,10 +40,10 @@ use function func_get_args;
 use function in_array;
 use function is_array;
 use function is_numeric;
+use function is_object;
 use function is_string;
 use function ltrim;
 use function method_exists;
-use function serialize;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
@@ -379,7 +379,7 @@ trait DocumentModel
         }
 
         if ($this->isClassCastable($key)) {
-            return serialize($attribute) === serialize($original);
+            return ! is_object($attribute) ? $attribute === $original : $attribute == $original;
         }
 
         return is_numeric($attribute) && is_numeric($original)
