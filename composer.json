@@ -31,8 +31,7 @@
         "illuminate/database": "^10.30|^11|^12",
         "illuminate/events": "^10.0|^11|^12",
         "illuminate/support": "^10.0|^11|^12",
-        "mongodb/mongodb": "^1.21|^2",
-        "symfony/http-foundation": "^6.4|^7"
+        "mongodb/mongodb": "^1.21|^2"
     },
     "require-dev": {
         "laravel/scout": "^10.3",
