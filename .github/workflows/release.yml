@@ -23,7 +23,7 @@ jobs:
         run: echo '🎬 Release process for version ${{ inputs.version }} started by @${{ github.triggering_actor }}' >> $GITHUB_STEP_SUMMARY
 
       - name: "Generate token and checkout repository"
-        uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+        uses: mongodb-labs/drivers-github-tools/secure-checkout@v3
         with:
           app_id: ${{ vars.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -71,7 +71,7 @@ jobs:
       #
 
       - name: "Set up drivers-github-tools"
-        uses: mongodb-labs/drivers-github-tools/setup@v2
+        uses: mongodb-labs/drivers-github-tools/setup@v3
         with:
           aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
           aws_region_name: ${{ vars.AWS_REGION_NAME }}
@@ -82,7 +82,7 @@ jobs:
         run: echo "RELEASE_URL=$(gh release create ${{ inputs.version }} --target ${{ github.ref_name }} --title "${{ inputs.version }}" --generate-notes --draft)" >> "$GITHUB_ENV"
 
       - name: "Create release tag"
-        uses: mongodb-labs/drivers-github-tools/tag-version@v2
+        uses: mongodb-labs/drivers-github-tools/tag-version@v3
         with:
           version: ${{ inputs.version }}
           tag_message_template: 'Release ${VERSION}'
@@ -121,7 +121,7 @@ jobs:
 
     steps:
       - name: "Generate token and checkout repository"
-        uses: mongodb-labs/drivers-github-tools/secure-checkout@v2
+        uses: mongodb-labs/drivers-github-tools/secure-checkout@v3
         with:
           app_id: ${{ vars.APP_ID }}
           private_key: ${{ secrets.APP_PRIVATE_KEY }}
@@ -129,14 +129,14 @@ jobs:
 
       # Sets the S3_ASSETS environment variable used later
       - name: "Set up drivers-github-tools"
-        uses: mongodb-labs/drivers-github-tools/setup@v2
+        uses: mongodb-labs/drivers-github-tools/setup@v3
         with:
           aws_role_arn: ${{ secrets.AWS_ROLE_ARN }}
           aws_region_name: ${{ vars.AWS_REGION_NAME }}
           aws_secret_id: ${{ secrets.AWS_SECRET_ID }}
 
       - name: "Generate SSDLC Reports"
-        uses: mongodb-labs/drivers-github-tools/full-report@v2
+        uses: mongodb-labs/drivers-github-tools/full-report@v3
         with:
           product_name: "MongoDB Laravel Integration"
           release_version: ${{ inputs.version }}
@@ -147,7 +147,7 @@ jobs:
         continue-on-error: true
 
       - name: Upload S3 assets
-        uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v2
+        uses: mongodb-labs/drivers-github-tools/upload-s3-assets@v3
         with:
           version: ${{ inputs.version }}
           product_name: laravel-mongodb
