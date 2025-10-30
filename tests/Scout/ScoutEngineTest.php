@@ -21,6 +21,7 @@ use MongoDB\Laravel\Tests\Scout\Models\ScoutUser;
 use MongoDB\Laravel\Tests\Scout\Models\SearchableModel;
 use MongoDB\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
+use TypeError;
 
 use function array_replace_recursive;
 use function count;
@@ -669,5 +670,18 @@ class ScoutEngineTest extends TestCase
 
         $engine = new ScoutEngine($database, softDelete: false);
         $engine->delete($job->models);
+    }
+
+    public function testDeleteRejectsNonEloquentCollection(): void
+    {
+        $database = $this->createMock(Database::class);
+        $engine = new ScoutEngine($database, softDelete: false);
+
+        $this->expectException(TypeError::class);
+        $this->expectExceptionMessage(
+            'Argument #1 ($models) must be of type Illuminate\Database\Eloquent\Collection',
+        );
+
+        $engine->delete(LaravelCollection::make([1, 2, 3]));
     }
 }
