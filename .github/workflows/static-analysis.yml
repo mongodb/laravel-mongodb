@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - "[0-9]+.[0-9x]+"
-      - "feature/*"
   pull_request:
     branches:
       - "[0-9]+.[0-9x]+"
@@ -17,7 +16,7 @@ on:
         required: true
 
 env:
-  PHP_VERSION: "8.2"
+  PHP_VERSION: "8.5"
   DRIVER_VERSION: "stable"
   MONGODB_EXT_V1: mongodb-1.21.0
   MONGODB_EXT_V2: mongodb-mongodb/mongo-php-driver@v2.x
@@ -34,9 +33,12 @@ jobs:
           - '8.2'
           - '8.3'
           - '8.4'
+          - '8.5'
         driver:
-          - 1
           - 2
+        include:
+          - php: "8.4"
+            driver: 1
     steps:
       - name: Checkout
         uses: actions/checkout@v5
