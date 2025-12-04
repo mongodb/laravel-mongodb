@@ -23,6 +23,15 @@ class Book extends Model
     protected $table = 'books';
     protected static $unguarded = true;
 
+    public function __construct(array $attributes = [])
+    {
+        /* @TODO remove when connection prefix is supported
+         * @see https://jira.mongodb.org/browse/PHPORM-433 */
+        $this->table = ($_SERVER['DB_PREFIX'] ?? '') . $this->table;
+
+        parent::__construct($attributes);
+    }
+
     public function author(): BelongsTo
     {
         return $this->belongsTo(User::class, 'author_id');

@@ -29,6 +29,10 @@ class AtlasSearchTest extends TestCase
 
     public function setUp(): void
     {
+        // Use a unique prefix per test to avoid collisions when the search index is
+        // deleted asynchronously while we try to create it in setup of the next test
+        $_SERVER['DB_PREFIX'] = 'AtlasSearchTest_' . $this->name() . '_';
+
         parent::setUp();
 
         Book::insert($this->addVector([
@@ -54,7 +58,7 @@ class AtlasSearchTest extends TestCase
             ['title' => 'Pattern Recognition and Machine Learning'],
         ]));
 
-        $collection = $this->getConnection('mongodb')->getCollection('books');
+        $collection = $this->getConnection('mongodb')->getCollection($this->getBookCollectionName());
         assert($collection instanceof MongoDBCollection);
 
         try {
@@ -92,25 +96,24 @@ class AtlasSearchTest extends TestCase
         // Wait for the index to be ready
         do {
             $ready = true;
-            usleep(10_000);
+            usleep(100);
             foreach ($collection->listSearchIndexes() as $index) {
-                if ($index['status'] !== 'READY') {
-                    $ready = false;
-                }
+                $ready = $ready && $index['queryable'];
             }
         } while (! $ready);
     }
 
     public function tearDown(): void
     {
-        $this->getConnection('mongodb')->getCollection('books')->drop();
+        $this->getConnection('mongodb')->getCollection($this->getBookCollectionName())->drop();
+        unset($_SERVER['DB_PREFIX']);
 
         parent::tearDown();
     }
 
     public function testGetIndexes()
     {
-        $indexes = Schema::getIndexes('books');
+        $indexes = Schema::getIndexes($this->getBookCollectionName());
 
         self::assertIsArray($indexes);
         self::assertCount(4, $indexes);
@@ -171,7 +174,7 @@ class AtlasSearchTest extends TestCase
 
     public function testDatabaseBuilderSearch()
     {
-        $results = $this->getConnection('mongodb')->table('books')
+        $results = $this->getConnection('mongodb')->table($this->getBookCollectionName())
             ->search(Search::text('title', 'systems'), sort: ['title' => 1]);
 
         self::assertInstanceOf(LaravelCollection::class, $results);
@@ -199,7 +202,7 @@ class AtlasSearchTest extends TestCase
 
     public function testDatabaseBuilderAutocomplete()
     {
-        $results = $this->getConnection('mongodb')->table('books')
+        $results = $this->getConnection('mongodb')->table($this->getBookCollectionName())
             ->autocomplete('title', 'system');
 
         self::assertInstanceOf(LaravelCollection::class, $results);
@@ -213,7 +216,7 @@ class AtlasSearchTest extends TestCase
 
     public function testDatabaseBuilderVectorSearch()
     {
-        $results = $this->getConnection('mongodb')->table('books')
+        $results = $this->getConnection('mongodb')->table($this->getBookCollectionName())
             ->vectorSearch(
                 index: 'vector',
                 path: 'vector4',
@@ -251,6 +254,15 @@ class AtlasSearchTest extends TestCase
             $results->first()->vectorSearchScore,
             self::logicalAnd(self::isType('float'), self::greaterThan(0.9), self::lessThan(1.0)),
         );
+    }
+
+    private function getBookCollectionName(): string
+    {
+        $name = (new Book())->getTable();
+
+        self::assertStringStartsWith('AtlasSearchTest_', $name);
+
+        return $name;
     }
 
     /** Generate random vectors using fixed seed to make tests deterministic */

@@ -112,8 +112,9 @@ class ScoutIntegrationTest extends TestCase
         self::assertSame(['mappings' => ['dynamic' => true, 'fields' => ['bool_field' => ['type' => 'boolean']]]], iterator_to_array($searchIndexes)[0]['latestDefinition']);
 
         // Wait for all documents to be indexed asynchronously
-        $i = 100;
+        $i = 1000;
         while (true) {
+            usleep(10_000);
             $indexedDocuments = $collection->aggregate([
                 ['$search' => ['index' => 'scout', 'exists' => ['path' => 'name']]],
             ])->toArray();
@@ -125,8 +126,6 @@ class ScoutIntegrationTest extends TestCase
             if ($i-- === 0) {
                 self::fail('Documents not indexed');
             }
-
-            usleep(100_000);
         }
 
         self::assertCount(44, $indexedDocuments);
@@ -135,7 +134,7 @@ class ScoutIntegrationTest extends TestCase
     #[Depends('testItCanCreateTheCollection')]
     public function testItCanUseBasicSearch()
     {
-        // All the search queries use "sort" option to ensure the results are deterministic
+        // All the search queries use the "sort" option to ensure the results are deterministic
         $results = ScoutUser::search('lar')->take(10)->orderBy('id')->get();
 
         self::assertSame([

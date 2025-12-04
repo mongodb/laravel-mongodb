@@ -8,6 +8,7 @@ use App\Models\Movie;
 use Illuminate\Support\Facades\DB;
 use MongoDB\Builder\Query;
 use MongoDB\Builder\Search;
+use MongoDB\Collection;
 use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Laravel\Schema\Builder;
 use MongoDB\Laravel\Tests\TestCase;
@@ -32,6 +33,7 @@ class AtlasSearchTest extends TestCase
         parent::setUp();
 
         $moviesCollection = DB::connection('mongodb')->getCollection('movies');
+        self::assertInstanceOf(Collection::class, $moviesCollection);
         $moviesCollection->drop();
 
         Movie::insert([
@@ -49,7 +51,10 @@ class AtlasSearchTest extends TestCase
             ['title' => 'D', 'plot' => 'Stranded on a distant planet, astronauts must repair their ship before supplies run out.'],
         ]));
 
-        $moviesCollection = DB::connection('mongodb')->getCollection('movies');
+        // Waits for the search index created in the previous test to be deleted
+        do {
+            usleep(1_000);
+        } while ($moviesCollection->listSearchIndexes()->count());
 
         try {
             $moviesCollection->createSearchIndex([
@@ -87,9 +92,7 @@ class AtlasSearchTest extends TestCase
             $ready = true;
             usleep(10_000);
             foreach ($moviesCollection->listSearchIndexes() as $index) {
-                if ($index['status'] !== 'READY') {
-                    $ready = false;
-                }
+                $ready = $ready && $index['queryable'];
             }
         } while (! $ready);
     }
