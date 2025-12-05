@@ -11,6 +11,7 @@ use MongoDB\Builder\Search;
 use MongoDB\Collection;
 use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Laravel\Schema\Builder;
+use MongoDB\Laravel\Tests\AtlasSearchIndexManagement;
 use MongoDB\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\Group;
 
@@ -19,11 +20,12 @@ use function mt_getrandmax;
 use function rand;
 use function range;
 use function srand;
-use function usleep;
 
 #[Group('atlas-search')]
 class AtlasSearchTest extends TestCase
 {
+    use AtlasSearchIndexManagement;
+
     private array $vectors;
 
     protected function setUp(): void
@@ -51,10 +53,7 @@ class AtlasSearchTest extends TestCase
             ['title' => 'D', 'plot' => 'Stranded on a distant planet, astronauts must repair their ship before supplies run out.'],
         ]));
 
-        // Waits for the search index created in the previous test to be deleted
-        while ($moviesCollection->listSearchIndexes()->count()) {
-            usleep(1000);
-        }
+        $this->waitForSearchIndexesDropped($moviesCollection);
 
         try {
             $moviesCollection->createSearchIndex([
@@ -87,14 +86,7 @@ class AtlasSearchTest extends TestCase
             throw $e;
         }
 
-        // Waits for the index to be ready
-        do {
-            $ready = true;
-            usleep(10_000);
-            foreach ($moviesCollection->listSearchIndexes() as $index) {
-                $ready = $ready && $index['queryable'];
-            }
-        } while (! $ready);
+        $this->waitForSearchIndexesReady($moviesCollection);
     }
 
     /**

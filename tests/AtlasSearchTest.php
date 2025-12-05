@@ -19,12 +19,13 @@ use function mt_getrandmax;
 use function rand;
 use function range;
 use function srand;
-use function usleep;
 use function usort;
 
 #[Group('atlas-search')]
 class AtlasSearchTest extends TestCase
 {
+    use AtlasSearchIndexManagement;
+
     private array $vectors;
 
     public function setUp(): void
@@ -59,10 +60,7 @@ class AtlasSearchTest extends TestCase
         ]));
 
         try {
-            // Waits for the search index created in the previous test to be deleted
-            while ($collection->listSearchIndexes()->count()) {
-                usleep(1000);
-            }
+            $this->waitForSearchIndexesDropped($collection);
 
             $collection->createSearchIndex([
                 'mappings' => [
@@ -95,14 +93,7 @@ class AtlasSearchTest extends TestCase
             throw $e;
         }
 
-        // Wait for the index to be ready
-        do {
-            $ready = true;
-            usleep(1000);
-            foreach ($collection->listSearchIndexes() as $index) {
-                $ready = $ready && $index['queryable'];
-            }
-        } while (! $ready);
+        $this->waitForSearchIndexesReady($collection);
     }
 
     public function tearDown(): void
