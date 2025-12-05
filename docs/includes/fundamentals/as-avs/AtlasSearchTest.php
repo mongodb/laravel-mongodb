@@ -52,9 +52,9 @@ class AtlasSearchTest extends TestCase
         ]));
 
         // Waits for the search index created in the previous test to be deleted
-        do {
-            usleep(1_000);
-        } while ($moviesCollection->listSearchIndexes()->count());
+        while ($moviesCollection->listSearchIndexes()->count()) {
+            usleep(1000);
+        }
 
         try {
             $moviesCollection->createSearchIndex([
