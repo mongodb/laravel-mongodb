@@ -65,7 +65,7 @@ jobs:
             laravel: "12.*"
 
     steps:
-      - uses: "actions/checkout@v5"
+      - uses: "actions/checkout@v6"
 
       - name: "Create MongoDB Replica Set"
         run: |
