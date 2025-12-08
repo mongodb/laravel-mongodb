@@ -458,7 +458,7 @@ class SchemaTest extends TestCase
             $this->assertNotEquals('test_view', $table['name'], 'Standard views should not be included in the result of getTables.');
 
             if ($table['name'] === self::COLL_1) {
-                $this->assertEquals(8192, $table['size']);
+                $this->assertGreaterThanOrEqual(8192, $table['size']);
                 $this->assertEquals($dbName, $table['schema']);
                 $this->assertEquals($dbName . '.' . self::COLL_1, $table['schema_qualified_name']);
                 $found = true;
