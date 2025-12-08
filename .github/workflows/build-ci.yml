@@ -49,27 +49,27 @@ jobs:
             mongodb: "8.0"
             driver: 1
           # Test Laravel 10
-          - php: "8.4"
+          - php: "8.5"
             laravel: "10.*"
             mongodb: "8.0"
           # Test Laravel 11
-          - php: "8.4"
+          - php: "8.5"
             laravel: "11.*"
             mongodb: "8.0"
-          # Test all server versions
-          - php: "8.4"
+          # Test all server versions with the lowest PHP and latest Laravel
+          - php: "8.2"
             laravel: "12.*"
             mongodb: "4.4"
-          - php: "8.4"
+          - php: "8.2"
             laravel: "12.*"
             mongodb: "5.0"
-          - php: "8.4"
+          - php: "8.2"
             laravel: "12.*"
             mongodb: "6.0"
-          - php: "8.4"
+          - php: "8.2"
             laravel: "12.*"
             mongodb: "7.0"
-          - php: "8.4"
+          - php: "8.2"
             laravel: "12.*"
             mongodb: "8.0"
 
