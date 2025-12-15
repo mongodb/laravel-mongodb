@@ -179,25 +179,23 @@ final class MongoStore implements LockProvider, Store
     #[Override]
     public function increment($key, $value = 1): int|float|false
     {
+        $now = $this->getUTCDateTime();
+
         $result = $this->collection->findOneAndUpdate(
             [
                 '_id' => $this->prefix . $key,
+                'expires_at' => ['$gt' => $now],
             ],
             [
                 '$inc' => ['value' => $value],
             ],
             [
+                'projection' => ['value' => 1, 'expires_at' => 1],
                 'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
             ],
         );
 
         if (! $result) {
-            return false;
-        }
-
-        if ($result['expires_at'] <= $this->getUTCDateTime()) {
-            $this->forgetIfExpired($key);
-
             return false;
         }
 
