@@ -131,5 +131,25 @@ class ValidationTest extends TestCase
             ['name' => 'exists:users'],
         );
         $this->assertFalse($validator->fails());
+
+        User::create(['name' => 'Foo/Bar']);
+
+        $validator = Validator::make(
+            ['name' => 'Foo/Bar'],
+            ['name' => 'required|exists:users'],
+        );
+        $this->assertFalse($validator->fails());
+
+        $validator = Validator::make(
+            ['name' => 'foo/bar'], // case-insensitive
+            ['name' => 'required|exists:users'],
+        );
+        $this->assertFalse($validator->fails());
+
+        $validator = Validator::make(
+            ['name' => 'Foo'], // partial should not match
+            ['name' => 'required|exists:users'],
+        );
+        $this->assertTrue($validator->fails());
     }
 }
