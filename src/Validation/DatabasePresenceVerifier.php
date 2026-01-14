@@ -17,7 +17,10 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
     #[Override]
     public function getCount($collection, $column, $value, $excludeId = null, $idColumn = null, array $extra = [])
     {
-        $query = $this->table($collection)->where($column, new Regex('^' . preg_quote($value) . '$', '/i'));
+        $quoted = preg_quote((string) $value, '/');
+        $regex = new Regex('^' . $quoted . '$', 'i');
+
+        $query = $this->table($collection)->where($column, $regex);
 
         if ($excludeId !== null && $excludeId !== 'NULL') {
             $query->where($idColumn ?: 'id', '<>', $excludeId);
@@ -40,9 +43,14 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
         }
 
         // Generates a regex like '/^(a|b|c)$/i' which can query multiple values
-        $regex = new Regex('^(' . implode('|', array_map(preg_quote(...), $values)) . ')$', 'i');
+        $escapedValues = array_map(
+            static fn ($v) => preg_quote((string) $v, '/'),
+            $values
+        );
 
-        $query = $this->table($collection)->where($column, 'regex', $regex);
+        $regex = new Regex('^(' . implode('|', $escapedValues) . ')$', 'i');
+
+        $query = $this->table($collection)->where($column, $regex);
 
         foreach ($extra as $key => $extraValue) {
             $this->addWhere($query, $key, $extraValue);
