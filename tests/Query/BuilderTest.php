@@ -1681,10 +1681,11 @@ class BuilderTest extends TestCase
         ];
     }
 
-    private function getBuilder(bool $renameEmbeddedIdField = true): Builder
+    private function getBuilder(bool $renameEmbeddedIdField = true, bool $aliasId = true): Builder
     {
         $connection = $this->createStub(Connection::class);
         $connection->method('getRenameEmbeddedIdField')->willReturn($renameEmbeddedIdField);
+        $connection->method('getAliasId')->willReturn($aliasId);
         $processor  = $this->createStub(Processor::class);
         $connection->method('getSession')->willReturn(null);
         $connection->method('getQueryGrammar')->willReturn(new Grammar($connection));
