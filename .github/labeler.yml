@@ -1,7 +1,4 @@
 # https://github.com/actions/labeler
-docs:
-  - changed-files:
-    - any-glob-to-any-file: 'docs/**'
 github:
   - changed-files:
     - any-glob-to-any-file: '.github/**'

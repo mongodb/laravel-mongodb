@@ -17,9 +17,6 @@ changelog:
       labels:
         - bug
         - fixed
-    - title: Documentation Changes
-      labels:
-        - docs
     - title: Other Changes
       labels:
         - "*"

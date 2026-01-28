@@ -10,7 +10,6 @@ use Rector\TypeDeclaration\Rector\Closure\AddClosureVoidReturnTypeWhereNoReturnR
 return RectorConfig::configure()
     ->withPaths([
         __FILE__,
-        __DIR__ . '/docs',
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ])

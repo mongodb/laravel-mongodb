@@ -1,6 +1,5 @@
 /.github                 export-ignore
 /.phpunit.cache          export-ignore
-/docs                    export-ignore
 /tests                   export-ignore
 *.md                     export-ignore
 *.dist                   export-ignore
