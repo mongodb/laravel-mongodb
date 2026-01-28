@@ -1286,7 +1286,7 @@ class Builder extends BaseBuilder
                 $where['column'] = (string) $where['column'];
 
                 // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
-                if ($where['column'] === 'id') {
+                if ($where['column'] === 'id' && $this->connection->getAliasId()) {
                     $where['column'] = '_id';
                 }
 
@@ -1863,7 +1863,9 @@ class Builder extends BaseBuilder
 
     private function aliasIdForQuery(array $values, bool $root = true): array
     {
-        if (array_key_exists('id', $values) && ($root || $this->connection->getRenameEmbeddedIdField())) {
+        $shouldAliasRoot = $root && $this->connection->getAliasId();
+        $shouldAliasEmbedded = ! $root && $this->connection->getRenameEmbeddedIdField();
+        if (array_key_exists('id', $values) && ($shouldAliasRoot || $shouldAliasEmbedded)) {
             if (array_key_exists('_id', $values) && $values['id'] !== $values['_id']) {
                 throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
             }
@@ -1924,9 +1926,11 @@ class Builder extends BaseBuilder
     public function aliasIdForResult(array|object $values, bool $root = true): array|object
     {
         if (is_array($values)) {
+            $shouldAliasRoot = $root && $this->connection->getAliasId();
+            $shouldAliasEmbedded = ! $root && $this->connection->getRenameEmbeddedIdField();
             if (
                 array_key_exists('_id', $values) && ! array_key_exists('id', $values)
-                && ($root || $this->connection->getRenameEmbeddedIdField())
+                && ($shouldAliasRoot || $shouldAliasEmbedded)
             ) {
                 $values['id'] = $values['_id'];
                 unset($values['_id']);
@@ -1943,9 +1947,11 @@ class Builder extends BaseBuilder
         }
 
         if ($values instanceof stdClass) {
+            $shouldAliasRoot = $root && $this->connection->getAliasId();
+            $shouldAliasEmbedded = ! $root && $this->connection->getRenameEmbeddedIdField();
             if (
                 property_exists($values, '_id') && ! property_exists($values, 'id')
-                && ($root || $this->connection->getRenameEmbeddedIdField())
+                && ($shouldAliasRoot || $shouldAliasEmbedded)
             ) {
                 $values->id = $values->_id;
                 unset($values->_id);

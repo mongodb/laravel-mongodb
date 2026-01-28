@@ -77,6 +77,12 @@ trait DocumentModel
      */
     public function getIdAttribute($value = null)
     {
+        // When alias_id is disabled, return the actual 'id' attribute without
+        // falling back to '_id', so that custom 'id' fields are preserved.
+        if (! $this->getConnection()->getAliasId()) {
+            return $value ?? $this->attributes['id'] ?? null;
+        }
+
         // If we don't have a value for 'id', we will use the MongoDB '_id' value.
         // This allows us to work with models in a more sql-like way.
         $value ??= $this->attributes['id'] ?? $this->attributes['_id'] ?? null;
@@ -91,6 +97,30 @@ trait DocumentModel
         }
 
         return $value;
+    }
+
+    /**
+     * Get the primary key for the model.
+     * When alias_id is disabled, always use '_id' as the primary key
+     * to prevent MongoDB's _id from overwriting a custom 'id' field.
+     */
+    public function getKeyName()
+    {
+        return $this->getConnection()->getAliasId()
+            ? parent::getKeyName()
+            : '_id';
+    }
+
+    /**
+     * Get the value of the model's primary key.
+     * When alias_id is disabled, return the raw '_id' attribute directly
+     * to bypass the getIdAttribute accessor.
+     */
+    public function getKey()
+    {
+        return $this->getConnection()->getAliasId()
+            ? parent::getKey()
+            : $this->attributes['_id'] ?? null;
     }
 
     /** @inheritdoc */

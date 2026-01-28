@@ -57,6 +57,9 @@ class Connection extends BaseConnection
     /** @var bool Whether to rename the rename "id" into "_id" for embedded documents. */
     private bool $renameEmbeddedIdField;
 
+    /** @var bool Whether to alias "id" to "_id" at the top level for queries and results. */
+    private bool $aliasId;
+
     /**
      * Create a new database connection instance.
      */
@@ -86,6 +89,7 @@ class Connection extends BaseConnection
         $this->useDefaultQueryGrammar();
 
         $this->renameEmbeddedIdField = $config['rename_embedded_id_field'] ?? true;
+        $this->aliasId = $config['alias_id'] ?? true;
     }
 
     /**
@@ -421,6 +425,18 @@ class Connection extends BaseConnection
     public function getRenameEmbeddedIdField(): bool
     {
         return $this->renameEmbeddedIdField;
+    }
+
+    /** Set whether to alias "id" to "_id" at the top level for queries and results. */
+    public function setAliasId(bool $alias): void
+    {
+        $this->aliasId = $alias;
+    }
+
+    /** Get whether to alias "id" to "_id" at the top level for queries and results. */
+    public function getAliasId(): bool
+    {
+        return $this->aliasId;
     }
 
     /**
