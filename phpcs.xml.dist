@@ -36,6 +36,14 @@
         <exclude name="SlevomatCodingStandard.TypeHints.ReturnTypeHint"/>
 
         <exclude name="Generic.Formatting.MultipleStatementAlignment" />
+
+        <exclude name="Squiz.Classes.ClassFileName.NoMatch">
+            <exclude-pattern>/tests</exclude-pattern>
+        </exclude>
+
+        <exclude name="SlevomatCodingStandard.TypeHints.DeclareStrictTypes.DeclareStrictTypesMissing">
+            <exclude-pattern>/tests</exclude-pattern>
+        </exclude>
     </rule>
 
     <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">

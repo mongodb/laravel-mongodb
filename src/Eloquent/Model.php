@@ -23,9 +23,7 @@ abstract class Model extends BaseModel
      */
     protected $keyType = 'string';
 
-    private static $documentModelClasses = [
-        User::class => true,
-    ];
+    private static $documentModelClasses = [User::class => true];
 
     /**
      * Indicates if the given model class is a MongoDB document model.

@@ -47,9 +47,7 @@ class ScoutEngineTest extends TestCase
     {
         $collectionName = 'collection_custom';
         $expectedDefinition = [
-            'mappings' => [
-                'dynamic' => true,
-            ],
+            'mappings' => ['dynamic' => true],
         ];
 
         $database = $this->createMock(Database::class);
@@ -170,15 +168,11 @@ class ScoutEngineTest extends TestCase
                         ],
                         'minimumShouldMatch' => 1,
                     ],
-                    'count' => [
-                        'type' => 'lowerBound',
-                    ],
+                    'count' => ['type' => 'lowerBound'],
                 ],
             ],
             [
-                '$addFields' => [
-                    '__count' => '$$SEARCH_META.count.lowerBound',
-                ],
+                '$addFields' => ['__count' => '$$SEARCH_META.count.lowerBound'],
             ],
         ];
 
@@ -450,25 +444,17 @@ class ScoutEngineTest extends TestCase
                                 ],
                                 'minimumShouldMatch' => 1,
                             ],
-                            'count' => [
-                                'type' => 'lowerBound',
-                            ],
+                            'count' => ['type' => 'lowerBound'],
                             'sort' => [
                                 'name' => -1,
                             ],
                         ],
                     ],
                     [
-                        '$addFields' => [
-                            '__count' => '$$SEARCH_META.count.lowerBound',
-                        ],
+                        '$addFields' => ['__count' => '$$SEARCH_META.count.lowerBound'],
                     ],
-                    [
-                        '$skip' => 10,
-                    ],
-                    [
-                        '$limit' => 5,
-                    ],
+                    ['$skip' => 10],
+                    ['$limit' => 5],
                 ], $args[0]);
 
                 return $cursor;
@@ -597,9 +583,7 @@ class ScoutEngineTest extends TestCase
                 'id' => 1,
                 'date' => $date,
             ]),
-            new SearchableModel([
-                'id' => 2,
-            ]),
+            new SearchableModel(['id' => 2]),
         ]));
     }
 

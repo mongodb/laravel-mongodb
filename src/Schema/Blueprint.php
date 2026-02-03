@@ -129,9 +129,7 @@ class Blueprint extends BaseBlueprint
     ): void {
         $options = array_merge(
             [
-                'validator' => [
-                    '$jsonSchema' => $schema,
-                ],
+                'validator' => ['$jsonSchema' => $schema],
             ],
             $validationLevel ? ['validationLevel' => $validationLevel] : [],
             $validationAction ? ['validationAction' => $validationAction] : [],

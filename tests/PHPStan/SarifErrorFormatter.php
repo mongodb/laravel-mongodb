@@ -85,18 +85,14 @@ class SarifErrorFormatter implements ErrorFormatter
         foreach ($analysisResult->getNotFileSpecificErrors() as $notFileSpecificError) {
             $results[] = [
                 'level' => 'error',
-                'message' => [
-                    'text' => $notFileSpecificError,
-                ],
+                'message' => ['text' => $notFileSpecificError],
             ];
         }
 
         foreach ($analysisResult->getWarnings() as $warning) {
             $results[] = [
                 'level' => 'warning',
-                'message' => [
-                    'text' => $warning,
-                ],
+                'message' => ['text' => $warning],
             ];
         }
 

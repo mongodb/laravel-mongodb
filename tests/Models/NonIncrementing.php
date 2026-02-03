@@ -18,9 +18,7 @@ class NonIncrementing extends Model
     protected $keyType = 'string';
     protected $connection = 'mongodb';
 
-    protected $fillable = [
-        'name',
-    ];
+    protected $fillable = ['name'];
     protected static $unguarded = true;
     public $incrementing = false;
 }

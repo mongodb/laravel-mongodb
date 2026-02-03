@@ -107,9 +107,7 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
                     'total_jobs' => $amount,
                     'pending_jobs' => $amount,
                 ],
-                '$set' => [
-                    'finished_at' => null,
-                ],
+                '$set' => ['finished_at' => null],
             ],
         );
     }

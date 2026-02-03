@@ -97,10 +97,7 @@ final class MongoStore implements LockProvider, Store
                     'expires_at' => $this->getUTCDateTime($seconds),
                 ],
             ],
-            [
-                'upsert' => true,
-
-            ],
+            ['upsert' => true],
         );
 
         return $result->getUpsertedCount() > 0 || $result->getModifiedCount() > 0;
