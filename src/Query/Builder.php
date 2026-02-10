@@ -1870,7 +1870,16 @@ class Builder extends BaseBuilder
         throw new BadMethodCallException('This method is not supported by MongoDB');
     }
 
-    private function aliasIdForQuery(array $values, bool $root = true): array
+    /**
+     * @internal
+     *
+     * @psalm-param T $values
+     *
+     * @psalm-return T
+     *
+     * @template T of array
+     */
+    public function aliasIdForQuery(array $values, bool $root = true): array
     {
         if (array_key_exists('id', $values) && ($root || $this->connection->getRenameEmbeddedIdField())) {
             if (array_key_exists('_id', $values) && $values['id'] !== $values['_id']) {
@@ -1888,24 +1897,24 @@ class Builder extends BaseBuilder
 
             // "->" arrow notation for subfields is an alias for "." dot notation
             if (str_contains($key, '->')) {
-                $newkey = str_replace('->', '.', $key);
-                if (array_key_exists($newkey, $values) && $value !== $values[$newkey]) {
-                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
+                $newKey = str_replace('->', '.', $key);
+                if (array_key_exists($newKey, $values) && $value !== $values[$newKey]) {
+                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newKey));
                 }
 
-                $values[$newkey] = $value;
+                $values[$newKey] = $value;
                 unset($values[$key]);
-                $key = $newkey;
+                $key = $newKey;
             }
 
             // ".id" subfield are alias for "._id"
             if (str_ends_with($key, '.id') && $this->connection->getRenameEmbeddedIdField()) {
-                $newkey = substr($key, 0, -3) . '._id';
-                if (array_key_exists($newkey, $values) && $value !== $values[$newkey]) {
-                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newkey));
+                $newKey = substr($key, 0, -3) . '._id';
+                if (array_key_exists($newKey, $values) && $value !== $values[$newKey]) {
+                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newKey));
                 }
 
-                $values[$newkey] = $value;
+                $values[$newKey] = $value;
                 unset($values[$key]);
             }
         }
