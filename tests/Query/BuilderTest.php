@@ -531,6 +531,36 @@ class BuilderTest extends TestCase
                 ->orderBy('age', 1),
         ];
 
+        yield 'chunked ordering' => [
+            [
+                'find' => [
+                    ['_id' => ['$gt' => 0]],
+                    ['sort' => ['_id' => 1, 'name' => 1], 'limit' => 2],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->orderBy('_id')->orderBy('name');
+                $builder->forPageAfterId(2);
+
+                return $builder;
+            },
+        ];
+
+        yield 'chunked ordering with id alias' => [
+            [
+                'find' => [
+                    ['_id' => ['$gt' => 0]],
+                    ['sort' => ['_id' => 1, 'name' => 1], 'limit' => 2],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->orderBy('id')->orderBy('name');
+                $builder->forPageAfterId(2);
+
+                return $builder;
+            },
+        ];
+
         yield 'orderByDesc' => [
             ['find' => [[], ['sort' => ['email' => -1]]]],
             fn (Builder $builder) => $builder->orderByDesc('email'),

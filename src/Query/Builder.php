@@ -39,6 +39,7 @@ use function array_fill_keys;
 use function array_filter;
 use function array_is_list;
 use function array_key_exists;
+use function array_keys;
 use function array_map;
 use function array_merge;
 use function array_replace;
@@ -702,6 +703,33 @@ class Builder extends BaseBuilder
         }
 
         return $this;
+    }
+
+    /**
+     * Override Illuminate's removeExistingOrdersFor to support associative order storage used by MongoDB.
+     *
+     * @inheritdoc
+     */
+    #[Override]
+    protected function removeExistingOrdersFor($column): array
+    {
+        $orders = $this->orders ?? [];
+
+        $toUnset = array_filter(
+            array_keys($orders),
+            function ($orderColumn) use ($column) {
+                return $orderColumn === $column
+                    || ($orderColumn === 'id' && $column === '_id')
+                    || ($orderColumn === '_id' && $column === 'id'
+                );
+            },
+        );
+
+        foreach ($toUnset as $column) {
+            unset($orders[$column]);
+        }
+
+        return $orders;
     }
 
     /** @inheritdoc */
