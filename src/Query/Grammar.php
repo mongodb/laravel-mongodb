@@ -34,14 +34,14 @@ class Grammar extends BaseGrammar
      * Prepare fields for the MongoDB query by aliasing "id" to "_id" and handling arrow notation.
      * Users can override this method to customize field aliasing behavior.
      *
-     * @template T of array
-     *
-     * @psalm-param T $values
      * @param array<string, mixed> $values The values to prepare
      * @param bool                 $root   Whether this is the root level (affects embedded id field handling)
+     * @psalm-param T $values
      *
-     * @psalm-return T
      * @return array<string, mixed> The prepared values
+     * @psalm-return T
+     *
+     * @template T of array
      */
     public function prepareFieldsForQuery(array $values, bool $root = true): array
     {
@@ -98,16 +98,16 @@ class Grammar extends BaseGrammar
      * Prepare fields from the MongoDB result by aliasing "_id" to "id".
      * Users can override this method to customize field aliasing behavior.
      *
-     * @template T of array|object
-     *
-     * @psalm-param T                     $values
      * @param array<string, mixed>|object $values The values to prepare
      * @param bool                        $root   Whether this is the root level (affects embedded id field handling)
+     * @psalm-param T                     $values
      *
-     * @psalm-return T
      * @return array<string, mixed>|object The prepared values
+     * @psalm-return T
      *
      * @throws DateInvalidTimeZoneException
+     *
+     * @template T of array|object
      */
     public function prepareFieldsForResult(array|object $values, bool $root = true): array|object
     {
