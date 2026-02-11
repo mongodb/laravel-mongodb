@@ -37,7 +37,7 @@ if (method_exists(Builder::class, 'timeout')) {
          *
          * @return $this
          */
-        public function timeout($seconds): static
+        public function timeout($seconds)
         {
             $this->timeout = $seconds;
 
