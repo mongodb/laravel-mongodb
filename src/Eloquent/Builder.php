@@ -253,7 +253,7 @@ class Builder extends EloquentBuilder
         // Convert MongoCursor results to a collection of models.
         if ($results instanceof CursorInterface) {
             $results->setTypeMap(['root' => 'array', 'document' => 'array', 'array' => 'array']);
-            $results = array_map(fn ($document) => $this->query->aliasIdForResult($document), iterator_to_array($results));
+            $results = array_map(fn ($document) => $this->query->getGrammar()->prepareFieldsForResult($document), iterator_to_array($results));
 
             return $this->model->hydrate($results);
         }
@@ -269,7 +269,7 @@ class Builder extends EloquentBuilder
 
         // The result is a single object.
         if (is_array($results) && (array_key_exists('_id', $results) || array_key_exists('id', $results))) {
-            $results = $this->query->aliasIdForResult($results);
+            $results = $this->query->getGrammar()->prepareFieldsForResult($results);
 
             return $this->model->newFromBuilder($results);
         }

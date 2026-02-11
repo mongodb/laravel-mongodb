@@ -8,14 +8,11 @@ use ArgumentCountError;
 use BadMethodCallException;
 use Carbon\CarbonPeriod;
 use Closure;
-use DateTimeInterface;
-use DateTimeZone;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Date;
 use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LogicException;
@@ -32,7 +29,6 @@ use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
 use Override;
 use RuntimeException;
-use stdClass;
 use TypeError;
 
 use function array_fill_keys;
@@ -50,7 +46,6 @@ use function call_user_func;
 use function call_user_func_array;
 use function count;
 use function ctype_xdigit;
-use function date_default_timezone_get;
 use function dd;
 use function dump;
 use function end;
@@ -58,7 +53,6 @@ use function explode;
 use function func_get_args;
 use function func_num_args;
 use function get_debug_type;
-use function get_object_vars;
 use function implode;
 use function in_array;
 use function is_array;
@@ -72,10 +66,8 @@ use function md5;
 use function preg_match;
 use function preg_quote;
 use function preg_replace;
-use function property_exists;
 use function serialize;
 use function sprintf;
-use function str_contains;
 use function str_ends_with;
 use function str_replace;
 use function str_starts_with;
@@ -85,7 +77,10 @@ use function substr;
 use function trait_exists;
 use function var_export;
 
-/** @property Connection $connection */
+/**
+ * @property Connection $connection
+ * @property Grammar    $grammar
+ */
 class Builder extends BaseBuilder
 {
     use BuilderTimeout;
@@ -95,23 +90,23 @@ class Builder extends BaseBuilder
     /**
      * The database collection.
      *
-     * @var \MongoDB\Collection
+     * @var Collection
      */
-    protected $collection;
+    protected Collection $collection;
 
     /**
      * The column projections.
      *
      * @var array
      */
-    public $projections = [];
+    public array $projections = [];
 
     /**
      * The cursor hint value.
      *
      * @var int
      */
-    public $hint;
+    public int $hint;
 
     private ReadPreference $readPreference;
 
@@ -120,7 +115,7 @@ class Builder extends BaseBuilder
      *
      * @var array
      */
-    public $options = [];
+    public array $options = [];
 
     /**
      * All of the available clause operators.
@@ -176,7 +171,7 @@ class Builder extends BaseBuilder
      *
      * @var array
      */
-    protected $conversion = [
+    protected array $conversion = [
         '=' => 'eq',
         '!=' => 'ne',
         '<>' => 'ne',
@@ -302,11 +297,11 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
-        $wheres = $this->aliasIdForQuery($wheres);
+        $wheres = $this->grammar->prepareFieldsForQuery($wheres);
 
         // Use MongoDB's aggregation framework when using grouping or aggregation functions.
         if ($this->groups || $this->aggregate) {
-            $group   = [];
+            $group = [];
             $unwinds = [];
             $set = [];
 
@@ -341,7 +336,7 @@ class Builder extends BaseBuilder
                     $splitColumns = explode('.*.', $column);
                     if (count($splitColumns) === 2) {
                         $unwinds[] = $splitColumns[0];
-                        $column    = implode('.', $splitColumns);
+                        $column = implode('.', $splitColumns);
                     }
 
                     $aggregations = blank($this->aggregate['columns']) ? [] : $this->aggregate['columns'];
@@ -394,7 +389,7 @@ class Builder extends BaseBuilder
 
             // Apply order and limit
             if ($this->orders) {
-                $pipeline[] = ['$sort' => $this->aliasIdForQuery($this->orders)];
+                $pipeline[] = ['$sort' => $this->grammar->prepareFieldsForQuery($this->orders)];
             }
 
             if ($this->offset) {
@@ -435,7 +430,7 @@ class Builder extends BaseBuilder
 
         // Normal query
         // Convert select columns to simple projections.
-        $projection = $this->aliasIdForQuery(array_fill_keys($columns, true));
+        $projection = $this->grammar->prepareFieldsForQuery(array_fill_keys($columns, true));
 
         // Add custom projections.
         if ($this->projections) {
@@ -450,7 +445,7 @@ class Builder extends BaseBuilder
         }
 
         if ($this->orders) {
-            $options['sort'] = $this->aliasIdForQuery($this->orders);
+            $options['sort'] = $this->grammar->prepareFieldsForQuery($this->orders);
         }
 
         if ($this->offset) {
@@ -524,7 +519,7 @@ class Builder extends BaseBuilder
         if ($returnLazy) {
             return LazyCollection::make(function () use ($result) {
                 foreach ($result as $item) {
-                    yield $this->aliasIdForResult($item);
+                    yield $this->grammar->prepareFieldsForResult($item);
                 }
             });
         }
@@ -535,7 +530,7 @@ class Builder extends BaseBuilder
 
         foreach ($result as &$document) {
             if (is_array($document) || is_object($document)) {
-                $document = $this->aliasIdForResult($document);
+                $document = $this->grammar->prepareFieldsForResult($document);
             }
         }
 
@@ -606,8 +601,8 @@ class Builder extends BaseBuilder
         // Once we have executed the query, we will reset the aggregate property so
         // that more select queries can be executed against the database without
         // the aggregate value getting in the way when the grammar builds it.
-        $this->aggregate          = null;
-        $this->columns            = $previousColumns;
+        $this->aggregate = null;
+        $this->columns = $previousColumns;
         $this->bindings['select'] = $previousSelectBindings;
 
         // When the aggregation is per group, we return the results as is.
@@ -765,7 +760,7 @@ class Builder extends BaseBuilder
         }
 
         $values = array_map(
-            $this->aliasIdForQuery(...),
+            $this->grammar->prepareFieldsForQuery(...),
             $values,
         );
 
@@ -782,7 +777,7 @@ class Builder extends BaseBuilder
     {
         $options = $this->inheritConnectionOptions();
 
-        $values = $this->aliasIdForQuery($values);
+        $values = $this->grammar->prepareFieldsForQuery($values);
 
         $result = $this->collection->insertOne($values, $options);
 
@@ -987,8 +982,8 @@ class Builder extends BaseBuilder
             $this->where('_id', '=', $id);
         }
 
-        $wheres  = $this->compileWheres();
-        $wheres  = $this->aliasIdForQuery($wheres);
+        $wheres = $this->compileWheres();
+        $wheres = $this->grammar->prepareFieldsForQuery($wheres);
         $options = $this->inheritConnectionOptions();
 
         /**
@@ -1022,7 +1017,7 @@ class Builder extends BaseBuilder
     public function truncate(): bool
     {
         $options = $this->inheritConnectionOptions();
-        $result  = $this->collection->deleteMany([], $options);
+        $result = $this->collection->deleteMany([], $options);
 
         return $result->isAcknowledged();
     }
@@ -1193,12 +1188,12 @@ class Builder extends BaseBuilder
             $options['multiple'] = true;
         }
 
-        $update = $this->aliasIdForQuery($update);
+        $update = $this->grammar->prepareFieldsForQuery($update);
 
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
-        $wheres = $this->aliasIdForQuery($wheres);
+        $wheres = $this->grammar->prepareFieldsForQuery($wheres);
         $result = $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
             return $result->getModifiedCount() ?: $result->getUpsertedCount();
@@ -1367,9 +1362,9 @@ class Builder extends BaseBuilder
 
     protected function compileWhereBasic(array $where): array
     {
-        $column   = $where['column'];
+        $column = $where['column'];
         $operator = $where['operator'];
-        $value    = $where['value'];
+        $value = $where['value'];
 
         // Replace like or not like with a Regex instance.
         if (in_array($operator, ['like', 'not like'])) {
@@ -1395,9 +1390,7 @@ class Builder extends BaseBuilder
             // For inverse like operations, we can just use the $not operator with the Regex
             $operator = $operator === 'like' ? '=' : 'not';
             // phpcs:ignore Squiz.ControlStructures.ControlSignature.SpaceAfterCloseBrace
-        }
-
-        // Manipulate regex operations.
+        } // Manipulate regex operations.
         elseif (in_array($operator, ['regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
             if (is_string($value)) {
@@ -1417,7 +1410,7 @@ class Builder extends BaseBuilder
                 $flags = end($e);
                 // Extract the regex string between the delimiters
                 $regstr = substr($value, 1, -1 - strlen($flags));
-                $value  = new Regex($regstr, $flags);
+                $value = new Regex($regstr, $flags);
             }
 
             // For inverse regex operations, we can just use the $not operator with the Regex
@@ -1458,7 +1451,7 @@ class Builder extends BaseBuilder
     protected function compileWhereNull(array $where): array
     {
         $where['operator'] = '=';
-        $where['value']    = null;
+        $where['value'] = null;
 
         return $this->compileWhereBasic($where);
     }
@@ -1466,7 +1459,7 @@ class Builder extends BaseBuilder
     protected function compileWhereNotNull(array $where): array
     {
         $where['operator'] = 'ne';
-        $where['value']    = null;
+        $where['value'] = null;
 
         return $this->compileWhereBasic($where);
     }
@@ -1474,7 +1467,7 @@ class Builder extends BaseBuilder
     protected function compileWhereBetween(array $where): array
     {
         $column = $where['column'];
-        $not    = $where['not'];
+        $not = $where['not'];
         $values = $where['values'];
 
         if ($not) {
@@ -1505,7 +1498,7 @@ class Builder extends BaseBuilder
     protected function compileWhereDate(array $where): array
     {
         $startOfDay = new UTCDateTime(Carbon::parse($where['value'])->startOfDay());
-        $endOfDay   = new UTCDateTime(Carbon::parse($where['value'])->endOfDay());
+        $endOfDay = new UTCDateTime(Carbon::parse($where['value'])->endOfDay());
 
         return match ($where['operator']) {
             'eq', '=' => [
@@ -1868,117 +1861,5 @@ class Builder extends BaseBuilder
     public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
-    }
-
-    /**
-     * @internal
-     *
-     * @psalm-param T $values
-     *
-     * @psalm-return T
-     *
-     * @template T of array
-     */
-    public function aliasIdForQuery(array $values, bool $root = true): array
-    {
-        if (array_key_exists('id', $values) && ($root || $this->connection->getRenameEmbeddedIdField())) {
-            if (array_key_exists('_id', $values) && $values['id'] !== $values['_id']) {
-                throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
-            }
-
-            $values['_id'] = $values['id'];
-            unset($values['id']);
-        }
-
-        foreach ($values as $key => $value) {
-            if (! is_string($key)) {
-                continue;
-            }
-
-            // "->" arrow notation for subfields is an alias for "." dot notation
-            if (str_contains($key, '->')) {
-                $newKey = str_replace('->', '.', $key);
-                if (array_key_exists($newKey, $values) && $value !== $values[$newKey]) {
-                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newKey));
-                }
-
-                $values[$newKey] = $value;
-                unset($values[$key]);
-                $key = $newKey;
-            }
-
-            // ".id" subfield are alias for "._id"
-            if (str_ends_with($key, '.id') && $this->connection->getRenameEmbeddedIdField()) {
-                $newKey = substr($key, 0, -3) . '._id';
-                if (array_key_exists($newKey, $values) && $value !== $values[$newKey]) {
-                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newKey));
-                }
-
-                $values[$newKey] = $value;
-                unset($values[$key]);
-            }
-        }
-
-        foreach ($values as &$value) {
-            if (is_array($value)) {
-                $value = $this->aliasIdForQuery($value, false);
-            } elseif ($value instanceof DateTimeInterface) {
-                $value = new UTCDateTime($value);
-            }
-        }
-
-        return $values;
-    }
-
-    /**
-     * @internal
-     *
-     * @psalm-param T $values
-     *
-     * @psalm-return T
-     *
-     * @template T of array|object
-     */
-    public function aliasIdForResult(array|object $values, bool $root = true): array|object
-    {
-        if (is_array($values)) {
-            if (
-                array_key_exists('_id', $values) && ! array_key_exists('id', $values)
-                && ($root || $this->connection->getRenameEmbeddedIdField())
-            ) {
-                $values['id'] = $values['_id'];
-                unset($values['_id']);
-            }
-
-            foreach ($values as $key => $value) {
-                if ($value instanceof UTCDateTime) {
-                    $values[$key] = Date::instance($value->toDateTime())
-                        ->setTimezone(new DateTimeZone(date_default_timezone_get()));
-                } elseif (is_array($value) || is_object($value)) {
-                    $values[$key] = $this->aliasIdForResult($value, false);
-                }
-            }
-        }
-
-        if ($values instanceof stdClass) {
-            if (
-                property_exists($values, '_id') && ! property_exists($values, 'id')
-                && ($root || $this->connection->getRenameEmbeddedIdField())
-            ) {
-                $values->id = $values->_id;
-                unset($values->_id);
-            }
-
-            foreach (get_object_vars($values) as $key => $value) {
-                if ($value instanceof UTCDateTime) {
-                    $values->{$key} = Date::instance($value->toDateTime())
-                        ->setTimezone(new DateTimeZone(date_default_timezone_get()));
-                } elseif (is_array($value) || is_object($value)) {
-                    $values->{$key} = $this->aliasIdForResult($value, false);
-                }
-            }
-        }
-
-        return $values;
     }
 }
