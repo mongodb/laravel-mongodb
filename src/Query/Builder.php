@@ -90,9 +90,9 @@ class Builder extends BaseBuilder
     /**
      * The database collection.
      *
-     * @var Collection
+     * @var \MongoDB\Collection
      */
-    protected Collection $collection;
+    protected $collection;
 
     /**
      * The column projections.
@@ -1391,7 +1391,7 @@ class Builder extends BaseBuilder
             $operator = $operator === 'like' ? '=' : 'not';
             // phpcs:ignore Squiz.ControlStructures.ControlSignature.SpaceAfterCloseBrace
         }
-        
+
         // Manipulate regex operations.
         elseif (in_array($operator, ['regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
