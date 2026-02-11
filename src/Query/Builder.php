@@ -106,7 +106,7 @@ class Builder extends BaseBuilder
      *
      * @var int
      */
-    public int $hint;
+    public $hint;
 
     private ReadPreference $readPreference;
 
