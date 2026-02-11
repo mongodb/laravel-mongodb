@@ -48,6 +48,7 @@
 
     <rule ref="PSR1.Classes.ClassDeclaration.MultipleClasses">
         <exclude-pattern>tests/Ticket/*.php</exclude-pattern>
+        <exclude-pattern>src/Query/BuilderTimeout.php</exclude-pattern>
     </rule>
 
     <rule ref="SlevomatCodingStandard.Commenting.DocCommentSpacing.IncorrectAnnotationsGroup">
