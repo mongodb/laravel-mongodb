@@ -33,7 +33,7 @@ if (method_exists(Builder::class, 'timeout')) {
         /**
          * The maximum amount of seconds to allow the query to run.
          *
-         * @param  int|float $seconds
+         * @param  int|null $seconds
          *
          * @return $this
          */

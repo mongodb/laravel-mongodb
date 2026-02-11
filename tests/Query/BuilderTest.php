@@ -1438,8 +1438,8 @@ class BuilderTest extends TestCase
         ];
 
         yield 'timeout' => [
-            ['find' => [[], ['maxTimeMS' => 2345]]],
-            fn (Builder $builder) => $builder->timeout(2.3456),
+            ['find' => [[], ['maxTimeMS' => 2000]]],
+            fn (Builder $builder) => $builder->timeout(2),
         ];
     }
 
