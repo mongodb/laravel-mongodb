@@ -10,9 +10,9 @@ use function method_exists;
 
 /**
  * The method {@see \Illuminate\Database\Query\Builder::timeout()} was added in
- * Laravel 12.51.0. This trait removes the method if it already exists
- * as it's identical to the one added in Laravel 12.51, and adds it if it doesn't
- * exist to provide support for older Laravel versions.
+ * Laravel 12.51.0. On Laravel 12.51.0 and later, this trait is empty because the
+ * framework already provides the method. On older Laravel versions, this trait
+ * defines the timeout API to provide backwards compatibility.
  */
 if (method_exists(Builder::class, 'timeout')) {
     /** @internal For Laravel 12.51+ */
