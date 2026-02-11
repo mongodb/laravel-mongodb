@@ -1390,7 +1390,9 @@ class Builder extends BaseBuilder
             // For inverse like operations, we can just use the $not operator with the Regex
             $operator = $operator === 'like' ? '=' : 'not';
             // phpcs:ignore Squiz.ControlStructures.ControlSignature.SpaceAfterCloseBrace
-        } // Manipulate regex operations.
+        }
+        
+        // Manipulate regex operations.
         elseif (in_array($operator, ['regex', 'not regex'])) {
             // Automatically convert regular expression strings to Regex objects.
             if (is_string($value)) {
