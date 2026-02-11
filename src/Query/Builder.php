@@ -87,6 +87,8 @@ use function var_export;
 /** @property Connection $connection */
 class Builder extends BaseBuilder
 {
+    use BuilderTimeout;
+
     private const REGEX_DELIMITERS = ['/', '#', '~'];
 
     /**
@@ -102,13 +104,6 @@ class Builder extends BaseBuilder
      * @var array
      */
     public $projections = [];
-
-    /**
-     * The maximum amount of seconds to allow the query to run.
-     *
-     * @var int|float
-     */
-    public $timeout;
 
     /**
      * The cursor hint value.
@@ -210,20 +205,6 @@ class Builder extends BaseBuilder
     public function project($columns)
     {
         $this->projections = is_array($columns) ? $columns : func_get_args();
-
-        return $this;
-    }
-
-    /**
-     * The maximum amount of seconds to allow the query to run.
-     *
-     * @param  int|float $seconds
-     *
-     * @return $this
-     */
-    public function timeout($seconds)
-    {
-        $this->timeout = $seconds;
 
         return $this;
     }
