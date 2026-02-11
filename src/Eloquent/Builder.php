@@ -28,6 +28,7 @@ use function is_array;
 use function is_object;
 use function iterator_to_array;
 use function property_exists;
+use function value;
 
 /**
  * @method \MongoDB\Laravel\Query\Builder toBase()
@@ -277,7 +278,7 @@ class Builder extends EloquentBuilder
     }
 
     #[Override]
-    public function firstOrCreate(array $attributes = [], array $values = [])
+    public function firstOrCreate(array $attributes = [], Closure|array $values = [])
     {
         $instance = (clone $this)->where($attributes)->first();
         if ($instance !== null) {
@@ -286,14 +287,14 @@ class Builder extends EloquentBuilder
 
         // createOrFirst is not supported in transaction.
         if ($this->getConnection()->getSession()?->isInTransaction()) {
-            return $this->create(array_replace($attributes, $values));
+            return $this->create(array_replace($attributes, value($values)));
         }
 
         return $this->createOrFirst($attributes, $values);
     }
 
     #[Override]
-    public function createOrFirst(array $attributes = [], array $values = [])
+    public function createOrFirst(array $attributes = [], Closure|array $values = [])
     {
         // The duplicate key error would abort the transaction. Using the regular firstOrCreate in that case.
         if ($this->getConnection()->getSession()?->isInTransaction()) {
@@ -301,7 +302,7 @@ class Builder extends EloquentBuilder
         }
 
         try {
-            return $this->create(array_replace($attributes, $values));
+            return $this->create(array_replace($attributes, value($values)));
         } catch (BulkWriteException $e) {
             if ($e->getCode() === self::DUPLICATE_KEY_ERROR) {
                 return $this->where($attributes)->first() ?? throw $e;

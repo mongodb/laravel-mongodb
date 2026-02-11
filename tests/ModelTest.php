@@ -1129,6 +1129,25 @@ class ModelTest extends TestCase
         $this->assertEquals($user->id, $check->id);
     }
 
+    public function testFirstOrCreateWithValues(): void
+    {
+        $name = 'Jane Poe';
+
+        $user = User::where('name', $name)->first();
+        $this->assertNull($user);
+
+        $user = User::firstOrCreate(['name' => $name], static fn () => ['age' => 30]);
+        $this->assertInstanceOf(User::class, $user);
+        $this->assertTrue(Model::isDocumentModel($user));
+        $this->assertTrue($user->exists);
+        $this->assertEquals($name, $user->name);
+
+        $check = User::where('name', $name)->first();
+        $this->assertInstanceOf(User::class, $check);
+        $this->assertEquals($user->id, $check->id);
+        $this->assertSame(30, $check->age);
+    }
+
     public function testEnumCast(): void
     {
         $name = 'John Member';
@@ -1213,7 +1232,7 @@ class ModelTest extends TestCase
         $events = [];
         $user3 = User::createOrFirst(
             ['email' => 'jane.doe@example.com'],
-            ['name' => 'Jane Doe', 'birthday' => new DateTime('1987-05-28')],
+            static fn () => ['name' => 'Jane Doe', 'birthday' => new DateTime('1987-05-28')],
         );
 
         $this->assertNotEquals($user3->id, $user1->id);
