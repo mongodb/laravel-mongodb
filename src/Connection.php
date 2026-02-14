@@ -22,6 +22,7 @@ use Throwable;
 use function filter_var;
 use function implode;
 use function is_array;
+use function method_exists;
 use function preg_match;
 use function sprintf;
 use function str_contains;
@@ -371,7 +372,16 @@ class Connection extends BaseConnection
     protected function getDefaultQueryGrammar()
     {
         // Argument added in Laravel 12
-        return new Query\Grammar($this);
+        $grammar = new Query\Grammar($this);
+
+        // Method setConnection() was removed in Laravel 12,
+        // where the connection is passed via the constructor instead.
+        // Keep this for Laravel 11.
+        if (method_exists($grammar, 'setConnection')) {
+            $grammar->setConnection($this);
+        }
+
+        return $grammar;
     }
 
     /** @inheritdoc */
@@ -379,7 +389,16 @@ class Connection extends BaseConnection
     protected function getDefaultSchemaGrammar()
     {
         // Argument added in Laravel 12
-        return new Schema\Grammar($this);
+        $grammar = new Schema\Grammar($this);
+
+        // Method setConnection() was removed in Laravel 12,
+        // where the connection is passed via the constructor instead.
+        // Keep this for Laravel 11.
+        if (method_exists($grammar, 'setConnection')) {
+            $grammar->setConnection($this);
+        }
+
+        return $grammar;
     }
 
     /**
