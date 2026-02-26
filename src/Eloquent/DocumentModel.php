@@ -101,26 +101,38 @@ trait DocumentModel
 
     /**
      * Get the primary key for the model.
-     * When alias_id is disabled, always use '_id' as the primary key
-     * to prevent MongoDB's _id from overwriting a custom 'id' field.
+     *
+     * When alias_id is disabled and the model uses Eloquent's default 'id' key,
+     * returns '_id' to prevent MongoDB's _id from overwriting a custom 'id' field.
+     * Models with a custom primary key are always respected regardless of alias_id.
+     *
+     * @return string
      */
     public function getKeyName()
     {
-        return $this->getConnection()->getAliasId()
-            ? parent::getKeyName()
-            : '_id';
+        if (! $this->getConnection()->getAliasId() && parent::getKeyName() === 'id') {
+            return '_id';
+        }
+
+        return parent::getKeyName();
     }
 
     /**
      * Get the value of the model's primary key.
-     * When alias_id is disabled, return the raw '_id' attribute directly
-     * to bypass the getIdAttribute accessor.
+     *
+     * When alias_id is disabled and the model uses Eloquent's default 'id' key,
+     * returns the raw '_id' attribute directly to bypass the getIdAttribute accessor.
+     * Models with a custom primary key are always respected regardless of alias_id.
+     *
+     * @return mixed
      */
     public function getKey()
     {
-        return $this->getConnection()->getAliasId()
-            ? parent::getKey()
-            : $this->attributes['_id'] ?? null;
+        if (! $this->getConnection()->getAliasId() && parent::getKeyName() === 'id') {
+            return $this->attributes['_id'] ?? null;
+        }
+
+        return parent::getKey();
     }
 
     /** @inheritdoc */
