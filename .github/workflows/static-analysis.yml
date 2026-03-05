@@ -1,51 +1,49 @@
-name: "Static Analysis"
+name: Static Analysis
 
 on:
   push:
     branches:
-      - "[0-9]+.[0-9x]+"
+      - [0-9]+.[0-9x]+
   pull_request:
     branches:
-      - "[0-9]+.[0-9x]+"
-      - "feature/*"
+      - [0-9]+.[0-9x]+
+      - feature/*
   workflow_call:
     inputs:
       ref:
-        description: "The git ref to check"
+        description: The git ref to check
         type: string
         required: true
 
 env:
-  PHP_VERSION: "8.5"
-  DRIVER_VERSION: "stable"
+  PHP_VERSION: '8.5'
+  DRIVER_VERSION: stable
   MONGODB_EXT_V1: mongodb-1.21.0
   MONGODB_EXT_V2: mongodb-mongodb/mongo-php-driver@v2.x
 
 jobs:
   phpstan:
-    name: "PHP/${{ matrix.php }} Driver/${{ matrix.driver }}"
-    runs-on: "ubuntu-22.04"
+    name: PHP/${{ matrix.php }} Driver/${{ matrix.driver }}
+
+    runs-on: ubuntu-22.04
+
     continue-on-error: true
+
     strategy:
       matrix:
-        php:
-          - '8.1'
-          - '8.2'
-          - '8.3'
-          - '8.4'
-          - '8.5'
-        driver:
-          - 2
+        php: ['8.1', '8.2', '8.3', '8.4', '8.5']
+        driver: [2]
         include:
-          - php: "8.4"
+          - php: '8.4'
             driver: 1
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
 
-      - name: "Get SHA hash of checked out ref"
+      - name: Get SHA hash of checked out ref
         if: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           echo CHECKED_OUT_SHA=$(git rev-parse HEAD) >> $GITHUB_ENV
@@ -56,13 +54,13 @@ jobs:
         with:
           php-version: ${{ matrix.php }}
           extensions: ${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
-          key: "extcache-v1"
+          key: extcache-v1
 
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: "curl,mbstring,${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}"
+          extensions: curl,mbstring,${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
           tools: composer:v2
           coverage: none
 
@@ -81,7 +79,7 @@ jobs:
         uses: actions/cache/restore@v5
         with:
           path: .cache
-          key: "phpstan-result-cache-${{ matrix.php }}-${{ github.run_id }}"
+          key: phpstan-result-cache-${{ matrix.php }}-${{ github.run_id }}
           restore-keys: |
             phpstan-result-cache-
 
@@ -89,15 +87,15 @@ jobs:
         run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi --error-format=sarif > phpstan.sarif
         continue-on-error: true
 
-      - name: "Upload SARIF report"
+      - name: Upload SARIF report
         if: ${{ github.event_name != 'workflow_dispatch' }}
-        uses: "github/codeql-action/upload-sarif@v4"
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: phpstan.sarif
 
-      - name: "Upload SARIF report"
+      - name: Upload SARIF report
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        uses: "github/codeql-action/upload-sarif@v4"
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: phpstan.sarif
           ref: ${{ inputs.ref }}
