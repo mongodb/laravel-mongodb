@@ -201,6 +201,43 @@ class MongoCacheStoreTest extends TestCase
         $this->assertFalse($store->increment('foo', 5));
     }
 
+    public function testTouchReturnsFalseWhenKeyDoesNotExist()
+    {
+        $store = $this->getStore();
+
+        $this->assertFalse($store->touch('foo', 60));
+    }
+
+    public function testTouchExtendsExpirationAndPreservesValue()
+    {
+        $store = $this->getStore();
+
+        $this->insertToCacheTable('foo', 'bar', 60);
+        $result = $store->touch('foo', 3600);
+
+        $this->assertTrue($result);
+        $this->assertSame('bar', $store->get('foo'));
+
+        $document = DB::connection('mongodb')
+            ->getCollection($this->getCacheCollectionName())
+            ->findOne(['_id' => $this->withCachePrefix('foo')]);
+
+        $this->assertGreaterThan(
+            new UTCDateTime(Carbon::now()->addSeconds(60)),
+            $document['expires_at'],
+        );
+    }
+
+    public function testTouchReturnsFalseOnExpiredItem()
+    {
+        $store = $this->getStore();
+
+        $this->insertToCacheTable('foo', 'bar', -5);
+
+        $this->assertFalse($store->touch('foo', 60));
+        $this->assertNull($store->get('foo'));
+    }
+
     public function testTTLIndex()
     {
         $store = $this->getStore();
