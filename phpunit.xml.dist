@@ -18,7 +18,6 @@
         <env name="MONGODB_DATABASE" value="unittest"/>
         <env name="SQLITE_DATABASE" value=":memory:"/>
         <env name="QUEUE_CONNECTION" value="database"/>
-        <ini name="xdebug.mode" value="coverage"/>
         <ini name="memory_limit" value="-1"/>
         <!-- Evaluate assertions, requires running with "php -d zend.assertions=1 vendor/bin/phpunit" -->
         <!-- <ini name="zend.assertions=1" value="1" /> -->
