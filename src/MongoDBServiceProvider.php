@@ -112,7 +112,7 @@ class MongoDBServiceProvider extends ServiceProvider
     {
         // GridFS adapter for filesystem
         $this->app->resolving('filesystem', static function (FilesystemManager $filesystemManager) {
-            $filesystemManager->extend('gridfs', static function (Application $app, array $config) {
+            $filesystemManager->extend('gridfs', function (Application $app, array $config) {
                 if (! class_exists(GridFSAdapter::class)) {
                     throw new RuntimeException('GridFS adapter for Flysystem is missing. Try running "composer require league/flysystem-gridfs"');
                 }
