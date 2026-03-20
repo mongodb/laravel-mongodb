@@ -1,22 +1,22 @@
-name: "Coding Standards"
+name: Coding Standards
 
 on:
   push:
     branches:
-      - "[0-9]+.[0-9x]+"
+      - '[0-9]+.[0-9x]+'
   pull_request:
     branches:
-      - "[0-9]+.[0-9x]+"
-      - "feature/*"
+      - '[0-9]+.[0-9x]+'
+      - feature/*
 
 env:
-  PHP_VERSION: "8.4"
-  DRIVER_VERSION: "stable"
+  PHP_VERSION: '8.4'
+  DRIVER_VERSION: stable
 
 jobs:
   phpcs:
-    name: "phpcs"
-    runs-on: "ubuntu-22.04"
+    name: phpcs
+    runs-on: ubuntu-22.04
 
     permissions:
       # Give the default GITHUB_TOKEN write permission to commit and push the
@@ -24,45 +24,45 @@ jobs:
       contents: write
 
     steps:
-      - name: "Checkout"
-        uses: "actions/checkout@v6"
+      - name: Checkout
+        uses: actions/checkout@v6
 
-      - name: "Setup cache environment"
-        id: "extcache"
-        uses: "shivammathur/cache-extensions@v1"
+      - name: Setup cache environment
+        id: extcache
+        uses: shivammathur/cache-extensions@v1
         with:
           php-version: ${{ env.PHP_VERSION }}
-          extensions: "mongodb-${{ env.DRIVER_VERSION }}"
-          key: "extcache-v1"
+          extensions: mongodb-${{ env.DRIVER_VERSION }}
+          key: extcache-v1
 
-      - name: "Cache extensions"
-        uses: "actions/cache@v5"
+      - name: Cache extensions
+        uses: actions/cache@v5
         with:
           path: ${{ steps.extcache.outputs.dir }}
           key: ${{ steps.extcache.outputs.key }}
           restore-keys: ${{ steps.extcache.outputs.key }}
 
-      - name: "Install PHP"
-        uses: "shivammathur/setup-php@v2"
+      - name: Install PHP
+        uses: shivammathur/setup-php@v2
         with:
-          coverage: "none"
-          extensions: "mongodb-${{ env.DRIVER_VERSION }}"
+          coverage: none
+          extensions: mongodb-${{ env.DRIVER_VERSION }}
           php-version: ${{ env.PHP_VERSION }}
-          tools: "cs2pr"
+          tools: cs2pr
 
-      - name: "Show driver information"
-        run: "php --ri mongodb"
+      - name: Show driver information
+        run: php --ri mongodb
 
-      - name: "Install dependencies with Composer"
-        uses: "ramsey/composer-install@4.0.0"
+      - name: Install dependencies with Composer
+        uses: ramsey/composer-install@4.0.0
         with:
-          composer-options: "--no-suggest"
+          composer-options: --no-suggest
 
-      - name: "Validate PSR class names"
-        run: "composer dump-autoload --optimize --strict-psr"
+      - name: Validate PSR class names
+        run: composer dump-autoload --optimize --strict-psr
 
       # The -q option is required until phpcs v4 is released
-      - name: "Run PHP_CodeSniffer"
+      - name: Run PHP_CodeSniffer
         run: |
           mkdir .cache
           vendor/bin/phpcs -q --no-colors --report=checkstyle | cs2pr

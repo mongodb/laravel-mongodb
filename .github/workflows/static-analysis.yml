@@ -3,10 +3,10 @@ name: Static Analysis
 on:
   push:
     branches:
-      - [0-9]+.[0-9x]+
+      - '[0-9]+.[0-9x]+'
   pull_request:
     branches:
-      - [0-9]+.[0-9x]+
+      - '[0-9]+.[0-9x]+'
       - feature/*
   workflow_call:
     inputs:

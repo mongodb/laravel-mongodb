@@ -19,4 +19,4 @@ changelog:
         - fixed
     - title: Other Changes
       labels:
-        - "*"
+        - '*'
