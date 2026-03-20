@@ -1317,9 +1317,10 @@ class ModelTest extends TestCase
     #[TestWith(['id'])]
     public function testCreateWithNullId(string $id)
     {
+        User::truncate();
         $user = User::create([$id => null, 'email' => 'foo@bar']);
-        $this->assertNotNull(ObjectId::class, $user->id);
-        $this->assertSame(1, User::count());
+        $this->assertIsString($user->id);
+        $this->assertEquals([['id' => $user->id, 'email' => 'foo@bar']], User::all(['id', 'email'])->toArray());
     }
 
     /** @param class-string<Model> $modelClass */
