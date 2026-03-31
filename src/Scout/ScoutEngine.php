@@ -344,7 +344,7 @@ final class ScoutEngine extends Engine
         return $this->performMap($builder, $results, $model, true);
     }
 
-    /** @return ($lazy is true ? LazyCollection : Collection)<mixed> */
+    /** @return ($lazy is true ? LazyCollection : Collection<mixed>) */
     private function performMap(Builder $builder, array $results, Model $model, bool $lazy): Collection|LazyCollection
     {
         if (! $results) {
