@@ -35,11 +35,12 @@ trait HybridRelations
      *
      * @see HasRelationships::hasOne()
      *
-     * @param class-string $related
-     * @param string|null  $foreignKey
-     * @param string|null  $localKey
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @param  class-string<TRelatedModel>  $related
+     * @param  string|null  $foreignKey
+     * @param  string|null  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne<TRelatedModel, $this>
      */
     public function hasOne($related, $foreignKey = null, $localKey = null)
     {
@@ -62,13 +63,14 @@ trait HybridRelations
      *
      * @see HasRelationships::morphOne()
      *
-     * @param class-string $related
-     * @param string       $name
-     * @param string|null  $type
-     * @param string|null  $id
-     * @param string|null  $localKey
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
      *
-     * @return MorphOne
+     * @param  class-string<TRelatedModel>  $related
+     * @param  string  $name
+     * @param  string|null  $type
+     * @param  string|null  $id
+     * @param  string|null  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\MorphOne<TRelatedModel, $this>
      */
     public function morphOne($related, $name, $type = null, $id = null, $localKey = null)
     {
@@ -91,11 +93,12 @@ trait HybridRelations
      *
      * @see HasRelationships::hasMany()
      *
-     * @param class-string $related
-     * @param string|null  $foreignKey
-     * @param string|null  $localKey
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @param  class-string<TRelatedModel>  $related
+     * @param  string|null  $foreignKey
+     * @param  string|null  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<TRelatedModel, $this>
      */
     public function hasMany($related, $foreignKey = null, $localKey = null)
     {
@@ -118,13 +121,14 @@ trait HybridRelations
      *
      * @see HasRelationships::morphMany()
      *
-     * @param class-string $related
-     * @param string       $name
-     * @param string|null  $type
-     * @param string|null  $id
-     * @param string|null  $localKey
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphMany
+     * @param  class-string<TRelatedModel>  $related
+     * @param  string  $name
+     * @param  string|null  $type
+     * @param  string|null  $id
+     * @param  string|null  $localKey
+     * @return \Illuminate\Database\Eloquent\Relations\MorphMany<TRelatedModel, $this>
      */
     public function morphMany($related, $name, $type = null, $id = null, $localKey = null)
     {
@@ -152,12 +156,13 @@ trait HybridRelations
      *
      * @see HasRelationships::belongsTo()
      *
-     * @param class-string $related
-     * @param string|null  $foreignKey
-     * @param string|null  $ownerKey
-     * @param string|null  $relation
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @param  class-string<TRelatedModel>  $related
+     * @param  string|null  $foreignKey
+     * @param  string|null  $ownerKey
+     * @param  string|null  $relation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo<TRelatedModel, $this>
      */
     public function belongsTo($related, $foreignKey = null, $ownerKey = null, $relation = null)
     {
@@ -197,12 +202,11 @@ trait HybridRelations
      *
      * @see HasRelationships::morphTo()
      *
-     * @param string      $name
-     * @param string|null $type
-     * @param string|null $id
-     * @param string|null $ownerKey
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphTo
+     * @param  string|null  $name
+     * @param  string|null  $type
+     * @param  string|null  $id
+     * @param  string|null  $ownerKey
+     * @return \Illuminate\Database\Eloquent\Relations\MorphTo<\Illuminate\Database\Eloquent\Model, $this>
      */
     public function morphTo($name = null, $type = null, $id = null, $ownerKey = null)
     {
@@ -259,15 +263,16 @@ trait HybridRelations
      *
      * @see HasRelationships::belongsToMany()
      *
-     * @param class-string $related
-     * @param string|null  $collection
-     * @param string|null  $foreignPivotKey
-     * @param string|null  $relatedPivotKey
-     * @param string|null  $parentKey
-     * @param string|null  $relatedKey
-     * @param string|null  $relation
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @param  class-string<TRelatedModel>  $related
+     * @param  string|class-string<\Illuminate\Database\Eloquent\Model>|null  $table
+     * @param  string|null  $foreignPivotKey
+     * @param  string|null  $relatedPivotKey
+     * @param  string|null  $parentKey
+     * @param  string|null  $relatedKey
+     * @param  string|null  $relation
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany<TRelatedModel, $this, \Illuminate\Database\Eloquent\Relations\Pivot>
      */
     public function belongsToMany(
         $related,
@@ -334,17 +339,20 @@ trait HybridRelations
     /**
      * Define a morph-to-many relationship.
      *
-     * @param class-string $related
-     * @param string       $name
-     * @param string|null  $table
-     * @param string|null  $foreignPivotKey
-     * @param string|null  $relatedPivotKey
-     * @param string|null  $parentKey
-     * @param string|null  $relatedKey
-     * @param string|null  $relation
-     * @param bool         $inverse
+     * @see HasRelationships::morphToMany()
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  class-string<TRelatedModel>  $related
+     * @param  string  $name
+     * @param  string|null  $table
+     * @param  string|null  $foreignPivotKey
+     * @param  string|null  $relatedPivotKey
+     * @param  string|null  $parentKey
+     * @param  string|null  $relatedKey
+     * @param  string|null  $relation
+     * @param  bool  $inverse
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany<TRelatedModel, $this>
      */
     public function morphToMany(
         $related,
@@ -410,16 +418,19 @@ trait HybridRelations
     /**
      * Define a polymorphic, inverse many-to-many relationship.
      *
-     * @param class-string $related
-     * @param string       $name
-     * @param string|null  $table
-     * @param string|null  $foreignPivotKey
-     * @param string|null  $relatedPivotKey
-     * @param string|null  $parentKey
-     * @param string|null  $relatedKey
-     * @param string|null  $relation
+     * @see HasRelationships::morphedByMany()
      *
-     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  class-string<TRelatedModel>  $related
+     * @param  string  $name
+     * @param  string|null  $table
+     * @param  string|null  $foreignPivotKey
+     * @param  string|null  $relatedPivotKey
+     * @param  string|null  $parentKey
+     * @param  string|null  $relatedKey
+     * @param  string|null  $relation
+     * @return \Illuminate\Database\Eloquent\Relations\MorphToMany<TRelatedModel, $this>
      */
     public function morphedByMany(
         $related,
