@@ -204,7 +204,7 @@ class MongoCacheStoreTest extends TestCase
             ->getCollection($this->getCacheCollectionName())
             ->findOne(
                 ['_id' => $this->withCachePrefix('foo')],
-                ['projection' => ['value' => 1]]
+                ['projection' => ['value' => 1]],
             );
         $this->assertSame(10, $doc['value']);
     }
