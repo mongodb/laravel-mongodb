@@ -45,7 +45,7 @@ class DatabasePresenceVerifier extends \Illuminate\Validation\DatabasePresenceVe
         // Generates a regex like '/^(a|b|c)$/i' which can query multiple values
         $escapedValues = array_map(
             static fn ($v) => preg_quote((string) $v, '/'),
-            $values
+            $values,
         );
 
         $regex = new Regex('^(' . implode('|', $escapedValues) . ')$', 'i');
