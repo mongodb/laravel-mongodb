@@ -199,6 +199,10 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     #[Override]
     public function rollBack(): void
     {
+        if (! $this->connection->getSession()?->isInTransaction()) {
+            return;
+        }
+
         $this->connection->rollBack();
     }
 

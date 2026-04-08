@@ -329,6 +329,20 @@ final class MongoBatchRepositoryTest extends TestCase
         $this->assertInstanceOf(CarbonImmutable::class, $batch->createdAt);
     }
 
+    /** @see https://github.com/mongodb/laravel-mongodb/issues/3488 */
+    public function testRollBackWithoutSessionIsNoOp(): void
+    {
+        $connection = DB::connection('mongodb');
+        $this->assertInstanceOf(Connection::class, $connection);
+        $this->assertNull($connection->getSession());
+
+        $repository = new MongoBatchRepository(new BatchFactory(m::mock(Factory::class)), $connection, 'job_batches');
+
+        // Should not throw even when there is no active MongoDB session or transaction
+        $repository->rollBack();
+        $this->assertNull($connection->getSession());
+    }
+
     /** @see BusBatchTest::createTestBatch() */
     private function createTestBatch(Factory $queue, $allowFailures = false)
     {
