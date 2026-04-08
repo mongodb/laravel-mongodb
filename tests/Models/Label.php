@@ -55,4 +55,18 @@ class Label extends Model
             'cclient_id',
         );
     }
+
+    public function clientsWithCustomRelationName(): MorphToMany
+    {
+        return $this->morphedByMany(
+            Client::class,
+            'labelled',
+            null,
+            null,
+            null,
+            null,
+            null,
+            'customRelationName',
+        );
+    }
 }

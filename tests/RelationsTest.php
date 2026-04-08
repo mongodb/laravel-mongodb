@@ -1124,6 +1124,13 @@ class RelationsTest extends TestCase
         $this->assertContains($label->id, $check->pluck('id'));
     }
 
+    public function testMorphedByManyWithExplicitRelationName(): void
+    {
+        $label = Label::query()->create(['name' => 'test label']);
+        $relation = $label->clientsWithCustomRelationName();
+        $this->assertSame('customRelationName', $relation->getRelationName());
+    }
+
     public function testHasManyHas(): void
     {
         $author1 = User::create(['name' => 'George R. R. Martin']);
