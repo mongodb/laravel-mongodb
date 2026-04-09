@@ -8,6 +8,13 @@ use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Casting;
 use MongoDB\Laravel\Tests\TestCase;
+use stdClass;
+
+use function assert;
+use function restore_error_handler;
+use function set_error_handler;
+
+use const E_USER_DEPRECATED;
 
 class ArrayTest extends TestCase
 {
@@ -18,44 +25,58 @@ class ArrayTest extends TestCase
         Casting::truncate();
     }
 
-    public function testArray(): void
+    public function testArrayCastTriggersDeprecation(): void
     {
-        /** @var Casting $model */
-        $model = Casting::query()->create(['arrayValue' => ["Dreamin' 'bout the spot that right now, I'm actually in", 'g-eazy' => 'Still']]);
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            if ($errno === E_USER_DEPRECATED) {
+                $deprecations[] = $errstr;
+            }
 
+            return true;
+        });
+
+        $model = Casting::query()->create(['arrayValue' => ['key' => 'value']]);
+        assert($model instanceof Casting);
+
+        restore_error_handler();
+
+        self::assertNotEmpty($deprecations);
+        self::assertStringContainsString('Use the "json" cast to keep this behavior explicitly, or remove the cast to store a native BSON array.', $deprecations[0]);
         self::assertIsArray($model->arrayValue);
-        self::assertIsArray(
-            DB::connection()
-              ->table((new Casting())->getTable())
-              ->where('id', $model->id)
-              ->first()->arrayValue,
-        );
-        self::assertEquals(["Dreamin' 'bout the spot that right now, I'm actually in", 'g-eazy' => 'Still'], $model->arrayValue);
-
-        $model->update(['arrayValue' => ['What if I just said, f*ck it, never followed my dreams?']]);
-
-        self::assertIsArray($model->arrayValue);
-        self::assertIsArray(
-            DB::connection()
-              ->table((new Casting())->getTable())
-              ->where('id', $model->id)
-              ->first()->arrayValue,
-        );
-        self::assertEquals(['What if I just said, f*ck it, never followed my dreams?'], $model->arrayValue);
+        self::assertSame(['key' => 'value'], $model->arrayValue);
     }
 
-    public function testArrayLegacyJsonStringIsStillReadable(): void
+    public function testJsonStringIsNotDecodedWithoutCast(): void
     {
-        // Simulate data previously saved with the old behavior (JSON-encoded string).
+        // Document stored with the old behavior (JSON-encoded string via "array" cast).
         $id = new ObjectId();
-        $table = (new Casting())->getTable();
-        DB::connection()->table($table)->insert([
+        DB::connection()->table((new Casting())->getTable())->insert([
             '_id' => $id,
-            'arrayValue' => '{"key":"value","nested":{"a":1}}',
+            'arrayValue' => '{"key":"value"}',
         ]);
 
-        /** @var Casting $model */
+        // Without a cast, the raw JSON string is returned as-is — not decoded.
+        // Users must migrate their data before removing the "array" cast.
+        $raw = DB::connection()->table((new Casting())->getTable())->find($id);
+        assert($raw instanceof stdClass);
+
+        self::assertIsString($raw->arrayValue);
+        self::assertSame('{"key":"value"}', $raw->arrayValue);
+    }
+
+    public function testArrayCastStillReadableAsBsonNativeArray(): void
+    {
+        // A value stored as a native BSON array (e.g. by another system or after a future migration)
+        // must remain readable via the "array" cast.
+        $id = new ObjectId();
+        DB::connection()->table((new Casting())->getTable())->insert([
+            '_id' => $id,
+            'arrayValue' => ['key' => 'value', 'nested' => ['a' => 1]],
+        ]);
+
         $model = Casting::query()->find($id);
+        assert($model instanceof Casting);
 
         self::assertIsArray($model->arrayValue);
         self::assertSame(['key' => 'value', 'nested' => ['a' => 1]], $model->arrayValue);

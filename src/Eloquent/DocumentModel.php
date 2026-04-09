@@ -48,7 +48,10 @@ use function str_contains;
 use function str_starts_with;
 use function strcmp;
 use function strlen;
+use function trigger_error;
 use function var_export;
+
+use const E_USER_DEPRECATED;
 
 /** @mixin Builder */
 trait DocumentModel
@@ -271,7 +274,14 @@ trait DocumentModel
     protected function isJsonCastable($key)
     {
         if ($this->hasCast($key, ['array'])) {
-            return false;
+            trigger_error(
+                sprintf(
+                    'The "array" cast on attribute "%s" of model "%s" stores values as a JSON-encoded string in MongoDB, which is not the native format. Use the "json" cast to keep this behavior explicitly, or remove the cast to store a native BSON array.',
+                    $key,
+                    static::class,
+                ),
+                E_USER_DEPRECATED,
+            );
         }
 
         return parent::isJsonCastable($key);
