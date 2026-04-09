@@ -190,7 +190,7 @@ final class MongoStore implements LockProvider, Store
                 '$inc' => ['value' => $value],
             ],
             [
-                'projection' => ['value' => 1, 'expires_at' => 1],
+                'projection' => ['value' => 1],
                 'returnDocument' => FindOneAndUpdate::RETURN_DOCUMENT_AFTER,
             ],
         );
