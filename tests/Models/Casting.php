@@ -7,6 +7,10 @@ namespace MongoDB\Laravel\Tests\Models;
 use MongoDB\Laravel\Eloquent\Casts\BinaryUuid;
 use MongoDB\Laravel\Eloquent\Model;
 
+/**
+ * @property mixed $id
+ * @property array $arrayValue
+ */
 class Casting extends Model
 {
     protected $connection = 'mongodb';
