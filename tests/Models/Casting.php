@@ -10,6 +10,7 @@ use MongoDB\Laravel\Eloquent\Model;
 /**
  * @property mixed $id
  * @property array $arrayValue
+ * @property object $objectValue
  */
 class Casting extends Model
 {

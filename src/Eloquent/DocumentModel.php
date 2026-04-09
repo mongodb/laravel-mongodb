@@ -276,7 +276,7 @@ trait DocumentModel
         if ($this->hasCast($key, ['array'])) {
             trigger_error(
                 sprintf(
-                    'The "array" cast on attribute "%s" of model "%s" stores values as a JSON-encoded string in MongoDB, which is not the native format. Use the "json" cast to keep this behavior explicitly, or remove the cast to store a native BSON array.',
+                    'The "array" cast on attribute "%s" of model "%s" stores values as a JSON-encoded string in MongoDB, which is not the native format. Remove the cast to store native BSON arrays. If you must keep JSON string storage, use the "json" cast explicitly.',
                     $key,
                     static::class,
                 ),
@@ -311,7 +311,7 @@ trait DocumentModel
     public function fromJson($value, $asObject = false)
     {
         if (is_array($value)) {
-            return $value;
+            return $asObject ? (object) $value : $value;
         }
 
         return parent::fromJson($value, $asObject);

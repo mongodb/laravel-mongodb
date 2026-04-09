@@ -31,18 +31,22 @@ class ArrayTest extends TestCase
         set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
             if ($errno === E_USER_DEPRECATED) {
                 $deprecations[] = $errstr;
+
+                return true;
             }
 
-            return true;
+            return false;
         });
 
-        $model = Casting::query()->create(['arrayValue' => ['key' => 'value']]);
-        assert($model instanceof Casting);
-
-        restore_error_handler();
+        try {
+            $model = Casting::query()->create(['arrayValue' => ['key' => 'value']]);
+            assert($model instanceof Casting);
+        } finally {
+            restore_error_handler();
+        }
 
         self::assertNotEmpty($deprecations);
-        self::assertStringContainsString('Use the "json" cast to keep this behavior explicitly, or remove the cast to store a native BSON array.', $deprecations[0]);
+        self::assertStringContainsString('Remove the cast to store native BSON arrays.', $deprecations[0]);
         self::assertIsArray($model->arrayValue);
         self::assertSame(['key' => 'value'], $model->arrayValue);
     }
@@ -80,5 +84,21 @@ class ArrayTest extends TestCase
 
         self::assertIsArray($model->arrayValue);
         self::assertSame(['key' => 'value', 'nested' => ['a' => 1]], $model->arrayValue);
+    }
+
+    public function testObjectCastWithNativeBsonDocumentReturnsObject(): void
+    {
+        // A native BSON document read via an "object" cast must come back as an object, not an array.
+        $id = new ObjectId();
+        DB::connection()->table((new Casting())->getTable())->insert([
+            '_id' => $id,
+            'objectValue' => ['key' => 'value'],
+        ]);
+
+        $model = Casting::query()->find($id);
+        assert($model instanceof Casting);
+
+        self::assertIsObject($model->objectValue);
+        self::assertSame('value', $model->objectValue->key);
     }
 }
