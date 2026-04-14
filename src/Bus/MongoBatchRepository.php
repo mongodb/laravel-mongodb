@@ -170,12 +170,14 @@ class MongoBatchRepository extends DatabaseBatchRepository implements PrunableBa
     public function cancel(string $batchId): void
     {
         $batchId = new ObjectId($batchId);
+
+        $now = $this->getUTCDateTime();
         $this->collection->updateOne(
             ['_id' => $batchId],
             [
                 '$set' => [
-                    'cancelled_at' => $this->getUTCDateTime(),
-                    'finished_at' => $this->getUTCDateTime(),
+                    'cancelled_at' => $now,
+                    'finished_at' => $now,
                 ],
             ],
         );
