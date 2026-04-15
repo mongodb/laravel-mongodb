@@ -5,22 +5,24 @@ on:
     branches:
       - '[0-9]+.[0-9x]+'
 
-env:
-  GH_TOKEN: ${{ secrets.MERGE_UP_TOKEN }}
-
 jobs:
   merge-up:
     name: Create merge up pull request
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout
         id: checkout
-        uses: actions/checkout@v6
+        uses: mongodb-labs/drivers-github-tools/secure-checkout@v3
         with:
-          # fetch-depth 0 is required to fetch all branches, not just the branch being built
+          app_id: ${{ vars.PR_APP_ID }}
+          private_key: ${{ secrets.PR_APP_PRIVATE_KEY }}
+          submodules: true
           fetch-depth: 0
-          token: ${{ secrets.MERGE_UP_TOKEN }}
 
       - name: Create pull request
         id: create-pull-request
