@@ -388,6 +388,15 @@ trait DocumentModel
             return false;
         }
 
+        if ($this->isDateAttribute($key)) {
+            $attribute = $attribute instanceof UTCDateTime ? $this->asDateTime($attribute) : $attribute;
+            $original  = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
+
+            // Comparison on DateTimeInterface values
+            // phpcs:disable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
+            return $attribute == $original;
+        }
+
         if (is_scalar($attribute) || is_scalar($original)) {
             return false;
         }
