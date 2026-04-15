@@ -1059,7 +1059,9 @@ class ModelTest extends TestCase
     public function testGetDirtyDates(): void
     {
         $user = new User();
-        $user->setRawAttributes(['name' => 'John Doe', 'birthday' => new DateTime('19 august 1989')], true);
+        $user->name = 'John Doe';
+        $user->birthday = new DateTime('19 august 1989');
+        $user->syncOriginal();
         $this->assertEmpty($user->getDirty());
 
         $user->birthday = new DateTime('19 august 1989');
@@ -1080,6 +1082,42 @@ class ModelTest extends TestCase
 
         $user->save();
         $this->assertEmpty($user->getDirty());
+    }
+
+    public function testGetDirtyScalarTypeChange(): void
+    {
+        // Changing a scalar value from one type to another must be considered dirty
+        // because MongoDB stores types as-is (int 1 and string '1' are different).
+        $user = new User();
+        $user->name = 'John Doe';
+        $user->age = 25;
+        $user->syncOriginal();
+
+        $this->assertEmpty($user->getDirty());
+
+        // Same value, same type: not dirty
+        $user->age = 25;
+        $this->assertEmpty($user->getDirty());
+
+        // Same numeric value, different type: dirty
+        $user->age = '25';
+        $this->assertTrue($user->isDirty('age'));
+    }
+
+    public function testGetDirtyEmbeddedDocument(): void
+    {
+        $user = User::create(['name' => 'John Doe', 'address' => ['city' => 'Paris', 'country' => 'France']]);
+
+        $user = User::find($user->id);
+        $this->assertFalse($user->isDirty());
+
+        // Setting the same array value: not dirty
+        $user->address = ['city' => 'Paris', 'country' => 'France'];
+        $this->assertFalse($user->isDirty());
+
+        // Changing a nested value: dirty
+        $user->address = ['city' => 'Lyon', 'country' => 'France'];
+        $this->assertTrue($user->isDirty('address'));
     }
 
     public function testChunkById(): void

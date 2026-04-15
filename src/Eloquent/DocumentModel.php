@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\Decimal128;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
@@ -39,15 +40,13 @@ use function explode;
 use function func_get_args;
 use function in_array;
 use function is_array;
-use function is_numeric;
-use function is_object;
+use function is_scalar;
 use function is_string;
 use function ltrim;
 use function method_exists;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
-use function strcmp;
 use function strlen;
 use function trigger_error;
 use function var_export;
@@ -389,26 +388,11 @@ trait DocumentModel
             return false;
         }
 
-        if ($this->isDateAttribute($key)) {
-            $attribute = $attribute instanceof UTCDateTime ? $this->asDateTime($attribute) : $attribute;
-            $original  = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
-
-            // Comparison on DateTimeInterface values
-            // phpcs:disable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
-            return $attribute == $original;
+        if (is_scalar($attribute) || is_scalar($original)) {
+            return false;
         }
 
-        if ($this->hasCast($key, static::$primitiveCastTypes)) {
-            return $this->castAttribute($key, $attribute) ===
-                $this->castAttribute($key, $original);
-        }
-
-        if ($this->isClassCastable($key)) {
-            return ! is_object($attribute) ? $attribute === $original : $attribute == $original;
-        }
-
-        return is_numeric($attribute) && is_numeric($original)
-            && strcmp((string) $attribute, (string) $original) === 0;
+        return (string) Document::fromPHP(['v' => $attribute]) === (string) Document::fromPHP(['v' => $original]);
     }
 
     /** @inheritdoc */
