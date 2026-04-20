@@ -972,4 +972,28 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertNull($user->addresses->get(0)->city);
         $this->assertSame('Kyoto', $user->addresses->get(1)->city);
     }
+
+    public function testResolveRelationUsingEmbedsMany()
+    {
+        User::resolveRelationUsing('dynamicAddresses', fn (User $model) => $model->embedsMany(Address::class, 'addresses', 'user_id', 'dynamicAddresses'));
+
+        $user = User::create(['name' => 'John Doe']);
+        $user->dynamicAddresses()->save(new Address(['city' => 'London']));
+
+        $user = User::find($user->id);
+        $this->assertCount(1, $user->dynamicAddresses);
+        $this->assertEquals('London', $user->dynamicAddresses->first()->city);
+    }
+
+    public function testResolveRelationUsingEmbedsOne()
+    {
+        User::resolveRelationUsing('dynamicFather', fn (User $model) => $model->embedsOne(User::class, 'father', 'user_id', 'dynamicFather'));
+
+        $user = User::create(['name' => 'John Doe']);
+        $user->dynamicFather()->save(new User(['name' => 'Mark Doe']));
+
+        $user = User::find($user->id);
+        $this->assertNotNull($user->dynamicFather);
+        $this->assertEquals('Mark Doe', $user->dynamicFather->name);
+    }
 }

@@ -53,7 +53,7 @@ trait EmbedsRelations
     }
 
     /**
-     * Define an embedded one-to-many relationship.
+     * Define an embedded one-to-one relationship.
      *
      * @param class-string $related
      * @param string|null  $localKey
