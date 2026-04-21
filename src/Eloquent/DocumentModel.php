@@ -384,24 +384,23 @@ trait DocumentModel
             return true;
         }
 
-        if ($attribute === null) {
+        if ($attribute === null || is_scalar($attribute) || is_scalar($original)) {
             return false;
         }
 
-        if ($this->isDateAttribute($key)) {
-            $attribute = $attribute instanceof UTCDateTime ? $this->asDateTime($attribute) : $attribute;
-            $original  = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
-
-            // Comparison on DateTimeInterface values
-            // phpcs:disable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
-            return $attribute == $original;
+        // Convert DateTime instances to UTCDateTime for comparison.
+        // As done in Grammar::prepareFieldsForQuery()
+        if ($attribute instanceof DateTimeInterface) {
+            $attribute = new UTCDateTime($attribute);
         }
 
-        if (is_scalar($attribute) || is_scalar($original)) {
-            return false;
+        if ($original instanceof DateTimeInterface) {
+            $original = new UTCDateTime($original);
         }
 
-        return (string) Document::fromPHP(['v' => $attribute]) === (string) Document::fromPHP(['v' => $original]);
+        // phpcs:disable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
+        return Document::fromPHP(['v' => $attribute]) == Document::fromPHP(['v' => $original]);
+        // phpcs:enable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
     }
 
     /** @inheritdoc */

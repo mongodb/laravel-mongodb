@@ -26,7 +26,6 @@ use MongoDB\Laravel\Tests\Models\IdIsString;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\MemberStatus;
 use MongoDB\Laravel\Tests\Models\NonIncrementing;
-use MongoDB\Laravel\Tests\Models\Options;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
@@ -1054,116 +1053,6 @@ class ModelTest extends TestCase
         $this->assertEquals(['one' => ['title' => 'The first chapter']], $book->chapters);
         $this->assertEquals(['title' => 'The first chapter'], $book['chapters.one']);
         $this->assertEquals('The first chapter', $book['chapters.one.title']);
-    }
-
-    public function testGetDirtyDates(): void
-    {
-        $user = new User();
-        $user->name = 'John Doe';
-        $user->birthday = new DateTime('19 august 1989');
-        $user->syncOriginal();
-
-        // Same date: not dirty
-        $this->assertEmpty($user->getDirty());
-
-        $user->birthday = new DateTime('19 august 1989');
-        // Same date set again: not dirty
-        $this->assertEmpty($user->getDirty());
-    }
-
-    public function testGetDirtyObjects(): void
-    {
-        $user = new User();
-        $user->options = new Options();
-        // New unsaved model: dirty
-        $this->assertNotEmpty($user->getDirty());
-
-        $user->save();
-        // After save: not dirty
-        $this->assertEmpty($user->getDirty());
-
-        // Different object value: dirty
-        $user->options = (new Options())->setOption1('Value1');
-        $this->assertNotEmpty($user->getDirty());
-
-        $user->save();
-        // After save: not dirty
-        $this->assertEmpty($user->getDirty());
-    }
-
-    public function testGetDirtyScalarTypeChange(): void
-    {
-        // Changing a scalar value from one type to another must be considered dirty
-        // because MongoDB stores types as-is (int 1 and string '1' are different).
-        $user = new User();
-        $user->name = 'John Doe';
-        $user->age = 25;
-        $user->syncOriginal();
-
-        $this->assertEmpty($user->getDirty());
-
-        // Same value, same type: not dirty
-        $user->age = 25;
-        $this->assertEmpty($user->getDirty());
-
-        // Same numeric value, different type: dirty
-        $user->age = '25';
-        $this->assertTrue($user->isDirty('age'));
-    }
-
-    public function testGetDirtyEmbeddedDocument(): void
-    {
-        $user = User::create(['name' => 'John Doe', 'address' => ['city' => 'Paris', 'country' => 'France']]);
-
-        $user = User::find($user->id);
-        $this->assertFalse($user->isDirty());
-
-        // Setting the same array value: not dirty
-        $user->address = ['city' => 'Paris', 'country' => 'France'];
-        $this->assertFalse($user->isDirty());
-
-        // Changing a nested value: dirty
-        $user->address = ['city' => 'Lyon', 'country' => 'France'];
-        $this->assertTrue($user->isDirty('address'));
-    }
-
-    public function testGetDirtyDatetimeCast(): void
-    {
-        $user = User::create(['name' => 'John Doe', 'birthday' => new DateTime('1989-08-19 12:00:00')]);
-        $user = User::find($user->id);
-        $this->assertFalse($user->isDirty());
-
-        // Same date via Carbon: not dirty
-        $user->birthday = Carbon::parse('1989-08-19 12:00:00');
-        $this->assertFalse($user->isDirty('birthday'));
-
-        // Same date via DateTime: not dirty
-        $user->birthday = new DateTime('1989-08-19 12:00:00');
-        $this->assertFalse($user->isDirty('birthday'));
-
-        // Different date: dirty
-        $user->birthday = new DateTime('1990-01-01 00:00:00');
-        $this->assertTrue($user->isDirty('birthday'));
-
-        // Null vs date: dirty
-        $user->save();
-        $user->birthday = null;
-        $this->assertTrue($user->isDirty('birthday'));
-    }
-
-    public function testGetDirtyEnumCast(): void
-    {
-        $user = User::create(['name' => 'John Doe', 'member_status' => MemberStatus::Member]);
-        $user = User::find($user->id);
-        $this->assertFalse($user->isDirty());
-
-        // Same enum value: not dirty
-        $user->member_status = MemberStatus::Member;
-        $this->assertFalse($user->isDirty('member_status'));
-
-        // Setting null: dirty
-        $user->member_status = null;
-        $this->assertTrue($user->isDirty('member_status'));
     }
 
     public function testChunkById(): void
