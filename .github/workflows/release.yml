@@ -14,6 +14,8 @@ jobs:
     environment: release
     name: "Prepare release"
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       id-token: write
       contents: write
@@ -114,6 +116,8 @@ jobs:
     environment: release
     name: "Publish SSDLC Assets"
     runs-on: ubuntu-latest
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     permissions:
       security-events: read
       id-token: write
