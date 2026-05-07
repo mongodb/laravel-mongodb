@@ -664,16 +664,11 @@ class Builder extends BaseBuilder
     #[Override]
     public function orderBy($column, $direction = 'asc')
     {
-        // Laravel 13.8+ passes the global \SortDirection enum (PHP 8.6+ /
-        // symfony/polyfill-php86) as the default direction. See
-        // laravel/framework#59865.
-        if ($direction instanceof SortDirection) {
-            $direction = $direction === SortDirection::Ascending ? 1 : -1;
-        } elseif (is_string($direction)) {
+        if (is_string($direction) || $direction instanceof SortDirection) {
             $direction = match ($direction) {
-                'asc', 'ASC' => 1,
-                'desc', 'DESC' => -1,
-                default => throw new InvalidArgumentException('Order direction must be "asc" or "desc".'),
+                'asc', 'ASC', SortDirection::Ascending => 1,
+                'desc', 'DESC', SortDirection::Descending => -1,
+                default => throw new InvalidArgumentException('Order direction must be "asc", "desc" or a case from the SortDirection enum.'),
             };
         }
 
