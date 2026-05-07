@@ -54,16 +54,16 @@
         "mongodb/mongodb": "^1.21|^2"
     },
     "require-dev": {
+        "doctrine/coding-standard": "^12.0",
         "laravel/scout": "^10.3",
         "league/flysystem-gridfs": "^3.28",
         "league/flysystem-read-only": "^3.0",
-        "phpunit/phpunit": "^10.3|^11.5.3|^12.5.12",
-        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
         "mockery/mockery": "^1.4.4",
-        "doctrine/coding-standard": "^12.0",
-        "spatie/laravel-query-builder": "^5.6|^6",
+        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
         "phpstan/phpstan": "^1.10|^2.1",
+        "phpunit/phpunit": "^10.3|^11.5.3|^12.5.12",
         "rector/rector": "^1.2|^2.3",
+        "spatie/laravel-query-builder": "^5.6|^6",
         "symfony/polyfill-php86": "^1.37"
     },
     "conflict": {
@@ -105,6 +105,7 @@
     "config": {
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
-        }
+        },
+        "sort-packages": true
     }
 }
