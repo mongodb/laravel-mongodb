@@ -29,6 +29,7 @@ use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
 use Override;
 use RuntimeException;
+use SortDirection;
 use TypeError;
 
 use function array_fill_keys;
@@ -656,14 +657,19 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param int|string|array $direction
+     * @param SortDirection|int|string|array $direction
      *
      * @inheritdoc
      */
     #[Override]
     public function orderBy($column, $direction = 'asc')
     {
-        if (is_string($direction)) {
+        // Laravel 13.8+ passes the global \SortDirection enum (PHP 8.6+ /
+        // symfony/polyfill-php86) as the default direction. See
+        // laravel/framework#59865.
+        if ($direction instanceof SortDirection) {
+            $direction = $direction === SortDirection::Ascending ? 1 : -1;
+        } elseif (is_string($direction)) {
             $direction = match ($direction) {
                 'asc', 'ASC' => 1,
                 'desc', 'DESC' => -1,

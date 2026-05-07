@@ -21,8 +21,10 @@ use MongoDB\Laravel\Query\Grammar;
 use MongoDB\Laravel\Query\Processor;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use SortDirection;
 use stdClass;
 
+use function class_exists;
 use function collect;
 use function method_exists;
 use function now;
@@ -565,6 +567,23 @@ class BuilderTest extends TestCase
             ['find' => [[], ['sort' => ['email' => -1]]]],
             fn (Builder $builder) => $builder->orderByDesc('email'),
         ];
+
+        if (class_exists(SortDirection::class)) {
+            yield 'orderBy SortDirection::Ascending' => [
+                ['find' => [[], ['sort' => ['email' => 1]]]],
+                fn (Builder $builder) => $builder->orderBy('email', SortDirection::Ascending),
+            ];
+
+            yield 'orderBy SortDirection::Descending' => [
+                ['find' => [[], ['sort' => ['email' => -1]]]],
+                fn (Builder $builder) => $builder->orderBy('email', SortDirection::Descending),
+            ];
+
+            yield 'orderBy SortDirection on natural' => [
+                ['find' => [[], ['sort' => ['$natural' => -1]]]],
+                fn (Builder $builder) => $builder->orderBy('natural', SortDirection::Descending),
+            ];
+        }
 
         /** @see DatabaseQueryBuilderTest::testReorder() */
         yield 'reorder reset' => [
