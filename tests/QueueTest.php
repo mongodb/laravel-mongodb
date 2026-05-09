@@ -184,6 +184,24 @@ class QueueTest extends TestCase
         $mock->deleteAndRelease($queue, $job, $delay);
     }
 
+    public function testQueueReservedAtTimestamp(): void
+    {
+        $queue = 'test';
+        Queue::push($queue, ['action' => 'QueueReservedAtTimestamp'], 'test');
+
+        $job = Queue::pop($queue);
+        $this->assertInstanceOf(MongoJob::class, $job);
+
+        $reserved = Queue::getDatabase()
+            ->table(Config::get('queue.connections.database.table'))
+            ->where('id', $job->getJobId())
+            ->first();
+
+        $this->assertSame(Carbon::now()->getTimestamp(), $reserved->reserved_at);
+
+        $job->delete();
+    }
+
     public function testFailedJobLogging()
     {
         Carbon::setTestNow('2019-01-01 00:00:00');
