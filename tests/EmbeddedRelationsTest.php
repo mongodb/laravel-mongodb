@@ -904,6 +904,86 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertEquals(5, $user->addresses()->first()->visited);
     }
 
+    public function testIncrementEmbeddedWithCustomAmount(): void
+    {
+        $user    = User::create(['name' => 'John Doe']);
+        $address = $user->addresses()->create(['city' => 'New York', 'visited' => 5]);
+
+        $address->increment('visited', 3);
+        $this->assertEquals(8, $address->visited);
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals(8, $user->addresses()->first()->visited);
+
+        $address->decrement('visited', 2);
+        $this->assertEquals(6, $address->visited);
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals(6, $user->addresses()->first()->visited);
+    }
+
+    public function testIncrementEmbeddedWithExtra(): void
+    {
+        $user    = User::create(['name' => 'John Doe']);
+        $address = $user->addresses()->create(['city' => 'New York', 'visited' => 5]);
+
+        $address->increment('visited', 1, ['city' => 'Paris']);
+        $this->assertEquals(6, $address->visited);
+        $this->assertEquals('Paris', $address->city);
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals(6, $user->addresses()->first()->visited);
+        $this->assertEquals('Paris', $user->addresses()->first()->city);
+
+        $address->decrement('visited', 1, ['city' => 'London']);
+        $this->assertEquals(5, $address->visited);
+        $this->assertEquals('London', $address->city);
+        $user = User::where('name', 'John Doe')->first();
+        $this->assertEquals(5, $user->addresses()->first()->visited);
+        $this->assertEquals('London', $user->addresses()->first()->city);
+    }
+
+    public function testIncrementEmbeddedFiresEvents(): void
+    {
+        $user    = User::create(['name' => 'John Doe']);
+        $address = $user->addresses()->create(['city' => 'New York', 'visited' => 5]);
+
+        $address->setEventDispatcher($events = Mockery::mock(Dispatcher::class));
+        $events->shouldReceive('dispatch')->with('eloquent.retrieved: ' . $address::class, Mockery::any());
+        $events->shouldReceive('dispatch')
+            ->once()
+            ->with('eloquent.updated: ' . $address::class, $address);
+
+        $events->shouldReceive('until')
+            ->once()
+            ->with('eloquent.updating: ' . $address::class, $address)
+            ->andReturn(true);
+
+        $address->increment('visited');
+
+        $this->assertEquals(6, $address->visited);
+        $address->unsetEventDispatcher();
+    }
+
+    public function testDecrementEmbeddedFiresEvents(): void
+    {
+        $user    = User::create(['name' => 'John Doe']);
+        $address = $user->addresses()->create(['city' => 'New York', 'visited' => 5]);
+
+        $address->setEventDispatcher($events = Mockery::mock(Dispatcher::class));
+        $events->shouldReceive('dispatch')->with('eloquent.retrieved: ' . $address::class, Mockery::any());
+        $events->shouldReceive('dispatch')
+            ->once()
+            ->with('eloquent.updated: ' . $address::class, $address);
+
+        $events->shouldReceive('until')
+            ->once()
+            ->with('eloquent.updating: ' . $address::class, $address)
+            ->andReturn(true);
+
+        $address->decrement('visited');
+
+        $this->assertEquals(4, $address->visited);
+        $address->unsetEventDispatcher();
+    }
+
     public function testPaginateEmbedsMany()
     {
         $user = User::create(['name' => 'John Doe']);
