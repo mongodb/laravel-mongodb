@@ -36,8 +36,8 @@ use function value;
  */
 class Builder extends EloquentBuilder
 {
-    private const DUPLICATE_KEY_ERROR = 11000;
     use QueriesRelationships;
+    private const DUPLICATE_KEY_ERROR = 11000;
 
     /**
      * The methods that should be returned from query builder.
@@ -198,19 +198,12 @@ class Builder extends EloquentBuilder
     public function increment($column, $amount = 1, array $extra = [])
     {
         // Intercept operations on embedded models and delegate logic
-        // to the parent relation instance.
+        // to the parent relation instance. The value computation, event
+        // firing, and syncOriginalAttribute are handled by
+        // Model::incrementOrDecrement(), so we only need to persist.
         $relation = $this->model->getParentRelation();
         if ($relation) {
-            $value = $this->model->{$column};
-
-            // When doing increment and decrements, Eloquent will automatically
-            // sync the original attributes. We need to change the attribute
-            // temporary in order to trigger an update query.
-            $this->model->{$column} = null;
-
-            $this->model->syncOriginalAttribute($column);
-
-            return $this->model->update([$column => $value]);
+            return $this->update(array_merge([$column => $this->model->{$column}], $extra));
         }
 
         return parent::increment($column, $amount, $extra);
@@ -220,19 +213,12 @@ class Builder extends EloquentBuilder
     public function decrement($column, $amount = 1, array $extra = [])
     {
         // Intercept operations on embedded models and delegate logic
-        // to the parent relation instance.
+        // to the parent relation instance. The value computation, event
+        // firing, and syncOriginalAttribute are handled by
+        // Model::incrementOrDecrement(), so we only need to persist.
         $relation = $this->model->getParentRelation();
         if ($relation) {
-            $value = $this->model->{$column};
-
-            // When doing increment and decrements, Eloquent will automatically
-            // sync the original attributes. We need to change the attribute
-            // temporary in order to trigger an update query.
-            $this->model->{$column} = null;
-
-            $this->model->syncOriginalAttribute($column);
-
-            return $this->model->update([$column => $value]);
+            return $this->update(array_merge([$column => $this->model->{$column}], $extra));
         }
 
         return parent::decrement($column, $amount, $extra);
