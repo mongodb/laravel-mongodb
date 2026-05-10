@@ -22,6 +22,7 @@ use Override;
 
 use function array_key_exists;
 use function array_map;
+use function array_merge;
 use function array_replace;
 use function collect;
 use function is_array;
@@ -37,6 +38,7 @@ use function value;
 class Builder extends EloquentBuilder
 {
     use QueriesRelationships;
+
     private const DUPLICATE_KEY_ERROR = 11000;
 
     /**
