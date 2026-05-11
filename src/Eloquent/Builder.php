@@ -200,9 +200,7 @@ class Builder extends EloquentBuilder
     public function increment($column, $amount = 1, array $extra = [])
     {
         // Intercept operations on embedded models and delegate logic
-        // to the parent relation instance. The value computation, event
-        // firing, and syncOriginalAttribute are handled by
-        // Model::incrementOrDecrement(), so we only need to persist.
+        // to the parent relation instance.
         $relation = $this->model->getParentRelation();
         if ($relation) {
             return $this->update(array_merge([$column => $this->model->{$column}], $extra));
@@ -215,9 +213,7 @@ class Builder extends EloquentBuilder
     public function decrement($column, $amount = 1, array $extra = [])
     {
         // Intercept operations on embedded models and delegate logic
-        // to the parent relation instance. The value computation, event
-        // firing, and syncOriginalAttribute are handled by
-        // Model::incrementOrDecrement(), so we only need to persist.
+        // to the parent relation instance.
         $relation = $this->model->getParentRelation();
         if ($relation) {
             return $this->update(array_merge([$column => $this->model->{$column}], $extra));
