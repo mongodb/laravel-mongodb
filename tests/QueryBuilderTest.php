@@ -771,6 +771,27 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals([(object) ['role' => 'admin', 'aggregate' => 1.5], (object) ['role' => 'user', 'aggregate' => 4]], $results->toArray());
     }
 
+    public function testCountWithGroupBy(): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'John Doe', 'role' => 'admin'],
+            ['name' => 'Jane Doe', 'role' => 'admin'],
+            ['name' => 'Robert Roe', 'role' => 'user'],
+        ]);
+
+        $count = DB::table('users')->groupBy('role')->count();
+        $this->assertIsInt($count);
+        $this->assertEquals(2, $count);
+
+        $count = DB::table('users')->where('role', 'admin')->groupBy('role')->count();
+        $this->assertIsInt($count);
+        $this->assertEquals(1, $count);
+
+        $count = DB::table('users')->where('role', 'nonexistent')->groupBy('role')->count();
+        $this->assertIsInt($count);
+        $this->assertSame(0, $count);
+    }
+
     public function testAggregateByGroupException(): void
     {
         $this->expectException(InvalidArgumentException::class);
