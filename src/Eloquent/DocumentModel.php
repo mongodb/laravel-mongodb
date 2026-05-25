@@ -196,10 +196,17 @@ trait DocumentModel
         // to a Carbon or CarbonImmutable instance.
         // @see Model::setAttribute()
         if ($this->hasCast($key) && $value instanceof CarbonInterface) {
-            $value->settings(array_replace($value->getSettings(), ['toStringFormat' => $this->getDateFormat()]));
+            $castType = $this->getCasts()[$key];
+
+            // Use the per-attribute format from the cast definition (e.g. "datetime:Y-m-d")
+            // instead of the model-wide dateFormat, so that each attribute keeps its own format.
+            $dateFormat = ($this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType))
+                ? Str::after($castType, ':')
+                : $this->getDateFormat();
+
+            $value->settings(array_replace($value->getSettings(), ['toStringFormat' => $dateFormat]));
 
             // "date" cast resets the time to 00:00:00.
-            $castType = $this->getCasts()[$key];
             if (str_starts_with($castType, 'date:') || str_starts_with($castType, 'immutable_date:')) {
                 $value = $value->startOfDay();
             }
@@ -207,18 +214,6 @@ trait DocumentModel
 
         return $value;
     }
-
-    /** @inheritdoc */
-    protected function getCastType($key)
-    {
-        $castType = $this->getCasts()[$key];
-        if ($this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType)) {
-            $this->setDateFormat(Str::after($castType, ':'));
-        }
-
-        return parent::getCastType($key);
-    }
-
     /** @inheritdoc */
     protected function getAttributeFromArray($key)
     {
