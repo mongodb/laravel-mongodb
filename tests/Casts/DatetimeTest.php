@@ -138,4 +138,24 @@ class DatetimeTest extends TestCase
         $model->update(['immutableDatetimeWithFormatField' => null]);
         $this->assertNull($model->immutableDatetimeWithFormatField);
     }
+
+    public function testMultipleDatetimeFormatsDoNotInterfere(): void
+    {
+        $model = Casting::query()->create([
+            'datetimeWithFormatField' => now(),
+            'datetimeWithAnotherFormatField' => now(),
+        ]);
+
+        // Access the second format first (Y-m-d\TH:i:s)
+        self::assertEquals(now()->format('Y-m-d\TH:i:s'), (string) $model->datetimeWithAnotherFormatField);
+
+        // Access the first format after — it must retain its own format (j.n.Y H:i),
+        // not be affected by the previous access.
+        self::assertEquals(now()->format('j.n.Y H:i'), (string) $model->datetimeWithFormatField);
+
+        // Access in reverse order to verify neither direction causes interference.
+        $model->refresh();
+        self::assertEquals(now()->format('j.n.Y H:i'), (string) $model->datetimeWithFormatField);
+        self::assertEquals(now()->format('Y-m-d\TH:i:s'), (string) $model->datetimeWithAnotherFormatField);
+    }
 }
