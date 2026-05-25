@@ -200,7 +200,7 @@ trait DocumentModel
 
             // Use the per-attribute format from the cast definition (e.g. "datetime:Y-m-d")
             // instead of the model-wide dateFormat, so that each attribute keeps its own format.
-            $dateFormat = ($this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType))
+            $dateFormat = $this->isCustomDateTimeCast($castType) || $this->isImmutableCustomDateTimeCast($castType)
                 ? Str::after($castType, ':')
                 : $this->getDateFormat();
 
@@ -214,6 +214,7 @@ trait DocumentModel
 
         return $value;
     }
+
     /** @inheritdoc */
     protected function getAttributeFromArray($key)
     {
