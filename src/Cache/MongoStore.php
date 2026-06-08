@@ -16,7 +16,6 @@ use function is_float;
 use function is_int;
 use function is_string;
 use function serialize;
-use function str_contains;
 use function unserialize;
 
 final class MongoStore implements LockProvider, Store
@@ -312,7 +311,7 @@ final class MongoStore implements LockProvider, Store
 
     private function unserialize($value): mixed
     {
-        if (! is_string($value) || ! str_contains($value, ';')) {
+        if (! is_string($value)) {
             return $value;
         }
 

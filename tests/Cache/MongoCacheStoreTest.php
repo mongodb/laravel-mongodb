@@ -2,15 +2,22 @@
 
 namespace MongoDB\Laravel\Tests\Cache;
 
+use Generator;
 use Illuminate\Cache\Repository;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
+use stdClass;
 
 use function assert;
 use function config;
+use function get_debug_type;
+use function is_float;
+use function is_int;
+use function serialize;
 
 /** Tests imported from {@see \Illuminate\Tests\Integration\Database\DatabaseCacheStoreTest} */
 class MongoCacheStoreTest extends TestCase
@@ -257,6 +264,26 @@ class MongoCacheStoreTest extends TestCase
         $this->assertNull($store->get('foo'));
     }
 
+    public static function provideSerializedEdgeCases(): Generator
+    {
+        yield 'empty array' => [[]];
+        yield 'empty object' => [new stdClass()];
+        yield 'null' => [null];
+        yield 'false' => [false];
+    }
+
+    #[DataProvider('provideSerializedEdgeCases')]
+    public function testGetReturnsCachedValueForSerializedEdgeCases(mixed $value): void
+    {
+        $store = $this->getStore();
+
+        $this->assertTrue($store->put('foo', $value, 60));
+
+        $result = $store->get('foo');
+        $this->assertSame(get_debug_type($value), get_debug_type($result));
+        $this->assertEquals($value, $result);
+    }
+
     public function testTTLIndex()
     {
         $store = $this->getStore();
@@ -285,13 +312,13 @@ class MongoCacheStoreTest extends TestCase
         return config('cache.prefix') . $key;
     }
 
-    private function insertToCacheTable(string $key, $value, $ttl = 60)
+    private function insertToCacheTable(string $key, mixed $value, int $ttl = 60): void
     {
         DB::connection('mongodb')
             ->getCollection($this->getCacheCollectionName())
             ->insertOne([
                 '_id' => $this->withCachePrefix($key),
-                'value' => $value,
+                'value' => is_int($value) || is_float($value) ? $value : serialize($value),
                 'expires_at' => new UTCDateTime(Carbon::now()->addSeconds($ttl)),
             ]);
     }
