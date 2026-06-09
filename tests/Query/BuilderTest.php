@@ -24,6 +24,7 @@ use PHPUnit\Framework\TestCase;
 use SortDirection;
 use stdClass;
 
+use function class_exists;
 use function collect;
 use function method_exists;
 use function now;
@@ -567,20 +568,22 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->orderByDesc('email'),
         ];
 
-        yield 'orderBy SortDirection::Ascending' => [
-            ['find' => [[], ['sort' => ['email' => 1]]]],
-            fn (Builder $builder) => $builder->orderBy('email', SortDirection::Ascending),
-        ];
+        if (class_exists(SortDirection::class)) {
+            yield 'orderBy SortDirection::Ascending' => [
+                ['find' => [[], ['sort' => ['email' => 1]]]],
+                fn (Builder $builder) => $builder->orderBy('email', SortDirection::Ascending),
+            ];
 
-        yield 'orderBy SortDirection::Descending' => [
-            ['find' => [[], ['sort' => ['email' => -1]]]],
-            fn (Builder $builder) => $builder->orderBy('email', SortDirection::Descending),
-        ];
+            yield 'orderBy SortDirection::Descending' => [
+                ['find' => [[], ['sort' => ['email' => -1]]]],
+                fn (Builder $builder) => $builder->orderBy('email', SortDirection::Descending),
+            ];
 
-        yield 'orderBy SortDirection on natural' => [
-            ['find' => [[], ['sort' => ['$natural' => -1]]]],
-            fn (Builder $builder) => $builder->orderBy('natural', SortDirection::Descending),
-        ];
+            yield 'orderBy SortDirection on natural' => [
+                ['find' => [[], ['sort' => ['$natural' => -1]]]],
+                fn (Builder $builder) => $builder->orderBy('natural', SortDirection::Descending),
+            ];
+        }
 
         /** @see DatabaseQueryBuilderTest::testReorder() */
         yield 'reorder reset' => [
