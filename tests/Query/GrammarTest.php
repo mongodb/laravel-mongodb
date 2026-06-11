@@ -203,6 +203,63 @@ class GrammarTest extends TestCase
     }
 
     /**
+     * Test that stdClass values are recursed into and processed
+     */
+    public function testPrepareFieldsForQueryProcessesStdClassValues()
+    {
+        $metadata = new stdClass();
+        $metadata->id = '123';
+        $metadata->name = 'test';
+
+        $input = ['metadata' => $metadata];
+        $result = $this->grammar->prepareFieldsForQuery($input);
+
+        $this->assertInstanceOf(stdClass::class, $result['metadata']);
+        $this->assertTrue(property_exists($result['metadata'], '_id'));
+        $this->assertFalse(property_exists($result['metadata'], 'id'));
+        $this->assertEquals('123', $result['metadata']->_id);
+        $this->assertEquals('test', $result['metadata']->name);
+    }
+
+    /**
+     * Test that DateTimeInterface inside stdClass values are converted to UTCDateTime
+     */
+    public function testPrepareFieldsForQueryConvertsDateTimeInsideStdClass()
+    {
+        $metadata = new stdClass();
+        $metadata->created_at = Carbon::parse('2024-01-01 12:00:00');
+        $metadata->label = 'test';
+
+        $input = ['metadata' => $metadata];
+        $result = $this->grammar->prepareFieldsForQuery($input);
+
+        $this->assertInstanceOf(stdClass::class, $result['metadata']);
+        $this->assertInstanceOf(UTCDateTime::class, $result['metadata']->created_at);
+        $this->assertEquals('test', $result['metadata']->label);
+    }
+
+    /**
+     * Test that stdClass values respect renameEmbeddedIdField configuration
+     */
+    public function testPrepareFieldsForQueryProcessesStdClassWithConfigDisabled()
+    {
+        $this->connection->setRenameEmbeddedIdField(false);
+
+        $metadata = new stdClass();
+        $metadata->id = '123';
+        $metadata->name = 'test';
+
+        $input = ['metadata' => $metadata];
+        $result = $this->grammar->prepareFieldsForQuery($input);
+
+        $this->assertInstanceOf(stdClass::class, $result['metadata']);
+        $this->assertTrue(property_exists($result['metadata'], 'id'));
+        $this->assertFalse(property_exists($result['metadata'], '_id'));
+
+        $this->connection->setRenameEmbeddedIdField(true);
+    }
+
+    /**
      * Test that _id is converted to id for root level results
      */
     public function testPrepareFieldsForResultConvertsUnderscoreIdToId()
