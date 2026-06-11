@@ -88,6 +88,13 @@ class Grammar extends BaseGrammar
                 $value = $this->prepareFieldsForQuery($value, false);
             } elseif ($value instanceof DateTimeInterface) {
                 $value = new UTCDateTime($value);
+            } elseif ($value instanceof stdClass) {
+                $value = $this->prepareFieldsForQuery(
+                    get_object_vars($value),
+                    false,
+                );
+
+                $value = (object) $value;
             }
         }
 
