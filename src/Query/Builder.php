@@ -1045,9 +1045,9 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * @param (Closure():T)|Expression|null $value
+     * @param (Closure(\MongoDB\Collection):T)|Expression|null $value
      *
-     * @return ($value is Closure ? T : ($value is null ? Collection : Expression))
+     * @return ($value is Closure ? T : ($value is null ? \MongoDB\Collection : Expression))
      *
      * @template T
      */
