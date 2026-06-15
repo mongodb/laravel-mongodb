@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\PHPStan;
 
+use Illuminate\Database\Query\Expression;
 use MongoDB\Collection as MongoDBCollection;
 use MongoDB\Laravel\Eloquent\Builder as EloquentBuilder;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
@@ -33,6 +34,11 @@ final class BuilderRawTypes
         assertType('array|object|null', $queryBuilder->raw(fn (MongoDBCollection $c) => $c->findOne([])));
     }
 
+    public static function queryBuilderRawExpression(QueryBuilder $queryBuilder): void
+    {
+        assertType('Illuminate\Database\Query\Expression', $queryBuilder->raw(new Expression('foo')));
+    }
+
     /** @param EloquentBuilder<User> $builder */
     public static function eloquentBuilderRawNull(EloquentBuilder $builder): void
     {
@@ -46,6 +52,12 @@ final class BuilderRawTypes
             'Illuminate\Database\Eloquent\Collection<int, MongoDB\Laravel\Tests\Models\User>|MongoDB\Driver\CursorInterface|MongoDB\Laravel\Tests\Models\User',
             $builder->raw(fn (MongoDBCollection $c) => $c->find([])),
         );
+    }
+
+    /** @param EloquentBuilder<User> $builder */
+    public static function eloquentBuilderRawExpression(EloquentBuilder $builder): void
+    {
+        assertType('Illuminate\Database\Query\Expression', $builder->raw(new Expression('foo')));
     }
 
     /** @param EloquentBuilder<User> $builder */
