@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\PHPStan;
 
 use MongoDB\Collection as MongoDBCollection;
-use MongoDB\Driver\CursorInterface;
 use MongoDB\Laravel\Eloquent\Builder as EloquentBuilder;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use MongoDB\Laravel\Tests\Models\User;
@@ -24,13 +23,6 @@ final class BuilderRawTypes
         assertType('MongoDB\Collection', $queryBuilder->raw());
     }
 
-    public static function queryBuilderRawClosureReceivesMongoCollection(QueryBuilder $queryBuilder): void
-    {
-        $queryBuilder->raw(function (MongoDBCollection $collection): CursorInterface {
-            return $collection->find([]);
-        });
-    }
-
     public static function queryBuilderRawClosureFind(QueryBuilder $queryBuilder): void
     {
         assertType('MongoDB\Driver\CursorInterface', $queryBuilder->raw(fn (MongoDBCollection $c) => $c->find([])));
@@ -45,14 +37,6 @@ final class BuilderRawTypes
     public static function eloquentBuilderRawNull(EloquentBuilder $builder): void
     {
         assertType('MongoDB\Collection', $builder->raw());
-    }
-
-    /** @param EloquentBuilder<User> $builder */
-    public static function eloquentBuilderRawClosureReceivesMongoCollection(EloquentBuilder $builder): void
-    {
-        $builder->raw(function (MongoDBCollection $collection): CursorInterface {
-            return $collection->find([]);
-        });
     }
 
     /** @param EloquentBuilder<User> $builder */
