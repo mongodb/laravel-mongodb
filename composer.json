@@ -51,7 +51,8 @@
         "illuminate/database": "^12.51|^13.0",
         "illuminate/events": "^12|^13.0",
         "illuminate/support": "^12|^13.0",
-        "mongodb/mongodb": "^1.21|^2"
+        "mongodb/mongodb": "^1.21|^2",
+        "symfony/polyfill-php86": "^1.38"
     },
     "require-dev": {
         "doctrine/coding-standard": "^12.0",

@@ -105,6 +105,7 @@ jobs:
     needs: prepare-release
     name: "Run Static Analysis"
     uses: ./.github/workflows/static-analysis.yml
+    continue-on-error: true
     with:
       ref: refs/tags/${{ inputs.version }}
     permissions:

@@ -27,8 +27,6 @@ jobs:
 
     runs-on: ubuntu-22.04
 
-    continue-on-error: true
-
     strategy:
       matrix:
         php: ['8.2', '8.3', '8.4', '8.5']
@@ -84,6 +82,7 @@ jobs:
             phpstan-result-cache-
 
       - name: Run PHPStan
+        id: phpstan
         run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi --error-format=sarif > phpstan.sarif
         continue-on-error: true
 
@@ -108,3 +107,7 @@ jobs:
         with:
           path: .cache
           key: ${{ steps.phpstan-cache-restore.outputs.cache-primary-key }}
+
+      - name: Assert no PHPStan errors
+        if: steps.phpstan.outcome == 'failure'
+        run: exit 1
