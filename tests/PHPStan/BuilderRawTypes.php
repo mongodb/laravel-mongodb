@@ -49,7 +49,7 @@ final class BuilderRawTypes
     public static function eloquentBuilderRawClosureFind(EloquentBuilder $builder): void
     {
         assertType(
-            'Illuminate\Database\Eloquent\Collection<int, MongoDB\Laravel\Tests\Models\User>|MongoDB\Driver\CursorInterface|MongoDB\Laravel\Tests\Models\User',
+            'Illuminate\Database\Eloquent\Collection<int, MongoDB\Laravel\Tests\Models\User>',
             $builder->raw(fn (MongoDBCollection $c) => $c->find([])),
         );
     }
@@ -57,7 +57,7 @@ final class BuilderRawTypes
     /** @param EloquentBuilder<User> $builder */
     public static function eloquentBuilderRawExpression(EloquentBuilder $builder): void
     {
-        assertType('Illuminate\Database\Query\Expression', $builder->raw(new Expression('foo')));
+        assertType('Illuminate\Contracts\Database\Query\Expression', $builder->raw(new Expression('foo')));
     }
 
     /** @param EloquentBuilder<User> $builder */
