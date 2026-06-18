@@ -39,7 +39,7 @@ jobs:
             php: '8.2'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Create MongoDB Atlas Local
         run: |
