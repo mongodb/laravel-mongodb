@@ -152,6 +152,27 @@ class ModelGetDirtyTest extends TestCase
         $this->assertTrue($casting->isDirty('floatNumber'));
     }
 
+    public function testGetDirtyWithObjectAndArrayCast(): void
+    {
+        $casting = Casting::create(['objectValue' => (object) ['x' => 1], 'arrayValue' => [1, 2, 3]]);
+        $casting = Casting::find($casting->id);
+        $this->assertFalse($casting->isDirty());
+
+        // Same content via different PHP type (array vs stdClass): BSON encoding makes them equivalent
+        $casting->objectValue = (object) ['x' => 1];
+        $this->assertFalse($casting->isDirty('objectValue'));
+
+        $casting->arrayValue = [1, 2, 3];
+        $this->assertFalse($casting->isDirty('arrayValue'));
+
+        // Different content: dirty
+        $casting->objectValue = (object) ['x' => 2];
+        $this->assertTrue($casting->isDirty('objectValue'));
+
+        $casting->arrayValue = [1, 2, 4];
+        $this->assertTrue($casting->isDirty('arrayValue'));
+    }
+
     public function testGetDirtyDateWithoutCast(): void
     {
         // A date field stored as UTCDateTime in MongoDB without an explicit cast.

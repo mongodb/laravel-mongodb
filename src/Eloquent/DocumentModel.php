@@ -60,6 +60,33 @@ trait DocumentModel
     use EmbedsRelations;
 
     /**
+     * Cast types where castAttribute() produces a scalar-comparable value.
+     * Encrypted casts are included because Eloquent encrypts on SET; castAttribute decrypts
+     * before comparing, so re-assigning the same plaintext is correctly detected as not dirty.
+     * Excludes: date/datetime (handled via UTCDateTime), array/object/collection/json (BSON).
+     *
+     * @var list<string>
+     */
+    private static array $scalarCastTypes = [
+        'int',
+        'integer',
+        'real',
+        'float',
+        'double',
+        'decimal',
+        'string',
+        'bool',
+        'boolean',
+        'timestamp',
+        'hashed',
+        'encrypted',
+        'encrypted:array',
+        'encrypted:json',
+        'encrypted:object',
+        'encrypted:collection',
+    ];
+
+    /**
      * The parent relation instance.
      */
     private Relation $parentRelation;
@@ -388,10 +415,12 @@ trait DocumentModel
             return false;
         }
 
-        // For fields with primitive casts (excluding date casts, handled below via UTCDateTime),
-        // apply the cast before comparing. This preserves Eloquent's behavior where int(1) and
-        // string('1') are equivalent on a field cast to int.
-        if (! $this->isDateAttribute($key) && $this->hasCast($key, static::$primitiveCastTypes)) {
+        // For scalar-producing and encrypted casts, apply the cast before comparing.
+        // This preserves Eloquent's behavior where int(1) and string('1') are equivalent
+        // on a field cast to int, and where re-assigning the same encrypted plaintext is
+        // not dirty. Object/array/collection/json casts fall through to BSON comparison.
+        // Date casts fall through to UTCDateTime conversion below.
+        if ($this->hasCast($key, self::$scalarCastTypes)) {
             return $this->castAttribute($key, $attribute) === $this->castAttribute($key, $original);
         }
 
