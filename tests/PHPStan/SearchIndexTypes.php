@@ -229,5 +229,40 @@ final class SearchIndexTypes
                 ['type' => 'filter', 'path' => 'genres'],
             ],
         ]);
+
+        // autoEmbed - minimal definition
+        // Source: https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/#automated-embedding
+        self::assertVectorSearchIndexDefinition([
+            'fields' => [
+                [
+                    'type' => 'autoEmbed',
+                    'modality' => 'text',
+                    'path' => 'description',
+                    'model' => 'voyage-4',
+                ],
+            ],
+        ]);
+
+        // autoEmbed - with optional tuning parameters
+        // Source: https://www.mongodb.com/docs/atlas/atlas-vector-search/vector-search-type/#automated-embedding
+        self::assertVectorSearchIndexDefinition([
+            'fields' => [
+                [
+                    'type' => 'autoEmbed',
+                    'modality' => 'text',
+                    'path' => 'description',
+                    'model' => 'voyage-4-large',
+                    'numDimensions' => 1024,
+                    'quantization' => 'scalar',
+                    'similarity' => 'dotProduct',
+                    'indexingMethod' => 'hnsw',
+                    'hnswOptions' => [
+                        'maxEdges' => 32,
+                        'numEdgeCandidates' => 200,
+                    ],
+                ],
+                ['type' => 'filter', 'path' => 'genres'],
+            ],
+        ]);
     }
 }

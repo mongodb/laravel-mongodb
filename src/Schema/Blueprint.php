@@ -108,6 +108,16 @@ use function key;
  *     indexingMethod?: 'flat'|'hnsw',
  *     hnswOptions?: array{maxEdges?: int, numEdgeCandidates?: int},
  * } | array{
+ *     type: 'autoEmbed',
+ *     modality: 'text',
+ *     path: string,
+ *     model: string,
+ *     numDimensions?: int,
+ *     quantization?: 'float'|'scalar'|'binary'|'binaryNoRescore',
+ *     similarity?: 'euclidean'|'cosine'|'dotProduct',
+ *     indexingMethod?: 'flat'|'hnsw',
+ *     hnswOptions?: array{maxEdges?: int, numEdgeCandidates?: int},
+ * } | array{
  *     type: 'filter',
  *     path: string,
  * }
