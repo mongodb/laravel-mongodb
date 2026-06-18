@@ -131,6 +131,27 @@ class ModelGetDirtyTest extends TestCase
         $this->assertTrue($user->isDirty('member_status'));
     }
 
+    public function testGetDirtyWithPrimitiveCast(): void
+    {
+        $casting = Casting::create(['intNumber' => 1, 'floatNumber' => 1.5, 'stringContent' => 'hello', 'booleanValue' => true]);
+        $casting = Casting::find($casting->id);
+        $this->assertFalse($casting->isDirty());
+
+        // Same value, different PHP type: cast normalizes to the same value, so not dirty
+        $casting->intNumber = '1';
+        $this->assertFalse($casting->isDirty('intNumber'));
+
+        $casting->booleanValue = 1;
+        $this->assertFalse($casting->isDirty('booleanValue'));
+
+        // Different effective value: dirty
+        $casting->intNumber = 2;
+        $this->assertTrue($casting->isDirty('intNumber'));
+
+        $casting->floatNumber = 1.6;
+        $this->assertTrue($casting->isDirty('floatNumber'));
+    }
+
     public function testGetDirtyDateWithoutCast(): void
     {
         // A date field stored as UTCDateTime in MongoDB without an explicit cast.

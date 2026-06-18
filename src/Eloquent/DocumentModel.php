@@ -384,7 +384,18 @@ trait DocumentModel
             return true;
         }
 
-        if ($attribute === null || is_scalar($attribute) || is_scalar($original)) {
+        if ($attribute === null) {
+            return false;
+        }
+
+        // For fields with primitive casts (excluding date casts, handled below via UTCDateTime),
+        // apply the cast before comparing. This preserves Eloquent's behavior where int(1) and
+        // string('1') are equivalent on a field cast to int.
+        if (! $this->isDateAttribute($key) && $this->hasCast($key, static::$primitiveCastTypes)) {
+            return $this->castAttribute($key, $attribute) === $this->castAttribute($key, $original);
+        }
+
+        if (is_scalar($attribute) || is_scalar($original)) {
             return false;
         }
 
