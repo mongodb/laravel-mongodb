@@ -260,10 +260,15 @@ final class ScoutEngine extends Engine
             $compound['mustNot'][] = ['in' => ['path' => $field, 'value' => $value]];
         }
 
-        // Sort by field value only if specified
+        // Sort by field value only if specified.
+        // '_score' maps to Atlas Search's relevance score via $meta: searchScore (always descending).
         $sort = [];
         foreach ($builder->orders as $order) {
-            $sort[$order['column']] = $order['direction'] === 'asc' ? 1 : -1;
+            if ($order['column'] === '_score') {
+                $sort['score'] = ['$meta' => 'searchScore'];
+            } else {
+                $sort[$order['column']] = $order['direction'] === 'asc' ? 1 : -1;
+            }
         }
 
         $pipeline = [
