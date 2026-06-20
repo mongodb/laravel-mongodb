@@ -39,6 +39,32 @@ class MongoLockTest extends TestCase
         );
     }
 
+    public function testLotteryPrunesExpiredLocks(): void
+    {
+        $collection = $this->createMock(Collection::class);
+        $collection->expects($this->once())
+            ->method('findOneAndUpdate')
+            ->willReturn(['owner' => 'test-owner']);
+        $collection->expects($this->once())
+            ->method('deleteMany');
+
+        $lock = new MongoLock($collection, 'foo', 10, 'test-owner', lottery: [1, 1]);
+        $lock->acquire();
+    }
+
+    public function testDisabledLotteryDoesNotPruneExpiredLocks(): void
+    {
+        $collection = $this->createMock(Collection::class);
+        $collection->expects($this->once())
+            ->method('findOneAndUpdate')
+            ->willReturn(['owner' => 'test-owner']);
+        $collection->expects($this->never())
+            ->method('deleteMany');
+
+        $lock = new MongoLock($collection, 'foo', 10, 'test-owner', lottery: [0, 0]);
+        $lock->acquire();
+    }
+
     public function testLockCanBeAcquired()
     {
         $lock = $this->getCache()->lock('foo');
