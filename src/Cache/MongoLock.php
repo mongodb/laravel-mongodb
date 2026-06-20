@@ -81,7 +81,7 @@ final class MongoLock extends Lock
             ],
         );
 
-        if ($this->lottery[0] <= 0 && random_int(1, $this->lottery[1]) <= $this->lottery[0]) {
+        if ($this->lottery[0] > 0 && random_int(1, $this->lottery[1]) <= $this->lottery[0]) {
             $this->collection->deleteMany(['expires_at' => ['$lte' => $this->getUTCDateTime()]]);
         }
 
