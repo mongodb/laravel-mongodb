@@ -404,6 +404,44 @@ class ScoutEngineTest extends TestCase
                 ],
             ]),
         ];
+
+        yield 'ordered by score' => [
+            function () {
+                $builder = new Builder(new SearchableModel(), 'lar');
+                $builder->orderBy('_score', 'desc');
+
+                return $builder;
+            },
+            array_replace_recursive($defaultPipeline, [
+                [
+                    '$search' => [
+                        'sort' => [
+                            'score' => ['$meta' => 'searchScore'],
+                        ],
+                    ],
+                ],
+            ]),
+        ];
+
+        yield 'ordered by score and field' => [
+            function () {
+                $builder = new Builder(new SearchableModel(), 'lar');
+                $builder->orderBy('_score', 'desc');
+                $builder->orderBy('name', 'asc');
+
+                return $builder;
+            },
+            array_replace_recursive($defaultPipeline, [
+                [
+                    '$search' => [
+                        'sort' => [
+                            'score' => ['$meta' => 'searchScore'],
+                            'name' => 1,
+                        ],
+                    ],
+                ],
+            ]),
+        ];
     }
 
     public function testPaginate()
