@@ -262,6 +262,11 @@ final class ScoutEngine extends Engine
 
         // Sort by field value only if specified.
         // '_score' maps to Atlas Search's relevance score via $meta: searchScore (always descending).
+        $columns = array_column($builder->orders, 'column');
+        if (in_array('_score', $columns, true) && in_array('score', $columns, true)) {
+            throw new InvalidArgumentException("Cannot sort by a field named 'score' together with Atlas Search's '_score' relevance sort.");
+        }
+
         $sort = [];
         foreach ($builder->orders as $order) {
             if ($order['column'] === '_score') {
