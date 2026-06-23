@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection as LaravelCollection;
 use Illuminate\Support\LazyCollection;
+use InvalidArgumentException;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Jobs\RemoveFromSearch;
 use LogicException;
@@ -140,6 +141,21 @@ class ScoutEngineTest extends TestCase
         $engine = new ScoutEngine($database, softDelete: false);
         $result = $engine->search($builder());
         $this->assertEquals($data, $result);
+    }
+
+    public function testSearchRejectsScoreFieldWithScoreSort(): void
+    {
+        $database = $this->createMock(Database::class);
+        $builder = new Builder(new SearchableModel(), 'lar');
+        $builder->orderBy('_score', 'desc');
+        $builder->orderBy('score', 'asc');
+
+        $engine = new ScoutEngine($database, softDelete: false);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Cannot sort by a field named 'score' together with Atlas Search's '_score' relevance sort.");
+
+        $engine->search($builder);
     }
 
     public static function provideSearchPipelines(): iterable
