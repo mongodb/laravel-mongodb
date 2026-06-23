@@ -1646,6 +1646,12 @@ class BuilderTest extends TestCase
 
         /** @see DatabaseQueryBuilderTest::testOrWhereIntegerNotInRaw */
         yield 'orWhereIntegerNotInRaw' => [fn (Builder $builder) => $builder->orWhereIntegerNotInRaw('id', ['1a', 2])];
+
+        yield 'whereVectorSimilarTo' => [fn (Builder $builder) => $builder->whereVectorSimilarTo('embedding', [0.1, 0.2])];
+        yield 'whereVectorDistanceLessThan' => [fn (Builder $builder) => $builder->whereVectorDistanceLessThan('embedding', [0.1, 0.2], 0.5)];
+        yield 'orWhereVectorDistanceLessThan' => [fn (Builder $builder) => $builder->orWhereVectorDistanceLessThan('embedding', [0.1, 0.2], 0.5)];
+        yield 'selectVectorDistance' => [fn (Builder $builder) => $builder->selectVectorDistance('embedding', [0.1, 0.2])];
+        yield 'orderByVectorDistance' => [fn (Builder $builder) => $builder->orderByVectorDistance('embedding', [0.1, 0.2])];
     }
 
     #[DataProvider('provideDisableRenameEmbeddedIdField')]

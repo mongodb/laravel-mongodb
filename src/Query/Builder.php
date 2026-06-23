@@ -703,8 +703,7 @@ class Builder extends BaseBuilder
             function ($orderColumn) use ($column) {
                 return $orderColumn === $column
                     || ($orderColumn === 'id' && $column === '_id')
-                    || ($orderColumn === '_id' && $column === 'id'
-                );
+                    || ($orderColumn === '_id' && $column === 'id');
             },
         );
 
@@ -1870,5 +1869,60 @@ class Builder extends BaseBuilder
     public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() instead.
+     */
+    public function whereVectorSimilarTo($column, $vector, $minSimilarity = 0.6, $order = true)
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() instead.');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() with the $filter parameter instead.
+     */
+    public function whereVectorDistanceLessThan($column, $vector, $maxDistance, $boolean = 'and')
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() with the $filter parameter instead.');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() with the $filter parameter instead.
+     */
+    public function orWhereVectorDistanceLessThan($column, $vector, $maxDistance)
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() with the $filter parameter instead.');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() instead, which returns vectorSearchScore in the result.
+     */
+    public function selectVectorDistance($column, $vector, $as = null)
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() instead, which returns vectorSearchScore in the result.');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() instead, which returns results ordered by vector score.
+     */
+    public function orderByVectorDistance($column, $vector = [])
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() instead, which returns results ordered by vector score.');
     }
 }
