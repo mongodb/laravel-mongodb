@@ -29,7 +29,7 @@ jobs:
             laravel: 12.*
             driver: 1
         exclude:
-          - laravel: 13.*
+          - laravel: '13.*'
             php: '8.2'
 
     steps:

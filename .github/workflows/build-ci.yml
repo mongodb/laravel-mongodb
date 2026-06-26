@@ -28,7 +28,7 @@ jobs:
         include:
           - php: '8.2'
             laravel: 12.*
-            mongodb: '7.0'
+            mongodb: '5.0'
             mode: low-deps
             driver: 1
           - php: '8.4'
@@ -47,11 +47,8 @@ jobs:
           - php: '8.2'
             laravel: 12.*
             mongodb: '7.0'
-          - php: '8.2'
-            laravel: 12.*
-            mongodb: '8.0'
         exclude:
-          - laravel: 13.*
+          - laravel: '13.*'
             php: '8.2'
 
     steps:

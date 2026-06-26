@@ -31,7 +31,7 @@ jobs:
 
     strategy:
       matrix:
-        php: ['8.1', '8.2', '8.3', '8.4', '8.5']
+        php: ['8.2', '8.3', '8.4', '8.5']
         driver: [2]
         include:
           - php: '8.4'
