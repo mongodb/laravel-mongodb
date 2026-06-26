@@ -26,25 +26,15 @@ jobs:
         laravel: ['12.*', '13.*']
         driver: [2]
         include:
-          - php: '8.1'
-            laravel: 10.*
-            mongodb: '5.0'
+          - php: '8.2'
+            laravel: 12.*
+            mongodb: '7.0'
             mode: low-deps
-            driver: 1
-          - php: '8.3'
-            laravel: 10.*
-            mongodb: '4.4'
             driver: 1
           - php: '8.4'
             laravel: 12.*
             mongodb: '8.0'
             driver: 1
-          - php: '8.5'
-            laravel: 10.*
-            mongodb: '8.0'
-          - php: '8.5'
-            laravel: 11.*
-            mongodb: '8.0'
           - php: '8.2'
             laravel: 12.*
             mongodb: '4.4'
