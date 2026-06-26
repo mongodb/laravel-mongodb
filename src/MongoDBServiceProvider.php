@@ -79,21 +79,18 @@ class MongoDBServiceProvider extends ServiceProvider
 
         // Add cache and lock drivers.
         $this->app->resolving('cache', function (CacheManager $cache) {
-            $cache->extend('mongodb', function (Application $app, array $config): Repository {
-                // The closure is bound to the CacheManager
-                assert($this instanceof CacheManager);
-
+            $cache->extend('mongodb', function (Application $app, array $config) use ($cache): Repository {
                 $store = new MongoStore(
                     $app['db']->connection($config['connection'] ?? null),
                     $config['collection'] ?? 'cache',
-                    $this->getPrefix($config),
+                    $config['prefix'] ?? $app['config']['cache.prefix'],
                     $app['db']->connection($config['lock_connection'] ?? $config['connection'] ?? null),
                     $config['lock_collection'] ?? ($config['collection'] ?? 'cache') . '_locks',
                     $config['lock_lottery'] ?? [2, 100],
                     $config['lock_timeout'] ?? 86400,
                 );
 
-                return $this->repository($store, $config);
+                return $cache->repository($store, $config);
             });
         });
 

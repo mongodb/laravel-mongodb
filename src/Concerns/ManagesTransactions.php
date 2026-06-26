@@ -8,12 +8,10 @@ use Closure;
 use MongoDB\Client;
 use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Session;
-use MongoDB\Laravel\Connection;
 use Throwable;
 
 use function max;
 use function MongoDB\with_transaction;
-use function property_exists;
 
 /**
  * @internal
@@ -131,11 +129,8 @@ trait ManagesTransactions
 
     private function runCallbacksBeforeTransaction(): void
     {
-        // ToDo: remove conditional once we stop supporting Laravel 10.x
-        if (property_exists(Connection::class, 'beforeStartingTransaction')) {
-            foreach ($this->beforeStartingTransaction as $beforeTransactionCallback) {
-                $beforeTransactionCallback($this);
-            }
+        foreach ($this->beforeStartingTransaction as $beforeTransactionCallback) {
+            $beforeTransactionCallback($this);
         }
     }
 

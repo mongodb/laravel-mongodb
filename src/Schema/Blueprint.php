@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Schema;
 
+use Closure;
 use Illuminate\Database\Schema\Blueprint as BaseBlueprint;
 use MongoDB\Collection;
 use MongoDB\Laravel\Connection;
@@ -128,15 +129,19 @@ use function key;
  */
 class Blueprint extends BaseBlueprint
 {
-    // Import $connection property and constructor for Laravel 12 compatibility
-    use BlueprintLaravelCompatibility;
-
     /**
      * The MongoDB collection object for this blueprint.
      *
      * @var Collection
      */
     protected $collection;
+
+    public function __construct(Connection $connection, string $collection, ?Closure $callback = null)
+    {
+        parent::__construct($connection, $collection, $callback);
+
+        $this->collection = $connection->getCollection($collection);
+    }
 
     /**
      * Fluent columns.

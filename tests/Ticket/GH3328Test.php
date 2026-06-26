@@ -6,7 +6,6 @@ use Closure;
 use Exception;
 use Illuminate\Contracts\Database\ConcurrencyErrorDetector;
 use Illuminate\Contracts\Events\ShouldDispatchAfterCommit;
-use Illuminate\Database\Concerns\ManagesTransactions;
 use Illuminate\Database\Connection;
 use Illuminate\Database\Events\TransactionBeginning;
 use Illuminate\Database\Events\TransactionCommitted;
@@ -21,7 +20,6 @@ use Throwable;
 
 use function event;
 use function interface_exists;
-use function property_exists;
 
 /**
  * @see https://github.com/mongodb/laravel-mongodb/issues/3328
@@ -37,10 +35,7 @@ class GH3328Test extends TestCase
         };
 
         $assert = function (): void {
-            if ($this->beforeStartingTransactionIsSupported()) {
-                Event::assertDispatchedTimes(BeforeTransactionEvent::class);
-            }
-
+            Event::assertDispatchedTimes(BeforeTransactionEvent::class);
             Event::assertDispatchedTimes(RegularEvent::class);
             Event::assertDispatchedTimes(AfterCommitEvent::class);
 
@@ -63,10 +58,7 @@ class GH3328Test extends TestCase
         };
 
         $assert = function (): void {
-            if ($this->beforeStartingTransactionIsSupported()) {
-                Event::assertDispatchedTimes(BeforeTransactionEvent::class, 3);
-            }
-
+            Event::assertDispatchedTimes(BeforeTransactionEvent::class, 3);
             Event::assertDispatchedTimes(RegularEvent::class, 3);
 
             Event::assertDispatchedTimes(TransactionBeginning::class, 3);
@@ -106,10 +98,7 @@ class GH3328Test extends TestCase
         };
 
         $assert = function (): void {
-            if ($this->beforeStartingTransactionIsSupported()) {
-                Event::assertDispatchedTimes(BeforeTransactionEvent::class);
-            }
-
+            Event::assertDispatchedTimes(BeforeTransactionEvent::class);
             Event::assertDispatchedTimes(RegularEvent::class);
             Event::assertDispatchedTimes(AfterCommitEvent::class);
 
@@ -132,10 +121,7 @@ class GH3328Test extends TestCase
         };
 
         $assert = function (): void {
-            if ($this->beforeStartingTransactionIsSupported()) {
-                Event::assertDispatchedTimes(BeforeTransactionEvent::class);
-            }
-
+            Event::assertDispatchedTimes(BeforeTransactionEvent::class);
             Event::assertDispatchedTimes(RegularEvent::class);
             Event::assertNotDispatched(AfterCommitEvent::class);
 
@@ -173,11 +159,9 @@ class GH3328Test extends TestCase
         $fake = Event::fake();
         $connection->setEventDispatcher($fake);
 
-        if ($this->beforeStartingTransactionIsSupported()) {
-            $connection->beforeStartingTransaction(function () {
-                event(new BeforeTransactionEvent());
-            });
-        }
+        $connection->beforeStartingTransaction(function () {
+            event(new BeforeTransactionEvent());
+        });
 
         try {
             $connection->transaction($callback, $attempts);
@@ -210,11 +194,9 @@ class GH3328Test extends TestCase
         $fake = Event::fake();
         $connection->setEventDispatcher($fake);
 
-        if ($this->beforeStartingTransactionIsSupported()) {
-            $connection->beforeStartingTransaction(function () {
-                event(new BeforeTransactionEvent());
-            });
-        }
+        $connection->beforeStartingTransaction(function () {
+            event(new BeforeTransactionEvent());
+        });
 
         $connection->beginTransaction();
 
@@ -226,11 +208,6 @@ class GH3328Test extends TestCase
         }
 
         $assert();
-    }
-
-    private function beforeStartingTransactionIsSupported(): bool
-    {
-        return property_exists(ManagesTransactions::class, 'beforeStartingTransaction');
     }
 }
 

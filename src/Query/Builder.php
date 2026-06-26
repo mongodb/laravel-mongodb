@@ -84,8 +84,6 @@ use function var_export;
  */
 class Builder extends BaseBuilder
 {
-    use BuilderTimeout;
-
     private const REGEX_DELIMITERS = ['/', '#', '~'];
 
     /**

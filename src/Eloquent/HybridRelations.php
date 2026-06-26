@@ -269,7 +269,7 @@ trait HybridRelations
      * @see HasRelationships::belongsToMany()
      *
      * @param  class-string<TRelatedModel>                                   $related
-     * @param  string|class-string<\Illuminate\Database\Eloquent\Model>|null $table
+     * @param  string|class-string<\Illuminate\Database\Eloquent\Model>|null $collection
      * @param  string|null                                                   $foreignPivotKey
      * @param  string|null                                                   $relatedPivotKey
      * @param  string|null                                                   $parentKey

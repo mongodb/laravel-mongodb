@@ -1742,26 +1742,8 @@ class BuilderTest extends TestCase
         $connection->method('getRenameEmbeddedIdField')->willReturn($renameEmbeddedIdField);
         $processor  = $this->createStub(Processor::class);
         $connection->method('getSession')->willReturn(null);
-        $connection->method('getQueryGrammar')->willReturn($this->getMongoGrammar($connection));
+        $connection->method('getQueryGrammar')->willReturn(new Grammar($connection));
 
         return new Builder($connection, null, $processor);
-    }
-
-    /**
-     * Helper method to get a MongoDB grammar instance with the given connection.
-     */
-    protected function getMongoGrammar(Connection $connection): Grammar
-    {
-        // Argument added in Laravel 12
-        $grammar = new Grammar($connection);
-
-        // Method setConnection() was removed in Laravel 12,
-        // where the connection is passed via the constructor instead.
-        // Keep this for Laravel 11.
-        if (method_exists($grammar, 'setConnection')) {
-            $grammar->setConnection($connection);
-        }
-
-        return $grammar;
     }
 }

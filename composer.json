@@ -43,14 +43,14 @@
     ],
     "license": "MIT",
     "require": {
-        "php": "^8.1",
+        "php": "^8.2",
         "ext-mongodb": "^1.21|^2",
         "composer-runtime-api": "^2.0.0",
-        "illuminate/cache": "^10.36|^11|^12|^13.0",
-        "illuminate/container": "^10.0|^11|^12|^13.0",
-        "illuminate/database": "^10.30|^11|^12|^13.0",
-        "illuminate/events": "^10.0|^11|^12|^13.0",
-        "illuminate/support": "^10.0|^11|^12|^13.0",
+        "illuminate/cache": "^12|^13.0",
+        "illuminate/container": "^12|^13.0",
+        "illuminate/database": "^12.51|^13.0",
+        "illuminate/events": "^12|^13.0",
+        "illuminate/support": "^12|^13.0",
         "mongodb/mongodb": "^1.21|^2"
     },
     "require-dev": {
@@ -59,9 +59,9 @@
         "league/flysystem-gridfs": "^3.28",
         "league/flysystem-read-only": "^3.0",
         "mockery/mockery": "^1.4.4",
-        "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+        "orchestra/testbench": "^10.0|^11.0",
         "phpstan/phpstan": "^1.10|^2.1",
-        "phpunit/phpunit": "^10.3|^11.5.3|^12.5.12",
+        "phpunit/phpunit": "^11.5.3|^12.5.12",
         "rector/rector": "^1.2|^2.3",
         "spatie/laravel-query-builder": "^5.6|^6"
     },
