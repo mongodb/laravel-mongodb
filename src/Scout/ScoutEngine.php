@@ -270,6 +270,10 @@ final class ScoutEngine extends Engine
         $sort = [];
         foreach ($builder->orders as $order) {
             if ($order['column'] === '_score') {
+                if ($order['direction'] === 'asc') {
+                    throw new InvalidArgumentException("Cannot sort by '_score' in ascending order; Atlas Search relevance score always sorts descending.");
+                }
+
                 $sort['score'] = ['$meta' => 'searchScore'];
             } else {
                 $sort[$order['column']] = $order['direction'] === 'asc' ? 1 : -1;

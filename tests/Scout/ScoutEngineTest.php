@@ -158,6 +158,20 @@ class ScoutEngineTest extends TestCase
         $engine->search($builder);
     }
 
+    public function testSearchRejectsAscendingScoreSort(): void
+    {
+        $database = $this->createMock(Database::class);
+        $builder = new Builder(new SearchableModel(), 'lar');
+        $builder->orderBy('_score', 'asc');
+
+        $engine = new ScoutEngine($database, softDelete: false);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Cannot sort by '_score' in ascending order; Atlas Search relevance score always sorts descending.");
+
+        $engine->search($builder);
+    }
+
     public static function provideSearchPipelines(): iterable
     {
         $defaultPipeline = [
