@@ -19,7 +19,7 @@ issues that are resolved as "Fixed" and should be included in this release
 version.
 
 Update the version's release date and status from the
-[Manage Versions](https://jira.mongodb.org/plugins/servlet/project-config/PHPORM/versions)
+[Manage Versions](https://jira.mongodb.org/plugins/servlet/project-config/PHPLARA/versions)
 page.
 
 ## Trigger the release workflow
@@ -43,5 +43,5 @@ Release announcements should also be posted in the [MongoDB Product & Driver Ann
 ## Mark JIRA version as released
 
 Mark the version as released from the
-[Manage Versions](https://jira.mongodb.org/plugins/servlet/project-config/PHPORM/versions)
+[Manage Versions](https://jira.mongodb.org/plugins/servlet/project-config/PHPLARA/versions)
 page.

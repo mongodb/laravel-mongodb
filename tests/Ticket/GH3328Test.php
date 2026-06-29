@@ -25,7 +25,7 @@ use function property_exists;
 
 /**
  * @see https://github.com/mongodb/laravel-mongodb/issues/3328
- * @see https://jira.mongodb.org/browse/PHPORM-373
+ * @see https://jira.mongodb.org/browse/PHPLARA-245
  */
 class GH3328Test extends TestCase
 {

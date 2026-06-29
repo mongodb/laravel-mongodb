@@ -11,7 +11,7 @@ use MongoDB\Laravel\Tests\TestCase;
 
 /**
  * @see https://github.com/mongodb/laravel-mongodb/issues/2783
- * @see https://jira.mongodb.org/browse/PHPORM-175
+ * @see https://jira.mongodb.org/browse/PHPLARA-198
  */
 class GH2783Test extends TestCase
 {

@@ -9,7 +9,7 @@ use MongoDB\Laravel\Tests\TestCase;
 
 /**
  * @see https://github.com/mongodb/laravel-mongodb/issues/3326
- * @see https://jira.mongodb.org/browse/PHPORM-309
+ * @see https://jira.mongodb.org/browse/PHPLARA-244
  */
 class GH3326Test extends TestCase
 {
