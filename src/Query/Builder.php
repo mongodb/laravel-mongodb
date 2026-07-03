@@ -36,6 +36,7 @@ use function array_fill_keys;
 use function array_filter;
 use function array_is_list;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -1293,10 +1294,11 @@ class Builder extends BaseBuilder
             if (isset($where['column'])) {
                 $where['column'] = (string) $where['column'];
 
-                // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
-                if ($where['column'] === 'id') {
-                    $where['column'] = '_id';
-                }
+                // Compatibility with Eloquent queries that use "id" instead of MongoDB's _id.
+                // Delegates to Grammar::prepareFieldsForQuery so the aliasing is overridable.
+                $where['column'] = (string) array_key_first(
+                    $this->grammar->prepareFieldsForQuery([$where['column'] => null]),
+                );
 
                 // Convert id's.
                 if ($where['column'] === '_id' || str_ends_with($where['column'], '._id')) {

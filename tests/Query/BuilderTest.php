@@ -1736,6 +1736,29 @@ class BuilderTest extends TestCase
         ];
     }
 
+    public function testCustomGrammarDisablesIdAliasing()
+    {
+        $connection = $this->createStub(Connection::class);
+        $connection->method('getRenameEmbeddedIdField')->willReturn(true);
+        $connection->method('getSession')->willReturn(null);
+        $grammar = new class ($connection) extends Grammar {
+            public function prepareFieldsForQuery(array $values, bool $root = true): array
+            {
+                return $values;
+            }
+        };
+        $connection->method('getQueryGrammar')->willReturn($grammar);
+
+        $builder = new Builder($connection, null, $this->createStub(Processor::class));
+
+        $mql = $builder->where('id', '=', 'abc123')->toMql();
+
+        $this->assertEquals(
+            ['find' => [['id' => 'abc123'], ['typeMap' => ['root' => 'object', 'document' => 'array']]]],
+            $mql,
+        );
+    }
+
     private function getBuilder(bool $renameEmbeddedIdField = true): Builder
     {
         $connection = $this->createStub(Connection::class);
