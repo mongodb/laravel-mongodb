@@ -400,6 +400,10 @@ trait DocumentModel
                 $this->castAttribute($key, $original);
         }
 
+        if ($this->isClassComparable($key)) {
+            return $this->compareClassCastableAttribute($key, $original, $attribute);
+        }
+
         if ($this->isClassCastable($key)) {
             return ! is_object($attribute) ? $attribute === $original : $attribute == $original;
         }
