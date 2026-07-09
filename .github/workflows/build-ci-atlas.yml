@@ -34,7 +34,10 @@ jobs:
       - name: Create MongoDB Atlas Local
         timeout-minutes: 5
         run: |
-          docker run --name mongodb -p 27017:27017 --detach mongodb/mongodb-atlas-local:latest
+          docker run --name mongodb -p 27017:27017 \
+              -e VOYAGE_API_KEY=${{ secrets.VOYAGE_API_KEY }} \
+              -e EMBEDDING_PROVIDER_ENDPOINT=https://api.voyageai.com/v1/embeddings \
+              --detach mongodb/mongodb-atlas-local:latest
           until docker exec --tty mongodb mongosh --eval "db.hello().isWritablePrimary" | grep -q true; do sleep 1; done
           until docker exec --tty mongodb mongosh --eval "db.getCollection('connection_test').insertOne({})"; do sleep 1; done
           until docker exec --tty mongodb mongosh --eval "db.getCollection('connection_test').createSearchIndex({mappings:{dynamic: true}})"; do sleep 1; done

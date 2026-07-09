@@ -3,6 +3,7 @@
 *.sublime-workspace
 .DS_Store
 .idea/
+.env
 /vendor
 composer.lock
 composer.phar

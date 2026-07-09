@@ -17,6 +17,12 @@ services:
         image: mongodb/mongodb-atlas-local:8
         ports:
             - "27017:27017"
+        env_file:
+            - path: .env
+              required: false
+        environment:
+            VOYAGE_API_KEY: ${VOYAGE_API_KEY:-}
+            EMBEDDING_PROVIDER_ENDPOINT: ${EMBEDDING_PROVIDER_ENDPOINT:-https://api.voyageai.com/v1/embeddings}
         healthcheck:
             test: mongosh --quiet --eval 'db.runCommand("ping").ok'
             interval: 10s

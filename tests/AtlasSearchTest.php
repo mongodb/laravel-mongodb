@@ -15,10 +15,12 @@ use PHPUnit\Framework\Attributes\Group;
 
 use function array_map;
 use function assert;
+use function getenv;
 use function mt_getrandmax;
 use function rand;
 use function range;
 use function srand;
+use function str_contains;
 use function usort;
 
 #[Group('atlas-search')]
@@ -246,6 +248,49 @@ class AtlasSearchTest extends TestCase
             $results->first()->vectorSearchScore,
             self::logicalAnd(self::isType('float'), self::greaterThan(0.9), self::lessThan(1.0)),
         );
+    }
+
+    public function testEloquentBuilderVectorSearchAutoEmbedding()
+    {
+        if (getenv('VOYAGE_API_KEY') === false || getenv('VOYAGE_API_KEY') === '') {
+            self::markTestSkipped('Auto embedding requires VOYAGE_API_KEY to be set on the Atlas cluster.');
+        }
+
+        $collection = $this->getConnection('mongodb')->getCollection('books');
+        assert($collection instanceof MongoDBCollection);
+
+        try {
+            Schema::table('books', function ($table) {
+                $table->vectorSearchIndex([
+                    'fields' => [
+                        ['type' => 'autoEmbed', 'modality' => 'text', 'path' => 'title', 'model' => 'voyage-4-large'],
+                    ],
+                ], 'auto_embed');
+            });
+        } catch (ServerException $e) {
+            if (str_contains($e->getMessage(), 'not registered')) {
+                self::markTestSkipped('Auto embedding requires an Atlas cluster with a registered embedding model. Set VOYAGE_API_KEY.');
+            }
+
+            throw $e;
+        }
+
+        $this->waitForSearchIndexesReady($collection);
+
+        // Query with a lighter model (voyage-4-lite) than the indexing model (voyage-4-large);
+        // all voyage-4 embeddings are compatible.
+        $results = Book::vectorSearch(
+            index: 'auto_embed',
+            path: 'title',
+            query: 'machine learning textbook',
+            model: 'voyage-4-lite',
+            limit: 3,
+        );
+
+        self::assertInstanceOf(EloquentCollection::class, $results);
+        self::assertCount(3, $results);
+        self::assertInstanceOf(Book::class, $results->first());
+        self::assertIsFloat($results->first()->vectorSearchScore);
     }
 
     /** Generate random vectors using fixed seed to make tests deterministic */

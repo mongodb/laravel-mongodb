@@ -1696,21 +1696,25 @@ class Builder extends BaseBuilder
     public function vectorSearch(
         string $index,
         string $path,
-        array $queryVector,
-        int $limit,
+        array|null $queryVector = null,
+        int $limit = 10,
         bool $exact = false,
         QueryInterface|array|null $filter = null,
         int|null $numCandidates = null,
+        string|null $query = null,
+        string|null $model = null,
     ): Collection {
         // Forward named arguments to the vectorSearch stage, skip null values
         $args = array_filter([
             'index' => $index,
             'limit' => $limit,
             'path' => $path,
-            'queryVector' => $queryVector,
+            'model' => $model,
             'exact' => $exact,
             'filter' => $filter,
             'numCandidates' => $numCandidates,
+            'queryVector' => $queryVector,
+            'query' => $query,
         ], fn ($arg) => $arg !== null);
 
         return $this->aggregate()

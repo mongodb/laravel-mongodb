@@ -32,9 +32,9 @@ trait AtlasSearchIndexManagement
     /**
      * Waits for all search indexes to be ready
      */
-    public function waitForSearchIndexesReady(Collection $collection)
+    public function waitForSearchIndexesReady(Collection $collection, int $timeoutSeconds = 120)
     {
-        $timeout = hrtime()[0] + 120;
+        $timeout = hrtime()[0] + $timeoutSeconds;
         do {
             if (hrtime()[0] > $timeout) {
                 throw new RuntimeException('Timed out waiting for search indexes to be ready');

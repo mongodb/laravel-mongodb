@@ -122,13 +122,25 @@ class Builder extends EloquentBuilder
     public function vectorSearch(
         string $index,
         string $path,
-        array $queryVector,
-        int $limit,
+        array|null $queryVector = null,
+        int $limit = 10,
         bool $exact = false,
         QueryInterface|array $filter = [],
         int|null $numCandidates = null,
+        string|null $query = null,
+        string|null $model = null,
     ): Collection {
-        $results = $this->toBase()->vectorSearch($index, $path, $queryVector, $limit, $exact, $filter, $numCandidates);
+        $results = $this->toBase()->vectorSearch(
+            index: $index,
+            path: $path,
+            limit: $limit,
+            queryVector: $queryVector,
+            exact: $exact,
+            filter: $filter,
+            numCandidates: $numCandidates,
+            query: $query,
+            model: $model,
+        );
 
         return $this->model->hydrate($results->all());
     }
