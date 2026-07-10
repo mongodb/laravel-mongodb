@@ -14,6 +14,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
+use Laravel\Boost\BoostServiceProvider;
 use Laravel\Scout\EngineManager;
 use League\Flysystem\Filesystem;
 use League\Flysystem\GridFS\GridFSAdapter;
@@ -24,11 +25,14 @@ use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Queue\MongoConnector;
 use MongoDB\Laravel\Scout\ScoutEngine;
 use MongoDB\Laravel\Session\MongoDbSessionHandler;
+use MongoDB\Laravel\Tools\DatabaseInfo;
 use Override;
 use RuntimeException;
 
+use function array_merge;
 use function assert;
 use function class_exists;
+use function config;
 use function get_debug_type;
 use function is_string;
 use function sprintf;
@@ -103,6 +107,7 @@ class MongoDBServiceProvider extends ServiceProvider
 
         $this->registerFlysystemAdapter();
         $this->registerScoutEngine();
+        $this->registerBoostTools();
     }
 
     private function registerFlysystemAdapter(): void
@@ -155,6 +160,18 @@ class MongoDBServiceProvider extends ServiceProvider
                 return new FilesystemAdapter(new Filesystem($adapter, $config), $adapter, $config);
             });
         });
+    }
+
+    private function registerBoostTools(): void
+    {
+        if (! class_exists(BoostServiceProvider::class)) {
+            return;
+        }
+
+        config()->set('boost.mcp.tools.include', array_merge(
+            config('boost.mcp.tools.include', []),
+            [DatabaseInfo::class],
+        ));
     }
 
     private function registerScoutEngine(): void
