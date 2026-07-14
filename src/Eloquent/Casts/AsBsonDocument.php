@@ -21,10 +21,6 @@ class AsBsonDocument implements Castable, CastsAttributes
 
     public function get($model, string $key, $value, array $attributes)
     {
-        if ($value === null) {
-            return null;
-        }
-
         if ($value instanceof BSONDocument) {
             return clone $value;
         }
@@ -33,11 +29,7 @@ class AsBsonDocument implements Castable, CastsAttributes
             $value = (array) $value;
         }
 
-        if (! is_array($value)) {
-            return null;
-        }
-
-        return new BSONDocument($value);
+        return is_array($value) ? new BSONDocument($value) : null;
     }
 
     public function set($model, string $key, $value, array $attributes)
@@ -48,10 +40,6 @@ class AsBsonDocument implements Castable, CastsAttributes
 
         if ($value instanceof BSONDocument) {
             return [$key => clone $value];
-        }
-
-        if ($value instanceof stdClass) {
-            $value = (array) $value;
         }
 
         return [$key => new BSONDocument((array) $value)];

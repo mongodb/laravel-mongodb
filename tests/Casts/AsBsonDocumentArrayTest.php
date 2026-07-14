@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Casts;
 
 use Illuminate\Support\Facades\DB;
+use MongoDB\Laravel\Eloquent\Casts\AsBsonArray;
+use MongoDB\Laravel\Eloquent\Casts\AsBsonDocument;
 use MongoDB\Laravel\Tests\Models\BsonCasting;
 use MongoDB\Laravel\Tests\TestCase;
 use MongoDB\Model\BSONArray;
@@ -147,5 +149,61 @@ class AsBsonDocumentArrayTest extends TestCase
         self::assertIsArray($raw->variants);
         self::assertSame('512GB SSD', $raw->specs['storage']['primary']);
         self::assertSame('Blue', $raw->variants[0]['color']);
+    }
+
+    public function testGetReturnsNullForNonArrayValue(): void
+    {
+        $model = new BsonCasting();
+
+        self::assertNull((new AsBsonArray())->get($model, 'variants', null, []));
+        self::assertNull((new AsBsonArray())->get($model, 'variants', 'scalar', []));
+        self::assertNull((new AsBsonArray())->get($model, 'variants', 42, []));
+
+        self::assertNull((new AsBsonDocument())->get($model, 'specs', null, []));
+        self::assertNull((new AsBsonDocument())->get($model, 'specs', 'scalar', []));
+        self::assertNull((new AsBsonDocument())->get($model, 'specs', 42, []));
+    }
+
+    public function testGetConvertsStdClassToBsonDocument(): void
+    {
+        $result = (new AsBsonDocument())->get(new BsonCasting(), 'specs', (object) ['name' => 'Taylor'], []);
+
+        self::assertInstanceOf(BSONDocument::class, $result);
+        self::assertSame(['name' => 'Taylor'], $result->getArrayCopy());
+    }
+
+    public function testGetClonesExistingBsonContainer(): void
+    {
+        $model = new BsonCasting();
+
+        $document = new BSONDocument(['name' => 'Taylor']);
+        $castDocument = (new AsBsonDocument())->get($model, 'specs', $document, []);
+        self::assertInstanceOf(BSONDocument::class, $castDocument);
+        self::assertNotSame($document, $castDocument);
+        self::assertSame(['name' => 'Taylor'], $castDocument->getArrayCopy());
+
+        $array = new BSONArray([['name' => 'Taylor']]);
+        $castArray = (new AsBsonArray())->get($model, 'variants', $array, []);
+        self::assertInstanceOf(BSONArray::class, $castArray);
+        self::assertNotSame($array, $castArray);
+        self::assertSame([['name' => 'Taylor']], $castArray->getArrayCopy());
+    }
+
+    /**
+     * Mirrors the leniency of Laravel's AsArrayObject / AsCollection: set() never
+     * throws on non-array input, it coerces via (array) instead.
+     */
+    public function testSetCoercesNonArrayValueWithoutThrowing(): void
+    {
+        $model = new BsonCasting();
+
+        $variants = (new AsBsonArray())->set($model, 'variants', 'foo', []);
+        self::assertEquals(new BSONArray(['foo']), $variants['variants']);
+
+        $specs = (new AsBsonDocument())->set($model, 'specs', (object) ['name' => 'Taylor'], []);
+        self::assertEquals(new BSONDocument(['name' => 'Taylor']), $specs['specs']);
+
+        self::assertSame(['variants' => null], (new AsBsonArray())->set($model, 'variants', null, []));
+        self::assertSame(['specs' => null], (new AsBsonDocument())->set($model, 'specs', null, []));
     }
 }

@@ -20,19 +20,11 @@ class AsBsonArray implements Castable, CastsAttributes
 
     public function get($model, string $key, $value, array $attributes)
     {
-        if ($value === null) {
-            return null;
-        }
-
         if ($value instanceof BSONArray) {
             return clone $value;
         }
 
-        if (! is_array($value)) {
-            return null;
-        }
-
-        return new BSONArray($value);
+        return is_array($value) ? new BSONArray($value) : null;
     }
 
     public function set($model, string $key, $value, array $attributes)
