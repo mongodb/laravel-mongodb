@@ -1,0 +1,56 @@
+name: Validate Skills
+
+on:
+  pull_request:
+    paths:
+      - "skills/**"
+      - ".github/workflows/validate-skills.yml"
+      - ".github/scripts/validate-skills.sh"
+      - "tests/skills/**"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Full history is needed so git diff can compare against the base branch
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: stable
+          cache: false
+
+      - name: Install skill-validator
+        run: go install github.com/agent-ecosystem/skill-validator/cmd/skill-validator@latest
+
+      - name: Validate changed skills
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          echo "## Changed Skills" >> "$GITHUB_STEP_SUMMARY"
+          bash .github/scripts/validate-skills.sh "$BASE_REF"
+
+      - name: Validate all skills
+        run: |
+          echo "## All Skills" >> "$GITHUB_STEP_SUMMARY"
+          skill-validator check --strict --emit-annotations -o markdown skills/ \
+            2>&1 | tee >(grep -v '^::' >> "$GITHUB_STEP_SUMMARY")
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          tools: none
+          coverage: none
+
+      - name: Validate PHP examples in skill docs
+        run: |
+          echo "## PHP Examples" >> "$GITHUB_STEP_SUMMARY"
+          php tests/skills/laravel-mongodb/validate-php-examples.php \
+            2>&1 | tee -a "$GITHUB_STEP_SUMMARY"
