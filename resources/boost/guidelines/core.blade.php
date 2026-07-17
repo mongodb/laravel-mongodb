@@ -8,6 +8,7 @@ Before running any Boost database tool, check whether the target connection uses
 
 If it does, you MUST use a MongoDB Laravel equivalent tool instead, if available:
 
-| Boost tool        | MongoDB Laravel tool |
-|-------------------|----------------------|
-| `database-schema` | `database-info`      |
+| Boost tool        | MongoDB Laravel tool      |
+|-------------------|---------------------------|
+| `database-schema` | `database-info`           |
+| `database-query`  | `database-query-mongodb`  |
