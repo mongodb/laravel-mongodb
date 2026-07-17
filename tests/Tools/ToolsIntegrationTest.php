@@ -11,6 +11,7 @@ use Laravel\Boost\Mcp\ToolRegistry;
 use Laravel\Mcp\Server\Tool;
 use MongoDB\Laravel\Tests\TestCase;
 use MongoDB\Laravel\Tools\DatabaseInfo;
+use MongoDB\Laravel\Tools\DatabaseQuery;
 
 use function array_merge;
 
@@ -45,5 +46,6 @@ class ToolsIntegrationTest extends TestCase
     private function tools(): Generator
     {
         yield [new DatabaseInfo(), ['connection' => 'mongodb']];
+        yield [new DatabaseQuery(), ['connection' => 'mongodb', 'command' => ['find' => 'examples']]];
     }
 }

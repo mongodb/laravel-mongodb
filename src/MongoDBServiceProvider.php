@@ -26,6 +26,7 @@ use MongoDB\Laravel\Queue\MongoConnector;
 use MongoDB\Laravel\Scout\ScoutEngine;
 use MongoDB\Laravel\Session\MongoDbSessionHandler;
 use MongoDB\Laravel\Tools\DatabaseInfo;
+use MongoDB\Laravel\Tools\DatabaseQuery;
 use Override;
 use RuntimeException;
 
@@ -170,7 +171,7 @@ class MongoDBServiceProvider extends ServiceProvider
 
         config()->set('boost.mcp.tools.include', array_merge(
             config('boost.mcp.tools.include', []),
-            [DatabaseInfo::class],
+            [DatabaseInfo::class, DatabaseQuery::class],
         ));
     }
 
