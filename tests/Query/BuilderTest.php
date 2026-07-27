@@ -1241,6 +1241,16 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->groupBy('foo'),
         ];
 
+        yield 'groupBy with _id in select' => [
+            [
+                'aggregate' => [
+                    [['$group' => ['_id' => ['foo' => '$foo'], 'foo' => ['$last' => '$foo']]]],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder->select('_id', 'foo')->groupBy('foo'),
+        ];
+
         yield 'sub-query' => [
             [
                 'find' => [
