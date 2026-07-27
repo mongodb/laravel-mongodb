@@ -14,6 +14,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
+use Laravel\Boost\BoostServiceProvider;
 use Laravel\Scout\EngineManager;
 use League\Flysystem\Filesystem;
 use League\Flysystem\GridFS\GridFSAdapter;
@@ -24,11 +25,15 @@ use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Queue\MongoConnector;
 use MongoDB\Laravel\Scout\ScoutEngine;
 use MongoDB\Laravel\Session\MongoDbSessionHandler;
+use MongoDB\Laravel\Tools\DatabaseInfo;
+use MongoDB\Laravel\Tools\DatabaseQuery;
 use Override;
 use RuntimeException;
 
+use function array_merge;
 use function assert;
 use function class_exists;
+use function config;
 use function get_debug_type;
 use function is_string;
 use function sprintf;
@@ -79,21 +84,18 @@ class MongoDBServiceProvider extends ServiceProvider
 
         // Add cache and lock drivers.
         $this->app->resolving('cache', function (CacheManager $cache) {
-            $cache->extend('mongodb', function (Application $app, array $config): Repository {
-                // The closure is bound to the CacheManager
-                assert($this instanceof CacheManager);
-
+            $cache->extend('mongodb', function (Application $app, array $config) use ($cache): Repository {
                 $store = new MongoStore(
                     $app['db']->connection($config['connection'] ?? null),
                     $config['collection'] ?? 'cache',
-                    $this->getPrefix($config),
+                    $this->getPrefix($config), // @phpstan-ignore arguments.count (closure is bound to CacheManager at runtime)
                     $app['db']->connection($config['lock_connection'] ?? $config['connection'] ?? null),
                     $config['lock_collection'] ?? ($config['collection'] ?? 'cache') . '_locks',
                     $config['lock_lottery'] ?? [2, 100],
                     $config['lock_timeout'] ?? 86400,
                 );
 
-                return $this->repository($store, $config);
+                return $cache->repository($store, $config);
             });
         });
 
@@ -106,6 +108,7 @@ class MongoDBServiceProvider extends ServiceProvider
 
         $this->registerFlysystemAdapter();
         $this->registerScoutEngine();
+        $this->registerBoostTools();
     }
 
     private function registerFlysystemAdapter(): void
@@ -158,6 +161,18 @@ class MongoDBServiceProvider extends ServiceProvider
                 return new FilesystemAdapter(new Filesystem($adapter, $config), $adapter, $config);
             });
         });
+    }
+
+    private function registerBoostTools(): void
+    {
+        if (! class_exists(BoostServiceProvider::class)) {
+            return;
+        }
+
+        config()->set('boost.mcp.tools.include', array_merge(
+            config('boost.mcp.tools.include', []),
+            [DatabaseInfo::class, DatabaseQuery::class],
+        ));
     }
 
     private function registerScoutEngine(): void

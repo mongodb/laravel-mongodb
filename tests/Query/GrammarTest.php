@@ -13,7 +13,6 @@ use MongoDB\Laravel\Tests\TestCase;
 use stdClass;
 
 use function date_default_timezone_get;
-use function method_exists;
 use function property_exists;
 
 class GrammarTest extends TestCase
@@ -26,7 +25,7 @@ class GrammarTest extends TestCase
         parent::setUp();
 
         $this->connection = $this->getMongoConnection();
-        $this->grammar    = $this->getMongoGrammar($this->connection);
+        $this->grammar    = new Grammar($this->connection);
     }
 
     /**
@@ -474,23 +473,5 @@ class GrammarTest extends TestCase
     protected function getMongoConnection(): Connection
     {
         return $this->app['db']->connection('mongodb');
-    }
-
-    /**
-     * Helper method to get a MongoDB grammar instance with the given connection.
-     */
-    protected function getMongoGrammar(Connection $connection): Grammar
-    {
-        // Argument added in Laravel 12
-        $grammar = new Grammar($connection);
-
-        // Method setConnection() was removed in Laravel 12,
-        // where the connection is passed via the constructor instead.
-        // Keep this for Laravel 11.
-        if (method_exists($grammar, 'setConnection')) {
-            $grammar->setConnection($connection);
-        }
-
-        return $grammar;
     }
 }

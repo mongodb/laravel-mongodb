@@ -1,0 +1,156 @@
+{
+  "skill_name": "laravel-mongodb",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Create a Laravel Eloquent model for a `posts` MongoDB collection. The model should have fields: title, body, author_id (FK to users), published_at. Show the full model class with correct imports, casts, and any MongoDB-specific configuration needed.",
+      "expected_output": "A Post model extending MongoDB\\Laravel\\Eloquent\\Model with the collection set via $table, and casts for author_id (string) and published_at (datetime).",
+      "expectations": [
+        "Model extends `MongoDB\\Laravel\\Eloquent\\Model`, not `Illuminate\\Database\\Eloquent\\Model`",
+        "Uses `protected $table = 'posts'` and does NOT use `protected $collection`",
+        "Declares `protected $casts` with `'author_id' => 'string'`",
+        "Declares `protected $casts` with `'published_at' => 'datetime'`",
+        "Imports `MongoDB\\Laravel\\Eloquent\\Model` (fully-qualified MongoDB model)"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "How do I get a list of all distinct genres from my Movie collection in Laravel MongoDB? I want a simple array of strings like `['Action', 'Comedy', 'Drama']`.",
+      "expected_output": "Use `Movie::distinct()->pluck('genre')` (or an aggregation with $group/$addToSet) and explicitly warn that `distinct('field')->get()` returns model objects, not scalar values.",
+      "expectations": [
+        "Does NOT use `->distinct('genre')->get()` expecting an array of scalar strings",
+        "Uses `->distinct()->pluck('genre')` OR a raw aggregation with `$group` / `$addToSet`",
+        "Explicitly warns that `distinct('field')->get()` returns a Collection of model objects rather than scalar values",
+        "Final result is described as an array of scalar strings (not objects/models)",
+        "Does NOT rely on a PHP-side `->flatten()->unique()` post-processing chain as the recommended approach"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "How do I count the number of comments per post in Laravel with MongoDB?",
+      "expected_output": "Use a raw aggregation pipeline with $lookup and $size executed via Post::raw(), and avoid Eloquent's withCount().",
+      "expectations": [
+        "Does NOT use `Post::withCount('comments')` or `withCount(...)` on a MongoDB model",
+        "Uses a `$lookup` stage and a `$size` operator in an aggregation pipeline",
+        "Calls the aggregation via `Post::raw(...)` or `$collection->aggregate(...)`",
+        "Explicitly states that `withCount` is not supported with the Laravel MongoDB package"
+      ]
+    },
+    {
+      "id": 4,
+      "prompt": "How do I get 5 random documents from my MongoDB collection in Laravel?",
+      "expected_output": "Use a raw aggregation pipeline with a $sample stage of size 5 executed via Model::raw(), and avoid inRandomOrder().",
+      "expectations": [
+        "Does NOT use `->inRandomOrder()`",
+        "Uses the `$sample` aggregation stage with `'size' => 5`",
+        "Calls the aggregation via `Model::raw(...)` or `$collection->aggregate(...)`",
+        "Explicitly states that `inRandomOrder()` is not supported with the Laravel MongoDB package"
+      ]
+    },
+    {
+      "id": 5,
+      "prompt": "My `belongsTo` always returns null but the `user_id` field exists in the document. My Post model has `public function author(): BelongsTo { return $this->belongsTo(User::class, 'author_id'); }`. What is wrong?",
+      "expected_output": "Identify that the FK field may be stored as BSON ObjectId while the query expects a string, and fix it by casting author_id to string on Post. Note that belongsTo() coerces types during relation matching so it may work anyway, but direct where() queries require consistent BSON types.",
+      "expectations": [
+        "Identifies a possible BSON type mismatch on the FK field (ObjectId vs string) as the likely root cause",
+        "Recommends adding `protected $casts = ['author_id' => 'string']` on the Post model",
+        "Does NOT recommend adding `$keyType = 'string'` on a SQL/MySQL User model as the fix",
+        "Does NOT suggest the relationship method name is the cause of the null return"
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "How do I debug a MongoDB query in Laravel? I want to see the generated query, similar to how `toSql()` works for MySQL.",
+      "expected_output": "Explain that MongoDB queries are BSON/array documents (not SQL) and recommend ->dump() or ->dd() to inspect the generated pipeline or filter.",
+      "expectations": [
+        "Does NOT suggest `toSql()` or `toRawSql()` as a working option for MongoDB",
+        "Recommends `->dump()` or `->dd()` on the query builder",
+        "Explicitly states there is no SQL for MongoDB queries (they are BSON/array documents or pipelines)",
+        "Does NOT recommend `DB::enableQueryLog()` combined with `toSql()` as the primary debugging method"
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "How do I use `DatabaseTransactions` in Pest tests with MongoDB?",
+      "expected_output": "Explicitly state that DatabaseTransactions and RefreshDatabase are not supported with MongoDB and recommend manually truncating collections in beforeEach.",
+      "expectations": [
+        "Explicitly states that `DatabaseTransactions` is NOT supported with MongoDB in Laravel",
+        "Does NOT recommend `RefreshDatabase` as a working alternative",
+        "Recommends a manual cleanup pattern in `beforeEach` using `deleteMany([])`, `truncate()`, or collection drop",
+        "Does NOT recommend `DB::beginTransaction()` / `rollBack()` per test as a working pattern on standalone MongoDB",
+        "Mentions that MongoDB transactions require a replica set (or notes the standalone limitation)"
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "How do I configure MongoDB as a cache store with TTL expiration in Laravel?",
+      "expected_output": "Configure the built-in `mongodb` cache driver in config/cache.php and create a migration with a TTL index on expires_at using $collection->expire('expires_at', 0).",
+      "expectations": [
+        "Does NOT create a custom cache store class (no custom `MongoDBStore` implementation)",
+        "Configures the built-in `'driver' => 'mongodb'` store in `config/cache.php`",
+        "Creates a TTL index on the `expires_at` field (NOT on a field called `expiration`)",
+        "Uses `$collection->expire('expires_at', 0)` or equivalent TTL index with expireAfterSeconds 0",
+        "Does NOT create a unique index on `key` (the cache key is stored as `_id`)"
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "How do I filter products by price range using Laravel Scout with MongoDB? I want to search for 'headphones' and filter to only show products where price is between 50 and 200.",
+      "expected_output": "Use a raw aggregation pipeline combining $search for the text query with a $match stage for the price range, and note that Scout where() only supports equality on the MongoDB engine.",
+      "expectations": [
+        "Does NOT use chained `->where('price', '>=', N)` / `->where('price', '<=', N)` on a Scout `search()` call as a working solution",
+        "Uses a raw aggregation pipeline with an Atlas `$search` stage followed by a `$match` stage for the price range",
+        "Explicitly states that Scout `where()` on the MongoDB engine supports only equality filters (no range/comparison operators)",
+        "Mentions that Atlas Search or raw aggregation is required for range filtering"
+      ]
+    },
+    {
+      "id": 10,
+      "prompt": "I have Users in MySQL and Posts in MongoDB, how do I define the Eloquent relationship between them?",
+      "expected_output": "Add the HybridRelations trait to the SQL User model, define HasMany/BelongsTo as usual, and cast the user_id FK to string on the MongoDB Post model.",
+      "expectations": [
+        "Adds `use HybridRelations` from `MongoDB\\Laravel\\Eloquent\\HybridRelations` on the SQL-side User model",
+        "MongoDB Post model casts the foreign key (`user_id`) to `'string'`",
+        "Does NOT add `protected $keyType = 'string'` on the SQL User model",
+        "Does NOT add the `HybridRelations` trait to the MongoDB Post model (only to the SQL side)",
+        "Indicates the SQL model stores or relates the MongoDB `_id` as a string value"
+      ]
+    },
+    {
+      "id": 11,
+      "prompt": "I want to add a search feature to my Laravel app so users can search products by name and description. My products are stored in MongoDB. What's the simplest approach?",
+      "expected_output": "Recommend querying Atlas Search directly via a raw $search aggregation pipeline on the model's collection, and clarify that Laravel Scout is not required — Atlas indexes MongoDB collections automatically without a sync job.",
+      "expectations": [
+        "Recommends using Atlas Search via a raw `$search` aggregation pipeline directly on the collection",
+        "Explicitly states that Laravel Scout is NOT required for full-text search on MongoDB with Atlas Search",
+        "Mentions that Atlas indexes the collection automatically — no import job or sync pipeline needed",
+        "Does NOT present Scout as the only or default approach for search on MongoDB",
+        "Does NOT recommend Algolia, Meilisearch, or Elasticsearch as the primary solution"
+      ]
+    },
+    {
+      "id": 12,
+      "prompt": "How do I implement semantic search on my MongoDB Product collection in Laravel? I want to find products similar to a user's query using embeddings.",
+      "expected_output": "Explain how to create a vector search index, generate an embedding for the query, and run a $vectorSearch aggregation pipeline via Model::raw() or Model::vectorSearch().",
+      "expectations": [
+        "Creates a vector search index with a `vector` type field specifying `numDimensions` and `similarity`",
+        "Generates a query embedding from the user's text using an embedding model (OpenAI, Laravel AI SDK, etc.)",
+        "Uses `$vectorSearch` aggregation stage with `queryVector`, `numCandidates`, and `limit`",
+        "Calls the aggregation via `Model::raw(...)` or `Model::vectorSearch(...)`",
+        "Does NOT use `$search` (full-text) as the solution for semantic/embedding similarity"
+      ]
+    },
+    {
+      "id": 13,
+      "prompt": "I want to add semantic search to my MongoDB Laravel app but I don't want to manage an embedding pipeline myself. Is there a simpler way?",
+      "expected_output": "Recommend auto-embedding via the autoEmbed index type, which lets Atlas generate and maintain embeddings automatically. Show the vectorSearchIndex() migration with type: 'autoEmbed' and a queryText query.",
+      "expectations": [
+        "Recommends auto-embedding as the approach that removes the need to manage an embedding pipeline",
+        "Shows a vector search index definition using `type: 'autoEmbed'` with `modality`, `path`, and `model` fields",
+        "Uses `queryText` (not `queryVector`) in the `$vectorSearch` aggregation stage",
+        "Mentions that documents are automatically embedded by Atlas on insert and update",
+        "Does NOT require the user to call an external embedding API in PHP to index documents"
+      ]
+    }
+  ]
+}

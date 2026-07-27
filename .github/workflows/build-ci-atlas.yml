@@ -25,39 +25,34 @@ jobs:
         laravel: ['12.*', '13.*']
         driver: [2]
         include:
-          - php: '8.1'
-            laravel: 10.*
-            driver: 1
-          - php: '8.2'
-            laravel: 11.*
-            driver: 1
           - php: '8.4'
             laravel: 12.*
             driver: 1
         exclude:
-          - laravel: 13.*
+          - laravel: '13.*'
             php: '8.2'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Create MongoDB Atlas Local
-        timeout-minutes: 2
+        timeout-minutes: 5
+
         run: |
           docker run --name mongodb -p 27017:27017 --detach mongodb/mongodb-atlas-local:latest
           until docker exec --tty mongodb mongosh --eval "db.runCommand({ ping: 1 })"; do
             sleep 1
           done
-          until docker exec --tty mongodb mongosh --eval "db.createCollection('connection_test') && db.getCollection('connection_test').createSearchIndex({mappings:{dynamic: true}})"; do
+          docker exec --tty mongodb mongosh --eval "db.createCollection('connection_test')"
+          until docker exec --tty mongodb mongosh --eval "db.getCollection('connection_test').createSearchIndex({mappings:{dynamic: true}})"; do
+            sleep 1
+          done
+          until docker exec --tty mongodb mongosh --eval "db.runCommand({ serverStatus: 1 })"; do
             sleep 1
           done
           until docker exec --tty mongodb mongosh --eval "db.runCommand({ ping: 1 })"; do
             sleep 1
           done
-
-      - name: Show MongoDB server status
-        run: |
-          docker exec --tty mongodb mongosh --eval "db.runCommand({ serverStatus: 1 })"
 
       - name: Setup cache environment
         id: extcache
@@ -87,7 +82,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}

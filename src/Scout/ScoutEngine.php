@@ -198,6 +198,18 @@ final class ScoutEngine extends Engine
      */
     private function performSearch(Builder $builder, ?int $offset = null): array
     {
+        // Validate sort before any I/O so unit tests can assert on these exceptions without a real collection.
+        $columns = array_column($builder->orders, 'column');
+        if (in_array('_score', $columns, true) && in_array('score', $columns, true)) {
+            throw new InvalidArgumentException("Cannot sort by a field named 'score' together with Atlas Search's '_score' relevance sort.");
+        }
+
+        foreach ($builder->orders as $order) {
+            if ($order['column'] === '_score' && $order['direction'] === 'asc') {
+                throw new InvalidArgumentException("Cannot sort by '_score' in ascending order; Atlas Search relevance score always sorts descending.");
+            }
+        }
+
         $collection = $this->getSearchableCollection($builder->model);
 
         if ($builder->callback) {
@@ -260,10 +272,15 @@ final class ScoutEngine extends Engine
             $compound['mustNot'][] = ['in' => ['path' => $field, 'value' => $value]];
         }
 
-        // Sort by field value only if specified
+        // Sort by field value only if specified.
+        // '_score' maps to Atlas Search's relevance score via $meta: searchScore (always descending).
         $sort = [];
         foreach ($builder->orders as $order) {
-            $sort[$order['column']] = $order['direction'] === 'asc' ? 1 : -1;
+            if ($order['column'] === '_score') {
+                $sort['score'] = ['$meta' => 'searchScore'];
+            } else {
+                $sort[$order['column']] = $order['direction'] === 'asc' ? 1 : -1;
+            }
         }
 
         $pipeline = [

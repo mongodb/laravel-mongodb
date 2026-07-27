@@ -36,6 +36,7 @@ use function array_fill_keys;
 use function array_filter;
 use function array_is_list;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -84,8 +85,6 @@ use function var_export;
  */
 class Builder extends BaseBuilder
 {
-    use BuilderTimeout;
-
     private const REGEX_DELIMITERS = ['/', '#', '~'];
 
     /**
@@ -703,8 +702,7 @@ class Builder extends BaseBuilder
             function ($orderColumn) use ($column) {
                 return $orderColumn === $column
                     || ($orderColumn === 'id' && $column === '_id')
-                    || ($orderColumn === '_id' && $column === 'id'
-                );
+                    || ($orderColumn === '_id' && $column === 'id');
             },
         );
 
@@ -1296,10 +1294,11 @@ class Builder extends BaseBuilder
             if (isset($where['column'])) {
                 $where['column'] = (string) $where['column'];
 
-                // Compatibility with Eloquent queries that uses "id" instead of MongoDB's _id
-                if ($where['column'] === 'id') {
-                    $where['column'] = '_id';
-                }
+                // Compatibility with Eloquent queries that use "id" instead of MongoDB's _id.
+                // Delegates to Grammar::prepareFieldsForQuery so the aliasing is overridable.
+                $where['column'] = (string) array_key_first(
+                    $this->grammar->prepareFieldsForQuery([$where['column'] => null]),
+                );
 
                 // Convert id's.
                 if ($where['column'] === '_id' || str_ends_with($where['column'], '._id')) {
@@ -1870,5 +1869,60 @@ class Builder extends BaseBuilder
     public function orWhereIntegerNotInRaw($column, $values, $boolean = 'and')
     {
         throw new BadMethodCallException('This method is not supported by MongoDB');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() instead.
+     */
+    public function whereVectorSimilarTo($column, $vector, $minSimilarity = 0.6, $order = true)
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() instead.');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() with the $filter parameter instead.
+     */
+    public function whereVectorDistanceLessThan($column, $vector, $maxDistance, $boolean = 'and')
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() with the $filter parameter instead.');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() with the $filter parameter instead.
+     */
+    public function orWhereVectorDistanceLessThan($column, $vector, $maxDistance)
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() with the $filter parameter instead.');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() instead, which returns vectorSearchScore in the result.
+     */
+    public function selectVectorDistance($column, $vector, $as = null)
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() instead, which returns vectorSearchScore in the result.');
+    }
+
+    /**
+     * Base method from Laravel >= 13.0
+     * ToDo: mark as `#[Override]` when we drop support for Laravel < 13.0
+     *
+     * @internal This method is not supported by MongoDB. Use vectorSearch() instead, which returns results ordered by vector score.
+     */
+    public function orderByVectorDistance($column, $vector = [])
+    {
+        throw new BadMethodCallException('This method is not supported by MongoDB. Use vectorSearch() instead, which returns results ordered by vector score.');
     }
 }

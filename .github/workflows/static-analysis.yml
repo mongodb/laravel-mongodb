@@ -27,11 +27,9 @@ jobs:
 
     runs-on: ubuntu-22.04
 
-    continue-on-error: true
-
     strategy:
       matrix:
-        php: ['8.1', '8.2', '8.3', '8.4', '8.5']
+        php: ['8.2', '8.3', '8.4', '8.5']
         driver: [2]
         include:
           - php: '8.4'
@@ -39,7 +37,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           ref: ${{ github.event_name == 'workflow_dispatch' && inputs.ref || github.ref }}
 
@@ -66,7 +64,7 @@ jobs:
 
       - name: Cache dependencies
         id: composer-cache
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ./vendor
           key: composer-${{ hashFiles('**/composer.lock') }}
@@ -76,7 +74,7 @@ jobs:
 
       - name: Restore cache PHPStan results
         id: phpstan-cache-restore
-        uses: actions/cache/restore@v5
+        uses: actions/cache/restore@v6
         with:
           path: .cache
           key: phpstan-result-cache-${{ matrix.php }}-${{ github.run_id }}
@@ -84,6 +82,7 @@ jobs:
             phpstan-result-cache-
 
       - name: Run PHPStan
+        id: phpstan
         run: ./vendor/bin/phpstan analyse --no-interaction --no-progress --ansi --error-format=sarif > phpstan.sarif
         continue-on-error: true
 
@@ -104,7 +103,11 @@ jobs:
       - name: Save cache PHPStan results
         id: phpstan-cache-save
         if: always()
-        uses: actions/cache/save@v5
+        uses: actions/cache/save@v6
         with:
           path: .cache
           key: ${{ steps.phpstan-cache-restore.outputs.cache-primary-key }}
+
+      - name: Assert no PHPStan errors
+        if: steps.phpstan.outcome == 'failure'
+        run: exit 1

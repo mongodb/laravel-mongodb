@@ -42,7 +42,7 @@ git show --show-signature 4.4.0
 Think you’ve found a bug in the library? Want to see a new feature? Please open a case in our issue management tool, JIRA:
 
 - [Create an account and login.](https://jira.mongodb.org/)
-- Navigate to the [PHPORM](https://jira.mongodb.org/browse/PHPORM) project.
+- Navigate to the [PHPLARA](https://jira.mongodb.org/browse/PHPLARA) project.
 - Click Create - Please provide as much information as possible about the issue type and how to reproduce it.
 
 Note: All reported issues in JIRA project are public.
@@ -59,6 +59,6 @@ project, please report it according to the instructions in
 ## Development
 
 Development is tracked in the
-[PHPORM](https://jira.mongodb.org/projects/PHPORM/summary) project in MongoDB's
+[PHPLARA](https://jira.mongodb.org/projects/PHPLARA/summary) project in MongoDB's
 JIRA. Documentation for contributing to this project may be found in
 [CONTRIBUTING.md](CONTRIBUTING.md).

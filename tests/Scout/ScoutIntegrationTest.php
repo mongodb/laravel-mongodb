@@ -15,6 +15,7 @@ use Override;
 use PHPUnit\Framework\Attributes\Depends;
 use PHPUnit\Framework\Attributes\Group;
 
+use function array_column;
 use function array_merge;
 use function count;
 use function env;
@@ -262,6 +263,67 @@ class ScoutIntegrationTest extends TestCase
             43 => 'Dana Larson Sr.',
             44 => 'Amos Larson Sr.',
         ], $page2->pluck('name', 'id')->all());
+    }
+
+    #[Depends('testItCanCreateTheCollection')]
+    public function testItCanSortByRelevanceScore()
+    {
+        $results = ScoutUser::search('lar')->orderBy('_score', 'desc')->take(10)->keys()->all();
+
+        // Reference: same pipeline with $meta:searchScore sort applied directly, bypassing ScoutEngine
+        $reference = DB::connection('mongodb')
+            ->getCollection('prefix_scout_users')
+            ->aggregate([
+                [
+                    '$search' => [
+                        'index' => 'scout',
+                        'compound' => [
+                            'should' => [
+                                ['text' => ['query' => 'lar', 'path' => ['wildcard' => '*'], 'fuzzy' => ['maxEdits' => 2], 'score' => ['boost' => ['value' => 5]]]],
+                                ['wildcard' => ['query' => 'lar*', 'path' => ['wildcard' => '*'], 'allowAnalyzedField' => true]],
+                            ],
+                            'minimumShouldMatch' => 1,
+                        ],
+                        'count' => ['type' => 'lowerBound'],
+                        'sort' => ['score' => ['$meta' => 'searchScore']],
+                    ],
+                ],
+                ['$project' => ['id' => 1, '_id' => 0]],
+                ['$limit' => 10],
+            ]);
+
+        $referenceIds = array_column(iterator_to_array($reference), 'id');
+        self::assertSame($referenceIds, $results);
+    }
+
+    #[Depends('testItCanCreateTheCollection')]
+    public function testItCanSortByRelevanceScoreAndField()
+    {
+        $results = ScoutUser::search('lar')->orderBy('_score', 'desc')->orderBy('id', 'asc')->take(10)->keys()->all();
+
+        $reference = DB::connection('mongodb')
+            ->getCollection('prefix_scout_users')
+            ->aggregate([
+                [
+                    '$search' => [
+                        'index' => 'scout',
+                        'compound' => [
+                            'should' => [
+                                ['text' => ['query' => 'lar', 'path' => ['wildcard' => '*'], 'fuzzy' => ['maxEdits' => 2], 'score' => ['boost' => ['value' => 5]]]],
+                                ['wildcard' => ['query' => 'lar*', 'path' => ['wildcard' => '*'], 'allowAnalyzedField' => true]],
+                            ],
+                            'minimumShouldMatch' => 1,
+                        ],
+                        'count' => ['type' => 'lowerBound'],
+                        'sort' => ['score' => ['$meta' => 'searchScore'], 'id' => 1],
+                    ],
+                ],
+                ['$project' => ['id' => 1, '_id' => 0]],
+                ['$limit' => 10],
+            ]);
+
+        $referenceIds = array_column(iterator_to_array($reference), 'id');
+        self::assertSame($referenceIds, $results);
     }
 
     public function testItCannotIndexInTheSameNamespace()

@@ -8,6 +8,7 @@ use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Support\Collection as LaravelCollection;
 use Illuminate\Support\LazyCollection;
+use InvalidArgumentException;
 use Laravel\Scout\Builder;
 use Laravel\Scout\Jobs\RemoveFromSearch;
 use LogicException;
@@ -140,6 +141,35 @@ class ScoutEngineTest extends TestCase
         $engine = new ScoutEngine($database, softDelete: false);
         $result = $engine->search($builder());
         $this->assertEquals($data, $result);
+    }
+
+    public function testSearchRejectsScoreFieldWithScoreSort(): void
+    {
+        $database = $this->createMock(Database::class);
+        $builder = new Builder(new SearchableModel(), 'lar');
+        $builder->orderBy('_score', 'desc');
+        $builder->orderBy('score', 'asc');
+
+        $engine = new ScoutEngine($database, softDelete: false);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Cannot sort by a field named 'score' together with Atlas Search's '_score' relevance sort.");
+
+        $engine->search($builder);
+    }
+
+    public function testSearchRejectsAscendingScoreSort(): void
+    {
+        $database = $this->createMock(Database::class);
+        $builder = new Builder(new SearchableModel(), 'lar');
+        $builder->orderBy('_score', 'asc');
+
+        $engine = new ScoutEngine($database, softDelete: false);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage("Cannot sort by '_score' in ascending order; Atlas Search relevance score always sorts descending.");
+
+        $engine->search($builder);
     }
 
     public static function provideSearchPipelines(): iterable
@@ -399,6 +429,44 @@ class ScoutEngineTest extends TestCase
                         'sort' => [
                             'name' => -1,
                             'age' => 1,
+                        ],
+                    ],
+                ],
+            ]),
+        ];
+
+        yield 'ordered by score' => [
+            function () {
+                $builder = new Builder(new SearchableModel(), 'lar');
+                $builder->orderBy('_score', 'desc');
+
+                return $builder;
+            },
+            array_replace_recursive($defaultPipeline, [
+                [
+                    '$search' => [
+                        'sort' => [
+                            'score' => ['$meta' => 'searchScore'],
+                        ],
+                    ],
+                ],
+            ]),
+        ];
+
+        yield 'ordered by score and field' => [
+            function () {
+                $builder = new Builder(new SearchableModel(), 'lar');
+                $builder->orderBy('_score', 'desc');
+                $builder->orderBy('name', 'asc');
+
+                return $builder;
+            },
+            array_replace_recursive($defaultPipeline, [
+                [
+                    '$search' => [
+                        'sort' => [
+                            'score' => ['$meta' => 'searchScore'],
+                            'name' => 1,
                         ],
                     ],
                 ],

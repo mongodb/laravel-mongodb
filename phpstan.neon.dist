@@ -14,6 +14,7 @@ parameters:
 
     universalObjectCratesClasses:
         - MongoDB\BSON\Document
+        - Illuminate\Queue\Jobs\DatabaseJobRecord
 
     ignoreErrors:
         - '#Unsafe usage of new static#'

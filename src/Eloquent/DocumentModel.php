@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Eloquent;
 
-use BackedEnum;
 use Carbon\CarbonInterface;
 use DateTimeInterface;
 use DateTimeZone;
@@ -26,7 +25,6 @@ use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use Stringable;
-use ValueError;
 
 use function array_key_exists;
 use function array_keys;
@@ -49,7 +47,6 @@ use function str_contains;
 use function str_starts_with;
 use function strlen;
 use function trigger_error;
-use function var_export;
 
 use const E_USER_DEPRECATED;
 
@@ -430,6 +427,14 @@ trait DocumentModel
         if ($original instanceof DateTimeInterface) {
             $original = new UTCDateTime($original);
         }
+          
+        if ($this->isClassComparable($key)) {
+            return $this->compareClassCastableAttribute($key, $original, $attribute);
+        }
+
+        if ($this->isClassCastable($key)) {
+            return ! is_object($attribute) ? $attribute === $original : $attribute == $original;
+        }
 
         // phpcs:disable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
         return Document::fromPHP(['v' => $attribute]) == Document::fromPHP(['v' => $original]);
@@ -733,7 +738,7 @@ trait DocumentModel
             }
 
             if ($this->isEnumCastable($key) && (! $castValue instanceof Arrayable)) {
-                $castValue = $castValue !== null ? $this->getStorableEnumValueFromLaravel11($this->getCasts()[$key], $castValue) : null;
+                $castValue = $castValue !== null ? $this->getStorableEnumValue($this->getCasts()[$key], $castValue) : null;
             }
 
             if ($castValue instanceof Arrayable) {
@@ -744,23 +749,6 @@ trait DocumentModel
         }
 
         return $attributes;
-    }
-
-    /**
-     * Duplicate of {@see HasAttributes::getStorableEnumValue()} for Laravel 11 as the signature of the method has
-     * changed in a non-backward compatible way.
-     *
-     * @todo Remove this method when support for Laravel 10 is dropped.
-     */
-    private function getStorableEnumValueFromLaravel11($expectedEnum, $value)
-    {
-        if (! $value instanceof $expectedEnum) {
-            throw new ValueError(sprintf('Value [%s] is not of the expected enum type [%s].', var_export($value, true), $expectedEnum));
-        }
-
-        return $value instanceof BackedEnum
-            ? $value->value
-            : $value->name;
     }
 
     /**

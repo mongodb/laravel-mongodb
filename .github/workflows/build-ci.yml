@@ -26,25 +26,15 @@ jobs:
         laravel: ['12.*', '13.*']
         driver: [2]
         include:
-          - php: '8.1'
-            laravel: 10.*
+          - php: '8.2'
+            laravel: 12.*
             mongodb: '5.0'
             mode: low-deps
-            driver: 1
-          - php: '8.3'
-            laravel: 10.*
-            mongodb: '4.4'
             driver: 1
           - php: '8.4'
             laravel: 12.*
             mongodb: '8.0'
             driver: 1
-          - php: '8.5'
-            laravel: 10.*
-            mongodb: '8.0'
-          - php: '8.5'
-            laravel: 11.*
-            mongodb: '8.0'
           - php: '8.2'
             laravel: 12.*
             mongodb: '4.4'
@@ -57,15 +47,12 @@ jobs:
           - php: '8.2'
             laravel: 12.*
             mongodb: '7.0'
-          - php: '8.2'
-            laravel: 12.*
-            mongodb: '8.0'
         exclude:
-          - laravel: 13.*
+          - laravel: '13.*'
             php: '8.2'
 
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
 
       - name: Create MongoDB Replica Set
         run: |
@@ -110,7 +97,7 @@ jobs:
         run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
 
       - name: Cache Composer dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ${{ steps.composer-cache.outputs.dir }}
           key: ${{ matrix.os }}-composer-${{ hashFiles('**/composer.json') }}

@@ -18,7 +18,7 @@ trait AtlasSearchIndexManagement
      */
     public function waitForSearchIndexesDropped(Collection $collection)
     {
-        $timeout = hrtime()[0] + 30;
+        $timeout = hrtime()[0] + 120;
         // Waits for the search index created in the previous test to be deleted
         while ($collection->listSearchIndexes()->count()) {
             if (hrtime()[0] > $timeout) {
@@ -34,7 +34,7 @@ trait AtlasSearchIndexManagement
      */
     public function waitForSearchIndexesReady(Collection $collection)
     {
-        $timeout = hrtime()[0] + 30;
+        $timeout = hrtime()[0] + 120;
         do {
             if (hrtime()[0] > $timeout) {
                 throw new RuntimeException('Timed out waiting for search indexes to be ready');
