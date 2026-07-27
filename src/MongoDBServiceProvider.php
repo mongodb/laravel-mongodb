@@ -88,7 +88,7 @@ class MongoDBServiceProvider extends ServiceProvider
                 $store = new MongoStore(
                     $app['db']->connection($config['connection'] ?? null),
                     $config['collection'] ?? 'cache',
-                    $this->getPrefix($config), // @phpstan-ignore arguments.count (closure is bound to CacheManager at runtime)
+                    $this->getPrefix($config),
                     $app['db']->connection($config['lock_connection'] ?? $config['connection'] ?? null),
                     $config['lock_collection'] ?? ($config['collection'] ?? 'cache') . '_locks',
                     $config['lock_lottery'] ?? [2, 100],

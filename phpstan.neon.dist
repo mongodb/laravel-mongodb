@@ -19,6 +19,12 @@ parameters:
     ignoreErrors:
         - '#Unsafe usage of new static#'
         - '#Call to an undefined method [a-zA-Z0-9\\_\<\>\(\)]+::[a-zA-Z]+\(\)#'
+        # Closure is bound to CacheManager at runtime, PHPStan does not detect it.
+        -
+            identifier: arguments.count
+            path: src/MongoDBServiceProvider.php
+            count: 1
+            reportUnmatched: false
 
 services:
     errorFormatter.sarif:
