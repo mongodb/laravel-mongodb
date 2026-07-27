@@ -319,6 +319,12 @@ class Builder extends BaseBuilder
             // Add the last value of each column when there is no aggregate function.
             if ($this->groups && ! $this->aggregate) {
                 foreach ($columns as $column) {
+                    // The _id field holds the grouping keys and must not be
+                    // overwritten by an accumulator when it is selected.
+                    if ($column === '_id') {
+                        continue;
+                    }
+
                     $key = str_replace('.', '_', $column);
 
                     $group[$key] = ['$last' => '$' . $column];
