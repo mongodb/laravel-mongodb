@@ -205,7 +205,7 @@ trait DocumentModel
             method_exists($this, $key)
             && ! method_exists(Model::class, $key)
             && ! method_exists(DocumentModel::class, $key)
-            && ! $this->hasAttributeGetMutator($key)
+            && ! $this->hasAttributeMutator($key)
         ) {
             return $this->getRelationValue($key);
         }
