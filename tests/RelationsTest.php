@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Tests;
 use Illuminate\Database\Eloquent\Collection;
 use Mockery;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Laravel\Relations\MorphTo;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
@@ -678,6 +679,62 @@ class RelationsTest extends TestCase
         $relations = $check->getRelations();
         $this->assertArrayHasKey('hasImageWithCustomOwnerKey', $relations);
         $this->assertInstanceOf(Client::class, $check->hasImageWithCustomOwnerKey);
+    }
+
+    public function testMorphToWithTrashed(): void
+    {
+        $soft = Soft::create(['name' => 'Young Gerald']);
+
+        $photo = Photo::create(['url' => 'https://graph.facebook.com/young.gerald/picture']);
+        $photo->hasImage()->associate($soft);
+        $photo->hasImageWithTrashed()->associate($soft);
+        $photo->save();
+
+        $soft->delete();
+
+        $photo = Photo::first();
+        $this->assertEquals($soft->id, $photo->has_image_id);
+        $this->assertEquals($soft->id, $photo->has_image_with_trashed_id);
+
+        // Lazy loading
+        $this->assertNull($photo->hasImage);
+        $this->assertInstanceOf(Soft::class, $photo->hasImageWithTrashed);
+        $this->assertTrue($photo->hasImageWithTrashed->trashed());
+
+        // Eager loading
+        $photo = Photo::with('hasImage', 'hasImageWithTrashed')->first();
+        $this->assertNull($photo->getRelation('hasImage'));
+        $this->assertInstanceOf(Soft::class, $photo->getRelation('hasImageWithTrashed'));
+        $this->assertEquals($soft->id, $photo->hasImageWithTrashed->id);
+    }
+
+    public function testMorphToConstrainAndMorphWith(): void
+    {
+        $john = User::create(['name' => 'John Doe']);
+        $john->books()->create(['title' => 'Human Action']);
+        $jane = User::create(['name' => 'Jane Doe']);
+
+        Photo::create(['url' => 'john.jpg'])->hasImage()->associate($john)->save();
+        Photo::create(['url' => 'jane.jpg'])->hasImage()->associate($jane)->save();
+
+        $photos = Photo::with([
+            'hasImage' => fn (MorphTo $relation) => $relation->constrain([
+                User::class => fn ($query) => $query->where('name', 'John Doe'),
+            ]),
+        ])->get();
+
+        $this->assertEquals($john->id, $photos->firstWhere('url', 'john.jpg')->hasImage->id);
+        $this->assertNull($photos->firstWhere('url', 'jane.jpg')->getRelation('hasImage'));
+
+        $photos = Photo::with([
+            'hasImage' => fn (MorphTo $relation) => $relation->morphWith([
+                User::class => ['books'],
+            ]),
+        ])->get();
+
+        $john = $photos->firstWhere('url', 'john.jpg')->hasImage;
+        $this->assertTrue($john->relationLoaded('books'));
+        $this->assertEquals('Human Action', $john->books->first()->title);
     }
 
     public function testMorphToMany(): void

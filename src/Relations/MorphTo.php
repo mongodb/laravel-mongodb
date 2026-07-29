@@ -31,19 +31,6 @@ class MorphTo extends EloquentMorphTo
         }
     }
 
-    /** @inheritdoc */
-    #[Override]
-    protected function getResultsByType($type)
-    {
-        $instance = $this->createModelByType($type);
-
-        $key = $this->ownerKey ?? $instance->getKeyName();
-
-        $query = $instance->newQuery();
-
-        return $query->whereIn($key, $this->gatherKeysByType($type, $instance->getKeyType()))->get();
-    }
-
     /** Get the name of the "where in" method for eager loading. */
     #[Override]
     protected function whereInMethod(Model $model, $key)
