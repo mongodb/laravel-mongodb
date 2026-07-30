@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Str;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\Decimal128;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
@@ -37,15 +38,13 @@ use function explode;
 use function func_get_args;
 use function in_array;
 use function is_array;
-use function is_numeric;
-use function is_object;
+use function is_scalar;
 use function is_string;
 use function ltrim;
 use function method_exists;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
-use function strcmp;
 use function strlen;
 use function trigger_error;
 
@@ -56,6 +55,22 @@ trait DocumentModel
 {
     use HybridRelations;
     use EmbedsRelations;
+
+    /**
+     * Non-scalar, non-date cast types excluded from castAttribute() comparison.
+     * These fall through to BSON Document comparison in originalIsEquivalent().
+     * Date types are excluded separately via isDateAttribute().
+     * Everything else in $primitiveCastTypes produces a scalar and is compared via castAttribute().
+     *
+     * @var list<string>
+     */
+    private static array $nonScalarCastTypes = [
+        'array',
+        'json',
+        'json:unicode',
+        'object',
+        'collection',
+    ];
 
     /**
      * The parent relation instance.
@@ -386,20 +401,33 @@ trait DocumentModel
             return false;
         }
 
-        if ($this->isDateAttribute($key)) {
-            $attribute = $attribute instanceof UTCDateTime ? $this->asDateTime($attribute) : $attribute;
-            $original  = $original instanceof UTCDateTime ? $this->asDateTime($original) : $original;
-
-            // Comparison on DateTimeInterface values
-            // phpcs:disable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
-            return $attribute == $original;
+        // For primitive casts that produce scalar-comparable values, apply the cast before
+        // comparing. This preserves Eloquent's behavior where int(1) and string('1') are
+        // equivalent on a field cast to int, and where re-assigning the same encrypted
+        // plaintext is not dirty. Non-scalar types (array/object/collection/json) fall through
+        // to BSON comparison. Date types fall through to UTCDateTime conversion below.
+        if (
+            $this->hasCast($key, static::$primitiveCastTypes)
+            && ! $this->isDateAttribute($key)
+            && ! $this->hasCast($key, self::$nonScalarCastTypes)
+        ) {
+            return $this->castAttribute($key, $attribute) === $this->castAttribute($key, $original);
         }
 
-        if ($this->hasCast($key, static::$primitiveCastTypes)) {
-            return $this->castAttribute($key, $attribute) ===
-                $this->castAttribute($key, $original);
+        if (is_scalar($attribute) || is_scalar($original)) {
+            return false;
         }
 
+        // Convert DateTime instances to UTCDateTime for comparison.
+        // As done in Grammar::prepareFieldsForQuery()
+        if ($attribute instanceof DateTimeInterface) {
+            $attribute = new UTCDateTime($attribute);
+        }
+
+        if ($original instanceof DateTimeInterface) {
+            $original = new UTCDateTime($original);
+        }
+          
         if ($this->isClassComparable($key)) {
             return $this->compareClassCastableAttribute($key, $original, $attribute);
         }
@@ -408,8 +436,9 @@ trait DocumentModel
             return ! is_object($attribute) ? $attribute === $original : $attribute == $original;
         }
 
-        return is_numeric($attribute) && is_numeric($original)
-            && strcmp((string) $attribute, (string) $original) === 0;
+        // phpcs:disable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
+        return Document::fromPHP(['v' => $attribute]) == Document::fromPHP(['v' => $original]);
+        // phpcs:enable SlevomatCodingStandard.Operators.DisallowEqualOperators.DisallowedEqualOperator
     }
 
     /** @inheritdoc */

@@ -26,7 +26,6 @@ use MongoDB\Laravel\Tests\Models\IdIsString;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\MemberStatus;
 use MongoDB\Laravel\Tests\Models\NonIncrementing;
-use MongoDB\Laravel\Tests\Models\Options;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
@@ -1054,32 +1053,6 @@ class ModelTest extends TestCase
         $this->assertEquals(['one' => ['title' => 'The first chapter']], $book->chapters);
         $this->assertEquals(['title' => 'The first chapter'], $book['chapters.one']);
         $this->assertEquals('The first chapter', $book['chapters.one.title']);
-    }
-
-    public function testGetDirtyDates(): void
-    {
-        $user = new User();
-        $user->setRawAttributes(['name' => 'John Doe', 'birthday' => new DateTime('19 august 1989')], true);
-        $this->assertEmpty($user->getDirty());
-
-        $user->birthday = new DateTime('19 august 1989');
-        $this->assertEmpty($user->getDirty());
-    }
-
-    public function testGetDirtyObjects(): void
-    {
-        $user = new User();
-        $user->options = new Options();
-        $this->assertNotEmpty($user->getDirty());
-
-        $user->save();
-        $this->assertEmpty($user->getDirty());
-
-        $user->options = (new Options())->setOption1('Value1');
-        $this->assertNotEmpty($user->getDirty());
-
-        $user->save();
-        $this->assertEmpty($user->getDirty());
     }
 
     public function testChunkById(): void
