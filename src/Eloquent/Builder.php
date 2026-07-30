@@ -15,6 +15,7 @@ use MongoDB\Builder\Type\SearchOperatorInterface;
 use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Helpers\QueriesRelationshipAggregates;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Model\BSONDocument;
@@ -38,6 +39,7 @@ use function value;
 class Builder extends EloquentBuilder
 {
     use QueriesRelationships;
+    use QueriesRelationshipAggregates;
 
     private const DUPLICATE_KEY_ERROR = 11000;
 

@@ -8,14 +8,14 @@ metadata:
 
 # Laravel MongoDB
 
-Implementation skill for `mongodb/laravel-mongodb`. Exists to prevent the common mistakes: auto-increment IDs, `withCount()`, `toSql()`, SQL `JOIN`, `distinct()->get()` expecting scalar arrays, and `belongsTo()` over native ObjectId FKs.
+Implementation skill for `mongodb/laravel-mongodb`. Exists to prevent the common mistakes: auto-increment IDs, `toSql()`, SQL `JOIN`, `distinct()->get()` expecting scalar arrays, and `belongsTo()` over native ObjectId FKs.
 
 ## Core Workflow
 
 1. Identify layer: model, query builder, relationship, schema/index, queue/cache/session, search, or transaction.
 2. Confirm model extends `MongoDB\Laravel\Eloquent\Model` (or uses `DocumentModel` trait).
 3. Map every FK and `_id`: ObjectId in DB, **string** in Eloquent — cast accordingly.
-4. Replace unsupported helpers (`withCount`, `toSql`, `groupByRaw`, `whereFulltext`, `union`, `inRandomOrder`, `whereColumn`) with MongoDB alternatives.
+4. Replace unsupported helpers (`toSql`, `groupByRaw`, `whereFulltext`, `union`, `inRandomOrder`, `whereColumn`) with MongoDB alternatives.
 5. Validate: `php artisan migrate`, Pest tests, `phpcs`/`phpstan`.
 
 ## Related MongoDB tooling
@@ -35,7 +35,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 | Topic | Reference file | Load When |
 |---|---|---|
 | Models, casts, `_id` mapping | `references/eloquent-models.md` | Defining or modifying a model |
-| Query builder gotchas, aggregation | `references/query-builder.md` | Writing queries, `withCount`, `distinct`, grouping |
+| Query builder gotchas, aggregation | `references/query-builder.md` | Writing queries, relation aggregates, `distinct`, grouping |
 | Embedded, hybrid, cross-database relations | `references/relationships.md` | `belongsTo`, `hasMany`, `embedsMany`, `hasManyIn` |
 | Connection setup | `references/connection.md` | `config/database.php`, multiple connections |
 | Indexes, migrations | `references/schema.md` | Creating indexes, migrations, collections |
@@ -56,12 +56,13 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 - Cast FK fields to `string` via `$casts` on the child model when FK values may come from outside model attributes (imports, raw ObjectIds) — prevents BSON type mismatches on direct `where('author_id', $id)` queries.
 - Eager-load with `::with()` — MongoDB does no server-side joins for Eloquent relations.
 - Use aggregation pipeline for grouping, counting per group, `$lookup`, and `$sample`.
+- Relation aggregates (`withCount()`, `withExists()`, `withSum()`, `withAvg()`, `withMin()`, `withMax()`) are supported, but each one runs an extra query after the parent documents are read. Use a `$lookup` pipeline when the aggregated value must be filtered, sorted or paginated on.
 - Create indexes in migrations: `Schema::connection('mongodb')->create('posts', fn (Blueprint $c) => $c->index('user_id'))`.
 - Use `DB::connection('mongodb')->transaction(...)` only on replica set / sharded cluster.
 
 ### MUST NOT DO
 
-- `withCount()` / `withAvg()` / `withSum()` — silently wrong or throws. Use `$lookup` + `$size`/`$avg`/`$sum` aggregation.
+- `orderBy()` on a `withCount()` / `withAggregate()` alias — the value is computed after the documents are read, so it throws. Use `$lookup` + `$size` aggregation, or sort the resulting collection.
 - `toSql()` / `toRawSql()` — no SQL. Use `->dump()` / `->dd()`.
 - `distinct('field')->get()` expecting scalars — returns a Collection. Use `->distinct()->pluck('field')`.
 - `groupByRaw()`, `orderByRaw()`, `havingRaw()`, `whereFulltext()`, `union()`, `whereColumn()` — use aggregation.
@@ -128,14 +129,22 @@ final class User extends Model
 }
 ```
 
-### 3. Aggregation replacing `withCount`
+### 3. Relation aggregates, and when to use `$lookup` instead
 
 ```php
 <?php
 
 use App\Models\Post;
 
-// WRONG: Post::withCount('comments')->get();
+// One extra query per aggregate, values set as attributes on the models
+$posts = Post::withCount('comments')->withExists('author')->withMax('comments', 'score')->get();
+
+$posts[0]->comments_count;      // int
+$posts[0]->author_exists;       // bool
+$posts[0]->comments_max_score;  // null when there is no comment
+
+// Sorting or filtering on the aggregated value requires a pipeline,
+// Post::withCount('comments')->orderBy('comments_count') throws.
 $posts = Post::raw(fn ($collection) => $collection->aggregate([
     ['$lookup' => [
         'from'         => 'comments',
@@ -145,6 +154,7 @@ $posts = Post::raw(fn ($collection) => $collection->aggregate([
     ]],
     ['$addFields' => ['comments_count' => ['$size' => '$comments']]],
     ['$project'   => ['comments' => 0]],
+    ['$sort'      => ['comments_count' => -1]],
 ]));
 ```
 

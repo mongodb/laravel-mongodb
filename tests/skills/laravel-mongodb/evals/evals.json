@@ -27,13 +27,13 @@
     },
     {
       "id": 3,
-      "prompt": "How do I count the number of comments per post in Laravel with MongoDB?",
-      "expected_output": "Use a raw aggregation pipeline with $lookup and $size executed via Post::raw(), and avoid Eloquent's withCount().",
+      "prompt": "How do I count the number of comments per post in Laravel with MongoDB, and then list the posts from the most commented to the least commented?",
+      "expected_output": "Use Post::withCount('comments') to read the counts, but explain that ordering by the comments_count alias throws because the value is computed after the documents are read, so the sorted listing needs a raw $lookup + $size + $sort aggregation pipeline (or a PHP-side sortByDesc on the collection).",
       "expectations": [
-        "Does NOT use `Post::withCount('comments')` or `withCount(...)` on a MongoDB model",
-        "Uses a `$lookup` stage and a `$size` operator in an aggregation pipeline",
-        "Calls the aggregation via `Post::raw(...)` or `$collection->aggregate(...)`",
-        "Explicitly states that `withCount` is not supported with the Laravel MongoDB package"
+        "States that `Post::withCount('comments')` is supported and exposes a `comments_count` attribute",
+        "States that `orderBy('comments_count')` is NOT supported, because the aggregate is computed after the documents are read",
+        "Proposes a `$lookup` stage with a `$size` operator and a `$sort` stage to order by the count on the server",
+        "Calls the aggregation via `Post::raw(...)` or `$collection->aggregate(...)`"
       ]
     },
     {

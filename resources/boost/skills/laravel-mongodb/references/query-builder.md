@@ -5,7 +5,6 @@
 | Standard Eloquent | Status | MongoDB replacement |
 |---|---|---|
 | `toSql()` / `toRawSql()` | unsupported | `->dump()` / `->dd()` / `->toMql()` |
-| `withCount()` / `withAvg()` / `withSum()` | unsupported | aggregation `$lookup` + `$size` / `$avg` / `$sum` |
 | `groupByRaw()` / `orderByRaw()` / `havingRaw()` | unsupported | aggregation `$group` / `$sort` |
 | `whereFulltext()` | unsupported | Atlas Search `$search` stage |
 | `union()` | unsupported | aggregation `$unionWith` |
@@ -33,15 +32,43 @@ $genres = Movie::raw(fn ($c) => $c->aggregate([
 
 Do **not** use `Movie::raw(fn ($c) => $c->distinct('field'))` via Eloquent if you expect a Collection — use `->distinct()->pluck()` instead.
 
-## Replacing `withCount`
+## Relation aggregates
 
-`withCount()`, `withAvg()`, and `withSum()` are **not supported** on MongoDB models — they silently return wrong results or throw. Replace with a `$lookup` + `$size` / `$avg` / `$sum` aggregation pipeline.
+`withCount()`, `withExists()`, `withSum()`, `withAvg()`, `withMin()` and `withMax()` are supported, as well as
+`loadCount()`, `loadExists()` and `loadAggregate()`. MongoDB has no correlated subquery, so the values are not
+selected with the parent documents: they are computed with **one additional query per aggregate**, after the
+parent documents are read, then set as attributes.
 
 ```php
-// WRONG — withCount is not supported on MongoDB models
-$posts = Post::withCount('comments')->get();
+$posts = Post::withCount('comments')
+    ->withExists('author')
+    ->withMax('comments as top_score', 'score')
+    ->get();
 
-// CORRECT
+$posts[0]->comments_count;   // int, 0 when there is no related document
+$posts[0]->author_exists;    // bool
+$posts[0]->top_score;        // null when there is no related document
+
+// Constrained aggregate
+Post::withCount(['comments' => fn ($query) => $query->where('approved', true)])->get();
+```
+
+Supported relations: `hasOne`, `hasMany`, `morphOne`, `morphMany`, `belongsTo`, `belongsToMany`, `morphToMany`,
+`morphedByMany`, `embedsOne` and `embedsMany`. Embedded aggregates cost no extra query, they are computed from
+the parent document.
+
+Anything else throws a `LogicException` rather than returning a wrong value: `morphTo`, `hasManyThrough`, and
+hybrid relations where the related model is not stored in MongoDB.
+
+Limitations:
+
+- `orderBy()` on an aggregate alias throws, because the value does not exist server side. Sort the resulting
+  collection with `sortBy()` instead.
+- `cursor()` and `lazy()` do not eager load, so the aliases are absent on those paths.
+- Constraint closures on embedded relations are not supported.
+- Use a `$lookup` pipeline instead when you need to filter, sort or paginate on the aggregated value:
+
+```php
 $posts = Post::raw(fn ($c) => $c->aggregate([
     ['$lookup' => [
         'from'         => 'comments',
@@ -51,6 +78,7 @@ $posts = Post::raw(fn ($c) => $c->aggregate([
     ]],
     ['$addFields' => ['comments_count' => ['$size' => '$comments']]],
     ['$project'   => ['comments' => 0]],
+    ['$sort'      => ['comments_count' => -1]],
 ]));
 ```
 

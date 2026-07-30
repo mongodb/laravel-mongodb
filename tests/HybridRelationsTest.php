@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use BadMethodCallException;
 use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\DB;
+use LogicException;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Experience;
 use MongoDB\Laravel\Tests\Models\Label;
@@ -283,6 +285,23 @@ class HybridRelationsTest extends TestCase
         SqlUser::whereHas('skills', function ($query) {
             return $query->where('name', 'LIKE', 'MongoDB');
         });
+    }
+
+    public function testWithCountOnHybridRelationFails()
+    {
+        // MongoModel -> HasMany -> SqlModel
+        try {
+            User::withCount('sqlBooks')->get();
+            self::fail('Expected a LogicException');
+        } catch (LogicException $e) {
+            self::assertStringContainsString('Aggregating the hybrid relation "sqlBooks" is not supported', $e->getMessage());
+        }
+
+        // SqlModel -> HasMany -> MongoModel
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('This method is not supported by MongoDB. Try "toMql()" instead.');
+
+        SqlUser::withCount('books')->get();
     }
 
     public function testHybridMorphToManySqlModelToMongoModel()
