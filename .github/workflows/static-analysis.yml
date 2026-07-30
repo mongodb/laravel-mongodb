@@ -88,13 +88,13 @@ jobs:
 
       - name: Upload SARIF report
         if: ${{ github.event_name != 'workflow_dispatch' }}
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v4.37.3
         with:
           sarif_file: phpstan.sarif
 
       - name: Upload SARIF report
         if: ${{ github.event_name == 'workflow_dispatch' }}
-        uses: github/codeql-action/upload-sarif@v4
+        uses: github/codeql-action/upload-sarif@v4.37.3
         with:
           sarif_file: phpstan.sarif
           ref: ${{ inputs.ref }}
