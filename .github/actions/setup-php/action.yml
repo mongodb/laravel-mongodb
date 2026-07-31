@@ -37,8 +37,9 @@ runs:
         DRIVER_MAJOR: ${{ inputs.driver }}
       run: |
         set -euo pipefail
-        version=$(gh api --paginate repos/mongodb/mongo-php-driver/releases \
-          --jq "[.[] | select(.prerelease==false) | .tag_name | select(startswith(\"${DRIVER_MAJOR}.\"))] | .[0] // empty")
+        version=$(gh api graphql \
+          -f query='{ repository(owner: "mongodb", name: "mongo-php-driver") { releases(first: 100, orderBy: {field: CREATED_AT, direction: DESC}) { nodes { tagName isPrerelease } } } }' \
+          --jq "[.data.repository.releases.nodes[] | select(.isPrerelease==false) | .tagName | select(startswith(\"${DRIVER_MAJOR}.\"))] | .[0] // empty")
         if [ -z "${version}" ]; then
           echo "Could not resolve latest mongodb extension for major ${DRIVER_MAJOR}" >&2
           exit 1
