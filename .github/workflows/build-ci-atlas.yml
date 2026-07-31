@@ -35,16 +35,10 @@ jobs:
         timeout-minutes: 5
         run: |
           docker run --name mongodb -p 27017:27017 --detach mongodb/mongodb-atlas-local:latest
-          until docker exec --tty mongodb mongosh --eval "db.runCommand({ ping: 1 })"; do
-            sleep 1
-          done
-          docker exec --tty mongodb mongosh --eval "db.createCollection('connection_test')"
-          until docker exec --tty mongodb mongosh --eval "db.getCollection('connection_test').createSearchIndex({mappings:{dynamic: true}})"; do
-            sleep 1
-          done
-          until docker exec --tty mongodb mongosh --eval "db.runCommand({ serverStatus: 1 })"; do
-            sleep 1
-          done
+          until docker exec --tty mongodb mongosh --eval "db.hello().isWritablePrimary" | grep -q true; do sleep 1; done
+          until docker exec --tty mongodb mongosh --eval "db.createCollection('connection_test')"; do sleep 1; done
+          until docker exec --tty mongodb mongosh --eval "db.getCollection('connection_test').createSearchIndex({mappings:{dynamic: true}})"; do sleep 1; done
+          until docker exec --tty mongodb mongosh --eval "db.runCommand({ serverStatus: 1 })"; do sleep 1; done
 
       - name: Setup PHP with MongoDB extension
         uses: ./.github/actions/setup-php

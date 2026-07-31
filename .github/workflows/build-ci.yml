@@ -55,6 +55,7 @@ jobs:
       - uses: actions/checkout@v7
 
       - name: Create MongoDB Replica Set
+        timeout-minutes: 5
         run: |
           docker run --name mongodb -p 27017:27017 -e MONGO_INITDB_DATABASE=unittest --detach mongo:${{ matrix.mongodb }} mongod --replSet rs --setParameter transactionLifetimeLimitSeconds=5
 
