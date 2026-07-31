@@ -34,15 +34,19 @@ jobs:
           - php: '8.2'
             laravel: 12.*
             mongodb: '4.4'
+            driver: 2
           - php: '8.2'
             laravel: 12.*
             mongodb: '5.0'
+            driver: 2
           - php: '8.2'
             laravel: 12.*
             mongodb: '6.0'
+            driver: 2
           - php: '8.2'
             laravel: 12.*
             mongodb: '7.0'
+            driver: 2
         exclude:
           - laravel: '13.*'
             php: '8.2'
