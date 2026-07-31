@@ -15,12 +15,6 @@ on:
         type: string
         required: true
 
-env:
-  PHP_VERSION: '8.5'
-  DRIVER_VERSION: stable
-  MONGODB_EXT_V1: mongodb-1.21.0
-  MONGODB_EXT_V2: mongodb-mongodb/mongo-php-driver@v2.x
-
 jobs:
   phpstan:
     name: PHP/${{ matrix.php }} Driver/${{ matrix.driver }}
@@ -46,21 +40,13 @@ jobs:
         run: |
           echo CHECKED_OUT_SHA=$(git rev-parse HEAD) >> $GITHUB_ENV
 
-      - name: Setup cache environment
-        id: extcache
-        uses: shivammathur/cache-extensions@v1
+      - name: Setup PHP with MongoDB extension
+        uses: ./.github/actions/setup-php
         with:
           php-version: ${{ matrix.php }}
-          extensions: ${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
-          key: extcache-v1
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: curl,mbstring,${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
+          driver: ${{ matrix.driver }}
+          extensions: curl,mbstring
           tools: composer:v2
-          coverage: none
 
       - name: Cache dependencies
         id: composer-cache

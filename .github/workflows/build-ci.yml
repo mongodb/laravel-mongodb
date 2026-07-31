@@ -9,10 +9,6 @@ on:
       - '[0-9]+.[0-9x]+'
       - feature/*
 
-env:
-  MONGODB_EXT_V1: mongodb-1.21.0
-  MONGODB_EXT_V2: stable
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -69,21 +65,13 @@ jobs:
           if [ "${{ matrix.mongodb }}" = "4.4" ]; then MONGOSH_BIN="mongo"; else MONGOSH_BIN="mongosh"; fi
           docker exec --tty mongodb $MONGOSH_BIN --eval "db.runCommand({ serverStatus: 1 })"
 
-      - name: Setup cache environment
-        id: extcache
-        uses: shivammathur/cache-extensions@v1
+      - name: Setup PHP with MongoDB extension
+        uses: ./.github/actions/setup-php
         with:
           php-version: ${{ matrix.php }}
-          extensions: ${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
-          key: extcache-v1
-
-      - name: Installing php
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: ${{ matrix.php }}
-          extensions: curl,mbstring,xdebug,${{ matrix.driver == 1 && env.MONGODB_EXT_V1 || env.MONGODB_EXT_V2 }}
+          driver: ${{ matrix.driver }}
+          extensions: curl,mbstring,xdebug
           coverage: xdebug
-          tools: composer
 
       - name: Show Docker version
         if: ${{ runner.debug }}

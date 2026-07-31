@@ -11,7 +11,6 @@ on:
 
 env:
   PHP_VERSION: '8.4'
-  DRIVER_VERSION: stable
 
 jobs:
   phpcs:
@@ -27,27 +26,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
-      - name: Setup cache environment
-        id: extcache
-        uses: shivammathur/cache-extensions@v1
+      - name: Setup PHP with MongoDB extension
+        uses: ./.github/actions/setup-php
         with:
           php-version: ${{ env.PHP_VERSION }}
-          extensions: mongodb-${{ env.DRIVER_VERSION }}
-          key: extcache-v1
-
-      - name: Cache extensions
-        uses: actions/cache@v6
-        with:
-          path: ${{ steps.extcache.outputs.dir }}
-          key: ${{ steps.extcache.outputs.key }}
-          restore-keys: ${{ steps.extcache.outputs.key }}
-
-      - name: Install PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          coverage: none
-          extensions: mongodb-${{ env.DRIVER_VERSION }}
-          php-version: ${{ env.PHP_VERSION }}
+          driver: 2
           tools: cs2pr
 
       - name: Show driver information

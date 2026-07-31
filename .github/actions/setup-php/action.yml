@@ -1,0 +1,72 @@
+name: Setup PHP with MongoDB extension
+description: Resolve the latest stable mongodb PHP extension for the requested major, install PHP with a cached build of that extension.
+
+inputs:
+  php-version:
+    description: PHP version (e.g. 8.4)
+    required: true
+  driver:
+    description: Major version of the mongodb extension to install (1 or 2)
+    required: true
+  extensions:
+    description: Comma-separated list of extra PHP extensions to install alongside mongodb (the mongodb extension is appended automatically)
+    required: false
+    default: ''
+  coverage:
+    description: Coverage driver passed to shivammathur/setup-php (e.g. xdebug, none)
+    required: false
+    default: none
+  tools:
+    description: Tools passed to shivammathur/setup-php
+    required: false
+    default: composer
+
+outputs:
+  extension-version:
+    description: Resolved mongodb extension version (e.g. 2.3.3)
+    value: ${{ steps.resolve.outputs.version }}
+
+runs:
+  using: composite
+  steps:
+    - name: Resolve latest mongodb extension release
+      id: resolve
+      shell: bash
+      env:
+        GH_TOKEN: ${{ github.token }}
+        DRIVER_MAJOR: ${{ inputs.driver }}
+      run: |
+        set -euo pipefail
+        version=$(gh api repos/mongodb/mongo-php-driver/releases \
+          --jq "[.[] | select(.prerelease==false) | .tag_name | select(startswith(\"${DRIVER_MAJOR}.\"))] | .[0] // empty")
+        if [ -z "${version}" ]; then
+          echo "Could not resolve latest mongodb extension for major ${DRIVER_MAJOR}" >&2
+          exit 1
+        fi
+        echo "Resolved mongodb-${version}"
+        echo "version=${version}" >> "$GITHUB_OUTPUT"
+        echo "spec=mongodb-${version}" >> "$GITHUB_OUTPUT"
+
+    - name: Setup cache environment
+      id: extcache
+      uses: shivammathur/cache-extensions@v1
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: ${{ steps.resolve.outputs.spec }}
+        key: extcache-php${{ inputs.php-version }}-${{ steps.resolve.outputs.spec }}
+
+    - name: Cache extensions
+      uses: actions/cache@v6
+      with:
+        path: ${{ steps.extcache.outputs.dir }}
+        key: ${{ steps.extcache.outputs.key }}
+        restore-keys: ${{ steps.extcache.outputs.key }}
+
+    - name: Install PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ inputs.php-version }}
+        extensions: ${{ inputs.extensions != '' && format('{0},{1}', inputs.extensions, steps.resolve.outputs.spec) || steps.resolve.outputs.spec }}
+
+        coverage: ${{ inputs.coverage }}
+        tools: ${{ inputs.tools }}
