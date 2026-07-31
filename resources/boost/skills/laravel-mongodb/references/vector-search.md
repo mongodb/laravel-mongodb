@@ -67,24 +67,16 @@ Product::create([
 
 use App\Models\Product;
 
-$results = Product::raw(fn ($c) => $c->aggregate([
-    ['$vectorSearch' => [
-        'index'         => 'products_vector',
-        'path'          => 'description',
-        'queryText'     => 'noise-cancelling headphones for travel',
-        'numCandidates' => 100,
-        'limit'         => 10,
-    ]],
-    ['$project' => [
-        'name'        => 1,
-        'description' => 1,
-        'price'       => 1,
-        'score'       => ['$meta' => 'vectorSearchScore'],
-    ]],
-]));
+$results = Product::vectorSearch(
+    index: 'products_vector',
+    path: 'description',
+    query: 'noise-cancelling headphones for travel',
+    numCandidates: 100,
+    limit: 10,
+);
 ```
 
-Use `queryText` (string) when the index uses `autoEmbed`. Use `queryVector` (float array) when providing vectors manually.
+Pass `query` (string) when the index uses `autoEmbed`; pass `queryVector` (float array) when providing vectors manually. The optional `model` parameter overrides the model configured on the index.
 
 ## Manual embedding
 
