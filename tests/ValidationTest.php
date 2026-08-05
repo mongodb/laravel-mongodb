@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Support\Facades\Validator;
+use MongoDB\BSON\Regex;
 use MongoDB\Laravel\Tests\Models\User;
+use MongoDB\Laravel\Validation\DatabasePresenceVerifier;
 
 class ValidationTest extends TestCase
 {
@@ -131,5 +133,45 @@ class ValidationTest extends TestCase
             ['name' => 'exists:users'],
         );
         $this->assertFalse($validator->fails());
+    }
+
+    public function testGetCountBuildsRegexWithValidFlags(): void
+    {
+        $query = new class {
+            public $value;
+
+            public function useWritePdo()
+            {
+                return $this;
+            }
+
+            public function where($column, $value)
+            {
+                $this->value = $value;
+
+                return $this;
+            }
+
+            public function count()
+            {
+                return 0;
+            }
+        };
+
+        $verifier = new class ($query) extends DatabasePresenceVerifier {
+            public function __construct(private $query)
+            {
+            }
+
+            protected function table($table)
+            {
+                return $this->query;
+            }
+        };
+
+        $verifier->getCount('users', 'name', 'John Doe');
+
+        $this->assertInstanceOf(Regex::class, $query->value);
+        $this->assertSame('i', $query->value->getFlags());
     }
 }
