@@ -50,7 +50,7 @@ class GH2783Test extends TestCase
     public function testMorphOneEagerLoadWithIntegerKeyType()
     {
         // Only reproduces with an integer $keyType: Relation::whereInMethod() resolves to whereIntegerInRaw(),
-        // when eager loading multiple parents　whose primary key is an integer and MongoDB\Laravel\Query\Builder does not support that method. 
+        // when eager loading multiple parents whose primary key is an integer and MongoDB\Laravel\Query\Builder does not support that method.
         // String keys (the default for Mongo models) already resolve to whereIn() even with the native class.
         GH2783IntKeyImage::truncate();
         GH2783IntKeyPost::truncate();
