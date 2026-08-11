@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Support\Arr;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
+use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use Override;
 
 use function array_diff;
@@ -88,7 +89,9 @@ class BelongsToMany extends EloquentBelongsToMany
     {
         $foreign = $this->getForeignKey();
 
-        $this->query->where($foreign, '=', $this->parent->{$this->parentKey});
+        $value = $this->parent->{$this->parentKey};
+        QueryBuilder::assertKeyIsNotOperator($value);
+        $this->query->where($foreign, '=', $value);
 
         return $this;
     }

@@ -1359,6 +1359,12 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where('id', 1)->orWhere('id', 2),
         ];
 
+        // A composite id (a plain array without MongoDB operators) is a valid _id and must be preserved.
+        yield 'composite array id without operator' => [
+            ['find' => [['_id' => ['tenant' => 1, 'seq' => 2]], []]],
+            fn (Builder $builder) => $builder->where('id', ['tenant' => 1, 'seq' => 2]),
+        ];
+
         yield 'select colums with id alias' => [
             ['find' => [[], ['projection' => ['name' => 1, 'email' => 1, '_id' => 1]]]],
             fn (Builder $builder) => $builder->select('name', 'email', 'id'),
@@ -1672,16 +1678,28 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where(2.3, '>', 1),
         ];
 
-        yield 'where _id = with operator array is rejected' => [
+        yield 'where _id equals operator document' => [
             InvalidArgumentException::class,
             'The value used as a document id or relation key cannot contain the MongoDB operator "$ne"',
             fn (Builder $builder) => $builder->where('_id', '=', ['$ne' => null]),
         ];
 
-        yield 'where _id = with nested operator array is rejected' => [
+        yield 'where id (alias) with operator document' => [
+            InvalidArgumentException::class,
+            'The value used as a document id or relation key cannot contain the MongoDB operator "$ne"',
+            fn (Builder $builder) => $builder->where('id', ['$ne' => null]),
+        ];
+
+        yield 'where _id with nested operator document' => [
             InvalidArgumentException::class,
             'The value used as a document id or relation key cannot contain the MongoDB operator "$gt"',
             fn (Builder $builder) => $builder->where('_id', '=', ['foo' => ['$gt' => 1]]),
+        ];
+
+        yield 'whereIn _id with operator document element' => [
+            InvalidArgumentException::class,
+            'The value used as a document id or relation key cannot contain the MongoDB operator "$ne"',
+            fn (Builder $builder) => $builder->whereIn('_id', [['$ne' => null]]),
         ];
     }
 

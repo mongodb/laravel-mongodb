@@ -1226,6 +1226,8 @@ class Builder extends BaseBuilder
      */
     public function convertKey($id)
     {
+        self::assertKeyIsNotOperator($id);
+
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
         }
@@ -1235,6 +1237,35 @@ class Builder extends BaseBuilder
         }
 
         return $id;
+    }
+
+    /**
+     * Ensure a value used as a document id or relation key does not smuggle a MongoDB
+     * operator. A "$"-prefixed key (at any depth) would turn an intended literal match
+     * into an arbitrary query predicate, e.g. {_id: {$ne: null}} matching every document.
+     *
+     * A plain array without operator keys is allowed, so composite _id values keep working.
+     *
+     * @internal
+     *
+     * @throws InvalidArgumentException when the value contains a MongoDB operator.
+     */
+    public static function assertKeyIsNotOperator(mixed $value): void
+    {
+        if (! is_array($value)) {
+            return;
+        }
+
+        foreach ($value as $key => $item) {
+            if (is_string($key) && str_starts_with($key, '$')) {
+                throw new InvalidArgumentException(sprintf(
+                    'The value used as a document id or relation key cannot contain the MongoDB operator "%s".',
+                    $key,
+                ));
+            }
+
+            self::assertKeyIsNotOperator($item);
+        }
     }
 
     /**

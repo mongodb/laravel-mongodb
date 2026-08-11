@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Relations;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
+use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use Override;
 
 /**
@@ -23,10 +24,12 @@ class MorphTo extends EloquentMorphTo
             // For belongs to relationships, which are essentially the inverse of has one
             // or has many relationships, we need to actually query on the primary key
             // of the related models matching on the foreign key that's on a parent.
+            $value = $this->getForeignKeyFrom($this->parent);
+            QueryBuilder::assertKeyIsNotOperator($value);
             $this->query->where(
                 $this->ownerKey ?? $this->getForeignKeyName(),
                 '=',
-                $this->getForeignKeyFrom($this->parent),
+                $value,
             );
         }
     }

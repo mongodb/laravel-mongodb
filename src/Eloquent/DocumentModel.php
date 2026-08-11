@@ -270,9 +270,13 @@ trait DocumentModel
             };
         }
 
-        // Convert _id to ObjectID.
-        if (($key === '_id' || $key === 'id') && is_string($value) && strlen($value) === 24) {
-            $value = $this->newBaseQueryBuilder()->convertKey($value);
+        // Reject a MongoDB operator planted as the primary key, then convert _id to ObjectID.
+        if ($key === '_id' || $key === 'id') {
+            QueryBuilder::assertKeyIsNotOperator($value);
+
+            if (is_string($value) && strlen($value) === 24) {
+                $value = $this->newBaseQueryBuilder()->convertKey($value);
+            }
         }
 
         // Support keys in dot notation.
