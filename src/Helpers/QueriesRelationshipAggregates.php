@@ -67,40 +67,13 @@ trait QueriesRelationshipAggregates
         }
 
         foreach ($this->parseWithRelations(is_array($relations) ? $relations : [$relations]) as $name => $constraints) {
-            $segments = explode(' ', $name);
-            $alias = null;
-
-            if (count($segments) === 3 && strtolower($segments[1]) === 'as') {
-                [$name, $alias] = [$segments[0], $segments[2]];
-            }
-
-            // Same alias as Illuminate\Database\Eloquent\Concerns\QueriesRelationships::withAggregate
-            $alias ??= Str::snake(preg_replace(
-                '/[^[:alnum:][:space:]_]/u',
-                '',
-                sprintf('%s %s %s', $name, $function, strtolower($column)),
-            ));
+            [$name, $alias] = $this->resolveAggregateAlias($name, $function, $column);
 
             $relation = $this->getRelationWithoutConstraints($name);
-
             $this->assertAggregateRelationSupported($relation, $name);
 
             $parentKey = $this->getAggregateParentKey($relation);
-
-            if ($relation instanceof EmbedsOneOrMany) {
-                $subQuery = $relation->getRelated()->newQuery();
-                $constraints($subQuery);
-
-                if ($subQuery->getQuery()->wheres) {
-                    throw new LogicException(sprintf(
-                        'Constraints on the embedded relation "%s" are not supported. See https://jira.mongodb.org/browse/PHPORM-292',
-                        $name,
-                    ));
-                }
-            } elseif ($parentKey !== null && $this->getQuery()->columns !== null) {
-                // The key used to match the aggregated values with the parent documents must be read.
-                $this->addSelect($parentKey);
-            }
+            $this->prepareAggregateQuery($relation, $name, $parentKey, $constraints);
 
             $this->withAggregates[$alias] = [
                 'name' => $name,
@@ -112,6 +85,56 @@ trait QueriesRelationshipAggregates
         }
 
         return $this;
+    }
+
+    /**
+     * Resolve the relation name and the attribute alias, using the same alias as
+     * Illuminate\Database\Eloquent\Concerns\QueriesRelationships::withAggregate.
+     *
+     * @return array{0: string, 1: string} the relation name and the alias
+     */
+    private function resolveAggregateAlias(string $name, string $function, string $column): array
+    {
+        $segments = explode(' ', $name);
+
+        if (count($segments) === 3 && strtolower($segments[1]) === 'as') {
+            return [$segments[0], $segments[2]];
+        }
+
+        $alias = Str::snake(preg_replace(
+            '/[^[:alnum:][:space:]_]/u',
+            '',
+            sprintf('%s %s %s', $name, $function, strtolower($column)),
+        ));
+
+        return [$name, $alias];
+    }
+
+    private function prepareAggregateQuery(Relation $relation, string $name, ?string $parentKey, Closure $constraints): void
+    {
+        if ($relation instanceof EmbedsOneOrMany) {
+            $this->assertEmbeddedConstraintsSupported($relation, $name, $constraints);
+
+            return;
+        }
+
+        // The key used to match the aggregated values with the parent documents must be read.
+        if ($parentKey !== null && $this->getQuery()->columns !== null) {
+            $this->addSelect($parentKey);
+        }
+    }
+
+    private function assertEmbeddedConstraintsSupported(EmbedsOneOrMany $relation, string $name, Closure $constraints): void
+    {
+        $subQuery = $relation->getRelated()->newQuery();
+        $constraints($subQuery);
+
+        if ($subQuery->getQuery()->wheres) {
+            throw new LogicException(sprintf(
+                'Constraints on the embedded relation "%s" are not supported.',
+                $name,
+            ));
+        }
     }
 
     /** @inheritdoc */
