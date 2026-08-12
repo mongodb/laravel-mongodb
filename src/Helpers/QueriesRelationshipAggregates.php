@@ -18,17 +18,21 @@ use LogicException;
 use MongoDB\BSON\Binary;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
+use Stringable;
 
 use function bin2hex;
 use function class_basename;
 use function count;
 use function explode;
+use function get_debug_type;
 use function implode;
 use function in_array;
 use function is_array;
+use function is_scalar;
 use function is_string;
 use function preg_replace;
 use function sprintf;
+use function str_starts_with;
 use function strtolower;
 
 /**
@@ -64,6 +68,13 @@ trait QueriesRelationshipAggregates
 
         if (! is_string($column)) {
             throw new InvalidArgumentException('The aggregate column name must be a string.');
+        }
+
+        if (str_starts_with($column, '$')) {
+            throw new InvalidArgumentException(sprintf(
+                'The aggregate column name "%s" must not start with "$".',
+                $column,
+            ));
         }
 
         foreach ($this->parseWithRelations(is_array($relations) ? $relations : [$relations]) as $name => $constraints) {
@@ -260,7 +271,18 @@ trait QueriesRelationshipAggregates
     /** Document keys are compared as strings, as ObjectId instances are not identical. */
     private static function aggregateKey(mixed $value): string
     {
-        return $value instanceof Binary ? bin2hex($value->getData()) : (string) $value;
+        if ($value instanceof Binary) {
+            return bin2hex($value->getData());
+        }
+
+        if (is_scalar($value) || $value instanceof Stringable) {
+            return (string) $value;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'The relation key of type "%s" cannot be used to match aggregated values.',
+            get_debug_type($value),
+        ));
     }
 
     private function assertAggregateRelationSupported(Relation $relation, string $name): void

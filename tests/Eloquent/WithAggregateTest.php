@@ -355,4 +355,24 @@ class WithAggregateTest extends TestCase
 
         $builder->withAggregate('books', 'title', 'stdDevPop');
     }
+
+    public function testColumnStartingWithDollarIsRejected(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The aggregate column name "$ROOT" must not start with "$"');
+
+        User::withSum('books', '$ROOT');
+    }
+
+    public function testNonScalarRelationKeyIsRejected(): void
+    {
+        $author = User::create(['name' => 'Alice']);
+        $author->books()->create(['title' => 'A']);
+        User::insert([['name' => 'Bob', '_id' => ['nested' => 'key']]]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The relation key of type "array" cannot be used to match aggregated values.');
+
+        User::withCount('books')->get();
+    }
 }
