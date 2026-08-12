@@ -71,9 +71,13 @@ trait QueriesRelationshipAggregates
 
             $relation = $this->getRelationWithoutConstraints($name);
             $this->assertAggregateRelationSupported($relation, $name);
+            $this->assertEmbeddedConstraintsSupported($relation, $name, $constraints);
 
+            // The key used to match the aggregated values with the parent documents must be read.
             $parentKey = $this->getAggregateParentKey($relation);
-            $this->prepareAggregateQuery($relation, $name, $parentKey, $constraints);
+            if ($parentKey !== null && $this->getQuery()->columns !== null) {
+                $this->addSelect($parentKey);
+            }
 
             $this->withAggregates[$alias] = [
                 'name' => $name,
@@ -110,22 +114,12 @@ trait QueriesRelationshipAggregates
         return [$name, $alias];
     }
 
-    private function prepareAggregateQuery(Relation $relation, string $name, ?string $parentKey, Closure $constraints): void
+    private function assertEmbeddedConstraintsSupported(Relation $relation, string $name, Closure $constraints): void
     {
-        if ($relation instanceof EmbedsOneOrMany) {
-            $this->assertEmbeddedConstraintsSupported($relation, $name, $constraints);
-
+        if (! $relation instanceof EmbedsOneOrMany) {
             return;
         }
 
-        // The key used to match the aggregated values with the parent documents must be read.
-        if ($parentKey !== null && $this->getQuery()->columns !== null) {
-            $this->addSelect($parentKey);
-        }
-    }
-
-    private function assertEmbeddedConstraintsSupported(EmbedsOneOrMany $relation, string $name, Closure $constraints): void
-    {
         $subQuery = $relation->getRelated()->newQuery();
         $constraints($subQuery);
 
@@ -159,13 +153,11 @@ trait QueriesRelationshipAggregates
 
         // Embedded documents are already part of the parent document, no query is needed.
         if ($relation instanceof EmbedsOneOrMany) {
-            $default = self::aggregateDefault($aggregate['function']);
             foreach ($models as $model) {
                 $model->setAttribute($alias, self::aggregateValues(
                     $model->{$aggregate['name']}()->getResults(),
                     $aggregate['function'],
                     $aggregate['column'],
-                    $default,
                 ));
             }
 
@@ -225,13 +217,12 @@ trait QueriesRelationshipAggregates
     {
         $relation->match($models, $relation->getEager(), $alias);
 
-        $default = self::aggregateDefault($aggregate['function']);
         foreach ($models as $model) {
             // match() leaves the relation unset on models without related documents.
             $related = $model->relationLoaded($alias) ? $model->getRelation($alias) : null;
             $model->unsetRelation($alias);
 
-            $model->setAttribute($alias, self::aggregateValues($related, $aggregate['function'], $aggregate['column'], $default));
+            $model->setAttribute($alias, self::aggregateValues($related, $aggregate['function'], $aggregate['column']));
         }
     }
 
@@ -244,7 +235,7 @@ trait QueriesRelationshipAggregates
         };
     }
 
-    private static function aggregateValues(mixed $related, string $function, string $column, mixed $default): mixed
+    private static function aggregateValues(mixed $related, string $function, string $column): mixed
     {
         $values = match (true) {
             $related instanceof Collection => $related,
@@ -253,7 +244,7 @@ trait QueriesRelationshipAggregates
         };
 
         if ($values->isEmpty()) {
-            return $default;
+            return self::aggregateDefault($function);
         }
 
         return match ($function) {
