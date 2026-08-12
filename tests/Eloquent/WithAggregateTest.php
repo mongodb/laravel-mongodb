@@ -233,6 +233,9 @@ class WithAggregateTest extends TestCase
         $users = User::withCount('addresses')
             ->withExists('addresses')
             ->withMax('addresses', 'zip')
+            ->withMin('addresses', 'zip')
+            ->withSum('addresses', 'zip')
+            ->withAvg('addresses', 'zip')
             ->orderBy('name')
             ->get();
 
@@ -242,10 +245,16 @@ class WithAggregateTest extends TestCase
         self::assertSame(2, $users[0]->addresses_count);
         self::assertTrue($users[0]->addresses_exists);
         self::assertSame(75001, $users[0]->addresses_max_zip);
+        self::assertSame(69001, $users[0]->addresses_min_zip);
+        self::assertSame(144002, $users[0]->addresses_sum_zip);
+        self::assertSame(72001, $users[0]->addresses_avg_zip);
 
         self::assertSame(0, $users[1]->addresses_count);
         self::assertFalse($users[1]->addresses_exists);
         self::assertNull($users[1]->addresses_max_zip);
+        self::assertNull($users[1]->addresses_min_zip);
+        self::assertNull($users[1]->addresses_sum_zip);
+        self::assertNull($users[1]->addresses_avg_zip);
     }
 
     public function testWithAggregateEmbedsOne(): void

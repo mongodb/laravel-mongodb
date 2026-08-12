@@ -129,36 +129,7 @@ final class User extends Model
 }
 ```
 
-### 3. Relation aggregates, and when to use `$lookup` instead
-
-```php
-<?php
-
-use App\Models\Post;
-
-// One extra query per aggregate, values set as attributes on the models
-$posts = Post::withCount('comments')->withExists('author')->withMax('comments', 'score')->get();
-
-$posts[0]->comments_count;      // int
-$posts[0]->author_exists;       // bool
-$posts[0]->comments_max_score;  // null when there is no comment
-
-// Sorting or filtering on the aggregated value requires a pipeline,
-// Post::withCount('comments')->orderBy('comments_count') throws.
-$posts = Post::raw(fn ($collection) => $collection->aggregate([
-    ['$lookup' => [
-        'from'         => 'comments',
-        'localField'   => '_id',
-        'foreignField' => 'post_id',
-        'as'           => 'comments',
-    ]],
-    ['$addFields' => ['comments_count' => ['$size' => '$comments']]],
-    ['$project'   => ['comments' => 0]],
-    ['$sort'      => ['comments_count' => -1]],
-]));
-```
-
-### 4. Queue job
+### 3. Queue job
 
 ```php
 <?php
@@ -183,7 +154,7 @@ final class IndexPostJob implements ShouldQueue
 IndexPostJob::dispatch((string) $post->_id)->onConnection('mongodb');
 ```
 
-### 5. Feature test (Pest)
+### 4. Feature test (Pest)
 
 ```php
 <?php

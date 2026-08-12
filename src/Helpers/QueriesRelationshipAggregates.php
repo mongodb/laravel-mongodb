@@ -63,7 +63,7 @@ trait QueriesRelationshipAggregates
         }
 
         if (! is_string($column)) {
-            throw new InvalidArgumentException('Expressions are not supported as aggregate column by MongoDB.');
+            throw new InvalidArgumentException('The aggregate column name must be a string.');
         }
 
         foreach ($this->parseWithRelations(is_array($relations) ? $relations : [$relations]) as $name => $constraints) {
@@ -131,22 +131,16 @@ trait QueriesRelationshipAggregates
      */
     private function hydrateAggregate(array $models, string $alias, array $aggregate): void
     {
-        $function = $aggregate['function'];
-        $default = match ($function) {
-            'count' => 0,
-            'exists' => false,
-            default => null,
-        };
-
         // The relation is resolved for each execution to start from a query without constraints.
         $relation = $this->getRelationWithoutConstraints($aggregate['name']);
 
-        // Embedded documents are already part of the parent document.
+        // Embedded documents are already part of the parent document, no query is needed.
         if ($relation instanceof EmbedsOneOrMany) {
+            $default = self::aggregateDefault($aggregate['function']);
             foreach ($models as $model) {
                 $model->setAttribute($alias, self::aggregateValues(
                     $model->{$aggregate['name']}()->getResults(),
-                    $function,
+                    $aggregate['function'],
                     $aggregate['column'],
                     $default,
                 ));
@@ -160,25 +154,9 @@ trait QueriesRelationshipAggregates
         // the constraints are applied to the query of the related model.
         $aggregate['constraints']($relation->getQuery());
 
+        // HasOneOrMany relations are aggregated by the server, grouped by foreign key.
         if ($relation instanceof HasOneOrMany) {
-            // The values are aggregated by the server, grouped by foreign key.
-            $foreignKey = $this->getHasCompareKey($relation);
-            $results = $relation->getQuery()->toBase()
-                ->groupBy($foreignKey)
-                ->aggregate($function === 'exists' ? 'count' : $function, [$aggregate['column']]);
-
-            $values = [];
-            foreach ($results as $result) {
-                $values[self::aggregateKey($result->{$foreignKey})] = $function === 'exists'
-                    ? $result->aggregate > 0
-                    : $result->aggregate;
-            }
-
-            foreach ($models as $model) {
-                $key = self::aggregateKey($model->getAttribute($aggregate['parentKey']));
-
-                $model->setAttribute($alias, $values[$key] ?? $default);
-            }
+            $this->hydrateGroupedAggregate($models, $alias, $aggregate, $relation);
 
             return;
         }
@@ -186,15 +164,61 @@ trait QueriesRelationshipAggregates
         // The related documents cannot be grouped by the server: a BelongsTo relation has a single
         // related document per parent, and the keys of many-to-many relations are stored in an array
         // field. The eager loading logic is reused to match the related documents to their parent.
+        $this->hydrateMatchedAggregate($models, $alias, $aggregate, $relation);
+    }
+
+    /**
+     * @param EloquentModel[]                                                                                 $models
+     * @param array{name: string, function: string, column: string, parentKey: ?string, constraints: Closure} $aggregate
+     */
+    private function hydrateGroupedAggregate(array $models, string $alias, array $aggregate, HasOneOrMany $relation): void
+    {
+        $function = $aggregate['function'];
+        $foreignKey = $this->getHasCompareKey($relation);
+        $results = $relation->getQuery()->toBase()
+            ->groupBy($foreignKey)
+            ->aggregate($function === 'exists' ? 'count' : $function, [$aggregate['column']]);
+
+        $values = [];
+        foreach ($results as $result) {
+            $values[self::aggregateKey($result->{$foreignKey})] = $function === 'exists'
+                ? $result->aggregate > 0
+                : $result->aggregate;
+        }
+
+        $default = self::aggregateDefault($function);
+        foreach ($models as $model) {
+            $key = self::aggregateKey($model->getAttribute($aggregate['parentKey']));
+
+            $model->setAttribute($alias, $values[$key] ?? $default);
+        }
+    }
+
+    /**
+     * @param EloquentModel[]                                                                                 $models
+     * @param array{name: string, function: string, column: string, parentKey: ?string, constraints: Closure} $aggregate
+     */
+    private function hydrateMatchedAggregate(array $models, string $alias, array $aggregate, Relation $relation): void
+    {
         $relation->match($models, $relation->getEager(), $alias);
 
+        $default = self::aggregateDefault($aggregate['function']);
         foreach ($models as $model) {
             // match() leaves the relation unset on models without related documents.
             $related = $model->relationLoaded($alias) ? $model->getRelation($alias) : null;
             $model->unsetRelation($alias);
 
-            $model->setAttribute($alias, self::aggregateValues($related, $function, $aggregate['column'], $default));
+            $model->setAttribute($alias, self::aggregateValues($related, $aggregate['function'], $aggregate['column'], $default));
         }
+    }
+
+    private static function aggregateDefault(string $function): mixed
+    {
+        return match ($function) {
+            'count' => 0,
+            'exists' => false,
+            default => null,
+        };
     }
 
     private static function aggregateValues(mixed $related, string $function, string $column, mixed $default): mixed

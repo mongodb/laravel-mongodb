@@ -35,9 +35,8 @@ Do **not** use `Movie::raw(fn ($c) => $c->distinct('field'))` via Eloquent if yo
 ## Relation aggregates
 
 `withCount()`, `withExists()`, `withSum()`, `withAvg()`, `withMin()` and `withMax()` are supported, as well as
-`loadCount()`, `loadExists()` and `loadAggregate()`. MongoDB has no correlated subquery, so the values are not
-selected with the parent documents: they are computed with **one additional query per aggregate**, after the
-parent documents are read, then set as attributes.
+`loadCount()`, `loadExists()` and `loadAggregate()`. They set the aggregated value as an attribute on the
+parent models, exactly like the base Eloquent builder.
 
 ```php
 $posts = Post::withCount('comments')
@@ -54,8 +53,7 @@ Post::withCount(['comments' => fn ($query) => $query->where('approved', true)])-
 ```
 
 Supported relations: `hasOne`, `hasMany`, `morphOne`, `morphMany`, `belongsTo`, `belongsToMany`, `morphToMany`,
-`morphedByMany`, `embedsOne` and `embedsMany`. Embedded aggregates cost no extra query, they are computed from
-the parent document.
+`morphedByMany`, `embedsOne` and `embedsMany`.
 
 Anything else throws a `LogicException` rather than returning a wrong value: `morphTo`, `hasManyThrough`, and
 hybrid relations where the related model is not stored in MongoDB.
