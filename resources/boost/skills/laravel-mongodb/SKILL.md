@@ -56,7 +56,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 - Cast FK fields to `string` via `$casts` on the child model when FK values may come from outside model attributes (imports, raw ObjectIds) — prevents BSON type mismatches on direct `where('author_id', $id)` queries.
 - Eager-load with `::with()` — MongoDB does no server-side joins for Eloquent relations.
 - Use aggregation pipeline for grouping, counting per group, `$lookup`, and `$sample`.
-- Relation aggregates (`withCount()`, `withExists()`, `withSum()`, `withAvg()`, `withMin()`, `withMax()`) are supported, but each one runs an extra query after the parent documents are read. Use a `$lookup` pipeline when the aggregated value must be filtered, sorted or paginated on.
+- Relation aggregates (`withCount()`, `withExists()`, `withSum()`, `withAvg()`, `withMin()`, `withMax()`) are supported. Use a `$lookup` pipeline when the aggregated value must be filtered, sorted or paginated on.
 - Create indexes in migrations: `Schema::connection('mongodb')->create('posts', fn (Blueprint $c) => $c->index('user_id'))`.
 - Use `DB::connection('mongodb')->transaction(...)` only on replica set / sharded cluster.
 

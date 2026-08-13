@@ -345,6 +345,14 @@ class WithAggregateTest extends TestCase
         User::withCount(['addresses' => static fn (Builder $query) => $query->where('city', 'Paris')])->get();
     }
 
+    public function testLimitOnEmbeddedRelationIsNotSupported(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Constraints on the embedded relation "addresses" are not supported');
+
+        User::withCount(['addresses' => static fn (Builder $query) => $query->limit(1)])->get();
+    }
+
     public function testUnsupportedFunction(): void
     {
         $builder = User::query();

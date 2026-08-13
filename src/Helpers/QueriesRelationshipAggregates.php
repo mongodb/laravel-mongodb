@@ -133,8 +133,9 @@ trait QueriesRelationshipAggregates
 
         $subQuery = $relation->getRelated()->newQuery();
         $constraints($subQuery);
+        $query = $subQuery->getQuery();
 
-        if ($subQuery->getQuery()->wheres) {
+        if ($query->wheres || $query->limit !== null || $query->offset !== null || $query->distinct) {
             throw new LogicException(sprintf(
                 'Constraints on the embedded relation "%s" are not supported.',
                 $name,
