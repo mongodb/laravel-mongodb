@@ -49,7 +49,7 @@ final class MongoLock extends Lock
         $isExpiredOrAlreadyOwned = [
             '$or' => [
                 ['$lte' => ['$expires_at', $this->getUTCDateTime()]],
-                ['$eq' => ['$owner', $this->owner]],
+                ['$eq' => ['$owner', ['$literal' => $this->owner]]],
             ],
         ];
         $result = $this->collection->findOneAndUpdate(
@@ -60,7 +60,7 @@ final class MongoLock extends Lock
                         'owner' => [
                             '$cond' => [
                                 'if' => $isExpiredOrAlreadyOwned,
-                                'then' => $this->owner,
+                                'then' => ['$literal' => $this->owner],
                                 'else' => '$owner',
                             ],
                         ],
