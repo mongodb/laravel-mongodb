@@ -25,6 +25,13 @@ parameters:
             path: src/MongoDBServiceProvider.php
             count: 1
             reportUnmatched: false
+        # The "query" and "model" parameters of vectorSearch() require mongodb/mongodb 2.4+,
+        # not yet available in the version currently installed.
+        -
+            identifier: argument.unknown
+            path: src/Query/Builder.php
+            count: 2
+            reportUnmatched: false
 
 services:
     errorFormatter.sarif:
