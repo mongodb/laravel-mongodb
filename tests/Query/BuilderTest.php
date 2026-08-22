@@ -238,6 +238,54 @@ class BuilderTest extends TestCase
                 ->orWhere('email', '=', 'foo'),
         ];
 
+        // "a and b or c" must mean "(a and b) or c", matching SQL's AND-before-OR precedence.
+        yield 'where where orWhere' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            [
+                                '$and' => [
+                                    ['age' => 1],
+                                    ['name' => 'bar'],
+                                ],
+                            ],
+                            ['email' => 'foo'],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('age', '=', 1)
+                ->where('name', '=', 'bar')
+                ->orWhere('email', '=', 'foo'),
+        ];
+
+        // "a or b and c" must mean "a or (b and c)", matching SQL's AND-before-OR precedence.
+        yield 'where orWhere where' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['age' => 1],
+                            [
+                                '$and' => [
+                                    ['email' => 'foo'],
+                                    ['name' => 'bar'],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('age', '=', 1)
+                ->orWhere('email', '=', 'foo')
+                ->where('name', '=', 'bar'),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testBasicOrWhereNot() */
         yield 'orWhereNot' => [
             [
