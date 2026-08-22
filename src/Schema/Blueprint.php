@@ -404,6 +404,18 @@ class Blueprint extends BaseBlueprint
         return $this;
     }
 
+    /** @inheritdoc */
+    #[Override]
+    public function after($column, $callback = null)
+    {
+        // Laravel column builders chain after() onto addColumn. MongoDB has no column order.
+        if ($callback instanceof Closure) {
+            $callback($this);
+        }
+
+        return $this;
+    }
+
     /**
      * Specify a sparse and unique index for the collection.
      *

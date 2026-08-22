@@ -324,6 +324,17 @@ class SchemaTest extends TestCase
         $this->assertEquals(1, $index['key']['token']);
     }
 
+    public function testMorphs(): void
+    {
+        Schema::create(self::COLL_1, function ($collection) {
+            $collection->morphs('tokenable');
+        });
+
+        $index = $this->assertIndexExists(self::COLL_1, 'tokenable_type_1_tokenable_id_1');
+        $this->assertEquals(1, $index['key']['tokenable_type']);
+        $this->assertEquals(1, $index['key']['tokenable_id']);
+    }
+
     public function testGeospatial(): void
     {
         Schema::table(self::COLL_1, function ($collection) {
