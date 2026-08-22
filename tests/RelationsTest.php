@@ -1181,6 +1181,24 @@ class RelationsTest extends TestCase
         $this->assertCount(1, $authors);
     }
 
+    public function testHasManyHasWithNumericStringCustomKeys(): void
+    {
+        $parent = User::create(['name' => 'Numeric Parent', 'custom_key' => '1']);
+        User::create(['name' => 'No Children', 'custom_key' => '2']);
+        Item::create(['type' => 'child', 'parent_key' => '1']);
+
+        $this->assertCount(1, $parent->itemsWithCustomKey);
+        $this->assertSame(1, $parent->itemsWithCustomKey()->count());
+
+        $parents = User::has('itemsWithCustomKey')->get();
+        $this->assertCount(1, $parents);
+        $this->assertEquals('Numeric Parent', $parents[0]->name);
+
+        $parents = User::whereHas('itemsWithCustomKey')->get();
+        $this->assertCount(1, $parents);
+        $this->assertEquals('Numeric Parent', $parents[0]->name);
+    }
+
     public function testHasOneHas(): void
     {
         $user1 = User::create(['name' => 'John Doe']);

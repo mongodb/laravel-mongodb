@@ -84,6 +84,11 @@ class User extends Model implements AuthenticatableContract, CanResetPasswordCon
         return $this->hasMany(Item::class);
     }
 
+    public function itemsWithCustomKey()
+    {
+        return $this->hasMany(Item::class, 'parent_key', 'custom_key');
+    }
+
     public function role()
     {
         return $this->hasOne(Role::class);

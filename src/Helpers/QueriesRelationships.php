@@ -224,7 +224,8 @@ trait QueriesRelationships
         });
 
         // All related ids.
-        return array_keys($relationCount);
+        // PHP casts numeric string array keys to integers; stringify so MongoDB $in matches BSON strings.
+        return array_map('strval', array_keys($relationCount));
     }
 
     /**
