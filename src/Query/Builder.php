@@ -40,7 +40,6 @@ use function array_key_exists;
 use function array_key_first;
 use function array_keys;
 use function array_map;
-use function array_merge;
 use function array_replace;
 use function array_values;
 use function assert;
@@ -1283,10 +1282,15 @@ class Builder extends BaseBuilder
         // The wheres to compile.
         $wheres = $this->wheres ?: [];
 
-        // We will add all compiled wheres to this array.
-        $compiled = [];
+        if (! $wheres) {
+            return [];
+        }
 
-        foreach ($wheres as $i => &$where) {
+        // Compile each where, paired with how it connects to the previous one
+        // ("and" or "or"; the connector of the very first where is unused).
+        $items = [];
+
+        foreach ($wheres as $where) {
             // Make sure the operator is in lowercase.
             if (isset($where['operator'])) {
                 $where['operator'] = strtolower($where['operator']);
@@ -1327,17 +1331,6 @@ class Builder extends BaseBuilder
                 ];
             }
 
-            // In a sequence of "where" clauses, the logical operator of the
-            // first "where" is determined by the 2nd "where".
-            // $where['boolean'] = "and", "or", "and not" or "or not"
-            if (
-                $i === 0 && count($wheres) > 1
-                && str_starts_with($where['boolean'], 'and')
-                && str_starts_with($wheres[$i + 1]['boolean'], 'or')
-            ) {
-                $where['boolean'] = 'or' . (str_ends_with($where['boolean'], 'not') ? ' not' : '');
-            }
-
             // We use different methods to compile different wheres.
             $method = 'compileWhere' . $where['type'];
             $result = $this->{$method}($where);
@@ -1347,30 +1340,30 @@ class Builder extends BaseBuilder
                 $result = ['$nor' => [$result]];
             }
 
-            // Wrap the where with an $or operator.
-            if (str_starts_with($where['boolean'], 'or')) {
-                $result = ['$or' => [$result]];
-                // phpcs:ignore Squiz.ControlStructures.ControlSignature.SpaceAfterCloseBrace
-            }
+            $connector = str_starts_with($where['boolean'], 'or') ? 'or' : 'and';
 
-            // If there are multiple wheres, we will wrap it with $and. This is needed
-            // to make nested wheres work.
-            elseif (count($wheres) > 1) {
-                $result = ['$and' => [$result]];
-            }
-
-            // Merge the compiled where with the others.
-            // array_merge_recursive can't be used here because it converts int keys to sequential int.
-            foreach ($result as $key => $value) {
-                if (in_array($key, ['$and', '$or', '$nor'])) {
-                    $compiled[$key] = array_merge($compiled[$key] ?? [], $value);
-                } else {
-                    $compiled[$key] = $value;
-                }
-            }
+            $items[] = [$connector, $result];
         }
 
-        return $compiled;
+        // Group consecutive "and"-connected wheres together, starting a new
+        // group at each "or". This mirrors SQL's AND-before-OR precedence,
+        // where "a and b or c" means "(a and b) or c", not "a and b and c".
+        $groups = [[]];
+
+        foreach ($items as $i => [$connector, $result]) {
+            if ($i > 0 && $connector === 'or') {
+                $groups[] = [];
+            }
+
+            $groups[count($groups) - 1][] = $result;
+        }
+
+        $groups = array_map(
+            static fn (array $group) => count($group) === 1 ? $group[0] : ['$and' => $group],
+            $groups,
+        );
+
+        return count($groups) === 1 ? $groups[0] : ['$or' => $groups];
     }
 
     protected function compileWhereBasic(array $where): array
