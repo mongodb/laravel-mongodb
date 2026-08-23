@@ -9,3 +9,4 @@
 docker-compose.yml       export-ignore
 Dockerfile               export-ignore
 phpstan-baseline.neon    export-ignore
+/resources/**/*.md       -export-ignore
