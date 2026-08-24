@@ -286,6 +286,94 @@ class BuilderTest extends TestCase
                 ->where('name', '=', 'bar'),
         ];
 
+        // "a or b and c or d and e" must mean "a or (b and c) or (d and e)".
+        yield 'alternating where and orWhere' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['a' => 1],
+                            ['$and' => [['b' => 2], ['c' => 3]]],
+                            ['$and' => [['d' => 4], ['e' => 5]]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('a', 1)
+                ->orWhere('b', 2)
+                ->where('c', 3)
+                ->orWhere('d', 4)
+                ->where('e', 5),
+        ];
+
+        // A leading "orWhere" behaves like a "where".
+        yield 'leading orWhere then where' => [
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            ['a' => 1],
+                            ['b' => 2],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->orWhere('a', 1)
+                ->where('b', 2),
+        ];
+
+        // "a or not b and c" must mean "a or (not b and c)".
+        yield 'where orWhereNot where' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['a' => 1],
+                            [
+                                '$and' => [
+                                    ['$nor' => [['b' => 2]]],
+                                    ['c' => 3],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('a', 1)
+                ->orWhereNot('b', 2)
+                ->where('c', 3),
+        ];
+
+        // "a or (b or c) and d" must mean "a or ((b or c) and d)".
+        yield 'where orWhere nested where' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['a' => 1],
+                            [
+                                '$and' => [
+                                    ['$or' => [['b' => 2], ['c' => 3]]],
+                                    ['d' => 4],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('a', 1)
+                ->orWhere(fn (Builder $query) => $query->where('b', 2)->orWhere('c', 3))
+                ->where('d', 4),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testBasicOrWhereNot() */
         yield 'orWhereNot' => [
             [
