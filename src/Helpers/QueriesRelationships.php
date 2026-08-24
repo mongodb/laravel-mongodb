@@ -24,6 +24,7 @@ use function class_basename;
 use function collect;
 use function in_array;
 use function is_array;
+use function is_object;
 use function is_string;
 use function method_exists;
 use function str_contains;
@@ -200,9 +201,19 @@ trait QueriesRelationships
      */
     protected function getConstrainedRelatedIds($relations, $operator, $count)
     {
+        $ids = is_array($relations) ? $relations : $relations->flatten()->toArray();
+
+        $originalIds = [];
+        foreach ($ids as $id) {
+            $key = (string) $id;
+            if (! isset($originalIds[$key])) {
+                $originalIds[$key] = is_object($id) ? $key : $id;
+            }
+        }
+
         $relationCount = array_count_values(array_map(function ($id) {
             return (string) $id; // Convert Back ObjectIds to Strings
-        }, is_array($relations) ? $relations : $relations->flatten()->toArray()));
+        }, $ids));
         // Remove unwanted related objects based on the operator and count.
         $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator) {
             // If we are comparing to 0, we always need all results.
@@ -224,8 +235,10 @@ trait QueriesRelationships
         });
 
         // All related ids.
-        // PHP casts numeric string array keys to integers; stringify so MongoDB $in matches BSON strings.
-        return array_map('strval', array_keys($relationCount));
+        return array_map(
+            static fn ($key) => $originalIds[(string) $key],
+            array_keys($relationCount),
+        );
     }
 
     /**
