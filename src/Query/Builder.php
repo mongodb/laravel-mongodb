@@ -447,10 +447,6 @@ class Builder extends BaseBuilder
         $options = [];
 
         // Apply order, offset, limit and projection
-        if ($this->timeout) {
-            $options['maxTimeMS'] = (int) ($this->timeout * 1000);
-        }
-
         if ($this->orders) {
             $options['sort'] = $this->grammar->prepareFieldsForQuery($this->orders);
         }
@@ -1778,6 +1774,12 @@ class Builder extends BaseBuilder
      */
     private function inheritConnectionOptions(array $options = []): array
     {
+        $queryTimeout = $this->timeout ? (int) ($this->timeout * 1000) : $this->connection->getConfig('options.maxTimeMS');
+
+        if ($queryTimeout !== null) {
+            $options['maxTimeMS'] ??= (int) $queryTimeout;
+        }
+
         if (! isset($options['session'])) {
             $session = $this->connection->getSession();
             if ($session) {

@@ -9,6 +9,7 @@ use BadMethodCallException;
 use Closure;
 use DateTimeImmutable;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Arr;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
 use LogicException;
@@ -54,6 +55,24 @@ class BuilderTest extends TestCase
         }
 
         // Compare with assertEquals because the query can contain BSON objects.
+        $this->assertEquals($expected, $mql, var_export($mql, true));
+    }
+
+    #[DataProvider('provideConnectionOptions')]
+    public function testConnectionOptionsAreInheritedByMql(array $expected, Closure $build, array $config): void
+    {
+        $builder = $build($this->getBuilder(true, $config));
+        $this->assertInstanceOf(Builder::class, $builder);
+        $mql = $builder->toMql();
+
+        if (isset($expected['find'][1])) {
+            $expected['find'][1]['typeMap'] = ['root' => 'object', 'document' => 'array'];
+        }
+
+        if (isset($expected['aggregate'][1])) {
+            $expected['aggregate'][1]['typeMap'] = ['root' => 'object', 'document' => 'array'];
+        }
+
         $this->assertEquals($expected, $mql, var_export($mql, true));
     }
 
@@ -1769,10 +1788,57 @@ class BuilderTest extends TestCase
         );
     }
 
-    private function getBuilder(bool $renameEmbeddedIdField = true): Builder
+    public static function provideConnectionOptions(): iterable
+    {
+        yield 'find inherits maxTimeMS from config' => [
+            ['find' => [[], ['maxTimeMS' => 2000]]],
+            fn (Builder $builder) => $builder,
+            ['options' => ['maxTimeMS' => 2000]],
+        ];
+
+        yield 'aggregate inherits maxTimeMS from config' => [
+            [
+                'aggregate' => [
+                    [['$group' => ['_id' => ['foo' => '$foo'], 'foo' => ['$last' => '$foo']]]],
+                    ['maxTimeMS' => 2000],
+                ],
+            ],
+            fn (Builder $builder) => $builder->groupBy('foo'),
+            ['options' => ['maxTimeMS' => 2000]],
+        ];
+
+        yield 'distinct inherits maxTimeMS from config' => [
+            ['distinct' => ['foo', [], ['maxTimeMS' => 2000]]],
+            fn (Builder $builder) => $builder->distinct('foo'),
+            ['options' => ['maxTimeMS' => 2000]],
+        ];
+
+        yield 'options maxTimeMS overrides config maxTimeMS' => [
+            ['find' => [[], ['maxTimeMS' => 5000]]],
+            fn (Builder $builder) => $builder->options(['maxTimeMS' => 5000]),
+            ['options' => ['maxTimeMS' => 2000]],
+        ];
+
+        yield 'timeout overrides config maxTimeMS' => [
+            ['find' => [[], ['maxTimeMS' => 1000]]],
+            fn (Builder $builder) => $builder->timeout(1),
+            ['options' => ['maxTimeMS' => 2000]],
+        ];
+
+        yield 'empty config does not inject maxTimeMS' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder,
+            [],
+        ];
+    }
+
+    private function getBuilder(bool $renameEmbeddedIdField = true, array $config = []): Builder
     {
         $connection = $this->createStub(Connection::class);
         $connection->method('getRenameEmbeddedIdField')->willReturn($renameEmbeddedIdField);
+        $connection->method('getConfig')->willReturnCallback(
+            static fn (?string $key = null): mixed => Arr::get($config, $key),
+        );
         $processor  = $this->createStub(Processor::class);
         $connection->method('getSession')->willReturn(null);
         $connection->method('getQueryGrammar')->willReturn(new Grammar($connection));
