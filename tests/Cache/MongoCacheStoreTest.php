@@ -2,6 +2,7 @@
 
 namespace MongoDB\Laravel\Tests\Cache;
 
+use __PHP_Incomplete_Class;
 use Generator;
 use Illuminate\Cache\Repository;
 use Illuminate\Support\Carbon;
@@ -284,6 +285,45 @@ class MongoCacheStoreTest extends TestCase
         $this->assertEquals($value, $result);
     }
 
+    public function testGetUnserializesAnyClassByDefault()
+    {
+        $store = $this->getStore();
+
+        $this->assertTrue($store->put('foo', new stdClass(), 60));
+        $this->assertInstanceOf(stdClass::class, $store->get('foo'));
+    }
+
+    public function testGetAllowsNoClassWhenSerializableClassesIsFalse()
+    {
+        $store = $this->getStoreAllowing(false);
+
+        $this->assertTrue($store->put('foo', new stdClass(), 60));
+        $this->assertInstanceOf(__PHP_Incomplete_Class::class, $store->get('foo'));
+    }
+
+    public function testGetOnlyUnserializesAllowedClasses()
+    {
+        $store = $this->getStoreAllowing([stdClass::class]);
+
+        $this->assertTrue($store->put('allowed', new stdClass(), 60));
+        $this->assertTrue($store->put('denied', Carbon::now(), 60));
+
+        $this->assertInstanceOf(stdClass::class, $store->get('allowed'));
+        $this->assertInstanceOf(__PHP_Incomplete_Class::class, $store->get('denied'));
+    }
+
+    #[DataProvider('provideSerializedEdgeCases')]
+    public function testGetReturnsCachedValueForSerializedEdgeCasesWithAllowedClasses(mixed $value): void
+    {
+        $store = $this->getStoreAllowing([stdClass::class]);
+
+        $this->assertTrue($store->put('foo', $value, 60));
+
+        $result = $store->get('foo');
+        $this->assertSame(get_debug_type($value), get_debug_type($result));
+        $this->assertEquals($value, $result);
+    }
+
     public function testTTLIndex()
     {
         $store = $this->getStore();
@@ -300,6 +340,14 @@ class MongoCacheStoreTest extends TestCase
         assert($repository instanceof Repository);
 
         return $repository;
+    }
+
+    private function getStoreAllowing(array|bool $serializableClasses): Repository
+    {
+        config()->set('cache.serializable_classes', $serializableClasses);
+        Cache::purge('mongodb');
+
+        return $this->getStore();
     }
 
     private function getCacheCollectionName(): string

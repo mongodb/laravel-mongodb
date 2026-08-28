@@ -7,6 +7,10 @@
 return [
     'default' => env('CACHE_STORE', 'mongodb'),
 
+    // Optional: restrict which classes may be unserialized from the cache.
+    // null allows all, false (shown here) allows none, or list allowed classes.
+    'serializable_classes' => false,
+
     'stores' => [
         'mongodb' => [
             'driver'          => 'mongodb',

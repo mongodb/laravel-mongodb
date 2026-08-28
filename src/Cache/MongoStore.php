@@ -35,6 +35,7 @@ final class MongoStore implements LockProvider, Store
      * @param string          $lockCollectionName          Name of the collection where locks are stored
      * @param array{int, int} $lockLottery                 Probability [chance, total] of pruning expired cache items. Set to [0, 0] to disable
      * @param int             $defaultLockTimeoutInSeconds Time-to-live of the locks in seconds
+     * @param array|bool|null $serializableClasses         Classes allowed during unserialization, null to allow all classes
      */
     public function __construct(
         private readonly Connection $connection,
@@ -44,6 +45,7 @@ final class MongoStore implements LockProvider, Store
         private readonly string $lockCollectionName = 'cache_locks',
         private readonly array $lockLottery = [2, 100],
         private readonly int $defaultLockTimeoutInSeconds = 86400,
+        private readonly array|bool|null $serializableClasses = null,
     ) {
         $this->collection = $this->connection->getCollection($this->collectionName);
     }
@@ -313,6 +315,10 @@ final class MongoStore implements LockProvider, Store
     {
         if (! is_string($value)) {
             return $value;
+        }
+
+        if ($this->serializableClasses !== null) {
+            return unserialize($value, ['allowed_classes' => $this->serializableClasses]);
         }
 
         return unserialize($value);
