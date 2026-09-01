@@ -221,6 +221,60 @@ class BuilderTest extends TestCase
                 ->orWhere('foo', '$type', 4),
         ];
 
+        yield 'where = with operator array is wrapped in $eq' => [
+            ['find' => [['token' => ['$eq' => ['$ne' => null]]], []]],
+            fn (Builder $builder) => $builder->where('token', '=', ['$ne' => null]),
+        ];
+
+        yield 'where _id = with operator array is wrapped in $eq' => [
+            ['find' => [['_id' => ['$eq' => ['$ne' => null]]], []]],
+            fn (Builder $builder) => $builder->where('_id', '=', ['$ne' => null]),
+        ];
+
+        yield 'where with 2-arg operator array is unchanged' => [
+            ['find' => [['token' => ['$ne' => null]], []]],
+            fn (Builder $builder) => $builder->where('token', ['$ne' => null]),
+        ];
+
+        yield 'where = with plain array is unchanged' => [
+            ['find' => [['tags' => ['a', 'b']], []]],
+            fn (Builder $builder) => $builder->where('tags', '=', ['a', 'b']),
+        ];
+
+        yield 'where = with nested operator is wrapped in $eq' => [
+            ['find' => [['meta' => ['$eq' => ['role' => ['$in' => ['admin']]]]], []]],
+            fn (Builder $builder) => $builder->where('meta', '=', ['role' => ['$in' => ['admin']]]),
+        ];
+
+        // The "=" that Laravel injects when expanding where(array) is not an operator
+        // chosen by the caller, so it must not be hardened into $eq.
+        yield 'where array shorthand with operator array is unchanged' => [
+            ['find' => [['tags' => ['$in' => ['a']]], []]],
+            fn (Builder $builder) => $builder->where(['tags' => ['$in' => ['a']]]),
+        ];
+
+        yield 'where array shorthand with $or is unchanged' => [
+            ['find' => [['$or' => [['a' => 1], ['b' => ['$ne' => null]]]], []]],
+            fn (Builder $builder) => $builder->where(['$or' => [['a' => 1], ['b' => ['$ne' => null]]]]),
+        ];
+
+        // Numeric keys hold [column, operator, value] tuples, where the operator is
+        // authored by the caller, so they keep the regular where() behaviour.
+        yield 'where array shorthand with operator tuples' => [
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            ['price' => ['$gt' => 100]],
+                            ['tag' => ['$all' => ['a', 'b']]],
+                        ],
+                    ],
+                    [], // options
+                ],
+            ],
+            fn (Builder $builder) => $builder->where([['price', '>', 100], ['tag', 'all', ['a', 'b']]]),
+        ];
+
         /** @see DatabaseQueryBuilderTest::testBasicWhereNot() */
         yield 'whereNot (multiple)' => [
             [

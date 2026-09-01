@@ -21,6 +21,7 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\CursorInterface;
+use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber;
@@ -210,6 +211,27 @@ class QueryBuilderTest extends TestCase
     {
         $user = DB::table('users')->find(null);
         $this->assertNull($user);
+    }
+
+    public function testFindWithOperatorArrayMatchesNothing()
+    {
+        DB::table('users')->insert([['name' => 'Jane Doe'], ['name' => 'John Doe']]);
+
+        $this->assertNull(DB::table('users')->find(['$ne' => null]));
+    }
+
+    public function testDeleteWithOperatorArrayDeletesNothing()
+    {
+        DB::table('users')->insert([['name' => 'Jane Doe'], ['name' => 'John Doe']]);
+
+        // On the _id field the driver rejects the operator document outright, before the
+        // $eq literal comparison can run. Either way nothing is deleted.
+        try {
+            DB::table('users')->delete(['$ne' => null]);
+        } catch (BulkWriteException) {
+        }
+
+        $this->assertEquals(2, DB::table('users')->count());
     }
 
     public function testCount()

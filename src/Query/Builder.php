@@ -63,6 +63,7 @@ use function is_bool;
 use function is_callable;
 use function is_float;
 use function is_int;
+use function is_numeric;
 use function is_object;
 use function is_string;
 use function md5;
@@ -87,6 +88,12 @@ use function var_export;
 class Builder extends BaseBuilder
 {
     private const REGEX_DELIMITERS = ['/', '#', '~'];
+
+    /**
+     * Sentinel operator that is used instead of "=" that doesn't get converted
+     * to $eq when the value contains a MQL query operator.
+     */
+    private const UNSAFE_FIELD_QUERY = "\0unsafe-field-query";
 
     /**
      * The database collection.
@@ -1237,6 +1244,9 @@ class Builder extends BaseBuilder
      * If 2 arguments, the signature is: where(string $column, mixed $value)
      * If 3 arguments, the signature is: where(string $colum, string $operator, mixed $value)
      *
+     * With 1 or 2 arguments, an array value is read as a MongoDB operator document,
+     * so never pass unvalidated input there, it is open to MQL injection.
+     *
      * @param  Closure|string|array $column
      * @param  mixed                $operator
      * @param  mixed                $value
@@ -1256,6 +1266,12 @@ class Builder extends BaseBuilder
             if (is_string($operator) && str_starts_with($operator, '$')) {
                 $operator = substr($operator, 1);
             }
+
+            if ($operator === self::UNSAFE_FIELD_QUERY) {
+                $operator = '=';
+            } elseif ($operator === '=' && self::valueContainsOperator($params[2])) {
+                $params[2] = ['$eq' => $params[2]];
+            }
         }
 
         if (func_num_args() === 1 && ! is_array($column) && ! is_callable($column)) {
@@ -1267,6 +1283,44 @@ class Builder extends BaseBuilder
         }
 
         return parent::where(...$params);
+    }
+
+    /**
+     * The "=" operator of each generated call is an internal detail of the array
+     * shorthand, not an operator chosen by the caller: these calls must build an
+     * operator document like the 2-argument form does, not be hardened into $eq.
+     */
+    #[Override]
+    protected function addArrayOfWheres($column, $boolean, $method = 'where')
+    {
+        return $this->whereNested(function ($query) use ($column, $method, $boolean) {
+            foreach ($column as $key => $value) {
+                if (is_numeric($key) && is_array($value)) {
+                    $query->{$method}(...array_values($value), boolean: $boolean);
+                } else {
+                    $query->{$method}($key, self::UNSAFE_FIELD_QUERY, $value, $boolean);
+                }
+            }
+        }, $boolean);
+    }
+
+    private static function valueContainsOperator(mixed $value): bool
+    {
+        if (! is_array($value)) {
+            return false;
+        }
+
+        foreach ($value as $key => $item) {
+            if (is_string($key) && str_starts_with($key, '$')) {
+                return true;
+            }
+
+            if (self::valueContainsOperator($item)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

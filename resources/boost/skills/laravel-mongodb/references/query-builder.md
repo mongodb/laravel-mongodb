@@ -122,6 +122,18 @@ Post::whereBetween('year', [2000, 2010])->get();
 Post::where('metadata.draft', true)->get();                // dotted path into sub-doc
 ```
 
+## `where()` and MQL injection
+
+With 1 or 2 arguments, an array value is read as a MongoDB operator document.
+Never pass unvalidated input there. The 3-argument form with `'='` always compares
+the value as a literal.
+
+```php
+Post::where('status', ['$ne' => 'draft'])->get();             // operator document
+Post::where('status', $request->input('status'))->get();      // DON'T DO THIS
+Post::where('status', '=', $request->input('status'))->get(); // safe: literal match
+```
+
 ## Raw aggregation entry point
 
 ```php
