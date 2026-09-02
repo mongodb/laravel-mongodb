@@ -53,7 +53,7 @@ jobs:
         uses: actions/cache@v6
         with:
           path: ./vendor
-          key: composer-${{ hashFiles('**/composer.lock') }}
+          key: composer-${{ matrix.php }}-${{ matrix.driver }}-${{ hashFiles('**/composer.json') }}
 
       - name: Install dependencies
         run: composer install
@@ -65,7 +65,7 @@ jobs:
           path: .cache
           key: phpstan-result-cache-${{ matrix.php }}-${{ github.run_id }}
           restore-keys: |
-            phpstan-result-cache-
+            phpstan-result-cache-${{ matrix.php }}-
 
       - name: Run PHPStan
         id: phpstan
