@@ -25,6 +25,11 @@ parameters:
             path: src/MongoDBServiceProvider.php
             count: 1
             reportUnmatched: false
+        # resolveClassAttribute() requires Laravel 13, which is not installable on PHP 8.2.
+        -
+            identifier: staticMethod.notFound
+            path: src/Eloquent/DocumentModel.php
+            reportUnmatched: false
         # The "query" and "model" parameters of vectorSearch() require mongodb/mongodb 2.4+,
         # not yet available in the version currently installed.
         -
