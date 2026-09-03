@@ -49,7 +49,7 @@
     },
     {
       "id": 5,
-      "prompt": "My `belongsTo` always returns null but the `user_id` field exists in the document. My Post model has `public function author(): BelongsTo { return $this->belongsTo(User::class, 'author_id'); }`. What is wrong?",
+      "prompt": "My `belongsTo` always returns null, but the `author_id` field is present in every post document and holds the id of a user that definitely exists. My Post model has `public function author(): BelongsTo { return $this->belongsTo(User::class, 'author_id'); }`, and both Post and User extend `MongoDB\\Laravel\\Eloquent\\Model`. The posts were loaded by a one-off import script rather than through Eloquent. What is wrong?",
       "expected_output": "Identify that the FK field may be stored as BSON ObjectId while the query expects a string, and fix it by casting author_id to string on Post. Note that belongsTo() coerces types during relation matching so it may work anyway, but direct where() queries require consistent BSON types.",
       "expectations": [
         "Identifies a possible BSON type mismatch on the FK field (ObjectId vs string) as the likely root cause",
