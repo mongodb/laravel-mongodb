@@ -30,7 +30,7 @@ return [
 
 ```
 DB_CONNECTION=mongodb
-MONGODB_URI="mongodb+srv://user:pass@cluster0.mongodb.net/"
+MONGODB_URI="mongodb+srv://user:pass@cluster0.mongodb.net/?retryWrites=true&w=majority"
 MONGODB_DATABASE=laravel
 ```
 
