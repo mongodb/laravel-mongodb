@@ -147,7 +147,7 @@
       "expectations": [
         "Recommends auto-embedding as the approach that removes the need to manage an embedding pipeline",
         "Shows a vector search index definition using `type: 'autoEmbed'` with `modality`, `path`, and `model` fields",
-        "Uses `queryText` (not `queryVector`) in the `$vectorSearch` aggregation stage",
+        "Passes the user's text as `query:` to `Model::vectorSearch()` (or `queryText` in a raw `$vectorSearch` stage), not `queryVector`",
         "Mentions that documents are automatically embedded by Atlas on insert and update",
         "Does NOT require the user to call an external embedding API in PHP to index documents"
       ]
