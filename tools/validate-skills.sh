@@ -11,7 +11,7 @@
 #
 # Usage: validate-skills.sh [path/to/skill/]
 #   path  Optional path to a single skill directory to validate.
-#         When omitted, all directories under skills/ are validated.
+#         When omitted, all directories under resources/boost/skills/ are validated.
 #
 # Exit codes:
 #   0  All validated skills passed.
@@ -39,7 +39,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null)" || {
 }
 cd "$REPO_ROOT"
 
-SKILL_PATH="${1:-skills/}"
+SKILL_PATH="${1:-resources/boost/skills/}"
 
 # Normalize absolute paths to be relative to the repo root.
 if [[ "$SKILL_PATH" == /* ]]; then

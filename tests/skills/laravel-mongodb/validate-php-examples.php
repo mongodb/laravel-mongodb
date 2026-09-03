@@ -9,7 +9,7 @@
  *   php tests/skills/laravel-mongodb/validate-php-examples.php [path/to/skill]
  */
 
-$skillDir = $argv[1] ?? 'skills/laravel-mongodb';
+$skillDir = $argv[1] ?? 'resources/boost/skills/laravel-mongodb';
 
 if (! is_dir($skillDir)) {
     fwrite(STDERR, 'Error: directory not found: ' . $skillDir . "\n");

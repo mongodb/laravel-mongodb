@@ -23,6 +23,8 @@
 # so abort-on-error would conflict with the || FAILED=1 accumulator pattern.
 set -uo pipefail
 
+SKILLS_ROOT="resources/boost/skills"
+
 BASE_REF="${1:-}"
 
 if [ -z "$BASE_REF" ]; then
@@ -33,7 +35,7 @@ fi
 # Find unique skill directories containing files changed in this PR.
 # The three-dot diff requires fetch-depth: 0 and a properly configured remote,
 # which is always the case on GitHub Actions.
-diff_output="$(git diff --name-only "origin/${BASE_REF}...HEAD" -- skills/)" || {
+diff_output="$(git diff --name-only "origin/${BASE_REF}...HEAD" -- "${SKILLS_ROOT}/")" || {
   echo "Error: git diff against origin/${BASE_REF} failed."
   echo "Ensure the base branch has been fetched (fetch-depth: 0 in the workflow)."
   exit 1
@@ -41,7 +43,7 @@ diff_output="$(git diff --name-only "origin/${BASE_REF}...HEAD" -- skills/)" || 
 
 changed_skills=()
 mapfile -t changed_skills < <(echo "$diff_output" \
-  | cut -d'/' -f2 \
+  | cut -d'/' -f4 \
   | sort -u \
   | grep -v '^$')
 
@@ -53,7 +55,7 @@ fi
 FAILED=0
 for skill in "${changed_skills[@]}"; do
   # Skip skills whose directories were deleted in this PR.
-  if [ ! -d "skills/$skill" ]; then
+  if [ ! -d "${SKILLS_ROOT}/$skill" ]; then
     echo "Skipping deleted skill: $skill"
     continue
   fi
@@ -64,7 +66,7 @@ for skill in "${changed_skills[@]}"; do
   # We use process substitution to:
   # 1. Send all output (including ::error commands) to stdout for GitHub Actions
   # 2. Filter out ::error/::warning/::notice lines before writing to the summary
-  skill-validator check --strict --emit-annotations -o markdown "skills/$skill/" \
+  skill-validator check --strict --emit-annotations -o markdown "${SKILLS_ROOT}/$skill/" \
     > >(tee >(grep -v '^::' >> "${GITHUB_STEP_SUMMARY:-/dev/null}")) 2>&1 || FAILED=1
 done
 

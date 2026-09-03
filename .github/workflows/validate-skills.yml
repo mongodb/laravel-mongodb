@@ -3,7 +3,7 @@ name: Validate Skills
 on:
   pull_request:
     paths:
-      - "skills/**"
+      - "resources/boost/skills/**"
       - ".github/workflows/validate-skills.yml"
       - ".github/scripts/validate-skills.sh"
       - "tests/skills/**"
@@ -39,7 +39,7 @@ jobs:
       - name: Validate all skills
         run: |
           echo "## All Skills" >> "$GITHUB_STEP_SUMMARY"
-          skill-validator check --strict --emit-annotations -o markdown skills/ \
+          skill-validator check --strict --emit-annotations -o markdown resources/boost/skills/ \
             2>&1 | tee >(grep -v '^::' >> "$GITHUB_STEP_SUMMARY")
 
       - name: Setup PHP
