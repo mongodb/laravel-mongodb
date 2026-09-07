@@ -7,6 +7,7 @@ namespace MongoDB\Laravel;
 use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
 use InvalidArgumentException;
+use LogicException;
 use MongoDB\BSON\Binary;
 use MongoDB\Client;
 use MongoDB\Collection;
@@ -29,6 +30,7 @@ use function array_values;
 use function base64_decode;
 use function filter_var;
 use function implode;
+use function in_array;
 use function is_array;
 use function is_string;
 use function phpversion;
@@ -73,15 +75,6 @@ class Connection extends BaseConnection
      * @var Manager|null
      */
     private ?Manager $plainManager = null;
-
-    /**
-     * Cache of alternate key name to keyId, memoized per connection instance so
-     * repeated key vault lookups within one connection are avoided. Not shared
-     * across connections, so key rotation stays visible on the next connection.
-     *
-     * @var array<string, Binary|null>
-     */
-    private array $resolvedKeyIds = [];
 
     /** @var bool Whether to rename the rename "id" into "_id" for embedded documents. */
     private bool $renameEmbeddedIdField;
@@ -358,9 +351,20 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Give every encrypted field an alternate key name: the declared
-     * keyAltName, or "<collection>.<path>" by default. This is a pure
-     * transformation; the driver resolves the name to the keyId from the vault.
+     * Normalize the driver_options.autoEncryption.encryptedFieldsMap to the
+     * driver's list form. Two field syntaxes are accepted:
+     *
+     * - A list of objects, each with an explicit "path":
+     *   ['patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string',
+     *   'queries' => [['queryType' => 'equality']]]]]].
+     *
+     * - An object keyed by path, with a flat "queryType" and range options; a
+     *   bare string value means a randomized, non-queryable field:
+     *   ['patients' => ['fields' => ['ssn' => ['bsonType' => 'string',
+     *   'queryType' => 'equality'], 'billing' => 'object']]].
+     *
+     * Each field also receives its alternate key name (declared, or
+     * "<collection>.<path>" by default) when it does not carry a keyId.
      *
      * @param  array<string, mixed> $encryptedFieldsMap
      *
@@ -369,23 +373,95 @@ class Connection extends BaseConnection
     public function normalizeEncryptedFieldsMap(array $encryptedFieldsMap): array
     {
         foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
-            $fields = $encryptedFields['fields'] ?? [];
+            $fields = $encryptedFields['fields'] ?? null;
 
-            foreach ($fields as &$field) {
-                if (! is_array($field) || isset($field['keyId'])) {
-                    continue;
-                }
-
-                $field['keyAltName'] = $this->keyAltNameFor($field, $collection);
+            if (! is_array($fields)) {
+                throw new LogicException(sprintf('The encrypted fields map entry for collection "%s" must define a "fields" array.', $collection));
             }
 
-            unset($field);
-
-            $encryptedFields['fields'] = array_values($fields);
-            $encryptedFieldsMap[$collection] = $encryptedFields;
+            $encryptedFieldsMap[$collection]['fields'] = $this->normalizeEncryptedFields($fields, (string) $collection);
         }
 
         return $encryptedFieldsMap;
+    }
+
+    /**
+     * Normalize the "fields" of a single collection into the driver's list
+     * form, accepting both the list and keyed-by-path syntaxes. A bare string
+     * value is the bsonType of a randomized, non-queryable field. Each field
+     * receives its alternate key name (declared, or "<collection>.<path>" by
+     * default) when it does not carry a keyId.
+     *
+     * @param  array<mixed> $fields
+     * @param  string       $collection
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function normalizeEncryptedFields(array $fields, string $collection): array
+    {
+        $normalized = [];
+
+        foreach ($fields as $key => $config) {
+            // Prefer an explicit path; otherwise the array key is the path.
+            $path = is_array($config) && isset($config['path']) && is_string($config['path'])
+                ? $config['path']
+                : (is_string($key) ? $key : null);
+            if ($path === null) {
+                throw new LogicException(sprintf('Missing "path" for an encrypted field in collection "%s".', $collection));
+            }
+
+            // A bare string value is the bsonType of a randomized field.
+            if (is_string($config)) {
+                $config = ['bsonType' => $config];
+            }
+
+            if (! is_array($config)) {
+                throw new LogicException(sprintf('Invalid encrypted field for path "%s" in collection "%s": expected a string bsonType or an array.', $path, $collection));
+            }
+
+            $bsonType = $config['bsonType'] ?? null;
+            if (! is_string($bsonType) || $bsonType === '') {
+                throw new LogicException(sprintf('Missing or invalid "bsonType" for encrypted field "%s" in collection "%s".', $path, $collection));
+            }
+
+            if (isset($config['keyId']) && isset($config['keyAltName'])) {
+                throw new LogicException(sprintf('Encrypted field "%s" in collection "%s" cannot declare both "keyId" and "keyAltName".', $path, $collection));
+            }
+
+            $field = ['path' => $path, 'bsonType' => $bsonType];
+
+            if (isset($config['keyId'])) {
+                $field['keyId'] = $config['keyId'];
+            }
+
+            if (isset($config['queries']) && is_array($config['queries'])) {
+                $field['queries'] = $config['queries'];
+            } elseif (isset($config['queryType'])) {
+                $queryType = $config['queryType'];
+                if (! in_array($queryType, ['equality', 'range'], true)) {
+                    throw new LogicException(sprintf('Invalid "queryType" "%s" for encrypted field "%s" in collection "%s": supported values are "equality" and "range".', $queryType, $path, $collection));
+                }
+
+                $query = ['queryType' => $queryType];
+                foreach (['min', 'max', 'sparsity', 'precision'] as $option) {
+                    if (array_key_exists($option, $config)) {
+                        $query[$option] = $config[$option];
+                    }
+                }
+
+                $field['queries'] = [$query];
+            }
+
+            if (isset($config['keyAltName']) && is_string($config['keyAltName']) && $config['keyAltName'] !== '') {
+                $field['keyAltName'] = $config['keyAltName'];
+            } elseif (! array_key_exists('keyId', $field)) {
+                $field['keyAltName'] = $this->keyAltNameFor($field, $collection);
+            }
+
+            $normalized[] = $field;
+        }
+
+        return $normalized;
     }
 
     /**
@@ -418,9 +494,10 @@ class Connection extends BaseConnection
                     ? $existing
                     : $clientEncryption->createDataKey($kmsProvider, ['keyAltNames' => [$keyAltName]]);
 
-                $this->resolvedKeyIds[$keyAltName] = $keyId;
-
+                // The driver accepts only one of keyId or keyAltName on a
+                // field; the alternate name has served its purpose.
                 $field = ['keyId' => $keyId] + $field;
+                unset($field['keyAltName']);
             }
 
             unset($field);
@@ -442,27 +519,23 @@ class Connection extends BaseConnection
      */
     private function findDataKeyByAltName(string $keyAltName, ?Manager $manager = null): ?Binary
     {
-        if (array_key_exists($keyAltName, $this->resolvedKeyIds)) {
-            return $this->resolvedKeyIds[$keyAltName];
+        $namespace = $this->getConfig('driver_options.autoEncryption.keyVaultNamespace');
+
+        if (! is_string($namespace) || ! str_contains($namespace, '.')) {
+            return null;
         }
 
-        $namespace = $this->getConfig('driver_options.autoEncryption.keyVaultNamespace');
-        $id = null;
+        $query = new DriverQuery(['keyAltNames' => $keyAltName]);
+        $cursor = ($manager ?? $this->plainManager())->executeQuery($namespace, $query);
 
-        if (is_string($namespace) && str_contains($namespace, '.')) {
-            $query = new DriverQuery(['keyAltNames' => $keyAltName]);
-            $cursor = ($manager ?? $this->plainManager())->executeQuery($namespace, $query);
-
-            foreach ($cursor as $document) {
-                $candidate = $document->_id ?? null;
-                if ($candidate instanceof Binary) {
-                    $id = $candidate;
-                    break;
-                }
+        foreach ($cursor as $document) {
+            $id = $document->_id ?? null;
+            if ($id instanceof Binary) {
+                return $id;
             }
         }
 
-        return $this->resolvedKeyIds[$keyAltName] = $id;
+        return null;
     }
 
     /**

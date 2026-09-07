@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Tests;
 use Generator;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
+use LogicException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Client;
 use MongoDB\Collection;
@@ -328,6 +329,65 @@ class ConnectionTest extends TestCase
         ]);
 
         $this->assertSame('my-name', $normalized['patients']['fields'][0]['keyAltName']);
+    }
+
+    public function testNormalizeEncryptedFieldsMapAcceptsKeyedSyntax(): void
+    {
+        $connection = new Connection($this->connectionConfig());
+
+        $normalized = $connection->normalizeEncryptedFieldsMap([
+            'patients' => [
+                'fields' => [
+                    'ssn' => ['bsonType' => 'string', 'queryType' => 'equality'],
+                    'billing' => 'object',
+                ],
+            ],
+        ]);
+
+        $byPath = [];
+        foreach ($normalized['patients']['fields'] as $field) {
+            $byPath[$field['path']] = $field;
+        }
+
+        $ssn = $byPath['ssn'];
+        $this->assertSame('string', $ssn['bsonType']);
+        $this->assertSame('equality', $ssn['queries'][0]['queryType']);
+        $this->assertSame('patients.ssn', $ssn['keyAltName']);
+
+        $billing = $byPath['billing'];
+        $this->assertSame('object', $billing['bsonType']);
+        $this->assertArrayNotHasKey('queries', $billing);
+        $this->assertArrayNotHasKey('keyId', $billing);
+    }
+
+    public function testNormalizeEncryptedFieldsMapThrowsOnMissingPath(): void
+    {
+        $this->expectException(LogicException::class);
+
+        $connection = new Connection($this->connectionConfig());
+        $connection->normalizeEncryptedFieldsMap([
+            'patients' => ['fields' => [['bsonType' => 'string']]],
+        ]);
+    }
+
+    public function testNormalizeEncryptedFieldsMapThrowsOnMissingBsonType(): void
+    {
+        $this->expectException(LogicException::class);
+
+        $connection = new Connection($this->connectionConfig());
+        $connection->normalizeEncryptedFieldsMap([
+            'patients' => ['fields' => [['path' => 'ssn', 'queryType' => 'equality']]],
+        ]);
+    }
+
+    public function testNormalizeEncryptedFieldsMapThrowsOnBothKeyIdAndKeyAltName(): void
+    {
+        $this->expectException(LogicException::class);
+
+        $connection = new Connection($this->connectionConfig());
+        $connection->normalizeEncryptedFieldsMap([
+            'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string', 'keyId' => 'x', 'keyAltName' => 'y']]],
+        ]);
     }
 
     public function testResolveOrCreateEncryptionKeysIsIdempotent(): void
