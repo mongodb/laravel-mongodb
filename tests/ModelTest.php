@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use DateTime;
 use Generator;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -41,6 +42,7 @@ use function array_merge;
 use function date_default_timezone_set;
 use function get_debug_type;
 use function hex2bin;
+use function json_decode;
 use function sleep;
 use function sort;
 use function strlen;
@@ -570,6 +572,58 @@ class ModelTest extends TestCase
         $this->assertIsString($array['created_at']);
         $this->assertIsString($array['updated_at']);
         $this->assertIsString($array['id']);
+    }
+
+    public function testToArrayHidesSafeContent(): void
+    {
+        $item = new Item();
+        $item->setRawAttributes([
+            'name' => 'fork',
+            '__safeContent__' => ['<server-managed>'],
+        ], true);
+
+        // Still visible through raw attribute access.
+        $this->assertArrayHasKey('__safeContent__', $item->getAttributes());
+
+        // Never exposed through serialization.
+        $this->assertArrayNotHasKey('__safeContent__', $item->toArray());
+        $this->assertArrayNotHasKey('__safeContent__', json_decode($item->toJson(), true));
+    }
+
+    public function testSafeContentIsNotDirtyByDefault(): void
+    {
+        $item = new Item();
+        $item->setRawAttributes([
+            'name' => 'fork',
+            '__safeContent__' => ['<server-managed>'],
+        ], true);
+
+        $this->assertFalse($item->isDirty());
+    }
+
+    public function testSafeContentCannotBeWritten(): void
+    {
+        $item = new Item();
+
+        // fill() must reject the reserved field, even on an unguarded model.
+        $this->expectException(MassAssignmentException::class);
+        $item->fill(['__safeContent__' => ['forged']]);
+    }
+
+    public function testSafeContentCannotBeSetOrUnset(): void
+    {
+        $item = new Item();
+
+        $this->expectException(MassAssignmentException::class);
+        $item->setAttribute('__safeContent__', ['forged']);
+    }
+
+    public function testSafeContentCannotBeUnset(): void
+    {
+        $item = new Item();
+
+        $this->expectException(MassAssignmentException::class);
+        unset($item->__safeContent__);
     }
 
     public function testUnset(): void

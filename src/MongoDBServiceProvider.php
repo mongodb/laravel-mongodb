@@ -109,6 +109,11 @@ class MongoDBServiceProvider extends ServiceProvider
         $this->registerFlysystemAdapter();
         $this->registerScoutEngine();
         $this->registerBoostTools();
+
+        $this->commands([
+            Commands\Encrypted\CreateEncryptedCommand::class,
+            Commands\Encrypted\DiagnoseEncryptedCommand::class,
+        ]);
     }
 
     private function registerFlysystemAdapter(): void
