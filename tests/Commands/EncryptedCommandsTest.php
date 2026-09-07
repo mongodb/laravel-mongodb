@@ -13,11 +13,14 @@ use function random_bytes;
 
 class EncryptedCommandsTest extends TestCase
 {
-    public function testDiagnoseFailsWhenEncryptionNotConfigured(): void
+    protected function getEnvironmentSetUp($app): void
     {
-        $this->artisan('mongodb:encrypted:diagnose', ['--no-server' => true])
-            ->expectsOutputToContain('Queryable Encryption is not enabled')
-            ->assertExitCode(Command::FAILURE);
+        parent::getEnvironmentSetUp($app);
+
+        // Configure automatic encryption so the encryption commands are
+        // registered on the "mongodb" connection (registered in boot());
+        // the config is fully loaded by then.
+        $app['config']->set('database.connections.mongodb.driver_options.autoEncryption', $this->encryptionOptions([]));
     }
 
     public function testDiagnoseNoServerListsMappedCollections(): void
@@ -49,20 +52,30 @@ class EncryptedCommandsTest extends TestCase
     }
 
     /**
-     * Configure automatic encryption on the default MongoDB connection.
+     * @param  array<string, mixed> $encryptedFieldsMap
+     *
+     * @return array<string, mixed>
+     */
+    private function encryptionOptions(array $encryptedFieldsMap): array
+    {
+        return [
+            'keyVaultNamespace' => 'encryption.__keyVault',
+            'kmsProviders' => ['local' => ['key' => base64_encode(random_bytes(96))]],
+            // Opt out of crypt_shared so the tests run on a community server.
+            'extraOptions' => ['cryptSharedLibRequired' => false],
+            'encryptedFieldsMap' => $encryptedFieldsMap,
+        ];
+    }
+
+    /**
+     * Override the encrypted fields map on the default MongoDB connection.
      *
      * @param  array<string, mixed> $encryptedFieldsMap
      */
     private function enableEncryption(array $encryptedFieldsMap): void
     {
         config([
-            'database.connections.mongodb.driver_options.autoEncryption' => [
-                'keyVaultNamespace' => 'encryption.__keyVault',
-                'kmsProviders' => ['local' => ['key' => base64_encode(random_bytes(96))]],
-                // Opt out of crypt_shared so the tests run on a community server.
-                'extraOptions' => ['cryptSharedLibRequired' => false],
-                'encryptedFieldsMap' => $encryptedFieldsMap,
-            ],
+            'database.connections.mongodb.driver_options.autoEncryption' => $this->encryptionOptions($encryptedFieldsMap),
         ]);
     }
 }
