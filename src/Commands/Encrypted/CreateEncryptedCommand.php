@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Commands\Encrypted;
 
+use Illuminate\Console\Command;
 use InvalidArgumentException;
 
 use function is_array;
@@ -12,8 +13,10 @@ use function sprintf;
 /**
  * Create an encrypted collection from the configured encrypted fields map.
  */
-class CreateEncryptedCommand extends EncryptedCommand
+final class CreateEncryptedCommand extends Command
 {
+    use EncryptedCommand;
+
     protected $signature = 'mongodb:encrypted:create
         {collection : The collection to create}
         {--no-server : Only validate the configuration, do not contact the server}

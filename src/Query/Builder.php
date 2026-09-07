@@ -1205,7 +1205,11 @@ class Builder extends BaseBuilder
 
         $wheres = $this->compileWheres();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
-        $result = $this->collection->updateMany($wheres, $update, $options);
+        // Queryable Encryption forbids multi-document updates, so encrypted
+        // collections must use single-document updates.
+        $result = $this->connection->isAutoEncryptionEnabled()
+            ? $this->collection->updateOne($wheres, $update, $options)
+            : $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
             return $result->getModifiedCount() ?: $result->getUpsertedCount();
         }

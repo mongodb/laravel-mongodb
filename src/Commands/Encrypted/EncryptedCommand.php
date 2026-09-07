@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Commands\Encrypted;
 
-use Illuminate\Console\Command;
 use InvalidArgumentException;
 use MongoDB\Laravel\Connection;
 
@@ -13,9 +12,11 @@ use function is_string;
 use function sprintf;
 
 /**
- * Base command shared by the Queryable Encryption CLI tools.
+ * Helpers shared by the Queryable Encryption CLI tools.
+ *
+ * @internal
  */
-abstract class EncryptedCommand extends Command
+trait EncryptedCommand
 {
     /**
      * Resolve the MongoDB connection referenced by the --connection option.

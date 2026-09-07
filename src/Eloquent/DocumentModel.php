@@ -71,16 +71,6 @@ trait DocumentModel
     private array $unset = [];
 
     /**
-     * The reserved document field managed by the server when automatic
-     * encryption is enabled (Queryable Encryption).
-     *
-     * This field is written by the driver server-side and must never be set by
-     * the application. It is always stripped from serialization and protected
-     * from direct writes.
-     */
-    public const SAFE_CONTENT_KEY = '__safeContent__';
-
-    /**
      * Custom accessor for the model's id.
      *
      * @param  mixed $value
@@ -244,9 +234,9 @@ trait DocumentModel
         // The encrypted respected field is managed by the server. Reject any
         // write, including a direct assignment, so it can never be forged or
         // desynchronized by the application.
-        if ($key === self::SAFE_CONTENT_KEY) {
+        if ($key === '__safeContent__') {
             throw new MassAssignmentException(
-                sprintf('The reserved field [%s] is managed by the server and cannot be set on model [%s].', self::SAFE_CONTENT_KEY, static::class),
+                sprintf('The reserved field [%s] is managed by the server and cannot be set on model [%s].', '__safeContent__', static::class),
             );
         }
 
@@ -353,7 +343,7 @@ trait DocumentModel
         // the document. It is an implementation detail and must never be
         // exposed through serialization. Bare attribute access remains
         // possible through getAttributes().
-        unset($attributes[self::SAFE_CONTENT_KEY]);
+        unset($attributes['__safeContent__']);
 
         // Because the original Eloquent never returns objects, we convert
         // MongoDB related objects to a string representation. This kind
@@ -444,9 +434,9 @@ trait DocumentModel
         $offset = (string) $offset;
 
         // Reject attempts to unset the server-managed encrypted field.
-        if ($offset === self::SAFE_CONTENT_KEY) {
+        if ($offset === '__safeContent__') {
             throw new MassAssignmentException(
-                sprintf('The reserved field [%s] is managed by the server and cannot be unset on model [%s].', self::SAFE_CONTENT_KEY, static::class),
+                sprintf('The reserved field [%s] is managed by the server and cannot be unset on model [%s].', '__safeContent__', static::class),
             );
         }
 

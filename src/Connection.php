@@ -477,6 +477,17 @@ class Connection extends BaseConnection
     }
 
     /**
+     * Determine whether automatic encryption (Queryable Encryption or CSFLE)
+     * is active on this connection.
+     */
+    public function isAutoEncryptionEnabled(): bool
+    {
+        $config = $this->getConfig('driver_options.autoEncryption');
+
+        return is_array($config) && $this->isEncryptionEnabled($config);
+    }
+
+    /**
      * Validate the shape of the driver_options.autoEncryption configuration and
      * return a normalized copy. This only checks the static configuration; it
      * never contacts the server.

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Commands\Encrypted;
 
+use Illuminate\Console\Command;
 use InvalidArgumentException;
 use MongoDB\Driver\ClientEncryption;
 
@@ -14,8 +15,10 @@ use function sprintf;
 /**
  * Diagnose the Queryable Encryption configuration and list mapped collections.
  */
-class DiagnoseEncryptedCommand extends EncryptedCommand
+final class DiagnoseEncryptedCommand extends Command
 {
+    use EncryptedCommand;
+
     protected $signature = 'mongodb:encrypted:diagnose
         {--no-server : Only validate the configuration, do not contact the server}
         {--connection= : The MongoDB connection to use}';
