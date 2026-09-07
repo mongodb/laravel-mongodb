@@ -479,12 +479,23 @@ class Connection extends BaseConnection
     /**
      * Determine whether automatic encryption (Queryable Encryption or CSFLE)
      * is active on this connection.
+     *
+     * When a collection name is given, only collections mapped in the
+     * encryptedFieldsMap are encrypted; the others keep their usual behavior.
      */
-    public function isAutoEncryptionEnabled(): bool
+    public function isAutoEncryptionEnabled(?string $collection = null): bool
     {
         $config = $this->getConfig('driver_options.autoEncryption');
 
-        return is_array($config) && $this->isEncryptionEnabled($config);
+        if (! is_array($config) || ! $this->isEncryptionEnabled($config)) {
+            return false;
+        }
+
+        if ($collection === null) {
+            return true;
+        }
+
+        return isset($config['encryptedFieldsMap'][$collection]);
     }
 
     /**

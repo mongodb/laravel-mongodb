@@ -1206,8 +1206,9 @@ class Builder extends BaseBuilder
         $wheres = $this->compileWheres();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
         // Queryable Encryption forbids multi-document updates, so encrypted
-        // collections must use single-document updates.
-        $result = $this->connection->isAutoEncryptionEnabled()
+        // collections must use single-document updates. Unmapped collections
+        // keep the multi-document behavior.
+        $result = $this->connection->isAutoEncryptionEnabled($this->collection->getCollectionName())
             ? $this->collection->updateOne($wheres, $update, $options)
             : $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
