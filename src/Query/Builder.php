@@ -1240,11 +1240,7 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Ensure a value used as a document id or relation key does not smuggle a MongoDB
-     * operator. A "$"-prefixed key (at any depth) would turn an intended literal match
-     * into an arbitrary query predicate, e.g. {_id: {$ne: null}} matching every document.
-     *
-     * A plain array without operator keys is allowed, so composite _id values keep working.
+     * A plain array without "$"-prefixed keys is allowed, so composite _id values keep working.
      *
      * @internal
      *
