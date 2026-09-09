@@ -93,6 +93,7 @@ class MongoDBServiceProvider extends ServiceProvider
                     $config['lock_collection'] ?? ($config['collection'] ?? 'cache') . '_locks',
                     $config['lock_lottery'] ?? [2, 100],
                     $config['lock_timeout'] ?? 86400,
+                    $app['config']->get('cache.serializable_classes'),
                 );
 
                 return $cache->repository($store, $config);
