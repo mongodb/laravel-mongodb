@@ -226,9 +226,9 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where('token', '=', ['$ne' => null]),
         ];
 
-        yield 'where _id = with operator array is wrapped in $eq' => [
-            ['find' => [['_id' => ['$eq' => ['$ne' => null]]], []]],
-            fn (Builder $builder) => $builder->where('_id', '=', ['$ne' => null]),
+        yield 'where _id = with plain composite array is not wrapped' => [
+            ['find' => [['_id' => ['tenant' => 1, 'seq' => 2]], []]],
+            fn (Builder $builder) => $builder->where('_id', '=', ['tenant' => 1, 'seq' => 2]),
         ];
 
         yield 'where with 2-arg operator array is unchanged' => [
@@ -1670,6 +1670,18 @@ class BuilderTest extends TestCase
             InvalidArgumentException::class,
             'First argument of MongoDB\Laravel\Query\Builder::where must be a field path as "string". Got "float"',
             fn (Builder $builder) => $builder->where(2.3, '>', 1),
+        ];
+
+        yield 'where _id = with operator array is rejected' => [
+            InvalidArgumentException::class,
+            'The value used as a document id or relation key cannot contain the MongoDB operator "$ne"',
+            fn (Builder $builder) => $builder->where('_id', '=', ['$ne' => null]),
+        ];
+
+        yield 'where _id = with nested operator array is rejected' => [
+            InvalidArgumentException::class,
+            'The value used as a document id or relation key cannot contain the MongoDB operator "$gt"',
+            fn (Builder $builder) => $builder->where('_id', '=', ['foo' => ['$gt' => 1]]),
         ];
     }
 

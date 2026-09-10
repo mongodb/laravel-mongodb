@@ -1270,6 +1270,15 @@ class Builder extends BaseBuilder
             if ($operator === self::UNSAFE_FIELD_QUERY) {
                 $operator = '=';
             } elseif ($operator === '=' && self::valueContainsOperator($params[2])) {
+                // Identifier columns only accept a scalar or a plain array (composite id).
+                // Reject an operator array here, and leave the non-id path to $eq below.
+                if (is_string($params[0]) && $this->isIdLikeField($params[0])) {
+                    throw new InvalidArgumentException(sprintf(
+                        'The value used as a document id or relation key cannot contain the MongoDB operator "%s".',
+                        self::firstOperatorKey($params[2]),
+                    ));
+                }
+
                 $params[2] = ['$eq' => $params[2]];
             }
         }
@@ -1321,6 +1330,43 @@ class Builder extends BaseBuilder
         }
 
         return false;
+    }
+
+    /**
+     * Whether a where column resolves to the MongoDB document id after the grammar
+     * aliasing: "id" becomes "_id", and "foo.id" becomes "foo._id" when configured.
+     * Operator arrays are rejected on such columns instead of being wrapped in $eq,
+     * so the rejection surfaces the offending operator.
+     */
+    private function isIdLikeField(string $column): bool
+    {
+        $key = array_key_first($this->grammar->prepareFieldsForQuery([$column => null]));
+
+        return $key === '_id' || str_ends_with($key, '._id');
+    }
+
+    /**
+     * The first "$"-prefixed key found in the value, depth-first, in the same order
+     * as the recursive rejection used for identifiers.
+     */
+    private static function firstOperatorKey(mixed $value): ?string
+    {
+        if (! is_array($value)) {
+            return null;
+        }
+
+        foreach ($value as $key => $item) {
+            if (is_string($key) && str_starts_with($key, '$')) {
+                return $key;
+            }
+
+            $operator = self::firstOperatorKey($item);
+            if ($operator !== null) {
+                return $operator;
+            }
+        }
+
+        return null;
     }
 
     /**
