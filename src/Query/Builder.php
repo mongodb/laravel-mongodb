@@ -89,10 +89,7 @@ class Builder extends BaseBuilder
 {
     private const REGEX_DELIMITERS = ['/', '#', '~'];
 
-    /**
-     * Sentinel operator that is used instead of "=" that doesn't get converted
-     * to $eq when the value contains a MQL query operator.
-     */
+    /** Internal sentinel so array-of-wheres calls skip the $eq hardening. */
     private const UNSAFE_FIELD_QUERY = 'unsafe-field-query';
 
     /**
@@ -1226,6 +1223,14 @@ class Builder extends BaseBuilder
      */
     public function convertKey($id)
     {
+        self::assertKeyIsNotOperator($id);
+
+        return $this->castKey($id);
+    }
+
+    /** Convert a key to its native BSON type without the primary-key operator check. */
+    private function castKey($id)
+    {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
         }
@@ -1235,6 +1240,31 @@ class Builder extends BaseBuilder
         }
 
         return $id;
+    }
+
+    /**
+     * A plain array without "$"-prefixed keys is allowed, so composite _id values keep working.
+     *
+     * @internal
+     *
+     * @throws InvalidArgumentException when the value contains a MongoDB operator.
+     */
+    public static function assertKeyIsNotOperator(mixed $value): void
+    {
+        if (! is_array($value)) {
+            return;
+        }
+
+        foreach ($value as $key => $item) {
+            if (is_string($key) && str_starts_with($key, '$')) {
+                throw new InvalidArgumentException(sprintf(
+                    'The value used as a document id or relation key cannot contain the MongoDB operator "%s".',
+                    $key,
+                ));
+            }
+
+            self::assertKeyIsNotOperator($item);
+        }
     }
 
     /**
@@ -1269,15 +1299,8 @@ class Builder extends BaseBuilder
 
             if ($operator === self::UNSAFE_FIELD_QUERY) {
                 $operator = '=';
-            } elseif ($operator === '=' && self::valueContainsOperator($params[2])) {
-                // Identifier columns only accept a scalar or a plain array (composite id).
-                // Reject an operator array here, and leave the non-id path to $eq below.
-                if (is_string($params[0]) && $this->isIdLikeField($params[0])) {
-                    throw new InvalidArgumentException(sprintf(
-                        'The value used as a document id or relation key cannot contain the MongoDB operator "%s".',
-                        self::firstOperatorKey($params[2]),
-                    ));
-                }
+            } elseif ($operator === '=' && self::firstOperatorKey($params[2]) !== null) {
+                $this->throwIfIdLikeOperatorValue($params[0], $params[2]);
 
                 $params[2] = ['$eq' => $params[2]];
             }
@@ -1294,11 +1317,7 @@ class Builder extends BaseBuilder
         return parent::where(...$params);
     }
 
-    /**
-     * The "=" operator of each generated call is an internal detail of the array
-     * shorthand, not an operator chosen by the caller: these calls must build an
-     * operator document like the 2-argument form does, not be hardened into $eq.
-     */
+    /** Array-of-wheres calls are marked so their generated "=" keeps building an operator document. */
     #[Override]
     protected function addArrayOfWheres($column, $boolean, $method = 'where')
     {
@@ -1313,31 +1332,7 @@ class Builder extends BaseBuilder
         }, $boolean);
     }
 
-    private static function valueContainsOperator(mixed $value): bool
-    {
-        if (! is_array($value)) {
-            return false;
-        }
-
-        foreach ($value as $key => $item) {
-            if (is_string($key) && str_starts_with($key, '$')) {
-                return true;
-            }
-
-            if (self::valueContainsOperator($item)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Whether a where column resolves to the MongoDB document id after the grammar
-     * aliasing: "id" becomes "_id", and "foo.id" becomes "foo._id" when configured.
-     * Operator arrays are rejected on such columns instead of being wrapped in $eq,
-     * so the rejection surfaces the offending operator.
-     */
+    /** Whether the column resolves to the document id after grammar aliasing. */
     private function isIdLikeField(string $column): bool
     {
         $key = array_key_first($this->grammar->prepareFieldsForQuery([$column => null]));
@@ -1345,10 +1340,14 @@ class Builder extends BaseBuilder
         return $key === '_id' || str_ends_with($key, '._id');
     }
 
-    /**
-     * The first "$"-prefixed key found in the value, depth-first, in the same order
-     * as the recursive rejection used for identifiers.
-     */
+    private function throwIfIdLikeOperatorValue(mixed $column, mixed $value): void
+    {
+        if (is_string($column) && $this->isIdLikeField($column)) {
+            self::assertKeyIsNotOperator($value);
+        }
+    }
+
+    /** First "$"-prefixed key, depth-first, in the same order as assertKeyIsNotOperator(). */
     private static function firstOperatorKey(mixed $value): ?string
     {
         if (! is_array($value)) {
@@ -1403,14 +1402,14 @@ class Builder extends BaseBuilder
                     $this->grammar->prepareFieldsForQuery([$where['column'] => null]),
                 );
 
-                // Convert id's.
+                // Convert id's. The primary key rejects operator arrays; embedded ids keep operator queries.
                 if ($where['column'] === '_id' || str_ends_with($where['column'], '._id')) {
+                    $convert = $where['column'] === '_id' ? $this->convertKey(...) : $this->castKey(...);
+
                     if (isset($where['values'])) {
-                        // Multiple values.
-                        $where['values'] = array_map($this->convertKey(...), $where['values']);
+                        $where['values'] = array_map($convert, $where['values']);
                     } elseif (isset($where['value'])) {
-                        // Single value.
-                        $where['value'] = $this->convertKey($where['value']);
+                        $where['value'] = $convert($where['value']);
                     }
                 }
             }

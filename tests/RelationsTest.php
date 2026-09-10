@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
+use InvalidArgumentException;
 use Mockery;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Tests\Models\Address;
@@ -476,6 +477,20 @@ class RelationsTest extends TestCase
         self::assertNotContains($check->id, $client->skillsWithCustomKeys->pluck('cskill_id'));
     }
 
+    public function testBelongsToManyRejectsOperatorForeignKey(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+
+        // An operator document planted into the custom parent key (as request input
+        // parsed to a PHP array would be) must not resolve into an arbitrary document.
+        $client->cclient_id = ['$ne' => null];
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('cannot contain the MongoDB operator "$ne"');
+
+        $client->skillsWithCustomKeys()->get();
+    }
+
     public function testBelongsToManyAttachEloquentCollectionWithCustomKeys(): void
     {
         $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
@@ -680,6 +695,22 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(Client::class, $check->hasImageWithCustomOwnerKey);
     }
 
+    public function testMorphToRejectsOperatorForeignKey(): void
+    {
+        $user  = User::create(['name' => 'Secret User']);
+        $photo = Photo::create(['url' => 'http://example.com/p.jpg']);
+        $photo->hasImage()->associate($user)->save();
+
+        // An operator document planted into the raw morph foreign key (as request input
+        // parsed to a PHP array would be) must not resolve into an arbitrary document.
+        $photo->has_image_id = ['$ne' => null];
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('cannot contain the MongoDB operator "$ne"');
+
+        $photo->hasImage()->first();
+    }
+
     public function testMorphToMany(): void
     {
         $user = User::query()->create(['name' => 'Young Gerald']);
@@ -830,6 +861,20 @@ class RelationsTest extends TestCase
         $this->assertEquals(1, $client->labelsWithCustomKeys->count());
         $this->assertContains($label->id, $client->labelsWithCustomKeys->pluck('id'));
         $this->assertNotContains($label2->id, $client->labelsWithCustomKeys->pluck('id'));
+    }
+
+    public function testMorphToManyRejectsOperatorForeignKey(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId())]);
+
+        // An operator document planted into the embedded pivot-ids field must not
+        // resolve into an arbitrary document.
+        $client->clabel_ids = ['$ne' => null];
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('cannot contain the MongoDB operator "$ne"');
+
+        $client->labelsWithCustomKeys()->get();
     }
 
     public function testMorphToManyLoadAndRefreshing(): void

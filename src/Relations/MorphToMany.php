@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany as EloquentMorphToMany;
 use Illuminate\Support\Arr;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use Override;
 
 use function array_diff;
@@ -67,6 +68,7 @@ class MorphToMany extends EloquentMorphToMany
         if ($this->getInverse()) {
             $ids = $this->getKeys($models, $this->table);
             $ids = $this->extractIds($ids[0] ?? []);
+            QueryBuilder::assertKeyIsNotOperator($ids);
             $this->query->whereIn($this->relatedKey, $ids);
         } else {
             parent::addEagerConstraints($models);
@@ -86,16 +88,22 @@ class MorphToMany extends EloquentMorphToMany
             if (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
                 $ids = $this->extractIds((array) $this->parent->{$this->table});
 
+                QueryBuilder::assertKeyIsNotOperator($ids);
                 $this->query->whereIn($this->relatedKey, $ids);
             } else {
-                $this->query
-                    ->whereIn($this->foreignPivotKey, (array) $this->parent->{$this->parentKey});
+                $ids = (array) $this->parent->{$this->parentKey};
+
+                QueryBuilder::assertKeyIsNotOperator($ids);
+                $this->query->whereIn($this->foreignPivotKey, $ids);
             }
         } else {
-            match (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
-                true => $this->query->whereIn($this->relatedKey, (array) $this->parent->{$this->relatedPivotKey}),
-                false => $this->query
-                    ->whereIn($this->getQualifiedForeignPivotKeyName(), (array) $this->parent->{$this->parentKey}),
+            $isDocument = \MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent);
+            $ids = (array) ($isDocument ? $this->parent->{$this->relatedPivotKey} : $this->parent->{$this->parentKey});
+
+            QueryBuilder::assertKeyIsNotOperator($ids);
+            match ($isDocument) {
+                true => $this->query->whereIn($this->relatedKey, $ids),
+                false => $this->query->whereIn($this->getQualifiedForeignPivotKeyName(), $ids),
             };
         }
 

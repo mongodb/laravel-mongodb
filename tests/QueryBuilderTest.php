@@ -212,6 +212,31 @@ class QueryBuilderTest extends TestCase
         $this->assertNull($user);
     }
 
+    public function testFindRejectsOperatorId()
+    {
+        DB::table('users')->insert([['name' => 'Jane Doe'], ['name' => 'John Doe']]);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The value used as a document id or relation key cannot contain the MongoDB operator "$ne"');
+
+        DB::table('users')->find(['$ne' => null]);
+    }
+
+    public function testDeleteRejectsOperatorId()
+    {
+        DB::table('users')->insert([['name' => 'Jane Doe'], ['name' => 'John Doe']]);
+
+        try {
+            DB::table('users')->delete(['$ne' => null]);
+            $this->fail('Expected InvalidArgumentException was not thrown.');
+        } catch (InvalidArgumentException $e) {
+            $this->assertStringContainsString('cannot contain the MongoDB operator "$ne"', $e->getMessage());
+        }
+
+        // No document was deleted by the injected operator.
+        $this->assertEquals(2, DB::table('users')->count());
+    }
+
     public function testCount()
     {
         DB::table('users')->insert([

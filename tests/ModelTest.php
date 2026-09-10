@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
@@ -121,6 +122,16 @@ class ModelTest extends TestCase
 
         $this->assertEquals('John Doe', $user->name);
         $this->assertEquals(35, $user->age);
+    }
+
+    public function testRejectOperatorPlantedAsPrimaryKey(): void
+    {
+        $user = new User();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The value used as a document id or relation key cannot contain the MongoDB operator "$ne"');
+
+        $user->_id = ['$ne' => null];
     }
 
     public function testInsertNonIncrementable(): void
