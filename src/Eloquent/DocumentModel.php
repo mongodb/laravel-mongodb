@@ -270,7 +270,7 @@ trait DocumentModel
             };
         }
 
-        // Reject a MongoDB operator planted as the primary key, then convert _id to ObjectID.
+        // Reject a MongoDB operator as a primary key, then convert _id to ObjectID.
         if ($key === '_id' || $key === 'id') {
             QueryBuilder::assertKeyIsNotOperator($value);
 

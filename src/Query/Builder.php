@@ -89,10 +89,7 @@ class Builder extends BaseBuilder
 {
     private const REGEX_DELIMITERS = ['/', '#', '~'];
 
-    /**
-     * Sentinel operator that is used instead of "=" that doesn't get converted
-     * to $eq when the value contains a MQL query operator.
-     */
+    /** Internal sentinel so array-of-wheres calls skip the $eq hardening. */
     private const UNSAFE_FIELD_QUERY = 'unsafe-field-query';
 
     /**
@@ -1231,15 +1228,7 @@ class Builder extends BaseBuilder
         return $this->castKey($id);
     }
 
-    /**
-     * Convert a key to its native BSON type without rejecting operator arrays.
-     * Embedded id fields accept operator documents such as {"$exists": true},
-     * so the primary-key check lives in convertKey().
-     *
-     * @param  mixed $id
-     *
-     * @return mixed
-     */
+    /** Convert a key to its native BSON type without the primary-key operator check. */
     private function castKey($id)
     {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
@@ -1311,8 +1300,6 @@ class Builder extends BaseBuilder
             if ($operator === self::UNSAFE_FIELD_QUERY) {
                 $operator = '=';
             } elseif ($operator === '=' && self::valueContainsOperator($params[2])) {
-                // Identifier columns only accept a scalar or a plain array (composite id).
-                // Reject an operator array here, and leave the non-id path to $eq below.
                 if (is_string($params[0]) && $this->isIdLikeField($params[0])) {
                     throw new InvalidArgumentException(sprintf(
                         'The value used as a document id or relation key cannot contain the MongoDB operator "%s".',
@@ -1335,11 +1322,7 @@ class Builder extends BaseBuilder
         return parent::where(...$params);
     }
 
-    /**
-     * The "=" operator of each generated call is an internal detail of the array
-     * shorthand, not an operator chosen by the caller: these calls must build an
-     * operator document like the 2-argument form does, not be hardened into $eq.
-     */
+    /** Array-of-wheres calls are marked so their generated "=" keeps building an operator document. */
     #[Override]
     protected function addArrayOfWheres($column, $boolean, $method = 'where')
     {
@@ -1373,12 +1356,7 @@ class Builder extends BaseBuilder
         return false;
     }
 
-    /**
-     * Whether a where column resolves to the MongoDB document id after the grammar
-     * aliasing: "id" becomes "_id", and "foo.id" becomes "foo._id" when configured.
-     * Operator arrays are rejected on such columns instead of being wrapped in $eq,
-     * so the rejection surfaces the offending operator.
-     */
+    /** Whether the column resolves to the document id after grammar aliasing. */
     private function isIdLikeField(string $column): bool
     {
         $key = array_key_first($this->grammar->prepareFieldsForQuery([$column => null]));
@@ -1386,10 +1364,7 @@ class Builder extends BaseBuilder
         return $key === '_id' || str_ends_with($key, '._id');
     }
 
-    /**
-     * The first "$"-prefixed key found in the value, depth-first, in the same order
-     * as the recursive rejection used for identifiers.
-     */
+    /** First "$"-prefixed key, depth-first, in the same order as assertKeyIsNotOperator(). */
     private static function firstOperatorKey(mixed $value): ?string
     {
         if (! is_array($value)) {
@@ -1444,8 +1419,7 @@ class Builder extends BaseBuilder
                     $this->grammar->prepareFieldsForQuery([$where['column'] => null]),
                 );
 
-                // Convert id's. The primary key rejects operator arrays; embedded id
-                // fields keep the scalar conversion so operator queries stay valid.
+                // Convert id's. The primary key rejects operator arrays; embedded ids keep operator queries.
                 if ($where['column'] === '_id') {
                     if (isset($where['values'])) {
                         // Multiple values.
