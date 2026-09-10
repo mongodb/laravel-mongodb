@@ -93,7 +93,7 @@ class Builder extends BaseBuilder
      * Sentinel operator that is used instead of "=" that doesn't get converted
      * to $eq when the value contains a MQL query operator.
      */
-    private const UNSAFE_FIELD_QUERY = "\0unsafe-field-query";
+    private const UNSAFE_FIELD_QUERY = 'unsafe-field-query';
 
     /**
      * The database collection.
