@@ -1365,6 +1365,12 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where('id', ['tenant' => 1, 'seq' => 2]),
         ];
 
+        // Operator documents stay valid on embedded id fields, e.g. Schema::hasColumn().
+        yield 'where array shorthand with $exists on an embedded id is unchanged' => [
+            ['find' => [['embed._id' => ['$exists' => true]], []]],
+            fn (Builder $builder) => $builder->where(['embed._id' => ['$exists' => true]]),
+        ];
+
         yield 'select colums with id alias' => [
             ['find' => [[], ['projection' => ['name' => 1, 'email' => 1, '_id' => 1]]]],
             fn (Builder $builder) => $builder->select('name', 'email', 'id'),

@@ -1228,6 +1228,20 @@ class Builder extends BaseBuilder
     {
         self::assertKeyIsNotOperator($id);
 
+        return $this->castKey($id);
+    }
+
+    /**
+     * Convert a key to its native BSON type without rejecting operator arrays.
+     * Embedded id fields accept operator documents such as {"$exists": true},
+     * so the primary-key check lives in convertKey().
+     *
+     * @param  mixed $id
+     *
+     * @return mixed
+     */
+    private function castKey($id)
+    {
         if (is_string($id) && strlen($id) === 24 && ctype_xdigit($id)) {
             return new ObjectID($id);
         }
@@ -1430,14 +1444,23 @@ class Builder extends BaseBuilder
                     $this->grammar->prepareFieldsForQuery([$where['column'] => null]),
                 );
 
-                // Convert id's.
-                if ($where['column'] === '_id' || str_ends_with($where['column'], '._id')) {
+                // Convert id's. The primary key rejects operator arrays; embedded id
+                // fields keep the scalar conversion so operator queries stay valid.
+                if ($where['column'] === '_id') {
                     if (isset($where['values'])) {
                         // Multiple values.
                         $where['values'] = array_map($this->convertKey(...), $where['values']);
                     } elseif (isset($where['value'])) {
                         // Single value.
                         $where['value'] = $this->convertKey($where['value']);
+                    }
+                } elseif (str_ends_with($where['column'], '._id')) {
+                    if (isset($where['values'])) {
+                        // Multiple values.
+                        $where['values'] = array_map($this->castKey(...), $where['values']);
+                    } elseif (isset($where['value'])) {
+                        // Single value.
+                        $where['value'] = $this->castKey($where['value']);
                     }
                 }
             }
