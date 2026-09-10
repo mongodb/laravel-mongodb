@@ -48,24 +48,28 @@ jobs:
           extensions: curl,mbstring
           tools: composer:v2
 
-      - name: Cache dependencies
+      - name: Get Composer cache directory
         id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> $GITHUB_OUTPUT
+
+      - name: Cache Composer downloads
         uses: actions/cache@v6
         with:
-          path: ./vendor
+          path: ${{ steps.composer-cache.outputs.dir }}
           key: composer-${{ matrix.php }}-${{ matrix.driver }}-${{ hashFiles('**/composer.json') }}
+          restore-keys: composer-${{ matrix.php }}-${{ matrix.driver }}-
 
       - name: Install dependencies
-        run: composer install
+        run: composer update --no-interaction
 
       - name: Restore cache PHPStan results
         id: phpstan-cache-restore
         uses: actions/cache/restore@v6
         with:
           path: .cache
-          key: phpstan-result-cache-${{ matrix.php }}-${{ github.run_id }}
+          key: phpstan-result-cache-${{ matrix.php }}-${{ matrix.driver }}-${{ github.run_id }}
           restore-keys: |
-            phpstan-result-cache-${{ matrix.php }}-
+            phpstan-result-cache-${{ matrix.php }}-${{ matrix.driver }}-
 
       - name: Run PHPStan
         id: phpstan
