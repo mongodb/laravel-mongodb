@@ -1299,13 +1299,8 @@ class Builder extends BaseBuilder
 
             if ($operator === self::UNSAFE_FIELD_QUERY) {
                 $operator = '=';
-            } elseif ($operator === '=' && self::valueContainsOperator($params[2])) {
-                if (is_string($params[0]) && $this->isIdLikeField($params[0])) {
-                    throw new InvalidArgumentException(sprintf(
-                        'The value used as a document id or relation key cannot contain the MongoDB operator "%s".',
-                        self::firstOperatorKey($params[2]),
-                    ));
-                }
+            } elseif ($operator === '=' && self::firstOperatorKey($params[2]) !== null) {
+                $this->throwIfIdLikeOperatorValue($params[0], $params[2]);
 
                 $params[2] = ['$eq' => $params[2]];
             }
@@ -1337,31 +1332,19 @@ class Builder extends BaseBuilder
         }, $boolean);
     }
 
-    private static function valueContainsOperator(mixed $value): bool
-    {
-        if (! is_array($value)) {
-            return false;
-        }
-
-        foreach ($value as $key => $item) {
-            if (is_string($key) && str_starts_with($key, '$')) {
-                return true;
-            }
-
-            if (self::valueContainsOperator($item)) {
-                return true;
-            }
-        }
-
-        return false;
-    }
-
     /** Whether the column resolves to the document id after grammar aliasing. */
     private function isIdLikeField(string $column): bool
     {
         $key = array_key_first($this->grammar->prepareFieldsForQuery([$column => null]));
 
         return $key === '_id' || str_ends_with($key, '._id');
+    }
+
+    private function throwIfIdLikeOperatorValue(mixed $column, mixed $value): void
+    {
+        if (is_string($column) && $this->isIdLikeField($column)) {
+            self::assertKeyIsNotOperator($value);
+        }
     }
 
     /** First "$"-prefixed key, depth-first, in the same order as assertKeyIsNotOperator(). */
@@ -1420,21 +1403,13 @@ class Builder extends BaseBuilder
                 );
 
                 // Convert id's. The primary key rejects operator arrays; embedded ids keep operator queries.
-                if ($where['column'] === '_id') {
+                if ($where['column'] === '_id' || str_ends_with($where['column'], '._id')) {
+                    $convert = $where['column'] === '_id' ? $this->convertKey(...) : $this->castKey(...);
+
                     if (isset($where['values'])) {
-                        // Multiple values.
-                        $where['values'] = array_map($this->convertKey(...), $where['values']);
+                        $where['values'] = array_map($convert, $where['values']);
                     } elseif (isset($where['value'])) {
-                        // Single value.
-                        $where['value'] = $this->convertKey($where['value']);
-                    }
-                } elseif (str_ends_with($where['column'], '._id')) {
-                    if (isset($where['values'])) {
-                        // Multiple values.
-                        $where['values'] = array_map($this->castKey(...), $where['values']);
-                    } elseif (isset($where['value'])) {
-                        // Single value.
-                        $where['value'] = $this->castKey($where['value']);
+                        $where['value'] = $convert($where['value']);
                     }
                 }
             }

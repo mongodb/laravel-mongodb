@@ -1371,6 +1371,12 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->where(['embed._id' => ['$exists' => true]]),
         ];
 
+        // The 2-argument form on an embedded id keeps building an operator document.
+        yield 'where 2-arg embedded id with operator array keeps the operator document' => [
+            ['find' => [['embed._id' => ['$ne' => null]], []]],
+            fn (Builder $builder) => $builder->where('embed._id', ['$ne' => null]),
+        ];
+
         yield 'select colums with id alias' => [
             ['find' => [[], ['projection' => ['name' => 1, 'email' => 1, '_id' => 1]]]],
             fn (Builder $builder) => $builder->select('name', 'email', 'id'),
