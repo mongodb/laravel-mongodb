@@ -16,7 +16,6 @@ use LogicException;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Relations\MorphToMany;
 
-use function array_count_values;
 use function array_filter;
 use function array_keys;
 use function array_map;
@@ -24,6 +23,8 @@ use function class_basename;
 use function collect;
 use function in_array;
 use function is_array;
+use function is_int;
+use function is_object;
 use function is_string;
 use function method_exists;
 use function str_contains;
@@ -200,9 +201,28 @@ trait QueriesRelationships
      */
     protected function getConstrainedRelatedIds($relations, $operator, $count)
     {
-        $relationCount = array_count_values(array_map(function ($id) {
-            return (string) $id; // Convert Back ObjectIds to Strings
-        }, is_array($relations) ? $relations : $relations->flatten()->toArray()));
+        $ids = is_array($relations) ? $relations : $relations->flatten()->toArray();
+
+        // Count by type plus value so int 1 and string "1" stay distinct, then
+        // restore the original scalar (or ObjectId hex) for the Mongo $in match.
+        $idsByTypedKey = [];
+        $relationCount = [];
+        foreach ($ids as $id) {
+            if (is_int($id)) {
+                $typedKey = 'i:' . $id;
+                $original = $id;
+            } elseif (is_object($id)) {
+                $typedKey = 's:' . (string) $id;
+                $original = (string) $id;
+            } else {
+                $typedKey = 's:' . (string) $id;
+                $original = $id;
+            }
+
+            $idsByTypedKey[$typedKey] = $original;
+            $relationCount[$typedKey] = ($relationCount[$typedKey] ?? 0) + 1;
+        }
+
         // Remove unwanted related objects based on the operator and count.
         $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator) {
             // If we are comparing to 0, we always need all results.
@@ -224,7 +244,10 @@ trait QueriesRelationships
         });
 
         // All related ids.
-        return array_keys($relationCount);
+        return array_map(
+            static fn ($key) => $idsByTypedKey[$key],
+            array_keys($relationCount),
+        );
     }
 
     /**
