@@ -122,11 +122,12 @@ Post::whereBetween('year', [2000, 2010])->get();
 Post::where('metadata.draft', true)->get();                // dotted path into sub-doc
 ```
 
-## `where()` and MQL injection
+## `where()` and MongoDB operator documents
 
 With 1 or 2 arguments, an array value is read as a MongoDB operator document.
-Never pass unvalidated input there. The 3-argument form with `'='` always compares
-the value as a literal.
+Never pass unvalidated input there. The 3-argument form with `'='` compares the
+value as a literal, and identifier columns (`_id`, `id`, `*._id`) reject operator
+arrays instead.
 
 ```php
 Post::where('status', ['$ne' => 'draft'])->get();             // operator document
