@@ -7,25 +7,39 @@ namespace MongoDB\Laravel;
 use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
 use InvalidArgumentException;
+use LogicException;
+use MongoDB\BSON\Binary;
 use MongoDB\Client;
 use MongoDB\Collection;
 use MongoDB\Database;
+use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\AuthenticationException;
 use MongoDB\Driver\Exception\ConnectionException;
 use MongoDB\Driver\Exception\RuntimeException;
+use MongoDB\Driver\Manager;
+use MongoDB\Driver\Query as DriverQuery;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Concerns\ManagesTransactions;
 use OutOfBoundsException;
 use Override;
 use Throwable;
 
+use function array_key_exists;
+use function array_key_first;
+use function array_values;
+use function base64_decode;
 use function filter_var;
 use function implode;
+use function in_array;
 use function is_array;
+use function is_string;
+use function phpversion;
 use function preg_match;
 use function sprintf;
 use function str_contains;
+use function strlen;
 use function trigger_error;
+use function version_compare;
 
 use const E_USER_DEPRECATED;
 use const FILTER_FLAG_IPV6;
@@ -53,6 +67,14 @@ class Connection extends BaseConnection
     protected $connection;
 
     private ?CommandSubscriber $commandSubscriber = null;
+
+    /**
+     * A plain, non-auto-encrypted manager used to reach the key vault. The key
+     * vault client must not be auto-encrypted (CSFLE requirement).
+     *
+     * @var Manager|null
+     */
+    private ?Manager $plainManager = null;
 
     /** @var bool Whether to rename the rename "id" into "_id" for embedded documents. */
     private bool $renameEmbeddedIdField;
@@ -261,7 +283,439 @@ class Connection extends BaseConnection
             $driverOptions += ['connectionName' => $config['name']];
         }
 
+        // Normalize the automatic encryption configuration early. A broken
+        // autoEncryption block fails fast at connection time. Capability
+        // gating (library and server version) is lazy and only checked when
+        // encryption is actually used, so unrelated non-QE features keep
+        // working.
+        $autoEncryption = null;
+        if (isset($driverOptions['autoEncryption']) && is_array($driverOptions['autoEncryption'])) {
+            $autoEncryption = $this->validateAutoEncryptionConfig($driverOptions['autoEncryption']);
+            $driverOptions['autoEncryption'] = $autoEncryption;
+        }
+
+        // libmongocrypt (>= 1.18.0) resolves a field declared by "keyAltName"
+        // to its real keyId from the key vault at runtime, so the package only
+        // has to give every field a name (explicit, or "<collection>.<path>"
+        // by default) and the driver performs the lookup. No key vault query
+        // happens at connection time.
+        if (is_array($autoEncryption) && is_array($autoEncryption['encryptedFieldsMap'] ?? null)) {
+            $autoEncryption['encryptedFieldsMap'] = $this->normalizeEncryptedFieldsMap($autoEncryption['encryptedFieldsMap']);
+            $this->ensureAltKeyNameSupport($autoEncryption['encryptedFieldsMap']);
+            $driverOptions['autoEncryption'] = $autoEncryption;
+        }
+
         return new Client($dsn, $options, $driverOptions);
+    }
+
+    /**
+     * Verify the installed ext-mongodb can resolve encrypted fields by
+     * keyAltName (libmongocrypt >= 1.18, i.e. ext-mongodb 2.4.0+). Only
+     * checked when an alternate key name is actually used, so keyId-based and
+     * non-encrypted configs stay compatible with older extensions.
+     *
+     * @param  array<string, mixed> $encryptedFieldsMap
+     */
+    private function ensureAltKeyNameSupport(array $encryptedFieldsMap): void
+    {
+        foreach ($encryptedFieldsMap as $encryptedFields) {
+            foreach (($encryptedFields['fields'] ?? []) as $field) {
+                if (! is_array($field) || isset($field['keyId'])) {
+                    continue;
+                }
+
+                $version = phpversion('mongodb');
+
+                if (is_string($version) && version_compare($version, '2.4.0', '<')) {
+                    throw new RuntimeException(sprintf('Referencing encrypted fields by keyAltName requires ext-mongodb 2.4.0 or later (libmongocrypt >= 1.18). Installed version is %s.', $version));
+                }
+
+                return;
+            }
+        }
+    }
+
+    /**
+     * Compute the alternate key name to use for a field: the declared
+     * keyAltName, or "<collection>.<path>" by default.
+     *
+     * @param  array<string, mixed> $field
+     */
+    private function keyAltNameFor(array $field, string $collection): string
+    {
+        if (isset($field['keyAltName']) && is_string($field['keyAltName']) && $field['keyAltName'] !== '') {
+            return $field['keyAltName'];
+        }
+
+        return $collection . '.' . (string) $field['path'];
+    }
+
+    /**
+     * Normalize the driver_options.autoEncryption.encryptedFieldsMap to the
+     * driver's list form. Two field syntaxes are accepted:
+     *
+     * - A list of objects, each with an explicit "path":
+     *   ['patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string',
+     *   'queries' => [['queryType' => 'equality']]]]]].
+     *
+     * - An object keyed by path, with a flat "queryType" and range options; a
+     *   bare string value means a randomized, non-queryable field:
+     *   ['patients' => ['fields' => ['ssn' => ['bsonType' => 'string',
+     *   'queryType' => 'equality'], 'billing' => 'object']]].
+     *
+     * Each field also receives its alternate key name (declared, or
+     * "<collection>.<path>" by default) when it does not carry a keyId.
+     *
+     * @param  array<string, mixed> $encryptedFieldsMap
+     *
+     * @return array<string, mixed>
+     */
+    public function normalizeEncryptedFieldsMap(array $encryptedFieldsMap): array
+    {
+        foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
+            $fields = $encryptedFields['fields'] ?? null;
+
+            if (! is_array($fields)) {
+                throw new LogicException(sprintf('The encrypted fields map entry for collection "%s" must define a "fields" array.', $collection));
+            }
+
+            $encryptedFieldsMap[$collection]['fields'] = $this->normalizeEncryptedFields($fields, (string) $collection);
+        }
+
+        return $encryptedFieldsMap;
+    }
+
+    /**
+     * Normalize the "fields" of a single collection into the driver's list
+     * form, accepting both the list and keyed-by-path syntaxes. A bare string
+     * value is the bsonType of a randomized, non-queryable field. Each field
+     * receives its alternate key name (declared, or "<collection>.<path>" by
+     * default) when it does not carry a keyId.
+     *
+     * @param  array<mixed> $fields
+     * @param  string       $collection
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    private function normalizeEncryptedFields(array $fields, string $collection): array
+    {
+        $normalized = [];
+
+        foreach ($fields as $key => $config) {
+            // Prefer an explicit path; otherwise the array key is the path.
+            $path = is_array($config) && isset($config['path']) && is_string($config['path'])
+                ? $config['path']
+                : (is_string($key) ? $key : null);
+            if ($path === null) {
+                throw new LogicException(sprintf('Missing "path" for an encrypted field in collection "%s".', $collection));
+            }
+
+            // A bare string value is the bsonType of a randomized field.
+            if (is_string($config)) {
+                $config = ['bsonType' => $config];
+            }
+
+            if (! is_array($config)) {
+                throw new LogicException(sprintf('Invalid encrypted field for path "%s" in collection "%s": expected a string bsonType or an array.', $path, $collection));
+            }
+
+            $bsonType = $config['bsonType'] ?? null;
+            if (! is_string($bsonType) || $bsonType === '') {
+                throw new LogicException(sprintf('Missing or invalid "bsonType" for encrypted field "%s" in collection "%s".', $path, $collection));
+            }
+
+            if (isset($config['keyId']) && isset($config['keyAltName'])) {
+                throw new LogicException(sprintf('Encrypted field "%s" in collection "%s" cannot declare both "keyId" and "keyAltName".', $path, $collection));
+            }
+
+            $field = ['path' => $path, 'bsonType' => $bsonType];
+
+            if (isset($config['keyId'])) {
+                $field['keyId'] = $config['keyId'];
+            }
+
+            if (isset($config['queries']) && is_array($config['queries'])) {
+                $field['queries'] = $config['queries'];
+            } elseif (isset($config['queryType'])) {
+                $queryType = $config['queryType'];
+                if (! in_array($queryType, ['equality', 'range'], true)) {
+                    throw new LogicException(sprintf('Invalid "queryType" "%s" for encrypted field "%s" in collection "%s": supported values are "equality" and "range".', $queryType, $path, $collection));
+                }
+
+                $query = ['queryType' => $queryType];
+                foreach (['min', 'max', 'sparsity', 'precision'] as $option) {
+                    if (array_key_exists($option, $config)) {
+                        $query[$option] = $config[$option];
+                    }
+                }
+
+                $field['queries'] = [$query];
+            }
+
+            if (isset($config['keyAltName']) && is_string($config['keyAltName']) && $config['keyAltName'] !== '') {
+                $field['keyAltName'] = $config['keyAltName'];
+            } elseif (! array_key_exists('keyId', $field)) {
+                $field['keyAltName'] = $this->keyAltNameFor($field, $collection);
+            }
+
+            $normalized[] = $field;
+        }
+
+        return $normalized;
+    }
+
+    /**
+     * Resolve every field lacking a keyId, minting the data key when it does
+     * not exist yet. This makes encrypted collection creation idempotent:
+     * re-creating a dropped collection reuses the same keys.
+     *
+     * @param  array<string, mixed> $encryptedFieldsMap
+     *
+     * @return array<string, mixed>
+     */
+    public function resolveOrCreateEncryptionKeys(array $encryptedFieldsMap): array
+    {
+        $config = $this->getEncryptionOptions();
+        $clientEncryption = $this->getClientEncryption();
+        $kmsProvider = array_key_first($config['kmsProviders']) ?: 'local';
+
+        foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
+            $fields = $encryptedFields['fields'] ?? [];
+
+            foreach ($fields as &$field) {
+                if (! is_array($field) || isset($field['keyId'])) {
+                    continue;
+                }
+
+                $keyAltName = $this->keyAltNameFor($field, $collection);
+                $existing = $this->findDataKeyByAltName($keyAltName);
+
+                $keyId = $existing instanceof Binary
+                    ? $existing
+                    : $clientEncryption->createDataKey($kmsProvider, ['keyAltNames' => [$keyAltName]]);
+
+                // The driver accepts only one of keyId or keyAltName on a
+                // field; the alternate name has served its purpose.
+                $field = ['keyId' => $keyId] + $field;
+                unset($field['keyAltName']);
+            }
+
+            unset($field);
+
+            $encryptedFields['fields'] = array_values($fields);
+            $encryptedFieldsMap[$collection] = $encryptedFields;
+        }
+
+        return $encryptedFieldsMap;
+    }
+
+    /**
+     * Look up the keyId of a data key by its alternate name in the key vault.
+     * Uses a direct query rather than ClientEncryption::getKeyByAltName so it
+     * works regardless of driver/server support for that helper.
+     *
+     * @param  string       $keyAltName
+     * @param  Manager|null $manager
+     */
+    private function findDataKeyByAltName(string $keyAltName, ?Manager $manager = null): ?Binary
+    {
+        $namespace = $this->getConfig('driver_options.autoEncryption.keyVaultNamespace');
+
+        if (! is_string($namespace) || ! str_contains($namespace, '.')) {
+            return null;
+        }
+
+        $query = new DriverQuery(['keyAltNames' => $keyAltName]);
+        $cursor = ($manager ?? $this->plainManager())->executeQuery($namespace, $query);
+
+        foreach ($cursor as $document) {
+            $id = $document->_id ?? null;
+            if ($id instanceof Binary) {
+                return $id;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Determine whether automatic encryption (Queryable Encryption or CSFLE)
+     * is requested on this connection.
+     *
+     * @param  array<string, mixed> $config
+     */
+    public function isEncryptionEnabled(array $config): bool
+    {
+        return ! empty($config['keyVaultNamespace']);
+    }
+
+    /**
+     * Determine whether automatic encryption (Queryable Encryption or CSFLE)
+     * is active on this connection.
+     *
+     * When a collection name is given, only collections mapped in the
+     * encryptedFieldsMap are encrypted; the others keep their usual behavior.
+     */
+    public function isAutoEncryptionEnabled(?string $collection = null): bool
+    {
+        $config = $this->getConfig('driver_options.autoEncryption');
+
+        if (! is_array($config) || ! $this->isEncryptionEnabled($config)) {
+            return false;
+        }
+
+        if ($collection === null) {
+            return true;
+        }
+
+        return isset($config['encryptedFieldsMap'][$collection]);
+    }
+
+    /**
+     * Validate the shape of the driver_options.autoEncryption configuration and
+     * return a normalized copy. This only checks the static configuration; it
+     * never contacts the server.
+     *
+     * @param  array<string, mixed> $autoEncryption
+     *
+     * @return array<string, mixed>
+     */
+    public function validateAutoEncryptionConfig(array $autoEncryption): array
+    {
+        if (empty($autoEncryption['keyVaultNamespace']) || ! is_string($autoEncryption['keyVaultNamespace'])) {
+            throw new InvalidArgumentException('The "autoEncryption.keyVaultNamespace" driver option is required to use Queryable Encryption. Configure "database.connections.<name>.driver_options.autoEncryption.keyVaultNamespace".');
+        }
+
+        if (empty($autoEncryption['kmsProviders']) || ! is_array($autoEncryption['kmsProviders'])) {
+            throw new InvalidArgumentException('The "autoEncryption.kmsProviders" driver option must be a non-empty array to use Queryable Encryption.');
+        }
+
+        // Validate the local master key, if the local provider is declared.
+        $localProvider = $autoEncryption['kmsProviders']['local'] ?? null;
+        if (is_array($localProvider)) {
+            $key = $localProvider['key'] ?? null;
+            if (! is_string($key)) {
+                throw new InvalidArgumentException('The "autoEncryption.kmsProviders.local.key" value is required and must be a base64-encoded 96-byte master key.');
+            }
+
+            $decoded = base64_decode($key, true) ?: base64_decode($key);
+            if ($decoded === false) {
+                throw new InvalidArgumentException('The "autoEncryption.kmsProviders.local.key" value is not valid base64.');
+            }
+
+            if (strlen($decoded) !== 96) {
+                throw new InvalidArgumentException('The "autoEncryption.kmsProviders.local.key" master key must decode to exactly 96 bytes.');
+            }
+        }
+
+        // Normalize the crypt_shared settings. The shared library is required
+        // for automatic encryption; default it to true unless explicitly
+        // disabled and reject an explicitly null library path.
+        $extraOptions = is_array($autoEncryption['extraOptions'] ?? null) ? $autoEncryption['extraOptions'] : [];
+        $extraOptions += ['cryptSharedLibRequired' => true];
+
+        $hasSearchPath = ! empty($extraOptions['cryptSharedLibPath'])
+        || ! empty($extraOptions['cryptSharedSearchPath'])
+        || ! empty($extraOptions['cryptSharedSearchPaths']);
+        if ($extraOptions['cryptSharedLibRequired'] && ! $hasSearchPath && array_key_exists('cryptSharedLibPath', $extraOptions) && $extraOptions['cryptSharedLibPath'] === null) {
+            throw new InvalidArgumentException('The "autoEncryption.extraOptions.cryptSharedLibPath" value cannot be null. Provide the path to the Automatic Encryption Shared Library or a search path.');
+        }
+
+        $autoEncryption['extraOptions'] = $extraOptions;
+
+        // A collection mapped for automatic encryption must reference an
+        // existing data encryption key. Point to the keys-first bootstrap.
+        foreach (($autoEncryption['encryptedFieldsMap'] ?? []) as $collection => $encryptedFields) {
+            if (! is_array($encryptedFields)) {
+                continue;
+            }
+
+            foreach (($encryptedFields['fields'] ?? []) as $field) {
+                if (is_array($field) && array_key_exists('keyId', $field) && $field['keyId'] === null) {
+                    throw new InvalidArgumentException(sprintf('The encrypted field map for collection "%s" references a field with a null "keyId". Set a "keyAltName" or remove the "keyId" so it is resolved or minted automatically when the collection is created.', $collection));
+                }
+            }
+        }
+
+        return $autoEncryption;
+    }
+
+    /**
+     * Get the client-side encryption support used to mint and manage data
+     * encryption keys.
+     *
+     * This requires automatic encryption to be configured on the connection.
+     *
+     * @throws InvalidArgumentException when automatic encryption is not enabled.
+     */
+    public function getClientEncryption(): ClientEncryption
+    {
+        $autoEncryption = $this->getConfig('driver_options.autoEncryption');
+
+        if (! is_array($autoEncryption) || ! $this->isEncryptionEnabled($autoEncryption)) {
+            throw new InvalidArgumentException('Queryable Encryption is not enabled on this connection. Configure "driver_options.autoEncryption" with a "keyVaultNamespace" and "kmsProviders" first.');
+        }
+
+        $this->ensureQueryableEncryptionLibrary();
+
+        $config = $this->validateAutoEncryptionConfig($autoEncryption);
+
+        // The key vault client must be free of auto encryption (CSFLE rule),
+        // so it cannot be the auto-encryption-enabled connection client.
+        return $this->getClient()->createClientEncryption([
+            'keyVaultClient' => $config['keyVaultClient'] ?? $this->plainManager(),
+            'keyVaultNamespace' => $config['keyVaultNamespace'],
+            'kmsProviders' => $config['kmsProviders'],
+        ]);
+    }
+
+    /**
+     * Get a cached plain (non-auto-encrypted) manager to the same server,
+     * used only to reach the key vault.
+     */
+    private function plainManager(): Manager
+    {
+        return $this->plainManager ??= new Manager($this->getDsn($this->config), $this->config['options'] ?? []);
+    }
+
+    /**
+     * Get the automatic encryption options configured on this connection.
+     *
+     * @return array<string, mixed>
+     */
+    public function getEncryptionOptions(): array
+    {
+        $autoEncryption = $this->getConfig('driver_options.autoEncryption');
+
+        return is_array($autoEncryption) ? $autoEncryption : [];
+    }
+
+    /**
+     * Ensure the installed mongodb/mongodb library is new enough to support
+     * Queryable Encryption. This check is network-free and only fails when
+     * encryption is actually requested.
+     */
+    private function ensureQueryableEncryptionLibrary(): void
+    {
+        try {
+            $version = InstalledVersions::getPrettyVersion('mongodb/mongodb');
+        } catch (Throwable) {
+            return; // Unknown version; rely on the server to reject unsupported operations.
+        }
+
+        if (! is_string($version) || preg_match('/^(\d+)\.\d+\.\d+/', $version, $matches) !== 1) {
+            return;
+        }
+
+        // These floors carry the metadata collection deletion fix the encrypted
+        // collection lifecycle relies upon. Inlined because they are a runtime
+        // implementation detail, not public API; dropped once the composer
+        // constraint requires a newer mongodb/mongodb.
+        $minimum = (int) $matches[1] === 2 ? '2.1.1' : '1.21.2';
+
+        if (version_compare($version, $minimum, '<')) {
+            throw new RuntimeException(sprintf('Queryable Encryption requires mongodb/mongodb %s or later. Installed version is %s.', $minimum, $version));
+        }
     }
 
     /**

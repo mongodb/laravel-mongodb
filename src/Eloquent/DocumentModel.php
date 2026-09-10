@@ -13,6 +13,7 @@ use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasAttributes;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -258,6 +259,15 @@ trait DocumentModel
     {
         $key = (string) $key;
 
+        // The encrypted respected field is managed by the server. Reject any
+        // write, including a direct assignment, so it can never be forged or
+        // desynchronized by the application.
+        if ($key === '__safeContent__') {
+            throw new MassAssignmentException(
+                sprintf('The reserved field [%s] is managed by the server and cannot be set on model [%s].', '__safeContent__', static::class),
+            );
+        }
+
         $casts = $this->getCasts();
         if (array_key_exists($key, $casts)) {
             $castType = $this->getCastType($key);
@@ -361,6 +371,12 @@ trait DocumentModel
     {
         $attributes = parent::attributesToArray();
 
+        // Queryable Encryption stores a server-managed "safeContent" array in
+        // the document. It is an implementation detail and must never be
+        // exposed through serialization. Bare attribute access remains
+        // possible through getAttributes().
+        unset($attributes['__safeContent__']);
+
         // Because the original Eloquent never returns objects, we convert
         // MongoDB related objects to a string representation. This kind
         // of mimics the SQL behaviour so that dates are formatted
@@ -448,6 +464,13 @@ trait DocumentModel
     public function offsetUnset($offset): void
     {
         $offset = (string) $offset;
+
+        // Reject attempts to unset the server-managed encrypted field.
+        if ($offset === '__safeContent__') {
+            throw new MassAssignmentException(
+                sprintf('The reserved field [%s] is managed by the server and cannot be unset on model [%s].', '__safeContent__', static::class),
+            );
+        }
 
         if (str_contains($offset, '.')) {
             // Update the field in the subdocument

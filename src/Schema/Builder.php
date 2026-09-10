@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Schema;
 
 use Closure;
+use InvalidArgumentException;
 use MongoDB\Collection;
 use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Laravel\Connection;
@@ -16,6 +17,7 @@ use function array_column;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -129,6 +131,60 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
     }
 
+    /**
+     * Create an encrypted collection from the encrypted fields map configured
+     * on the connection (driver_options.autoEncryption.encryptedFieldsMap).
+     *
+     * Data encryption keys are minted for the fields that do not declare a
+     * "keyId"; fields that already reference a key keep it.
+     *
+     * @param  string              $collection Collection name
+     * @param  Closure|null        $callback   Optional callback to further configure the blueprint
+     * @param  array<string,mixed> $options    Additional create options (writeConcern, etc.)
+     *
+     * @return array<string,mixed> The effective encrypted fields, including the generated keyId values.
+     */
+    public function createEncrypted(string $collection, ?Closure $callback = null, array $options = []): array
+    {
+        $config = $this->connection->getConfig('driver_options.autoEncryption');
+
+        if (! is_array($config) || ! $this->connection->isEncryptionEnabled($config)) {
+            throw new InvalidArgumentException('Queryable Encryption is not enabled on this connection. Configure "driver_options.autoEncryption" with a "keyVaultNamespace" and "kmsProviders" first.');
+        }
+
+        // Normalize both the list and the keyed-by-path field syntaxes to the
+        // driver format before validating and creating.
+        $normalizedMap = $this->connection->normalizeEncryptedFieldsMap($config['encryptedFieldsMap']);
+        $map = $normalizedMap[$collection] ?? null;
+        if (! is_array($map) || ! isset($map['fields']) || ! is_array($map['fields'])) {
+            throw new InvalidArgumentException(sprintf('No "encryptedFieldsMap[%s]" entry is configured on this connection to create an encrypted collection.', $collection));
+        }
+
+        $kmsProvider = array_key_first($config['kmsProviders']) ?: 'local';
+        $masterKey = isset($config['masterKey']) && is_array($config['masterKey']) ? $config['masterKey'] : null;
+        $clientEncryption = $this->connection->getClientEncryption();
+
+        // Resolve fields declared by keyAltName to their real keyId, minting
+        // missing data keys on first creation. Re-creating a dropped
+        // collection therefore reuses the same keys.
+        $resolvedMap = $this->connection->resolveOrCreateEncryptionKeys([$collection => $map]);
+        $map = $resolvedMap[$collection];
+
+        $encryptedFields = $this->connection->getDatabase()->createEncryptedCollection(
+            $collection,
+            $clientEncryption,
+            $kmsProvider,
+            $masterKey,
+            [...$options, 'encryptedFields' => $map, 'keyVaultNamespace' => $config['keyVaultNamespace']],
+        );
+
+        if ($callback instanceof Closure) {
+            $callback($this->createBlueprint($collection));
+        }
+
+        return $encryptedFields;
+    }
+
     /** @inheritdoc */
     #[Override]
     public function dropIfExists($table)
@@ -155,6 +211,10 @@ class Builder extends \Illuminate\Database\Schema\Builder
      * In MongoDB, dropping the whole database is much faster than dropping collections
      * one by one. The database will be automatically recreated when a new connection
      * writes to it.
+     *
+     * Warning: with Queryable Encryption enabled, dropping the whole database also
+     * removes the key vault collection and every data encryption key it holds when
+     * the vault lives in this database. This is unrecoverable.
      */
     #[Override]
     public function dropAllTables()
