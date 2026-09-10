@@ -134,6 +134,38 @@ class MongoLockTest extends TestCase
         $this->assertFalse($resoredLock->isOwnedByCurrentProcess());
     }
 
+    #[TestWith(['$owner'])]
+    #[TestWith(['$literal'])]
+    #[TestWith(['$$ROOT'])]
+    public function testAcquireCannotTakeOverAnotherOwnersLockWithADollarPrefixedOwner(string $maliciousOwner): void
+    {
+        $lock = $this->getCache()->lock('foo', 100, 'legit-owner');
+        $this->assertTrue($lock->get());
+
+        $attackerLock = $this->getCache()->lock('foo', 1, $maliciousOwner);
+        $this->assertFalse($attackerLock->acquire());
+
+        $this->assertTrue($lock->isOwnedByCurrentProcess());
+
+        $attackerLock->release();
+        $lock->release();
+    }
+
+    #[TestWith(['$owner'])]
+    #[TestWith(['$literal'])]
+    #[TestWith(['$$ROOT'])]
+    public function testAcquireStoresADollarPrefixedOwnerAsALiteralValue(string $owner): void
+    {
+        $lock = $this->getCache()->lock('foo', 10, $owner);
+        $this->assertTrue($lock->get());
+        $this->assertSame($owner, $lock->owner());
+
+        $restoredLock = $this->getCache()->restoreLock('foo', $owner);
+        $this->assertTrue($restoredLock->isOwnedByCurrentProcess());
+
+        $restoredLock->release();
+    }
+
     public function testTTLIndex()
     {
         $store = $this->getCache()->lock('')->createTTLIndex();
