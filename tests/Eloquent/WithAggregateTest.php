@@ -298,6 +298,24 @@ class WithAggregateTest extends TestCase
         self::assertSame(1, $users[0]->books_count);
     }
 
+    public function testLoadSumAvgMinMax(): void
+    {
+        $user = User::create(['name' => 'Alice']);
+        $user->items()->create(['name' => 'knife', 'amount' => 4]);
+        $user->items()->create(['name' => 'fork', 'amount' => 6]);
+
+        $user = User::first();
+        $user->loadSum('items', 'amount');
+        $user->loadAvg('items', 'amount');
+        $user->loadMin('items', 'amount');
+        $user->loadMax('items', 'amount');
+
+        self::assertSame(10, $user->items_sum_amount);
+        self::assertSame(5.0, $user->items_avg_amount);
+        self::assertSame(4, $user->items_min_amount);
+        self::assertSame(6, $user->items_max_amount);
+    }
+
     public function testWithCountWithSelectAndPaginate(): void
     {
         $author = User::create(['name' => 'Alice']);
