@@ -16,6 +16,7 @@ use function array_column;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -129,6 +130,42 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
     }
 
+    /**
+     * Create an encrypted collection and generate its missing data keys.
+     *
+     * @param  string              $collection
+     * @param  Closure|null        $callback
+     * @param  array<string,mixed> $options
+     *
+     * @return array<string,mixed>
+     */
+    public function createEncrypted(string $collection, ?Closure $callback = null, array $options = []): array
+    {
+        $config = $this->connection->getConfig('driver_options.autoEncryption');
+        $fields = $this->connection->encryptedFieldsFor($collection);
+
+        $kmsProvider = array_key_first($config['kmsProviders']) ?: 'local';
+        $masterKey = isset($config['masterKey']) && is_array($config['masterKey']) ? $config['masterKey'] : null;
+        $clientEncryption = $this->connection->getClientEncryption();
+
+        $resolvedMap = $this->connection->resolveOrCreateEncryptionKeys([$collection => ['fields' => $fields]]);
+        $map = $resolvedMap[$collection];
+
+        $encryptedFields = $this->connection->getDatabase()->createEncryptedCollection(
+            $collection,
+            $clientEncryption,
+            $kmsProvider,
+            $masterKey,
+            [...$options, 'encryptedFields' => $map, 'keyVaultNamespace' => $config['keyVaultNamespace']],
+        );
+
+        if ($callback instanceof Closure) {
+            $callback($this->createBlueprint($collection));
+        }
+
+        return $encryptedFields;
+    }
+
     /** @inheritdoc */
     #[Override]
     public function dropIfExists($table)
@@ -155,6 +192,10 @@ class Builder extends \Illuminate\Database\Schema\Builder
      * In MongoDB, dropping the whole database is much faster than dropping collections
      * one by one. The database will be automatically recreated when a new connection
      * writes to it.
+     *
+     * Warning: with Queryable Encryption enabled, dropping the whole database also
+     * removes the key vault collection and every data encryption key it holds when
+     * the vault lives in this database. This is unrecoverable.
      */
     #[Override]
     public function dropAllTables()

@@ -5,12 +5,16 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Foundation\Application;
+use MongoDB\Driver\Exception\ConnectionException;
+use MongoDB\Driver\Exception\ConnectionTimeoutException;
 use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Laravel\MongoDBServiceProvider;
 use MongoDB\Laravel\Schema\Builder;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Validation\ValidationServiceProvider;
 use Orchestra\Testbench\TestCase as OrchestraTestCase;
+
+use function version_compare;
 
 class TestCase extends OrchestraTestCase
 {
@@ -77,6 +81,31 @@ class TestCase extends OrchestraTestCase
             }
 
             throw $e;
+        }
+    }
+
+    /**
+     * Skip when Queryable Encryption is not usable on the connection: the
+     * encryptedFieldsMap must be configured and the server must be recent
+     * enough (8.0+ for range and Community support) and a replica set or a
+     * sharded cluster.
+     */
+    public function skipIfQEIsNotSupported(): void
+    {
+        $connection = $this->getConnection('mongodb');
+
+        if (! $connection->isAutoEncryptionEnabled('patients') && ! $connection->isAutoEncryptionEnabled('users')) {
+            self::markTestSkipped('Queryable Encryption is not configured on the "mongodb" connection.');
+        }
+
+        try {
+            $version = $connection->getServerVersion();
+        } catch (ConnectionException | ConnectionTimeoutException) {
+            self::markTestSkipped('A MongoDB server is not reachable.');
+        }
+
+        if (version_compare($version, '8.0', '<')) {
+            self::markTestSkipped('Queryable Encryption requires MongoDB 8.0 or later.');
         }
     }
 }

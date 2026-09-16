@@ -10,11 +10,13 @@ use InvalidArgumentException;
 use MongoDB\Client;
 use MongoDB\Collection;
 use MongoDB\Database;
+use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\AuthenticationException;
 use MongoDB\Driver\Exception\ConnectionException;
 use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Concerns\ManagesTransactions;
+use MongoDB\Laravel\Encryption\AutoEncryption;
 use OutOfBoundsException;
 use Override;
 use Throwable;
@@ -54,6 +56,8 @@ class Connection extends BaseConnection
 
     private ?CommandSubscriber $commandSubscriber = null;
 
+    private ?AutoEncryption $autoEncryption = null;
+
     /** @var bool Whether to rename the rename "id" into "_id" for embedded documents. */
     private bool $renameEmbeddedIdField;
 
@@ -70,9 +74,13 @@ class Connection extends BaseConnection
         // You can pass options directly to the MongoDB constructor
         $options = $config['options'] ?? [];
 
+        // Resolve the database name first: the default alternate key name uses
+        // it while the automatic encryption options are normalized in
+        // createConnection().
+        $this->database = $this->getDefaultDatabaseName($dsn, $config);
+
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
-        $this->database = $this->getDefaultDatabaseName($dsn, $config);
 
         // Select database
         $this->db = $this->connection->getDatabase($this->database);
@@ -86,6 +94,15 @@ class Connection extends BaseConnection
         $this->useDefaultQueryGrammar();
 
         $this->renameEmbeddedIdField = $config['rename_embedded_id_field'] ?? true;
+    }
+
+    private function encryption(): ?AutoEncryption
+    {
+        if ($this->autoEncryption === null && isset($this->config['driver_options']['autoEncryption'])) {
+            $this->autoEncryption = new AutoEncryption($this, $this->getDsn($this->config), $this->config);
+        }
+
+        return $this->autoEncryption;
     }
 
     /**
@@ -261,7 +278,84 @@ class Connection extends BaseConnection
             $driverOptions += ['connectionName' => $config['name']];
         }
 
+        $driverOptions = $this->encryption()?->prepareDriverOptions($driverOptions) ?? $driverOptions;
+
         return new Client($dsn, $options, $driverOptions);
+    }
+
+    /**
+     * @param  array<string, mixed> $encryptedFieldsMap
+     *
+     * @return array<string, mixed>
+     */
+    public function normalizeEncryptedFieldsMap(array $encryptedFieldsMap): array
+    {
+        return $this->encryption()?->normalizeEncryptedFieldsMap($encryptedFieldsMap) ?? $encryptedFieldsMap;
+    }
+
+    /**
+     * @param  array<string, mixed> $encryptedFieldsMap
+     *
+     * @return array<string, mixed>
+     */
+    public function resolveOrCreateEncryptionKeys(array $encryptedFieldsMap): array
+    {
+        return $this->encryption()?->resolveOrCreateEncryptionKeys($encryptedFieldsMap) ?? $encryptedFieldsMap;
+    }
+
+    /** @param array<string, mixed> $config */
+    public function isEncryptionEnabled(array $config): bool
+    {
+        return $this->encryption()?->isEncryptionEnabled($config) ?? false;
+    }
+
+    public function isAutoEncryptionEnabled(?string $collection = null): bool
+    {
+        return $this->encryption()?->isAutoEncryptionEnabled($collection) ?? false;
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     *
+     * @throws InvalidArgumentException
+     */
+    public function encryptedFieldsFor(string $collection): array
+    {
+        $encryption = $this->encryption();
+
+        if ($encryption === null) {
+            throw new InvalidArgumentException('Queryable Encryption is not enabled on this connection.');
+        }
+
+        return $encryption->encryptedFieldsFor($collection);
+    }
+
+    /**
+     * @param  array<string, mixed> $autoEncryption
+     *
+     * @return array<string, mixed>
+     */
+    public function validateAutoEncryptionConfig(array $autoEncryption): array
+    {
+        return $this->encryption()?->validateAutoEncryptionConfig($autoEncryption) ?? $autoEncryption;
+    }
+
+    /** @throws InvalidArgumentException */
+    public function getClientEncryption(): ClientEncryption
+    {
+        $encryption = $this->encryption();
+
+        if ($encryption === null) {
+            throw new InvalidArgumentException('Queryable Encryption is not enabled on this connection.');
+        }
+
+        return $encryption->getClientEncryption();
+    }
+
+    /** @return array<string, mixed> */
+    public function getEncryptionOptions(): array
+    {
+        return $this->encryption()?->getEncryptionOptions() ?? [];
     }
 
     /**
@@ -432,7 +526,7 @@ class Connection extends BaseConnection
         return $this->db->command(['buildInfo' => 1])->toArray()[0]['version'];
     }
 
-    private static function getVersion(): string
+    public static function getVersion(): string
     {
         return self::$version ?? self::lookupVersion();
     }
