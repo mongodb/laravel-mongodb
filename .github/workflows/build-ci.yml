@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
 
     name: PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }} Server/${{ matrix.mongodb }} ${{ matrix.mode }}
 
@@ -77,6 +77,26 @@ jobs:
           driver: ${{ matrix.driver }}
           extensions: curl,mbstring,xdebug
           coverage: xdebug
+
+      - name: Resolve crypt_shared
+        id: crypt-shared
+        if: matrix.mongodb == '8.0'
+        run: php -d display_errors=stderr .github/scripts/crypt_shared_version.php --target ubuntu2404 >> "$GITHUB_OUTPUT"
+
+      - name: Cache crypt_shared library
+        if: matrix.mongodb == '8.0'
+        uses: actions/cache@v6
+        with:
+          path: /tmp/crypt_shared
+          key: crypt-shared-ubuntu2404-${{ steps.crypt-shared.outputs.version }}
+
+      - name: Install crypt_shared library
+        if: matrix.mongodb == '8.0'
+        run: |
+          library=$(php -d display_errors=stderr .github/scripts/crypt_shared_download.php \
+            --url "${{ steps.crypt-shared.outputs.url }}" \
+            --sha256 "${{ steps.crypt-shared.outputs.sha256 }}")
+          echo "CRYPT_SHARED_LIB_PATH=${library}" >> "$GITHUB_ENV"
 
       - name: Show Docker version
         if: ${{ runner.debug }}

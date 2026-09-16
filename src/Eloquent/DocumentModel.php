@@ -13,6 +13,7 @@ use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Concerns\HasAttributes;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
@@ -25,6 +26,7 @@ use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
+use MongoDB\Laravel\Encryption\AutoEncryption;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use ReflectionProperty;
 use Stringable;
@@ -258,6 +260,15 @@ trait DocumentModel
     {
         $key = (string) $key;
 
+        // The encrypted reserved field is managed by the server. Reject any
+        // write, including a direct assignment or a dotted sub-path, so it can
+        // never be forged or desynchronized by the application.
+        if (AutoEncryption::isSafeContentKey($key)) {
+            throw new MassAssignmentException(
+                sprintf('The reserved field [%s] is managed by the server and cannot be set on model [%s].', '__safeContent__', static::class),
+            );
+        }
+
         $casts = $this->getCasts();
         if (array_key_exists($key, $casts)) {
             $castType = $this->getCastType($key);
@@ -448,6 +459,13 @@ trait DocumentModel
     public function offsetUnset($offset): void
     {
         $offset = (string) $offset;
+
+        // Reject attempts to unset the server-managed encrypted field.
+        if (AutoEncryption::isSafeContentKey($offset)) {
+            throw new MassAssignmentException(
+                sprintf('The reserved field [%s] is managed by the server and cannot be unset on model [%s].', '__safeContent__', static::class),
+            );
+        }
 
         if (str_contains($offset, '.')) {
             // Update the field in the subdocument
