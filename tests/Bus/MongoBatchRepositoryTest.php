@@ -9,6 +9,7 @@ use Illuminate\Bus\BatchFactory;
 use Illuminate\Bus\PendingBatch;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Queue\Factory;
+use Illuminate\Contracts\Queue\Queue;
 use Illuminate\Queue\CallQueuedClosure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Tests\Bus\BusBatchTest;
@@ -82,7 +83,7 @@ final class MongoBatchRepositoryTest extends TestCase
 
         $queue->shouldReceive('connection')->once()
             ->with('test-connection')
-            ->andReturn($connection = m::mock(stdClass::class));
+            ->andReturn($connection = m::mock(Queue::class));
 
         $connection->shouldReceive('bulk')->once()->with(m::on(function ($args) use ($job, $secondJob) {
             return $args[0] === $job &&
@@ -309,7 +310,7 @@ final class MongoBatchRepositoryTest extends TestCase
 
         $queue->shouldReceive('connection')->once()
             ->with('test-connection')
-            ->andReturn($connection = m::mock(stdClass::class));
+            ->andReturn($connection = m::mock(Queue::class));
 
         $connection->shouldReceive('bulk')->once()->with(m::on(function ($args) use ($chainHeadJob, $secondJob, $thirdJob) {
             return $args[0] === $chainHeadJob
