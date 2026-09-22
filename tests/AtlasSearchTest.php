@@ -28,17 +28,17 @@ class AtlasSearchTest extends TestCase
 {
     use AtlasSearchIndexManagement;
 
-    private array $vectors;
+    private static array $vectors;
 
-    public function setUp(): void
+    public static function setUpBeforeClass(): void
     {
-        parent::setUp();
+        parent::setUpBeforeClass();
 
-        $collection = $this->getConnection('mongodb')->getCollection('books');
+        $collection = self::getConnection('mongodb')->getCollection('books');
         assert($collection instanceof MongoDBCollection);
         $collection->drop();
 
-        Book::insert($this->addVector([
+        Book::insert(self::addVector([
             ['title' => 'Introduction to Algorithms'],
             ['title' => 'Clean Code: A Handbook of Agile Software Craftsmanship'],
             ['title' => 'Design Patterns: Elements of Reusable Object-Oriented Software'],
@@ -62,7 +62,7 @@ class AtlasSearchTest extends TestCase
         ]));
 
         try {
-            $this->waitForSearchIndexesDropped($collection);
+            self::waitForSearchIndexesDropped($collection);
 
             $collection->createSearchIndex([
                 'mappings' => [
@@ -95,14 +95,14 @@ class AtlasSearchTest extends TestCase
             throw $e;
         }
 
-        $this->waitForSearchIndexesReady($collection);
+        self::waitForSearchIndexesReady($collection);
     }
 
-    public function tearDown(): void
+    public static function tearDownAfterClass(): void
     {
-        $this->getConnection('mongodb')->getCollection('books')->drop();
+        self::getConnection('mongodb')->getCollection('books')->drop();
 
-        parent::tearDown();
+        parent::tearDownAfterClass();
     }
 
     public function testGetIndexes()
@@ -214,7 +214,7 @@ class AtlasSearchTest extends TestCase
             ->vectorSearch(
                 index: 'vector',
                 path: 'vector4',
-                queryVector: $this->vectors[7], // This is an exact match of the vector
+                queryVector: self::$vectors[7], // This is an exact match of the vector
                 limit: 4,
                 exact: true,
             );
@@ -230,7 +230,7 @@ class AtlasSearchTest extends TestCase
         $results = Book::vectorSearch(
             index: 'vector',
             path: 'vector4',
-            queryVector: $this->vectors[7],
+            queryVector: self::$vectors[7],
             limit: 5,
             numCandidates: 15,
             // excludes the exact match
@@ -275,7 +275,7 @@ class AtlasSearchTest extends TestCase
             throw $e;
         }
 
-        $this->waitForSearchIndexesReady($collection);
+        self::waitForSearchIndexesReady($collection);
 
         // Query with a lighter model (voyage-4-lite) than the indexing model (voyage-4-large);
         // all voyage-4 embeddings are compatible.
@@ -294,11 +294,11 @@ class AtlasSearchTest extends TestCase
     }
 
     /** Generate random vectors using fixed seed to make tests deterministic */
-    private function addVector(array $items): array
+    private static function addVector(array $items): array
     {
         srand(1);
         foreach ($items as &$item) {
-            $this->vectors[] = $item['vector4'] = array_map(fn () => rand() / mt_getrandmax(), range(0, 3));
+            self::$vectors[] = $item['vector4'] = array_map(fn () => rand() / mt_getrandmax(), range(0, 3));
         }
 
         return $items;
