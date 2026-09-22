@@ -28,14 +28,41 @@ class AtlasSearchTest extends TestCase
 {
     use AtlasSearchIndexManagement;
 
-    private static array $vectors;
+    /** Vectors generated for the fixture, shared across all tests in this class. */
+    private static array $vectors = [];
 
-    public static function setUpBeforeClass(): void
+    /** Whether the expensive Atlas Search fixture has already been loaded for this class. */
+    private static bool $fixtureLoaded = false;
+
+    /** Whether the server reported that Atlas Search is not supported. */
+    private static bool $atlasSearchNotSupported = false;
+
+    /** Cached collection handle so tearDownAfterClass() can drop it without a bootstrapped app. */
+    private static ?MongoDBCollection $collection = null;
+
+    protected function setUp(): void
     {
-        parent::setUpBeforeClass();
+        parent::setUp();
 
-        $collection = self::getConnection('mongodb')->getCollection('books');
+        // The fixture is read-only for every test except the auto-embedding one, which
+        // cleans up its own extra index. Load it once per class instead of per test:
+        // recreating the collection, inserting 20 documents, and waiting on 3 search
+        // indexes is the most expensive part of this file and brings no isolation gain.
+        if (self::$atlasSearchNotSupported) {
+            self::markTestSkipped('Atlas Search not supported.');
+        }
+
+        if (! self::$fixtureLoaded) {
+            $this->loadAtlasSearchFixture();
+            self::$fixtureLoaded = true;
+        }
+    }
+
+    private function loadAtlasSearchFixture(): void
+    {
+        $collection = $this->getConnection('mongodb')->getCollection('books');
         assert($collection instanceof MongoDBCollection);
+        self::$collection = $collection;
         $collection->drop();
 
         Book::insert(self::addVector([
@@ -62,7 +89,7 @@ class AtlasSearchTest extends TestCase
         ]));
 
         try {
-            self::waitForSearchIndexesDropped($collection);
+            $this->waitForSearchIndexesDropped($collection);
 
             $collection->createSearchIndex([
                 'mappings' => [
@@ -89,18 +116,26 @@ class AtlasSearchTest extends TestCase
             ], ['name' => 'vector', 'type' => 'vectorSearch']);
         } catch (ServerException $e) {
             if (Builder::isAtlasSearchNotSupportedException($e)) {
+                self::$atlasSearchNotSupported = true;
                 self::markTestSkipped('Atlas Search not supported. ' . $e->getMessage());
             }
 
             throw $e;
         }
 
-        self::waitForSearchIndexesReady($collection);
+        $this->waitForSearchIndexesReady($collection);
     }
 
     public static function tearDownAfterClass(): void
     {
-        self::getConnection('mongodb')->getCollection('books')->drop();
+        // Drop the shared collection once the whole class is done. The cached Collection
+        // handle carries its own driver Manager, so this works without a bootstrapped app.
+        self::$collection?->drop();
+
+        self::$collection = null;
+        self::$fixtureLoaded = false;
+        self::$vectors = [];
+        self::$atlasSearchNotSupported = false;
 
         parent::tearDownAfterClass();
     }
@@ -275,26 +310,36 @@ class AtlasSearchTest extends TestCase
             throw $e;
         }
 
-        self::waitForSearchIndexesReady($collection);
+        try {
+            $this->waitForSearchIndexesReady($collection);
 
-        // Query with a lighter model (voyage-4-lite) than the indexing model (voyage-4-large);
-        // all voyage-4 embeddings are compatible.
-        $results = Book::vectorSearch(
-            index: 'auto_embed',
-            path: 'title',
-            query: 'machine learning textbook',
-            model: 'voyage-4-lite',
-            limit: 3,
-        );
+            // Query with a lighter model (voyage-4-lite) than the indexing model (voyage-4-large);
+            // all voyage-4 embeddings are compatible.
+            $results = Book::vectorSearch(
+                index: 'auto_embed',
+                path: 'title',
+                query: 'machine learning textbook',
+                model: 'voyage-4-lite',
+                limit: 3,
+            );
 
-        self::assertInstanceOf(EloquentCollection::class, $results);
-        self::assertCount(3, $results);
-        self::assertInstanceOf(Book::class, $results->first());
-        self::assertIsFloat($results->first()->vectorSearchScore);
+            self::assertInstanceOf(EloquentCollection::class, $results);
+            self::assertCount(3, $results);
+            self::assertInstanceOf(Book::class, $results->first());
+            self::assertIsFloat($results->first()->vectorSearchScore);
+        } finally {
+            // This test mutates the shared fixture by adding an index. Drop it and wait
+            // for the deletion to complete so the shared state stays at the 4 indexes
+            // the other tests expect, regardless of test execution order. We cannot use
+            // waitForSearchIndexesDropped() here: it waits for ALL indexes to be gone,
+            // which would time out because the 3 fixture indexes remain.
+            $collection->dropSearchIndex('auto_embed');
+            $this->waitForSearchIndexDropped($collection, 'auto_embed');
+        }
     }
 
     /** Generate random vectors using fixed seed to make tests deterministic */
-    private static function addVector(array $items): array
+    private function addVector(array $items): array
     {
         srand(1);
         foreach ($items as &$item) {
