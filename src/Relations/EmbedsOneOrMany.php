@@ -128,7 +128,7 @@ abstract class EmbedsOneOrMany extends Relation
     {
         throw_if($columns !== '*', new LogicException('The columns parameter should not be used.'));
 
-        return count($this->getEmbedded());
+        return count($this->getEmbedded() ?? []);
     }
 
     /**
