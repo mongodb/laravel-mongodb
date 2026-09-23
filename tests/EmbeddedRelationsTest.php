@@ -624,6 +624,26 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertNull($user->father);
     }
 
+    public function testEmbedsManyCountOnUnsetEmbeddedAttribute()
+    {
+        // A freshly created model has no embedded attribute set. Calling
+        // count() on the relation must report 0 rather than erroring.
+        $user = User::create(['name' => 'John Doe']);
+
+        $this->assertSame(0, $user->addresses()->count());
+    }
+
+    public function testEmbedsOneCountOnUnsetEmbeddedAttribute()
+    {
+        // Unlike embedsMany, embedsOne does not normalise getEmbedded() to
+        // an array, so the parent count() receives null when the embedded
+        // attribute is unset. This must report 0 rather than triggering a
+        // TypeError (count(null)) under PHP 8.0+.
+        $user = User::create(['name' => 'John Doe']);
+
+        $this->assertSame(0, $user->father()->count());
+    }
+
     public function testEmbedsOneDelete()
     {
         $user   = User::create(['name' => 'John Doe']);
