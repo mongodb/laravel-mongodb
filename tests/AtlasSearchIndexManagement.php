@@ -30,6 +30,36 @@ trait AtlasSearchIndexManagement
     }
 
     /**
+     * Waits for a single named search index to be deleted.
+     *
+     * Unlike waitForSearchIndexesDropped(), this does not require the collection
+     * to be empty of all indexes, so it can be used to clean up one extra index
+     * while the shared fixture indexes remain in place.
+     */
+    public function waitForSearchIndexDropped(Collection $collection, string $name, int $timeoutSeconds = 120)
+    {
+        $timeout = hrtime()[0] + $timeoutSeconds;
+        while ($this->hasSearchIndex($collection, $name)) {
+            if (hrtime()[0] > $timeout) {
+                throw new RuntimeException('Timed out waiting for search index "' . $name . '" to be dropped');
+            }
+
+            usleep(1000);
+        }
+    }
+
+    private function hasSearchIndex(Collection $collection, string $name): bool
+    {
+        foreach ($collection->listSearchIndexes(['name' => $name]) as $index) {
+            if (($index['name'] ?? null) === $name) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Waits for all search indexes to be ready
      */
     public function waitForSearchIndexesReady(Collection $collection, int $timeoutSeconds = 120)
