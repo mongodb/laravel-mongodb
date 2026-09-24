@@ -244,6 +244,8 @@ trait HybridRelations
         // we will pass in the appropriate values so that it behaves as expected.
         $class = $this->getActualClassNameForMorph($class);
 
+        MorphTo::assertMorphTypeIsEloquentModel($class);
+
         $instance = new $class();
 
         $ownerKey ??= $instance->getKeyName();

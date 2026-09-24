@@ -6,8 +6,12 @@ namespace MongoDB\Laravel\Relations;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo as EloquentMorphTo;
+use InvalidArgumentException;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use Override;
+
+use function is_a;
+use function sprintf;
 
 /**
  * @template TRelatedModel of Model
@@ -39,5 +43,31 @@ class MorphTo extends EloquentMorphTo
     protected function whereInMethod(Model $model, $key)
     {
         return 'whereIn';
+    }
+
+    /** @inheritdoc */
+    #[Override]
+    public function createModelByType($type)
+    {
+        self::assertMorphTypeIsEloquentModel(Model::getActualClassNameForMorph($type));
+
+        return parent::createModelByType($type);
+    }
+
+    /**
+     * @internal
+     *
+     * @throws InvalidArgumentException when the resolved morph type does not resolve to an Eloquent model.
+     */
+    public static function assertMorphTypeIsEloquentModel(string $class): void
+    {
+        if (is_a($class, Model::class, true)) {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'The morph type "%s" does not resolve to an Eloquent model.',
+            $class,
+        ));
     }
 }
