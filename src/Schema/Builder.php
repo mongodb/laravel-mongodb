@@ -7,10 +7,12 @@ namespace MongoDB\Laravel\Schema;
 use Closure;
 use MongoDB\Collection;
 use MongoDB\Driver\Exception\ServerException;
+use MongoDB\Exception\SearchNotSupportedException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Model\CollectionInfo;
 use MongoDB\Model\IndexInfo;
 use Override;
+use RuntimeException;
 
 use function array_column;
 use function array_fill_keys;
@@ -382,9 +384,45 @@ class Builder extends \Illuminate\Database\Schema\Builder
         return $collections;
     }
 
+    /**
+     * Ensure Atlas Search is available on the connection. It is required to create
+     * search and vector search indexes, and to run search queries.
+     *
+     * @param string|null $schema Database name
+     *
+     * @throws RuntimeException If Atlas Search is not available.
+     */
+    #[Override]
+    public function ensureVectorExtensionExists($schema = null)
+    {
+        $collection = $this->connection->getDatabase($schema)->getCollection('any');
+        assert($collection instanceof Collection);
+
+        $message = 'Atlas Search is not available on this MongoDB deployment. Use MongoDB Atlas or a local Atlas deployment. ';
+
+        try {
+            // The collection doesn't need to exist to know whether Atlas Search is available
+            $collection->listSearchIndexes(['name' => 'any']);
+        } catch (SearchNotSupportedException $exception) {
+            throw new RuntimeException($message . $exception->getMessage(), 0, $exception);
+        } catch (ServerException $exception) {
+            // mongodb/mongodb 1.x doesn't throw SearchNotSupportedException
+            if (self::isAtlasSearchNotSupportedException($exception)) {
+                throw new RuntimeException($message . $exception->getMessage(), 0, $exception);
+            }
+
+            throw $exception;
+        }
+    }
+
     /** @internal */
     public static function isAtlasSearchNotSupportedException(ServerException $e): bool
     {
+        if ($e instanceof SearchNotSupportedException) {
+            return true;
+        }
+
+        // mongodb/mongodb 1.x doesn't throw SearchNotSupportedException
         return in_array($e->getCode(), [
             59,      // MongoDB 4 to 6, 7-community: no such command: 'createSearchIndexes'
             40324,   // MongoDB 4 to 6: Unrecognized pipeline stage name: '$listSearchIndexes'
