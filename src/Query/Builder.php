@@ -116,6 +116,14 @@ class Builder extends BaseBuilder
     private ReadPreference $readPreference;
 
     /**
+     * Converters applied to the where values of fields that the Eloquent model casts to a BSON key type
+     * (ObjectId or Binary UUID), indexed by field name. They extend the default conversion of "_id" fields.
+     *
+     * @var array<string, callable(mixed): mixed>
+     */
+    private array $keyCasts = [];
+
+    /**
      * Custom options to add to the query.
      *
      * @var array
@@ -1165,6 +1173,40 @@ class Builder extends BaseBuilder
         return new static($this->connection, $this->grammar, $this->processor);
     }
 
+    /**
+     * Convert the where values of the given fields to their native BSON key type, like "_id" values are.
+     *
+     * Field names are aliased like where columns, so "id" registers a converter for "_id".
+     *
+     * @param array<string, callable(mixed): mixed> $keyCasts Converter indexed by field name
+     *
+     * @return $this
+     */
+    public function setKeyCasts(array $keyCasts): static
+    {
+        $this->keyCasts = [];
+
+        foreach ($keyCasts as $field => $convert) {
+            $field = (string) array_key_first($this->grammar->prepareFieldsForQuery([$field => null]));
+
+            $this->keyCasts[$field] = $convert;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return static
+     *
+     * @inheritdoc
+     */
+    #[Override]
+    public function forNestedWhere()
+    {
+        // Nested wheres target the same collection, so they convert the same fields.
+        return parent::forNestedWhere()->setKeyCasts($this->keyCasts);
+    }
+
     #[Override]
     public function runPaginationCountQuery($columns = ['*'])
     {
@@ -1403,9 +1445,19 @@ class Builder extends BaseBuilder
                 );
 
                 // Convert id's. The primary key rejects operator arrays; embedded ids keep operator queries.
-                if ($where['column'] === '_id' || str_ends_with($where['column'], '._id')) {
-                    $convert = $where['column'] === '_id' ? $this->convertKey(...) : $this->castKey(...);
+                if ($where['column'] === '_id') {
+                    self::assertKeyIsNotOperator($where['values'] ?? $where['value'] ?? null);
+                }
 
+                // Fields cast to a BSON key type by the model use their own converter, "_id" fields
+                // default to the ObjectId and UUID heuristic.
+                $convert = $this->keyCasts[$where['column']] ?? null;
+
+                if ($convert === null && ($where['column'] === '_id' || str_ends_with($where['column'], '._id'))) {
+                    $convert = $this->castKey(...);
+                }
+
+                if ($convert !== null) {
                     if (isset($where['values'])) {
                         $where['values'] = array_map($convert, $where['values']);
                     } elseif (isset($where['value'])) {
