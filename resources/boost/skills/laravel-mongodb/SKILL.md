@@ -53,7 +53,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 
 - Extend `MongoDB\Laravel\Eloquent\Model` (or apply `DocumentModel` trait to base classes you cannot change).
 - Cast `_id` to string in every API resource: `'id' => (string) $this->_id`.
-- Cast FK fields to `string` via `$casts` on the child model when FK values may come from outside model attributes (imports, raw ObjectIds) — prevents BSON type mismatches on direct `where('author_id', $id)` queries.
+- Cast FK fields via `$casts` on the child model when FK values may come from outside model attributes (imports, raw ObjectIds) — `'string'` to store strings, or `MongoDB\Laravel\Eloquent\Casts\ObjectId::class` to store native ObjectIds. Both prevent BSON type mismatches on direct `where('author_id', $id)` queries; the ObjectId cast also converts strings in `where()`, `whereIn()` and relation queries (including polymorphic `*_id` keys).
 - Eager-load with `::with()` — MongoDB does no server-side joins for Eloquent relations.
 - Use aggregation pipeline for grouping, counting per group, `$lookup`, and `$sample`.
 - Relation aggregates (`withCount()`, `withExists()`, `withSum()`, `withAvg()`, `withMin()`, `withMax()`) are supported. Use a `$lookup` pipeline when the aggregated value must be filtered, sorted or paginated on.
