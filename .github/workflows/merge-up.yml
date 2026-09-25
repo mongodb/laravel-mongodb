@@ -31,4 +31,5 @@ jobs:
           ref: ${{ github.ref_name }}
           branchNamePattern: '<major>.<minor>'
           devBranchNamePattern: '<major>.x'
+          labels: merge-up
           enableAutoMerge: true
