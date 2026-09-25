@@ -15,9 +15,11 @@ use MongoDB\Builder\Type\SearchOperatorInterface;
 use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Eloquent\Casts\ConvertsQueryValues;
 use MongoDB\Laravel\Helpers\QueriesRelationshipAggregates;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Query\AggregationBuilder;
+use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use MongoDB\Model\BSONDocument;
 use Override;
 
@@ -26,6 +28,8 @@ use function array_map;
 use function array_merge;
 use function array_replace;
 use function collect;
+use function explode;
+use function is_a;
 use function is_array;
 use function is_object;
 use function iterator_to_array;
@@ -42,6 +46,42 @@ class Builder extends EloquentBuilder
     use QueriesRelationshipAggregates;
 
     private const DUPLICATE_KEY_ERROR = 11000;
+
+    /** @inheritdoc */
+    #[Override]
+    public function setModel(Model $model)
+    {
+        parent::setModel($model);
+
+        if ($this->query instanceof QueryBuilder) {
+            $this->query->setKeyCasts(self::getKeyCasts($model));
+        }
+
+        return $this;
+    }
+
+    /**
+     * Where value converters for the attributes cast with a cast that converts query values
+     * (AsObjectId, AsBinaryUuid), so that queries on these attributes accept the string
+     * representation exposed by the model, like "_id" does.
+     *
+     * @return array<string, callable(mixed): mixed>
+     */
+    private static function getKeyCasts(Model $model): array
+    {
+        $keyCasts = [];
+
+        foreach ($model->getCasts() as $key => $castType) {
+            // Strip the cast parameters, e.g. "datetime:Y-m-d"
+            $castClass = explode(':', $castType, 2)[0];
+
+            if (is_a($castClass, ConvertsQueryValues::class, true)) {
+                $keyCasts[$key] = $castClass::convertQueryValue(...);
+            }
+        }
+
+        return $keyCasts;
+    }
 
     /**
      * The methods that should be returned from query builder.
