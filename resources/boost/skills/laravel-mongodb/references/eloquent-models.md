@@ -34,7 +34,26 @@ final class Movie extends Model
 }
 ```
 
+## `$casts` for dates
+
+Declare date fields with `$casts` (the `$dates` property is not supported). `DateTimeInterface` values (`Carbon`, `DateTime`) are converted to BSON `UTCDateTime` on write by the query layer. Mass `Model::where(...)->update([...])` also applies date casts, so parseable date strings on a cast field become `UTCDateTime` — the same as `$model->fill([...])->save()`:
+
+```php
+use App\Models\Event;
+use Illuminate\Support\Carbon;
+
+Event::where('match', true)->update([
+    'end_date' => Carbon::parse('2021-01-08 10:00'),
+]);
+Event::where('match', true)->update([
+    'end_date' => '2021-01-08T10:00:00+00:00',
+]);
+```
+
+Without a date cast, a string stays a string. Prefer `datetime` over a custom format (`datetime:Y-m-d`) for fields you store as BSON dates.
+
 ## `_id` vs `id`
+
 
 - BSON field is `_id` (default ObjectId, but any BSON type can be used); PHP exposes both `$model->id` and `$model->_id`.
 - In API resources, always cast an ObjectId `_id` to string so clients receive `"6708..."` not `{"$oid":"6708..."}`:
