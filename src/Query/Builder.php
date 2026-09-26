@@ -745,9 +745,13 @@ class Builder extends BaseBuilder
         return $this;
     }
 
-    /** @inheritdoc */
+    /**
+     * @param array $options Driver options (e.g. writeConcern) passed to insertMany
+     *
+     * @inheritdoc
+     */
     #[Override]
-    public function insert(array $values)
+    public function insert(array $values, array $options = [])
     {
         // Allow empty insert batch for consistency with Eloquent SQL
         if ($values === []) {
@@ -776,18 +780,22 @@ class Builder extends BaseBuilder
             $values,
         );
 
-        $options = $this->inheritConnectionOptions();
+        $options = $this->inheritConnectionOptions(array_replace($this->options, $options));
 
         $result = $this->collection->insertMany($values, $options);
 
         return $result->isAcknowledged();
     }
 
-    /** @inheritdoc */
+    /**
+     * @param array $options Driver options (e.g. writeConcern) passed to insertOne
+     *
+     * @inheritdoc
+     */
     #[Override]
-    public function insertGetId(array $values, $sequence = null)
+    public function insertGetId(array $values, $sequence = null, array $options = [])
     {
-        $options = $this->inheritConnectionOptions();
+        $options = $this->inheritConnectionOptions(array_replace($this->options, $options));
 
         $values = $this->grammar->prepareFieldsForQuery($values);
 
@@ -983,9 +991,14 @@ class Builder extends BaseBuilder
         return new Collection($p);
     }
 
-    /** @inheritdoc */
+    /**
+     * @param mixed $id
+     * @param array $options Driver options (e.g. writeConcern) passed to deleteOne/deleteMany
+     *
+     * @inheritdoc
+     */
     #[Override]
-    public function delete($id = null)
+    public function delete($id = null, array $options = [])
     {
         // If an ID is passed to the method, we will set the where clause to check
         // the ID to allow developers to simply and quickly remove a single row
@@ -996,7 +1009,7 @@ class Builder extends BaseBuilder
 
         $wheres = $this->compileWheres();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
-        $options = $this->inheritConnectionOptions();
+        $options = $this->inheritConnectionOptions(array_replace($this->options, $options));
 
         /**
          * Ignore the limit if it is set to more than 1, as it is not supported by the deleteMany method.

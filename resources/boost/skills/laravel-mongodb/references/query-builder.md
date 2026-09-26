@@ -12,6 +12,28 @@
 | `inRandomOrder()` | unsupported | aggregation `$sample` |
 | SQL `JOIN` | unsupported | aggregation `$lookup` |
 
+## Driver options on write operations
+
+`insert()`, `insertGetId()`, `update()` and `delete()` accept a driver `$options` array (write concern, session, …), merged with any options set via `->options([...])`:
+
+```php
+use Illuminate\Support\Facades\DB;
+use MongoDB\Driver\WriteConcern;
+
+// Fire-and-forget insert (do not wait for server acknowledgement)
+DB::table('logs')->insert(
+    ['msg' => 'api.hit', 'at' => now()],
+    ['writeConcern' => new WriteConcern(0)],
+);
+
+DB::table('logs')
+    ->options(['writeConcern' => new WriteConcern(0)])
+    ->where('expired', true)
+    ->delete();
+```
+
+With `WriteConcern(0)`, `insert()` / `update()` / `delete()` return `false` / `0` because the write is unacknowledged — the document is still written. Use a majority write concern when you need the modified count.
+
 ## `distinct()` returns a Collection, not scalars
 
 **Common mistake:** `Movie::distinct('genre')->get()` returns a Collection of model objects, **not** an array of scalar strings. Always use `->distinct()->pluck('field')` to get scalar values.
