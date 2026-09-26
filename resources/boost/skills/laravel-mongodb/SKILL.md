@@ -35,7 +35,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 | Reference file | Load when |
 |---|---|
 | `references/eloquent-models.md` | The user is defining a new model, changing its base class, or mapping `_id` / ObjectId fields |
-| `references/query-builder.md` | The user is writing a query and hits a missing Eloquent helper (`toSql`, `distinct`, grouping, random ordering, raw SQL builders) or needs relation aggregates |
+| `references/query-builder.md` | The user is writing a query and hits a missing Eloquent helper (`toSql`, `distinct`, grouping, random ordering, raw SQL builders), needs `project()` before `sum()`/`groupBy()`, or needs relation aggregates |
 | `references/relationships.md` | The user is defining a relationship between models, especially embedded, hybrid, or cross-database (MongoDB ↔ SQL) relations |
 | `references/connection.md` | The user is configuring `config/database.php`, setting up multiple connections, or accessing the underlying MongoDB client |
 | `references/schema.md` | The user is writing a migration or creating an index (regular, unique, TTL, geospatial, Atlas Search, Vector Search) |

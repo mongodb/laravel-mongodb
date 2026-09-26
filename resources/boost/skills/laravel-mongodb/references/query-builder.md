@@ -32,6 +32,24 @@ $genres = Movie::raw(fn ($c) => $c->aggregate([
 
 Do **not** use `Movie::raw(fn ($c) => $c->distinct('field'))` via Eloquent if you expect a Collection — use `->distinct()->pluck()` instead.
 
+## `project()` before aggregates
+
+`project()` emits a `$project` stage **before** `$group` when the query also uses `sum()` / `avg()` / `min()` / `max()` / `groupBy()`. That lets you compute a field and aggregate it in one builder chain:
+
+```php
+$total = Registration::where('entityType', 'organization')
+    ->project([
+        'uniqueCount' => [
+            '$size' => [
+                '$cond' => [['$isArray' => '$visitors'], '$visitors', []],
+            ],
+        ],
+    ])
+    ->sum('uniqueCount');
+```
+
+Pipeline order is `$match` → `$project` → `$group`. For full control over stage order use the Aggregation Builder (`Model::aggregate()`) or `Model::raw()`.
+
 ## Relation aggregates
 
 `withCount()`, `withExists()`, `withSum()`, `withAvg()`, `withMin()` and `withMax()` are supported, as well as

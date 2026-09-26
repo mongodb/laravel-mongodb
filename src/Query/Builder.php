@@ -380,6 +380,9 @@ class Builder extends BaseBuilder
             }
 
             // Build the aggregation pipeline.
+            // $project must come before $group so computed fields (e.g. from project()
+            // then sum()/avg()/groupBy()) exist when the accumulator runs. Putting it
+            // after $group was the root of GH-2339.
             $pipeline = [];
             if ($wheres) {
                 $pipeline[] = ['$match' => $wheres];
@@ -388,6 +391,10 @@ class Builder extends BaseBuilder
             // apply unwinds for subdocument array aggregation
             foreach ($unwinds as $unwind) {
                 $pipeline[] = ['$unwind' => '$' . $unwind];
+            }
+
+            if ($this->projections) {
+                $pipeline[] = ['$project' => $this->projections];
             }
 
             if ($group) {
@@ -409,10 +416,6 @@ class Builder extends BaseBuilder
 
             if ($this->limit) {
                 $pipeline[] = ['$limit' => $this->limit];
-            }
-
-            if ($this->projections) {
-                $pipeline[] = ['$project' => $this->projections];
             }
 
             $options = [
