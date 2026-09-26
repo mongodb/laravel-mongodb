@@ -60,6 +60,8 @@ $post->comments->where('approved', true);
 
 `Comment` / `Author` extend `MongoDB\Laravel\Eloquent\Model` but are never persisted standalone.
 
+`toArray()` / `toJson()` on the parent serialize embedded documents through the embedded model, whether or not the relation is loaded: its `$casts`, accessors, `$hidden` and `$appends` apply and BSON values become strings (`"6708..."`, not `{"$oid": ...}`; dates use the embedded model's date cast or `serializeDate()`). Requirements: the relation method must have the same name as the stored field (the default — `embedsMany(Comment::class)` in `comments()` reads `comments`), and no cast or accessor may be defined on that field on the parent; either one takes precedence over the embedded model. A relation stored under a different field name (`embedsMany(Comment::class, 'items')` in `comments()`) is not detected: the raw `items` field is output as stored — add it to `$hidden` and load the relation (`$post->load('comments')`) to output the models under `comments`.
+
 ## Cross-database relationships (MongoDB ↔ SQL)
 
 **Rule:** `HybridRelations` goes on the **SQL model only** — never on the MongoDB model.
