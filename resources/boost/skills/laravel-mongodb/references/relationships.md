@@ -92,6 +92,35 @@ final class Post extends \MongoDB\Laravel\Eloquent\Model
 }
 ```
 
+### Polymorphic relations across databases
+
+`morphOne()` / `morphMany()` from a SQL model to a MongoDB model also require `HybridRelations` on the SQL model. The trait returns `MongoDB\Laravel\Relations\MorphOne` / `MorphMany`, which query the bare `{name}_id` and `{name}_type` fields of the document — never `collection.{name}_id`, the table-qualified form Laravel uses for SQL — and eager-load with `whereIn()` (Laravel's native classes call `whereIntegerInRaw()` for integer SQL keys, which MongoDB does not support). The inverse `morphTo()` on the MongoDB model needs no trait.
+
+```php
+// SQL model (e.g. Product in MySQL)
+final class Product extends \Illuminate\Database\Eloquent\Model
+{
+    use \MongoDB\Laravel\Eloquent\HybridRelations;
+
+    public function meta(): \MongoDB\Laravel\Relations\MorphOne
+    {
+        return $this->morphOne(Meta::class, 'metable');  // queries metable_id + metable_type
+    }
+}
+
+// MongoDB model
+final class Meta extends \MongoDB\Laravel\Eloquent\Model
+{
+    public function metable(): \Illuminate\Database\Eloquent\Relations\MorphTo
+    {
+        return $this->morphTo();
+    }
+}
+
+$product->meta()->create(['color' => 'silver']);  // stores metable_id (int) and metable_type
+Product::with('meta')->whereHas('meta', fn ($q) => $q->where('color', 'silver'))->get();
+```
+
 ## Eager loading
 
 MongoDB cannot join Eloquent relations server-side (except via `$lookup`). Every `with()` is an extra round-trip — use it deliberately:
