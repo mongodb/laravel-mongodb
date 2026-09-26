@@ -166,7 +166,7 @@ class Builder extends EloquentBuilder
     }
 
     /** @inheritdoc */
-    public function insert(array $values)
+    public function insert(array $values, array $options = [])
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
@@ -177,11 +177,11 @@ class Builder extends EloquentBuilder
             return true;
         }
 
-        return parent::insert($values);
+        return $this->toBase()->insert($values, $options);
     }
 
     /** @inheritdoc */
-    public function insertGetId(array $values, $sequence = null)
+    public function insertGetId(array $values, $sequence = null, array $options = [])
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
@@ -192,7 +192,7 @@ class Builder extends EloquentBuilder
             return $this->model->getKey();
         }
 
-        return parent::insertGetId($values, $sequence);
+        return $this->toBase()->insertGetId($values, $sequence, $options);
     }
 
     /** @inheritdoc */
