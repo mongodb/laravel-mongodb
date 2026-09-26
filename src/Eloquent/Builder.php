@@ -28,8 +28,10 @@ use function array_replace;
 use function collect;
 use function is_array;
 use function is_object;
+use function is_string;
 use function iterator_to_array;
 use function property_exists;
+use function str_starts_with;
 use function value;
 
 /**
@@ -162,7 +164,61 @@ class Builder extends EloquentBuilder
             return 1;
         }
 
-        return $this->toBase()->update($this->addUpdatedAtColumn($values), $options);
+        return $this->toBase()->update(
+            $this->addUpdatedAtColumn($this->castDateAttributesForUpdate($values)),
+            $options,
+        );
+    }
+
+    /**
+     * Convert date-cast attributes to UTCDateTime so mass update() matches save().
+     *
+     * DateTimeInterface values are already converted by the query grammar (PHPORM-230);
+     * this also converts parseable strings (and other fromDateTime() inputs) for fields
+     * declared with a date / datetime cast, which otherwise would be stored as strings.
+     * See https://github.com/mongodb/laravel-mongodb/issues/2177.
+     *
+     * @param  array<string, mixed> $values
+     *
+     * @return array<string, mixed>
+     */
+    protected function castDateAttributesForUpdate(array $values): array
+    {
+        foreach ($values as $key => $value) {
+            if ($key === '$set' && is_array($value)) {
+                $values[$key] = $this->castDateAttributesForUpdate($value);
+
+                continue;
+            }
+
+            if (! is_string($key) || str_starts_with($key, '$') || $value === null) {
+                continue;
+            }
+
+            if (! $this->isDateCastAttribute($key)) {
+                continue;
+            }
+
+            $values[$key] = $this->model->fromDateTime($value);
+        }
+
+        return $values;
+    }
+
+    /**
+     * Whether the attribute is cast as a date / datetime on the model.
+     */
+    private function isDateCastAttribute(string $key): bool
+    {
+        return $this->model->hasCast($key, [
+            'date',
+            'datetime',
+            'immutable_date',
+            'immutable_datetime',
+            'custom_datetime',
+            'immutable_custom_datetime',
+            'timestamp',
+        ]);
     }
 
     /** @inheritdoc */
