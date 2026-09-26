@@ -26,6 +26,9 @@ use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
+use MongoDB\Laravel\Relations\EmbedsOneOrMany;
+use ReflectionMethod;
+use ReflectionNamedType;
 use ReflectionProperty;
 use Stringable;
 
@@ -370,10 +373,65 @@ trait DocumentModel
                 $value = (string) $value;
             } elseif ($value instanceof Binary) {
                 $value = (string) $value->getData();
+            } elseif (is_array($value)) {
+                // Embedded documents are stored as plain arrays in the attributes. Serialize them
+                // through the embedded model so that its casts, accessors, hidden attributes and
+                // appends apply, instead of exposing raw BSON values (ObjectId, UTCDateTime...).
+                $embedded = $this->embeddedRelationToArray($key);
+                if ($embedded !== null) {
+                    $value = $embedded;
+                }
             }
         }
 
         return $attributes;
+    }
+
+    /**
+     * Serialize the embedded relation stored in the attribute $key, if any.
+     *
+     * Uses the loaded relation when available, otherwise hydrates the embedded
+     * models from the raw attribute without loading the relation on the model.
+     * Returns null when the attribute is not an embedded relation, or when the
+     * user customized its serialization with a cast or an accessor.
+     */
+    private function embeddedRelationToArray(string $key): ?array
+    {
+        if (
+            ! method_exists($this, $key)
+            || method_exists(Model::class, $key)
+            || method_exists(DocumentModel::class, $key)
+            || $this->hasCast($key)
+            || $this->hasGetMutator($key)
+            || $this->hasAttributeGetMutator($key)
+        ) {
+            return null;
+        }
+
+        if ($this->relationLoaded($key)) {
+            $results = $this->getRelation($key);
+        } else {
+            // Unlike getAttribute(), serialization must never fail because an attribute
+            // shares its name with an unrelated method: only call argument-less methods
+            // that can return a relation.
+            $method     = new ReflectionMethod($this, $key);
+            $returnType = $method->getReturnType();
+            if (
+                $method->getNumberOfRequiredParameters() > 0
+                || ($returnType instanceof ReflectionNamedType && $returnType->isBuiltin())
+            ) {
+                return null;
+            }
+
+            $relation = $this->$key();
+            if (! $relation instanceof EmbedsOneOrMany) {
+                return null;
+            }
+
+            $results = $relation->getResults();
+        }
+
+        return $results instanceof Arrayable ? $results->toArray() : null;
     }
 
     /** @inheritdoc */
