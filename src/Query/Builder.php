@@ -1678,7 +1678,7 @@ class Builder extends BaseBuilder
 
     protected function compileWhereTime(array $where): array
     {
-        if (! is_string($where['value']) || ! preg_match('/^[0-2][0-9](:[0-6][0-9](:[0-6][0-9])?)?$/', $where['value'], $matches)) {
+        if (! is_string($where['value']) || ! preg_match('/^(?:[01][0-9]|2[0-3])(:[0-5][0-9](:[0-5][0-9])?)?$/', $where['value'], $matches)) {
             throw new InvalidArgumentException(sprintf('Invalid time format, expected HH:MM:SS, HH:MM or HH, got "%s"', is_string($where['value']) ? $where['value'] : get_debug_type($where['value'])));
         }
 
