@@ -186,7 +186,7 @@ class TransactionTest extends TestCase
     {
         $klinson = User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
         $this->assertInstanceOf(User::class, $klinson);
-        $alcaeus = User::create(['name' => 'klinson', 'age' => 38, 'title' => 'admin']);
+        $alcaeus = User::create(['name' => 'alcaeus', 'age' => 38, 'title' => 'admin']);
         $this->assertInstanceOf(User::class, $alcaeus);
 
         DB::beginTransaction();
