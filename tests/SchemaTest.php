@@ -623,8 +623,8 @@ class SchemaTest extends TestCase
                 'unique' => false,
             ],
             [
-                'name' => 'unique_index_1',
-                'columns' => ['unique_index'],
+                'name' => 'unique_index',
+                'columns' => ['mykey2'],
                 'primary' => false,
                 'type' => null,
                 'unique' => true,
