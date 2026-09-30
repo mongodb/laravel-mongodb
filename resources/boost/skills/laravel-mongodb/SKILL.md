@@ -44,6 +44,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 | `references/cache-sessions.md` | The user is configuring MongoDB as a cache store or session driver |
 | `references/search-engine.md` | The user is implementing full-text search on a MongoDB collection or is deciding whether to use Laravel Scout |
 | `references/vector-search.md` | The user is implementing semantic search, storing embeddings, using `autoEmbed`, or combining full-text and vector search |
+| `references/queryable-encryption.md` | The user is encrypting sensitive fields or configuring automatic encryption (autoEncryption) |
 | `references/installation.md` | The user is setting up `ext-mongodb`, installing the package, or configuring the connection for the first time |
 | `references/support.md` | The user has hit a suspected bug and needs to route the issue to the correct MongoDB repository |
 
@@ -70,7 +71,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 - Auto-increment IDs — primary keys are ObjectIds.
 - `protected $collection` — removed. Use `protected $table` instead.
 - `$keyType = 'string'` on a SQL model in a cross-database relationship — only needed on MongoDB models. The `HybridRelations` trait handles the comparison on the SQL side.
-- Unencrypted PII — use Laravel encrypted casts or Queryable Encryption.
+- Unencrypted PII — use Laravel encrypted casts or Queryable Encryption (see `references/queryable-encryption.md`).
 
 ## Code Templates
 
