@@ -1236,6 +1236,40 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->whereTime('created_at', new DateTimeImmutable('2023-08-22 10:11:12')),
         ];
 
+        yield 'where time last second of the day' => [
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                                '23:59:59',
+                            ],
+                        ],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder->whereTime('created_at', '23:59:59'),
+        ];
+
+        yield 'where time first second of the day' => [
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$eq' => [
+                                ['$dateToString' => ['date' => '$created_at', 'format' => '%H:%M:%S']],
+                                '00:00:00',
+                            ],
+                        ],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder->whereTime('created_at', '00:00:00'),
+        ];
+
         yield 'where time >' => [
             [
                 'find' => [
@@ -1676,6 +1710,30 @@ class BuilderTest extends TestCase
             InvalidArgumentException::class,
             'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "23:70"',
             fn (Builder $builder) => $builder->whereTime('created_at', '23:70'),
+        ];
+
+        yield 'whereTime hour out of range' => [
+            InvalidArgumentException::class,
+            'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "24:00"',
+            fn (Builder $builder) => $builder->whereTime('created_at', '24:00'),
+        ];
+
+        yield 'whereTime hour out of range without minutes' => [
+            InvalidArgumentException::class,
+            'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "29"',
+            fn (Builder $builder) => $builder->whereTime('created_at', '29'),
+        ];
+
+        yield 'whereTime minute out of range' => [
+            InvalidArgumentException::class,
+            'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "10:60"',
+            fn (Builder $builder) => $builder->whereTime('created_at', '10:60'),
+        ];
+
+        yield 'whereTime second out of range' => [
+            InvalidArgumentException::class,
+            'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "10:11:60"',
+            fn (Builder $builder) => $builder->whereTime('created_at', '10:11:60'),
         ];
 
         yield 'whereTime invalid type' => [
