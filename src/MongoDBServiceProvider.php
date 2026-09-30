@@ -57,6 +57,7 @@ class MongoDBServiceProvider extends ServiceProvider
         if ($this->supportsQueryableEncryption()) {
             $this->commands([
                 Encryption\Commands\CreateCollectionCommand::class,
+                Encryption\Commands\RewrapDataKeysCommand::class,
                 Encryption\Commands\StatusCommand::class,
             ]);
         }
