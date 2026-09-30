@@ -27,6 +27,9 @@ use stdClass;
 
 use function class_exists;
 use function collect;
+use function date;
+use function date_default_timezone_get;
+use function date_default_timezone_set;
 use function method_exists;
 use function now;
 use function sprintf;
@@ -1926,6 +1929,76 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder,
             [],
         ];
+    }
+
+    /**
+     * whereDate() resolves the day boundaries with Carbon, which uses the application timezone,
+     * so the same query compiles to different bounds depending on the zone it runs under.
+     */
+    public function testWhereDateUsesTheApplicationTimezone(): void
+    {
+        $day = date('Y-m-d');
+
+        $bounds = fn (string $timezone) => $this->inTimezone(
+            $timezone,
+            fn () => $this->getBuilder()->whereDate('created_at', $day)->toMql()['find'][0]['created_at'],
+        );
+
+        $utc   = $bounds('UTC');
+        $tokyo = $bounds('Asia/Tokyo');
+
+        // Asia/Tokyo is UTC+9 all year, so its day starts and ends nine hours earlier in UTC.
+        $this->assertSame(
+            -9 * 3600,
+            $tokyo['$gte']->toDateTime()->getTimestamp() - $utc['$gte']->toDateTime()->getTimestamp(),
+        );
+        $this->assertSame(
+            -9 * 3600,
+            $tokyo['$lte']->toDateTime()->getTimestamp() - $utc['$lte']->toDateTime()->getTimestamp(),
+        );
+    }
+
+    /**
+     * Unlike whereDate(), these compile to aggregation operators without a "timezone" argument,
+     * so the server evaluates them in UTC whatever the application timezone is. A document at
+     * 2018-09-30T16:00:00Z belongs to 2018-10-01 for whereDate() in Asia/Tokyo, but still to the
+     * 30th for whereDay().
+     */
+    public function testWhereYearMonthDayAndTimeAreEvaluatedInUtc(): void
+    {
+        $now = new DateTimeImmutable();
+
+        $queries = [
+            'whereYear'  => fn (Builder $builder) => $builder->whereYear('created_at', (int) $now->format('Y')),
+            'whereMonth' => fn (Builder $builder) => $builder->whereMonth('created_at', (int) $now->format('n')),
+            'whereDay'   => fn (Builder $builder) => $builder->whereDay('created_at', (int) $now->format('j')),
+            'whereTime'  => fn (Builder $builder) => $builder->whereTime('created_at', $now->format('H:i:s')),
+        ];
+
+        foreach ($queries as $method => $build) {
+            $compile = fn (string $timezone) => $this->inTimezone(
+                $timezone,
+                fn () => $build($this->getBuilder())->toMql()['find'][0],
+            );
+
+            $this->assertEquals(
+                $compile('UTC'),
+                $compile('Asia/Tokyo'),
+                $method . '() must not depend on the application timezone',
+            );
+        }
+    }
+
+    private function inTimezone(string $timezone, Closure $callback): mixed
+    {
+        $previous = date_default_timezone_get();
+        date_default_timezone_set($timezone);
+
+        try {
+            return $callback();
+        } finally {
+            date_default_timezone_set($previous);
+        }
     }
 
     private function getBuilder(bool $renameEmbeddedIdField = true, array $config = []): Builder
