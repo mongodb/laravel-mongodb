@@ -15,6 +15,15 @@ jobs:
 
     name: PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }}
 
+    services:
+      mongodb:
+        image: mongodb/mongodb-atlas-local:latest
+        env:
+          VOYAGE_API_KEY: ${{ secrets.VOYAGE_API_KEY }}
+          EMBEDDING_PROVIDER_ENDPOINT: https://api.voyageai.com/v1/embeddings
+        ports:
+          - 27017:27017
+
     strategy:
       matrix:
         php: ['8.2', '8.3', '8.4', '8.5']
@@ -30,19 +39,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v7
-
-      - name: Create MongoDB Atlas Local
-        timeout-minutes: 5
-        run: |
-          docker run --name mongodb -p 27017:27017 \
-              -e VOYAGE_API_KEY=${{ secrets.VOYAGE_API_KEY }} \
-              -e EMBEDDING_PROVIDER_ENDPOINT=https://api.voyageai.com/v1/embeddings \
-              --detach mongodb/mongodb-atlas-local:latest
-          until docker exec --tty mongodb mongosh --eval "db.hello().isWritablePrimary" | grep -q true; do sleep 1; done
-          until docker exec --tty mongodb mongosh --eval "db.getCollection('connection_test').insertOne({})"; do sleep 1; done
-          until docker exec --tty mongodb mongosh --eval "db.getCollection('connection_test').createSearchIndex({mappings:{dynamic: true}})"; do sleep 1; done
-          docker exec --tty mongodb mongosh --eval "db.getCollection('connection_test').drop()"
-          until docker exec --tty mongodb mongosh --eval "db.runCommand({ serverStatus: 1 })"; do sleep 1; done
 
       - name: Setup PHP with MongoDB extension
         uses: ./.github/actions/setup-php
