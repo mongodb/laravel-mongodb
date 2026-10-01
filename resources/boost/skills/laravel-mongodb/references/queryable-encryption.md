@@ -68,6 +68,27 @@ Collection names are logical: the connection `prefix` is applied, and the `encry
 
 Dropping the collection keeps the data keys, so you can recreate with the same map. __Dropping the whole database also drops the key vault and every data encryption key when the vault lives in that database. This is unrecoverable.__
 
+## Rotate the master key
+
+Each data encryption key (DEK) is itself stored encrypted in the key vault, under a master key held by a KMS provider. This command re-encrypts the DEKs under a new master key. The DEKs keep their id and key material, so no document is read or rewritten and encrypted data stays readable.
+
+```sh
+php artisan mongodb:encryption:rewrap-data-keys
+php artisan mongodb:encryption:rewrap-data-keys --provider=aws --master-key='{"region":"eu-west-1","key":"arn:aws:kms:..."}'
+```
+
+| Option | Effect |
+|---|---|
+| `--provider` | The KMS provider to wrap the DEKs under. Defaults to the first entry of `kmsProviders`. |
+| `--master-key` | The new master key as JSON, required for cloud KMS providers. Defaults to `autoEncryption.masterKey`. Omit it for `local`. |
+| `--filter` | A JSON key vault query narrowing which DEKs are rewrapped. Defaults to all of them. |
+| `--connection` | The MongoDB connection to use. |
+| `--force` | Skip the confirmation prompt in production. |
+
+Both the old and the new KMS credentials must be in `kmsProviders` when the command runs: the DEKs are unwrapped with the old master key before being rewrapped with the new one. The new credentials must stay in the configuration afterwards — without them every DEK, and so every encrypted document, is undecryptable. For two `local` keys, configure the new one as a [named KMS provider](https://www.mongodb.com/docs/manual/core/csfle/reference/kms-providers/) (`local:rotated`) and pass `--provider=local:rotated`.
+
+This rewraps the DEKs rather than replacing them. Replacing the DEKs themselves is a different and far more expensive operation — every document has to be read, decrypted and rewritten — and is not supported by this package.
+
 ## `__safeContent__`
 
 The server writes a reserved `__safeContent__` array. laravel-mongodb rejects any attempt to write it, by direct assignment, by mass assignment, or through a dotted sub-path. It is still returned by `toArray()` and JSON output.
