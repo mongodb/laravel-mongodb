@@ -152,6 +152,10 @@ class ConnectionAutoEncryptionTest extends TestCase
 
     public function testClientEncryptionOptionsExcludesAutoEncryptionOnlyOptions(): void
     {
+        if (version_compare(phpversion('mongodb'), '2.4.0', '<')) {
+            $this->markTestSkipped('The encrypted fields map below is referenced by keyAltName, which requires ext-mongodb 2.4.0.');
+        }
+
         $options = $this->clientEncryptionOptions([
             'keyVaultNamespace' => self::KEY_VAULT,
             'kmsProviders' => $this->localKmsProviders(),
