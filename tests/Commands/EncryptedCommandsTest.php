@@ -203,6 +203,15 @@ class EncryptedCommandsTest extends TestCase
             ->assertExitCode(Command::FAILURE);
     }
 
+    public function testRewrapDataKeysRejectsUnconfiguredProvider(): void
+    {
+        $this->enableEncryption([]);
+
+        $this->artisan('mongodb:encryption:rewrap-data-keys', ['--provider' => 'aws', '--force' => true])
+            ->expectsOutputToContain('The "aws" KMS provider is not configured. Configured providers: "local".')
+            ->assertExitCode(Command::FAILURE);
+    }
+
     #[Group('queryable-encryption')]
     public function testRewrapDataKeysRewrapsKeysUnderTheConfiguredProvider(): void
     {

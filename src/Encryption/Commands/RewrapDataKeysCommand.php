@@ -12,8 +12,11 @@ use JsonException;
 use stdClass;
 
 use function array_key_first;
+use function array_keys;
 use function blank;
 use function data_get;
+use function implode;
+use function in_array;
 use function is_array;
 use function json_decode;
 use function sprintf;
@@ -92,11 +95,21 @@ final class RewrapDataKeysCommand extends Command
      */
     private function provider(array $config): string
     {
-        $provider = $this->option('provider')
-            ?: array_key_first(Arr::wrap(Arr::get($config, 'kmsProviders')));
+        $kmsProviders = Arr::wrap(Arr::get($config, 'kmsProviders'));
+        $providers = array_keys($kmsProviders);
+
+        $provider = $this->option('provider') ?: array_key_first($kmsProviders);
 
         if (blank($provider)) {
             throw new InvalidArgumentException('No KMS provider to rewrap the data keys under. Pass "--provider" or configure "driver_options.autoEncryption.kmsProviders".');
+        }
+
+        if (! in_array($provider, $providers, true)) {
+            throw new InvalidArgumentException(sprintf(
+                'The "%s" KMS provider is not configured. Configured providers: %s.',
+                $provider,
+                $providers === [] ? 'none' : '"' . implode('", "', $providers) . '"',
+            ));
         }
 
         return (string) $provider;
@@ -104,10 +117,6 @@ final class RewrapDataKeysCommand extends Command
 
     /**
      * Decode a JSON command option, or null when it was not given.
-     *
-     * Decoded as an object rather than associatively, so that a JSON array is
-     * rejected: both `{}` and `[]` decode to a PHP array, and the driver
-     * expects a document for a filter and a master key alike.
      *
      * @return array<string, mixed>|null
      *
