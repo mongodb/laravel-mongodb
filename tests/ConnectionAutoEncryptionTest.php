@@ -8,8 +8,12 @@ use InvalidArgumentException;
 use LogicException;
 use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\RuntimeException;
+use MongoDB\Driver\Manager;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Encryption\AutoEncryption;
+use ReflectionMethod;
 
+use function array_keys;
 use function base64_encode;
 use function env;
 use function is_string;
@@ -112,6 +116,70 @@ class ConnectionAutoEncryptionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $connection->getClientEncryption();
+    }
+
+    public function testClientEncryptionOptionsForwardsTlsOptions(): void
+    {
+        $tlsOptions = ['kmip' => ['tlsCAFile' => '/etc/ssl/private-ca.pem']];
+
+        $options = $this->clientEncryptionOptions([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'tlsOptions' => $tlsOptions,
+        ]);
+
+        $this->assertSame($tlsOptions, $options['tlsOptions']);
+        $this->assertSame(self::KEY_VAULT, $options['keyVaultNamespace']);
+        $this->assertSame($this->localKmsProviders(), $options['kmsProviders']);
+        // The key vault client must be free of auto encryption (CSFLE rule).
+        $this->assertInstanceOf(Manager::class, $options['keyVaultClient']);
+    }
+
+    public function testClientEncryptionOptionsForwardsConfiguredKeyVaultClient(): void
+    {
+        $keyVaultClient = new Manager(env('MONGODB_URI', 'mongodb://127.0.0.1/'));
+
+        $options = $this->clientEncryptionOptions([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'keyVaultClient' => $keyVaultClient,
+        ]);
+
+        $this->assertSame($keyVaultClient, $options['keyVaultClient']);
+    }
+
+    public function testClientEncryptionOptionsExcludesAutoEncryptionOnlyOptions(): void
+    {
+        if (version_compare(phpversion('mongodb'), '2.4.0', '<')) {
+            $this->markTestSkipped('The encrypted fields map below is referenced by keyAltName, which requires ext-mongodb 2.4.0.');
+        }
+
+        $options = $this->clientEncryptionOptions([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'schemaMap' => ['unittest.patients' => []],
+            'encryptedFieldsMap' => ['patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string']]]],
+        ]);
+
+        $this->assertEqualsCanonicalizing(
+            ['keyVaultClient', 'keyVaultNamespace', 'kmsProviders'],
+            array_keys($options),
+        );
+    }
+
+    public function testGetClientEncryptionAcceptsTlsOptions(): void
+    {
+        $connection = new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'tlsOptions' => ['kmip' => ['tlsCAFile' => '/etc/ssl/private-ca.pem']],
+        ]));
+
+        $this->assertInstanceOf(ClientEncryption::class, $connection->getClientEncryption());
     }
 
     public function testReferenceByKeyAltNameRequiresNewEnoughExtension(): void
@@ -256,6 +324,25 @@ class ConnectionAutoEncryptionTest extends TestCase
         // The default alternate name used to bind the key.
         $normalized = $connection->normalizeEncryptedFieldsMap($map);
         $this->assertSame('unittest.patients/ssn', $normalized['patients']['fields'][0]['keyAltName']);
+    }
+
+    /**
+     * The driver options the connection builds for createClientEncryption().
+     *
+     * The connection is kept in scope: AutoEncryption only holds a weak
+     * reference to it.
+     *
+     * @param  array<string, mixed> $autoEncryption
+     *
+     * @return array<string, mixed>
+     */
+    private function clientEncryptionOptions(array $autoEncryption): array
+    {
+        $config = $this->encryptionConfig($autoEncryption);
+        $connection = new Connection($config);
+        $encryption = new AutoEncryption($connection, $config['dsn'], $config);
+
+        return (new ReflectionMethod($encryption, 'clientEncryptionOptions'))->invoke($encryption);
     }
 
     /**

@@ -14,6 +14,8 @@ use MongoDB\Driver\Query as DriverQuery;
 use MongoDB\Laravel\Connection;
 use WeakReference;
 
+use function array_flip;
+use function array_intersect_key;
 use function array_key_exists;
 use function array_key_first;
 use function array_values;
@@ -35,6 +37,18 @@ use function version_compare;
  */
 final class AutoEncryption
 {
+    /**
+     * The subset of the driver's AutoEncryptionOptionsShape accepted by
+     * ClientEncryption. The other options only apply to the auto-encryption
+     * manager, which prepareDriverOptions() feeds.
+     */
+    private const CLIENT_ENCRYPTION_OPTIONS = [
+        'keyVaultClient',
+        'keyVaultNamespace',
+        'kmsProviders',
+        'tlsOptions',
+    ];
+
     private ?Manager $plainManager = null;
 
     /** @var WeakReference<Connection> */
@@ -333,8 +347,12 @@ final class AutoEncryption
         return $prefixed;
     }
 
-    /** @throws InvalidArgumentException */
-    public function getClientEncryption(): ClientEncryption
+    /**
+     * @return array<string, mixed>
+     *
+     * @throws InvalidArgumentException
+     */
+    private function clientEncryptionOptions(): array
     {
         $autoEncryption = $this->connection()->getConfig('driver_options.autoEncryption');
 
@@ -342,12 +360,18 @@ final class AutoEncryption
             throw new InvalidArgumentException('Queryable Encryption is not enabled on this connection. Configure "driver_options.autoEncryption" with a "keyVaultNamespace" and "kmsProviders" first.');
         }
 
+        $options = array_intersect_key($autoEncryption, array_flip(self::CLIENT_ENCRYPTION_OPTIONS));
+
         // The key vault client must be free of auto encryption (CSFLE rule).
-        return $this->connection()->getClient()->createClientEncryption([
-            'keyVaultClient' => $autoEncryption['keyVaultClient'] ?? $this->plainManager(),
-            'keyVaultNamespace' => $autoEncryption['keyVaultNamespace'],
-            'kmsProviders' => $autoEncryption['kmsProviders'],
-        ]);
+        $options['keyVaultClient'] ??= $this->plainManager();
+
+        return $options;
+    }
+
+    /** @throws InvalidArgumentException */
+    public function getClientEncryption(): ClientEncryption
+    {
+        return $this->connection()->getClient()->createClientEncryption($this->clientEncryptionOptions());
     }
 
     /** @return array<string, mixed> */
