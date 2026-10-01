@@ -23,6 +23,9 @@ use MongoDB\Laravel\Tests\Models\User;
 
 class RelationsTest extends TestCase
 {
+    /** Read raw documents as plain PHP arrays to assert on the BSON types of stored values */
+    private const ARRAY_TYPEMAP = ['typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array']];
+
     public function tearDown(): void
     {
         Mockery::close();
@@ -338,6 +341,44 @@ class RelationsTest extends TestCase
 
         $user->clients()->attach([$client1, $client2]);
         $this->assertCount(2, $user->clients);
+    }
+
+    public function testBelongsToManyAttachDetachSyncObjectIdInstances(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $client1 = Client::create(['name' => 'Test 1']);
+        $client2 = Client::create(['name' => 'Test 2']);
+        $client3 = Client::create(['name' => 'Test 3']);
+
+        // Attach a single ObjectId instance: it must be stored as ObjectId, not as ['oid' => '...']
+        $user->clients()->attach(new ObjectId($client1->id));
+        $user->clients()->attach([new ObjectId($client2->id)]);
+
+        $document = User::raw()->findOne(['_id' => new ObjectId($user->id)], self::ARRAY_TYPEMAP);
+        $this->assertEquals([new ObjectId($client1->id), new ObjectId($client2->id)], $document['client_ids']);
+        $this->assertContainsOnlyInstancesOf(ObjectId::class, $document['client_ids']);
+        $this->assertEqualsCanonicalizing(['Test 1', 'Test 2'], $user->clients()->pluck('name')->all());
+
+        // Eager loading matches the stored ObjectId against the parent key
+        $this->assertCount(2, User::with('clients')->find($user->id)->clients);
+
+        // Detach an ObjectId instance
+        $user->clients()->detach(new ObjectId($client1->id));
+        $document = User::raw()->findOne(['_id' => new ObjectId($user->id)], self::ARRAY_TYPEMAP);
+        $this->assertEquals([new ObjectId($client2->id)], $document['client_ids']);
+
+        // Sync a list of ObjectId instances
+        $changes = $user->clients()->sync([new ObjectId($client2->id), new ObjectId($client3->id)]);
+        $this->assertSame(['attached' => [$client3->id], 'detached' => [], 'updated' => []], $changes);
+
+        $document = User::raw()->findOne(['_id' => new ObjectId($user->id)], self::ARRAY_TYPEMAP);
+        $this->assertEquals([new ObjectId($client2->id), new ObjectId($client3->id)], $document['client_ids']);
+        $this->assertEqualsCanonicalizing(['Test 2', 'Test 3'], $user->clients()->pluck('name')->all());
+
+        // Sync string ids: the stored ObjectId is recognized as already attached
+        $changes = $user->clients()->sync([$client3->id]);
+        $this->assertSame(['attached' => [], 'detached' => [$client2->id], 'updated' => []], $changes);
+        $this->assertSame(['Test 3'], $user->clients()->pluck('name')->all());
     }
 
     public function testBelongsToManyAttachEloquentCollection(): void

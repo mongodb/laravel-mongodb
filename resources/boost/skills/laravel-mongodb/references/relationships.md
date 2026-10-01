@@ -58,6 +58,26 @@ $post->comments()->create(['body' => 'hi']);
 $post->comments->where('approved', true);
 ```
 
+## Many-to-many (no pivot collection)
+
+`belongsToMany()` stores the related ids in an **array field on each side** — there is no pivot collection, so pivot attributes, `withPivot()`, `wherePivot()` and `toggle()` are not supported. Default field names are `{related}_ids` / `{parent}_ids`; `attach()`, `detach()` and `sync()` update both arrays with `$addToSet` / `$pull`.
+
+```php
+final class User extends Model
+{
+    public function clients(): \MongoDB\Laravel\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Client::class);  // user.client_ids <-> client.user_ids
+    }
+}
+
+$user->clients()->attach($client);            // stores $client->getKey() in user.client_ids
+$user->clients()->sync([$id1, $id2]);         // attaches missing ids, detaches the others
+$user->clients()->detach($client);
+```
+
+Ids are stored **with the type you pass**: a string key stays a string, a `MongoDB\BSON\ObjectId` instance (or a model whose key accessor returns one) is stored as a BSON ObjectId, never as its exploded `['oid' => ...]` array. Loading the relation queries the array on the *other* side against this model's key, so keep the types consistent across both models: string keys everywhere (the default), or `ObjectId` keys on both.
+
 `Comment` / `Author` extend `MongoDB\Laravel\Eloquent\Model` but are never persisted standalone.
 
 ## Cross-database relationships (MongoDB ↔ SQL)
