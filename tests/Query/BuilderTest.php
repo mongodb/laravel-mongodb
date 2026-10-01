@@ -1884,6 +1884,54 @@ class BuilderTest extends TestCase
         );
     }
 
+    public function testKeyCastsConvertWhereValues(): void
+    {
+        $convert = static fn (mixed $value): mixed => $value === 'foo' ? 'converted' : $value;
+
+        $builder = $this->getBuilder()->setKeyCasts(['author_id' => $convert]);
+
+        $mql = $builder
+            ->where('author_id', 'foo')
+            ->whereIn('author_id', ['foo', 'bar'])
+            ->where('name', 'foo')
+            ->where(fn (Builder $query) => $query->where('author_id', 'foo')->orWhere('author_id', '!=', 'foo'))
+            ->toMql();
+
+        $this->assertEquals(
+            [
+                '$and' => [
+                    ['author_id' => 'converted'],
+                    ['author_id' => ['$in' => ['converted', 'bar']]],
+                    ['name' => 'foo'],
+                    [
+                        '$or' => [
+                            ['author_id' => 'converted'],
+                            ['author_id' => ['$ne' => 'converted']],
+                        ],
+                    ],
+                ],
+            ],
+            $mql['find'][0],
+        );
+    }
+
+    public function testKeyCastsAreAliasedAndOverrideTheDefaultIdConversion(): void
+    {
+        $convert = static fn (mixed $value): mixed => 'converted';
+
+        $builder = $this->getBuilder()->setKeyCasts(['id' => $convert]);
+
+        // Without a key cast, this 24-character hexadecimal string is converted to an ObjectId
+        $mql = $builder->where('id', '5d3937af6e0ff0f88ceb1d90')->toMql();
+        $this->assertSame(['_id' => 'converted'], $mql['find'][0]);
+
+        // The primary key still rejects operator arrays
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('cannot contain the MongoDB operator "$ne"');
+
+        $this->getBuilder()->setKeyCasts(['id' => $convert])->where('_id', '=', ['$ne' => null])->toMql();
+    }
+
     public static function provideConnectionOptions(): iterable
     {
         yield 'find inherits maxTimeMS from config' => [

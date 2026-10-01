@@ -21,6 +21,22 @@ final class User extends Model
 }
 ```
 
+To store the FK as a native `ObjectId` instead, cast it with `MongoDB\Laravel\Eloquent\Casts\ObjectId`. Relation queries
+(`hasMany`, `morphMany`, eager loading, `whereHas`) and direct `where()` / `whereIn()` calls on that field convert the
+string exposed by the model to `ObjectId`, so polymorphic keys like `commentable_id` match without a `._id` suffix:
+
+```php
+final class Comment extends Model
+{
+    protected $casts = ['commentable_id' => MongoDB\Laravel\Eloquent\Casts\ObjectId::class];
+
+    public function commentable(): MorphTo
+    {
+        return $this->morphTo();
+    }
+}
+```
+
 Use MongoDB-aware relation classes when in doubt:
 
 ```php

@@ -40,13 +40,46 @@ class BinaryUuidTest extends TestCase
         yield 'Save string, Query Binary' => [$uuid, $uuid, $binaryUuid];
     }
 
-    public function testQueryByStringDoesNotCast(): void
+    #[DataProvider('provideUuidString')]
+    public function testQueryByStringCastsToBinaryUuid(string $queryUuid): void
     {
         $uuid = '0c103357-3806-48c9-a84b-867dcb625cfb';
 
         Casting::create(['uuid' => $uuid]);
 
-        $model = Casting::firstWhere('uuid', $uuid);
-        $this->assertNull($model);
+        $model = Casting::firstWhere('uuid', $queryUuid);
+        $this->assertNotNull($model);
+        $this->assertSame($uuid, $model->uuid);
+
+        $models = Casting::whereIn('uuid', [$queryUuid, '11111111-2222-3333-4444-555555555555'])->get();
+        $this->assertCount(1, $models);
+        $this->assertSame($uuid, $models->first()->uuid);
+    }
+
+    public static function provideUuidString(): Generator
+    {
+        yield 'canonical' => ['0c103357-3806-48c9-a84b-867dcb625cfb'];
+        yield 'uppercase' => ['0C103357-3806-48C9-A84B-867DCB625CFB'];
+        yield 'without dashes' => ['0c103357380648c9a84b867dcb625cfb'];
+    }
+
+    #[DataProvider('provideNonUuidQueryValue')]
+    public function testQueryByNonUuidValueIsNotConverted(mixed $value): void
+    {
+        Casting::create(['uuid' => '0c103357-3806-48c9-a84b-867dcb625cfb']);
+
+        // A value that cannot be a UUID is used as-is and does not throw
+        $this->assertNull(Casting::firstWhere('uuid', $value));
+        $this->assertSame(1, Casting::where('uuid', '!=', $value)->count());
+    }
+
+    public static function provideNonUuidQueryValue(): Generator
+    {
+        yield 'invalid string' => ['not-a-uuid'];
+        yield 'inconsistent dashes' => ['0c103357-380648c9-a84b-867dcb625cfb'];
+        yield 'too short' => ['0c103357-3806-48c9-a84b-867dcb625cf'];
+        yield 'non hexadecimal' => ['0c103357-3806-48c9-a84b-867dcb625cfg'];
+        yield 'integer' => [12345];
+        yield 'null' => [null];
     }
 }

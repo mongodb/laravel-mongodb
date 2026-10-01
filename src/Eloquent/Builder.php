@@ -8,16 +8,21 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use MongoDB\BSON\Binary;
 use MongoDB\BSON\Document;
+use MongoDB\BSON\ObjectId as BSONObjectId;
 use MongoDB\Builder\Expression;
 use MongoDB\Builder\Type\QueryInterface;
 use MongoDB\Builder\Type\SearchOperatorInterface;
 use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Eloquent\Casts\BinaryUuid;
+use MongoDB\Laravel\Eloquent\Casts\ObjectId;
 use MongoDB\Laravel\Helpers\QueriesRelationshipAggregates;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Query\AggregationBuilder;
+use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use MongoDB\Model\BSONDocument;
 use Override;
 
@@ -26,10 +31,18 @@ use function array_map;
 use function array_merge;
 use function array_replace;
 use function collect;
+use function ctype_xdigit;
+use function explode;
+use function hex2bin;
+use function is_a;
 use function is_array;
 use function is_object;
+use function is_string;
 use function iterator_to_array;
+use function preg_match;
 use function property_exists;
+use function str_replace;
+use function strlen;
 use function value;
 
 /**
@@ -73,6 +86,78 @@ class Builder extends EloquentBuilder
         'sum',
         'tomql',
     ];
+
+    /** @inheritdoc */
+    #[Override]
+    public function setModel(Model $model)
+    {
+        parent::setModel($model);
+
+        if ($this->query instanceof QueryBuilder) {
+            $this->query->setKeyCasts(self::getKeyCasts($model));
+        }
+
+        return $this;
+    }
+
+    /**
+     * Where value converters for the attributes cast to a BSON key type (ObjectId or Binary UUID), so that
+     * queries on these attributes accept the string representation exposed by the model, like "_id" does.
+     *
+     * @return array<string, callable(mixed): mixed>
+     */
+    private static function getKeyCasts(Model $model): array
+    {
+        $keyCasts = [];
+
+        foreach ($model->getCasts() as $key => $castType) {
+            // Strip the cast parameters, e.g. "datetime:Y-m-d"
+            $castClass = explode(':', $castType, 2)[0];
+
+            $convert = match (true) {
+                is_a($castClass, ObjectId::class, true) => self::castObjectId(...),
+                is_a($castClass, BinaryUuid::class, true) => self::castBinaryUuid(...),
+                default => null,
+            };
+
+            if ($convert !== null) {
+                $keyCasts[$key] = $convert;
+            }
+        }
+
+        return $keyCasts;
+    }
+
+    /** Convert a 24-character hexadecimal string to an ObjectId. Any other value is returned unchanged. */
+    private static function castObjectId(mixed $value): mixed
+    {
+        if (is_string($value) && strlen($value) === 24 && ctype_xdigit($value)) {
+            return new BSONObjectId($value);
+        }
+
+        return $value;
+    }
+
+    /**
+     * Convert a UUID string to a UUID Binary, accepting the same representations as the BinaryUuid cast:
+     * 16 raw bytes, or hexadecimal with or without dashes. Any other value is returned unchanged.
+     */
+    private static function castBinaryUuid(mixed $value): mixed
+    {
+        if (! is_string($value)) {
+            return $value;
+        }
+
+        if (strlen($value) === 16) {
+            return new Binary($value, Binary::TYPE_UUID);
+        }
+
+        if (preg_match('/^[0-9a-f]{8}(-?)[0-9a-f]{4}\1[0-9a-f]{4}\1[0-9a-f]{4}\1[0-9a-f]{12}$/iD', $value)) {
+            return new Binary(hex2bin(str_replace('-', '', $value)), Binary::TYPE_UUID);
+        }
+
+        return $value;
+    }
 
     /**
      * @return ($function is null ? AggregationBuilder : $this)
