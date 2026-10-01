@@ -41,6 +41,7 @@ Encryption is configured once in `config/database.php`. The `encryptedFieldsMap`
 ```
 
 - `keyVaultNamespace` and a non-empty `kmsProviders` are required. `cryptSharedLibRequired` defaults to `true`.
+- `tlsOptions` holds the TLS settings of each KMS provider, keyed by provider name (`['aws' => ['tlsCAFile' => '/path/ca.pem']]`). It is needed for a KMS reachable only through a private CA: libmongocrypt always speaks HTTPS to a custom KMS endpoint, and there is no way to declare the CA otherwise.
 - Two field syntaxes are accepted and normalized to the driver format: the list form above (keyed by path) and the verbose list form (`['fields' => [['path' => 'ssn', 'bsonType' => 'string', 'queries' => [['queryType' => 'equality']]]]]`).
 - A bare string value (`'billing' => 'object'`) means a randomized, non-queryable field.
 - Range fields take `queryType => 'range'` plus flat `min`, `max`, and `sparsity` options.
@@ -86,6 +87,8 @@ php artisan mongodb:encryption:rewrap-data-keys --provider=aws --master-key='{"r
 | `--force` | Skip the confirmation prompt in production. |
 
 Both the old and the new KMS credentials must be in `kmsProviders` when the command runs: the DEKs are unwrapped with the old master key before being rewrapped with the new one. The new credentials must stay in the configuration afterwards — without them every DEK, and so every encrypted document, is undecryptable. For two `local` keys, configure the new one as a [named KMS provider](https://www.mongodb.com/docs/manual/core/csfle/reference/kms-providers/) (`local:rotated`) and pass `--provider=local:rotated`.
+
+A master key for a self-hosted KMS also carries an `endpoint`, a `host:port` without scheme. The certificate of that endpoint is trusted through `tlsOptions`, which is forwarded to the `ClientEncryption` used by this command.
 
 This rewraps the DEKs rather than replacing them. Replacing the DEKs themselves is a different and far more expensive operation — every document has to be read, decrypted and rewritten — and is not supported by this package.
 
