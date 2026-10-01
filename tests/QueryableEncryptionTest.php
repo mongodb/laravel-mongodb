@@ -73,11 +73,29 @@ final class QueryableEncryptionTest extends TestCase
             'billing' => ['credit_card_number' => '0000'],
         ]);
 
-        // The server-managed field is still returned by queries until the
-        // follow-up hides it. It is written by the server, so it is not on the
-        // in-memory model returned by create().
         $fresh = Patient::findOrFail($patient->getKey());
-        $this->assertArrayHasKey('__safeContent__', $fresh->toArray());
+        $this->assertArrayNotHasKey('__safeContent__', $fresh->getAttributes());
+        $this->assertArrayNotHasKey('__safeContent__', $fresh->toArray());
+        $this->assertStringNotContainsString('__safeContent__', $fresh->toJson());
+
+        $this->assertArrayNotHasKey('__safeContent__', Patient::first()->getAttributes());
+        $this->assertArrayNotHasKey('__safeContent__', Patient::get()->first()->getAttributes());
+        $this->assertArrayNotHasKey('__safeContent__', Patient::cursor()->first()->getAttributes());
+
+        $this->assertArrayNotHasKey('__safeContent__', (array) $connection->table('patients')->first());
+        $this->assertArrayNotHasKey('__safeContent__', (array) $connection->table('patients')->cursor()->first());
+        $this->assertArrayNotHasKey('__safeContent__', Patient::aggregate()->first());
+
+        // A projection naming fields to keep drops the field on its own, and
+        // the server rejects an exclusion alongside it.
+        $selected = (array) $connection->table('patients')->select('ssn')->first();
+        $this->assertArrayNotHasKey('__safeContent__', $selected);
+        $this->assertArrayHasKey('ssn', $selected);
+
+        $excluded = (array) $connection->table('patients')->project(['billing' => 0])->first();
+        $this->assertArrayNotHasKey('__safeContent__', $excluded);
+        $this->assertArrayNotHasKey('billing', $excluded);
+        $this->assertArrayHasKey('ssn', $excluded);
 
         // Equality and range queries on encrypted fields.
         $this->assertTrue(Patient::where('ssn', '123-456-7890')->exists());
