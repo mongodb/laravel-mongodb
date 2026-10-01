@@ -12,8 +12,10 @@ use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query as DriverQuery;
 use MongoDB\Laravel\Connection;
+use stdClass;
 use WeakReference;
 
+use function array_diff_key;
 use function array_flip;
 use function array_intersect_key;
 use function array_key_exists;
@@ -25,6 +27,7 @@ use function is_string;
 use function phpversion;
 use function sprintf;
 use function str_contains;
+use function str_ends_with;
 use function str_starts_with;
 use function strlen;
 use function version_compare;
@@ -37,6 +40,16 @@ use function version_compare;
  */
 final class AutoEncryption
 {
+    public const SAFE_CONTENT_FIELD = '__safeContent__';
+
+    /**
+     * Every projection operator MongoDB defines. The positional "$." operator
+     * is a path, not a value, so it is matched separately.
+     *
+     * @see https://www.mongodb.com/docs/manual/reference/operator/projection/
+     */
+    private const PROJECTION_OPERATORS = ['$elemMatch', '$meta', '$slice'];
+
     /**
      * The subset of the driver's AutoEncryptionOptionsShape accepted by
      * ClientEncryption. The other options only apply to the auto-encryption
@@ -98,7 +111,36 @@ final class AutoEncryption
      */
     public static function isSafeContentKey(string $key): bool
     {
-        return $key === '__safeContent__' || str_starts_with($key, '__safeContent__.');
+        return $key === self::SAFE_CONTENT_FIELD || str_starts_with($key, self::SAFE_CONTENT_FIELD . '.');
+    }
+
+    /**
+     * The server rejects an exclusion next to an inclusion, and an inclusion
+     * already drops the field.
+     *
+     * @param  array<string, mixed> $projection
+     *
+     * @return array<string, mixed>
+     */
+    public static function hideSafeContent(array $projection): array
+    {
+        foreach ($projection as $path => $value) {
+            // A projection operator restricts a field that comes back anyway,
+            // so it is not an inclusion. Anything else truthy is: a positional
+            // "$." path, an aggregation expression, or a plain 1.
+            $includesField = match (true) {
+                str_ends_with((string) $path, '.$') => true,
+                is_array($value) || $value instanceof stdClass
+                    => array_diff_key((array) $value, array_flip(self::PROJECTION_OPERATORS)) !== [],
+                default => (bool) $value,
+            };
+
+            if ($includesField) {
+                return $projection;
+            }
+        }
+
+        return $projection + [self::SAFE_CONTENT_FIELD => 0];
     }
 
     /** @param array<string, mixed> $config */

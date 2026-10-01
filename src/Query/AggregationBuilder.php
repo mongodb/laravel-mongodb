@@ -12,9 +12,14 @@ use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Collection;
 use MongoDB\Driver\CursorInterface;
+use MongoDB\Laravel\Encryption\AutoEncryption;
+use stdClass;
 
+use function array_key_first;
 use function array_replace;
 use function collect;
+use function end;
+use function in_array;
 use function sprintf;
 use function str_starts_with;
 
@@ -22,9 +27,12 @@ class AggregationBuilder
 {
     use FluentFactoryTrait;
 
+    private const TERMINAL_STAGES = ['$out', '$merge'];
+
     public function __construct(
         private Collection $collection,
         private readonly array $options = [],
+        private readonly bool $hidesSafeContent = false,
     ) {
     }
 
@@ -84,7 +92,7 @@ class AggregationBuilder
     private function execute(array $options): CursorInterface&Iterator
     {
         $encoder = new BuilderEncoder();
-        $pipeline = $encoder->encode($this->getPipeline());
+        $pipeline = $this->hideSafeContent($encoder->encode($this->getPipeline()));
 
         $options = array_replace(
             ['typeMap' => ['root' => 'array', 'document' => 'array']],
@@ -93,5 +101,23 @@ class AggregationBuilder
         );
 
         return $this->collection->aggregate($pipeline, $options);
+    }
+
+    /**
+     * A "$out" or "$merge" returns no documents and must stay last.
+     *
+     * @param  list<array<string, mixed>|stdClass> $pipeline
+     *
+     * @return list<array<string, mixed>|stdClass>
+     */
+    private function hideSafeContent(array $pipeline): array
+    {
+        $last = (array) end($pipeline);
+
+        if (! $this->hidesSafeContent || in_array(array_key_first($last) ?? '', self::TERMINAL_STAGES, true)) {
+            return $pipeline;
+        }
+
+        return [...$pipeline, ['$unset' => AutoEncryption::SAFE_CONTENT_FIELD]];
     }
 }
