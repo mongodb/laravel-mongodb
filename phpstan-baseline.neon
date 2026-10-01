@@ -61,7 +61,7 @@ parameters:
 			path: src/Relations/MorphToMany.php
 
 		-
-			message: '#^Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy\<\(int\|string\), Illuminate\\Database\\Eloquent\\Model\>\:\:pushSoftDeleteMetadata\(\)\.$#'
+			message: '#^Call to an undefined method Illuminate\\Support\\HigherOrderCollectionProxy\<.+?\>\:\:pushSoftDeleteMetadata\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: src/Scout/ScoutEngine.php
