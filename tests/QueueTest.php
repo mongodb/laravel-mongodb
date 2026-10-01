@@ -30,6 +30,15 @@ class QueueTest extends TestCase
         Carbon::setTestNow(Carbon::now());
     }
 
+    public function tearDown(): void
+    {
+        // Remove test data so other test classes are not affected
+        Queue::getDatabase()->table(Config::get('queue.connections.database.table'))->raw()->drop();
+        Queue::getDatabase()->table(Config::get('queue.failed.table'))->raw()->drop();
+
+        parent::tearDown();
+    }
+
     public function testQueueJobLifeCycle(): void
     {
         $uuid = Str::uuid();
