@@ -1678,6 +1678,36 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->whereTime('created_at', '23:70'),
         ];
 
+        yield 'whereDate unsupported operator' => [
+            InvalidArgumentException::class,
+            'Unsupported operator "like" for whereDate(), supported operators are: =, !=, <, <=, >, >=',
+            fn (Builder $builder) => $builder->whereDate('created_at', 'like', '2018-09-30'),
+        ];
+
+        yield 'whereMonth unsupported operator' => [
+            InvalidArgumentException::class,
+            'Unsupported operator "like" for whereMonth(), supported operators are: =, !=, <, <=, >, >=',
+            fn (Builder $builder) => $builder->whereMonth('created_at', 'like', 9),
+        ];
+
+        yield 'whereDay unsupported operator' => [
+            InvalidArgumentException::class,
+            'Unsupported operator "like" for whereDay(), supported operators are: =, !=, <, <=, >, >=',
+            fn (Builder $builder) => $builder->whereDay('created_at', 'like', 30),
+        ];
+
+        yield 'whereYear unsupported operator' => [
+            InvalidArgumentException::class,
+            'Unsupported operator "like" for whereYear(), supported operators are: =, !=, <, <=, >, >=',
+            fn (Builder $builder) => $builder->whereYear('created_at', 'like', 2023),
+        ];
+
+        yield 'whereTime unsupported operator' => [
+            InvalidArgumentException::class,
+            'Unsupported operator "like" for whereTime(), supported operators are: =, !=, <, <=, >, >=',
+            fn (Builder $builder) => $builder->whereTime('created_at', 'like', '10:11:12'),
+        ];
+
         yield 'whereTime invalid type' => [
             InvalidArgumentException::class,
             'Invalid time format, expected HH:MM:SS, HH:MM or HH, got "stdClass"',
