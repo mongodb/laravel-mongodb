@@ -1632,6 +1632,7 @@ class Builder extends BaseBuilder
             'gt', 'lte' => [
                 $where['column'] => ['$' . $where['operator'] => $endOfDay],
             ],
+            default => throw $this->unsupportedDateOperator($where),
         };
     }
 
@@ -1639,7 +1640,7 @@ class Builder extends BaseBuilder
     {
         return [
             '$expr' => [
-                '$' . $where['operator'] => [
+                $this->compileDateOperator($where) => [
                     [
                         '$month' => '$' . $where['column'],
                     ],
@@ -1653,7 +1654,7 @@ class Builder extends BaseBuilder
     {
         return [
             '$expr' => [
-                '$' . $where['operator'] => [
+                $this->compileDateOperator($where) => [
                     [
                         '$dayOfMonth' => '$' . $where['column'],
                     ],
@@ -1667,7 +1668,7 @@ class Builder extends BaseBuilder
     {
         return [
             '$expr' => [
-                '$' . $where['operator'] => [
+                $this->compileDateOperator($where) => [
                     [
                         '$year' => '$' . $where['column'],
                     ],
@@ -1691,7 +1692,7 @@ class Builder extends BaseBuilder
 
         return [
             '$expr' => [
-                '$' . $where['operator'] => [
+                $this->compileDateOperator($where) => [
                     [
                         '$dateToString' => ['date' => '$' . $where['column'], 'format' => $format],
                     ],
@@ -1699,6 +1700,30 @@ class Builder extends BaseBuilder
                 ],
             ],
         ];
+    }
+
+    /**
+     * The aggregation comparison operator for a date-based where, e.g. "$eq".
+     *
+     * Without this, an operator Laravel allows but MongoDB has no equivalent for, such as "like",
+     * would be concatenated into an operator that does not exist, and the server would reject the
+     * whole query.
+     */
+    private function compileDateOperator(array $where): string
+    {
+        return match ($where['operator']) {
+            'eq', 'ne', 'lt', 'lte', 'gt', 'gte' => '$' . $where['operator'],
+            default => throw $this->unsupportedDateOperator($where),
+        };
+    }
+
+    private function unsupportedDateOperator(array $where): InvalidArgumentException
+    {
+        return new InvalidArgumentException(sprintf(
+            'Unsupported operator "%s" for where%s(), supported operators are: =, !=, <, <=, >, >=',
+            $where['operator'],
+            $where['type'],
+        ));
     }
 
     protected function compileWhereRaw(array $where): mixed
