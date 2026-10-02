@@ -287,6 +287,76 @@ class ThroughRelationsTest extends TestCase
         self::assertNull($loaded[2]->firstFilm);
     }
 
+    public function testWithCount(): void
+    {
+        $this->createStudios();
+
+        $studios = Studio::withCount('films')->withExists('films')->orderBy('name')->get();
+
+        self::assertSame(3, $studios[0]->films_count);
+        self::assertTrue($studios[0]->films_exists);
+        self::assertSame(1, $studios[1]->films_count);
+        self::assertSame(0, $studios[2]->films_count);
+        self::assertFalse($studios[2]->films_exists);
+    }
+
+    public function testWithCountHasOneThrough(): void
+    {
+        $this->createStudios();
+
+        $studios = Studio::withCount('firstFilm')->orderBy('name')->get();
+
+        self::assertSame(3, $studios[0]->first_film_count);
+        self::assertSame(1, $studios[1]->first_film_count);
+        self::assertSame(0, $studios[2]->first_film_count);
+    }
+
+    public function testWithAggregateHasOneThrough(): void
+    {
+        $studio = Studio::create(['name' => 'A24']);
+        $aster = $studio->directors()->create(['name' => 'Ari Aster']);
+        $eggers = $studio->directors()->create(['name' => 'Robert Eggers']);
+
+        $aster->films()->create(['title' => 'Hereditary', 'budget' => 10]);
+        $aster->films()->create(['title' => 'Midsommar', 'budget' => 9]);
+        $eggers->films()->create(['title' => 'The Lighthouse', 'budget' => 11]);
+
+        $loaded = Studio::withCount('firstFilm')
+            ->withMax('firstFilm', 'budget')
+            ->withSum('firstFilm', 'budget')
+            ->first();
+
+        self::assertSame(3, $loaded->first_film_count);
+        self::assertSame(11, $loaded->first_film_max_budget);
+        self::assertSame(30, $loaded->first_film_sum_budget);
+    }
+
+    public function testLoadingHasOneThroughStillNarrowsToOneDocument(): void
+    {
+        $studio = Studio::create(['name' => 'A24']);
+        $aster = $studio->directors()->create(['name' => 'Ari Aster']);
+        $eggers = $studio->directors()->create(['name' => 'Robert Eggers']);
+
+        $aster->films()->create(['title' => 'Hereditary']);
+        $eggers->films()->create(['title' => 'The Lighthouse']);
+
+        self::assertSame('Hereditary', Studio::with('firstFilm')->first()->firstFilm->title);
+        self::assertCount(2, Studio::with('films')->first()->films);
+    }
+
+    public function testWithAggregate(): void
+    {
+        $studio = Studio::create(['name' => 'A24']);
+        $director = $studio->directors()->create(['name' => 'Ari Aster']);
+        $director->films()->create(['title' => 'Hereditary', 'budget' => 10]);
+        $director->films()->create(['title' => 'Midsommar', 'budget' => 9]);
+
+        $loaded = Studio::withMax('films', 'budget')->withSum('films', 'budget')->first();
+
+        self::assertSame(10, $loaded->films_max_budget);
+        self::assertSame(19, $loaded->films_sum_budget);
+    }
+
     public function testCustomKeyNames(): void
     {
         $studio = Studio::create(['name' => 'A24', 'cstudio_id' => 'studio-a24']);
@@ -308,6 +378,10 @@ class ThroughRelationsTest extends TestCase
         $loaded = Studio::with('filmsWithCustomKeys')->orderBy('name')->get();
         self::assertCount(2, $loaded[0]->filmsWithCustomKeys);
         self::assertSame(['Get Out'], $loaded[1]->filmsWithCustomKeys->pluck('title')->all());
+
+        $counted = Studio::withCount('filmsWithCustomKeys')->orderBy('name')->get();
+        self::assertSame(2, $counted[0]->films_with_custom_keys_count);
+        self::assertSame(1, $counted[1]->films_with_custom_keys_count);
 
         self::assertSame(['A24', 'Neon'], Studio::has('filmsWithCustomKeys')->orderBy('name')->pluck('name')->all());
     }

@@ -18,6 +18,8 @@ use LogicException;
 use MongoDB\BSON\Binary;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
+use MongoDB\Laravel\Relations\HasOneThrough;
+use MongoDB\Laravel\Relations\ThroughRelation;
 use Stringable;
 
 use function bin2hex;
@@ -189,8 +191,9 @@ trait QueriesRelationshipAggregates
         }
 
         // The related documents cannot be grouped by the server: a BelongsTo relation has a single
-        // related document per parent, and the keys of many-to-many relations are stored in an array
-        // field. The eager loading logic is reused to match the related documents to their parent.
+        // related document per parent, the keys of many-to-many relations are stored in an array
+        // field, and a through relation has no key to the far parent on the related collection.
+        // The eager loading logic is reused to match the related documents to their parent.
         $this->hydrateMatchedAggregate($models, $alias, $aggregate, $relation);
     }
 
@@ -227,7 +230,7 @@ trait QueriesRelationshipAggregates
      */
     private function hydrateMatchedAggregate(array $models, string $alias, array $aggregate, Relation $relation): void
     {
-        $relation->match($models, $relation->getEager(), $alias);
+        $this->matchForAggregate($models, $alias, $relation);
 
         foreach ($models as $model) {
             // match() leaves the relation unset on models without related documents.
@@ -236,6 +239,25 @@ trait QueriesRelationshipAggregates
 
             $model->setAttribute($alias, self::aggregateValues($related, $aggregate['function'], $aggregate['column']));
         }
+    }
+
+    /**
+     * The aggregate covers every matching document, as it does on SQL. A
+     * has-one-through relation narrows to one document when it is loaded, so
+     * matching it that way would aggregate the first match rather than all of
+     * them.
+     *
+     * @param EloquentModel[] $models
+     */
+    private function matchForAggregate(array $models, string $alias, Relation $relation): void
+    {
+        if ($relation instanceof HasOneThrough) {
+            $relation->matchAll($models, $relation->getEager(), $alias);
+
+            return;
+        }
+
+        $relation->match($models, $relation->getEager(), $alias);
     }
 
     private static function aggregateDefault(string $function): mixed
@@ -302,6 +324,7 @@ trait QueriesRelationshipAggregates
         if (
             $relation instanceof HasOneOrMany
             || $relation instanceof BelongsToMany
+            || $relation instanceof ThroughRelation
             || ($relation instanceof BelongsTo && ! $relation instanceof MorphTo)
         ) {
             return;
@@ -316,7 +339,8 @@ trait QueriesRelationshipAggregates
     private function getAggregateParentKey(Relation $relation): ?string
     {
         return match (true) {
-            $relation instanceof HasOneOrMany => $relation->getLocalKeyName(),
+            $relation instanceof HasOneOrMany,
+            $relation instanceof ThroughRelation => $relation->getLocalKeyName(),
             $relation instanceof BelongsTo => $relation->getForeignKeyName(),
             $relation instanceof BelongsToMany => $relation->getParentKeyName(),
             default => null,
