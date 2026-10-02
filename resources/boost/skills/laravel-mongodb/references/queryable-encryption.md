@@ -99,7 +99,7 @@ This rewraps the DEKs rather than replacing them. Replacing the DEKs themselves 
 
 ## `__safeContent__`
 
-The server writes a reserved `__safeContent__` array. laravel-mongodb rejects any attempt to write it, by direct assignment, by mass assignment, or through a dotted sub-path. It is still returned by `toArray()` and JSON output.
+The server writes a reserved `__safeContent__` array to encrypted documents. Don't read or write it: laravel-mongodb rejects writes and keeps it out of query results. Raw reads through `DB::connection('mongodb')->getCollection('patients')` bypass the package and still return it.
 
 ## Match the bsonType
 

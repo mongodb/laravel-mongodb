@@ -27,6 +27,7 @@ use MongoDB\Builder\Type\SearchOperatorInterface;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Encryption\AutoEncryption;
 use Override;
 use ReflectionMethod;
 use RuntimeException;
@@ -448,6 +449,10 @@ class Builder extends BaseBuilder
             $projection = array_replace($projection, $this->projections);
         }
 
+        if ($this->connection->isAutoEncryptionEnabled($this->from)) {
+            $projection = AutoEncryption::hideSafeContent($projection);
+        }
+
         $options = [];
 
         // Apply order, offset, limit and projection
@@ -586,7 +591,11 @@ class Builder extends BaseBuilder
                 throw new BadMethodCallException('Aggregation builder does not support previous query-builder instructions. Use a $match stage instead.');
             }
 
-            return new AggregationBuilder($this->collection, $this->options);
+            return new AggregationBuilder(
+                $this->collection,
+                $this->options,
+                $this->connection->isAutoEncryptionEnabled($this->from),
+            );
         }
 
         $this->aggregate = [

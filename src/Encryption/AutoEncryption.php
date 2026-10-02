@@ -12,8 +12,10 @@ use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Manager;
 use MongoDB\Driver\Query as DriverQuery;
 use MongoDB\Laravel\Connection;
+use stdClass;
 use WeakReference;
 
+use function array_diff_key;
 use function array_flip;
 use function array_intersect_key;
 use function array_key_exists;
@@ -37,6 +39,8 @@ use function version_compare;
  */
 final class AutoEncryption
 {
+    public const SAFE_CONTENT_FIELD = '__safeContent__';
+
     /**
      * The subset of the driver's AutoEncryptionOptionsShape accepted by
      * ClientEncryption. The other options only apply to the auto-encryption
@@ -98,7 +102,46 @@ final class AutoEncryption
      */
     public static function isSafeContentKey(string $key): bool
     {
-        return $key === '__safeContent__' || str_starts_with($key, '__safeContent__.');
+        return $key === self::SAFE_CONTENT_FIELD || str_starts_with($key, self::SAFE_CONTENT_FIELD . '.');
+    }
+
+    /**
+     * The server rejects an exclusion next to an inclusion, and an inclusion
+     * already drops the field.
+     *
+     * @param  array<string, mixed> $projection
+     *
+     * @return array<string, mixed>
+     */
+    public static function hideSafeContent(array $projection): array
+    {
+        if (self::includesFields($projection)) {
+            return $projection;
+        }
+
+        return $projection + [self::SAFE_CONTENT_FIELD => 0];
+    }
+
+    /** @param array<string, mixed> $projection */
+    private static function includesFields(array $projection): bool
+    {
+        foreach ($projection as $value) {
+            if (self::includesField($value)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** "$slice" and "$meta" keep the other fields, so they are not inclusions. */
+    private static function includesField(mixed $value): bool
+    {
+        if (is_array($value) || $value instanceof stdClass) {
+            return array_diff_key((array) $value, array_flip(['$slice', '$meta'])) !== [];
+        }
+
+        return (bool) $value;
     }
 
     /** @param array<string, mixed> $config */
