@@ -1,0 +1,410 @@
+<?php
+
+declare(strict_types=1);
+
+namespace MongoDB\Laravel\Tests;
+
+use InvalidArgumentException;
+use MongoDB\Driver\ClientEncryption;
+use MongoDB\Driver\Exception\RuntimeException;
+use MongoDB\Driver\Manager;
+use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Encryption\AutoEncryption;
+use ReflectionMethod;
+
+use function array_keys;
+use function base64_encode;
+use function env;
+use function is_string;
+use function phpversion;
+use function random_bytes;
+use function version_compare;
+
+class ConnectionAutoEncryptionTest extends TestCase
+{
+    private const KEY_VAULT = 'encryption.__keyVault';
+
+    public function testValidateAutoEncryptionConfigWithoutKeyVaultNamespace(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('keyVaultNamespace');
+
+        new Connection($this->encryptionConfig([
+            'kmsProviders' => $this->localKmsProviders(),
+        ]));
+    }
+
+    public function testValidateAutoEncryptionConfigWithoutKmsProviders(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('kmsProviders');
+
+        new Connection($this->encryptionConfig(['keyVaultNamespace' => 'encryption.__keyVault']));
+    }
+
+    public function testValidateAutoEncryptionConfigWithInvalidLocalKey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => 'encryption.__keyVault',
+            'kmsProviders' => ['local' => ['key' => 'not-valid-**base64**']],
+        ]));
+    }
+
+    public function testValidateAutoEncryptionConfigWithShortLocalKey(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('96 bytes');
+
+        new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => 'encryption.__keyVault',
+            'kmsProviders' => ['local' => ['key' => base64_encode(random_bytes(32))]],
+        ]));
+    }
+
+    public function testValidateAutoEncryptionConfigWithEmptyKeyId(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('null "keyId"');
+
+        new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => 'encryption.__keyVault',
+            'kmsProviders' => $this->localKmsProviders(),
+            'encryptedFieldsMap' => [
+                'users' => [
+                    'fields' => [
+                        ['path' => 'ssn', 'bsonType' => 'string', 'keyId' => null],
+                    ],
+                ],
+            ],
+        ]));
+    }
+
+    public function testValidateAutoEncryptionConfigValid(): void
+    {
+        $config = [
+            'keyVaultNamespace' => 'encryption.__keyVault',
+            'kmsProviders' => $this->localKmsProviders(),
+            // Explicitly opt out of crypt_shared so this shape validation does
+            // not depend on the shared library being present at runtime.
+            'extraOptions' => $this->extraOptions(),
+        ];
+
+        $connection = new Connection($this->encryptionConfig($config));
+
+        $this->assertTrue($connection->isEncryptionEnabled($config));
+        $this->assertSame($config, $connection->getEncryptionOptions());
+    }
+
+    public function testGetClientEncryptionReturned(): void
+    {
+        $connection = new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => 'encryption.__keyVault',
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+        ]));
+
+        $this->assertInstanceOf(ClientEncryption::class, $connection->getClientEncryption());
+    }
+
+    public function testGetClientEncryptionThrowsWhenNotConfigured(): void
+    {
+        $connection = new Connection($this->connectionConfig());
+
+        $this->expectException(InvalidArgumentException::class);
+
+        $connection->getClientEncryption();
+    }
+
+    public function testClientEncryptionOptionsForwardsTlsOptions(): void
+    {
+        $tlsOptions = ['kmip' => ['tlsCAFile' => '/etc/ssl/private-ca.pem']];
+
+        $options = $this->clientEncryptionOptions([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'tlsOptions' => $tlsOptions,
+        ]);
+
+        $this->assertSame($tlsOptions, $options['tlsOptions']);
+        $this->assertSame(self::KEY_VAULT, $options['keyVaultNamespace']);
+        $this->assertSame($this->localKmsProviders(), $options['kmsProviders']);
+        // The key vault client must be free of auto encryption (CSFLE rule).
+        $this->assertInstanceOf(Manager::class, $options['keyVaultClient']);
+    }
+
+    public function testClientEncryptionOptionsForwardsConfiguredKeyVaultClient(): void
+    {
+        $keyVaultClient = new Manager(env('MONGODB_URI', 'mongodb://127.0.0.1/'));
+
+        $options = $this->clientEncryptionOptions([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'keyVaultClient' => $keyVaultClient,
+        ]);
+
+        $this->assertSame($keyVaultClient, $options['keyVaultClient']);
+    }
+
+    public function testClientEncryptionOptionsExcludesAutoEncryptionOnlyOptions(): void
+    {
+        if (version_compare(phpversion('mongodb'), '2.4.0', '<')) {
+            $this->markTestSkipped('The encrypted fields map below is referenced by keyAltName, which requires ext-mongodb 2.4.0.');
+        }
+
+        $options = $this->clientEncryptionOptions([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'schemaMap' => ['unittest.patients' => []],
+            'encryptedFieldsMap' => ['patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string']]]],
+        ]);
+
+        $this->assertEqualsCanonicalizing(
+            ['keyVaultClient', 'keyVaultNamespace', 'kmsProviders'],
+            array_keys($options),
+        );
+    }
+
+    public function testGetClientEncryptionAcceptsTlsOptions(): void
+    {
+        $connection = new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'tlsOptions' => ['kmip' => ['tlsCAFile' => '/etc/ssl/private-ca.pem']],
+        ]));
+
+        $this->assertInstanceOf(ClientEncryption::class, $connection->getClientEncryption());
+    }
+
+    public function testReferenceByKeyAltNameRequiresNewEnoughExtension(): void
+    {
+        if (version_compare(phpversion('mongodb'), '2.4.0', '>=')) {
+            $this->markTestSkipped('ext-mongodb >= 2.4.0 resolves keyAltName aliases itself.');
+        }
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('keyAltName requires ext-mongodb 2.4.0');
+
+        new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'encryptedFieldsMap' => ['users' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string']]]],
+        ]));
+    }
+
+    public function testNormalizeEncryptedFieldsMapAddsDefaultKeyAltName(): void
+    {
+        $connection = new Connection($this->encryptionConnectionConfig());
+
+        $normalized = $connection->normalizeEncryptedFieldsMap([
+            'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string']]],
+        ]);
+
+        $this->assertSame('unittest.patients/ssn', $normalized['patients']['fields'][0]['keyAltName']);
+    }
+
+    public function testNormalizeEncryptedFieldsMapPreservesExplicitKeyAltName(): void
+    {
+        $connection = new Connection($this->encryptionConnectionConfig());
+
+        $normalized = $connection->normalizeEncryptedFieldsMap([
+            'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string', 'keyAltName' => 'my-name']]],
+        ]);
+
+        $this->assertSame('my-name', $normalized['patients']['fields'][0]['keyAltName']);
+    }
+
+    public function testNormalizeEncryptedFieldsMapAcceptsKeyedSyntax(): void
+    {
+        $connection = new Connection($this->encryptionConnectionConfig());
+
+        $normalized = $connection->normalizeEncryptedFieldsMap([
+            'patients' => [
+                'fields' => [
+                    'ssn' => ['bsonType' => 'string', 'queryType' => 'equality'],
+                    'billing' => 'object',
+                ],
+            ],
+        ]);
+
+        $byPath = [];
+        foreach ($normalized['patients']['fields'] as $field) {
+            $byPath[$field['path']] = $field;
+        }
+
+        $ssn = $byPath['ssn'];
+        $this->assertSame('string', $ssn['bsonType']);
+        $this->assertSame('equality', $ssn['queries'][0]['queryType']);
+        $this->assertSame('unittest.patients/ssn', $ssn['keyAltName']);
+
+        $billing = $byPath['billing'];
+        $this->assertSame('object', $billing['bsonType']);
+        $this->assertArrayNotHasKey('queries', $billing);
+        $this->assertArrayNotHasKey('keyId', $billing);
+    }
+
+    public function testNormalizeEncryptedFieldsMapThrowsOnMissingPath(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $connection = new Connection($this->encryptionConnectionConfig());
+        $connection->normalizeEncryptedFieldsMap([
+            'patients' => ['fields' => [['bsonType' => 'string']]],
+        ]);
+    }
+
+    public function testNormalizeEncryptedFieldsMapThrowsOnMissingBsonType(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $connection = new Connection($this->encryptionConnectionConfig());
+        $connection->normalizeEncryptedFieldsMap([
+            'patients' => ['fields' => [['path' => 'ssn', 'queryType' => 'equality']]],
+        ]);
+    }
+
+    public function testNormalizeEncryptedFieldsMapThrowsOnBothKeyIdAndKeyAltName(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+
+        $connection = new Connection($this->encryptionConnectionConfig());
+        $connection->normalizeEncryptedFieldsMap([
+            'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string', 'keyId' => 'x', 'keyAltName' => 'y']]],
+        ]);
+    }
+
+    public function testResolveOrCreateEncryptionKeysIsIdempotent(): void
+    {
+        $connection = new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+        ]));
+
+        $map = static fn (string $altName): array => [
+            'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string', 'keyAltName' => $altName]]],
+        ];
+
+        $first  = $connection->resolveOrCreateEncryptionKeys($map('tests:idempotent'));
+        $second = $connection->resolveOrCreateEncryptionKeys($map('tests:idempotent'));
+
+        $this->assertSame(
+            $first['patients']['fields'][0]['keyId']->getData(),
+            $second['patients']['fields'][0]['keyId']->getData(),
+        );
+    }
+
+    public function testResolveOrCreateEncryptionKeysUsesDefaultKeyAltName(): void
+    {
+        $connection = new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+        ]));
+
+        // The field declares neither a keyId nor a keyAltName.
+        $map = ['patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string']]]];
+
+        $first  = $connection->resolveOrCreateEncryptionKeys($map);
+        $second = $connection->resolveOrCreateEncryptionKeys($map);
+
+        $keyId = $first['patients']['fields'][0]['keyId'];
+        $this->assertArrayHasKey('keyId', $first['patients']['fields'][0]);
+
+        // Idempotent: the second call reuses the key generated under "unittest.patients/ssn".
+        $this->assertSame($keyId->getData(), $second['patients']['fields'][0]['keyId']->getData());
+
+        // The default alternate name used to bind the key.
+        $normalized = $connection->normalizeEncryptedFieldsMap($map);
+        $this->assertSame('unittest.patients/ssn', $normalized['patients']['fields'][0]['keyAltName']);
+    }
+
+    /**
+     * The driver options the connection builds for createClientEncryption().
+     *
+     * The connection is kept in scope: AutoEncryption only holds a weak
+     * reference to it.
+     *
+     * @param  array<string, mixed> $autoEncryption
+     *
+     * @return array<string, mixed>
+     */
+    private function clientEncryptionOptions(array $autoEncryption): array
+    {
+        $config = $this->encryptionConfig($autoEncryption);
+        $connection = new Connection($config);
+        $encryption = new AutoEncryption($connection, $config['dsn'], $config);
+
+        return (new ReflectionMethod($encryption, 'clientEncryptionOptions'))->invoke($encryption);
+    }
+
+    /**
+     * Encryption runtime options. Once crypt_shared is loaded in this process
+     * by another test, every later client must point at the same library, so
+     * the path is passed whenever the environment provides one.
+     *
+     * @return array<string, mixed>
+     */
+    private function extraOptions(): array
+    {
+        $library = env('CRYPT_SHARED_LIB_PATH');
+
+        return is_string($library) && $library !== ''
+            ? ['cryptSharedLibPath' => $library, 'cryptSharedLibRequired' => true]
+            : ['cryptSharedLibRequired' => false];
+    }
+
+    /**
+     * Build a connection config used by the encryption validation tests.
+     *
+     * @param  array<string, mixed> $autoEncryption
+     *
+     * @return array<string, mixed>
+     */
+    private function encryptionConfig(array $autoEncryption): array
+    {
+        $config = $this->connectionConfig();
+
+        $config['driver_options'] = ['autoEncryption' => $autoEncryption];
+
+        return $config;
+    }
+
+    /**
+     * Build a connection config with a valid, minimal automatic encryption
+     * block (no encryptedFieldsMap), used to reach the pure normalization and
+     * validation methods.
+     *
+     * @return array<string, mixed>
+     */
+    private function encryptionConnectionConfig(): array
+    {
+        return $this->encryptionConfig([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+        ]);
+    }
+
+    /**
+     * Build a base connection config with no encryption options.
+     *
+     * @return array<string, mixed>
+     */
+    private function connectionConfig(): array
+    {
+        return [
+            'name' => 'mongodb',
+            'driver' => 'mongodb',
+            'dsn' => env('MONGODB_URI', 'mongodb://127.0.0.1/'),
+            'database' => env('MONGODB_DATABASE', 'unittest'),
+            'options' => [],
+        ];
+    }
+}

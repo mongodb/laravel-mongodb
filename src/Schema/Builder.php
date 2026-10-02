@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Schema;
 
 use Closure;
+use InvalidArgumentException;
 use MongoDB\Collection;
 use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Laravel\Connection;
@@ -16,6 +17,7 @@ use function array_column;
 use function array_fill_keys;
 use function array_filter;
 use function array_key_exists;
+use function array_key_first;
 use function array_keys;
 use function array_map;
 use function array_merge;
@@ -129,6 +131,102 @@ class Builder extends \Illuminate\Database\Schema\Builder
         }
     }
 
+    /**
+     * Create an encrypted collection and generate its missing data keys.
+     *
+     * The collection name is the logical one, the connection table prefix is
+     * applied. The method is idempotent: an existing encrypted collection is
+     * returned as is.
+     *
+     * @param  string              $collection
+     * @param  Closure|null        $callback
+     * @param  array<string,mixed> $options
+     *
+     * @return array<string,mixed>
+     *
+     * @throws InvalidArgumentException when the collection exists without encryption.
+     */
+    public function createEncrypted(string $collection, ?Closure $callback = null, array $options = []): array
+    {
+        $config = $this->connection->getConfig('driver_options.autoEncryption');
+        $fields = $this->connection->encryptedFieldsFor($collection);
+        $realCollection = $this->connection->getTablePrefix() . $collection;
+
+        $info = $this->collectionInfo($realCollection);
+        if ($info !== null) {
+            $encryptedFields = $info->getOptions()['encryptedFields'] ?? null;
+
+            if (! is_array($encryptedFields)) {
+                throw new InvalidArgumentException(sprintf('The collection "%s" already exists and is not an encrypted collection. Drop it before creating it with Queryable Encryption.', $realCollection));
+            }
+
+            return $encryptedFields;
+        }
+
+        $kmsProvider = array_key_first($config['kmsProviders']) ?: 'local';
+        $masterKey = isset($config['masterKey']) && is_array($config['masterKey']) ? $config['masterKey'] : null;
+        $clientEncryption = $this->connection->getClientEncryption();
+
+        $resolvedMap = $this->connection->resolveOrCreateEncryptionKeys([$collection => ['fields' => $fields]]);
+        $map = $resolvedMap[$collection];
+
+        $encryptedFields = $this->connection->getDatabase()->createEncryptedCollection(
+            $realCollection,
+            $clientEncryption,
+            $kmsProvider,
+            $masterKey,
+            [...$options, 'encryptedFields' => $map, 'keyVaultNamespace' => $config['keyVaultNamespace']],
+        );
+
+        if ($callback instanceof Closure) {
+            $callback($this->createBlueprint($collection));
+        }
+
+        return $encryptedFields;
+    }
+
+    /**
+     * Determine if the given encrypted collection exists.
+     *
+     * A collection that exists without encrypted fields is not an encrypted
+     * collection.
+     *
+     * @param string $collection
+     */
+    public function hasEncryptedCollection(string $collection): bool
+    {
+        $info = $this->collectionInfo($this->connection->getTablePrefix() . $collection);
+
+        return is_array($info?->getOptions()['encryptedFields'] ?? null);
+    }
+
+    /**
+     * The registered collection, or null when it does not exist.
+     */
+    private function collectionInfo(string $name): ?CollectionInfo
+    {
+        $infos = iterator_to_array($this->connection->getDatabase()->listCollections([
+            'filter' => ['name' => $name],
+        ]), false);
+
+        return $infos[0] ?? null;
+    }
+
+    /**
+     * Drop the metadata collections of an encrypted collection. The server
+     * does not remove them when the encrypted collection itself is dropped, so
+     * they would otherwise leak.
+     *
+     * @param array<string,mixed> $encryptedFields
+     */
+    private function dropMetadataCollections(string $realCollection, array $encryptedFields): void
+    {
+        $database = $this->connection->getDatabase();
+
+        $database->dropCollection($encryptedFields['escCollection'] ?? 'enxcol_.' . $realCollection . '.esc');
+        $database->dropCollection($encryptedFields['ecocCollection'] ?? 'enxcol_.' . $realCollection . '.ecoc');
+    }
+
     /** @inheritdoc */
     #[Override]
     public function dropIfExists($table)
@@ -142,6 +240,16 @@ class Builder extends \Illuminate\Database\Schema\Builder
     #[Override]
     public function drop($table)
     {
+        // Dropping an encrypted collection also drops its metadata collections,
+        // which the server leaves behind otherwise.
+        if ($this->connection->isAutoEncryptionEnabled($table)) {
+            $map = $this->connection->getConfig('driver_options.autoEncryption.encryptedFieldsMap');
+            $this->dropMetadataCollections(
+                $this->connection->getTablePrefix() . $table,
+                is_array($map) && is_array($map[$table] ?? null) ? $map[$table] : [],
+            );
+        }
+
         $blueprint = $this->createBlueprint($table);
 
         $blueprint->drop();
@@ -155,6 +263,10 @@ class Builder extends \Illuminate\Database\Schema\Builder
      * In MongoDB, dropping the whole database is much faster than dropping collections
      * one by one. The database will be automatically recreated when a new connection
      * writes to it.
+     *
+     * Warning: with Queryable Encryption enabled, dropping the whole database also
+     * removes the key vault collection and every data encryption key it holds when
+     * the vault lives in this database. This is unrecoverable.
      */
     #[Override]
     public function dropAllTables()

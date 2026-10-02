@@ -13,6 +13,8 @@ use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Tests\Models\User;
 use RuntimeException;
 
+use function assert;
+
 class TransactionTest extends TestCase
 {
     public function setUp(): void
@@ -184,7 +186,7 @@ class TransactionTest extends TestCase
     {
         $klinson = User::create(['name' => 'klinson', 'age' => 20, 'title' => 'admin']);
         $this->assertInstanceOf(User::class, $klinson);
-        $alcaeus = User::create(['name' => 'klinson', 'age' => 38, 'title' => 'admin']);
+        $alcaeus = User::create(['name' => 'alcaeus', 'age' => 38, 'title' => 'admin']);
         $this->assertInstanceOf(User::class, $alcaeus);
 
         DB::beginTransaction();
@@ -336,6 +338,22 @@ class TransactionTest extends TestCase
 
         $this->assertTrue(User::where('name', 'alcaeus')->exists());
         $this->assertTrue(User::where(['name' => 'klinson'])->where('age', 21)->exists());
+    }
+
+    public function testTransactionLevelInsideClosure(): void
+    {
+        $connection = DB::connection('mongodb');
+        assert($connection instanceof Connection);
+
+        $this->assertSame(0, $connection->transactionLevel());
+
+        $levelInsideClosure = null;
+        $connection->transaction(function () use ($connection, &$levelInsideClosure): void {
+            $levelInsideClosure = $connection->transactionLevel();
+        });
+
+        $this->assertSame(1, $levelInsideClosure);
+        $this->assertSame(0, $connection->transactionLevel());
     }
 
     public function testTransactionRepeatsOnTransientFailure(): void
