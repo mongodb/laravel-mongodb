@@ -9,8 +9,13 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use LogicException;
 use MongoDB\Laravel\Query\RelationLookup;
 use MongoDB\Laravel\Tests\Models\Book;
+use MongoDB\Laravel\Tests\Models\Client;
+use MongoDB\Laravel\Tests\Models\Label;
+use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
+
+use function array_slice;
 
 class RelationLookupTest extends TestCase
 {
@@ -68,6 +73,75 @@ class RelationLookupTest extends TestCase
         ], $stage['pipeline']);
     }
 
+    public function testMorphManyAlsoMatchesTheMorphType()
+    {
+        $stage = $this->lookupFor(fn () => (new User())->photos());
+
+        $this->assertSame('photos', $stage['from']);
+        $this->assertSame(['local' => '$_id'], $stage['let']);
+        $this->assertSame(
+            ['$match' => ['$expr' => ['$eq' => [['$toString' => '$has_image_id'], ['$toString' => '$$local']]]]],
+            $stage['pipeline'][0],
+        );
+        $this->assertSame(
+            ['$match' => ['has_image_type' => User::class]],
+            $stage['pipeline'][1],
+        );
+    }
+
+    public function testMorphOneAlsoMatchesTheMorphType()
+    {
+        $stage = $this->lookupFor(fn () => (new Client())->photo());
+
+        $this->assertSame('photos', $stage['from']);
+        $this->assertSame(
+            ['$match' => ['has_image_type' => Client::class]],
+            $stage['pipeline'][1],
+        );
+    }
+
+    public function testMorphToManyMatchesTheMorphTypeInThePivotArrayOfTheRelated()
+    {
+        $stage = $this->lookupFor(fn () => (new User())->labels());
+
+        $this->assertSame('labels', $stage['from']);
+        $this->assertSame(['local' => '$label_ids'], $stage['let']);
+        $this->assertSame(
+            ['$match' => ['labelleds.labelled_type' => User::class]],
+            $stage['pipeline'][1],
+        );
+    }
+
+    public function testMorphedByManyFiltersTheParentPivotArrayByMorphType()
+    {
+        $stage = $this->lookupFor(fn () => (new Label())->users());
+
+        $this->assertSame('users', $stage['from']);
+        $this->assertSame(['local' => '$labelleds'], $stage['let']);
+        $this->assertSame([
+            [
+                '$match' => [
+                    '$expr' => [
+                        '$in' => [
+                            ['$toString' => '$_id'],
+                            [
+                                '$map' => [
+                                    'input' => [
+                                        '$filter' => [
+                                            'input' => ['$ifNull' => ['$$local', []]],
+                                            'cond' => ['$eq' => ['$$this.labelled_type', User::class]],
+                                        ],
+                                    ],
+                                    'in' => ['$toString' => '$$this.labelled_id'],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ], $stage['pipeline']);
+    }
+
     public function testSourceAliasChainsTheLocalValueThroughThePreviousLookup()
     {
         $stage = $this->lookupFor(fn () => (new User())->books(), '__rel_author_books', '__rel_author');
@@ -93,12 +167,36 @@ class RelationLookupTest extends TestCase
         $this->assertSame(['$match' => $expected], $stage['pipeline'][1]);
     }
 
+    public function testConstraintClosureIsAppendedAfterTheMorphTypeMatch()
+    {
+        $stage = $this->lookupFor(
+            fn () => (new User())->photos(),
+            constrainRelated: fn (EloquentBuilder $query) => $query->where('name', 'avatar'),
+        );
+
+        $this->assertSame(
+            [
+                ['$match' => ['has_image_type' => User::class]],
+                ['$match' => ['name' => 'avatar']],
+            ],
+            array_slice($stage['pipeline'], 1),
+        );
+    }
+
     public function testAnEmptyConstraintClosureAddsNoStage()
     {
         $stage = $this->lookupFor(fn () => (new User())->books(), constrainRelated: static function (): void {
         });
 
         $this->assertCount(1, $stage['pipeline']);
+    }
+
+    public function testMorphToIsNotSupported()
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('MorphTo is not supported for relationship lookups. The related collection differs per document.');
+
+        $this->lookupFor(fn () => (new Photo())->hasImage());
     }
 
     public function testEmbedsManyIsNotSupported()

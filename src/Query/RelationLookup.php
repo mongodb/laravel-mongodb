@@ -10,7 +10,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\MorphOneOrMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use LogicException;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
@@ -42,8 +44,12 @@ final class RelationLookup
         self::assertLookupSupported($relation);
 
         $pipeline = [['$match' => ['$expr' => self::joinExpression($relation)]]];
+        $filters  = [
+            ...self::morphTypeConstraints($relation),
+            ...self::relatedConstraints($relation, $constrainRelated),
+        ];
 
-        foreach (self::relatedConstraints($relation, $constrainRelated) as $filter) {
+        foreach ($filters as $filter) {
             $pipeline[] = ['$match' => $filter];
         }
 
@@ -87,6 +93,12 @@ final class RelationLookup
         return match (true) {
             $relation instanceof BelongsTo => ['$eq' => [self::asString(self::field($relation->getOwnerKeyName())), ['$toString' => '$$local']]],
             $relation instanceof HasOneOrMany => ['$eq' => [self::asString(self::field($relation->getForeignKeyName())), ['$toString' => '$$local']]],
+            $relation instanceof MorphToMany && $relation->getInverse() => [
+                '$in' => [
+                    self::asString(self::field($relation->getRelatedKeyName())),
+                    self::pivotKeys($relation),
+                ],
+            ],
             $relation instanceof BelongsToMany => [
                 '$in' => [
                     self::asString(self::field($relation->getRelatedKeyName())),
@@ -94,6 +106,42 @@ final class RelationLookup
                 ],
             ],
             default => throw self::unsupported($relation),
+        };
+    }
+
+    /**
+     * @param MorphToMany<Model, Model> $relation
+     *
+     * @return array<string, mixed>
+     */
+    private static function pivotKeys(MorphToMany $relation): array
+    {
+        return [
+            '$map' => [
+                'input' => [
+                    '$filter' => [
+                        'input' => ['$ifNull' => ['$$local', []]],
+                        'cond' => ['$eq' => ['$$this.' . $relation->getMorphType(), $relation->getMorphClass()]],
+                    ],
+                ],
+                'in' => ['$toString' => '$$this.' . $relation->getRelatedPivotKeyName()],
+            ],
+        ];
+    }
+
+    /**
+     * @param Relation<Model, Model, mixed> $relation
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function morphTypeConstraints(Relation $relation): array
+    {
+        return match (true) {
+            $relation instanceof MorphOneOrMany => [[$relation->getMorphType() => $relation->getMorphClass()]],
+            $relation instanceof MorphToMany && ! $relation->getInverse() => [
+                [$relation->getTable() . '.' . $relation->getMorphType() => $relation->getMorphClass()],
+            ],
+            default => [],
         };
     }
 
@@ -119,6 +167,7 @@ final class RelationLookup
         return match (true) {
             $relation instanceof BelongsTo => self::field($relation->getForeignKeyName()),
             $relation instanceof HasOneOrMany => self::field($relation->getLocalKeyName()),
+            $relation instanceof MorphToMany && $relation->getInverse() => $relation->getTable(),
             $relation instanceof BelongsToMany => self::field($relation->getRelatedPivotKeyName()),
             default => throw self::unsupported($relation),
         };
