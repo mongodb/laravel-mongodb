@@ -45,7 +45,10 @@ trait EmbedsRelations
             $foreignKey = Str::snake(class_basename($this));
         }
 
-        $query = $this->newQuery();
+        // The relation query is the parent's builder because embedded documents are stored in the
+        // parent document. It must not carry the parent's eager loads, which would be applied to
+        // the embedded models instead of the parent.
+        $query = $this->newQueryWithoutRelationships();
 
         $instance = new $related();
 
@@ -79,7 +82,8 @@ trait EmbedsRelations
             $foreignKey = Str::snake(class_basename($this));
         }
 
-        $query = $this->newQuery();
+        // See embedsMany() for why the parent's eager loads are excluded.
+        $query = $this->newQueryWithoutRelationships();
 
         $instance = new $related();
 
