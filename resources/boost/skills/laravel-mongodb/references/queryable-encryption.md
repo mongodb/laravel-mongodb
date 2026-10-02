@@ -59,10 +59,15 @@ php artisan mongodb:encryption:create-collection patients
 php artisan mongodb:encryption:status
 ```
 
-Both accept `--no-server` to validate the configuration without a server. The Schema builder exposes the same creation:
+The collection argument is optional. Without it, every mapped collection that does not exist yet is created. In an interactive terminal they are proposed for selection first, all selected by default, so pressing enter creates them all.
+
+`--recreate` drops the mapped collections that already exist before creating them again, to rebuild them from a changed map. It asks for confirmation in production, and takes `--force`.
+
+Both commands accept `--no-server` to validate the configuration without a server. The Schema builder exposes the same creation:
 
 ```php
 Schema::connection('mongodb')->createEncrypted('patients');
+Schema::connection('mongodb')->hasEncryptedCollection('patients');
 ```
 
 Collection names are logical: the connection `prefix` is applied, and the `encryptedFieldsMap` is matched on the real collection name. `Schema::drop()` on an encrypted collection also drops its metadata collections, so it can be created again.
