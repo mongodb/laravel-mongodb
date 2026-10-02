@@ -403,6 +403,54 @@ class ThroughRelationsTest extends TestCase
         self::assertSame(['Get Out'], $loaded[1]->filmsWithCustomKeys->pluck('title')->all());
     }
 
+    public function testSoftDeletedThroughParentHidesItsRelatedDocuments(): void
+    {
+        $studio = Studio::create(['name' => 'A24']);
+        $aster = $studio->directors()->create(['name' => 'Ari Aster']);
+        $aster->films()->create(['title' => 'Hereditary']);
+        $studio->directors()->create(['name' => 'Robert Eggers'])->films()->create(['title' => 'The Lighthouse']);
+
+        $aster->delete();
+
+        self::assertTrue($studio->films()->throughParentSoftDeletes());
+        self::assertSame(['The Lighthouse'], $studio->films()->pluck('title')->all());
+        self::assertSame(
+            ['Hereditary', 'The Lighthouse'],
+            $studio->filmsWithTrashedDirectors()->pluck('title')->sort()->values()->all(),
+        );
+
+        self::assertSame(1, Studio::withCount('films')->first()->films_count);
+        self::assertSame(2, Studio::withCount('filmsWithTrashedDirectors')->first()->films_with_trashed_directors_count);
+    }
+
+    public function testNarrowingToOneKeepsTheTrashedParentsOfTheRelation(): void
+    {
+        $studio = Studio::create(['name' => 'A24']);
+        $aster = $studio->directors()->create(['name' => 'Ari Aster']);
+        $aster->films()->create(['title' => 'Hereditary']);
+
+        $aster->delete();
+
+        self::assertNull($studio->films()->one()->getResults());
+        self::assertSame('Hereditary', $studio->films()->one()->withTrashedParents()->getResults()->title);
+        self::assertSame('Hereditary', $studio->films()->withTrashedParents()->one()->getResults()->title);
+    }
+
+    public function testEagerLoadingAThroughRelationNarrowedToOneKeepsItsTrashedParents(): void
+    {
+        $studio = Studio::create(['name' => 'A24']);
+        $aster = $studio->directors()->create(['name' => 'Ari Aster']);
+        $aster->films()->create(['title' => 'Hereditary']);
+
+        $aster->delete();
+
+        self::assertNull(Studio::with('firstFilm')->first()->firstFilm);
+        self::assertSame(
+            'Hereditary',
+            Studio::with('firstFilmWithTrashedDirectors')->first()->firstFilmWithTrashedDirectors->title,
+        );
+    }
+
     public function testCustomKeysOfObjectIdAndStringDoNotShareDocuments(): void
     {
         $id = new ObjectId();

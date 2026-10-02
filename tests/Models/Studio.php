@@ -29,9 +29,19 @@ class Studio extends Model
         return $this->hasManyThrough(Film::class, Director::class);
     }
 
+    public function filmsWithTrashedDirectors(): HasManyThrough
+    {
+        return $this->films()->withTrashedParents();
+    }
+
     public function firstFilm(): HasOneThrough
     {
         return $this->hasOneThrough(Film::class, Director::class);
+    }
+
+    public function firstFilmWithTrashedDirectors(): HasOneThrough
+    {
+        return $this->films()->withTrashedParents()->one();
     }
 
     public function filmsWithCustomKeys(): HasManyThrough

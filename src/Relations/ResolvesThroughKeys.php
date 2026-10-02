@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Relations;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Illuminate\Support\Collection;
 use LogicException;
 use MongoDB\Laravel\Query\BsonValueKey;
@@ -64,6 +65,21 @@ trait ResolvesThroughKeys
      *
      * @inheritdoc
      */
+    #[Override]
+    public function withTrashedParents()
+    {
+        $this->throughKeys = $this->throughKeys()->keepingTrashedParents();
+
+        $resolvedFarParentKeys = $this->throughKeys->resolvedFarParentKeys;
+
+        if ($resolvedFarParentKeys !== null) {
+            $this->constrainByFarParentKeys($resolvedFarParentKeys);
+        }
+
+        return $this;
+    }
+
+    /** @inheritdoc */
     #[Override]
     public function getRelationExistenceQuery(Builder $query, Builder $parentQuery, $columns = ['*'])
     {
@@ -170,7 +186,10 @@ trait ResolvesThroughKeys
     {
         $throughParents = $this->readThroughParents($this->firstKey, $farParentKeys);
 
-        $this->throughKeys = $this->throughKeys()->resolvedTo($this->indexFarParentKeys($throughParents));
+        $this->throughKeys = $this->throughKeys()->resolvedTo(
+            $farParentKeys,
+            $this->indexFarParentKeys($throughParents),
+        );
 
         $this->constrainRelatedQuery(
             $throughParents->pluck($this->secondLocalKey)->all(),
@@ -245,7 +264,13 @@ trait ResolvesThroughKeys
     /** @return Builder */
     private function newThroughQuery()
     {
-        return $this->throughParent->newQuery()->select([$this->secondLocalKey, $this->firstKey]);
+        $query = $this->throughParent->newQuery();
+
+        if ($this->throughKeys()->keepTrashedParents) {
+            $query->withoutGlobalScope(SoftDeletingScope::class);
+        }
+
+        return $query->select([$this->secondLocalKey, $this->firstKey]);
     }
 
     /** @return array<string, mixed> */
