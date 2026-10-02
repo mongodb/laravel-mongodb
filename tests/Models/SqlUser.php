@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Tests\Models;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Schema\SQLiteBuilder;
@@ -42,6 +43,11 @@ class SqlUser extends EloquentModel
     public function sqlBooks(): HasMany
     {
         return $this->hasMany(SqlBook::class);
+    }
+
+    public function filmsThroughDirectors(): HasManyThrough
+    {
+        return $this->hasManyThrough(Film::class, Director::class, 'studio_id');
     }
 
     public function labels(): MorphToMany

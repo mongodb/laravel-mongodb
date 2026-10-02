@@ -16,6 +16,7 @@ use Override;
 use function array_key_last;
 use function array_merge;
 use function collect;
+use function sprintf;
 
 /**
  * MongoDB has neither joins nor qualified column names, so the intermediate keys
@@ -112,6 +113,8 @@ trait ResolvesThroughKeys
      */
     public function pluckFarParentKeys(Builder $relatedQuery)
     {
+        $this->assertChainStoredInOneDatabase();
+
         $throughKeys = $relatedQuery->pluck($this->secondKey);
 
         $farParentKeys = $this->readFarParentKeys($this->secondLocalKey, $throughKeys->all());
@@ -184,6 +187,8 @@ trait ResolvesThroughKeys
     /** @param list<mixed> $farParentKeys */
     private function constrainByFarParentKeys(array $farParentKeys): void
     {
+        $this->assertChainStoredInOneDatabase();
+
         $throughParents = $this->readThroughParents($this->firstKey, $farParentKeys);
 
         $this->throughKeys = $this->throughKeys()->resolvedTo(
@@ -271,6 +276,23 @@ trait ResolvesThroughKeys
         }
 
         return $query->select([$this->secondLocalKey, $this->firstKey]);
+    }
+
+    private function assertChainStoredInOneDatabase(): void
+    {
+        $throughConnection = $this->throughParent->getConnectionName();
+
+        if ($throughConnection === $this->related->getConnectionName()) {
+            return;
+        }
+
+        throw new LogicException(sprintf(
+            'Through relations cannot span two databases: the through model [%s] on connection [%s] and the related model [%s] on connection [%s] must be stored in the same database.',
+            $this->throughParent::class,
+            $throughConnection,
+            $this->related::class,
+            $this->related->getConnectionName(),
+        ));
     }
 
     /** @return array<string, mixed> */

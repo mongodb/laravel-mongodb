@@ -141,7 +141,7 @@ trait HybridRelations
      */
     public function hasOneThrough($related, $through, $firstKey = null, $secondKey = null, $localKey = null, $secondLocalKey = null)
     {
-        if (! Model::isDocumentModel($related)) {
+        if (! self::isThroughChainStoredInMongoDB($related, $through)) {
             return parent::hasOneThrough($related, $through, $firstKey, $secondKey, $localKey, $secondLocalKey);
         }
 
@@ -178,7 +178,7 @@ trait HybridRelations
      */
     public function hasManyThrough($related, $through, $firstKey = null, $secondKey = null, $localKey = null, $secondLocalKey = null)
     {
-        if (! Model::isDocumentModel($related)) {
+        if (! self::isThroughChainStoredInMongoDB($related, $through)) {
             return parent::hasManyThrough($related, $through, $firstKey, $secondKey, $localKey, $secondLocalKey);
         }
 
@@ -194,6 +194,17 @@ trait HybridRelations
             $localKey ?: $this->getKeyName(),
             $secondLocalKey ?: $throughInstance->getKeyName(),
         );
+    }
+
+    /**
+     * @internal
+     *
+     * @param class-string<\Illuminate\Database\Eloquent\Model> $related
+     * @param class-string<\Illuminate\Database\Eloquent\Model> $through
+     */
+    private static function isThroughChainStoredInMongoDB(string $related, string $through): bool
+    {
+        return Model::isDocumentModel($related) || Model::isDocumentModel($through);
     }
 
     /**
