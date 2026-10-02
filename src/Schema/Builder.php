@@ -186,6 +186,21 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
+     * Determine if the given encrypted collection exists.
+     *
+     * A collection that exists without encrypted fields is not an encrypted
+     * collection.
+     *
+     * @param string $collection
+     */
+    public function hasEncryptedCollection(string $collection): bool
+    {
+        $info = $this->collectionInfo($this->connection->getTablePrefix() . $collection);
+
+        return is_array($info?->getOptions()['encryptedFields'] ?? null);
+    }
+
+    /**
      * The registered collection, or null when it does not exist.
      */
     private function collectionInfo(string $name): ?CollectionInfo

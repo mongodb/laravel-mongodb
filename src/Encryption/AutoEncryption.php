@@ -218,6 +218,8 @@ final class AutoEncryption
      * @param  array<string, mixed> $encryptedFieldsMap
      *
      * @return array<string, mixed>
+     *
+     * @throws InvalidArgumentException
      */
     public function normalizeEncryptedFieldsMap(array $encryptedFieldsMap): array
     {
@@ -225,7 +227,7 @@ final class AutoEncryption
             $fields = $encryptedFields['fields'] ?? null;
 
             if (! is_array($fields)) {
-                throw new LogicException(sprintf('The encrypted fields map entry for collection "%s" must define a "fields" array.', $collection));
+                throw new InvalidArgumentException(sprintf('The encrypted fields map entry for collection "%s" must define a "fields" array.', $collection));
             }
 
             $encryptedFieldsMap[$collection]['fields'] = $this->normalizeEncryptedFields($fields, (string) $collection);
@@ -238,6 +240,8 @@ final class AutoEncryption
      * @param  array<mixed> $fields
      *
      * @return array<int, array<string, mixed>>
+     *
+     * @throws InvalidArgumentException
      */
     private function normalizeEncryptedFields(array $fields, string $collection): array
     {
@@ -248,7 +252,7 @@ final class AutoEncryption
                 ? $config['path']
                 : (is_string($key) ? $key : null);
             if ($path === null) {
-                throw new LogicException(sprintf('Missing "path" for an encrypted field in collection "%s".', $collection));
+                throw new InvalidArgumentException(sprintf('Missing "path" for an encrypted field in collection "%s".', $collection));
             }
 
             if (is_string($config)) {
@@ -256,16 +260,16 @@ final class AutoEncryption
             }
 
             if (! is_array($config)) {
-                throw new LogicException(sprintf('Invalid encrypted field for path "%s" in collection "%s": expected a string bsonType or an array.', $path, $collection));
+                throw new InvalidArgumentException(sprintf('Invalid encrypted field for path "%s" in collection "%s": expected a string bsonType or an array.', $path, $collection));
             }
 
             $bsonType = $config['bsonType'] ?? null;
             if (! is_string($bsonType) || $bsonType === '') {
-                throw new LogicException(sprintf('Missing or invalid "bsonType" for encrypted field "%s" in collection "%s".', $path, $collection));
+                throw new InvalidArgumentException(sprintf('Missing or invalid "bsonType" for encrypted field "%s" in collection "%s".', $path, $collection));
             }
 
             if (isset($config['keyId']) && isset($config['keyAltName'])) {
-                throw new LogicException(sprintf('Encrypted field "%s" in collection "%s" cannot declare both "keyId" and "keyAltName".', $path, $collection));
+                throw new InvalidArgumentException(sprintf('Encrypted field "%s" in collection "%s" cannot declare both "keyId" and "keyAltName".', $path, $collection));
             }
 
             $field = ['path' => $path, 'bsonType' => $bsonType];

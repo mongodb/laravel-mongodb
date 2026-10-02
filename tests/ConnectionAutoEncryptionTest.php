@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use InvalidArgumentException;
-use LogicException;
 use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\Manager;
@@ -252,7 +251,7 @@ class ConnectionAutoEncryptionTest extends TestCase
 
     public function testNormalizeEncryptedFieldsMapThrowsOnMissingPath(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $connection = new Connection($this->encryptionConnectionConfig());
         $connection->normalizeEncryptedFieldsMap([
@@ -262,7 +261,7 @@ class ConnectionAutoEncryptionTest extends TestCase
 
     public function testNormalizeEncryptedFieldsMapThrowsOnMissingBsonType(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $connection = new Connection($this->encryptionConnectionConfig());
         $connection->normalizeEncryptedFieldsMap([
@@ -272,7 +271,7 @@ class ConnectionAutoEncryptionTest extends TestCase
 
     public function testNormalizeEncryptedFieldsMapThrowsOnBothKeyIdAndKeyAltName(): void
     {
-        $this->expectException(LogicException::class);
+        $this->expectException(InvalidArgumentException::class);
 
         $connection = new Connection($this->encryptionConnectionConfig());
         $connection->normalizeEncryptedFieldsMap([
