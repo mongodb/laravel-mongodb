@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 use LogicException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Laravel\Relations\HasManyThrough;
@@ -14,6 +16,8 @@ use MongoDB\Laravel\Relations\HasOneThrough;
 use MongoDB\Laravel\Tests\Models\Director;
 use MongoDB\Laravel\Tests\Models\Film;
 use MongoDB\Laravel\Tests\Models\Studio;
+
+use function collect;
 
 class ThroughRelationsTest extends TestCase
 {
@@ -148,6 +152,78 @@ class ThroughRelationsTest extends TestCase
         $studio->firstFilm()->latestOfMany();
     }
 
+    public function testHas(): void
+    {
+        $this->createStudios();
+
+        self::assertSame(['A24', 'Blumhouse'], Studio::has('films')->orderBy('name')->pluck('name')->all());
+        self::assertSame(['Neon'], Studio::doesntHave('films')->pluck('name')->all());
+        self::assertSame(['A24'], Studio::has('films', '>', 1)->pluck('name')->all());
+        self::assertSame(['A24', 'Blumhouse'], Studio::has('firstFilm')->orderBy('name')->pluck('name')->all());
+    }
+
+    public function testHasCountsKeysOfDifferentBsonTypesApart(): void
+    {
+        Studio::create(['name' => 'IntStudio', 'cstudio_id' => 1]);
+        Studio::create(['name' => 'StringStudio', 'cstudio_id' => '1']);
+
+        Director::create(['name' => 'Ari Aster', 'cdirector_id' => 10, 'cstudio_ref' => 1]);
+        Director::create(['name' => 'Jordan Peele', 'cdirector_id' => '10', 'cstudio_ref' => '1']);
+
+        Film::create(['title' => 'Hereditary', 'cdirector_ref' => 10]);
+        Film::create(['title' => 'Get Out', 'cdirector_ref' => '10']);
+
+        self::assertSame(
+            ['IntStudio', 'StringStudio'],
+            Studio::has('filmsWithCustomKeys')->orderBy('name')->pluck('name')->all(),
+        );
+        self::assertSame(
+            ['IntStudio', 'StringStudio'],
+            Studio::has('filmsWithCustomKeys', '=', 1)->orderBy('name')->pluck('name')->all(),
+        );
+        self::assertSame([], Studio::has('filmsWithCustomKeys', '>', 1)->pluck('name')->all());
+    }
+
+    public function testHasLooksUpEachThroughDocumentOnce(): void
+    {
+        $studio = Studio::create(['name' => 'A24']);
+        $director = $studio->directors()->create(['name' => 'Ari Aster']);
+        $director->films()->create(['title' => 'Hereditary']);
+        $director->films()->create(['title' => 'Midsommar']);
+        $director->films()->create(['title' => 'The Lighthouse']);
+
+        $connection = DB::connection('mongodb');
+        $connection->enableQueryLog();
+
+        self::assertCount(1, Studio::has('films')->get());
+
+        $throughQueries = collect($connection->getQueryLog())
+            ->filter(static fn (array $query): bool => Str::contains($query['query'], '"find" : "directors"'))
+            ->pluck('query');
+
+        self::assertCount(1, $throughQueries);
+        self::assertSame(1, Str::substrCount($throughQueries->first(), (string) $director->getKey()));
+    }
+
+    public function testWhereHas(): void
+    {
+        $this->createStudios();
+
+        $studios = Studio::whereHas('films', static fn (Builder $query) => $query->where('title', 'Get Out'))->get();
+
+        self::assertSame(['Blumhouse'], $studios->pluck('name')->all());
+    }
+
+    public function testNestedHas(): void
+    {
+        $this->createStudios();
+
+        self::assertSame(
+            ['A24', 'Blumhouse'],
+            Studio::has('directors.films')->orderBy('name')->pluck('name')->all(),
+        );
+    }
+
     public function testConstraintsOnTheRelatedQuery(): void
     {
         $studio = Studio::create(['name' => 'A24']);
@@ -232,6 +308,8 @@ class ThroughRelationsTest extends TestCase
         $loaded = Studio::with('filmsWithCustomKeys')->orderBy('name')->get();
         self::assertCount(2, $loaded[0]->filmsWithCustomKeys);
         self::assertSame(['Get Out'], $loaded[1]->filmsWithCustomKeys->pluck('title')->all());
+
+        self::assertSame(['A24', 'Neon'], Studio::has('filmsWithCustomKeys')->orderBy('name')->pluck('name')->all());
     }
 
     public function testCustomKeysOfDifferentBsonTypesDoNotShareDocuments(): void

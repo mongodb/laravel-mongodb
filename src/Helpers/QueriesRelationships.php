@@ -14,16 +14,13 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use LogicException;
 use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Query\BsonValueKey;
 use MongoDB\Laravel\Relations\MorphToMany;
+use MongoDB\Laravel\Relations\ThroughRelation;
 
-use function array_count_values;
-use function array_filter;
-use function array_keys;
-use function array_map;
 use function class_basename;
 use function collect;
 use function in_array;
-use function is_array;
 use function is_string;
 use function method_exists;
 use function str_contains;
@@ -123,6 +120,7 @@ trait QueriesRelationships
             $relation instanceof MorphToMany => $relation->getInverse() ?
               $this->handleMorphedByMany($hasQuery, $relation) :
               $this->handleMorphToMany($hasQuery, $relation),
+            $relation instanceof ThroughRelation => $relation->pluckFarParentKeys($hasQuery),
             default => $hasQuery->pluck($this->getHasCompareKey($relation))
         };
 
@@ -143,6 +141,7 @@ trait QueriesRelationships
         if (
             $relation instanceof HasOneOrMany
             || $relation instanceof BelongsTo
+            || $relation instanceof ThroughRelation
             || ($relation instanceof BelongsToMany && ! $this->isAcrossConnections($relation))
         ) {
             return;
@@ -200,31 +199,28 @@ trait QueriesRelationships
      */
     protected function getConstrainedRelatedIds($relations, $operator, $count)
     {
-        $relationCount = array_count_values(array_map(function ($id) {
-            return (string) $id; // Convert Back ObjectIds to Strings
-        }, is_array($relations) ? $relations : $relations->flatten()->toArray()));
-        // Remove unwanted related objects based on the operator and count.
-        $relationCount = array_filter($relationCount, function ($counted) use ($count, $operator) {
-            // If we are comparing to 0, we always need all results.
-            if ($count === 0) {
-                return true;
-            }
+        $ids = $relations instanceof Collection ? $relations->flatten() : collect($relations);
 
-            switch ($operator) {
-                case '>=':
-                case '<':
-                    return $counted >= $count;
-                case '>':
-                case '<=':
-                    return $counted > $count;
-                case '=':
-                case '!=':
-                    return $counted === $count;
-            }
-        });
+        return $ids
+            ->groupBy(static fn (mixed $id): ?string => BsonValueKey::of($id))
+            ->filter(fn (Collection $occurrences): bool => $this->occurrenceMatches($occurrences->count(), $operator, $count))
+            ->map(static fn (Collection $occurrences): mixed => $occurrences->first())
+            ->values()
+            ->all();
+    }
 
-        // All related ids.
-        return array_keys($relationCount);
+    private function occurrenceMatches(int $occurrences, string $operator, int $count): bool
+    {
+        if ($count === 0) {
+            return true;
+        }
+
+        return match ($operator) {
+            '>=', '<' => $occurrences >= $count,
+            '>', '<=' => $occurrences > $count,
+            '=', '!=' => $occurrences === $count,
+            default => false,
+        };
     }
 
     /**
@@ -238,7 +234,7 @@ trait QueriesRelationships
     {
         $this->assertHybridRelationSupported($relation);
 
-        if ($relation instanceof HasOneOrMany) {
+        if ($relation instanceof HasOneOrMany || $relation instanceof ThroughRelation) {
             return $relation->getLocalKeyName();
         }
 
