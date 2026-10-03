@@ -41,16 +41,16 @@ class Connection extends BaseConnection
     private static ?string $version = null;
 
     /**
-     * The MongoDB database handler.
+     * The MongoDB database handler. Null after disconnect() until the next use.
      *
-     * @var Database
+     * @var Database|null
      */
     protected $db;
 
     /**
-     * The MongoDB connection handler.
+     * The MongoDB connection handler. Null after disconnect() until the next use.
      *
-     * @var Client
+     * @var Client|null
      */
     protected $connection;
 
@@ -68,22 +68,13 @@ class Connection extends BaseConnection
     {
         $this->config = $config;
 
-        // Build the connection string
-        $dsn = $this->getDsn($config);
-
-        // You can pass options directly to the MongoDB constructor
-        $options = $config['options'] ?? [];
-
         // Resolve the database name first: the default alternate key name uses
         // it while the automatic encryption options are normalized in
         // createConnection().
-        $this->database = $this->getDefaultDatabaseName($dsn, $config);
+        $this->database = $this->getDefaultDatabaseName($this->getDsn($config), $config);
 
-        // Create the connection
-        $this->connection = $this->createConnection($dsn, $config, $options);
-
-        // Select database
-        $this->db = $this->connection->getDatabase($this->database);
+        // Create the client and select the database
+        $this->connect();
 
         $this->tablePrefix = $config['prefix'] ?? '';
 
@@ -130,7 +121,7 @@ class Connection extends BaseConnection
      */
     public function getCollection($name): Collection
     {
-        return $this->db->selectCollection($this->tablePrefix . $name);
+        return $this->getDatabase()->selectCollection($this->tablePrefix . $name);
     }
 
     /** @inheritdoc */
@@ -151,7 +142,7 @@ class Connection extends BaseConnection
     {
         trigger_error(sprintf('Since mongodb/laravel-mongodb:5.2, Method "%s()" is deprecated, use "getDatabase()" instead.', __FUNCTION__), E_USER_DEPRECATED);
 
-        return $this->db;
+        return $this->getDatabase();
     }
 
     /**
@@ -163,6 +154,8 @@ class Connection extends BaseConnection
      */
     public function getDatabase(?string $name = null): Database
     {
+        $this->reconnectIfMissingConnection();
+
         if ($name && $name !== $this->database) {
             return $this->connection->getDatabase($name);
         }
@@ -185,11 +178,42 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Get the MongoDB client.
+     * Get the MongoDB client. A new client is created when the connection
+     * was closed by disconnect(), like the PDO handle of a SQL connection.
      */
     public function getClient(): ?Client
     {
+        $this->reconnectIfMissingConnection();
+
         return $this->connection;
+    }
+
+    /** @inheritdoc */
+    #[Override]
+    public function reconnectIfMissingConnection()
+    {
+        if ($this->connection !== null) {
+            return;
+        }
+
+        $this->connect();
+    }
+
+    /**
+     * Create the client and select the database. Query logging survives a
+     * disconnect, so the command subscriber is attached to the new client.
+     */
+    private function connect(): void
+    {
+        // Options from the config are passed directly to the MongoDB client constructor
+        $this->connection = $this->createConnection($this->getDsn($this->config), $this->config, $this->config['options'] ?? []);
+        $this->db = $this->connection->getDatabase($this->database);
+
+        if (! $this->loggingQueries) {
+            return;
+        }
+
+        $this->addCommandSubscriber();
     }
 
     /** @inheritdoc  */
@@ -198,10 +222,7 @@ class Connection extends BaseConnection
     {
         parent::enableQueryLog();
 
-        if (! $this->commandSubscriber) {
-            $this->commandSubscriber = new CommandSubscriber($this);
-            $this->connection->addSubscriber($this->commandSubscriber);
-        }
+        $this->addCommandSubscriber();
     }
 
     #[Override]
@@ -209,10 +230,27 @@ class Connection extends BaseConnection
     {
         parent::disableQueryLog();
 
-        if ($this->commandSubscriber) {
-            $this->connection->removeSubscriber($this->commandSubscriber);
-            $this->commandSubscriber = null;
+        $this->removeCommandSubscriber();
+    }
+
+    private function addCommandSubscriber(): void
+    {
+        if ($this->commandSubscriber !== null) {
+            return;
         }
+
+        $this->commandSubscriber = new CommandSubscriber($this);
+        $this->getClient()->addSubscriber($this->commandSubscriber);
+    }
+
+    private function removeCommandSubscriber(): void
+    {
+        if ($this->commandSubscriber === null) {
+            return;
+        }
+
+        $this->connection?->removeSubscriber($this->commandSubscriber);
+        $this->commandSubscriber = null;
     }
 
     #[Override]
@@ -370,11 +408,18 @@ class Connection extends BaseConnection
         $this->getClient()->getManager()->selectServer(new ReadPreference(ReadPreference::PRIMARY_PREFERRED));
     }
 
-    /** @inheritdoc */
+    /**
+     * Drop the client. The next use of the connection creates a new one.
+     * Query logging stays enabled: only the subscriber is detached from
+     * the client being released, so it can be attached again on reconnect.
+     *
+     * @inheritdoc
+     */
     public function disconnect()
     {
-        $this->disableQueryLog();
+        $this->removeCommandSubscriber();
         $this->connection = null;
+        $this->db = null;
     }
 
     /**
@@ -485,7 +530,7 @@ class Connection extends BaseConnection
     /** @inheritdoc  */
     public function threadCount()
     {
-        $status = $this->db->command(['serverStatus' => 1])->toArray();
+        $status = $this->getDatabase()->command(['serverStatus' => 1])->toArray();
 
         return $status[0]['connections']['current'];
     }
@@ -500,7 +545,7 @@ class Connection extends BaseConnection
      */
     public function __call($method, $parameters)
     {
-        return $this->db->$method(...$parameters);
+        return $this->getDatabase()->$method(...$parameters);
     }
 
     /** Set whether to rename "id" field into "_id" for embedded documents. */
@@ -523,7 +568,7 @@ class Connection extends BaseConnection
      */
     public function getServerVersion(): string
     {
-        return $this->db->command(['buildInfo' => 1])->toArray()[0]['version'];
+        return $this->getDatabase()->command(['buildInfo' => 1])->toArray()[0]['version'];
     }
 
     public static function getVersion(): string
