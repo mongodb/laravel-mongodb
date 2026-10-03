@@ -61,6 +61,8 @@ $collection = DB::connection('mongodb')->getCollection('logs');
 // note: ->collection() does not exist; use ->table() for the query builder
 ```
 
+`disconnect()` releases the client; the next query, `getClient()`, or `getDatabase()` creates a new one, like a SQL connection re-opening its PDO handle. `DB::enableQueryLog()` works after a disconnect and an enabled query log stays enabled across it. The `DatabaseMigrations` testing trait disconnects after `migrate:fresh`, so enabling the query log inside such a test is fine.
+
 ## Timeouts
 
 ```
