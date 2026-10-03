@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use LogicException;
+use MongoDB\BSON\ObjectId as BSONObjectId;
+use MongoDB\Laravel\Eloquent\Casts\ObjectId as ObjectIdCast;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Relations\MorphToMany;
 
@@ -22,11 +24,14 @@ use function array_keys;
 use function array_map;
 use function class_basename;
 use function collect;
+use function ctype_xdigit;
 use function in_array;
 use function is_array;
 use function is_string;
 use function method_exists;
 use function str_contains;
+use function str_starts_with;
+use function strlen;
 
 trait QueriesRelationships
 {
@@ -126,9 +131,41 @@ trait QueriesRelationships
             default => $hasQuery->pluck($this->getHasCompareKey($relation))
         };
 
-        $relatedIds = $this->getConstrainedRelatedIds($relations, $operator, $count);
+        $constraintKey = $this->getRelatedConstraintKey($relation);
+        $relatedIds = $this->castIdsForObjectIdConstraint(
+            $constraintKey,
+            $this->getConstrainedRelatedIds($relations, $operator, $count),
+        );
 
-        return $this->whereIn($this->getRelatedConstraintKey($relation), $relatedIds, $boolean, $not);
+        return $this->whereIn($constraintKey, $relatedIds, $boolean, $not);
+    }
+
+    /**
+     * whereHas compares plucked keys as strings, but an ObjectId cast stores
+     * the foreign key as BSON. A string $in does not match those values.
+     *
+     * @param list<mixed> $ids
+     *
+     * @return list<mixed>
+     */
+    private function castIdsForObjectIdConstraint(string $key, array $ids): array
+    {
+        $model = $this->getModel();
+        $cast = $model->getCasts()[$key] ?? null;
+
+        if ($cast !== ObjectIdCast::class && ! str_starts_with((string) $cast, ObjectIdCast::class . ':')) {
+            return $ids;
+        }
+
+        $caster = new ObjectIdCast();
+
+        return array_map(function ($id) use ($caster, $model, $key) {
+            if ($id instanceof BSONObjectId || ! is_string($id) || strlen($id) !== 24 || ! ctype_xdigit($id)) {
+                return $id;
+            }
+
+            return $caster->set($model, $key, $id, []);
+        }, $ids);
     }
 
     /**
