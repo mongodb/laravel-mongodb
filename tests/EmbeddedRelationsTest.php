@@ -7,12 +7,19 @@ namespace MongoDB\Laravel\Tests;
 use DateTime;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Facades\DB;
 use Mockery;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Laravel\Relations\EmbedsOne;
 use MongoDB\Laravel\Tests\Models\Address;
+use MongoDB\Laravel\Tests\Models\Cargo;
+use MongoDB\Laravel\Tests\Models\SpaceShip;
+use MongoDB\Laravel\Tests\Models\SpaceShipCount;
 use MongoDB\Laravel\Tests\Models\User;
 
 use function array_merge;
+use function serialize;
+use function unserialize;
 
 class EmbeddedRelationsTest extends TestCase
 {
@@ -20,6 +27,11 @@ class EmbeddedRelationsTest extends TestCase
     {
         Mockery::close();
         User::truncate();
+        SpaceShip::truncate();
+        // SpaceShipCount::truncate() builds a query from the model's $withCount, which is the
+        // path exercised by testEmbedsManyWithCountOnParent(). Drop the collection directly
+        // so the other tests still run when that path is broken.
+        DB::connection('mongodb')->getCollection('space_ship_counts')->deleteMany([]);
 
         parent::tearDown();
     }
@@ -1091,5 +1103,111 @@ class EmbeddedRelationsTest extends TestCase
         $user = User::find($user->id);
         $this->assertNotNull($user->dynamicFather);
         $this->assertEquals('Mark Doe', $user->dynamicFather->name);
+    }
+
+    public function testEmbedsManyWritesWithParentEagerLoad()
+    {
+        $spaceShip = SpaceShip::create(['name' => 'Millennium Falcon']);
+
+        $cargo = new Cargo(['name' => 'spice']);
+        $spaceShip->cargo()->attach($cargo);
+        $this->assertNotNull($cargo->id);
+
+        $spaceShip->cargo()->save(new Cargo(['name' => 'fuel']));
+        $spaceShip->cargo()->create(['name' => 'water']);
+
+        $spaceShip = SpaceShip::find($spaceShip->id);
+        $this->assertTrue($spaceShip->relationLoaded('cargo'));
+        $this->assertEquals(['spice', 'fuel', 'water'], $spaceShip->cargo->pluck('name')->all());
+    }
+
+    public function testEmbedsOneCreateWithParentEagerLoad()
+    {
+        $spaceShip = SpaceShip::create(['name' => 'Millennium Falcon']);
+
+        $spaceShip->pilot()->create(['name' => 'Han Solo']);
+
+        $spaceShip = SpaceShip::find($spaceShip->id);
+        $this->assertTrue($spaceShip->relationLoaded('pilot'));
+        $this->assertEquals('Han Solo', $spaceShip->pilot->name);
+    }
+
+    public function testEmbedsManyWithCountOnParent()
+    {
+        $spaceShip = SpaceShipCount::create(['name' => 'Millennium Falcon']);
+        $spaceShip->cargo()->create(['name' => 'spice']);
+
+        $spaceShip = SpaceShipCount::find($spaceShip->id);
+        $this->assertEquals(1, $spaceShip->cargo_count);
+        $this->assertEquals(1, $spaceShip->toArray()['cargo_count']);
+    }
+
+    public function testParentWithStillEagerLoadsEmbeddedRelations()
+    {
+        $spaceShip = SpaceShip::create(['name' => 'Millennium Falcon']);
+        $spaceShip->cargo()->create(['name' => 'spice']);
+        $spaceShip->pilot()->create(['name' => 'Han Solo']);
+
+        $spaceShip = SpaceShip::find($spaceShip->id);
+
+        $this->assertTrue($spaceShip->relationLoaded('cargo'));
+        $this->assertTrue($spaceShip->relationLoaded('pilot'));
+
+        $serialized = $spaceShip->toArray();
+        $this->assertArrayHasKey('cargo', $serialized);
+        $this->assertArrayHasKey('pilot', $serialized);
+        $this->assertIsArray($serialized['cargo']);
+        $this->assertIsArray($serialized['pilot']);
+    }
+
+    public function testEagerLoadDoesNotSetParentRelationOnParentModel()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->father()->create(['name' => 'Mark Doe']);
+
+        $loaded = User::with('father')->find($user->id);
+
+        $this->assertNull($loaded->getParentRelation());
+        $this->assertEquals('Mark Doe', $loaded->father->name);
+        $this->assertInstanceOf(EmbedsOne::class, $loaded->father->getParentRelation());
+    }
+
+    public function testEagerLoadDoesNotCorruptWritePathOfOtherEmbeddedRelations()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->father()->create(['name' => 'Mark Doe']);
+
+        $loaded = User::with('father')->find($user->id);
+        $loaded->addresses()->create(['city' => 'Paris']);
+
+        $raw = $loaded->getConnection()->getCollection('users')->findOne(['name' => 'John Doe']);
+        $this->assertSame('Paris', $raw['addresses'][0]['city']);
+        $this->assertArrayNotHasKey('addresses', (array) ($raw['father'] ?? []));
+    }
+
+    public function testSerializationOfEagerLoadedEmbeds()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->father()->create(['name' => 'Mark Doe']);
+        User::create(['name' => 'Jane Doe']);
+
+        $users = User::with('father')->get();
+
+        $restored = unserialize(serialize(new EmbeddedRelationsJob($users)));
+        $this->assertNull($restored->users->first()->getParentRelation());
+
+        $restored = unserialize(serialize(new EmbeddedRelationsJob($restored->users)));
+        $this->assertCount(2, $restored->users);
+    }
+
+    public function testDeleteAfterEagerLoadDeletesTheRootModel()
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->father()->create(['name' => 'Mark Doe']);
+
+        $loaded = User::with('father')->find($user->id);
+        $loaded->delete();
+
+        $this->assertNull(User::find($user->id));
     }
 }

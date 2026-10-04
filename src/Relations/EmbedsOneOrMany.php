@@ -101,7 +101,10 @@ abstract class EmbedsOneOrMany extends Relation
         foreach ($models as $model) {
             $results = $model->$relation()->getResults();
 
-            $model->setParentRelation($this);
+            // The models being matched are the parents that declare this relation, not the
+            // embedded documents. Setting the parent relation here marks the root model as
+            // embedded, so later writes use the wrong path and queue serialization recurses.
+            // Embedded children receive their parent relation in toModel().
 
             $model->setRelation($relation, $results);
         }
@@ -274,10 +277,8 @@ abstract class EmbedsOneOrMany extends Relation
             $models[] = $this->toModel($attributes);
         }
 
-        if (count($models) > 0) {
-            $models = $this->eagerLoadRelations($models);
-        }
-
+        // Eager loads on this query belong to the parent model. Applying them here loads the
+        // parent's relations onto the embedded models.
         return $this->related->newCollection($models);
     }
 
