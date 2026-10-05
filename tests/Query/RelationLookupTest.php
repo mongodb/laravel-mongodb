@@ -191,10 +191,42 @@ class RelationLookupTest extends TestCase
         $this->assertCount(1, $stage['pipeline']);
     }
 
+    public function testConstraintClosureKeepsSortSkipLimitAndProjection()
+    {
+        $stage = $this->lookupFor(
+            fn () => (new User())->books(),
+            constrainRelated: fn (EloquentBuilder $query) => $query
+                ->where('year', '>', 1999)
+                ->orderBy('title')
+                ->offset(2)
+                ->limit(5)
+                ->select('title'),
+        );
+
+        $this->assertSame([
+            ['$match' => ['year' => ['$gt' => 1999]]],
+            ['$sort' => ['title' => 1]],
+            ['$skip' => 2],
+            ['$limit' => 5],
+            ['$project' => ['title' => true]],
+        ], array_slice($stage['pipeline'], 1));
+    }
+
+    public function testConstraintClosureProducingAnAggregationIsNotSupported()
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Relationship constraints producing a "aggregate" command are not supported for relationship lookups.');
+
+        $this->lookupFor(
+            fn () => (new User())->books(),
+            constrainRelated: fn (EloquentBuilder $query) => $query->groupBy('title'),
+        );
+    }
+
     public function testMorphToIsNotSupported()
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('MorphTo is not supported for relationship lookups. The related collection differs per document.');
+        $this->expectExceptionMessage('MorphTo is not supported for relationship lookups. The related collection differs per document, which one lookup cannot express. Eager load the relation with "with()", or query each morph type on its own.');
 
         $this->lookupFor(fn () => (new Photo())->hasImage());
     }
@@ -202,7 +234,7 @@ class RelationLookupTest extends TestCase
     public function testEmbedsManyIsNotSupported()
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('EmbedsMany is not supported for relationship lookups. The related documents are already embedded in the parent document.');
+        $this->expectExceptionMessage('EmbedsMany is not supported for relationship lookups. The related documents are already part of the parent document. Read them from the attribute, or match them on their dotted path.');
 
         $this->lookupFor(fn () => (new User())->addresses());
     }
@@ -210,7 +242,7 @@ class RelationLookupTest extends TestCase
     public function testEmbedsOneIsNotSupported()
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('EmbedsOne is not supported for relationship lookups. The related documents are already embedded in the parent document.');
+        $this->expectExceptionMessage('EmbedsOne is not supported for relationship lookups. The related documents are already part of the parent document. Read them from the attribute, or match them on their dotted path.');
 
         $this->lookupFor(fn () => (new User())->father());
     }
