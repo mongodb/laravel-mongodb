@@ -11,6 +11,7 @@ use Illuminate\Container\Container;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Filesystem\FilesystemManager;
 use Illuminate\Foundation\Application;
+use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
 use Illuminate\Session\SessionManager;
 use Illuminate\Support\ServiceProvider;
 use InvalidArgumentException;
@@ -22,6 +23,7 @@ use League\Flysystem\ReadOnly\ReadOnlyFilesystemAdapter;
 use MongoDB\GridFS\Bucket;
 use MongoDB\Laravel\Cache\MongoStore;
 use MongoDB\Laravel\Eloquent\Model;
+use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 use MongoDB\Laravel\Queue\MongoConnector;
 use MongoDB\Laravel\Scout\ScoutEngine;
 use MongoDB\Laravel\Session\MongoDbSessionHandler;
@@ -35,6 +37,7 @@ use function assert;
 use function class_exists;
 use function config;
 use function get_debug_type;
+use function is_array;
 use function is_string;
 use function sprintf;
 
@@ -107,9 +110,45 @@ class MongoDBServiceProvider extends ServiceProvider
             });
         });
 
+        $this->registerFailedJobProvider();
         $this->registerFlysystemAdapter();
         $this->registerScoutEngine();
         $this->registerBoostTools();
+    }
+
+    /**
+     * Replace Laravel's database failed-job provider on MongoDB connections.
+     *
+     * `DatabaseFailedJobProvider::ids()` plucks `id`, which stays an ObjectId.
+     * `queue:retry` uses each id as an array key, so the id has to be a string.
+     */
+    private function registerFailedJobProvider(): void
+    {
+        $this->app->extend('queue.failer', function ($provider, $app) {
+            if (! $provider instanceof DatabaseFailedJobProvider || $provider::class !== DatabaseFailedJobProvider::class) {
+                return $provider;
+            }
+
+            $database = $app['config']->get('queue.failed.database');
+            $connectionName = is_string($database) && $database !== ''
+                ? $database
+                : $app['config']->get('database.default');
+
+            $connections = $app['config']->get('database.connections');
+            $driver = is_array($connections) && is_string($connectionName)
+                ? ($connections[$connectionName]['driver'] ?? null)
+                : null;
+
+            if ($driver !== 'mongodb') {
+                return $provider;
+            }
+
+            return new MongoFailedJobProvider(
+                $app['db'],
+                $database,
+                $app['config']->get('queue.failed.table'),
+            );
+        });
     }
 
     private function registerFlysystemAdapter(): void
