@@ -81,12 +81,38 @@ class EncryptedCommandsTest extends TestCase
 
     public function testStatusNoServerCountsTheEncryptedFields(): void
     {
-        $this->enableEncryption(self::PATIENTS_AND_USERS_MAP);
+        $this->enableEncryption($this->keyedFieldsMap());
 
         $this->artisan('mongodb:encryption:status', ['--no-server' => true])
             ->expectsOutputToContain('patients: 1 encrypted field(s)')
-            ->expectsOutputToContain('users: 1 encrypted field(s)')
+            ->expectsOutputToContain('users: 2 encrypted field(s)')
             ->assertExitCode(Command::SUCCESS);
+    }
+
+    /**
+     * A map whose fields carry an explicit keyId, so it needs no encryption runtime
+     * and no keyAltName support: referencing a field by keyAltName requires
+     * ext-mongodb 2.4.0, and the test matrix includes 1.21.
+     *
+     * @return array<string, array{fields: list<array<string, mixed>>}>
+     */
+    private function keyedFieldsMap(): array
+    {
+        $keyId = static fn (string $seed): Binary => new Binary(str_pad($seed, 16, '0'), Binary::TYPE_UUID);
+
+        return [
+            'patients' => [
+                'fields' => [
+                    ['path' => 'ssn', 'bsonType' => 'string', 'keyId' => $keyId('ssn')],
+                ],
+            ],
+            'users' => [
+                'fields' => [
+                    ['path' => 'email', 'bsonType' => 'string', 'keyId' => $keyId('email')],
+                    ['path' => 'phone', 'bsonType' => 'string', 'keyId' => $keyId('phone')],
+                ],
+            ],
+        ];
     }
 
     public function testStatusReportsAnEmptyMap(): void
