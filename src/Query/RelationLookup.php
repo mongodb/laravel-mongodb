@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use LogicException;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 
+use function array_key_first;
 use function class_basename;
 use function is_array;
 use function sprintf;
@@ -44,14 +45,12 @@ final class RelationLookup
         self::assertLookupSupported($relation);
 
         $pipeline = [['$match' => ['$expr' => self::joinExpression($relation)]]];
-        $filters  = [
-            ...self::morphTypeConstraints($relation),
-            ...self::relatedConstraints($relation, $constrainRelated),
-        ];
 
-        foreach ($filters as $filter) {
+        foreach (self::morphTypeConstraints($relation) as $filter) {
             $pipeline[] = ['$match' => $filter];
         }
+
+        $pipeline = [...$pipeline, ...self::relatedStages($relation, $constrainRelated)];
 
         return new self($alias, [
             '$lookup' => [
@@ -67,8 +66,8 @@ final class RelationLookup
     private static function assertLookupSupported(Relation $relation): void
     {
         $reason = match (true) {
-            $relation instanceof MorphTo => 'The related collection differs per document.',
-            $relation instanceof EmbedsOneOrMany => 'The related documents are already embedded in the parent document.',
+            $relation instanceof MorphTo => 'The related collection differs per document, which one lookup cannot express. Eager load the relation with "with()", or query each morph type on its own.',
+            $relation instanceof EmbedsOneOrMany => 'The related documents are already part of the parent document. Read them from the attribute, or match them on their dotted path.',
             default => null,
         };
 
@@ -179,7 +178,7 @@ final class RelationLookup
      *
      * @return list<array<string, mixed>>
      */
-    private static function relatedConstraints(Relation $relation, ?Closure $constrainRelated): array
+    private static function relatedStages(Relation $relation, ?Closure $constrainRelated): array
     {
         if ($constrainRelated === null) {
             return [];
@@ -188,13 +187,46 @@ final class RelationLookup
         $related = $relation->getRelated()->newQuery();
         $constrainRelated($related);
 
-        $wheres = self::mongoQuery($related)->toMql()['find'][0] ?? [];
+        $command = self::mongoQuery($related)->toMql();
 
-        if (! is_array($wheres) || $wheres === []) {
-            return [];
+        if (! isset($command['find'])) {
+            throw new LogicException(sprintf(
+                'Relationship constraints producing a "%s" command are not supported for relationship lookups.',
+                (string) array_key_first($command),
+            ));
         }
 
-        return [$wheres];
+        [$wheres, $options] = $command['find'] + [[], []];
+
+        return self::stagesFor(
+            is_array($wheres) ? $wheres : [],
+            is_array($options) ? $options : [],
+        );
+    }
+
+    /**
+     * @param array<string, mixed> $wheres
+     * @param array<string, mixed> $options
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function stagesFor(array $wheres, array $options): array
+    {
+        $stages = [];
+
+        if ($wheres !== []) {
+            $stages[] = ['$match' => $wheres];
+        }
+
+        foreach (['sort' => '$sort', 'skip' => '$skip', 'limit' => '$limit', 'projection' => '$project'] as $option => $stage) {
+            if (! isset($options[$option])) {
+                continue;
+            }
+
+            $stages[] = [$stage => $options[$option]];
+        }
+
+        return $stages;
     }
 
     /** @param EloquentBuilder<Model> $related */
@@ -213,7 +245,7 @@ final class RelationLookup
     private static function unsupported(Relation $relation): LogicException
     {
         return new LogicException(sprintf(
-            '%s is not supported for relationship lookups.',
+            '%s is not supported for relationship lookups. One lookup covers a single relationship hop; chain a lookup per hop, or eager load the relation with "with()".',
             class_basename($relation),
         ));
     }
