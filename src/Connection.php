@@ -130,7 +130,7 @@ class Connection extends BaseConnection
      */
     public function getCollection($name): Collection
     {
-        return $this->db->selectCollection($this->tablePrefix . $name);
+        return $this->db->getCollection($this->tablePrefix . $name);
     }
 
     /** @inheritdoc */

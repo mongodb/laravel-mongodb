@@ -388,7 +388,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     #[Override]
     public function getIndexes($table)
     {
-        $collection = $this->connection->getDatabase()->selectCollection($table);
+        $collection = $this->connection->getDatabase()->getCollection($table);
         assert($collection instanceof Collection);
         $indexList = [];
 
@@ -523,7 +523,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
             $collation = $options['collation'] ?? [];
 
             // Aggregation is not supported on views
-            $stats = $collectionType !== 'view' ? $db->selectCollection($collectionName)->aggregate([
+            $stats = $collectionType !== 'view' ? $db->getCollection($collectionName)->aggregate([
                 ['$collStats' => ['storageStats' => ['scale' => 1]]],
                 ['$project' => ['storageStats.totalSize' => 1]],
             ])->toArray() : null;

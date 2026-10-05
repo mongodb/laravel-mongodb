@@ -457,7 +457,7 @@ final class ScoutEngine extends Engine
         // Ensure the collection exists before creating the search index
         $this->database->createCollection($name);
 
-        $collection = $this->database->selectCollection($name);
+        $collection = $this->database->getCollection($name);
         $collection->createSearchIndex($definition, ['name' => self::INDEX_NAME]);
 
         if ($options['wait'] ?? true) {
@@ -494,7 +494,7 @@ final class ScoutEngine extends Engine
 
         assert(method_exists($model, 'searchableAs'), sprintf('Model "%s" must use "%s" trait', $model::class, Searchable::class));
 
-        return $this->database->selectCollection($model->searchableAs());
+        return $this->database->getCollection($model->searchableAs());
     }
 
     /** Get the MongoDB collection used to index the provided model */
@@ -515,7 +515,7 @@ final class ScoutEngine extends Engine
             throw new LogicException(sprintf('The MongoDB Scout collection "%s.%s" must use a different collection from the collection name of the model "%s". Set the "scout.prefix" configuration or use a distinct MongoDB database', $this->database->getDatabaseName(), $model->indexableAs(), $model::class));
         }
 
-        return $this->database->selectCollection($model->indexableAs());
+        return $this->database->getCollection($model->indexableAs());
     }
 
     private static function serialize(mixed $value): mixed

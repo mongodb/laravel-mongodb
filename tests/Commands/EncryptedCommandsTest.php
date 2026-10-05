@@ -503,7 +503,7 @@ class EncryptedCommandsTest extends TestCase
     {
         $keys = [];
 
-        $vault = $this->plainConnection()->getDatabase(self::KEY_VAULT_DATABASE)->selectCollection(self::KEY_VAULT_COLLECTION);
+        $vault = $this->plainConnection()->getDatabase(self::KEY_VAULT_DATABASE)->getCollection(self::KEY_VAULT_COLLECTION);
 
         foreach ($vault->find() as $key) {
             $keys[base64_encode($key->_id->getData())] = $key;
