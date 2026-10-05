@@ -51,8 +51,11 @@ class ConnectionTest extends TestCase
         $client = $connection->getClient();
         $this->assertInstanceOf(Client::class, $client);
         $connection->disconnect();
-        $client = $connection->getClient();
-        $this->assertNull($client);
+        // Like the PDO handle of a SQL connection, the client is re-created on next use
+        $newClient = $connection->getClient();
+        $this->assertInstanceOf(Client::class, $newClient);
+        $this->assertNotSame($client, $newClient);
+        $this->assertInstanceOf(Database::class, $connection->getDatabase());
         DB::purge('mongodb');
         $connection = DB::connection('mongodb');
         $this->assertInstanceOf(Connection::class, $connection);
