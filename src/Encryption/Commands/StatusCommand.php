@@ -34,7 +34,7 @@ final class StatusCommand extends Command
             $connection = $this->connection();
             $config = $this->autoEncryptionConfig($connection);
             $encryptedFields = $this->encryptedFields($connection, $config);
-        } catch (InvalidArgumentException $e) {
+        } catch (InvalidArgumentException | DriverException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
@@ -63,7 +63,7 @@ final class StatusCommand extends Command
      *
      * @param  array<string, mixed> $config
      *
-     * @return array<string, int>
+     * @return array<array-key, int>
      *
      * @throws InvalidArgumentException
      */
@@ -79,7 +79,7 @@ final class StatusCommand extends Command
     }
 
     /**
-     * @param array<string, int> $encryptedFields
+     * @param array<array-key, int> $encryptedFields
      *
      * @throws DriverException
      */
@@ -100,7 +100,7 @@ final class StatusCommand extends Command
                 '  - %s: %d encrypted field(s)%s',
                 $collection,
                 $fields,
-                $builder === null ? '' : ($builder->hasEncryptedCollection($collection) ? ', exists' : ', missing'),
+                $builder === null ? '' : ($builder->hasEncryptedCollection((string) $collection) ? ', exists' : ', missing'),
             ));
         }
     }

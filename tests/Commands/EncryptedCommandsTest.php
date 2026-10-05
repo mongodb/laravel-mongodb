@@ -429,10 +429,17 @@ class EncryptedCommandsTest extends TestCase
     {
         $this->enableEncryption(self::PATIENTS_MAP);
         $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
 
         $this->artisan('mongodb:encryption:status')
             ->expectsOutputToContain('configuration is valid')
-            ->expectsOutputToContain('patients')
+            ->expectsOutputToContain('patients: 1 encrypted field(s), missing')
+            ->assertExitCode(Command::SUCCESS);
+
+        $this->schemaBuilder()->createEncrypted('patients');
+
+        $this->artisan('mongodb:encryption:status')
+            ->expectsOutputToContain('patients: 1 encrypted field(s), exists')
             ->assertExitCode(Command::SUCCESS);
     }
 
