@@ -26,4 +26,9 @@ class Photo extends Model
     {
         return $this->morphTo(ownerKey: 'cclient_id');
     }
+
+    public function hasImageWithTrashed(): MorphTo
+    {
+        return $this->morphTo()->withTrashed();
+    }
 }

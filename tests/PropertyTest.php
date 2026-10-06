@@ -34,4 +34,21 @@ final class PropertyTest extends TestCase
         self::assertArrayNotHasKey('country', $hiddenAnimal->toArray(), 'the country column should be hidden');
         self::assertArrayHasKey('can_be_eaten', $hiddenAnimal->toArray());
     }
+
+    public function testHiddenAttributeWithSetOnlyAttributeMutatorIsAccessible(): void
+    {
+        HiddenAnimal::create([
+            'name' => 'Sheep',
+            'country' => 'Ireland',
+            'can_be_eaten' => true,
+            'secret' => 'shhh',
+        ]);
+
+        $hiddenAnimal = HiddenAnimal::sole();
+        assert($hiddenAnimal instanceof HiddenAnimal);
+
+        self::assertSame('shhh', $hiddenAnimal->secret);
+        self::assertSame('shhh', $hiddenAnimal->getAttributes()['secret']);
+        self::assertArrayNotHasKey('secret', $hiddenAnimal->toArray());
+    }
 }

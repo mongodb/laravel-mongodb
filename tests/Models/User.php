@@ -28,7 +28,7 @@ use MongoDB\Laravel\Eloquent\MassPrunable;
  * @property Carbon $created_at
  * @property Carbon $updated_at
  * @property string $username
- * @property MemberStatus member_status
+ * @property MemberStatus $member_status
  * @property Options $options
  */
 class User extends Model implements AuthenticatableContract, CanResetPasswordContract

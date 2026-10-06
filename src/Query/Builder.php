@@ -1195,18 +1195,19 @@ class Builder extends BaseBuilder
      */
     protected function performUpdate(array $update, array $options = [])
     {
-        // Update multiple items by default.
-        if (! array_key_exists('multiple', $options)) {
-            $options['multiple'] = true;
-        }
-
         $update = $this->grammar->prepareFieldsForQuery($update);
 
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
-        $result = $this->collection->updateMany($wheres, $update, $options);
+        // Queryable Encryption forbids multi-document updates, so encrypted
+        // collections must use single-document updates. Unmapped collections
+        // keep the multi-document behavior. The encrypted fields map is keyed
+        // by the logical collection name, without the table prefix.
+        $result = $this->connection->isAutoEncryptionEnabled($this->from)
+            ? $this->collection->updateOne($wheres, $update, $options)
+            : $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {
             return $result->getModifiedCount() ?: $result->getUpsertedCount();
         }
