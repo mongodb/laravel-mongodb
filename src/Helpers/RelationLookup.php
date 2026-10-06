@@ -44,7 +44,6 @@ final class RelationLookup
     public static function for(
         Relation $relation,
         string $alias,
-        ?string $sourceAlias,
         ?Closure $constrainRelated = null,
     ): self {
         self::assertLookupSupported($relation);
@@ -60,7 +59,7 @@ final class RelationLookup
         return new self($alias, [
             '$lookup' => [
                 'from' => $relation->getRelated()->getTable(),
-                'let' => ['local' => self::localValue($relation, $sourceAlias)],
+                'let' => ['local' => self::localValue($relation)],
                 'pipeline' => $pipeline,
                 'as' => $alias,
             ],
@@ -186,41 +185,21 @@ final class RelationLookup
      *
      * @return array<string, mixed>
      */
-    private static function localValue(Relation $relation, ?string $sourceAlias): array
+    private static function localValue(Relation $relation): array
     {
         $path = '$' . self::localField($relation);
 
-        if ($sourceAlias === null) {
-            return self::withoutMissingKeys(self::holdsManyKeys($relation) ? ['$ifNull' => [$path, []]] : [$path]);
-        }
-
-        $collected = '$' . $sourceAlias . '.' . self::localField($relation);
-
-        return self::withoutMissingKeys(
-            self::holdsManyKeys($relation) ? self::flatten($collected) : $collected,
-        );
+        return self::withoutMissingKeys(self::holdsManyKeys($relation) ? ['$ifNull' => [$path, []]] : [$path]);
     }
 
     /**
-     * @param string|array<string, mixed>|list<string> $keys
+     * @param array<string, mixed>|list<string> $keys
      *
      * @return array<string, mixed>
      */
-    private static function withoutMissingKeys(string|array $keys): array
+    private static function withoutMissingKeys(array $keys): array
     {
         return ['$filter' => ['input' => $keys, 'cond' => ['$ne' => ['$$this', null]]]];
-    }
-
-    /** @return array<string, mixed> */
-    private static function flatten(string $path): array
-    {
-        return [
-            '$reduce' => [
-                'input' => ['$ifNull' => [$path, []]],
-                'initialValue' => [],
-                'in' => ['$concatArrays' => ['$$value', ['$ifNull' => ['$$this', []]]]],
-            ],
-        ];
     }
 
     /** @param Relation<Model, Model, mixed> $relation */
