@@ -566,6 +566,27 @@ class Builder extends BaseBuilder
         return md5(serialize(array_values($key)));
     }
 
+    /** @inheritdoc */
+    #[Override]
+    public function count($columns = '*')
+    {
+        if ($this->groups) {
+            $without = ['columns', 'orders', 'limit', 'offset'];
+
+            $mql = $this->cloneWithout($without)
+                ->cloneWithoutBindings(['select', 'order'])
+                ->toMql();
+
+            $mql['aggregate'][0][] = ['$count' => 'aggregate'];
+
+            $result = $this->collection->aggregate($mql['aggregate'][0], $mql['aggregate'][1])->toArray();
+
+            return isset($result[0]) ? (int) ((array) $result[0])['aggregate'] : 0;
+        }
+
+        return parent::count($columns);
+    }
+
     /** @return ($function is null ? AggregationBuilder : mixed) */
     #[Override]
     public function aggregate($function = null, $columns = ['*'])
