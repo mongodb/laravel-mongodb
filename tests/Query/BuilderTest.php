@@ -927,6 +927,50 @@ class BuilderTest extends TestCase
             'whereNotLike',
         ];
 
+        yield 'filament search contains' => [
+            ['find' => [['name' => new Regex('^.*search.*$', 'i')], []]],
+            fn
+        (Builder $builder) => $builder->whereLike('name', '%search%', false, 'and', false),
+            'whereLike',
+        ];
+
+        yield 'filament search contains with or' => [
+            ['find' => [['$or' => [['active' => true], ['name' => new Regex('^.*search.*$', 'i')]]], []]],
+            fn
+        (Builder $builder) => $builder->where('active', true)->whereLike('name', '%search%', false, 'or', false),
+            'whereLike',
+        ];
+
+        yield 'filament search across columns' => [
+            ['find' => [['$or' => [['name' => new Regex('^.*search.*$', 'i')], ['email' => new Regex('^.*search.*$', 'i')]]], []]],
+            fn
+        (Builder $builder) => $builder
+                ->whereLike('name', '%search%', false, 'or', false)
+                ->whereLike('email', '%search%', false, 'or', false),
+            'whereLike',
+        ];
+
+        yield 'filament search inverse' => [
+            ['find' => [['name' => ['$not' => new Regex('^.*search.*$', 'i')]], []]],
+            fn
+        (Builder $builder) => $builder->whereLike('name', '%search%', false, 'and', true),
+            'whereLike',
+        ];
+
+        yield 'filament search inverse with or' => [
+            ['find' => [['$or' => [['active' => true], ['name' => ['$not' => new Regex('^.*search.*$', 'i')]]]], []]],
+            fn
+        (Builder $builder) => $builder->where('active', true)->whereLike('name', '%search%', false, 'or', true),
+            'whereLike',
+        ];
+
+        yield 'filament search escaped wildcards' => [
+            ['find' => [['name' => new Regex('^.*café\\!_100%\\[draft\\]\\\\path\\\\%\\\\_wow\\!\\!.*$', 'i')], []]],
+            fn
+        (Builder $builder) => $builder->whereLike('name', '%café!\\_100\\%[draft]\\path\\\\%\\\\_wow!!%', false, 'and', false),
+            'whereLike',
+        ];
+
         $regex = new Regex('^acme$', 'si');
         yield 'where BSON\Regex' => [
             ['find' => [['name' => $regex], []]],
