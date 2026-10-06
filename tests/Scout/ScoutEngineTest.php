@@ -57,7 +57,7 @@ class ScoutEngineTest extends TestCase
             ->method('createCollection')
             ->with($collectionName);
         $database->expects($this->once())
-            ->method('selectCollection')
+            ->method('getCollection')
             ->with($collectionName)
             ->willReturn($collection);
         $collection->expects($this->once())
@@ -95,7 +95,7 @@ class ScoutEngineTest extends TestCase
             ->method('createCollection')
             ->with($collectionName);
         $database->expects($this->once())
-            ->method('selectCollection')
+            ->method('getCollection')
             ->with($collectionName)
             ->willReturn($collection);
         $collection->expects($this->once())
@@ -118,7 +118,7 @@ class ScoutEngineTest extends TestCase
         $database = $this->createMock(Database::class);
         $collection = $this->createMock(Collection::class);
         $database->expects($this->once())
-            ->method('selectCollection')
+            ->method('getCollection')
             ->with('collection_searchable')
             ->willReturn($collection);
         $cursor = $this->createMock(CursorInterface::class);
@@ -482,7 +482,7 @@ class ScoutEngineTest extends TestCase
         $database = $this->createMock(Database::class);
         $collection = $this->createMock(Collection::class);
         $cursor = $this->createMock(CursorInterface::class);
-        $database->method('selectCollection')
+        $database->method('getCollection')
             ->with('collection_searchable')
             ->willReturn($collection);
         $collection->expects($this->once())
@@ -623,7 +623,7 @@ class ScoutEngineTest extends TestCase
         $database = $this->createMock(Database::class);
         $collection = $this->createMock(Collection::class);
         $database->expects($this->once())
-            ->method('selectCollection')
+            ->method('getCollection')
             ->with('collection_indexable')
             ->willReturn($collection);
         $collection->expects($this->once())
@@ -661,7 +661,7 @@ class ScoutEngineTest extends TestCase
         $database = $this->createMock(Database::class);
         $collection = $this->createMock(Collection::class);
         $database->expects($this->once())
-            ->method('selectCollection')
+            ->method('getCollection')
             ->with('collection_indexable')
             ->willReturn($collection);
         $collection->expects($this->once())
@@ -688,7 +688,7 @@ class ScoutEngineTest extends TestCase
         $database = $this->createMock(Database::class);
         $collection = $this->createMock(Collection::class);
         $database->expects($this->once())
-            ->method('selectCollection')
+            ->method('getCollection')
             ->with('collection_indexable')
             ->willReturn($collection);
         $collection->expects($this->once())
@@ -713,7 +713,7 @@ class ScoutEngineTest extends TestCase
         $database = $this->createMock(Database::class);
         $collection = $this->createMock(Collection::class);
         $database->expects($this->once())
-            ->method('selectCollection')
+            ->method('getCollection')
             ->with('collection_indexable')
             ->willReturn($collection);
         $collection->expects($this->once())
