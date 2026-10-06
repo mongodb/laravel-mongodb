@@ -635,7 +635,17 @@ trait DocumentModel
         return $this->parentRelation ?? null;
     }
 
-    /** @inheritdoc */
+    /**
+     * Get a new query builder for the model's table.
+     *
+     * @return Builder<static>
+     */
+    public function newQuery()
+    {
+        return parent::newQuery();
+    }
+
+    /** @return Builder<static> */
     public function newEloquentBuilder($query)
     {
         return new Builder($query);
