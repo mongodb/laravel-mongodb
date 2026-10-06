@@ -15,11 +15,15 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use LogicException;
+use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 
+use function array_is_list;
 use function array_key_first;
 use function class_basename;
+use function count;
 use function is_array;
+use function is_int;
 use function sprintf;
 
 /** @internal */
@@ -71,14 +75,32 @@ final class RelationLookup
             default => null,
         };
 
-        if ($reason === null) {
+        if ($reason !== null) {
+            throw new LogicException(sprintf(
+                '%s is not supported for relationship lookups. %s',
+                class_basename($relation),
+                $reason,
+            ));
+        }
+
+        self::assertRelatedStoredInSameDatabase($relation);
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private static function assertRelatedStoredInSameDatabase(Relation $relation): void
+    {
+        $related = $relation->getRelated();
+        $connection = $relation->getParent()->getConnectionName();
+
+        if (DocumentModel::isDocumentModel($related) && $related->getConnectionName() === $connection) {
             return;
         }
 
         throw new LogicException(sprintf(
-            '%s is not supported for relationship lookups. %s',
-            class_basename($relation),
-            $reason,
+            'The hybrid relation to [%s] is not supported for relationship lookups. A lookup reads a collection of the database it runs in, so the related model must be stored in MongoDB on connection [%s], not on connection [%s].',
+            $related::class,
+            (string) $connection,
+            (string) $related->getConnectionName(),
         ));
     }
 
@@ -89,23 +111,37 @@ final class RelationLookup
      */
     private static function joinExpression(Relation $relation): array
     {
+        return [
+            '$in' => [
+                self::asString(self::field(self::relatedKeyName($relation))),
+                self::localKeyValues($relation),
+            ],
+        ];
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private static function relatedKeyName(Relation $relation): string
+    {
         return match (true) {
-            $relation instanceof BelongsTo => ['$eq' => [self::asString(self::field($relation->getOwnerKeyName())), ['$toString' => '$$local']]],
-            $relation instanceof HasOneOrMany => ['$eq' => [self::asString(self::field($relation->getForeignKeyName())), ['$toString' => '$$local']]],
-            $relation instanceof MorphToMany && $relation->getInverse() => [
-                '$in' => [
-                    self::asString(self::field($relation->getRelatedKeyName())),
-                    self::pivotKeys($relation),
-                ],
-            ],
-            $relation instanceof BelongsToMany => [
-                '$in' => [
-                    self::asString(self::field($relation->getRelatedKeyName())),
-                    ['$map' => ['input' => ['$ifNull' => ['$$local', []]], 'in' => ['$toString' => '$$this']]],
-                ],
-            ],
+            $relation instanceof BelongsTo => $relation->getOwnerKeyName(),
+            $relation instanceof HasOneOrMany => $relation->getForeignKeyName(),
+            $relation instanceof BelongsToMany => $relation->getRelatedKeyName(),
             default => throw self::unsupported($relation),
         };
+    }
+
+    /**
+     * @param Relation<Model, Model, mixed> $relation
+     *
+     * @return array<string, mixed>
+     */
+    private static function localKeyValues(Relation $relation): array
+    {
+        if ($relation instanceof MorphToMany && $relation->getInverse()) {
+            return self::pivotKeys($relation);
+        }
+
+        return ['$map' => ['input' => '$$local', 'in' => ['$toString' => '$$this']]];
     }
 
     /**
@@ -119,7 +155,7 @@ final class RelationLookup
             '$map' => [
                 'input' => [
                     '$filter' => [
-                        'input' => ['$ifNull' => ['$$local', []]],
+                        'input' => '$$local',
                         'cond' => ['$eq' => ['$$this.' . $relation->getMorphType(), $relation->getMorphClass()]],
                     ],
                 ],
@@ -147,17 +183,49 @@ final class RelationLookup
     /**
      * @param Relation<Model, Model, mixed> $relation
      *
-     * @return string|array<string, mixed>
+     * @return array<string, mixed>
      */
-    private static function localValue(Relation $relation, ?string $sourceAlias): string|array
+    private static function localValue(Relation $relation, ?string $sourceAlias): array
     {
-        $field = self::localField($relation);
+        $path = '$' . self::localField($relation);
 
         if ($sourceAlias === null) {
-            return '$' . $field;
+            return self::withoutMissingKeys(self::holdsManyKeys($relation) ? ['$ifNull' => [$path, []]] : [$path]);
         }
 
-        return ['$first' => '$' . $sourceAlias . '.' . $field];
+        $collected = '$' . $sourceAlias . '.' . self::localField($relation);
+
+        return self::withoutMissingKeys(
+            self::holdsManyKeys($relation) ? self::flatten($collected) : $collected,
+        );
+    }
+
+    /**
+     * @param string|array<string, mixed>|list<string> $keys
+     *
+     * @return array<string, mixed>
+     */
+    private static function withoutMissingKeys(string|array $keys): array
+    {
+        return ['$filter' => ['input' => $keys, 'cond' => ['$ne' => ['$$this', null]]]];
+    }
+
+    /** @return array<string, mixed> */
+    private static function flatten(string $path): array
+    {
+        return [
+            '$reduce' => [
+                'input' => ['$ifNull' => [$path, []]],
+                'initialValue' => [],
+                'in' => ['$concatArrays' => ['$$value', ['$ifNull' => ['$$this', []]]]],
+            ],
+        ];
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private static function holdsManyKeys(Relation $relation): bool
+    {
+        return $relation instanceof BelongsToMany;
     }
 
     /** @param Relation<Model, Model, mixed> $relation */
@@ -180,14 +248,14 @@ final class RelationLookup
      */
     private static function relatedStages(Relation $relation, ?Closure $constrainRelated): array
     {
-        if ($constrainRelated === null) {
-            return [];
+        $related = $relation->getRelated()->newQuery()
+            ->withoutGlobalScopes($relation->getQuery()->removedScopes());
+
+        if ($constrainRelated !== null) {
+            $constrainRelated($related);
         }
 
-        $related = $relation->getRelated()->newQuery();
-        $constrainRelated($related);
-
-        $command = self::mongoQuery($related)->toMql();
+        $command = self::mongoQuery($related->applyScopes())->toMql();
 
         if (! isset($command['find'])) {
             throw new LogicException(sprintf(
@@ -218,7 +286,7 @@ final class RelationLookup
             $stages[] = ['$match' => $wheres];
         }
 
-        foreach (['sort' => '$sort', 'skip' => '$skip', 'limit' => '$limit', 'projection' => '$project'] as $option => $stage) {
+        foreach (['sort' => '$sort', 'skip' => '$skip', 'limit' => '$limit'] as $option => $stage) {
             if (! isset($options[$option])) {
                 continue;
             }
@@ -226,7 +294,61 @@ final class RelationLookup
             $stages[] = [$stage => $options[$option]];
         }
 
+        if (isset($options['projection']) && is_array($options['projection'])) {
+            $stages[] = ['$project' => self::projection($options['projection'])];
+        }
+
         return $stages;
+    }
+
+    /**
+     * @param array<string, mixed> $projection
+     *
+     * @return array<string, mixed>
+     */
+    private static function projection(array $projection): array
+    {
+        $projected = [];
+
+        foreach ($projection as $field => $specification) {
+            $projected[$field] = self::projectedField($field, $specification);
+        }
+
+        return $projected;
+    }
+
+    private static function projectedField(string $field, mixed $specification): mixed
+    {
+        if (! is_array($specification)) {
+            return $specification;
+        }
+
+        if (isset($specification['$slice'])) {
+            return ['$slice' => self::sliceArguments($field, $specification['$slice'])];
+        }
+
+        throw new LogicException(sprintf(
+            'The projection of "%s" uses the operator "%s", which a relationship lookup cannot compile into an aggregation stage. Project the field without it, or read the relation without a lookup.',
+            $field,
+            (string) array_key_first($specification),
+        ));
+    }
+
+    /** @return list<mixed> */
+    private static function sliceArguments(string $field, mixed $arguments): array
+    {
+        if (is_int($arguments)) {
+            return ['$' . $field, $arguments];
+        }
+
+        if (is_array($arguments) && array_is_list($arguments) && count($arguments) === 2) {
+            return ['$' . $field, $arguments[0], $arguments[1]];
+        }
+
+        throw new LogicException(sprintf(
+            'The projection of "%s" slices with arguments a relationship lookup cannot compile into an aggregation stage. Slice with a count, or with a skip and a count.',
+            $field,
+        ));
     }
 
     /** @param EloquentBuilder<Model> $related */
