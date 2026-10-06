@@ -35,6 +35,7 @@ use function value;
 /**
  * @method \MongoDB\Laravel\Query\Builder toBase()
  * @template TModel of Model
+ * @extends EloquentBuilder<TModel>
  */
 class Builder extends EloquentBuilder
 {

@@ -65,3 +65,22 @@ parameters:
 			identifier: method.notFound
 			count: 1
 			path: src/Scout/ScoutEngine.php
+
+		# Surfaced by binding Builder's TModel to its parent via @extends (see TModel
+		# of Model above): $this->model was previously resolved too loosely for its own
+		# generic bound to be checked against these trait-provided methods. Both are
+		# genuinely available on any model this class is used with, but TModel's bound
+		# (Illuminate\Database\Eloquent\Model) can't express that, since the Mongo
+		# capabilities trait-based models rely on (DocumentModel) can be composed onto
+		# any Eloquent model, not only subclasses of MongoDB\Laravel\Eloquent\Model.
+		-
+			message: '#^Call to an undefined method TModel of Illuminate\\Database\\Eloquent\\Model\:\:getParentRelation\(\)\.$#'
+			identifier: method.notFound
+			count: 6
+			path: src/Eloquent/Builder.php
+
+		-
+			message: '#^Call to an undefined method TModel of Illuminate\\Database\\Eloquent\\Model\:\:hydrate\(\)\.$#'
+			identifier: method.notFound
+			count: 3
+			path: src/Eloquent/Builder.php
