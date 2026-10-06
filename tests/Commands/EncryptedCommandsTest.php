@@ -79,6 +79,90 @@ class EncryptedCommandsTest extends TestCase
             ->assertExitCode(Command::SUCCESS);
     }
 
+    public function testStatusNoServerCountsTheEncryptedFields(): void
+    {
+        $this->enableEncryption($this->keyedFieldsMap());
+
+        $this->artisan('mongodb:encryption:status', ['--no-server' => true])
+            ->expectsOutputToContain('patients: 1 encrypted field(s)')
+            ->expectsOutputToContain('users: 2 encrypted field(s)')
+            ->assertExitCode(Command::SUCCESS);
+    }
+
+    /**
+     * A map whose fields carry an explicit keyId, so it needs no encryption runtime
+     * and no keyAltName support: referencing a field by keyAltName requires
+     * ext-mongodb 2.4.0, and the test matrix includes 1.21.
+     *
+     * @return array<string, array{fields: list<array<string, mixed>>}>
+     */
+    private function keyedFieldsMap(): array
+    {
+        $keyId = static fn (string $seed): Binary => new Binary(str_pad($seed, 16, '0'), Binary::TYPE_UUID);
+
+        return [
+            'patients' => [
+                'fields' => [
+                    ['path' => 'ssn', 'bsonType' => 'string', 'keyId' => $keyId('ssn')],
+                ],
+            ],
+            'users' => [
+                'fields' => [
+                    ['path' => 'email', 'bsonType' => 'string', 'keyId' => $keyId('email')],
+                    ['path' => 'phone', 'bsonType' => 'string', 'keyId' => $keyId('phone')],
+                ],
+            ],
+        ];
+    }
+
+    public function testStatusReportsAnEmptyMap(): void
+    {
+        $this->enableEncryption([]);
+
+        $this->artisan('mongodb:encryption:status', ['--no-server' => true])
+            ->expectsOutputToContain('Mapped collections: none')
+            ->assertExitCode(Command::SUCCESS);
+    }
+
+    /**
+     * An invalid configuration is rejected while the connection is created, so the
+     * command reports that instead of its own summary. Previously untested.
+     */
+    public function testStatusFailsWithoutAKeyVaultNamespace(): void
+    {
+        config(['database.connections.mongodb.driver_options.autoEncryption' => ['encryptedFieldsMap' => self::EMPTY_FIELDS_MAP]]);
+
+        $this->artisan('mongodb:encryption:status', ['--no-server' => true])
+            ->expectsOutputToContain('The "autoEncryption.keyVaultNamespace" driver option is required')
+            ->doesntExpectOutputToContain('configuration is valid')
+            ->assertExitCode(Command::FAILURE);
+    }
+
+    public function testStatusFailsWithoutKmsProviders(): void
+    {
+        config([
+            'database.connections.mongodb.driver_options.autoEncryption' => [
+                'keyVaultNamespace' => self::KEY_VAULT_NAMESPACE,
+                'encryptedFieldsMap' => self::EMPTY_FIELDS_MAP,
+            ],
+        ]);
+
+        $this->artisan('mongodb:encryption:status', ['--no-server' => true])
+            ->expectsOutputToContain('The "autoEncryption.kmsProviders" driver option must be a non-empty array')
+            ->doesntExpectOutputToContain('configuration is valid')
+            ->assertExitCode(Command::FAILURE);
+    }
+
+    public function testStatusFailsOnAMalformedMapEntry(): void
+    {
+        $this->enableEncryption(['patients' => ['no-fields-key' => []]]);
+
+        $this->artisan('mongodb:encryption:status', ['--no-server' => true])
+            ->expectsOutputToContain('must define a "fields" array')
+            ->doesntExpectOutputToContain('configuration is valid')
+            ->assertExitCode(Command::FAILURE);
+    }
+
     public function testCreateNoServerValidatesConfiguration(): void
     {
         $this->enableEncryption(['users' => ['fields' => []]]);
@@ -179,6 +263,23 @@ class EncryptedCommandsTest extends TestCase
         $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients'])
             ->expectsOutputToContain('Created encrypted collection "patients"')
             ->assertExitCode(Command::SUCCESS);
+    }
+
+    public function testStatusReportsAnUnreachableServer(): void
+    {
+        config([
+            'database.connections.mongodb_unreachable' => [
+                'name' => 'mongodb_unreachable',
+                'driver' => 'mongodb',
+                'dsn' => 'mongodb://127.0.0.1:1/?serverSelectionTimeoutMS=100',
+                'database' => 'unittest',
+                'driver_options' => ['autoEncryption' => $this->encryptionOptions(self::EMPTY_FIELDS_MAP)],
+            ],
+        ]);
+
+        $this->artisan('mongodb:encryption:status', ['--connection' => 'mongodb_unreachable'])
+            ->doesntExpectOutputToContain('Stack trace')
+            ->assertExitCode(Command::FAILURE);
     }
 
     public function testCreateNoServerWithoutCollectionValidatesTheWholeMap(): void
@@ -328,10 +429,17 @@ class EncryptedCommandsTest extends TestCase
     {
         $this->enableEncryption(self::PATIENTS_MAP);
         $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
 
         $this->artisan('mongodb:encryption:status')
             ->expectsOutputToContain('configuration is valid')
-            ->expectsOutputToContain('patients')
+            ->expectsOutputToContain('patients: 1 encrypted field(s), missing')
+            ->assertExitCode(Command::SUCCESS);
+
+        $this->schemaBuilder()->createEncrypted('patients');
+
+        $this->artisan('mongodb:encryption:status')
+            ->expectsOutputToContain('patients: 1 encrypted field(s), exists')
             ->assertExitCode(Command::SUCCESS);
     }
 
