@@ -288,12 +288,26 @@ class ScoutIntegrationTest extends TestCase
                         'sort' => ['score' => ['$meta' => 'searchScore']],
                     ],
                 ],
-                ['$project' => ['id' => 1, '_id' => 0]],
+                ['$project' => ['id' => 1, '_id' => 0, 'score' => ['$meta' => 'searchScore']]],
                 ['$limit' => 10],
             ]);
 
-        $referenceIds = array_column(iterator_to_array($reference), 'id');
-        self::assertSame($referenceIds, $results);
+        $referenceDocuments = iterator_to_array($reference);
+
+        // Documents with an identical searchScore may be returned in any order, so compare the ids as a set
+        self::assertEqualsCanonicalizing(array_column($referenceDocuments, 'id'), $results);
+
+        // The relevance score of the Scout results must be non-increasing
+        $scores = array_column($referenceDocuments, 'score', 'id');
+        $previousScore = null;
+        foreach ($results as $id) {
+            $score = $scores[$id];
+            if ($previousScore !== null) {
+                self::assertLessThanOrEqual($previousScore, $score);
+            }
+
+            $previousScore = $score;
+        }
     }
 
     #[Depends('testItCanCreateTheCollection')]
