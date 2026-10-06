@@ -1,22 +1,28 @@
 changelog:
   exclude:
     labels:
-      - ignore-for-release
-      - minor
+      - tidy
+      - merge-up
     authors:
       - mongodb-php-bot
+      - mongodb-drivers-pr-bot[bot]
+      - dependabot[bot]
   categories:
     - title: Breaking Changes 🛠
       labels:
         - breaking-change
+    - title: Security
+      labels:
+        - security
     - title: New Features
       labels:
-        - enhancement
         - feature
     - title: Fixed
       labels:
         - bug
-        - fixed
+    - title: Minor
+      labels:
+        - minor
     - title: Other Changes
       labels:
         - '*'
