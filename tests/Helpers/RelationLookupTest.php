@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace MongoDB\Laravel\Tests\Query;
+namespace MongoDB\Laravel\Tests\Helpers;
 
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use LogicException;
-use MongoDB\Laravel\Query\RelationLookup;
+use MongoDB\Laravel\Helpers\RelationLookup;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
 use MongoDB\Laravel\Tests\Models\Label;

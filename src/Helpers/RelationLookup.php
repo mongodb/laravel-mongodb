@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace MongoDB\Laravel\Query;
+namespace MongoDB\Laravel\Helpers;
 
 use Closure;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use LogicException;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
+use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 
 use function array_is_list;
