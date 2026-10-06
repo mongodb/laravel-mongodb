@@ -155,40 +155,11 @@ class RelationLookupTest extends TestCase
         ], $stage['pipeline']);
     }
 
-    public function testSourceAliasChainsTheLocalValueThroughThePreviousLookup()
+    public function testTheAliasNamesTheFieldTheRelatedDocumentsLandIn()
     {
-        $stage = $this->lookupFor(fn () => (new User())->books(), '__rel_author_books', '__rel_author');
+        $stage = $this->lookupFor(fn () => (new User())->books(), '__rel_author_books');
 
-        $this->assertSame(['local' => $this->collectedKeys('$__rel_author._id')], $stage['let']);
         $this->assertSame('__rel_author_books', $stage['as']);
-    }
-
-    public function testChainingKeepsEveryKeyOfAMultiDocumentSource()
-    {
-        $stage = $this->lookupFor(fn () => (new User())->books(), '__rel_books', '__rel_authors');
-
-        $this->assertSame(
-            ['$filter' => ['input' => '$__rel_authors._id', 'cond' => ['$ne' => ['$$this', null]]]],
-            $stage['let']['local'],
-        );
-    }
-
-    public function testChainingFlattensTheKeyArraysOfAMultiDocumentSource()
-    {
-        $stage = $this->lookupFor(fn () => (new User())->clients(), '__rel_clients', '__rel_users');
-
-        $this->assertSame([
-            '$filter' => [
-                'input' => [
-                    '$reduce' => [
-                        'input' => ['$ifNull' => ['$__rel_users.client_ids', []]],
-                        'initialValue' => [],
-                        'in' => ['$concatArrays' => ['$$value', ['$ifNull' => ['$$this', []]]]],
-                    ],
-                ],
-                'cond' => ['$ne' => ['$$this', null]],
-            ],
-        ], $stage['let']['local']);
     }
 
     public function testConstraintClosureCompilesIntoAnExtraMatchStage()
@@ -384,7 +355,6 @@ class RelationLookupTest extends TestCase
         $lookup = RelationLookup::for(
             Relation::noConstraints(fn () => (new Book())->author()),
             '__rel_author',
-            null,
         );
 
         $this->assertSame('__rel_author', $lookup->alias);
@@ -395,12 +365,6 @@ class RelationLookupTest extends TestCase
     private function scalarKey(string $path): array
     {
         return ['$filter' => ['input' => [$path], 'cond' => ['$ne' => ['$$this', null]]]];
-    }
-
-    /** @return array<string, mixed> */
-    private function collectedKeys(string $path): array
-    {
-        return ['$filter' => ['input' => $path, 'cond' => ['$ne' => ['$$this', null]]]];
     }
 
     /** @return array<string, mixed> */
@@ -428,13 +392,11 @@ class RelationLookupTest extends TestCase
     private function lookupFor(
         callable $relation,
         string $alias = '__rel',
-        ?string $sourceAlias = null,
         ?callable $constrainRelated = null,
     ): array {
         $lookup = RelationLookup::for(
             Relation::noConstraints($relation),
             $alias,
-            $sourceAlias,
             $constrainRelated === null ? null : $constrainRelated(...),
         );
 
