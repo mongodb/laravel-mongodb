@@ -294,13 +294,16 @@ class ConnectionTest extends TestCase
 
         DB::table('items')->get();
         $this->assertCount(1, $logs = DB::getQueryLog());
-        $this->assertJsonStringEqualsJsonString('{"find":"items","filter":{}}', $logs[0]['query']);
+        $this->assertSame('db.getCollection("items").find({})', $logs[0]['query']);
         $this->assertLessThan(10, $logs[0]['time'], 'Query time is in milliseconds');
         $this->assertGreaterThan(0.01, $logs[0]['time'], 'Query time is in milliseconds');
 
         DB::table('items')->insert(['id' => $id = new ObjectId(), 'name' => 'test']);
         $this->assertCount(2, $logs = DB::getQueryLog());
-        $this->assertJsonStringEqualsJsonString('{"insert":"items","ordered":true,"documents":[{"name":"test","_id":{"$oid":"' . $id . '"}}]}', $logs[1]['query']);
+        $this->assertStringContainsString('db.getCollection("items").insertOne(', $logs[1]['query']);
+        $this->assertStringContainsString('ObjectId("' . $id . '")', $logs[1]['query']);
+        $this->assertStringContainsString('name: "test"', $logs[1]['query']);
+        $this->assertStringNotContainsString('$oid', $logs[1]['query']);
 
         DB::table('items')->count();
         $this->assertCount(3, DB::getQueryLog());

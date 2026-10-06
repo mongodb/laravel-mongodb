@@ -64,7 +64,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 ### MUST NOT DO
 
 - `orderBy()` on a `withCount()` / `withAggregate()` alias — the value is computed after the documents are read, so it throws. Use `$lookup` + `$size` aggregation, or sort the resulting collection.
-- `toSql()` / `toRawSql()` — no SQL. Use `->dump()` / `->dd()`.
+- `toSql()` / `toRawSql()` — no SQL. Use `->dump()` / `->dd()`. `DB::enableQueryLog()` records a mongosh statement that Telescope and Debugbar can show.
 - `distinct('field')->get()` expecting scalars — returns a Collection. Use `->distinct()->pluck('field')`.
 - `groupByRaw()`, `orderByRaw()`, `havingRaw()`, `whereFulltext()`, `union()`, `whereColumn()` — use aggregation.
 - `inRandomOrder()` — use `Model::raw(fn($c) => $c->aggregate([['$sample' => ['size' => N]]]))`.

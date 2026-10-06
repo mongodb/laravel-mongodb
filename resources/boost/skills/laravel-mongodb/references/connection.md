@@ -70,3 +70,14 @@ mongodb+srv://.../db?serverSelectionTimeoutMS=5000&socketTimeoutMS=30000
 `maxPoolSize` and `minPoolSize` have no effect. The PHP extension drives
 libmongoc in single-threaded mode, which holds at most one socket per server
 and implements no connection pool.
+
+## Query log
+
+`DB::enableQueryLog()` and `DB::listen()` record each command as a mongosh statement. Laravel Telescope and Laravel Debugbar show that string, so a logged query can be copied into mongosh:
+
+```text
+db.getCollection("orders").find({status: "open"})
+db.getCollection("orders").updateMany({status: "open"}, {$set: {status: "closed"}})
+```
+
+`ObjectId`, `ISODate`, `NumberLong`, and `NumberDecimal` use mongosh constructors. Commands that do not map to a collection helper, such as `ping`, are logged as `db.runCommand(EJSON.parse(...))`, which mongosh runs unchanged. The statement uses the connection's current database.

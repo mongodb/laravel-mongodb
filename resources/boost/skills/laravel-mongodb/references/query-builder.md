@@ -91,6 +91,8 @@ User::query()->where('active', true)->dump();
 dd(User::query()->where('active', true)->toMql());
 ```
 
+`DB::enableQueryLog()` records the command that was sent. Laravel Telescope and Debugbar show that same text: a mongosh statement such as `db.getCollection("users").find({active: true})`, which can be pasted into mongosh. Commands without a collection helper are logged as `db.runCommand(EJSON.parse(...))`.
+
 ## Random sampling
 
 ```php

@@ -2,11 +2,11 @@
 
 namespace MongoDB\Laravel;
 
-use MongoDB\BSON\Document;
 use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber as CommandSubscriberInterface;
 use MongoDB\Driver\Monitoring\CommandSucceededEvent;
+use MongoDB\Laravel\Query\MongoshFormatter;
 use Override;
 
 use function get_object_vars;
@@ -52,6 +52,6 @@ final class CommandSubscriber implements CommandSubscriberInterface
             }
         }
 
-        $this->connection->logQuery(Document::fromPHP($command)->toCanonicalExtendedJSON(), [], $event->getDurationMicros() / 1000);
+        $this->connection->logQuery(MongoshFormatter::format($command), [], $event->getDurationMicros() / 1000);
     }
 }
