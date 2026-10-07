@@ -53,10 +53,10 @@ Post::withCount(['comments' => fn ($query) => $query->where('approved', true)])-
 ```
 
 Supported relations: `hasOne`, `hasMany`, `morphOne`, `morphMany`, `belongsTo`, `belongsToMany`, `morphToMany`,
-`morphedByMany`, `embedsOne` and `embedsMany`.
+`morphedByMany`, `hasOneThrough`, `hasManyThrough`, `embedsOne` and `embedsMany`.
 
-Anything else throws a `LogicException` rather than returning a wrong value: `morphTo`, `hasManyThrough`, and
-hybrid relations where the related model is not stored in MongoDB.
+Anything else throws a `LogicException` rather than returning a wrong value: `morphTo`, and hybrid relations
+where the related model is not stored in MongoDB.
 
 Limitations:
 

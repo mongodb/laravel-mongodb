@@ -5,17 +5,22 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use BadMethodCallException;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\SQLiteConnection;
 use Illuminate\Support\Facades\DB;
 use LogicException;
 use MongoDB\Laravel\Tests\Models\Book;
+use MongoDB\Laravel\Tests\Models\Director;
 use MongoDB\Laravel\Tests\Models\Experience;
+use MongoDB\Laravel\Tests\Models\Film;
 use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\SqlBook;
 use MongoDB\Laravel\Tests\Models\SqlRole;
 use MongoDB\Laravel\Tests\Models\SqlUser;
+use MongoDB\Laravel\Tests\Models\Studio;
 use MongoDB\Laravel\Tests\Models\User;
 use PDOException;
 
@@ -44,6 +49,9 @@ class HybridRelationsTest extends TestCase
         Skill::truncate();
         Experience::truncate();
         Label::truncate();
+        Studio::truncate();
+        Director::truncate();
+        Film::truncate();
 
         parent::tearDown();
     }
@@ -285,6 +293,60 @@ class HybridRelationsTest extends TestCase
         SqlUser::whereHas('skills', function ($query) {
             return $query->where('name', 'LIKE', 'MongoDB');
         });
+    }
+
+    public function testThroughRelationSpanningTwoDatabasesCanBeInspected()
+    {
+        $studio = new Studio();
+
+        self::assertInstanceOf(
+            HasManyThrough::class,
+            Relation::noConstraints(fn () => $studio->sqlRolesThroughDirectors()),
+        );
+    }
+
+    public function testThroughRelationWithSqlRelatedModelFails()
+    {
+        $studio = new Studio();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'Through relations cannot span two databases: the through model [MongoDB\Laravel\Tests\Models\Director] on connection [mongodb] and the related model [MongoDB\Laravel\Tests\Models\SqlRole] on connection [sqlite] must be stored in the same database.',
+        );
+
+        // MongoModel -> HasManyThrough -> MongoModel -> SqlModel
+        $studio->sqlRolesThroughDirectors();
+    }
+
+    public function testThroughRelationWithSqlThroughModelFails()
+    {
+        $studio = new Studio();
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'Through relations cannot span two databases: the through model [MongoDB\Laravel\Tests\Models\SqlUser] on connection [sqlite] and the related model [MongoDB\Laravel\Tests\Models\Film] on connection [mongodb] must be stored in the same database.',
+        );
+
+        // MongoModel -> HasManyThrough -> SqlModel -> MongoModel
+        $studio->filmsThroughSqlUsers();
+    }
+
+    public function testThroughRelationSpanningTwoDatabasesFailsInExistenceQueries()
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(
+            'Through relations cannot span two databases: the through model [MongoDB\Laravel\Tests\Models\Director] on connection [mongodb] and the related model [MongoDB\Laravel\Tests\Models\SqlRole] on connection [sqlite] must be stored in the same database.',
+        );
+
+        Studio::has('sqlRolesThroughDirectors')->get();
+    }
+
+    public function testThroughRelationWithSqlFarParentIsSupported()
+    {
+        $user = new SqlUser();
+
+        self::assertInstanceOf(HasManyThrough::class, $user->filmsThroughDirectors());
+        self::assertCount(0, $user->filmsThroughDirectors()->get());
     }
 
     public function testWithCountOnHybridRelationFails()

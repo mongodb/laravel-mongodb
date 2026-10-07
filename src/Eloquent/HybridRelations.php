@@ -11,7 +11,9 @@ use MongoDB\Laravel\Helpers\EloquentBuilder;
 use MongoDB\Laravel\Relations\BelongsTo;
 use MongoDB\Laravel\Relations\BelongsToMany;
 use MongoDB\Laravel\Relations\HasMany;
+use MongoDB\Laravel\Relations\HasManyThrough;
 use MongoDB\Laravel\Relations\HasOne;
+use MongoDB\Laravel\Relations\HasOneThrough;
 use MongoDB\Laravel\Relations\MorphMany;
 use MongoDB\Laravel\Relations\MorphOne;
 use MongoDB\Laravel\Relations\MorphTo;
@@ -118,6 +120,91 @@ trait HybridRelations
         $localKey = $localKey ?: $this->getKeyName();
 
         return new HasMany($instance->newQuery(), $this, $foreignKey, $localKey);
+    }
+
+    /**
+     * Define a has-one-through relationship.
+     *
+     * @see HasRelationships::hasOneThrough()
+     *
+     * @param  class-string<TRelatedModel>      $related
+     * @param  class-string<TIntermediateModel> $through
+     * @param  string|null                      $firstKey
+     * @param  string|null                      $secondKey
+     * @param  string|null                      $localKey
+     * @param  string|null                      $secondLocalKey
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasOneThrough<TRelatedModel, TIntermediateModel, $this>
+     *
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
+     * @template TIntermediateModel of \Illuminate\Database\Eloquent\Model
+     */
+    public function hasOneThrough($related, $through, $firstKey = null, $secondKey = null, $localKey = null, $secondLocalKey = null)
+    {
+        if (! self::isThroughChainStoredInMongoDB($related, $through)) {
+            return parent::hasOneThrough($related, $through, $firstKey, $secondKey, $localKey, $secondLocalKey);
+        }
+
+        $throughInstance = new $through();
+        $instance = new $related();
+
+        return new HasOneThrough(
+            $instance->newQuery(),
+            $this,
+            $throughInstance,
+            $firstKey ?: $this->getForeignKey(),
+            $secondKey ?: $throughInstance->getForeignKey(),
+            $localKey ?: $this->getKeyName(),
+            $secondLocalKey ?: $throughInstance->getKeyName(),
+        );
+    }
+
+    /**
+     * Define a has-many-through relationship.
+     *
+     * @see HasRelationships::hasManyThrough()
+     *
+     * @param  class-string<TRelatedModel>      $related
+     * @param  class-string<TIntermediateModel> $through
+     * @param  string|null                      $firstKey
+     * @param  string|null                      $secondKey
+     * @param  string|null                      $localKey
+     * @param  string|null                      $secondLocalKey
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough<TRelatedModel, TIntermediateModel, $this>
+     *
+     * @template TRelatedModel of \Illuminate\Database\Eloquent\Model
+     * @template TIntermediateModel of \Illuminate\Database\Eloquent\Model
+     */
+    public function hasManyThrough($related, $through, $firstKey = null, $secondKey = null, $localKey = null, $secondLocalKey = null)
+    {
+        if (! self::isThroughChainStoredInMongoDB($related, $through)) {
+            return parent::hasManyThrough($related, $through, $firstKey, $secondKey, $localKey, $secondLocalKey);
+        }
+
+        $throughInstance = new $through();
+        $instance = new $related();
+
+        return new HasManyThrough(
+            $instance->newQuery(),
+            $this,
+            $throughInstance,
+            $firstKey ?: $this->getForeignKey(),
+            $secondKey ?: $throughInstance->getForeignKey(),
+            $localKey ?: $this->getKeyName(),
+            $secondLocalKey ?: $throughInstance->getKeyName(),
+        );
+    }
+
+    /**
+     * @internal
+     *
+     * @param class-string<\Illuminate\Database\Eloquent\Model> $related
+     * @param class-string<\Illuminate\Database\Eloquent\Model> $through
+     */
+    private static function isThroughChainStoredInMongoDB(string $related, string $through): bool
+    {
+        return Model::isDocumentModel($related) || Model::isDocumentModel($through);
     }
 
     /**
