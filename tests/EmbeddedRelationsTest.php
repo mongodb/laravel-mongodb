@@ -1214,21 +1214,32 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertNull(User::find($user->id));
     }
 
-    public function testNestedEagerLoadIsNotAppliedToEmbeddedModels()
+    public function testNestedEagerLoadIsAppliedToEmbeddedModels()
     {
-        // Builder::getRelation() attaches the nested part of with('addresses.addresses') to the
-        // relation query. Embedded models are hydrated from the parent document, so the nested
-        // relation is not loaded eagerly. The data stays reachable through lazy loading.
-        // This test pins the current behavior: nested eager loading of embedded relations is
-        // not supported yet and is addressed in a follow-up pull request.
+        // with('addresses.addresses') must eager load the nested embedded relation on the
+        // hydrated child models, not leave it to lazy loading.
         $user    = User::create(['name' => 'John Doe']);
         $country = $user->addresses()->create(['country' => 'France']);
         $country->addresses()->create(['city' => 'Paris']);
+        $country->addresses()->create(['city' => 'Lyon']);
 
         $loaded = User::with('addresses.addresses')->find($user->id);
         $child  = $loaded->addresses->first();
 
-        $this->assertFalse($child->relationLoaded('addresses'));
-        $this->assertSame('Paris', $child->addresses->first()->city);
+        $this->assertTrue($child->relationLoaded('addresses'));
+        $this->assertSame(['Paris', 'Lyon'], $child->addresses->pluck('city')->all());
+    }
+
+    public function testNestedEagerLoadOnEmbedsOne()
+    {
+        // with('father.father') must eager load the nested embedsOne relation.
+        $user        = User::create(['name' => 'John Doe']);
+        $father      = $user->father()->create(['name' => 'Mark Doe']);
+        $grandfather = $father->father()->create(['name' => 'Steve Doe']);
+
+        $loaded = User::with('father.father')->find($user->id);
+
+        $this->assertTrue($loaded->father->relationLoaded('father'));
+        $this->assertSame('Steve Doe', $loaded->father->father->name);
     }
 }

@@ -74,7 +74,7 @@ abstract class EmbedsOneOrMany extends Relation
         // If this is a nested relation, we need to get the parent query instead.
         $parentRelation = $this->getParentRelation();
         if ($parentRelation) {
-            $this->query = $parentRelation->getQuery();
+            $this->query = clone $parentRelation->getQuery();
         }
     }
 
@@ -98,6 +98,11 @@ abstract class EmbedsOneOrMany extends Relation
     #[Override]
     public function match(array $models, Collection $results, $relation)
     {
+        // The builder attaches the nested eager loads of with('parent.child') to this relation
+        // query. Embedded models are hydrated from the parent document, so the nested relations
+        // must be loaded on each hydrated model instead of on the relation query.
+        $eagerLoads = $this->query->getEagerLoads();
+
         foreach ($models as $model) {
             $results = $model->$relation()->getResults();
 
@@ -107,10 +112,28 @@ abstract class EmbedsOneOrMany extends Relation
             // and makes queue serialization recurse. Embedded children get their parent
             // relation from toModel().
 
+            if ($eagerLoads !== []) {
+                $this->loadNestedRelations($results, $eagerLoads);
+            }
+
             $model->setRelation($relation, $results);
         }
 
         return $models;
+    }
+
+    /**
+     * Eager load the nested relations on the models hydrated from the parent document.
+     *
+     * @param Model|Collection|null $results
+     */
+    private function loadNestedRelations($results, array $eagerLoads): void
+    {
+        if ($results instanceof Collection) {
+            $results->each(static fn (Model $model) => $model->load($eagerLoads));
+        } elseif ($results instanceof Model) {
+            $results->load($eagerLoads);
+        }
     }
 
     #[Override]
@@ -327,9 +350,10 @@ abstract class EmbedsOneOrMany extends Relation
     #[Override]
     public function getQuery()
     {
-        // Because we are sharing this relation instance to models, we need
-        // to make sure we use separate query instances.
-        return clone $this->query;
+        // Return the relation query itself, like a regular Eloquent relation does. The builder
+        // attaches the nested eager loads of with('parent.child') to this query, and match()
+        // reads them back to eager load the nested embedded relations.
+        return $this->query;
     }
 
     /** @inheritdoc */

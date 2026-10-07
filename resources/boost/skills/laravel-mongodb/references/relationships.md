@@ -60,6 +60,12 @@ $post->comments->where('approved', true);
 
 `Comment` / `Author` extend `MongoDB\Laravel\Eloquent\Model` but are never persisted standalone.
 
+Embedded relations are eager loaded with `with()`, including nested ones:
+
+```php
+Post::with('comments.replies')->get();
+```
+
 ## Cross-database relationships (MongoDB ↔ SQL)
 
 **Rule:** `HybridRelations` goes on the **SQL model only** — never on the MongoDB model.
