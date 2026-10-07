@@ -57,7 +57,18 @@ use function trigger_error;
 
 use const E_USER_DEPRECATED;
 
-/** @mixin Builder */
+/**
+ * The query factories return the MongoDB builder. Laravel's Model declares them with a
+ * hardcoded Eloquent builder return type, so the concrete type is restored with @method
+ * tags instead of a runtime override.
+ *
+ * @mixin Builder
+ * @method Builder<static> newQuery()
+ * @method Builder<static> newModelQuery()
+ * @method Builder<static> newQueryWithoutRelationships()
+ * @method Builder<static> newQueryWithoutScopes()
+ * @method static Builder<static> query()
+ */
 trait DocumentModel
 {
     use HybridRelations;
@@ -635,7 +646,7 @@ trait DocumentModel
         return $this->parentRelation ?? null;
     }
 
-    /** @inheritdoc */
+    /** @return Builder<static> */
     public function newEloquentBuilder($query)
     {
         return new Builder($query);

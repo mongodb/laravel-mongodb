@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use MongoDB\BSON\Document;
 use MongoDB\Builder\Expression;
 use MongoDB\Builder\Type\QueryInterface;
@@ -25,16 +26,19 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_replace;
+use function assert;
 use function collect;
 use function is_array;
 use function is_object;
 use function iterator_to_array;
+use function method_exists;
 use function property_exists;
 use function value;
 
 /**
  * @method \MongoDB\Laravel\Query\Builder toBase()
  * @template TModel of Model
+ * @extends EloquentBuilder<TModel>
  */
 class Builder extends EloquentBuilder
 {
@@ -108,7 +112,7 @@ class Builder extends EloquentBuilder
     ): Collection {
         $results = $this->toBase()->search($operator, $index, $highlight, $concurrent, $count, $searchAfter, $searchBefore, $scoreDetails, $sort, $returnStoredSource, $tracking);
 
-        return $this->model->hydrate($results->all());
+        return $this->hydrate($results->all());
     }
 
     /**
@@ -142,7 +146,7 @@ class Builder extends EloquentBuilder
             model: $model,
         );
 
-        return $this->model->hydrate($results->all());
+        return $this->hydrate($results->all());
     }
 
     /**
@@ -155,7 +159,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             $relation->performUpdate($this->model, $values);
 
@@ -170,7 +174,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             $relation->performInsert($this->model, $values);
 
@@ -185,7 +189,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             $relation->performInsert($this->model, $values);
 
@@ -200,7 +204,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             $relation->performDelete($this->model);
 
@@ -215,7 +219,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             return $this->update(array_merge([$column => $this->model->{$column}], $extra));
         }
@@ -228,7 +232,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             return $this->update(array_merge([$column => $this->model->{$column}], $extra));
         }
@@ -253,7 +257,7 @@ class Builder extends EloquentBuilder
             $results->setTypeMap(['root' => 'array', 'document' => 'array', 'array' => 'array']);
             $results = array_map(fn ($document) => $this->query->getGrammar()->prepareFieldsForResult($document), iterator_to_array($results));
 
-            return $this->model->hydrate($results);
+            return $this->hydrate($results);
         }
 
         // Convert MongoDB Document to a single object.
@@ -360,5 +364,18 @@ class Builder extends EloquentBuilder
                 'column' => $column,
                 'direction' => $direction === 1 ? 'asc' : 'desc',
             ])->values();
+    }
+
+    /**
+     * Get the parent relation of the embedded model.
+     *
+     * getParentRelation() is provided by the DocumentModel trait, which PHPStan cannot resolve
+     * on the generic model type.
+     */
+    private function getParentRelation(): ?Relation
+    {
+        assert(method_exists($this->model, 'getParentRelation'));
+
+        return $this->model->getParentRelation();
     }
 }
