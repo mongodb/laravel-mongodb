@@ -54,4 +54,9 @@
     <rule ref="SlevomatCodingStandard.Commenting.DocCommentSpacing.IncorrectAnnotationsGroup">
         <exclude-pattern>src/Schema/Blueprint.php</exclude-pattern>
     </rule>
+
+    <!-- The sniff incorrectly flags multi-line arrow functions used as array values, see #3635 -->
+    <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNoNewline">
+        <exclude-pattern>tests/Query/BuilderTest.php</exclude-pattern>
+    </rule>
 </ruleset>
