@@ -109,7 +109,7 @@ class Builder extends EloquentBuilder
     ): Collection {
         $results = $this->toBase()->search($operator, $index, $highlight, $concurrent, $count, $searchAfter, $searchBefore, $scoreDetails, $sort, $returnStoredSource, $tracking);
 
-        return $this->model->hydrate($results->all());
+        return $this->hydrate($results->all());
     }
 
     /**
@@ -143,7 +143,7 @@ class Builder extends EloquentBuilder
             model: $model,
         );
 
-        return $this->model->hydrate($results->all());
+        return $this->hydrate($results->all());
     }
 
     /**
@@ -254,7 +254,7 @@ class Builder extends EloquentBuilder
             $results->setTypeMap(['root' => 'array', 'document' => 'array', 'array' => 'array']);
             $results = array_map(fn ($document) => $this->query->getGrammar()->prepareFieldsForResult($document), iterator_to_array($results));
 
-            return $this->model->hydrate($results);
+            return $this->hydrate($results);
         }
 
         // Convert MongoDB Document to a single object.
