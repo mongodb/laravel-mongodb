@@ -1213,4 +1213,22 @@ class EmbeddedRelationsTest extends TestCase
 
         $this->assertNull(User::find($user->id));
     }
+
+    public function testNestedEagerLoadIsNotAppliedToEmbeddedModels()
+    {
+        // Builder::getRelation() attaches the nested part of with('addresses.addresses') to the
+        // relation query. Embedded models are hydrated from the parent document, so the nested
+        // relation is not loaded eagerly. The data stays reachable through lazy loading.
+        // This test pins the current behavior: nested eager loading of embedded relations is
+        // not supported yet and is addressed in a follow-up pull request.
+        $user    = User::create(['name' => 'John Doe']);
+        $country = $user->addresses()->create(['country' => 'France']);
+        $country->addresses()->create(['city' => 'Paris']);
+
+        $loaded = User::with('addresses.addresses')->find($user->id);
+        $child  = $loaded->addresses->first();
+
+        $this->assertFalse($child->relationLoaded('addresses'));
+        $this->assertSame('Paris', $child->addresses->first()->city);
+    }
 }
