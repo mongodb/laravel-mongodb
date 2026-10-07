@@ -887,64 +887,63 @@ class BuilderTest extends TestCase
 
         yield 'whereLike' => [
             ['find' => [['name' => new Regex('^1$', 'i')], []]],
-            fn
-        (Builder $builder) => $builder->whereLike('name', '1'),
+            fn (Builder $builder) => $builder
+                ->whereLike('name', '1'),
             'whereLike',
         ];
 
         yield 'whereLike case not sensitive' => [
             ['find' => [['name' => new Regex('^1$', 'i')], []]],
-            fn
-        (Builder $builder) => $builder->whereLike('name', '1', false),
+            fn (Builder $builder) => $builder
+                ->whereLike('name', '1', false),
             'whereLike',
         ];
 
         yield 'whereLike case sensitive' => [
             ['find' => [['name' => new Regex('^1$', '')], []]],
-            fn
-        (Builder $builder) => $builder->whereLike('name', '1', true),
+            fn (Builder $builder) => $builder
+                ->whereLike('name', '1', true),
             'whereLike',
         ];
 
         yield 'whereNotLike' => [
             ['find' => [['name' => ['$not' => new Regex('^1$', 'i')]], []]],
-            fn
-        (Builder $builder) => $builder->whereNotLike('name', '1'),
+            fn (Builder $builder) => $builder
+                ->whereNotLike('name', '1'),
             'whereNotLike',
         ];
 
         yield 'whereNotLike case not sensitive' => [
             ['find' => [['name' => ['$not' => new Regex('^1$', 'i')]], []]],
-            fn
-        (Builder $builder) => $builder->whereNotLike('name', '1', false),
+            fn (Builder $builder) => $builder
+                ->whereNotLike('name', '1', false),
             'whereNotLike',
         ];
 
         yield 'whereNotLike case sensitive' => [
             ['find' => [['name' => ['$not' => new Regex('^1$', '')]], []]],
-            fn
-        (Builder $builder) => $builder->whereNotLike('name', '1', true),
+            fn (Builder $builder) => $builder
+                ->whereNotLike('name', '1', true),
             'whereNotLike',
         ];
 
         yield 'filament search contains' => [
             ['find' => [['name' => new Regex('^.*search.*$', 'i')], []]],
-            fn
-        (Builder $builder) => $builder->whereLike('name', '%search%', false, 'and', false),
+            fn (Builder $builder) => $builder
+                ->whereLike('name', '%search%', false, 'and', false),
             'whereLike',
         ];
 
         yield 'filament search contains with or' => [
             ['find' => [['$or' => [['active' => true], ['name' => new Regex('^.*search.*$', 'i')]]], []]],
-            fn
-        (Builder $builder) => $builder->where('active', true)->whereLike('name', '%search%', false, 'or', false),
+            fn (Builder $builder) => $builder
+                ->where('active', true)->whereLike('name', '%search%', false, 'or', false),
             'whereLike',
         ];
 
         yield 'filament search across columns' => [
             ['find' => [['$or' => [['name' => new Regex('^.*search.*$', 'i')], ['email' => new Regex('^.*search.*$', 'i')]]], []]],
-            fn
-        (Builder $builder) => $builder
+            fn (Builder $builder) => $builder
                 ->whereLike('name', '%search%', false, 'or', false)
                 ->whereLike('email', '%search%', false, 'or', false),
             'whereLike',
@@ -952,22 +951,22 @@ class BuilderTest extends TestCase
 
         yield 'filament search inverse' => [
             ['find' => [['name' => ['$not' => new Regex('^.*search.*$', 'i')]], []]],
-            fn
-        (Builder $builder) => $builder->whereLike('name', '%search%', false, 'and', true),
+            fn (Builder $builder) => $builder
+                ->whereLike('name', '%search%', false, 'and', true),
             'whereLike',
         ];
 
         yield 'filament search inverse with or' => [
             ['find' => [['$or' => [['active' => true], ['name' => ['$not' => new Regex('^.*search.*$', 'i')]]]], []]],
-            fn
-        (Builder $builder) => $builder->where('active', true)->whereLike('name', '%search%', false, 'or', true),
+            fn (Builder $builder) => $builder
+                ->where('active', true)->whereLike('name', '%search%', false, 'or', true),
             'whereLike',
         ];
 
         yield 'filament search escaped wildcards' => [
             ['find' => [['name' => new Regex('^.*café\\!_100%\\[draft\\]\\\\path\\\\%\\\\_wow\\!\\!.*$', 'i')], []]],
-            fn
-        (Builder $builder) => $builder->whereLike('name', '%café!\\_100\\%[draft]\\path\\\\%\\\\_wow!!%', false, 'and', false),
+            fn (Builder $builder) => $builder
+                ->whereLike('name', '%café!\\_100\\%[draft]\\path\\\\%\\\\_wow!!%', false, 'and', false),
             'whereLike',
         ];
 
