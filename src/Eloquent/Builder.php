@@ -8,6 +8,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use MongoDB\BSON\Document;
 use MongoDB\Builder\Expression;
 use MongoDB\Builder\Type\QueryInterface;
@@ -25,10 +26,12 @@ use function array_key_exists;
 use function array_map;
 use function array_merge;
 use function array_replace;
+use function assert;
 use function collect;
 use function is_array;
 use function is_object;
 use function iterator_to_array;
+use function method_exists;
 use function property_exists;
 use function value;
 
@@ -156,7 +159,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             $relation->performUpdate($this->model, $values);
 
@@ -171,7 +174,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             $relation->performInsert($this->model, $values);
 
@@ -186,7 +189,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             $relation->performInsert($this->model, $values);
 
@@ -201,7 +204,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             $relation->performDelete($this->model);
 
@@ -216,7 +219,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             return $this->update(array_merge([$column => $this->model->{$column}], $extra));
         }
@@ -229,7 +232,7 @@ class Builder extends EloquentBuilder
     {
         // Intercept operations on embedded models and delegate logic
         // to the parent relation instance.
-        $relation = $this->model->getParentRelation();
+        $relation = $this->getParentRelation();
         if ($relation) {
             return $this->update(array_merge([$column => $this->model->{$column}], $extra));
         }
@@ -361,5 +364,18 @@ class Builder extends EloquentBuilder
                 'column' => $column,
                 'direction' => $direction === 1 ? 'asc' : 'desc',
             ])->values();
+    }
+
+    /**
+     * Get the parent relation of the embedded model.
+     *
+     * getParentRelation() is provided by the DocumentModel trait, which PHPStan cannot resolve
+     * on the generic model type.
+     */
+    private function getParentRelation(): ?Relation
+    {
+        assert(method_exists($this->model, 'getParentRelation'));
+
+        return $this->model->getParentRelation();
     }
 }
