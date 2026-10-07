@@ -55,7 +55,7 @@
         <exclude-pattern>src/Schema/Blueprint.php</exclude-pattern>
     </rule>
 
-    <!-- The sniff incorrectly flags multi-line arrow functions used as array values, see #3635 -->
+    <!-- ValueNoNewline false-positives on multi-line arrow functions; phpcbf splits `fn` from its parameters. See #3635 and PHPCSStandards/PHP_CodeSniffer#559. -->
     <rule ref="Squiz.Arrays.ArrayDeclaration.ValueNoNewline">
         <exclude-pattern>tests/Query/BuilderTest.php</exclude-pattern>
     </rule>
