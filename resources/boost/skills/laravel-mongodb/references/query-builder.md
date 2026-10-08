@@ -122,6 +122,22 @@ Post::whereBetween('year', [2000, 2010])->get();
 Post::where('metadata.draft', true)->get();                // dotted path into sub-doc
 ```
 
+## JSON where helpers
+
+Laravel's JSON where helpers query arrays and embedded documents. `->` is an
+alias for `.`.
+
+```php
+Post::whereJsonContains('tags', ['mongo', 'laravel'])->get(); // $all
+Post::whereJsonOverlaps('tags', ['mongo', 'laravel'])->get(); // $in
+Post::whereJsonContainsKey('metadata->draft')->get();         // $exists
+Post::whereJsonLength('tags', '>', 2)->get();                 // $size, arrays only
+Post::where('metadata->draft', true)->get();
+```
+
+An associative array passed to `whereJsonContains()` or `whereJsonOverlaps()`
+matches a whole array element, not part of one. Use `elemMatch` for that.
+
 ## `where()` and MongoDB operator documents
 
 With 1 or 2 arguments, an array value is read as a MongoDB operator document.

@@ -970,6 +970,102 @@ class BuilderTest extends TestCase
             'whereLike',
         ];
 
+        yield 'where boolean on arrow path' => [
+            ['find' => [['options.enabled' => true], []]],
+            fn (Builder $builder) => $builder->where('options->enabled', true),
+        ];
+
+        yield 'where false on arrow path' => [
+            ['find' => [['options.enabled' => ['$ne' => false]], []]],
+            fn (Builder $builder) => $builder->where('options->enabled', '!=', false),
+        ];
+
+        yield 'whereJsonContains scalar' => [
+            ['find' => [['tags' => ['$all' => ['mongodb']]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('tags', 'mongodb'),
+        ];
+
+        yield 'whereJsonContains list' => [
+            ['find' => [['options.languages' => ['$all' => ['en', 'fr']]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('options->languages', ['en', 'fr']),
+        ];
+
+        yield 'whereJsonContains collection' => [
+            ['find' => [['tags' => ['$all' => ['en', 'fr']]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('tags', collect(['en', 'fr'])),
+        ];
+
+        yield 'whereJsonContains document' => [
+            ['find' => [['items' => ['$all' => [['name' => 'knife']]]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('items', ['name' => 'knife']),
+        ];
+
+        yield 'whereJsonDoesntContain' => [
+            ['find' => [['tags' => ['$not' => ['$all' => ['mongodb']]]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntContain('tags', 'mongodb'),
+        ];
+
+        yield 'orWhereJsonContains' => [
+            ['find' => [['$or' => [['name' => 'acme'], ['tags' => ['$all' => ['mongodb']]]]], []]],
+            fn (Builder $builder) => $builder->where('name', 'acme')->orWhereJsonContains('tags', 'mongodb'),
+        ];
+
+        yield 'whereJsonOverlaps' => [
+            ['find' => [['tags' => ['$in' => ['en', 'fr']]], []]],
+            fn (Builder $builder) => $builder->whereJsonOverlaps('tags', ['en', 'fr']),
+        ];
+
+        yield 'whereJsonDoesntOverlap' => [
+            ['find' => [['tags' => ['$nin' => ['en']]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntOverlap('tags', 'en'),
+        ];
+
+        yield 'whereJsonContainsKey' => [
+            ['find' => [['options.languages' => ['$exists' => true]], []]],
+            fn (Builder $builder) => $builder->whereJsonContainsKey('options->languages'),
+        ];
+
+        yield 'whereJsonDoesntContainKey' => [
+            ['find' => [['options.languages' => ['$exists' => false]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntContainKey('options->languages'),
+        ];
+
+        yield 'whereJsonLength' => [
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$cond' => [
+                                'if' => ['$isArray' => '$tags'],
+                                'then' => ['$eq' => [['$size' => '$tags'], 2]],
+                                'else' => false,
+                            ],
+                        ],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder->whereJsonLength('tags', 2),
+        ];
+
+        yield 'whereJsonLength >' => [
+            [
+                'find' => [
+                    [
+                        '$expr' => [
+                            '$cond' => [
+                                'if' => ['$isArray' => '$options.languages'],
+                                'then' => ['$gt' => [['$size' => '$options.languages'], 1]],
+                                'else' => false,
+                            ],
+                        ],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder->whereJsonLength('options->languages', '>', 1),
+        ];
+
         $regex = new Regex('^acme$', 'si');
         yield 'where BSON\Regex' => [
             ['find' => [['name' => $regex], []]],
@@ -1749,6 +1845,12 @@ class BuilderTest extends TestCase
             InvalidArgumentException::class,
             'Unsupported operator "like" for whereTime(), supported operators are: =, !=, <, <=, >, >=',
             fn (Builder $builder) => $builder->whereTime('created_at', 'like', '10:11:12'),
+        ];
+
+        yield 'whereJsonLength unsupported operator' => [
+            InvalidArgumentException::class,
+            'Unsupported operator "like" for whereJsonLength(), supported operators are: =, !=, <, <=, >, >=',
+            fn (Builder $builder) => $builder->whereJsonLength('tags', 'like', 2),
         ];
 
         yield 'whereTime invalid type' => [
