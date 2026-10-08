@@ -8,6 +8,7 @@ use ArgumentCountError;
 use BadMethodCallException;
 use Carbon\CarbonPeriod;
 use Closure;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Database\Query\Expression;
 use Illuminate\Support\Arr;
@@ -1632,7 +1633,7 @@ class Builder extends BaseBuilder
             'gt', 'lte' => [
                 $where['column'] => ['$' . $where['operator'] => $endOfDay],
             ],
-            default => throw $this->unsupportedDateOperator($where),
+            default => throw $this->unsupportedExprOperator($where),
         };
     }
 
@@ -1640,7 +1641,7 @@ class Builder extends BaseBuilder
     {
         return [
             '$expr' => [
-                $this->compileDateOperator($where) => [
+                $this->compileExprOperator($where) => [
                     [
                         '$month' => '$' . $where['column'],
                     ],
@@ -1654,7 +1655,7 @@ class Builder extends BaseBuilder
     {
         return [
             '$expr' => [
-                $this->compileDateOperator($where) => [
+                $this->compileExprOperator($where) => [
                     [
                         '$dayOfMonth' => '$' . $where['column'],
                     ],
@@ -1668,7 +1669,7 @@ class Builder extends BaseBuilder
     {
         return [
             '$expr' => [
-                $this->compileDateOperator($where) => [
+                $this->compileExprOperator($where) => [
                     [
                         '$year' => '$' . $where['column'],
                     ],
@@ -1692,7 +1693,7 @@ class Builder extends BaseBuilder
 
         return [
             '$expr' => [
-                $this->compileDateOperator($where) => [
+                $this->compileExprOperator($where) => [
                     [
                         '$dateToString' => ['date' => '$' . $where['column'], 'format' => $format],
                     ],
@@ -1703,27 +1704,93 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * The aggregation comparison operator for a date-based where, e.g. "$eq".
+     * The aggregation comparison operator for a where compiled to "$expr", e.g. "$eq".
      *
      * Without this, an operator Laravel allows but MongoDB has no equivalent for, such as "like",
      * would be concatenated into an operator that does not exist, and the server would reject the
      * whole query.
      */
-    private function compileDateOperator(array $where): string
+    private function compileExprOperator(array $where): string
     {
         return match ($where['operator']) {
             'eq', 'ne', 'lt', 'lte', 'gt', 'gte' => '$' . $where['operator'],
-            default => throw $this->unsupportedDateOperator($where),
+            default => throw $this->unsupportedExprOperator($where),
         };
     }
 
-    private function unsupportedDateOperator(array $where): InvalidArgumentException
+    private function unsupportedExprOperator(array $where): InvalidArgumentException
     {
         return new InvalidArgumentException(sprintf(
             'Unsupported operator "%s" for where%s(), supported operators are: =, !=, <, <=, >, >=',
             $where['operator'],
             $where['type'],
         ));
+    }
+
+    /**
+     * Laravel types a where on a "->" path with a boolean value as a JSON boolean and stores the
+     * value as a "true" or "false" expression, which has to be turned back into a boolean.
+     */
+    protected function compileWhereJsonBoolean(array $where): array
+    {
+        $where['value'] = $where['value'] instanceof Expression
+            ? $where['value']->getValue($this->grammar) === 'true'
+            : (bool) $where['value'];
+
+        return $this->compileWhereBasic($where);
+    }
+
+    /**
+     * A list matches the arrays holding every one of its items, any other value is a single item.
+     */
+    protected function compileWhereJsonContains(array $where): array
+    {
+        $operator = ['$all' => $this->jsonItems($where['value'])];
+
+        return [$where['column'] => $where['not'] ? ['$not' => $operator] : $operator];
+    }
+
+    /**
+     * A list matches the arrays holding at least one of its items, any other value is a single item.
+     */
+    protected function compileWhereJsonOverlaps(array $where): array
+    {
+        return [$where['column'] => [($where['not'] ? '$nin' : '$in') => $this->jsonItems($where['value'])]];
+    }
+
+    protected function compileWhereJsonContainsKey(array $where): array
+    {
+        return [$where['column'] => ['$exists' => ! $where['not']]];
+    }
+
+    /**
+     * Only arrays have a length, "$size" fails the whole query on any other value.
+     */
+    protected function compileWhereJsonLength(array $where): array
+    {
+        return [
+            '$expr' => [
+                '$cond' => [
+                    'if' => ['$isArray' => '$' . $where['column']],
+                    'then' => [
+                        $this->compileExprOperator($where) => [
+                            ['$size' => '$' . $where['column']],
+                            (int) $where['value'],
+                        ],
+                    ],
+                    'else' => false,
+                ],
+            ],
+        ];
+    }
+
+    private function jsonItems(mixed $value): array
+    {
+        if ($value instanceof Arrayable) {
+            $value = $value->toArray();
+        }
+
+        return is_array($value) && array_is_list($value) ? $value : [$value];
     }
 
     protected function compileWhereRaw(array $where): mixed
