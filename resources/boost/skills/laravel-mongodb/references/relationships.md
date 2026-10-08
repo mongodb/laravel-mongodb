@@ -21,6 +21,29 @@ final class User extends Model
 }
 ```
 
+`whereHas` and `whereDoesntHave` honor an `ObjectId` cast on the foreign key. The cast stores a BSON ObjectId, and a string `$in` does not match it, so the constraint values are written back as ObjectIds:
+
+```php
+use MongoDB\Laravel\Eloquent\Casts\ObjectId;
+use MongoDB\Laravel\Eloquent\Model;
+
+class EntityB extends Model
+{
+    protected $casts = [
+        'entity_a_id' => ObjectId::class,
+    ];
+
+    public function entityA()
+    {
+        return $this->belongsTo(EntityA::class, 'entity_a_id');
+    }
+}
+
+$matches = EntityB::whereHas('entityA', fn ($query) => $query->where('status', 'added'))->get();
+```
+
+A direct `where('entity_a_id', $hexString)` still does not cast the value. Pass an `ObjectId` instance, or use `whereHas`.
+
 Use MongoDB-aware relation classes when in doubt:
 
 ```php
