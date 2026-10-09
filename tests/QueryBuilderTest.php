@@ -354,6 +354,29 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(1, $items);
     }
 
+    public function testWhereJson()
+    {
+        DB::table('items')->insert([
+            ['name' => 'knife', 'tags' => ['sharp', 'steel'], 'options' => ['enabled' => true, 'colors' => ['red']]],
+            ['name' => 'fork', 'tags' => ['steel'], 'options' => ['enabled' => false]],
+            ['name' => 'spoon', 'tags' => 'wood'],
+        ]);
+
+        $names = fn ($query) => $query->orderBy('name')->pluck('name')->all();
+
+        $this->assertSame(['fork', 'knife'], $names(DB::table('items')->whereJsonContains('tags', 'steel')));
+        $this->assertSame(['knife'], $names(DB::table('items')->whereJsonContains('tags', ['steel', 'sharp'])));
+        $this->assertSame(['spoon'], $names(DB::table('items')->whereJsonDoesntContain('tags', 'steel')));
+        $this->assertSame(['knife', 'spoon'], $names(DB::table('items')->whereJsonOverlaps('tags', ['sharp', 'wood'])));
+        $this->assertSame(['fork'], $names(DB::table('items')->whereJsonDoesntOverlap('tags', ['sharp', 'wood'])));
+        $this->assertSame(['knife'], $names(DB::table('items')->whereJsonContainsKey('options->colors')));
+        $this->assertSame(['fork', 'spoon'], $names(DB::table('items')->whereJsonDoesntContainKey('options->colors')));
+        $this->assertSame(['fork'], $names(DB::table('items')->whereJsonLength('tags', 1)));
+        $this->assertSame(['knife'], $names(DB::table('items')->whereJsonLength('tags', '>', 1)));
+        $this->assertSame(['knife'], $names(DB::table('items')->where('options->enabled', true)));
+        $this->assertSame(['fork'], $names(DB::table('items')->where('options->enabled', false)));
+    }
+
     public function testRaw()
     {
         DB::table('users')->insert([
