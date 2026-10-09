@@ -9,12 +9,26 @@ use function trigger_error;
 
 use const E_USER_DEPRECATED;
 
-trigger_error(sprintf('Since mongodb/laravel-mongodb:5.5, trait "%s" is deprecated, use "%s" instead.', SoftDeletes::class, \Illuminate\Database\Eloquent\SoftDeletes::class), E_USER_DEPRECATED);
-
 /** @deprecated since mongodb/laravel-mongodb:5.5, use \Illuminate\Database\Eloquent\SoftDeletes instead */
 trait SoftDeletes
 {
-    use \Illuminate\Database\Eloquent\SoftDeletes;
+    use \Illuminate\Database\Eloquent\SoftDeletes {
+        bootSoftDeletes as private bootIlluminateSoftDeletes;
+    }
+
+    /**
+     * Raised when a model using this trait boots, so preloading the file is silent.
+     */
+    public static function bootSoftDeletes(): void
+    {
+        trigger_error(sprintf(
+            'Since mongodb/laravel-mongodb:5.5, trait "%s" is deprecated, use "%s" instead.',
+            SoftDeletes::class,
+            \Illuminate\Database\Eloquent\SoftDeletes::class,
+        ), E_USER_DEPRECATED);
+
+        self::bootIlluminateSoftDeletes();
+    }
 
     /** @inheritdoc */
     public function getQualifiedDeletedAtColumn()
