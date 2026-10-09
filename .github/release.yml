@@ -3,10 +3,7 @@ changelog:
     labels:
       - tidy
       - merge-up
-    authors:
-      - mongodb-php-bot
-      - mongodb-drivers-pr-bot[bot]
-      - dependabot[bot]
+      - dependencies
   categories:
     - title: Breaking Changes 🛠
       labels:
