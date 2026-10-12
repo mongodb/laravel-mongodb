@@ -6,11 +6,11 @@ namespace MongoDB\Laravel\Tests;
 
 use Carbon\Carbon;
 use Exception;
-use Illuminate\Queue\Failed\DatabaseFailedJobProvider;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Str;
 use Mockery;
+use MongoDB\Laravel\Queue\Failed\MongoFailedJobProvider;
 use MongoDB\Laravel\Queue\MongoJob;
 use MongoDB\Laravel\Queue\MongoQueue;
 
@@ -94,7 +94,7 @@ class QueueTest extends TestCase
     {
         $provider = app('queue.failer');
 
-        $this->assertInstanceOf(DatabaseFailedJobProvider::class, $provider);
+        $this->assertInstanceOf(MongoFailedJobProvider::class, $provider);
     }
 
     public function testFindFailJobNull(): void

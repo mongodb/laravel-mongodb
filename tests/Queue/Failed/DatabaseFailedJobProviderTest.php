@@ -113,6 +113,8 @@ class DatabaseFailedJobProviderTest extends TestCase
         $ids = $this->getProvider()->ids();
 
         $this->assertCount(5, $ids);
+        // Constructed directly, Laravel's provider still returns ObjectId.
+        // The registered queue.failer stringifies them; see MongoFailedJobProviderTest.
         $this->assertEquals(new ObjectId(sprintf('%024d', 5)), $ids[0]);
     }
 
