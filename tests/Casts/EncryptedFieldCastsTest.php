@@ -264,6 +264,8 @@ final class EncryptedFieldCastsTest extends TestCase
 
     #[TestWith(['decimal'])]
     #[TestWith(['decimal:'])]
+    #[TestWith(['decimal:abc'])]
+    #[TestWith(['decimal:2.5'])]
     public function testDecimalCastWithoutAScaleIsReported(string $cast): void
     {
         // Without a scale, the cast cannot convert a value: Laravel passes the

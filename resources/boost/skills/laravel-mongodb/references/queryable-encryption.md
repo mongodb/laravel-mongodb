@@ -119,7 +119,7 @@ Automatic encryption encrypts a value according to the `bsonType` declared in th
 
 - `$model->billing_amount = '1500'` stores the integer `1500`, and the value read back is an `int`.
 - The coercion is applied to a value that can be converted. A value that cannot (`'abc'` on an `int` field, a bool field with a value that is neither a boolean nor a boolean string) is passed to the driver as is, and automatic encryption rejects the write with its own message, rather than storing a corrupted value.
-- No cast is derived for `decimal`: a bare `decimal` cast is invalid, the scale is mandatory. Declare `decimal:<scale>` yourself to read the `Decimal128` as a string.
+- No cast is derived for `decimal`: a bare `decimal` cast is invalid, the scale is mandatory. Declare `decimal:<scale>` yourself, with an integer scale, to read the `Decimal128` as a string.
 - A BSON date holds a full timestamp, so the derived cast is `datetime` and the time is kept. A `date` cast declared by the developer is accepted, but it reads back at midnight.
 - An embedded document must be `bsonType: 'object'`. It is stored natively and read back as an array, so no cast is derived. An `array` or `object` cast stores a JSON string, which automatic encryption rejects.
 - Encrypted sub-fields are declared as dotted paths (`billing.amount`) and coerced when the embedded document is assigned as an array or a plain object, or when the sub-field is assigned by its dotted path (`$model->setAttribute('billing.amount', '1500')`). A sub-value that is not declared is left untouched, and any other object assigned to the parent (a model, a collection) is a value of its own.
