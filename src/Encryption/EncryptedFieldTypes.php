@@ -15,6 +15,7 @@ use Stringable;
 use function array_key_exists;
 use function array_shift;
 use function class_exists;
+use function ctype_digit;
 use function explode;
 use function filter_var;
 use function in_array;
@@ -179,9 +180,9 @@ final class EncryptedFieldTypes
 
         [$type, $scale] = explode(':', strtolower($cast), 2) + [1 => null];
 
-        // A decimal cast requires a scale: without one, the value cannot be
-        // converted, so the cast cannot store the declared BSON type.
-        if ($type === 'decimal' && ($scale === null || $scale === '')) {
+        // A decimal cast requires an integer scale: without one, the value
+        // cannot be converted, so the cast cannot store the declared BSON type.
+        if ($type === 'decimal' && ($scale === null || ! ctype_digit($scale))) {
             return false;
         }
 
