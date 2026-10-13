@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Generator;
+use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
@@ -13,10 +14,12 @@ use MongoDB\Collection;
 use MongoDB\Database;
 use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Driver\Exception\ConnectionTimeoutException;
+use MongoDB\Laravel\CommandSubscriber;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
 use PHPUnit\Framework\Attributes\DataProvider;
+use ReflectionProperty;
 
 use function env;
 use function spl_object_hash;
@@ -373,6 +376,98 @@ class ConnectionTest extends TestCase
         DB::disableQueryLog();
         DB::table('items')->get();
         $this->assertCount(2, DB::getQueryLog());
+    }
+
+    public function testQueryEventsAreDispatchedWithoutEnablingTheQueryLog()
+    {
+        $queries = [];
+        DB::listen(function (QueryExecuted $query) use (&$queries) {
+            $queries[] = $query->sql;
+        });
+
+        DB::table('items')->get();
+
+        $this->assertCount(1, $queries);
+        $this->assertJsonStringEqualsJsonString('{"find":"items","filter":{}}', $queries[0]);
+
+        // Listening to the event does not enable the query log.
+        $this->assertCount(0, DB::getQueryLog());
+    }
+
+    public function testDisableQueryLogStopsRecordingButKeepsDispatchingEvents()
+    {
+        $queries = [];
+        DB::listen(function (QueryExecuted $query) use (&$queries) {
+            $queries[] = $query->sql;
+        });
+
+        DB::enableQueryLog();
+        DB::table('items')->get();
+        $this->assertCount(1, DB::getQueryLog());
+
+        DB::disableQueryLog();
+        DB::table('items')->get();
+
+        $this->assertCount(1, DB::getQueryLog(), 'The query log stops recording');
+        $this->assertCount(2, $queries, 'The query events keep being dispatched');
+    }
+
+    public function testCommandSubscriberIsAttachedOnlyWhenQueriesAreConsumed()
+    {
+        $connection = DB::connection('mongodb');
+        $subscriber = new ReflectionProperty(Connection::class, 'commandSubscriber');
+
+        // Nothing consumes the query events, the subscriber is not needed.
+        $connection->table('items')->get();
+        $this->assertNull($subscriber->getValue($connection));
+
+        // The query log is a consumer.
+        $connection->enableQueryLog();
+        $connection->table('items')->get();
+        $this->assertInstanceOf(CommandSubscriber::class, $subscriber->getValue($connection));
+
+        // No consumer left.
+        $connection->disableQueryLog();
+        $connection->table('items')->get();
+        $this->assertNull($subscriber->getValue($connection));
+    }
+
+    public function testQueryEventsAreDispatchedForABuilderCreatedBeforeTheListener()
+    {
+        // The collection is resolved when the builder is created, so the query
+        // is executed without going through the connection again.
+        $builder = DB::table('items');
+
+        $queries = [];
+        DB::listen(function (QueryExecuted $query) use (&$queries) {
+            $queries[] = $query->sql;
+        });
+
+        $builder->get();
+
+        $this->assertCount(1, $queries);
+        $this->assertJsonStringEqualsJsonString('{"find":"items","filter":{}}', $queries[0]);
+    }
+
+    public function testDisconnectRemovesTheSubscriberFromTheClient()
+    {
+        $connection = DB::connection('mongodb');
+
+        $queries = [];
+        DB::listen(function (QueryExecuted $query) use (&$queries) {
+            $queries[] = $query->sql;
+        });
+
+        $connection->table('items')->get();
+        $this->assertCount(1, $queries);
+
+        $database = $connection->getDatabase();
+        $connection->disconnect();
+
+        // The client is still usable, but it must not report commands anymore.
+        $database->selectCollection('items')->findOne();
+
+        $this->assertCount(1, $queries);
     }
 
     public function testSchemaBuilder()

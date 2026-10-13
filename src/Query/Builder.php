@@ -1896,9 +1896,16 @@ class Builder extends BaseBuilder
 
     /**
      * Apply the connection's session to options if it's not already specified.
+     *
+     * Every method that runs a command calls this one, so it is also the place
+     * where the connection checks that the query events are still reported. A
+     * builder that was created before a listener was registered would otherwise
+     * run without reporting anything.
      */
     private function inheritConnectionOptions(array $options = []): array
     {
+        $this->connection->attachCommandSubscriber();
+
         $queryTimeout = $this->timeout ? (int) ($this->timeout * 1000) : $this->connection->getConfig('options.maxTimeMS');
 
         if ($queryTimeout !== null) {
