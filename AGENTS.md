@@ -14,6 +14,10 @@ The scope covers the Eloquent ORM (models, query builder, relations, casts), the
 builder (built on the `mongodb/mongodb` aggregation builder), and the Laravel drivers and
 integrations (queue, session, cache, auth, validation, filesystem, Scout, and so on).
 
+The package runs on every MongoDB topology (standalone, replica set and sharded cluster) and every
+supported server version. Do not assume a topology or a version, the same code must work on all of
+them.
+
 When a Laravel feature cannot work on MongoDB, do not diverge silently: state the limitation, and
 prefer a change in Laravel or in a dependency when that unblocks a faithful implementation.
 
@@ -119,7 +123,10 @@ A change is reviewed against the following standards, in rough order of priority
    generated MQL with the SQL Laravel produces for the same call, and do not add parameters to a
    method that overrides a Laravel method.
 4. Fail loudly. A public method that cannot express the requested constraint throws with a clear
-   message instead of returning a query that matches the wrong documents.
+   message instead of returning a query that matches the wrong documents. When a feature is not
+   supported by the server version or the topology in use, let the server decide, then translate its
+   error into a clear, actionable message instead of letting it surface raw, as
+   `Schema\Builder::isAtlasSearchNotSupportedException()` does for Atlas Search.
 5. Keep the API surface small. Mark an extension point that is not public API with `@internal`.
    Inline a helper that is used once and has no complexity.
 6. Keep documentation short. Show usage with a small code sample, and drop implementation details,
