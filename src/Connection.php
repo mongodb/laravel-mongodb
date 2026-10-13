@@ -331,6 +331,23 @@ class Connection extends BaseConnection
     }
 
     /**
+     * The bsonType declared for each encrypted field of a collection, keyed by
+     * field path. Empty when the connection does not use automatic encryption
+     * or the collection is not in the encryptedFieldsMap.
+     *
+     * Used by the model layer to derive the casts and coerce the values written
+     * to encrypted fields. {@see encryptedFieldsFor()} is the public surface.
+     *
+     * @internal
+     *
+     * @return array<string, string>
+     */
+    public function encryptedFieldTypes(string $collection): array
+    {
+        return $this->encryption()?->encryptedFieldTypes($collection) ?? [];
+    }
+
+    /**
      * @param  array<string, mixed> $autoEncryption
      *
      * @return array<string, mixed>

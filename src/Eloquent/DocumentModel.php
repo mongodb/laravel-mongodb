@@ -27,6 +27,7 @@ use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 use MongoDB\Laravel\Encryption\AutoEncryption;
+use MongoDB\Laravel\Encryption\EncryptedFieldTypes;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use ReflectionProperty;
 use Stringable;
@@ -292,6 +293,18 @@ trait DocumentModel
             };
         }
 
+        // Automatic encryption rejects a value whose BSON type does not match
+        // the bsonType declared in the encryptedFieldsMap. Coerce the value to
+        // that type on write, so a form or JSON string is stored as declared
+        // instead of being rejected. A custom cast owns its value.
+        if ($value !== null && ! $this->isClassCastable($key)) {
+            $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
+
+            if ($fieldTypes !== []) {
+                $value = EncryptedFieldTypes::coerceField($fieldTypes, $key, $value, $this->fromDateTime(...));
+            }
+        }
+
         // Reject a MongoDB operator as a primary key, then convert _id to ObjectID.
         if ($key === '_id' || $key === 'id') {
             QueryBuilder::assertKeyIsNotOperator($value);
@@ -401,7 +414,17 @@ trait DocumentModel
     /** @inheritdoc */
     public function getCasts()
     {
-        return $this->casts;
+        // Derive a cast from the bsonType declared for each encrypted field of
+        // the collection, so the value read back has the declared type. A cast
+        // declared by the developer is kept, but reported when it cannot store
+        // that BSON type.
+        $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
+
+        if ($fieldTypes === []) {
+            return $this->casts;
+        }
+
+        return EncryptedFieldTypes::mergeCasts(static::class, $this->casts, $fieldTypes);
     }
 
     /** @inheritdoc */

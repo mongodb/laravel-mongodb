@@ -10,6 +10,8 @@ use MongoDB\BSON\Binary;
 use MongoDB\BSON\ObjectID;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Tests\Models\EncryptedCasting;
+use MongoDB\Laravel\Tests\Models\EncryptedEmbedded;
 use MongoDB\Laravel\Tests\Models\EncryptedUser;
 use MongoDB\Laravel\Tests\Models\Patient;
 use PHPUnit\Framework\Attributes\Group;
@@ -198,6 +200,109 @@ final class QueryableEncryptionTest extends TestCase
                     ],
                 ],
             ],
+            'encrypted_casting' => [
+                'fields' => [
+                    'an_int' => ['bsonType' => 'int', 'queryType' => 'range', 'min' => 0, 'max' => 10000, 'sparsity' => 1],
+                    'a_long' => 'long',
+                    'a_double' => 'double',
+                    'a_decimal' => 'decimal',
+                    'a_bool' => 'bool',
+                    'a_date' => 'date',
+                    'an_object' => 'object',
+                    'a_string' => 'string',
+                    'billing.amount' => ['bsonType' => 'int', 'queryType' => 'range', 'min' => 0, 'max' => 10000, 'sparsity' => 1],
+                    'billing.label' => 'string',
+                ],
+            ],
+            'encrypted_embedded' => [
+                'fields' => [
+                    'name' => 'string',
+                    'address.amount' => ['bsonType' => 'int', 'queryType' => 'range', 'min' => 0, 'max' => 10000, 'sparsity' => 1],
+                    'address.label.amount' => 'int',
+                ],
+            ],
         ];
+    }
+
+    /**
+     * Values that come from a form or a JSON API are strings. The package
+     * derives a cast from each bsonType and coerces the value on write, so
+     * automatic encryption accepts it instead of rejecting a string.
+     */
+    public function testEncryptedFieldsAreCoercedToNativeBsonTypes(): void
+    {
+        $connection = $this->getConnection('mongodb');
+        $schema = $connection->getSchemaBuilder();
+        $schema->drop('encrypted_casting');
+        $schema->createEncrypted('encrypted_casting');
+
+        $model = EncryptedCasting::create([
+            'an_int' => '1500',
+            'a_long' => '1500',
+            'a_double' => '15.5',
+            'a_decimal' => '1500.25',
+            'a_bool' => '1',
+            'a_date' => '2020-01-02 15:30:00',
+            'an_object' => ['foo' => 'bar'],
+            'a_string' => 'hello',
+            'billing' => ['amount' => '1500', 'label' => 'invoice'],
+        ]);
+
+        $fresh = EncryptedCasting::findOrFail($model->getKey());
+
+        self::assertSame(1500, $fresh->an_int);
+        self::assertSame(1500, $fresh->a_long);
+        self::assertSame(15.5, $fresh->a_double);
+        self::assertSame('1500.25', (string) $fresh->a_decimal);
+        self::assertTrue($fresh->a_bool);
+        // The datetime cast keeps the time of the stored timestamp.
+        self::assertSame('2020-01-02 15:30:00', $fresh->a_date->format('Y-m-d H:i:s'));
+        self::assertSame('hello', $fresh->a_string);
+        self::assertSame(['foo' => 'bar'], $fresh->an_object);
+        self::assertSame(['amount' => 1500, 'label' => 'invoice'], $fresh->billing);
+
+        // The range query only matches if the value is stored as an int.
+        self::assertSame(1, EncryptedCasting::whereBetween('an_int', [1000, 2000])->count());
+        self::assertSame(1, EncryptedCasting::whereBetween('billing.amount', [1000, 2000])->count());
+
+        // Encryption at rest: the native type is hidden by the ciphertext.
+        $raw = $this->plainConnection()->getCollection('encrypted_casting')->findOne(['_id' => new ObjectID($model->getKey())]);
+        self::assertInstanceOf(Binary::class, $raw['an_int']);
+        self::assertInstanceOf(Binary::class, $raw['a_long']);
+        self::assertInstanceOf(Binary::class, $raw['billing']['amount']);
+
+        $schema->drop('encrypted_casting');
+    }
+
+    /**
+     * An embedded relation stores the embedded document inside the document of
+     * the parent, so its encrypted fields are declared as dotted paths in the
+     * map of the parent collection and are coerced when the embedded model is
+     * written through its relation.
+     */
+    public function testEncryptedFieldsOfEmbeddedRelationsAreCoerced(): void
+    {
+        $connection = $this->getConnection('mongodb');
+        $schema = $connection->getSchemaBuilder();
+        $schema->drop('encrypted_embedded');
+        $schema->createEncrypted('encrypted_embedded');
+
+        $parent = EncryptedEmbedded::create(['name' => 'Jane']);
+        $parent->address()->create(['amount' => '1500', 'label' => ['amount' => '1600']]);
+
+        $fresh = EncryptedEmbedded::findOrFail($parent->getKey());
+
+        self::assertSame(1500, $fresh->address->amount);
+        self::assertSame(1600, $fresh->address->label['amount']);
+
+        // The range query only matches if the value is stored as an int.
+        self::assertSame(1, EncryptedEmbedded::whereBetween('address.amount', [1000, 2000])->count());
+
+        // Encryption at rest: the native type is hidden by the ciphertext.
+        $raw = $this->plainConnection()->getCollection('encrypted_embedded')->findOne(['_id' => new ObjectID($parent->getKey())]);
+        self::assertInstanceOf(Binary::class, $raw['address']['amount']);
+        self::assertInstanceOf(Binary::class, $raw['address']['label']['amount']);
+
+        $schema->drop('encrypted_embedded');
     }
 }

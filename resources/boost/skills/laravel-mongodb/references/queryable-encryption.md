@@ -91,11 +91,11 @@ php artisan mongodb:encryption:rewrap-data-keys --provider=aws --master-key='{"r
 | `--connection` | The MongoDB connection to use. |
 | `--force` | Skip the confirmation prompt in production. |
 
-Both the old and the new KMS credentials must be in `kmsProviders` when the command runs: the DEKs are unwrapped with the old master key before being rewrapped with the new one. The new credentials must stay in the configuration afterwards — without them every DEK, and so every encrypted document, is undecryptable. For two `local` keys, configure the new one as a [named KMS provider](https://www.mongodb.com/docs/manual/core/csfle/reference/kms-providers/) (`local:rotated`) and pass `--provider=local:rotated`.
+Both the old and the new KMS credentials must be in `kmsProviders` when the command runs: the DEKs are unwrapped with the old master key before being rewrapped with the new one. The new credentials must stay in the configuration afterwards. Without them, every DEK, and so every encrypted document, is undecryptable. For two `local` keys, configure the new one as a [named KMS provider](https://www.mongodb.com/docs/manual/core/csfle/reference/kms-providers/) (`local:rotated`) and pass `--provider=local:rotated`.
 
 A master key for a self-hosted KMS also carries an `endpoint`, a `host:port` without scheme. The certificate of that endpoint is trusted through `tlsOptions`, which is forwarded to the `ClientEncryption` used by this command.
 
-This rewraps the DEKs rather than replacing them. Replacing the DEKs themselves is a different and far more expensive operation — every document has to be read, decrypted and rewritten — and is not supported by this package.
+This rewraps the DEKs rather than replacing them. Replacing the DEKs themselves is a different and far more expensive operation, which has to read, decrypt and rewrite every document, and is not supported by this package.
 
 ## `__safeContent__`
 
@@ -103,11 +103,34 @@ The server writes a reserved `__safeContent__` array. laravel-mongodb rejects an
 
 ## Match the bsonType
 
-Automatic encryption encrypts a value according to the `bsonType` declared in the map, and the server **rejects a value that does not match** that type at write time. Fail fast, no coercion is done by the package.
+Automatic encryption encrypts a value according to the `bsonType` declared in the map, and the server **rejects a value that does not match** that type at write time. For every encrypted field, laravel-mongodb derives an Eloquent cast from the `bsonType` and coerces the value on write, so a form or JSON string becomes the expected type instead of being stored as a string or rejected.
 
-- HTTP form fields are strings, so coerce them to the mapped type before saving (`(int) $request->field`, a custom `CastsAttributes::set()` cast, a mutator, or `Rule::integer`). A plain `integer` Eloquent cast is read/serialization-side only.
-- An embedded document must be `bsonType: 'object'`, not `'array'`. Do not `array`-cast an object field: it stores a JSON string that automatic encryption rejects.
-- A range query on a `date` field needs date objects (Carbon), not strings.
+| bsonType | Cast derived | Value stored |
+|---|---|---|
+| `string` | none | string |
+| `int` | `integer` | 32-bit integer |
+| `long` | `integer` | 64-bit integer |
+| `double` | `float` | double |
+| `decimal` | none | Decimal128 |
+| `bool` | `boolean` | boolean |
+| `date` | `datetime` | datetime |
+| `object` | none | embedded document |
+| `array` | none | encrypted array |
+
+- `$model->billing_amount = '1500'` stores the integer `1500`, and the value read back is an `int`.
+- The coercion is applied to a value that can be converted. A value that cannot (`'abc'` on an `int` field, a bool field with a value that is neither a boolean nor a boolean string) is passed to the driver as is, and automatic encryption rejects the write with its own message, rather than storing a corrupted value.
+- No cast is derived for `decimal`: a bare `decimal` cast is invalid, the scale is mandatory. Declare `decimal:<scale>` yourself to read the `Decimal128` as a string.
+- A BSON date holds a full timestamp, so the derived cast is `datetime` and the time is kept. A `date` cast declared by the developer is accepted, but it reads back at midnight.
+- An embedded document must be `bsonType: 'object'`. It is stored natively and read back as an array, so no cast is derived. An `array` or `object` cast stores a JSON string, which automatic encryption rejects.
+- Encrypted sub-fields are declared as dotted paths (`billing.amount`) and coerced when the embedded document is assigned as an array or a plain object, or when the sub-field is assigned by its dotted path (`$model->setAttribute('billing.amount', '1500')`). A sub-value that is not declared is left untouched, and any other object assigned to the parent (a model, a collection) is a value of its own.
+- The parent of an encrypted sub-field must be a document. Automatic encryption refuses to encrypt a field under an array, with `Cannot $set to a path <path> that is an encrypted prefix to a non-object type`. An `EmbedsMany` relation stores an array of documents, so its documents cannot hold encrypted fields.
+- An array field as a whole can be encrypted: declare it with `bsonType: 'array'` and no query type. Its elements are not encrypted one by one, it is not queryable, and it can only be written as a whole. A push into it is rejected with `$addToSet not allowed on encrypted values`, so an `EmbedsMany` relation cannot add or save a document in it.
+- A dotted path has no cast: Eloquent casts are keyed by plain attribute names.
+- A cast declared on an encrypted field must store the declared BSON type. A compatible native cast (`integer` for `int`, `float` for `double`, `date` for `date`) is kept. An incompatible one (`array` for `object`, `string` for `int`) raises a `LogicException` when the model reads its casts.
+- A custom cast class owns its value: the coercion does not run on the field, the cast receives the value as it was assigned.
+- The coercion runs when the attribute is assigned, before a set mutator. A mutator receives the coerced value and must return a value of the declared BSON type.
+- An `EmbedsOne` relation stores one embedded document. Its encrypted fields are declared as dotted paths in the map of the collection that holds the whole document, and are coerced when the model is saved through the relation, at any nesting level.
+- The coercion applies to values written through the model, not to query values. A range query on a `date` field needs date objects (Carbon), not strings, and a query on an `int` field needs an integer, not the string `'1500'`.
 - QE forbids multi-document updates. laravel-mongodb uses single-document updates automatically on encrypted collections, so `save()` and `update()` work as usual.
 
 ## Supported queries and limits

@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Expression;
 use MongoDB\Driver\Exception\LogicException;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
+use MongoDB\Laravel\Encryption\EncryptedFieldTypes;
 use Override;
 use Throwable;
 
@@ -233,6 +234,14 @@ abstract class EmbedsOneOrMany extends Relation
     /** @inheritdoc */
     protected function setEmbedded($records)
     {
+        // The records are stored inside the parent document, which is written
+        // as is: coerce their encrypted fields to the declared BSON types.
+        $fieldTypes = $this->getEncryptedFieldTypes();
+
+        if ($fieldTypes !== []) {
+            $records = EncryptedFieldTypes::coerceField($fieldTypes, $this->getPathHierarchy(), $records, $this->parent->fromDateTime(...));
+        }
+
         // Assign models to parent attributes array.
         $attributes                  = $this->parent->getAttributes();
         $attributes[$this->localKey] = $records;
@@ -242,6 +251,52 @@ abstract class EmbedsOneOrMany extends Relation
 
         // Set the relation on the parent.
         return $this->parent->setRelation($this->relation, $records === null ? null : $this->getResults());
+    }
+
+    /**
+     * The bsonType declared for each encrypted field of the collection that
+     * holds the whole document, keyed by field path. An embedded document is
+     * stored inside the top-level document, so the encrypted fields of a nested
+     * document are declared in the encryptedFieldsMap of the top-level
+     * collection, not in the map of the related model's own collection.
+     *
+     * @return array<string, string>
+     */
+    private function getEncryptedFieldTypes(): array
+    {
+        $parent = $this->parent;
+
+        // A nested relation is stored in the top-level document.
+        while ($parentRelation = $parent->getParentRelation()) {
+            $parent = $parentRelation->getParent();
+        }
+
+        return EncryptedFieldTypes::fieldTypesFor($parent);
+    }
+
+    /**
+     * Coerce the attributes of an embedded model to the BSON types declared
+     * for the encrypted fields of the document that holds it. The model is
+     * saved through its own builder, which writes its attributes as they are.
+     */
+    protected function coerceEncryptedAttributes(Model $model): void
+    {
+        $fieldTypes = $this->getEncryptedFieldTypes();
+
+        if ($fieldTypes === []) {
+            return;
+        }
+
+        // The relation path is the prefix of the encrypted field paths of the
+        // embedded document, which can be nested in another relation.
+        $prefix     = $this->getPathHierarchy() . '.';
+        $attributes = $model->getAttributes();
+
+        foreach ($attributes as $key => $value) {
+            $attributes[$key] = EncryptedFieldTypes::coerceField($fieldTypes, $prefix . $key, $value, $model->fromDateTime(...));
+        }
+
+        $model->setRawAttributes($attributes);
     }
 
     /**

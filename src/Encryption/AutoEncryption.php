@@ -51,6 +51,9 @@ final class AutoEncryption
 
     private ?Manager $plainManager = null;
 
+    /** @var array<string, array<string, string>> */
+    private array $encryptedFieldTypes = [];
+
     /** @var WeakReference<Connection> */
     private readonly WeakReference $connection;
 
@@ -153,6 +156,32 @@ final class AutoEncryption
         }
 
         return $map['fields'];
+    }
+
+    /**
+     * The bsonType declared for each encrypted field of a collection, keyed by
+     * field path. Empty when the collection is not in the encryptedFieldsMap.
+     *
+     * @param string $collection The logical collection name, without the
+     *                           connection table prefix.
+     *
+     * @return array<string, string>
+     */
+    public function encryptedFieldTypes(string $collection): array
+    {
+        if (isset($this->encryptedFieldTypes[$collection])) {
+            return $this->encryptedFieldTypes[$collection];
+        }
+
+        $types = [];
+
+        if ($this->isAutoEncryptionEnabled($collection)) {
+            foreach ($this->encryptedFieldsFor($collection) as $field) {
+                $types[$field['path']] = $field['bsonType'];
+            }
+        }
+
+        return $this->encryptedFieldTypes[$collection] = $types;
     }
 
     /**
