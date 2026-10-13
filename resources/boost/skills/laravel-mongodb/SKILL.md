@@ -1,6 +1,6 @@
 ---
 name: laravel-mongodb
-description: Implementation specialist for the mongodb/laravel-mongodb package. Triggers on "Laravel MongoDB", "mongodb/laravel-mongodb", "Eloquent MongoDB", "MongoDB model", "_id", "ObjectId in Laravel", "MongoDB queue/cache/session driver", "Atlas Search Laravel", "Laravel Scout MongoDB", "embedsMany", "embedsOne", "withCount MongoDB", "distinct MongoDB", "distinct array MongoDB", "get unique values MongoDB", "Laravel aggregation pipeline", "cross-database relationship MongoDB". Corrects LLM mistakes when MySQL/Eloquent patterns are applied to MongoDB. Do NOT use this skill for the raw PHP MongoDB driver or mongodb/mongodb library without Laravel, for MongoDB schema design and data-modelling decisions (embed vs reference, unbounded arrays), for MongoDB Atlas infrastructure or cluster/index management via the UI or Admin API, for query performance tuning and index selection, or for non-Laravel PHP frameworks (Symfony, CodeIgniter, plain PHP).
+description: Implementation specialist for the mongodb/laravel-mongodb package. Triggers on "Laravel MongoDB", "mongodb/laravel-mongodb", "Eloquent MongoDB", "MongoDB model", "_id", "ObjectId in Laravel", "MongoDB queue/cache/session driver", "Atlas Search Laravel", "Laravel Scout MongoDB", "embedsMany", "embedsOne", "withCount MongoDB", "distinct MongoDB", "distinct array MongoDB", "get unique values MongoDB", "Laravel aggregation pipeline", "cross-database relationship MongoDB", "Laravel Telescope MongoDB queries". Corrects LLM mistakes when MySQL/Eloquent patterns are applied to MongoDB. Do NOT use this skill for the raw PHP MongoDB driver or mongodb/mongodb library without Laravel, for MongoDB schema design and data-modelling decisions (embed vs reference, unbounded arrays), for MongoDB Atlas infrastructure or cluster/index management via the UI or Admin API, for query performance tuning and index selection, or for non-Laravel PHP frameworks (Symfony, CodeIgniter, plain PHP).
 license: Apache-2.0
 metadata:
   version: "1.0.0"
@@ -42,6 +42,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 | `references/queues.md` | The user is configuring the MongoDB queue driver or dispatching jobs onto it |
 | `references/transactions.md` | The user needs to write multiple documents atomically or is asking about `beginTransaction`, replica set requirements, or transactional testing traits |
 | `references/cache-sessions.md` | The user is configuring MongoDB as a cache store or session driver |
+| `references/telescope.md` | The user is installing Telescope, reading recorded MongoDB queries, or replaying them in mongosh |
 | `references/search-engine.md` | The user is implementing full-text search on a MongoDB collection or is deciding whether to use Laravel Scout |
 | `references/vector-search.md` | The user is implementing semantic search, storing embeddings, using `autoEmbed`, or combining full-text and vector search |
 | `references/queryable-encryption.md` | The user is encrypting sensitive fields or configuring automatic encryption (autoEncryption) |
