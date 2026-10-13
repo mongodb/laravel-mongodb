@@ -92,6 +92,36 @@ default run: `php -d zend.assertions=1 vendor/bin/phpunit --exclude-group atlas-
 - Keep backwards compatibility: the package follows SemVer. The supported Laravel versions are the
   constraints declared in `composer.json`, read them there instead of assuming a version.
 
+## Review guidelines
+
+A change is reviewed against the following standards, in rough order of priority.
+
+1. Backwards compatibility. The package follows SemVer, so a behaviour change goes to the next
+   minor branch, never to a patch branch, and is noted as a behaviour change in the release notes.
+   The documented and tested behaviour is a contract. A more restrictive behaviour is not a bug fix
+   unless it was only accidental.
+2. Do not duplicate server validation. MongoDB and its drivers validate configuration and
+   operators, and the server can widen what it accepts. Add a client-side check only to protect
+   against something the server cannot, such as MQL injection.
+3. Follow Laravel. Reuse the parent Eloquent method instead of reimplementing it, align the
+   generated MQL with the SQL Laravel produces for the same call, and do not add parameters to a
+   method that overrides a Laravel method.
+4. Fail loudly. A public method that cannot express the requested constraint throws with a clear
+   message instead of returning a query that matches the wrong documents.
+5. Keep the API surface small. Mark an extension point that is not public API with `@internal`.
+   Inline a helper that is used once and has no complexity.
+6. Keep documentation short. Show usage with a small code sample, and drop implementation details,
+   cost notes, and sentences that repeat the docblock above.
+7. Name things for their intention. A method or command name should say what it does, not how.
+8. Test behaviour, not code paths. One test per behaviour, with a data provider when several cases
+   share a shape, and the reverse order when ordering matters. A new test must fail without the
+   change, and must not pass for the wrong reason.
+9. Never reject without a path forward. When a change is declined, name the alternative, the
+   workaround, or the upstream fix in Laravel or a dependency.
+
+Review with evidence: reproduce a claim before asserting it, show the value before and after, cite
+the Laravel source, and prefer a concrete suggestion.
+
 ## Key behaviours to know
 
 - `id` is an alias of `_id`. It is exposed on the models and aliased in queries by the grammar.
