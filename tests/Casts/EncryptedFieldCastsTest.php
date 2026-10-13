@@ -27,6 +27,11 @@ final class EncryptedFieldCastsTest extends TestCase
     {
         parent::setUp();
 
+        // The map below is read by resolving the connection, which builds the
+        // auto encryption options and raises on an extension that cannot
+        // resolve a keyAltName.
+        $this->skipIfKeyAltNameIsNotSupported();
+
         $this->enableEncryption([
             'encrypted_casting' => [
                 'fields' => [

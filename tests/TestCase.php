@@ -164,11 +164,7 @@ class TestCase extends OrchestraTestCase
      */
     public function skipIfQEIsNotSupported(): void
     {
-        $extensionVersion = phpversion('mongodb');
-
-        if (is_string($extensionVersion) && version_compare($extensionVersion, '2.4.0', '<')) {
-            self::markTestSkipped(sprintf('Queryable Encryption fields are referenced by keyAltName, which requires ext-mongodb 2.4.0 or later. Installed version is %s.', $extensionVersion));
-        }
+        $this->skipIfKeyAltNameIsNotSupported();
 
         if (! $this->hasEncryptionRuntime()) {
             self::markTestSkipped('No automatic encryption runtime is available. Set CRYPT_SHARED_LIB_PATH to the Automatic Encryption Shared Library, or install mongocryptd (MongoDB Enterprise).');
@@ -188,6 +184,20 @@ class TestCase extends OrchestraTestCase
 
         if (version_compare($version, '8.0', '<')) {
             self::markTestSkipped('Queryable Encryption requires MongoDB 8.0 or later.');
+        }
+    }
+
+    /**
+     * Skip when the extension cannot resolve a keyAltName. The encrypted fields
+     * map of these tests references each field by its alternate key name, which
+     * the extension resolves only from version 2.4.0.
+     */
+    protected function skipIfKeyAltNameIsNotSupported(): void
+    {
+        $version = phpversion('mongodb');
+
+        if (is_string($version) && version_compare($version, '2.4.0', '<')) {
+            self::markTestSkipped(sprintf('Queryable Encryption fields are referenced by keyAltName, which requires ext-mongodb 2.4.0 or later. Installed version is %s.', $version));
         }
     }
 
