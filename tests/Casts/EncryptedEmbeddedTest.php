@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+
+namespace MongoDB\Laravel\Tests\Casts;
+
+use MongoDB\Laravel\Tests\Models\EncryptedEmbedded;
+use MongoDB\Laravel\Tests\Models\EncryptedEmbeddedItem;
+use MongoDB\Laravel\Tests\TestCase;
+
+/**
+ * An embedded document is stored inside the document of its parent, so the
+ * encrypted fields of its own attributes are declared as dotted paths in the
+ * encryptedFieldsMap of the parent collection, and are coerced when the
+ * embedded document is written through its relation.
+ *
+ * These tests do not need a server: only the connection configuration is read.
+ */
+final class EncryptedEmbeddedTest extends TestCase
+{
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->enableEncryption([
+            'encrypted_embedded' => [
+                'fields' => [
+                    'name' => 'string',
+                    // EmbedsOne relation.
+                    'address.amount' => 'int',
+                    // EmbedsOne relation nested in "address".
+                    'address.label.amount' => 'int',
+                ],
+            ],
+        ]);
+    }
+
+    public function testCoercesAnEmbedsOneRelation(): void
+    {
+        $parent = new EncryptedEmbedded(['name' => 'Jane']);
+
+        $parent->address()->associate(new EncryptedEmbeddedItem(['amount' => '1500']));
+
+        self::assertSame(1500, $parent->getAttributes()['address']['amount']);
+    }
+
+    public function testCoercesANestedEmbedsOneRelation(): void
+    {
+        $parent = new EncryptedEmbedded(['name' => 'Jane']);
+        $item = new EncryptedEmbeddedItem();
+        // The relation path is built from the parent relation of the model.
+        $item->setParentRelation($parent->address());
+
+        $item->label()->associate(new EncryptedEmbeddedItem(['amount' => '1500']));
+
+        self::assertSame(1500, $item->getAttributes()['label']['amount']);
+    }
+
+    public function testCoercesTheSubFieldsOfAnEmbeddedDocumentAssignedOnTheParent(): void
+    {
+        $parent = new EncryptedEmbedded();
+        $parent->address = ['amount' => '1500', 'label' => ['amount' => '1600']];
+
+        self::assertSame(1500, $parent->getAttributes()['address']['amount']);
+        self::assertSame(1600, $parent->getAttributes()['address']['label']['amount']);
+    }
+
+    public function testValuesThatCannotBeConvertedAreLeftUntouched(): void
+    {
+        $parent = new EncryptedEmbedded();
+        $parent->address = ['amount' => 'abc', 'note' => '42'];
+
+        // A value that cannot be converted is passed to the driver as is, and a
+        // sub-field that is not declared is left untouched.
+        self::assertSame('abc', $parent->getAttributes()['address']['amount']);
+        self::assertSame('42', $parent->getAttributes()['address']['note']);
+    }
+
+    public function testNoCoercionWhenTheCollectionIsNotEncrypted(): void
+    {
+        $this->enableEncryption([]);
+
+        $parent = new EncryptedEmbedded();
+        $parent->address = ['amount' => '1500'];
+
+        self::assertSame('1500', $parent->getAttributes()['address']['amount']);
+    }
+}
