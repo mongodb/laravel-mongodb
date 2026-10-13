@@ -116,6 +116,12 @@ class Builder extends BaseBuilder
     private ReadPreference $readPreference;
 
     /**
+     * The `_id` from the last acknowledged {@see insertGetId()} call.
+     * Distinct from the value returned when a custom primary key is kept.
+     */
+    private mixed $lastInsertedId = null;
+
+    /**
      * Custom options to add to the query.
      *
      * @var array
@@ -794,13 +800,32 @@ class Builder extends BaseBuilder
         $result = $this->collection->insertOne($values, $options);
 
         if (! $result->isAcknowledged()) {
+            $this->lastInsertedId = null;
+
             return null;
         }
 
+        $this->lastInsertedId = $result->getInsertedId();
+
+        // A custom grammar can keep `id` as its own field instead of aliasing it
+        // to `_id`. That stored value is the primary key Eloquent must write back.
+        // The generated `_id` stays available via getLastInsertedId().
+        if ($sequence === 'id' && array_key_exists('id', $values)) {
+            return $values['id'];
+        }
+
         return match ($sequence) {
-            '_id', 'id', null => $result->getInsertedId(),
+            '_id', 'id', null => $this->lastInsertedId,
             default => $values[$sequence],
         };
+    }
+
+    /**
+     * The MongoDB `_id` produced by the last acknowledged insertGetId() call.
+     */
+    public function getLastInsertedId(): mixed
+    {
+        return $this->lastInsertedId;
     }
 
     /** @inheritdoc */

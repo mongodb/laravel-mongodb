@@ -37,6 +37,7 @@ final class Movie extends Model
 ## `_id` vs `id`
 
 - BSON field is `_id` (default ObjectId, but any BSON type can be used); PHP exposes both `$model->id` and `$model->_id`.
+- By default a root `id` is aliased to `_id` on write. A grammar that overrides `prepareFieldsForQuery()` and keeps `id` as its own field (for example an integer primary key) must still see that value on the model returned by `create()` / `save()`. The generated `_id` is set on that same instance, so it matches a later `find()` / `first()`.
 - In API resources, always cast an ObjectId `_id` to string so clients receive `"6708..."` not `{"$oid":"6708..."}`:
 
 ```php

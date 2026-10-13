@@ -12,6 +12,7 @@ use Illuminate\Contracts\Queue\QueueableCollection;
 use Illuminate\Contracts\Queue\QueueableEntity;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Attributes\Table;
+use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Concerns\HasAttributes;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\Model;
@@ -793,6 +794,48 @@ trait DocumentModel
     protected function isBSON(mixed $value): bool
     {
         return $value instanceof Type;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * When `id` is stored separately from MongoDB's `_id`, keep the assigned
+     * primary key and record the generated `_id` on this instance. Eloquent
+     * otherwise replaces `id` with the inserted `_id` after create()/save().
+     */
+    protected function insertAndSetId(EloquentBuilder $query, $attributes)
+    {
+        $keyName = $this->getKeyName();
+        $id = $query->insertGetId($attributes, $keyName);
+
+        $this->setAttribute($keyName, $id);
+
+        $baseQuery = $query->getQuery();
+        $insertedId = $baseQuery instanceof QueryBuilder ? $baseQuery->getLastInsertedId() : null;
+
+        if (
+            $keyName !== 'id'
+            || $insertedId === null
+            || array_key_exists('_id', $this->attributes)
+            || $this->assignedKeyIsInsertedId($this->attributes['id'] ?? null, $insertedId)
+        ) {
+            return;
+        }
+
+        $this->setAttribute('_id', $insertedId);
+        $this->syncOriginalAttribute('_id');
+    }
+
+    /**
+     * Whether the assigned primary key is the same value MongoDB stored as `_id`.
+     */
+    private function assignedKeyIsInsertedId(mixed $key, mixed $insertedId): bool
+    {
+        if ($key instanceof ObjectID && $insertedId instanceof ObjectID) {
+            return (string) $key === (string) $insertedId;
+        }
+
+        return $key === $insertedId;
     }
 
     /**
