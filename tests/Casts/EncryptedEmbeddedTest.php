@@ -65,6 +65,20 @@ final class EncryptedEmbeddedTest extends TestCase
         self::assertSame(1600, $parent->getAttributes()['address']['label']['amount']);
     }
 
+    public function testACustomCastOfAnEmbeddedModelOwnsItsValue(): void
+    {
+        // As on the parent model, a custom cast owns its value: the coercion
+        // must not change what the cast returned.
+        $item = new EncryptedEmbeddedItem();
+        $item->mergeCasts(['amount' => RecordingCast::class]);
+        $item->amount = '1500';
+
+        $parent = new EncryptedEmbedded(['name' => 'Jane']);
+        $parent->address()->associate($item);
+
+        self::assertSame('1500', $parent->getAttributes()['address']['amount']);
+    }
+
     public function testValuesThatCannotBeConvertedAreLeftUntouched(): void
     {
         $parent = new EncryptedEmbedded();

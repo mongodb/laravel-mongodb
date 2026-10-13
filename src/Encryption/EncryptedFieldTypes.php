@@ -14,12 +14,14 @@ use Stringable;
 
 use function array_key_exists;
 use function array_shift;
+use function class_exists;
 use function explode;
 use function filter_var;
 use function in_array;
 use function is_array;
 use function is_numeric;
 use function is_scalar;
+use function is_string;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
@@ -134,7 +136,7 @@ final class EncryptedFieldTypes
             if (array_key_exists($path, $casts)) {
                 if (! self::isCompatible($bsonType, (string) $casts[$path])) {
                     throw new LogicException(sprintf(
-                        'The "%s" cast declared on attribute "%s" of model "%s" does not store the "%s" BSON type declared for this encrypted field. Remove the cast so it is derived from the encryptedFieldsMap.',
+                        'The "%s" cast declared on attribute "%s" of model "%s" does not store the "%s" BSON type declared for this encrypted field. Remove the cast, or declare a compatible one.',
                         $casts[$path],
                         $path,
                         $model,
@@ -157,6 +159,16 @@ final class EncryptedFieldTypes
         return $casts;
     }
 
+    /**
+     * Whether a declared cast is a custom cast class, which owns the value it
+     * stores. Laravel's isClassCastable() is protected, so the class check is
+     * repeated here; the arguments after the colon are not part of the name.
+     */
+    public static function isCustomCast(mixed $cast): bool
+    {
+        return is_string($cast) && class_exists(explode(':', $cast, 2)[0]);
+    }
+
     /** Whether a cast declared by the developer can store the declared bsonType. */
     private static function isCompatible(string $bsonType, string $cast): bool
     {
@@ -165,7 +177,13 @@ final class EncryptedFieldTypes
             return true;
         }
 
-        $type = strtolower(explode(':', $cast, 2)[0]);
+        [$type, $scale] = explode(':', strtolower($cast), 2) + [1 => null];
+
+        // A decimal cast requires a scale: without one, the value cannot be
+        // converted, so the cast cannot store the declared BSON type.
+        if ($type === 'decimal' && ($scale === null || $scale === '')) {
+            return false;
+        }
 
         return in_array($type, self::COMPATIBLE_CASTS[$bsonType] ?? [], true);
     }

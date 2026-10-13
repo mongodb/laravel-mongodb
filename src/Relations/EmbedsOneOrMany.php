@@ -234,14 +234,6 @@ abstract class EmbedsOneOrMany extends Relation
     /** @inheritdoc */
     protected function setEmbedded($records)
     {
-        // The records are stored inside the parent document, which is written
-        // as is: coerce their encrypted fields to the declared BSON types.
-        $fieldTypes = $this->getEncryptedFieldTypes();
-
-        if ($fieldTypes !== []) {
-            $records = EncryptedFieldTypes::coerceField($fieldTypes, $this->getPathHierarchy(), $records, $this->parent->fromDateTime(...));
-        }
-
         // Assign models to parent attributes array.
         $attributes                  = $this->parent->getAttributes();
         $attributes[$this->localKey] = $records;
@@ -277,7 +269,7 @@ abstract class EmbedsOneOrMany extends Relation
     /**
      * Coerce the attributes of an embedded model to the BSON types declared
      * for the encrypted fields of the document that holds it. The model is
-     * saved through its own builder, which writes its attributes as they are.
+     * written as is, both through its own builder and into the parent document.
      */
     protected function coerceEncryptedAttributes(Model $model): void
     {
@@ -291,8 +283,14 @@ abstract class EmbedsOneOrMany extends Relation
         // embedded document, which can be nested in another relation.
         $prefix     = $this->getPathHierarchy() . '.';
         $attributes = $model->getAttributes();
+        $casts      = $model->getCasts();
 
         foreach ($attributes as $key => $value) {
+            // A custom cast owns its value, as in setAttribute().
+            if (EncryptedFieldTypes::isCustomCast($casts[$key] ?? null)) {
+                continue;
+            }
+
             $attributes[$key] = EncryptedFieldTypes::coerceField($fieldTypes, $prefix . $key, $value, $model->fromDateTime(...));
         }
 

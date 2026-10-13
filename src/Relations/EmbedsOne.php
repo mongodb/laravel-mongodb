@@ -131,6 +131,8 @@ class EmbedsOne extends EmbedsOneOrMany
      */
     public function associate(Model $model)
     {
+        $this->coerceEncryptedAttributes($model);
+
         return $this->setEmbedded($model->getAttributes());
     }
 
