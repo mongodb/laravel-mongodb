@@ -31,7 +31,27 @@ prefer a change in Laravel or in a dependency when that unblocks a faithful impl
 Requires PHP `^8.2` with the `mongodb` extension, Composer, and a MongoDB server. The suite needs a
 replica set, because transactions are tested.
 
-CI starts a single-node replica set with Docker:
+For development, MongoDB Atlas Local gives a single-node replica set plus Atlas Search and vector
+search, so it also runs the `atlas-search` tests. Start it with Docker or the Atlas CLI:
+
+```bash
+docker run --name mongodb -p 27017:27017 --detach mongodb/mongodb-atlas-local:8
+# or
+atlas deployments setup --type local
+```
+
+It takes a moment to start and the server restarts a few times while it initialises, so wait for
+`db.runCommand("ping").ok` to stay stable instead of trusting a single probe. Then point the suite
+at it:
+
+```bash
+export MONGODB_URI="mongodb://127.0.0.1:27017/?directConnection=true"
+```
+
+`docker compose up -d mongodb` runs the same image and waits for its health check.
+
+The default CI job runs a plain `mongo:8.0` replica set instead. It is lighter but has no Atlas
+Search, so the `atlas-search` group is excluded:
 
 ```bash
 docker run --name mongodb -p 27017:27017 --detach mongo:8.0 \
@@ -49,14 +69,6 @@ mongod --replSet rs --dbpath /tmp/mongo --port 27017 --bind_ip 127.0.0.1 \
   --fork --logpath /tmp/mongo/mongod.log
 mongosh --eval 'rs.initiate({_id:"rs",members:[{_id:0,host:"127.0.0.1:27017"}]})'
 export MONGODB_URI="mongodb://127.0.0.1:27017/?replicaSet=rs"
-```
-
-For development, MongoDB Atlas Local is a single-node replica set that also supports Atlas Search.
-Start it with the Atlas CLI or with Docker:
-
-```bash
-atlas deployments setup --type local   # Atlas CLI
-docker compose up -d mongodb           # mongodb/mongodb-atlas-local:8, exposed on port 27017
 ```
 
 Then run `composer install`, or `docker compose run app` to install the dependencies and run the
