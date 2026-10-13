@@ -95,6 +95,37 @@ php tests/skills/laravel-mongodb/validate-php-examples.php           # after edi
 Tests marked with `#[Group('atlas-search')]` need Atlas or Atlas Local. CI excludes them from the
 default run: `php -d zend.assertions=1 vendor/bin/phpunit --exclude-group atlas-search`.
 
+## Tests
+
+The suite has two kinds of tests, split by what they need to run.
+
+Unit tests need no server. They extend `PHPUnit\Framework\TestCase` and stub the connection.
+`tests/Query/BuilderTest.php` builds a `Query\Builder` with a stubbed `Connection`, compiles with
+`toMql()` and compares the MQL array; `tests/Eloquent/ModelTest.php` covers class-level behaviour.
+Compare MQL with `assertEquals`, not `assertSame`, because it can contain BSON objects. Parameterise
+cases with `#[DataProvider]` and `#[TestWith]`.
+
+Functional tests need a MongoDB server. They extend `MongoDB\Laravel\Tests\TestCase`, which boots
+Orchestra Testbench, registers the package providers and loads `tests/config/database.php`. The
+`mongodb` connection reads `MONGODB_URI` and `MONGODB_DATABASE` (default `unittest`), with short
+timeouts, and `phpunit.xml.dist` sets the defaults. Use the models from `tests/Models/`, which
+include SQL models that guard the plain Eloquent integration.
+
+Reach the driver collection with `DB::connection('mongodb')->getCollection('users')` or
+`$this->getConnection('mongodb')`. Assert the observable result through Eloquent, and the stored BSON
+through the raw collection when the type matters.
+
+There is no global reset: each test creates and drops its own collections in `setUp()`. The runner
+is strict, with `failOnRisky`, `failOnWarning` and `beStrictAboutOutputDuringTests` on, so a test
+without an assertion or with output fails. Run with `php -d zend.assertions=1` to evaluate the
+`assert()` calls, freeze time with `Carbon::setTestNow()`, and replay a case with and without a
+transaction with `#[TestWith]`.
+
+Some tests are conditional. `#[Group('atlas-search')]` needs Atlas or Atlas Local and is excluded by
+default. `TestCase::skipIfQEIsNotSupported()` and `skipIfSearchIndexManagementIsNotSupported()` skip
+when the server, the driver or the version does not support the feature. Transactions and Queryable
+Encryption need a replica set or a sharded cluster, not a standalone.
+
 ## Conventions
 
 - `declare(strict_types=1)` in every file, and import functions with `use function`.
