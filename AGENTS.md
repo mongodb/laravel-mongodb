@@ -153,6 +153,13 @@ the Laravel source, and prefer a concrete suggestion.
 - Operator documents (`['$ne' => ...]`) are rejected as an `_id` or a relation key value, to prevent
   MQL injection. See `Query\Builder::assertKeyIsNotOperator()`.
 
+## Keeping this file current
+
+Update this file in the same change whenever the change makes it stale: the repository layout, the
+setup, the commands, the conventions, the review guidelines, or a key behaviour. When a review
+misses a problem, or a pull request written by an agent repeats a mistake, add the lesson here so
+the next agent applies it.
+
 ## Keeping the skill in sync
 
 When a change adds, removes, or alters user-facing behaviour covered by the
