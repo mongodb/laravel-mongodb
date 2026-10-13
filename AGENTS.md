@@ -89,7 +89,8 @@ default run: `php -d zend.assertions=1 vendor/bin/phpunit --exclude-group atlas-
   only when the rule is buggy or makes the code less readable, and comment the reason.
 - Add or update tests for every behaviour change. Prefer the models from `tests/Models/` and assert
   observable results; check the stored BSON with the raw collection when the type matters.
-- Keep backwards compatibility: the package follows SemVer and supports Laravel 12 and 13.
+- Keep backwards compatibility: the package follows SemVer. The supported Laravel versions are the
+  constraints declared in `composer.json`, read them there instead of assuming a version.
 
 ## Key behaviours to know
 
