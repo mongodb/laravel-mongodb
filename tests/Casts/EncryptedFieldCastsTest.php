@@ -254,6 +254,29 @@ final class EncryptedFieldCastsTest extends TestCase
         self::assertSame('1500', RecordingCast::$received);
     }
 
+    public function testDecimalCastWithAScaleIsKept(): void
+    {
+        $model = new EncryptedCasting();
+        $model->mergeCasts(['a_decimal' => 'decimal:2']);
+
+        self::assertSame('decimal:2', $model->getCasts()['a_decimal']);
+    }
+
+    #[TestWith(['decimal'])]
+    #[TestWith(['decimal:'])]
+    public function testDecimalCastWithoutAScaleIsReported(string $cast): void
+    {
+        // Without a scale, the cast cannot convert a value: Laravel passes the
+        // cast string itself as the scale.
+        $model = new EncryptedCasting();
+        $model->mergeCasts(['a_decimal' => $cast]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('does not store the "decimal" BSON type');
+
+        $model->getCasts();
+    }
+
     public function testIncompatibleDeclaredCastIsReported(): void
     {
         $model = new EncryptedCasting();
