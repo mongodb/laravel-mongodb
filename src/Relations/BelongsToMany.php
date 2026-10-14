@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Relations;
 
+use BackedEnum;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -16,11 +17,11 @@ use Override;
 use function array_diff;
 use function array_keys;
 use function array_map;
-use function array_replace;
 use function array_values;
 use function assert;
 use function count;
 use function in_array;
+use function is_array;
 use function is_numeric;
 
 /**
@@ -151,9 +152,20 @@ class BelongsToMany extends EloquentBelongsToMany
             $current = $this->parseIds($current);
         }
 
-        $records = $this->formatRecordsList($ids);
-
         $current = Arr::wrap($current);
+
+        // Index the given ids by their string representation, as BSON objects such as ObjectId
+        // cannot be used as array keys. The original values are kept so they are stored as-is.
+        // Pivot attributes ([id => [...]]) are ignored as there is no pivot collection.
+        $records = [];
+        foreach (Arr::wrap($ids) as $key => $value) {
+            $id = is_array($value) ? $key : $value;
+            if ($id instanceof BackedEnum) {
+                $id = $id->value;
+            }
+
+            $records[$this->getDictionaryKey($id)] = $id;
+        }
 
         $detach = array_diff($current, array_keys($records));
 
@@ -175,10 +187,17 @@ class BelongsToMany extends EloquentBelongsToMany
         // Now we are finally ready to attach the new records. Note that we'll disable
         // touching until after the entire operation is complete so we don't fire a
         // ton of touch operations until we are totally done syncing the records.
-        $changes = array_replace(
-            $changes,
-            $this->attachNew($records, $current, false),
-        );
+        $currentKeys = array_map(fn ($id) => (string) $this->getDictionaryKey($id), $current);
+
+        foreach ($records as $key => $id) {
+            if (in_array((string) $key, $currentKeys, true)) {
+                continue;
+            }
+
+            $this->attach($id, [], false);
+
+            $changes['attached'][] = $this->castKey($key);
+        }
 
         if (count($changes['attached']) || count($changes['updated'])) {
             $this->touchIfTouching();
@@ -213,7 +232,8 @@ class BelongsToMany extends EloquentBelongsToMany
 
             $query = $this->newRelatedQuery();
 
-            $query->whereIn($this->relatedKey, (array) $id);
+            // Arr::wrap() keeps BSON objects such as ObjectId intact, unlike an (array) cast.
+            $query->whereIn($this->relatedKey, Arr::wrap($id));
 
             // Attach the new parent id to the related model.
             $query->push($this->foreignPivotKey, $this->parent->{$this->parentKey}, true);
@@ -221,7 +241,7 @@ class BelongsToMany extends EloquentBelongsToMany
 
         // Attach the new ids to the parent model.
         if (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
-            $this->parent->push($this->relatedPivotKey, (array) $id, true);
+            $this->parent->push($this->relatedPivotKey, Arr::wrap($id), true);
         } else {
             $instance = new $this->related();
             $instance->forceFill([$this->relatedKey => $id]);
@@ -249,7 +269,8 @@ class BelongsToMany extends EloquentBelongsToMany
         // If associated IDs were passed to the method we will only delete those
         // associations, otherwise all of the association ties will be broken.
         // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array) $ids;
+        // Arr::wrap() keeps BSON objects such as ObjectId intact, unlike an (array) cast.
+        $ids = Arr::wrap($ids);
 
         // Detach all ids from the parent model.
         if (DocumentModel::isDocumentModel($this->parent)) {
@@ -290,7 +311,8 @@ class BelongsToMany extends EloquentBelongsToMany
 
         foreach ($results as $result) {
             foreach ($result->$foreign as $item) {
-                $dictionary[$item][] = $result;
+                // Stored ids may be BSON objects such as ObjectId, which cannot be array keys.
+                $dictionary[$this->getDictionaryKey($item)][] = $result;
             }
         }
 
