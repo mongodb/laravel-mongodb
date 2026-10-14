@@ -347,8 +347,10 @@ class MorphToMany extends EloquentMorphToMany
             if (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
                 $this->parent->pull($this->table, $data);
             } else {
+                // An empty id list detaches every related model. SQL models have no pull().
+                $detachedIds = $this->extractIds($data);
                 $value = $this->parent->{$this->relationName}
-                    ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $this->extractIds($data)));
+                    ->filter(fn ($rel) => count($ids) > 0 && ! in_array($rel->{$this->relatedKey}, $detachedIds));
                 $this->parent->setRelation($this->relationName, $value);
             }
 
@@ -364,8 +366,9 @@ class MorphToMany extends EloquentMorphToMany
             if (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
                 $this->parent->pull($this->relatedPivotKey, $ids);
             } else {
+                // An empty id list detaches every related model. SQL models have no pull().
                 $value = $this->parent->{$this->relationName}
-                    ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $ids));
+                    ->filter(fn ($rel) => count($ids) > 0 && ! in_array($rel->{$this->relatedKey}, $ids));
                 $this->parent->setRelation($this->relationName, $value);
             }
 
