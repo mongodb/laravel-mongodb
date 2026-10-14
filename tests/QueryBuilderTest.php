@@ -15,8 +15,11 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\Assert;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\PackedArray;
 use MongoDB\BSON\Regex;
+use MongoDB\BSON\Serializable;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 use MongoDB\Driver\Cursor;
@@ -1328,6 +1331,105 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(30, $user->age);
         $this->assertEquals(5, $user->note);
         $this->assertEquals('foo', $user->extra);
+    }
+
+    public function testIncrementEachStoresExtraValues(): void
+    {
+        DB::table('users')->insert(['name' => 'John Doe', 'age' => 30]);
+
+        DB::table('users')->incrementEach(['age' => 1], ['note' => 'John Doe', 'meta' => ['draft' => true]]);
+
+        $user = DB::table('users')->where('name', 'John Doe')->first();
+        $this->assertSame(31, $user->age);
+        $this->assertSame('John Doe', $user->note);
+        $this->assertSame(['draft' => true], (array) $user->meta);
+    }
+
+    #[TestWith(['$name'])]
+    #[TestWith(['$$ROOT'])]
+    #[TestWith([['$ne' => 1]])]
+    #[TestWith([['a', '$name']])]
+    #[TestWith([['a' => ['b' => '$c']]])]
+    public function testIncrementEachRejectsExpressionValues(mixed $value): void
+    {
+        $this->assertIncrementEachRejects($value);
+    }
+
+    public static function objectExpressionValues(): iterable
+    {
+        yield 'stdClass operator' => [(object) ['$concat' => ['$secret', '']]];
+        yield 'stdClass string' => [(object) ['a' => '$secret']];
+        yield 'nested stdClass' => [['a' => (object) ['$ne' => 1]]];
+        yield 'BSON document' => [Document::fromPHP(['$concat' => ['$secret', '']])];
+        yield 'nested BSON document' => [['a' => Document::fromPHP(['b' => '$secret'])]];
+        yield 'BSON array' => [PackedArray::fromPHP(['$secret'])];
+        yield 'serializable' => [self::serializableOperatorDocument()];
+        yield 'plain object' => [self::plainObjectWithFieldPath()];
+        yield 'nested plain object' => [['a' => self::plainObjectWithFieldPath()]];
+    }
+
+    private static function plainObjectWithFieldPath(): object
+    {
+        return new class () {
+            public string $note = '$secret';
+        };
+    }
+
+    private static function serializableOperatorDocument(): Serializable
+    {
+        return new class () implements Serializable {
+            /** @return array<string, mixed> */
+            public function bsonSerialize(): array
+            {
+                return ['$concat' => ['$secret', '']];
+            }
+        };
+    }
+
+    public function testIncrementEachStoresBsonTypesAndPlainObjectsWithoutExpressions(): void
+    {
+        $id = new ObjectId();
+        $when = new UTCDateTime();
+        DB::table('users')->insert(['name' => 'John Doe', 'age' => 30]);
+
+        DB::table('users')->incrementEach(['age' => 1], [
+            'ref' => $id,
+            'at' => $when,
+            'meta' => (object) ['draft' => true],
+        ]);
+
+        $user = DB::table('users')->where('name', 'John Doe')->first();
+        $this->assertSame(31, $user->age);
+        $this->assertEquals($id, $user->ref);
+        $this->assertSame($when->toDateTime()->format('Uv'), $user->at->format('Uv'));
+        $this->assertSame(['draft' => true], (array) $user->meta);
+    }
+
+    #[DataProvider('objectExpressionValues')]
+    public function testIncrementEachRejectsObjectExpressionValues(mixed $value): void
+    {
+        $this->assertIncrementEachRejects($value);
+    }
+
+    private function assertIncrementEachRejects(mixed $value): void
+    {
+        DB::table('users')->insert(['name' => 'John Doe', 'age' => 30, 'secret' => 'TOP-SECRET']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The value of the extra column "note" cannot contain a MongoDB operator or a "$"-prefixed string.');
+
+        DB::table('users')->incrementEach(['age' => 1], ['note' => $value]);
+    }
+
+    #[TestWith(['$name'])]
+    #[TestWith([['$ne' => 1]])]
+    public function testDecrementEachRejectsExpressionValues(mixed $value): void
+    {
+        DB::table('users')->insert(['name' => 'John Doe', 'age' => 30, 'secret' => 'TOP-SECRET']);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        DB::table('users')->decrementEach(['age' => 1], ['note' => $value]);
     }
 
     #[TestWith(['id', 'id'])]

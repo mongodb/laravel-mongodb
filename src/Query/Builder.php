@@ -17,8 +17,12 @@ use Illuminate\Support\LazyCollection;
 use InvalidArgumentException;
 use LogicException;
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\PackedArray;
 use MongoDB\BSON\Regex;
+use MongoDB\BSON\Serializable;
+use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\Search;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
@@ -56,6 +60,7 @@ use function explode;
 use function func_get_args;
 use function func_num_args;
 use function get_debug_type;
+use function get_object_vars;
 use function implode;
 use function in_array;
 use function is_array;
@@ -66,6 +71,7 @@ use function is_int;
 use function is_numeric;
 use function is_object;
 use function is_string;
+use function iterator_to_array;
 use function md5;
 use function preg_match;
 use function preg_quote;
@@ -897,6 +903,17 @@ class Builder extends BaseBuilder
     #[Override]
     public function incrementEach(array $columns, array $extra = [], array $options = [])
     {
+        // This update is a pipeline, so the server reads the extra values as
+        // expressions. Reject the ones it would not store as given.
+        foreach ($extra as $column => $value) {
+            if (self::containsExpression($value)) {
+                throw new InvalidArgumentException(sprintf(
+                    'The value of the extra column "%s" cannot contain a MongoDB operator or a "$"-prefixed string.',
+                    $column,
+                ));
+            }
+        }
+
         $stage['$addFields'] = $extra;
 
         // Not using $inc for each column, because it would fail if one column is null.
@@ -1252,20 +1269,16 @@ class Builder extends BaseBuilder
      */
     public static function assertKeyIsNotOperator(mixed $value): void
     {
-        if (! is_array($value)) {
+        $operator = self::firstOperatorKey($value);
+
+        if ($operator === null) {
             return;
         }
 
-        foreach ($value as $key => $item) {
-            if (is_string($key) && str_starts_with($key, '$')) {
-                throw new InvalidArgumentException(sprintf(
-                    'The value used as a document id or relation key cannot contain the MongoDB operator "%s".',
-                    $key,
-                ));
-            }
-
-            self::assertKeyIsNotOperator($item);
-        }
+        throw new InvalidArgumentException(sprintf(
+            'The value used as a document id or relation key cannot contain the MongoDB operator "%s".',
+            $operator,
+        ));
     }
 
     /**
@@ -1348,14 +1361,10 @@ class Builder extends BaseBuilder
         }
     }
 
-    /** First "$"-prefixed key, depth-first, in the same order as assertKeyIsNotOperator(). */
+    /** First "$"-prefixed key in the value, depth-first, or null when the value holds no operator. */
     private static function firstOperatorKey(mixed $value): ?string
     {
-        if (! is_array($value)) {
-            return null;
-        }
-
-        foreach ($value as $key => $item) {
+        foreach (self::entries($value) as $key => $item) {
             if (is_string($key) && str_starts_with($key, '$')) {
                 return $key;
             }
@@ -1922,6 +1931,39 @@ class Builder extends BaseBuilder
         }
 
         return $options;
+    }
+
+    /** Whether the server reads the value as an expression in a pipeline update instead of storing it. */
+    private static function containsExpression(mixed $value): bool
+    {
+        if (self::firstOperatorKey($value) !== null) {
+            return true;
+        }
+
+        if (is_string($value)) {
+            return str_starts_with($value, '$');
+        }
+
+        foreach (self::entries($value) as $item) {
+            if (self::containsExpression($item)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** @return array<array-key, mixed> */
+    private static function entries(mixed $value): array
+    {
+        return match (true) {
+            is_array($value) => $value,
+            $value instanceof Document, $value instanceof PackedArray => iterator_to_array($value),
+            $value instanceof Serializable => self::entries($value->bsonSerialize()),
+            $value instanceof Type => [],
+            is_object($value) => get_object_vars($value),
+            default => [],
+        };
     }
 
     /** @inheritdoc */
