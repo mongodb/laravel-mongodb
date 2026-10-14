@@ -1,6 +1,6 @@
 ---
 name: laravel-mongodb
-description: Implementation specialist for the mongodb/laravel-mongodb package. Triggers on "Laravel MongoDB", "mongodb/laravel-mongodb", "Eloquent MongoDB", "MongoDB model", "_id", "ObjectId in Laravel", "MongoDB queue/cache/session driver", "Atlas Search Laravel", "Laravel Scout MongoDB", "embedsMany", "embedsOne", "withCount MongoDB", "distinct MongoDB", "distinct array MongoDB", "get unique values MongoDB", "Laravel aggregation pipeline", "cross-database relationship MongoDB". Corrects LLM mistakes when MySQL/Eloquent patterns are applied to MongoDB. Do NOT use this skill for the raw PHP MongoDB driver or mongodb/mongodb library without Laravel, for MongoDB schema design and data-modelling decisions (embed vs reference, unbounded arrays), for MongoDB Atlas infrastructure or cluster/index management via the UI or Admin API, for query performance tuning and index selection, or for non-Laravel PHP frameworks (Symfony, CodeIgniter, plain PHP).
+description: Implementation specialist for the mongodb/laravel-mongodb package. Triggers on "Laravel MongoDB", "mongodb/laravel-mongodb", "Eloquent MongoDB", "MongoDB model", "_id", "ObjectId in Laravel", "MongoDB queue/cache/session driver", "Atlas Search Laravel", "Laravel Scout MongoDB", "embedsMany", "embedsOne", "polymorphic relationship MongoDB", "morphTo MongoDB", "morphToMany MongoDB", "withCount MongoDB", "distinct MongoDB", "distinct array MongoDB", "get unique values MongoDB", "Laravel aggregation pipeline", "cross-database relationship MongoDB". Corrects LLM mistakes when MySQL/Eloquent patterns are applied to MongoDB. Do NOT use this skill for the raw PHP MongoDB driver or mongodb/mongodb library without Laravel, for MongoDB schema design and data-modelling decisions (embed vs reference, unbounded arrays), for MongoDB Atlas infrastructure or cluster/index management via the UI or Admin API, for query performance tuning and index selection, or for non-Laravel PHP frameworks (Symfony, CodeIgniter, plain PHP).
 license: Apache-2.0
 metadata:
   version: "1.0.0"
@@ -36,7 +36,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 |---|---|
 | `references/eloquent-models.md` | The user is defining a new model, changing its base class, or mapping `_id` / ObjectId fields |
 | `references/query-builder.md` | The user is writing a query and hits a missing Eloquent helper (`toSql`, `distinct`, grouping, random ordering, raw SQL builders) or needs relation aggregates |
-| `references/relationships.md` | The user is defining a relationship between models, especially embedded, hybrid, or cross-database (MongoDB ↔ SQL) relations |
+| `references/relationships.md` | The user is defining a relationship between models, especially embedded, polymorphic (`morphTo`, `morphToMany`), hybrid, or cross-database (MongoDB ↔ SQL) relations |
 | `references/connection.md` | The user is configuring `config/database.php`, setting up multiple connections, or accessing the underlying MongoDB client |
 | `references/schema.md` | The user is writing a migration or creating an index (regular, unique, TTL, geospatial, Atlas Search, Vector Search) |
 | `references/queues.md` | The user is configuring the MongoDB queue driver or dispatching jobs onto it |

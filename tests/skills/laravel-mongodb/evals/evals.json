@@ -151,6 +151,18 @@
         "Mentions that documents are automatically embedded by Atlas on insert and update",
         "Does NOT require the user to call an external embedding API in PHP to index documents"
       ]
+    },
+    {
+      "id": 14,
+      "prompt": "I have Photo documents in MongoDB that can belong to either a User or a Client. How do I define this polymorphic relationship with Laravel MongoDB, and what does a photo document look like once it is attached?",
+      "expected_output": "Define morphTo() on Photo and morphOne()/morphMany() on User and Client using the MongoDB relation classes, and explain that the photo document stores `{name}_id` (parent key as a string) and `{name}_type` (the parent's morph class) with no pivot collection.",
+      "expectations": [
+        "Defines `morphTo()` on the Photo model and `morphMany()` or `morphOne()` on the User and Client models",
+        "Uses `MongoDB\\Laravel\\Eloquent\\Model` (or the `DocumentModel` trait) for the models, not a SQL-only base class",
+        "Explains that the photo document stores two fields, `{name}_id` and `{name}_type` (e.g. `imageable_id` and `imageable_type`)",
+        "States that `{name}_type` holds the parent's morph class (FQCN, or the alias when `Relation::enforceMorphMap()` is used)",
+        "Does NOT introduce a pivot collection, a SQL migration with `morphs()`, or a `JOIN`-based query"
+      ]
     }
   ]
 }
