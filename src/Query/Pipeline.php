@@ -30,15 +30,19 @@ final class Pipeline
     /** @var list<string> */
     private array $temporaryFields = [];
 
+    /** @var list<bool> */
+    private array $neededForCount = [];
+
     public function __construct()
     {
         $this->stages = new BuilderPipeline();
     }
 
     /** @param array<string, mixed>|StageInterface $stage */
-    public function addStage(array|StageInterface $stage): void
+    public function addStage(array|StageInterface $stage, bool $neededForCount = true): void
     {
         $this->stages = new BuilderPipeline($this->stages, $stage);
+        $this->neededForCount[] = $neededForCount;
     }
 
     public function unsetTemporaryField(string $field): void
@@ -49,6 +53,7 @@ final class Pipeline
     public function mergeFrom(self $other): void
     {
         $this->stages = new BuilderPipeline($this->stages, $other->stages);
+        $this->neededForCount = [...$this->neededForCount, ...$other->neededForCount];
 
         foreach ($other->temporaryFields as $field) {
             $this->temporaryFields[] = $field;
@@ -132,13 +137,29 @@ final class Pipeline
 
         $pipeline = [
             ...$this->matchStage($before),
-            ...$this->stages,
+            ...$this->stagesForCount($after !== []),
             ...$this->matchStage($after),
             ...self::pagingStages($options),
             ['$count' => 'aggregate'],
         ];
 
         return ['aggregate' => [$pipeline, ['typeMap' => self::OBJECT_TYPE_MAP] + $this->pipelineOptions($options)]];
+    }
+
+    /** @return list<array<string, mixed>|StageInterface> */
+    private function stagesForCount(bool $needsAll): array
+    {
+        $stages = [];
+        $index = 0;
+        foreach ($this->stages as $stage) {
+            if ($needsAll || ($this->neededForCount[$index] ?? true)) {
+                $stages[] = $stage;
+            }
+
+            $index++;
+        }
+
+        return $stages;
     }
 
     /**
