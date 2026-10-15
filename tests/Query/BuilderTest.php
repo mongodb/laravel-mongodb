@@ -1952,6 +1952,21 @@ class BuilderTest extends TestCase
                 ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
         ];
 
+        yield 'pipeline translates a slice projection with a skip' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$set' => ['tags' => ['$cond' => [['$isArray' => ['$tags']], ['$slice' => ['$tags', 1, 2]], '$tags']]]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['tags' => ['$slice' => [1, 2]]])
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
         yield 'pipeline translates a slice beside an inclusion in one $project' => [
             [
                 'aggregate' => [

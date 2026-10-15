@@ -26,8 +26,10 @@ use MongoDB\Builder\Type\QueryInterface;
 use MongoDB\Builder\Type\SearchOperatorInterface;
 use MongoDB\Builder\Type\StageInterface;
 use MongoDB\Driver\Cursor;
+use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Helpers\RelationLookup;
 use Override;
 use ReflectionMethod;
 use RuntimeException;
@@ -597,6 +599,16 @@ class Builder extends BaseBuilder
      * @return array|static[]|Collection|LazyCollection
      */
     public function getFresh($columns = [], $returnLazy = false)
+    {
+        try {
+            return $this->runFreshSelect($columns, $returnLazy);
+        } catch (ServerException $exception) {
+            throw RelationLookup::explainFailure($exception);
+        }
+    }
+
+    /** @return array|static[]|Collection|LazyCollection */
+    private function runFreshSelect($columns, bool $returnLazy)
     {
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
