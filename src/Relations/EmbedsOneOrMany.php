@@ -291,6 +291,13 @@ abstract class EmbedsOneOrMany extends Relation
                 continue;
             }
 
+            // A value written by a nested relation was already coerced by that
+            // relation, which honored its own custom casts. Walking it again
+            // here would undo them.
+            if ($model->relationLoaded($key)) {
+                continue;
+            }
+
             $attributes[$key] = EncryptedFieldTypes::coerceField($fieldTypes, $prefix . $key, $value, $model->fromDateTime(...));
         }
 

@@ -84,6 +84,25 @@ final class EncryptedEmbeddedTest extends TestCase
         self::assertSame('1500', $parent->getAttributes()['address']['amount']);
     }
 
+    public function testACustomCastOfANestedEmbeddedModelOwnsItsValue(): void
+    {
+        // The nested relation coerces its own model, which honors the custom
+        // cast. Associating the outer model must not coerce that value again.
+        $parent = new EncryptedEmbedded(['name' => 'Jane']);
+
+        $item = new EncryptedEmbeddedItem();
+        $item->setParentRelation($parent->address());
+
+        $label = new EncryptedEmbeddedItem();
+        $label->mergeCasts(['amount' => RecordingCast::class]);
+        $label->amount = '1500';
+        $item->label()->associate($label);
+
+        $parent->address()->associate($item);
+
+        self::assertSame('1500', $parent->getAttributes()['address']['label']['amount']);
+    }
+
     public function testValuesThatCannotBeConvertedAreLeftUntouched(): void
     {
         $parent = new EncryptedEmbedded();
