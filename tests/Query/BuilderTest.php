@@ -1664,6 +1664,124 @@ class BuilderTest extends TestCase
             ['find' => [[], ['maxTimeMS' => 2000]]],
             fn (Builder $builder) => $builder->timeout(2),
         ];
+
+        yield 'pipeline stage turns find into aggregate' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['name' => 'foo']],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('name', 'foo')
+                ->addPipelineStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline stage without a filter' => [
+            [
+                'aggregate' => [
+                    [['$lookup' => ['from' => 'books', 'as' => '__rel_books']]],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->addPipelineStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline computed sort comes before the query sort' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$sort' => ['__count_books' => -1, 'name' => 1]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->orderBy('name')
+                ->sortByComputedField('__count_books', -1)
+                ->addPipelineStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline keeps paging and projection as stages' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$sort' => ['name' => 1]],
+                        ['$skip' => 5],
+                        ['$limit' => 10],
+                        ['$project' => ['name' => 1]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->orderBy('name')
+                ->skip(5)
+                ->limit(10)
+                ->select('name')
+                ->addPipelineStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline unsets temporary fields last' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$addFields' => ['__count_books' => ['$size' => '$__rel_books']]],
+                        ['$unset' => ['__rel_books', '__count_books']],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->addPipelineStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']])
+                ->addPipelineStage(['$addFields' => ['__count_books' => ['$size' => '$__rel_books']]])
+                ->unsetTemporaryField('__rel_books')
+                ->unsetTemporaryField('__count_books'),
+        ];
+
+        yield 'pipeline count folds into an aggregate' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['name' => 'foo']],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$count' => 'aggregate'],
+                    ],
+                    [],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->where('name', 'foo')
+                    ->addPipelineStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]);
+                $builder->aggregate = ['function' => 'count', 'columns' => ['*']];
+
+                return $builder;
+            },
+        ];
+
+        yield 'pipeline stages join an existing aggregate after its match' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['name' => 'foo']],
+                        ['$addFields' => ['flag' => true]],
+                        ['$group' => ['_id' => ['type' => '$type'], 'type' => ['$last' => '$type']]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('name', 'foo')
+                ->groupBy('type')
+                ->addPipelineStage(['$addFields' => ['flag' => true]]),
+        ];
     }
 
     #[DataProvider('provideExceptions')]
@@ -1815,6 +1933,14 @@ class BuilderTest extends TestCase
             InvalidArgumentException::class,
             'The value used as a document id or relation key cannot contain the MongoDB operator "$ne"',
             fn (Builder $builder) => $builder->whereIn('_id', [['$ne' => null]]),
+        ];
+
+        yield 'pipeline stages with a distinct query' => [
+            LogicException::class,
+            'Pipeline stages cannot be combined with a [distinct] query.',
+            fn (Builder $builder) => $builder
+                ->distinct('foo')
+                ->addPipelineStage(['$lookup' => ['from' => 'bar']]),
         ];
     }
 

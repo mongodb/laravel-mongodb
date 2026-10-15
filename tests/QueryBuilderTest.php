@@ -99,6 +99,37 @@ class QueryBuilderTest extends TestCase
         $this->assertCount(1, $users);
     }
 
+    public function testPipelineStagesRunAsAnAggregate()
+    {
+        DB::table('users')->insert([
+            ['name' => 'Jane Doe'],
+            ['name' => 'John Doe'],
+        ]);
+
+        $users = DB::table('users')
+            ->addPipelineStage(['$addFields' => ['__name' => ['$toUpper' => '$name']]])
+            ->sortByComputedField('__name', -1)
+            ->unsetTemporaryField('__name')
+            ->get();
+
+        $this->assertSame(['John Doe', 'Jane Doe'], $users->pluck('name')->all());
+        $this->assertArrayNotHasKey('__name', (array) $users->first());
+    }
+
+    public function testPipelineStagesFoldIntoTheCount()
+    {
+        DB::table('users')->insert([
+            ['name' => 'Jane Doe'],
+            ['name' => 'John Doe'],
+        ]);
+
+        $count = DB::table('users')
+            ->addPipelineStage(['$match' => ['name' => 'Jane Doe']])
+            ->count();
+
+        $this->assertSame(1, $count);
+    }
+
     public function testNoDocument()
     {
         $items = DB::table('items')->where('name', 'nothing')->get()->toArray();

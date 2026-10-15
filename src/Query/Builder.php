@@ -115,6 +115,8 @@ class Builder extends BaseBuilder
 
     private ReadPreference $readPreference;
 
+    private ?Pipeline $pipeline = null;
+
     /**
      * Custom options to add to the query.
      *
@@ -224,6 +226,40 @@ class Builder extends BaseBuilder
         return $this;
     }
 
+    /** @param array<string, mixed> $stage */
+    public function addPipelineStage(array $stage): static
+    {
+        $this->pipeline()->addStage($stage);
+
+        return $this;
+    }
+
+    public function sortByComputedField(string $field, int $direction): static
+    {
+        $this->pipeline()->sortByComputedField($field, $direction);
+
+        return $this;
+    }
+
+    public function unsetTemporaryField(string $field): static
+    {
+        $this->pipeline()->unsetTemporaryField($field);
+
+        return $this;
+    }
+
+    public function __clone()
+    {
+        if ($this->pipeline !== null) {
+            $this->pipeline = clone $this->pipeline;
+        }
+    }
+
+    private function pipeline(): Pipeline
+    {
+        return $this->pipeline ??= new Pipeline();
+    }
+
     /** @inheritdoc */
     #[Override]
     public function find($id, $columns = [])
@@ -293,6 +329,14 @@ class Builder extends BaseBuilder
      * @return array<string, mixed[]>
      */
     public function toMql(): array
+    {
+        $command = $this->compileCommand();
+
+        return $this->pipeline === null ? $command : $this->pipeline->applyTo($command);
+    }
+
+    /** @return array<string, mixed[]> */
+    private function compileCommand(): array
     {
         $columns = $this->columns ?? [];
 
