@@ -255,8 +255,10 @@ class BelongsToMany extends EloquentBelongsToMany
         if (DocumentModel::isDocumentModel($this->parent)) {
             $this->parent->pull($this->relatedPivotKey, $ids);
         } else {
+            // An empty id list detaches every related model, so none stay on the parent.
+            // A non-empty list removes only those ids. SQL models have no pull().
             $value = $this->parent->{$this->relationName}
-                ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $ids));
+                ->filter(fn ($rel) => count($ids) > 0 && ! in_array($rel->{$this->relatedKey}, $ids));
             $this->parent->setRelation($this->relationName, $value);
         }
 
