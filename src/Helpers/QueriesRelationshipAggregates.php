@@ -48,8 +48,6 @@ use function strtolower;
  */
 trait QueriesRelationshipAggregates
 {
-    private const AGGREGATE_FUNCTIONS = ['count', 'exists', 'sum', 'avg', 'min', 'max'];
-
     /** @var array<string, array{name: string, function: string, column: string, parentKey: ?string, constraints: Closure}> */
     private array $withAggregates = [];
 
@@ -60,11 +58,11 @@ trait QueriesRelationshipAggregates
             return $this;
         }
 
-        if (! in_array($function, self::AGGREGATE_FUNCTIONS, true)) {
+        if (! in_array($function, RelationAggregate::FUNCTIONS, true)) {
             throw new InvalidArgumentException(sprintf(
                 'Aggregate function "%s" is not supported by MongoDB. Supported functions are: %s.',
                 $function ?? 'null',
-                implode(', ', self::AGGREGATE_FUNCTIONS),
+                implode(', ', RelationAggregate::FUNCTIONS),
             ));
         }
 
@@ -352,7 +350,7 @@ trait QueriesRelationshipAggregates
     {
         if (isset($this->getQuery()->orders[$alias])) {
             throw new LogicException(sprintf(
-                'Ordering by the aggregated field "%s" is not supported, as it is computed after the documents are read. Sort the results with the collection method "sortBy" instead.',
+                'Ordering by the aggregated field "%s" is not supported, as it is computed after the documents are read. Sort on the relation with "orderByRelationAggregate()", or sort the results with the collection method "sortBy".',
                 $alias,
             ));
         }
