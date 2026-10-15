@@ -126,6 +126,19 @@ class QueryBuilderTest extends TestCase
         $this->assertIsArray($user->tags);
     }
 
+    public function testWhereMatchesEmbeddedDocumentStoredInLegacyFieldOrder()
+    {
+        DB::connection('mongodb')->getCollection('users')->insertOne([
+            'embed' => ['name' => 'Jane', '_id' => 30],
+        ]);
+
+        $users = DB::table('users')
+            ->where('embed', '=', ['id' => 30, 'name' => 'Jane'])
+            ->get();
+
+        $this->assertCount(1, $users);
+    }
+
     #[TestWith([true])]
     #[TestWith([false])]
     public function testInsertWithCustomId(bool $renameEmbeddedIdField)

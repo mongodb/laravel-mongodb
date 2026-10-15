@@ -45,45 +45,31 @@ class Grammar extends BaseGrammar
      */
     public function prepareFieldsForQuery(array $values, bool $root = true): array
     {
-        if (array_key_exists('id', $values) && ($root || $this->connection->getRenameEmbeddedIdField())) {
-            if (array_key_exists('_id', $values) && $values['id'] !== $values['_id']) {
-                throw new InvalidArgumentException('Cannot have both "id" and "_id" fields.');
-            }
-
-            $values['_id'] = $values['id'];
-            unset($values['id']);
-        }
+        $prepared = [];
+        $renamed  = [];
+        $seen     = [];
 
         foreach ($values as $key => $value) {
             if (! is_string($key)) {
+                $prepared[$key] = $value;
                 continue;
             }
 
-            // "->" arrow notation for subfields is an alias for "." dot notation
-            if (str_contains($key, '->')) {
-                $newKey = str_replace('->', '.', $key);
-                if (array_key_exists($newKey, $values) && $value !== $values[$newKey]) {
-                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newKey));
-                }
+            $newKey = $this->prepareFieldKey($key, $value, $values, $seen, $root);
 
-                $values[$newKey] = $value;
-                unset($values[$key]);
-                $key = $newKey;
+            $seen[$newKey] = $value;
+
+            if ($root || $newKey === $key) {
+                $prepared[$newKey] = $value;
+                continue;
             }
 
-            // ".id" subfield are alias for "._id"
-            if (str_ends_with($key, '.id') && $this->connection->getRenameEmbeddedIdField()) {
-                $newKey = substr($key, 0, -3) . '._id';
-                if (array_key_exists($newKey, $values) && $value !== $values[$newKey]) {
-                    throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newKey));
-                }
-
-                $values[$newKey] = $value;
-                unset($values[$key]);
-            }
+            $renamed[$newKey] = $value;
         }
 
-        foreach ($values as &$value) {
+        $prepared += $renamed;
+
+        foreach ($prepared as &$value) {
             if (is_array($value)) {
                 $value = $this->prepareFieldsForQuery($value, false);
             } elseif ($value instanceof DateTimeInterface) {
@@ -98,7 +84,37 @@ class Grammar extends BaseGrammar
             }
         }
 
-        return $values;
+        return $prepared;
+    }
+
+    private function prepareFieldKey(string $key, mixed $value, array $values, array $seen, bool $root): string
+    {
+        if ($key === 'id' && ($root || $this->connection->getRenameEmbeddedIdField())) {
+            return $this->aliasedFieldKey($key, '_id', $value, $values, $seen);
+        }
+
+        if (str_contains($key, '->')) {
+            $key = $this->aliasedFieldKey($key, str_replace('->', '.', $key), $value, $values, $seen);
+        }
+
+        if (str_ends_with($key, '.id') && $this->connection->getRenameEmbeddedIdField()) {
+            return $this->aliasedFieldKey($key, substr($key, 0, -3) . '._id', $value, $values, $seen);
+        }
+
+        return $key;
+    }
+
+    private function aliasedFieldKey(string $key, string $newKey, mixed $value, array $values, array $seen): string
+    {
+        $hasConflict =
+            (array_key_exists($newKey, $seen) && $seen[$newKey] !== $value)
+            || (array_key_exists($newKey, $values) && $values[$newKey] !== $value);
+
+        if ($hasConflict) {
+            throw new InvalidArgumentException(sprintf('Cannot have both "%s" and "%s" fields.', $key, $newKey));
+        }
+
+        return $newKey;
     }
 
     /**

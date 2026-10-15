@@ -10,6 +10,7 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Grammar;
 use MongoDB\Laravel\Tests\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 use stdClass;
 
 use function date_default_timezone_get;
@@ -85,6 +86,29 @@ class GrammarTest extends TestCase
         $this->assertArrayNotHasKey('user->email', $result);
         $this->assertEquals('John', $result['user.name']);
         $this->assertEquals('john@example.com', $result['user.email']);
+    }
+
+    #[DataProvider('provideRenamedFieldsKeepingTheirPosition')]
+    public function testPrepareFieldsForQueryKeepsThePositionOfARenamedField(array $fields, array $expected)
+    {
+        $this->assertSame($expected, $this->grammar->prepareFieldsForQuery($fields));
+    }
+
+    public static function provideRenamedFieldsKeepingTheirPosition(): iterable
+    {
+        yield 'arrow key first' => [['traits->colour' => 1, 'name' => 1], ['traits.colour' => 1, 'name' => 1]];
+        yield 'arrow key last' => [['name' => 1, 'traits->colour' => 1], ['name' => 1, 'traits.colour' => 1]];
+        yield 'id first' => [['id' => 1, 'name' => 1], ['_id' => 1, 'name' => 1]];
+        yield 'id last' => [['name' => 1, 'id' => 1], ['name' => 1, '_id' => 1]];
+        yield 'subfield id first' => [['user.id' => 1, 'name' => 1], ['user._id' => 1, 'name' => 1]];
+        yield 'subfield id last' => [['name' => 1, 'user.id' => 1], ['name' => 1, 'user._id' => 1]];
+    }
+
+    public function testPrepareFieldsForQueryKeepsTheStoredOrderOfEmbeddedDocuments()
+    {
+        $result = $this->grammar->prepareFieldsForQuery(['embed' => ['id' => 30, 'name' => 'Jane']]);
+
+        $this->assertSame(['embed' => ['name' => 'Jane', '_id' => 30]], $result);
     }
 
     /**

@@ -58,6 +58,36 @@ class BuilderTest extends TestCase
         $this->assertEquals($expected, $mql, var_export($mql, true));
     }
 
+    #[DataProvider('provideOrderedFieldsKeepingTheirPosition')]
+    public function testOrderByKeepsThePositionOfARenamedField(array $columns, array $expected): void
+    {
+        $builder = $this->getBuilder();
+
+        foreach ($columns as $column) {
+            $builder->orderBy($column);
+        }
+
+        $sort = $builder->toMql()['find'][1]['sort'];
+
+        $this->assertSame($expected, $sort);
+    }
+
+    public static function provideOrderedFieldsKeepingTheirPosition(): iterable
+    {
+        yield 'renamed field first' => [['traits->colour', 'name'], ['traits.colour' => 1, 'name' => 1]];
+        yield 'renamed field last' => [['name', 'traits->colour'], ['name' => 1, 'traits.colour' => 1]];
+    }
+
+    public function testWhereKeepsTheStoredOrderOfAnEmbeddedDocument(): void
+    {
+        $builder = $this->getBuilder()
+            ->where('embed', '=', ['id' => 30, 'name' => 'Jane']);
+
+        $filter = $builder->toMql()['find'][0];
+
+        $this->assertSame(['embed' => ['name' => 'Jane', '_id' => 30]], $filter);
+    }
+
     #[DataProvider('provideConnectionOptions')]
     public function testConnectionOptionsAreInheritedByMql(array $expected, Closure $build, array $config): void
     {
