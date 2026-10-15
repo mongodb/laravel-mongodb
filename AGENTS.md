@@ -18,6 +18,14 @@ The package runs on every MongoDB topology (standalone, replica set and sharded 
 supported server version. Do not assume a topology or a version, the same code must work on all of
 them.
 
+The Filament bridge is the one exception: its relationship lookups require MongoDB 5.0, because an
+indexable `$lookup` combines `localField`/`foreignField` with a `pipeline`. Older servers reject the
+stage. Matching the keys the Eloquent relation itself matches is the bar; a gap beyond it is an
+accepted trade-off when it is documented. The bridge exists only for Filament, so judge a review
+finding by whether Filament's own sort, search and filter calls can reach it. Decline a finding that
+needs hand-written raw MQL, such as a raw `$expr` or `options()`, when the code already fails with a
+clear message.
+
 When a Laravel feature cannot work on MongoDB, do not diverge silently: state the limitation, and
 prefer a change in Laravel or in a dependency when that unblocks a faithful implementation.
 
@@ -122,8 +130,9 @@ without an assertion or with output fails. Run with `php -d zend.assertions=1` t
 transaction with `#[TestWith]`.
 
 Some tests are conditional. `#[Group('atlas-search')]` needs Atlas or Atlas Local and is excluded by
-default. `TestCase::skipIfQEIsNotSupported()` and `skipIfSearchIndexManagementIsNotSupported()` skip
-when the server, the driver or the version does not support the feature. Transactions and Queryable
+default. `TestCase::skipIfQEIsNotSupported()`, `skipIfSearchIndexManagementIsNotSupported()` and
+`skipIfRelationLookupIsNotSupported()` skip when the server, the driver or the version does not
+support the feature. Transactions and Queryable
 Encryption need a replica set or a sharded cluster, not a standalone.
 
 ## Conventions

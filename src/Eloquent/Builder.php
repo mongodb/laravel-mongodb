@@ -174,6 +174,18 @@ class Builder extends EloquentBuilder
     }
 
     /**
+     * Supports the Filament bridge.
+     *
+     * @internal
+     */
+    public function applyGroupedConstraints(Closure $constraints): static
+    {
+        $this->callScope($constraints);
+
+        return $this;
+    }
+
+    /**
      * @param array $options
      *
      * @inheritdoc
