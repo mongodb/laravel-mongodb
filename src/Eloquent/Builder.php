@@ -170,6 +170,21 @@ class Builder extends EloquentBuilder
         return $this;
     }
 
+    public function whereRelationAggregate(
+        string $relation,
+        string $column,
+        string $function,
+        string $operator,
+        float $value,
+        ?Closure $callback = null,
+    ): static {
+        $field = $this->addRelationAggregateField($relation, $column, $function, $callback);
+
+        $this->mongoQuery()->addPipelineStage(['$match' => [$field => RelationAggregate::comparison($operator, $value)]]);
+
+        return $this;
+    }
+
     private function addRelationAggregateField(
         string $relation,
         string|QueryExpression $column,

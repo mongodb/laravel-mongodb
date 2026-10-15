@@ -81,6 +81,38 @@ class RelationAggregateTest extends TestCase
         User::orderByRelationAggregate('items', '*', 'count', 'up');
     }
 
+    public function testWhereRelationAggregate(): void
+    {
+        $this->seedUsers();
+
+        $names = User::whereRelationAggregate('items', 'amount', 'sum', '>=', 15)
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Alice', 'Bob'], $names);
+    }
+
+    public function testWhereRelationAggregateCountsPagesWithTheMatch(): void
+    {
+        $this->seedUsers();
+
+        $query = User::whereRelationAggregate('items', 'amount', 'sum', '<', 15);
+
+        $this->assertSame(['Carol'], $query->orderBy('name')->get()->pluck('name')->all());
+        $this->assertSame(1, $query->count());
+        $this->assertSame(1, $query->paginate()->total());
+    }
+
+    public function testWhereRelationAggregateUnsupportedOperator(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Comparison operator "~=" is not supported by MongoDB. Supported operators are: =, !=, <>, <, <=, >, >=');
+
+        User::whereRelationAggregate('items', 'amount', 'sum', '~=', 1);
+    }
+
     private function seedUsers(): void
     {
         $alice = User::create(['name' => 'Alice']);

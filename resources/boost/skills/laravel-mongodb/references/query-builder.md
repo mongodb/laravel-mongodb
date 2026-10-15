@@ -80,11 +80,12 @@ $posts = Post::raw(fn ($c) => $c->aggregate([
 ]));
 ```
 
-`orderByRelationAggregate()` builds that pipeline for one relationship, so the sort runs on the server and
-pagination totals include it:
+`orderByRelationAggregate()` and `whereRelationAggregate()` build that pipeline for one relationship, so the sort
+or filter runs on the server and pagination totals include it:
 
 ```php
 Post::orderByRelationAggregate('comments', '*', 'count', 'desc')->get();
+Post::whereRelationAggregate('comments', 'score', 'sum', '>=', 100)->paginate();
 ```
 
 ## Inspecting the generated query

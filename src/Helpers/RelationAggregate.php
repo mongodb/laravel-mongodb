@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Helpers;
 
 use InvalidArgumentException;
 
+use function array_keys;
 use function implode;
 use function in_array;
 use function sprintf;
@@ -15,6 +16,16 @@ use function strtolower;
 final readonly class RelationAggregate
 {
     private const FUNCTIONS = ['avg', 'count', 'exists', 'max', 'min', 'sum'];
+
+    private const OPERATORS = [
+        '=' => '$eq',
+        '!=' => '$ne',
+        '<>' => '$ne',
+        '<' => '$lt',
+        '<=' => '$lte',
+        '>' => '$gt',
+        '>=' => '$gte',
+    ];
 
     private function __construct(
         public string $function,
@@ -47,5 +58,17 @@ final readonly class RelationAggregate
             'exists' => ['$gt' => [['$size' => $documents], 0]],
             default => ['$' . $this->function => $documents . '.' . $this->column],
         };
+    }
+
+    /** @return array<string, float> */
+    public static function comparison(string $operator, float $value): array
+    {
+        $mongoOperator = self::OPERATORS[$operator] ?? throw new InvalidArgumentException(sprintf(
+            'Comparison operator "%s" is not supported by MongoDB. Supported operators are: %s.',
+            $operator,
+            implode(', ', array_keys(self::OPERATORS)),
+        ));
+
+        return [$mongoOperator => $value];
     }
 }
