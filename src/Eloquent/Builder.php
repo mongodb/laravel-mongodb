@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Eloquent;
 
 use Closure;
+use Illuminate\Contracts\Database\Query\Expression as QueryExpression;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use InvalidArgumentException;
 use MongoDB\BSON\Document;
 use MongoDB\Builder\Expression;
 use MongoDB\Builder\Type\QueryInterface;
@@ -18,7 +20,10 @@ use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Helpers\QueriesRelationshipAggregates;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
+use MongoDB\Laravel\Helpers\RelationAggregate;
+use MongoDB\Laravel\Helpers\RelationLookup;
 use MongoDB\Laravel\Query\AggregationBuilder;
+use MongoDB\Laravel\Query\Builder as MongoQueryBuilder;
 use MongoDB\Model\BSONDocument;
 use Override;
 
@@ -33,6 +38,8 @@ use function is_object;
 use function iterator_to_array;
 use function method_exists;
 use function property_exists;
+use function sprintf;
+use function strtolower;
 use function value;
 
 /**
@@ -147,6 +154,69 @@ class Builder extends EloquentBuilder
         );
 
         return $this->hydrate($results->all());
+    }
+
+    public function orderByRelationAggregate(
+        string $relation,
+        string|QueryExpression $column,
+        string $function,
+        string $direction = 'asc',
+        ?Closure $callback = null,
+    ): static {
+        $field = $this->addRelationAggregateField($relation, $column, $function, $callback);
+
+        $this->mongoQuery()->sortByComputedField($field, $this->sortDirection($direction));
+
+        return $this;
+    }
+
+    private function addRelationAggregateField(
+        string $relation,
+        string|QueryExpression $column,
+        string $function,
+        ?Closure $callback,
+    ): string {
+        $aggregate = RelationAggregate::of($function, $this->columnName($column));
+        $alias = '__rel_' . $relation;
+        $field = '__' . $aggregate->function . '_' . $relation;
+
+        $this->mongoQuery()
+            ->addPipelineStage(RelationLookup::for($this->getRelationWithoutConstraints($relation), $alias, $callback)->stage)
+            ->addPipelineStage(['$addFields' => [$field => $aggregate->expressionOver($alias)]])
+            ->unsetTemporaryField($alias)
+            ->unsetTemporaryField($field);
+
+        return $field;
+    }
+
+    private function columnName(string|QueryExpression $column): string
+    {
+        if ($column instanceof QueryExpression) {
+            return (string) $column->getValue($this->mongoQuery()->getGrammar());
+        }
+
+        return $column;
+    }
+
+    private function sortDirection(string $direction): int
+    {
+        return match (strtolower($direction)) {
+            'asc' => 1,
+            'desc' => -1,
+            default => throw new InvalidArgumentException(sprintf(
+                'Order direction must be "asc" or "desc", "%s" given.',
+                $direction,
+            )),
+        };
+    }
+
+    private function mongoQuery(): MongoQueryBuilder
+    {
+        $query = $this->getQuery();
+
+        assert($query instanceof MongoQueryBuilder);
+
+        return $query;
     }
 
     /**

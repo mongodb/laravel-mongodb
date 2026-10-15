@@ -61,7 +61,7 @@ where the related model is not stored in MongoDB.
 Limitations:
 
 - `orderBy()` on an aggregate alias throws, because the value does not exist server side. Sort the resulting
-  collection with `sortBy()` instead.
+  collection with `sortBy()`, or sort in the query with `orderByRelationAggregate()`.
 - `cursor()` and `lazy()` do not eager load, so the aliases are absent on those paths.
 - Constraint closures on embedded relations are not supported.
 - Use a `$lookup` pipeline instead when you need to filter, sort or paginate on the aggregated value:
@@ -78,6 +78,13 @@ $posts = Post::raw(fn ($c) => $c->aggregate([
     ['$project'   => ['comments' => 0]],
     ['$sort'      => ['comments_count' => -1]],
 ]));
+```
+
+`orderByRelationAggregate()` builds that pipeline for one relationship, so the sort runs on the server and
+pagination totals include it:
+
+```php
+Post::orderByRelationAggregate('comments', '*', 'count', 'desc')->get();
 ```
 
 ## Inspecting the generated query
