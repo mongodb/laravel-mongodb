@@ -13,7 +13,10 @@ use MongoDB\Laravel\Tests\Models\EncryptedCasting;
 use MongoDB\Laravel\Tests\Models\Patient;
 use MongoDB\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\TestWith;
+use stdClass;
 
+use function class_alias;
+use function class_exists;
 use function config;
 
 /**
@@ -46,6 +49,7 @@ final class EncryptedFieldCastsTest extends TestCase
                     'billing.amount' => 'int',
                     'billing.due' => 'date',
                     'billing.label' => 'string',
+                    'billing.details.amount' => 'int',
                 ],
             ],
         ]);
@@ -120,6 +124,29 @@ final class EncryptedFieldCastsTest extends TestCase
         $model->$attribute = 'abc';
 
         self::assertSame('abc', $model->getAttributes()[$attribute]);
+    }
+
+    #[TestWith(['9223372036854775807'])]
+    #[TestWith(['-9223372036854775808'])]
+    public function testLongValuesAtTheBoundaryAreConverted(string $value): void
+    {
+        $model = new EncryptedCasting();
+        $model->a_long = $value;
+
+        self::assertInstanceOf(Int64::class, $model->getAttributes()['a_long']);
+        self::assertSame($value, (string) $model->getAttributes()['a_long']);
+    }
+
+    #[TestWith(['9223372036854775808'])]
+    #[TestWith(['-9223372036854775809'])]
+    public function testLongValuesOutsideTheRangeAreLeftUntouched(string $value): void
+    {
+        // The (int) cast would saturate them to PHP_INT_MAX and the driver
+        // would store a different number.
+        $model = new EncryptedCasting();
+        $model->a_long = $value;
+
+        self::assertSame($value, $model->getAttributes()['a_long']);
     }
 
     public function testReadsBackTheNativePhpTypes(): void
@@ -201,6 +228,35 @@ final class EncryptedFieldCastsTest extends TestCase
         self::assertSame($billing, $model->getAttributes()['billing']);
     }
 
+    public function testAnEmptyObjectStaysADocument(): void
+    {
+        $model = new EncryptedCasting();
+        $model->an_object = new stdClass();
+
+        // An empty array is encoded as a BSON array, which the server rejects
+        // for an encrypted document field, so the object is kept.
+        self::assertInstanceOf(stdClass::class, $model->getAttributes()['an_object']);
+    }
+
+    public function testAnObjectWithSequentialNumericPropertiesStaysADocument(): void
+    {
+        $model = new EncryptedCasting();
+        $model->an_object = (object) ['0' => 'a', '1' => 'b'];
+
+        self::assertInstanceOf(stdClass::class, $model->getAttributes()['an_object']);
+    }
+
+    public function testAnEmptyNestedObjectStaysADocument(): void
+    {
+        $model = new EncryptedCasting();
+        $model->billing = ['details' => new stdClass(), 'amount' => '1500'];
+
+        $billing = $model->getAttributes()['billing'];
+
+        self::assertInstanceOf(stdClass::class, $billing['details']);
+        self::assertSame(1500, $billing['amount']);
+    }
+
     public function testCoercesEncryptedFieldSetByDottedPath(): void
     {
         $model = new EncryptedCasting();
@@ -254,6 +310,23 @@ final class EncryptedFieldCastsTest extends TestCase
 
         $model = new EncryptedCasting();
         $model->mergeCasts(['an_int' => RecordingCast::class]);
+        $model->an_int = '1500';
+
+        self::assertSame('1500', RecordingCast::$received);
+    }
+
+    public function testACustomCastInTheGlobalNamespaceOwnsItsValue(): void
+    {
+        // A custom cast class in the global namespace has no backslash in its
+        // name, so it must be recognized as a class, not as a native cast.
+        if (! class_exists('GlobalRecordingCast', false)) {
+            class_alias(RecordingCast::class, 'GlobalRecordingCast');
+        }
+
+        RecordingCast::$received = null;
+
+        $model = new EncryptedCasting();
+        $model->mergeCasts(['an_int' => 'GlobalRecordingCast']);
         $model->an_int = '1500';
 
         self::assertSame('1500', RecordingCast::$received);

@@ -12,6 +12,7 @@ use MongoDB\Laravel\Connection;
 use stdClass;
 use Stringable;
 
+use function array_is_list;
 use function array_key_exists;
 use function array_shift;
 use function class_exists;
@@ -23,15 +24,20 @@ use function is_array;
 use function is_numeric;
 use function is_scalar;
 use function is_string;
+use function ltrim;
+use function preg_match;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
+use function strcmp;
 use function strlen;
 use function strtolower;
 use function substr;
 
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
+use const PHP_INT_MAX;
+use const PHP_INT_MIN;
 
 /**
  * Bridges the bsonType declared for an encrypted field in the
@@ -84,6 +90,12 @@ final class EncryptedFieldTypes
         'object' => [],
         'array' => [],
     ];
+
+    /** The largest value of a signed 64-bit integer, as text. */
+    private const INT64_MAX = '9223372036854775807';
+
+    /** The absolute value of the smallest signed 64-bit integer, as text. */
+    private const INT64_MIN_ABS = '9223372036854775808';
 
     /**
      * The bsonType declared for each encrypted field of the collection of a
@@ -174,7 +186,7 @@ final class EncryptedFieldTypes
     private static function isCompatible(string $bsonType, string $cast): bool
     {
         // A custom cast class is the developer's responsibility.
-        if (str_contains($cast, '\\')) {
+        if (self::isCustomCast($cast)) {
             return true;
         }
 
@@ -243,7 +255,7 @@ final class EncryptedFieldTypes
             'int' => is_numeric($value) ? (int) $value : $value,
             // The driver stores a PHP int as int32 when it fits, so wrap it to
             // force the int64 stored for a "long" field.
-            'long' => is_numeric($value) ? new Int64((int) $value) : $value,
+            'long' => is_numeric($value) ? self::toInt64($value) : $value,
             'double' => is_numeric($value) ? (float) $value : $value,
             'decimal' => $value instanceof Decimal128 || ! is_numeric($value) ? $value : new Decimal128((string) $value),
             'bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value,
@@ -252,9 +264,58 @@ final class EncryptedFieldTypes
             // An embedded document is stored natively, never JSON-encoded. Only
             // a plain object is converted: any other object (a BSON type, a
             // model, a collection) is a value of its own and is left untouched.
-            'object' => $value instanceof stdClass ? (array) $value : $value,
+            'object' => $value instanceof stdClass ? self::toDocumentArray($value) : $value,
             default => $value,
         };
+    }
+
+    /**
+     * The value as a driver Int64. A value outside the signed 64-bit range is
+     * returned unchanged: the (int) cast would saturate it to PHP_INT_MAX and
+     * the driver would store a different number.
+     */
+    private static function toInt64(mixed $value): mixed
+    {
+        if (self::isOutsideInt64Range($value)) {
+            return $value;
+        }
+
+        return new Int64((int) $value);
+    }
+
+    /**
+     * Whether a number is outside the signed 64-bit range. An integer written
+     * as digits is compared as text, because a float comparison cannot tell
+     * PHP_INT_MAX from PHP_INT_MAX + 1.
+     */
+    private static function isOutsideInt64Range(mixed $value): bool
+    {
+        if (is_string($value) && preg_match('/^[+-]?\d+$/', $value) === 1) {
+            $limit  = str_starts_with($value, '-') ? self::INT64_MIN_ABS : self::INT64_MAX;
+            $digits = ltrim(ltrim($value, '+-'), '0');
+
+            return strlen($digits) > strlen($limit)
+                || (strlen($digits) === strlen($limit) && strcmp($digits, $limit) > 0);
+        }
+
+        $number = (float) $value;
+
+        return $number > (float) PHP_INT_MAX || $number < (float) PHP_INT_MIN;
+    }
+
+    /**
+     * The object as an array, or the object itself when its properties would be
+     * encoded as a BSON array. An empty object or one whose property names are
+     * sequential numbers is a BSON document, so the array form would change its
+     * type and automatic encryption would reject it.
+     *
+     * @return array<array-key, mixed>|stdClass
+     */
+    private static function toDocumentArray(stdClass $value): array|stdClass
+    {
+        $array = (array) $value;
+
+        return array_is_list($array) ? $value : $array;
     }
 
     /**
@@ -268,7 +329,7 @@ final class EncryptedFieldTypes
     private static function coerceEmbedded(array $fieldTypes, mixed $value, ?callable $dateConverter): mixed
     {
         if ($value instanceof stdClass) {
-            $value = (array) $value;
+            $value = self::toDocumentArray($value);
         }
 
         if (! is_array($value)) {
@@ -305,7 +366,7 @@ final class EncryptedFieldTypes
         $nested = $value[$segment];
 
         if ($nested instanceof stdClass) {
-            $nested = (array) $nested;
+            $nested = self::toDocumentArray($nested);
         }
 
         if (is_array($nested)) {
