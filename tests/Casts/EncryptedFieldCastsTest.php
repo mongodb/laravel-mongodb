@@ -139,10 +139,16 @@ final class EncryptedFieldCastsTest extends TestCase
 
     #[TestWith(['9223372036854775808'])]
     #[TestWith(['-9223372036854775809'])]
-    public function testLongValuesOutsideTheRangeAreLeftUntouched(string $value): void
+    #[TestWith(['9223372036854775808 '])]
+    #[TestWith(['9223372036854775808.0'])]
+    #[TestWith(['9.223372036854776e18'])]
+    #[TestWith([9.223372036854776e18])]
+    public function testLongValuesOutsideTheRangeAreLeftUntouched(string|float $value): void
     {
         // The (int) cast would saturate them to PHP_INT_MAX and the driver
-        // would store a different number.
+        // would store a different number. A number written with a whitespace,
+        // a decimal part or an exponent rounds to the same float as
+        // PHP_INT_MAX, so it is left untouched too.
         $model = new EncryptedCasting();
         $model->a_long = $value;
 
