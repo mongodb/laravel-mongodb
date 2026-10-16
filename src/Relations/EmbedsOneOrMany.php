@@ -241,10 +241,6 @@ abstract class EmbedsOneOrMany extends Relation
         // Set raw attributes to skip mutators.
         $this->parent->setRawAttributes($attributes);
 
-        // The value was coerced by the relation that wrote it, so the parent
-        // relation must not coerce it again.
-        $this->parent->markAttributeAsCoerced($this->localKey);
-
         // Set the relation on the parent.
         return $this->parent->setRelation($this->relation, $records === null ? null : $this->getResults());
     }
@@ -295,17 +291,47 @@ abstract class EmbedsOneOrMany extends Relation
                 continue;
             }
 
-            // A value written by a nested relation was already coerced by that
-            // relation, which honored its own custom casts. Walking it again
-            // here would undo them.
-            if ($model->isAttributeCoerced($key)) {
-                continue;
-            }
-
-            $attributes[$key] = EncryptedFieldTypes::coerceField($fieldTypes, $prefix . $key, $value, $model->fromDateTime(...));
+            $attributes[$key] = EncryptedFieldTypes::coerceField(
+                $fieldTypes,
+                $prefix . $key,
+                $value,
+                $model->fromDateTime(...),
+                $this->customCastPaths($model, $key),
+            );
         }
 
         $model->setRawAttributes($attributes);
+    }
+
+    /**
+     * The encrypted sub-fields of a nested relation whose model declares a
+     * custom cast, keyed by their path relative to that model. The relation
+     * that wrote the value applied those casts, so walking it again from here
+     * would undo them.
+     *
+     * @return array<string, true>
+     */
+    private function customCastPaths(Model $model, string $key): array
+    {
+        if (! $model->relationLoaded($key)) {
+            return [];
+        }
+
+        $related = $model->getRelation($key);
+
+        if (! $related instanceof Model) {
+            return [];
+        }
+
+        $paths = [];
+
+        foreach ($related->getCasts() as $name => $cast) {
+            if (EncryptedFieldTypes::isCustomCast($cast)) {
+                $paths[$name] = true;
+            }
+        }
+
+        return $paths;
     }
 
     /**

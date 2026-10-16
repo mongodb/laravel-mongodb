@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Tests\Models;
 
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Relations\EmbedsOne;
+use MongoDB\Laravel\Tests\Casts\RecordingCast;
 
 /**
  * The embedded document of {@see EncryptedEmbedded}, and of a nested relation.
@@ -17,6 +18,12 @@ class EncryptedEmbeddedItem extends Model
     protected $connection = 'mongodb';
     protected $table = 'encrypted_embedded';
     protected static $unguarded = true;
+
+    /**
+     * "note" is declared as an encrypted "int" field, so the cast class owns the
+     * value of that field, on this model and on a model nested in it.
+     */
+    protected $casts = ['note' => RecordingCast::class];
 
     public function label(): EmbedsOne
     {
