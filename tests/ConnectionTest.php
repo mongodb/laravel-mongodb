@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Tests;
 use Generator;
 use Illuminate\Database\Events\QueryExecuted;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
 use InvalidArgumentException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\Client;
@@ -468,6 +469,55 @@ class ConnectionTest extends TestCase
         $database->selectCollection('items')->findOne();
 
         $this->assertCount(1, $queries);
+    }
+
+    public function testQueryEventsAreDispatchedForADatabaseCommand()
+    {
+        $queries = [];
+        DB::listen(function (QueryExecuted $query) use (&$queries) {
+            $queries[] = $query->sql;
+        });
+
+        // The command is the first operation of the connection, so no other
+        // method had the chance to attach the subscriber.
+        DB::connection('mongodb')->command(['ping' => 1]);
+
+        $this->assertCount(1, $queries);
+        $this->assertJsonStringEqualsJsonString('{"ping":{"$numberInt":"1"}}', $queries[0]);
+    }
+
+    public function testQueryEventsAreDispatchedForAnAggregationBuilderCreatedBeforeTheListener()
+    {
+        // The aggregation builder is created before the listener exists.
+        $builder = DB::table('items')->aggregate();
+
+        $queries = [];
+        DB::listen(function (QueryExecuted $query) use (&$queries) {
+            $queries[] = $query->sql;
+        });
+
+        $builder->match(name: 'test')->get();
+
+        $this->assertCount(1, $queries);
+        $this->assertJsonStringEqualsJsonString('{"aggregate":"items","pipeline":[{"$match":{"name":"test"}}],"cursor":{}}', $queries[0]);
+    }
+
+    public function testCommandSubscriberIsDetachedWhenTheLastListenerIsRemoved()
+    {
+        $connection = DB::connection('mongodb');
+        $subscriber = new ReflectionProperty(Connection::class, 'commandSubscriber');
+
+        DB::listen(static function (QueryExecuted $query) {
+        });
+
+        $connection->table('items')->get();
+        $this->assertInstanceOf(CommandSubscriber::class, $subscriber->getValue($connection));
+
+        // Nothing consumes the query events anymore.
+        Event::forget(QueryExecuted::class);
+
+        $connection->table('items')->get();
+        $this->assertNull($subscriber->getValue($connection));
     }
 
     public function testSchemaBuilder()

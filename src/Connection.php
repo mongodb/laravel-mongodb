@@ -131,7 +131,7 @@ class Connection extends BaseConnection
      */
     public function getCollection($name): Collection
     {
-        $this->attachCommandSubscriber();
+        $this->syncCommandSubscriber();
 
         return $this->db->getCollection($this->tablePrefix . $name);
     }
@@ -166,7 +166,7 @@ class Connection extends BaseConnection
      */
     public function getDatabase(?string $name = null): Database
     {
-        $this->attachCommandSubscriber();
+        $this->syncCommandSubscriber();
 
         if ($name && $name !== $this->database) {
             return $this->connection->getDatabase($name);
@@ -194,7 +194,7 @@ class Connection extends BaseConnection
      */
     public function getClient(): ?Client
     {
-        $this->attachCommandSubscriber();
+        $this->syncCommandSubscriber();
 
         return $this->connection;
     }
@@ -205,7 +205,7 @@ class Connection extends BaseConnection
     {
         parent::enableQueryLog();
 
-        $this->attachCommandSubscriber();
+        $this->syncCommandSubscriber();
     }
 
     #[Override]
@@ -213,7 +213,7 @@ class Connection extends BaseConnection
     {
         parent::disableQueryLog();
 
-        $this->detachCommandSubscriber();
+        $this->syncCommandSubscriber();
     }
 
     #[Override]
@@ -508,6 +508,9 @@ class Connection extends BaseConnection
      */
     public function __call($method, $parameters)
     {
+        // Methods of the database object run commands, too.
+        $this->syncCommandSubscriber();
+
         return $this->db->$method(...$parameters);
     }
 
@@ -541,19 +544,29 @@ class Connection extends BaseConnection
     }
 
     /**
-     * Attach the command subscriber if something consumes the query events, so
-     * that MongoDB connections report commands like SQL connections do.
+     * Attach or detach the command subscriber to match the consumers of the
+     * query events, so that MongoDB connections report commands like SQL
+     * connections do.
      *
-     * @internal Called by the query builder before running a command.
+     * @internal Called by the query builders before running a command.
      */
-    public function attachCommandSubscriber(): void
+    public function syncCommandSubscriber(): void
     {
-        if ($this->connection === null || $this->commandSubscriber !== null || ! $this->isQueryWatched()) {
+        if ($this->connection === null) {
             return;
         }
 
-        $this->commandSubscriber = new CommandSubscriber($this);
-        $this->connection->addSubscriber($this->commandSubscriber);
+        if (! $this->isQueryWatched()) {
+            // The consumer may have been removed since the previous command.
+            $this->detachCommandSubscriber();
+
+            return;
+        }
+
+        if ($this->commandSubscriber === null) {
+            $this->commandSubscriber = new CommandSubscriber($this);
+            $this->connection->addSubscriber($this->commandSubscriber);
+        }
     }
 
     /** Detach the command subscriber when nothing consumes the query events. */
