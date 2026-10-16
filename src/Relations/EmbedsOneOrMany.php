@@ -241,6 +241,10 @@ abstract class EmbedsOneOrMany extends Relation
         // Set raw attributes to skip mutators.
         $this->parent->setRawAttributes($attributes);
 
+        // The value was coerced by the relation that wrote it, so the parent
+        // relation must not coerce it again.
+        $this->parent->markAttributeAsCoerced($this->localKey);
+
         // Set the relation on the parent.
         return $this->parent->setRelation($this->relation, $records === null ? null : $this->getResults());
     }
@@ -294,7 +298,7 @@ abstract class EmbedsOneOrMany extends Relation
             // A value written by a nested relation was already coerced by that
             // relation, which honored its own custom casts. Walking it again
             // here would undo them.
-            if ($model->relationLoaded($key)) {
+            if ($model->isAttributeCoerced($key)) {
                 continue;
             }
 

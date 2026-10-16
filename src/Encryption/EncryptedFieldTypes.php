@@ -21,6 +21,7 @@ use function explode;
 use function filter_var;
 use function in_array;
 use function is_array;
+use function is_int;
 use function is_numeric;
 use function is_scalar;
 use function is_string;
@@ -36,29 +37,23 @@ use function substr;
 
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
-use const PHP_INT_MAX;
-use const PHP_INT_MIN;
 
 /**
- * Bridges the bsonType declared for an encrypted field in the
- * encryptedFieldsMap to the model: it derives the Eloquent cast from the
- * bsonType, and coerces values to the native BSON type before they are
- * written.
+ * Derives the Eloquent cast of an encrypted field from the bsonType declared
+ * in the encryptedFieldsMap, and coerces the value to that BSON type on write.
  *
- * Automatic encryption encrypts a value according to the declared bsonType and
- * rejects a value of another BSON type. Values that come from an HTTP form, a
- * JSON API or a CSV import are strings, so they are coerced here rather than
- * stored as strings or rejected by the driver.
+ * Automatic encryption rejects a value of another BSON type, and a value that
+ * comes from a form or a JSON payload is a string, so it is coerced here
+ * rather than stored as a string or rejected by the driver.
  *
  * @internal
  */
 final class EncryptedFieldTypes
 {
     /**
-     * Eloquent cast derived from each bsonType. Null means the native read-side
-     * value is already correct: the driver type map returns embedded documents
-     * as arrays and strings as strings. No cast is derived for "decimal"
-     * because a bare "decimal" cast is invalid: the scale is mandatory.
+     * Eloquent cast derived from each bsonType. Null means the driver already
+     * returns the correct native value, or no cast can store the type: a bare
+     * "decimal" cast is invalid, the scale is mandatory.
      */
     private const CASTS = [
         'string' => null,
@@ -67,8 +62,7 @@ final class EncryptedFieldTypes
         'double' => 'float',
         'decimal' => null,
         'bool' => 'boolean',
-        // A BSON date holds a full timestamp, so the datetime cast keeps the
-        // time, which the date cast would truncate.
+        // "datetime" keeps the time of a BSON date, which "date" would truncate.
         'date' => 'datetime',
         'object' => null,
         'array' => null,
@@ -99,9 +93,7 @@ final class EncryptedFieldTypes
 
     /**
      * The bsonType declared for each encrypted field of the collection of a
-     * model, keyed by field path. Empty when the model has no database
-     * connection, or its connection is not a MongoDB connection, or the
-     * collection is not in the encryptedFieldsMap.
+     * model, keyed by field path. Empty when the collection is not encrypted.
      *
      * @return array<string, string>
      */
@@ -160,9 +152,6 @@ final class EncryptedFieldTypes
                 continue;
             }
 
-            // The native read-side value is already correct for a bsonType
-            // without a cast: the driver type map returns embedded documents as
-            // arrays and strings as strings.
             $cast = self::CASTS[$bsonType] ?? null;
             if ($cast !== null) {
                 $casts[$path] = $cast;
@@ -261,9 +250,8 @@ final class EncryptedFieldTypes
             'bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value,
             'date' => $dateConverter === null ? $value : $dateConverter($value),
             'string' => is_scalar($value) || $value instanceof Stringable ? (string) $value : $value,
-            // An embedded document is stored natively, never JSON-encoded. Only
-            // a plain object is converted: any other object (a BSON type, a
-            // model, a collection) is a value of its own and is left untouched.
+            // Only a plain object is converted: any other object is a value of
+            // its own and is left untouched.
             'object' => $value instanceof stdClass ? self::toDocumentArray($value) : $value,
             default => $value,
         };
@@ -285,11 +273,16 @@ final class EncryptedFieldTypes
 
     /**
      * Whether a number is outside the signed 64-bit range. An integer written
-     * as digits is compared as text, because a float comparison cannot tell
-     * PHP_INT_MAX from PHP_INT_MAX + 1.
+     * as digits is compared as text, because a float cannot tell PHP_INT_MAX
+     * from PHP_INT_MAX + 1. Any other number is compared as a float, with an
+     * exclusive bound because 2^63 is not a PHP int.
      */
     private static function isOutsideInt64Range(mixed $value): bool
     {
+        if (is_int($value)) {
+            return false;
+        }
+
         if (is_string($value) && preg_match('/^[+-]?\d+$/', $value) === 1) {
             $limit  = str_starts_with($value, '-') ? self::INT64_MIN_ABS : self::INT64_MAX;
             $digits = ltrim(ltrim($value, '+-'), '0');
@@ -300,14 +293,13 @@ final class EncryptedFieldTypes
 
         $number = (float) $value;
 
-        return $number > (float) PHP_INT_MAX || $number < (float) PHP_INT_MIN;
+        return $number >= 2 ** 63 || $number < -(2 ** 63);
     }
 
     /**
-     * The object as an array, or the object itself when its properties would be
-     * encoded as a BSON array. An empty object or one whose property names are
-     * sequential numbers is a BSON document, so the array form would change its
-     * type and automatic encryption would reject it.
+     * The object as an array, or the object itself when the array form would be
+     * encoded as a BSON array: automatic encryption rejects that for a field
+     * declared as a document.
      *
      * @return array<array-key, mixed>|stdClass
      */

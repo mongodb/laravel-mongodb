@@ -103,6 +103,21 @@ final class EncryptedEmbeddedTest extends TestCase
         self::assertSame('1500', $parent->getAttributes()['address']['label']['amount']);
     }
 
+    public function testCoercesANestedRelationThatWasOnlyLoaded(): void
+    {
+        // Loading the relation, or writing a sub-field by its dotted path, does
+        // not coerce the raw attribute. Associating the model must coerce it,
+        // even though the relation is loaded.
+        $item = new EncryptedEmbeddedItem(['label' => ['amount' => '1400']]);
+        $item->load('label');
+        $item->setAttribute('label.amount', '1500');
+
+        $parent = new EncryptedEmbedded(['name' => 'Jane']);
+        $parent->address()->associate($item);
+
+        self::assertSame(1500, $parent->getAttributes()['address']['label']['amount']);
+    }
+
     public function testValuesThatCannotBeConvertedAreLeftUntouched(): void
     {
         $parent = new EncryptedEmbedded();

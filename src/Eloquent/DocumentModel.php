@@ -88,6 +88,16 @@ trait DocumentModel
     private array $unset = [];
 
     /**
+     * The attributes already coerced to their encrypted BSON type by a nested
+     * relation. Walking them again from the parent relation would undo the
+     * custom casts of the nested model, which are lost when the relation is
+     * rebuilt from the raw attributes.
+     *
+     * @var array<string, true>
+     */
+    private array $coercedAttributes = [];
+
+    /**
      * Custom accessor for the model's id.
      *
      * @param  mixed $value
@@ -294,9 +304,8 @@ trait DocumentModel
         }
 
         // Automatic encryption rejects a value whose BSON type does not match
-        // the bsonType declared in the encryptedFieldsMap. Coerce the value to
-        // that type on write, so a form or JSON string is stored as declared
-        // instead of being rejected. A custom cast owns its value.
+        // the declared bsonType, so a form or JSON string is coerced here.
+        // A custom cast owns its value.
         if ($value !== null && ! $this->isClassCastable($key)) {
             $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
 
@@ -328,7 +337,32 @@ trait DocumentModel
         // Setting an attribute cancels the unset operation.
         unset($this->unset[$key]);
 
+        // A new value is not the one coerced by the relation.
+        unset($this->coercedAttributes[$key]);
+
         return parent::setAttribute($key, $value);
+    }
+
+    /**
+     * Mark an attribute of an embedded document as coerced by the relation
+     * that wrote it.
+     *
+     * @internal
+     */
+    public function markAttributeAsCoerced(string $key): void
+    {
+        $this->coercedAttributes[$key] = true;
+    }
+
+    /**
+     * Whether an attribute of an embedded document was coerced by the relation
+     * that wrote it.
+     *
+     * @internal
+     */
+    public function isAttributeCoerced(string $key): bool
+    {
+        return isset($this->coercedAttributes[$key]);
     }
 
     /** @inheritdoc */
@@ -414,10 +448,8 @@ trait DocumentModel
     /** @inheritdoc */
     public function getCasts()
     {
-        // Derive a cast from the bsonType declared for each encrypted field of
-        // the collection, so the value read back has the declared type. A cast
-        // declared by the developer is kept, but reported when it cannot store
-        // that BSON type.
+        // The value read back must have the type declared in the
+        // encryptedFieldsMap, which a derived cast provides.
         $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
 
         if ($fieldTypes === []) {
