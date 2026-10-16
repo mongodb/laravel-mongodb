@@ -18,7 +18,6 @@ use function array_flip;
 use function array_intersect_key;
 use function array_key_exists;
 use function array_key_first;
-use function array_reduce;
 use function array_values;
 use function base64_decode;
 use function is_array;
@@ -170,13 +169,19 @@ final class AutoEncryption
      */
     public function encryptedFieldTypes(string $collection): array
     {
-        return $this->encryptedFieldTypes[$collection] ??= $this->isAutoEncryptionEnabled($collection)
-            ? array_reduce(
-                $this->encryptedFieldsFor($collection),
-                static fn (array $types, array $field): array => $types + [$field['path'] => $field['bsonType']],
-                [],
-            )
-            : [];
+        if (isset($this->encryptedFieldTypes[$collection])) {
+            return $this->encryptedFieldTypes[$collection];
+        }
+
+        $types = [];
+
+        if ($this->isAutoEncryptionEnabled($collection)) {
+            foreach ($this->encryptedFieldsFor($collection) as $field) {
+                $types[$field['path']] = $field['bsonType'];
+            }
+        }
+
+        return $this->encryptedFieldTypes[$collection] = $types;
     }
 
     /**
