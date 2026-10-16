@@ -48,6 +48,8 @@ class EmbedsOne extends EmbedsOneOrMany
      */
     public function performInsert(Model $model)
     {
+        $this->coerceEncryptedAttributes($model);
+
         // Create a new key if needed.
         if (($model->getKeyName() === '_id' || $model->getKeyName() === 'id') && ! $model->getKey()) {
             $model->setAttribute($model->getKeyName(), new ObjectID());
@@ -77,6 +79,8 @@ class EmbedsOne extends EmbedsOneOrMany
      */
     public function performUpdate(Model $model)
     {
+        $this->coerceEncryptedAttributes($model);
+
         if ($this->isNested()) {
             $this->associate($model);
 
@@ -127,6 +131,8 @@ class EmbedsOne extends EmbedsOneOrMany
      */
     public function associate(Model $model)
     {
+        $this->coerceEncryptedAttributes($model);
+
         return $this->setEmbedded($model->getAttributes());
     }
 

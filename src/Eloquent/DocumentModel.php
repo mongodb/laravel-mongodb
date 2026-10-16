@@ -27,6 +27,7 @@ use MongoDB\BSON\Type;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 use MongoDB\Laravel\Encryption\AutoEncryption;
+use MongoDB\Laravel\Encryption\EncryptedFieldTypes;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use ReflectionProperty;
 use Stringable;
@@ -292,6 +293,17 @@ trait DocumentModel
             };
         }
 
+        // Automatic encryption rejects a value whose BSON type does not match
+        // the declared bsonType, so a form or JSON string is coerced here.
+        // A custom cast owns its value.
+        if ($value !== null && ! $this->isClassCastable($key)) {
+            $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
+
+            if ($fieldTypes !== []) {
+                $value = EncryptedFieldTypes::coerceField($fieldTypes, $key, $value, $this->fromDateTime(...));
+            }
+        }
+
         // Reject a MongoDB operator as a primary key, then convert _id to ObjectID.
         if ($key === '_id' || $key === 'id') {
             QueryBuilder::assertKeyIsNotOperator($value);
@@ -401,7 +413,15 @@ trait DocumentModel
     /** @inheritdoc */
     public function getCasts()
     {
-        return $this->casts;
+        // The value read back must have the type declared in the
+        // encryptedFieldsMap, which a derived cast provides.
+        $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
+
+        if ($fieldTypes === []) {
+            return $this->casts;
+        }
+
+        return EncryptedFieldTypes::mergeCasts(static::class, $this->casts, $fieldTypes);
     }
 
     /** @inheritdoc */
