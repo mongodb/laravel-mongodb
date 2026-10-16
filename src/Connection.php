@@ -6,6 +6,7 @@ namespace MongoDB\Laravel;
 
 use Composer\InstalledVersions;
 use Illuminate\Database\Connection as BaseConnection;
+use Illuminate\Database\Events\QueryExecuted;
 use InvalidArgumentException;
 use MongoDB\Client;
 use MongoDB\Collection;
@@ -130,6 +131,8 @@ class Connection extends BaseConnection
      */
     public function getCollection($name): Collection
     {
+        $this->syncCommandSubscriber();
+
         return $this->db->getCollection($this->tablePrefix . $name);
     }
 
@@ -163,6 +166,8 @@ class Connection extends BaseConnection
      */
     public function getDatabase(?string $name = null): Database
     {
+        $this->syncCommandSubscriber();
+
         if ($name && $name !== $this->database) {
             return $this->connection->getDatabase($name);
         }
@@ -189,6 +194,8 @@ class Connection extends BaseConnection
      */
     public function getClient(): ?Client
     {
+        $this->syncCommandSubscriber();
+
         return $this->connection;
     }
 
@@ -198,10 +205,7 @@ class Connection extends BaseConnection
     {
         parent::enableQueryLog();
 
-        if (! $this->commandSubscriber) {
-            $this->commandSubscriber = new CommandSubscriber($this);
-            $this->connection->addSubscriber($this->commandSubscriber);
-        }
+        $this->syncCommandSubscriber();
     }
 
     #[Override]
@@ -209,10 +213,7 @@ class Connection extends BaseConnection
     {
         parent::disableQueryLog();
 
-        if ($this->commandSubscriber) {
-            $this->connection->removeSubscriber($this->commandSubscriber);
-            $this->commandSubscriber = null;
-        }
+        $this->syncCommandSubscriber();
     }
 
     #[Override]
@@ -223,7 +224,7 @@ class Connection extends BaseConnection
         } finally {
             // The parent method enable query log using enableQueryLog()
             // but disables it by setting $loggingQueries to false. We need to
-            // remove the subscriber for performance.
+            // remove the subscriber when nothing else consumes the query events.
             if (! $this->loggingQueries) {
                 $this->disableQueryLog();
             }
@@ -374,6 +375,13 @@ class Connection extends BaseConnection
     public function disconnect()
     {
         $this->disableQueryLog();
+
+        // The client outlives the connection, so detach the subscriber explicitly.
+        if ($this->connection !== null && $this->commandSubscriber !== null) {
+            $this->connection->removeSubscriber($this->commandSubscriber);
+        }
+
+        $this->commandSubscriber = null;
         $this->connection = null;
     }
 
@@ -500,6 +508,9 @@ class Connection extends BaseConnection
      */
     public function __call($method, $parameters)
     {
+        // Methods of the database object run commands, too.
+        $this->syncCommandSubscriber();
+
         return $this->db->$method(...$parameters);
     }
 
@@ -524,6 +535,49 @@ class Connection extends BaseConnection
     public function getServerVersion(): string
     {
         return $this->db->command(['buildInfo' => 1])->toArray()[0]['version'];
+    }
+
+    /** Whether something consumes the query events: the query log or a listener. */
+    private function isQueryWatched(): bool
+    {
+        return $this->loggingQueries || (bool) $this->events?->hasListeners(QueryExecuted::class);
+    }
+
+    /**
+     * Attach or detach the command subscriber to match the consumers of the
+     * query events, so that MongoDB connections report commands like SQL
+     * connections do.
+     *
+     * @internal Called by the query builders before running a command.
+     */
+    public function syncCommandSubscriber(): void
+    {
+        if ($this->connection === null) {
+            return;
+        }
+
+        if (! $this->isQueryWatched()) {
+            // The consumer may have been removed since the previous command.
+            $this->detachCommandSubscriber();
+
+            return;
+        }
+
+        if ($this->commandSubscriber === null) {
+            $this->commandSubscriber = new CommandSubscriber($this);
+            $this->connection->addSubscriber($this->commandSubscriber);
+        }
+    }
+
+    /** Detach the command subscriber when nothing consumes the query events. */
+    private function detachCommandSubscriber(): void
+    {
+        if ($this->commandSubscriber === null || $this->isQueryWatched()) {
+            return;
+        }
+
+        $this->connection->removeSubscriber($this->commandSubscriber);
+        $this->commandSubscriber = null;
     }
 
     public static function getVersion(): string

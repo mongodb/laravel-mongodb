@@ -586,7 +586,7 @@ class Builder extends BaseBuilder
                 throw new BadMethodCallException('Aggregation builder does not support previous query-builder instructions. Use a $match stage instead.');
             }
 
-            return new AggregationBuilder($this->collection, $this->options);
+            return new AggregationBuilder($this->collection, $this->options, $this->connection);
         }
 
         $this->aggregate = [
@@ -1896,9 +1896,14 @@ class Builder extends BaseBuilder
 
     /**
      * Apply the connection's session to options if it's not already specified.
+     *
+     * Every command goes through this method, so the connection also checks here
+     * that the query events are reported.
      */
     private function inheritConnectionOptions(array $options = []): array
     {
+        $this->connection->syncCommandSubscriber();
+
         $queryTimeout = $this->timeout ? (int) ($this->timeout * 1000) : $this->connection->getConfig('options.maxTimeMS');
 
         if ($queryTimeout !== null) {

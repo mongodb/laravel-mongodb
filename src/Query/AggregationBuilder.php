@@ -12,6 +12,7 @@ use MongoDB\Builder\BuilderEncoder;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Collection;
 use MongoDB\Driver\CursorInterface;
+use MongoDB\Laravel\Connection;
 
 use function array_replace;
 use function collect;
@@ -25,6 +26,7 @@ class AggregationBuilder
     public function __construct(
         private Collection $collection,
         private readonly array $options = [],
+        private readonly ?Connection $connection = null,
     ) {
     }
 
@@ -83,6 +85,8 @@ class AggregationBuilder
      */
     private function execute(array $options): CursorInterface&Iterator
     {
+        $this->connection?->syncCommandSubscriber();
+
         $encoder = new BuilderEncoder();
         $pipeline = $encoder->encode($this->getPipeline());
 
