@@ -199,8 +199,12 @@ final class EncryptedFieldTypes
      * @param callable|null         $dateConverter Converts a value to the date
      *                                             type of the model, applied to
      *                                             a "date" field.
+     * @param array<string, true>   $skipPaths     Sub-paths of the embedded
+     *                                             document whose value is owned
+     *                                             by a custom cast of the
+     *                                             nested model that wrote it.
      */
-    public static function coerceField(array $fieldTypes, string $key, mixed $value, ?callable $dateConverter = null): mixed
+    public static function coerceField(array $fieldTypes, string $key, mixed $value, ?callable $dateConverter = null, array $skipPaths = []): mixed
     {
         if ($value === null) {
             return null;
@@ -224,7 +228,7 @@ final class EncryptedFieldTypes
             return $value;
         }
 
-        return self::coerceEmbedded($children, $value, $dateConverter);
+        return self::coerceEmbedded($children, $value, $dateConverter, $skipPaths);
     }
 
     /**
@@ -317,8 +321,9 @@ final class EncryptedFieldTypes
      *
      * @param array<string, string> $fieldTypes Map of sub-path to bsonType,
      *                                          relative to the embedded document.
+     * @param array<string, true>   $skipPaths  Sub-paths owned by a custom cast.
      */
-    private static function coerceEmbedded(array $fieldTypes, mixed $value, ?callable $dateConverter): mixed
+    private static function coerceEmbedded(array $fieldTypes, mixed $value, ?callable $dateConverter, array $skipPaths = []): mixed
     {
         if ($value instanceof stdClass) {
             $value = self::toDocumentArray($value);
@@ -329,6 +334,10 @@ final class EncryptedFieldTypes
         }
 
         foreach ($fieldTypes as $path => $bsonType) {
+            if (isset($skipPaths[$path])) {
+                continue;
+            }
+
             $value = self::coercePath($value, explode('.', $path), $bsonType, $dateConverter);
         }
 

@@ -88,16 +88,6 @@ trait DocumentModel
     private array $unset = [];
 
     /**
-     * The attributes already coerced to their encrypted BSON type by a nested
-     * relation. Walking them again from the parent relation would undo the
-     * custom casts of the nested model, which are lost when the relation is
-     * rebuilt from the raw attributes.
-     *
-     * @var array<string, true>
-     */
-    private array $coercedAttributes = [];
-
-    /**
      * Custom accessor for the model's id.
      *
      * @param  mixed $value
@@ -337,32 +327,7 @@ trait DocumentModel
         // Setting an attribute cancels the unset operation.
         unset($this->unset[$key]);
 
-        // A new value is not the one coerced by the relation.
-        unset($this->coercedAttributes[$key]);
-
         return parent::setAttribute($key, $value);
-    }
-
-    /**
-     * Mark an attribute of an embedded document as coerced by the relation
-     * that wrote it.
-     *
-     * @internal
-     */
-    public function markAttributeAsCoerced(string $key): void
-    {
-        $this->coercedAttributes[$key] = true;
-    }
-
-    /**
-     * Whether an attribute of an embedded document was coerced by the relation
-     * that wrote it.
-     *
-     * @internal
-     */
-    public function isAttributeCoerced(string $key): bool
-    {
-        return isset($this->coercedAttributes[$key]);
     }
 
     /** @inheritdoc */

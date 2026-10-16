@@ -35,6 +35,8 @@ final class EncryptedEmbeddedTest extends TestCase
                     'address.amount' => 'int',
                     // EmbedsOne relation nested in "address".
                     'address.label.amount' => 'int',
+                    // "note" is declared by a cast of the embedded model.
+                    'address.label.note' => 'int',
                 ],
             ],
         ]);
@@ -87,20 +89,19 @@ final class EncryptedEmbeddedTest extends TestCase
     public function testACustomCastOfANestedEmbeddedModelOwnsItsValue(): void
     {
         // The nested relation coerces its own model, which honors the custom
-        // cast. Associating the outer model must not coerce that value again.
+        // cast. Associating the outer model must not coerce that value again,
+        // and must still coerce the other sub-fields of the same document.
         $parent = new EncryptedEmbedded(['name' => 'Jane']);
 
         $item = new EncryptedEmbeddedItem();
         $item->setParentRelation($parent->address());
 
-        $label = new EncryptedEmbeddedItem();
-        $label->mergeCasts(['amount' => RecordingCast::class]);
-        $label->amount = '1500';
-        $item->label()->associate($label);
+        $item->label()->associate(new EncryptedEmbeddedItem(['amount' => '1600', 'note' => '1500']));
 
         $parent->address()->associate($item);
 
-        self::assertSame('1500', $parent->getAttributes()['address']['label']['amount']);
+        self::assertSame(1600, $parent->getAttributes()['address']['label']['amount']);
+        self::assertSame('1500', $parent->getAttributes()['address']['label']['note']);
     }
 
     public function testCoercesANestedRelationThatWasOnlyLoaded(): void
