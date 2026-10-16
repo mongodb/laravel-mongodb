@@ -376,10 +376,7 @@ class Connection extends BaseConnection
     {
         $this->disableQueryLog();
 
-        // The client is discarded, so remove the subscriber even when the query
-        // events are still consumed. Dropping the property alone would leave the
-        // subscriber registered on the client, and it would keep reporting
-        // commands through a disconnected connection.
+        // The client outlives the connection, so detach the subscriber explicitly.
         if ($this->connection !== null && $this->commandSubscriber !== null) {
             $this->connection->removeSubscriber($this->commandSubscriber);
         }
@@ -537,25 +534,15 @@ class Connection extends BaseConnection
         return $this->db->command(['buildInfo' => 1])->toArray()[0]['version'];
     }
 
-    /**
-     * Determine whether the MongoDB query events are consumed: the query log is
-     * enabled, or something listens to the QueryExecuted event. Telescope and
-     * Debugbar register such a listener.
-     */
+    /** Whether something consumes the query events: the query log or a listener. */
     private function isQueryWatched(): bool
     {
         return $this->loggingQueries || (bool) $this->events?->hasListeners(QueryExecuted::class);
     }
 
     /**
-     * Attach the command subscriber when the query events are consumed.
-     *
-     * Laravel dispatches the QueryExecuted event from every SQL connection, whether
-     * or not the query log is enabled. MongoDB commands are reported by a driver
-     * subscriber, which must be attached to the client. Attaching it as soon as the
-     * events are consumed gives MongoDB connections the same behaviour as SQL ones,
-     * and keeps the cost of building the JSON document for every command out of the
-     * applications that consume nothing.
+     * Attach the command subscriber if something consumes the query events, so
+     * that MongoDB connections report commands like SQL connections do.
      *
      * @internal Called by the query builder before running a command.
      */
@@ -569,9 +556,7 @@ class Connection extends BaseConnection
         $this->connection->addSubscriber($this->commandSubscriber);
     }
 
-    /**
-     * Detach the command subscriber when nothing consumes the query events.
-     */
+    /** Detach the command subscriber when nothing consumes the query events. */
     private function detachCommandSubscriber(): void
     {
         if ($this->commandSubscriber === null || $this->isQueryWatched()) {

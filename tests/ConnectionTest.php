@@ -434,8 +434,8 @@ class ConnectionTest extends TestCase
 
     public function testQueryEventsAreDispatchedForABuilderCreatedBeforeTheListener()
     {
-        // The collection is resolved when the builder is created, so the query
-        // is executed without going through the connection again.
+        // The builder resolves its collection when it is created, before the
+        // listener exists.
         $builder = DB::table('items');
 
         $queries = [];

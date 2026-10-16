@@ -1897,10 +1897,8 @@ class Builder extends BaseBuilder
     /**
      * Apply the connection's session to options if it's not already specified.
      *
-     * Every method that runs a command calls this one, so it is also the place
-     * where the connection checks that the query events are still reported. A
-     * builder that was created before a listener was registered would otherwise
-     * run without reporting anything.
+     * Every command goes through this method, so the connection also checks here
+     * that the query events are reported.
      */
     private function inheritConnectionOptions(array $options = []): array
     {
