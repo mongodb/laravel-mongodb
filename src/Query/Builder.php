@@ -1741,21 +1741,54 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * A list matches the arrays holding every one of its items, any other value is a single item.
+     * A list matches the arrays holding every one of its items. An object matches
+     * by dotted path, so it matches a partial document, like Laravel. Any other
+     * value is a single item.
      */
     protected function compileWhereJsonContains(array $where): array
     {
-        $operator = ['$all' => $this->jsonItems($where['value'])];
+        $value = $where['value'] instanceof Arrayable ? $where['value']->toArray() : $where['value'];
+
+        if (is_array($value) && ! array_is_list($value)) {
+            $predicates = $this->jsonObjectPredicates($where['column'], $value);
+
+            if ($where['not']) {
+                return $this->negateJsonObject($predicates);
+            }
+
+            $predicate = [];
+            foreach ($predicates as $condition) {
+                $predicate += $condition;
+            }
+
+            return $predicate;
+        }
+
+        // An empty array is contained in any array or document. "$all" with an
+        // empty array matches nothing, so the type is tested instead.
+        $operator = $value === []
+            ? ['$type' => ['array', 'object']]
+            : ['$all' => $this->jsonItems($value)];
 
         return [$where['column'] => $where['not'] ? ['$not' => $operator] : $operator];
     }
 
     /**
-     * A list matches the arrays holding at least one of its items, any other value is a single item.
+     * A list matches the arrays holding at least one of its items. An object
+     * matches when any of its key-value pairs is present, like Laravel. Any other
+     * value is a single item.
      */
     protected function compileWhereJsonOverlaps(array $where): array
     {
-        return [$where['column'] => [($where['not'] ? '$nin' : '$in') => $this->jsonItems($where['value'])]];
+        $value = $where['value'] instanceof Arrayable ? $where['value']->toArray() : $where['value'];
+
+        if (is_array($value) && ! array_is_list($value)) {
+            $predicates = $this->jsonObjectPredicates($where['column'], $value);
+
+            return $where['not'] ? $this->negateJsonObject($predicates) : ['$or' => $predicates];
+        }
+
+        return [$where['column'] => [($where['not'] ? '$nin' : '$in') => $this->jsonItems($value)]];
     }
 
     protected function compileWhereJsonContainsKey(array $where): array
@@ -1764,21 +1797,30 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Only arrays have a length, "$size" fails the whole query on any other value.
+     * Counts the elements of an array and the keys of a document, like Laravel.
+     * "$size" fails the whole query on any other value, so the type is checked
+     * first, then the comparison is applied to the count.
      */
     protected function compileWhereJsonLength(array $where): array
     {
+        $column = '$' . $where['column'];
+        $operator = $this->compileExprOperator($where);
+        $value = (int) $where['value'];
+
         return [
             '$expr' => [
-                '$cond' => [
-                    'if' => ['$isArray' => '$' . $where['column']],
-                    'then' => [
-                        $this->compileExprOperator($where) => [
-                            ['$size' => '$' . $where['column']],
-                            (int) $where['value'],
+                '$switch' => [
+                    'branches' => [
+                        [
+                            'case' => ['$isArray' => $column],
+                            'then' => [$operator => [['$size' => $column], $value]],
+                        ],
+                        [
+                            'case' => ['$eq' => [['$type' => $column], 'object']],
+                            'then' => [$operator => [['$size' => ['$objectToArray' => $column]], $value]],
                         ],
                     ],
-                    'else' => false,
+                    'default' => false,
                 ],
             ],
         ];
@@ -1791,6 +1833,60 @@ class Builder extends BaseBuilder
         }
 
         return is_array($value) && array_is_list($value) ? $value : [$value];
+    }
+
+    /**
+     * Flatten a JSON object into dotted-path predicates, one per leaf key, so an
+     * object candidate matches a partial document, like Laravel. A nested object
+     * is flattened further, a list is compared with "$all".
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function jsonObjectPredicates(string $path, array $value): array
+    {
+        $predicates = [];
+
+        foreach ($value as $key => $item) {
+            if ($item instanceof Arrayable) {
+                $item = $item->toArray();
+            }
+
+            $keyPath = $path . '.' . $key;
+
+            if (is_array($item) && ! array_is_list($item)) {
+                $predicates = array_merge($predicates, $this->jsonObjectPredicates($keyPath, $item));
+            } elseif (is_array($item)) {
+                $predicates[] = [$keyPath => ['$all' => $item]];
+            } else {
+                $predicates[] = [$keyPath => $item];
+            }
+        }
+
+        return $predicates;
+    }
+
+    /**
+     * Negate the dotted-path predicates of a JSON object. A single predicate is
+     * negated on its own field, so an index on that field can still be used.
+     * Several predicates need "$nor", which cannot use an index.
+     *
+     * @param list<array<string, mixed>> $predicates
+     *
+     * @return array<string, mixed>
+     */
+    private function negateJsonObject(array $predicates): array
+    {
+        if (count($predicates) !== 1) {
+            return ['$nor' => $predicates];
+        }
+
+        $key = array_key_first($predicates[0]);
+        $value = $predicates[0][$key];
+
+        // "$all" is already an operator document. A scalar goes through "$eq",
+        // which forces a literal comparison, so a value that looks like an
+        // operator is never read as one.
+        return [$key => ['$not' => is_array($value) ? $value : ['$eq' => $value]]];
     }
 
     protected function compileWhereRaw(array $where): mixed

@@ -386,8 +386,81 @@ class QueryBuilderTest extends TestCase
         $this->assertSame(['fork', 'spoon'], $names(DB::table('items')->whereJsonDoesntContainKey('options->colors')));
         $this->assertSame(['fork'], $names(DB::table('items')->whereJsonLength('tags', 1)));
         $this->assertSame(['knife'], $names(DB::table('items')->whereJsonLength('tags', '>', 1)));
+        $this->assertSame(['knife'], $names(DB::table('items')->whereJsonLength('options', 2)));
+        $this->assertSame(['fork'], $names(DB::table('items')->whereJsonLength('options', 1)));
+        $this->assertSame(['fork', 'knife'], $names(DB::table('items')->whereJsonLength('options', '>=', 1)));
         $this->assertSame(['knife'], $names(DB::table('items')->where('options->enabled', true)));
         $this->assertSame(['fork'], $names(DB::table('items')->where('options->enabled', false)));
+
+        // An empty array is contained in any array or document, never in a scalar.
+        $this->assertSame(['fork', 'knife'], $names(DB::table('items')->whereJsonContains('tags', [])));
+        $this->assertSame(['fork', 'knife'], $names(DB::table('items')->whereJsonContains('options', [])));
+        $this->assertSame(['spoon'], $names(DB::table('items')->whereJsonDoesntContain('tags', [])));
+    }
+
+    public function testWhereJsonDocument()
+    {
+        DB::table('items')->insert([
+            // Embedded documents with extra fields, and a nested document.
+            ['name' => 'a', 'options' => ['enabled' => true, 'theme' => 'dark', 'size' => ['w' => 10, 'h' => 20], 'colors' => ['red', 'blue']]],
+            ['name' => 'b', 'options' => ['enabled' => true, 'theme' => 'light']],
+            // The same embedded document element, in a different field order.
+            ['name' => 'c', 'options' => ['enabled' => false, 'theme' => 'light'], 'parts' => [['name' => 'knife', 'qty' => 1]]],
+            ['name' => 'd', 'options' => ['enabled' => false, 'theme' => 'light'], 'parts' => [['qty' => 1, 'name' => 'knife']]],
+            // Value stored as a JSON string, not a native BSON array.
+            ['name' => 'e', 'options' => ['enabled' => false, 'theme' => 'light'], 'tags' => '["steel"]'],
+        ]);
+
+        $names = fn ($query) => $query->orderBy('name')->pluck('name')->all();
+
+        // An object matches a partial document, like Laravel.
+        $this->assertSame(['a', 'b'], $names(DB::table('items')->whereJsonContains('options', ['enabled' => true])));
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContains('options', ['size' => ['w' => 10]])));
+
+        // A nested object is flattened into dotted paths, a nested list is compared with $all.
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContains('options', ['size' => ['w' => 10, 'h' => 20]])));
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContains('options', ['colors' => ['red', 'blue']])));
+
+        $this->assertSame(['b', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntContain('options', ['theme' => 'dark'])));
+
+        // A single key is negated on its field, a list with "$not" on "$all".
+        $this->assertSame(['b', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntOverlap('options', ['theme' => 'dark'])));
+        $this->assertSame(['b', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntContain('options', ['colors' => ['red', 'blue']])));
+
+        // An object also matches an array of embedded documents, in any field order.
+        $this->assertSame(['c', 'd'], $names(DB::table('items')->whereJsonContains('parts', ['name' => 'knife', 'qty' => 1])));
+
+        // A list matches whole elements by BSON equality, sensitive to field order.
+        $this->assertSame(['c'], $names(DB::table('items')->whereJsonContains('parts', [['name' => 'knife', 'qty' => 1]])));
+
+        // Overlap matches when any key-value pair is present.
+        $this->assertSame(['a', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonOverlaps('options', ['theme' => 'dark', 'enabled' => false])));
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonOverlaps('options', ['size' => ['w' => 10]])));
+
+        // A field stored as a JSON string never matches.
+        $this->assertSame([], $names(DB::table('items')->whereJsonContains('tags', 'steel')));
+    }
+
+    public function testWhereJsonCombined()
+    {
+        DB::table('items')->insert([
+            ['name' => 'a', 'status' => 'active', 'tags' => ['steel', 'sharp'], 'options' => ['enabled' => true, 'theme' => 'dark']],
+            ['name' => 'b', 'status' => 'active', 'tags' => ['wood'], 'options' => ['enabled' => false]],
+            ['name' => 'c', 'status' => 'draft', 'tags' => ['steel'], 'options' => ['enabled' => true]],
+        ]);
+
+        $names = fn ($query) => $query->orderBy('name')->pluck('name')->all();
+
+        // $and between a JSON helper and a regular operator.
+        $this->assertSame(['a'], $names(DB::table('items')->where('status', 'active')->whereJsonContains('tags', 'steel')));
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContains('options', ['enabled' => true])->where('status', 'active')));
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonLength('tags', 2)->where('status', 'active')));
+        $this->assertSame(['b'], $names(DB::table('items')->whereJsonDoesntContain('options', ['enabled' => true])->where('status', 'active')));
+
+        // $or between a JSON helper and a regular operator.
+        $this->assertSame(['a', 'c'], $names(DB::table('items')->where('status', 'draft')->orWhereJsonContains('tags', 'sharp')));
+        $this->assertSame(['a', 'c'], $names(DB::table('items')->whereJsonContainsKey('options->theme')->orWhere('status', 'draft')));
+        $this->assertSame(['a', 'c'], $names(DB::table('items')->whereJsonOverlaps('options', ['theme' => 'dark'])->orWhere('status', 'draft')));
     }
 
     public function testRaw()

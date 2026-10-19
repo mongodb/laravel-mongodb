@@ -1026,13 +1026,58 @@ class BuilderTest extends TestCase
         ];
 
         yield 'whereJsonContains document' => [
-            ['find' => [['items' => ['$all' => [['name' => 'knife']]]], []]],
+            ['find' => [['items.name' => 'knife'], []]],
             fn (Builder $builder) => $builder->whereJsonContains('items', ['name' => 'knife']),
+        ];
+
+        yield 'whereJsonContains nested document' => [
+            ['find' => [['options.size.width' => 10, 'options.size.height' => 20], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('options', ['size' => ['width' => 10, 'height' => 20]]),
+        ];
+
+        yield 'whereJsonContains deeply nested document' => [
+            ['find' => [['a.b.c' => 1, 'a.b.d' => 2], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('a', ['b' => ['c' => 1, 'd' => 2]]),
+        ];
+
+        yield 'whereJsonContains document with list' => [
+            ['find' => [['options.colors' => ['$all' => ['red', 'blue']]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('options', ['colors' => ['red', 'blue']]),
+        ];
+
+        yield 'whereJsonContains list of documents' => [
+            ['find' => [['items' => ['$all' => [['name' => 'knife', 'qty' => 1]]]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('items', [['name' => 'knife', 'qty' => 1]]),
+        ];
+
+        yield 'whereJsonContains empty list' => [
+            ['find' => [['tags' => ['$type' => ['array', 'object']]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('tags', []),
         ];
 
         yield 'whereJsonDoesntContain' => [
             ['find' => [['tags' => ['$not' => ['$all' => ['mongodb']]]], []]],
             fn (Builder $builder) => $builder->whereJsonDoesntContain('tags', 'mongodb'),
+        ];
+
+        yield 'whereJsonDoesntContain document' => [
+            ['find' => [['options.enabled' => ['$not' => ['$eq' => true]]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntContain('options', ['enabled' => true]),
+        ];
+
+        yield 'whereJsonDoesntContain empty list' => [
+            ['find' => [['tags' => ['$not' => ['$type' => ['array', 'object']]]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntContain('tags', []),
+        ];
+
+        yield 'whereJsonDoesntContain document with list' => [
+            ['find' => [['options.colors' => ['$not' => ['$all' => ['red', 'blue']]]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntContain('options', ['colors' => ['red', 'blue']]),
+        ];
+
+        yield 'whereJsonDoesntContain multi-key document' => [
+            ['find' => [['$nor' => [['options.enabled' => true], ['options.theme' => 'dark']]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntContain('options', ['enabled' => true, 'theme' => 'dark']),
         ];
 
         yield 'orWhereJsonContains' => [
@@ -1045,9 +1090,34 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->whereJsonOverlaps('tags', ['en', 'fr']),
         ];
 
+        yield 'whereJsonOverlaps document' => [
+            ['find' => [['$or' => [['options.enabled' => true], ['options.theme' => 'dark']]], []]],
+            fn (Builder $builder) => $builder->whereJsonOverlaps('options', ['enabled' => true, 'theme' => 'dark']),
+        ];
+
+        yield 'whereJsonOverlaps nested document' => [
+            ['find' => [['$or' => [['options.size.width' => 10], ['options.theme' => 'dark']]], []]],
+            fn (Builder $builder) => $builder->whereJsonOverlaps('options', ['size' => ['width' => 10], 'theme' => 'dark']),
+        ];
+
         yield 'whereJsonDoesntOverlap' => [
             ['find' => [['tags' => ['$nin' => ['en']]], []]],
             fn (Builder $builder) => $builder->whereJsonDoesntOverlap('tags', 'en'),
+        ];
+
+        yield 'whereJsonDoesntOverlap document' => [
+            ['find' => [['$nor' => [['options.enabled' => true], ['options.theme' => 'dark']]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntOverlap('options', ['enabled' => true, 'theme' => 'dark']),
+        ];
+
+        yield 'whereJsonDoesntOverlap nested document' => [
+            ['find' => [['$nor' => [['options.size.width' => 10], ['options.theme' => 'dark']]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntOverlap('options', ['size' => ['width' => 10], 'theme' => 'dark']),
+        ];
+
+        yield 'whereJsonDoesntOverlap single document' => [
+            ['find' => [['options.enabled' => ['$not' => ['$eq' => true]]], []]],
+            fn (Builder $builder) => $builder->whereJsonDoesntOverlap('options', ['enabled' => true]),
         ];
 
         yield 'whereJsonContainsKey' => [
@@ -1065,10 +1135,18 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$expr' => [
-                            '$cond' => [
-                                'if' => ['$isArray' => '$tags'],
-                                'then' => ['$eq' => [['$size' => '$tags'], 2]],
-                                'else' => false,
+                            '$switch' => [
+                                'branches' => [
+                                    [
+                                        'case' => ['$isArray' => '$tags'],
+                                        'then' => ['$eq' => [['$size' => '$tags'], 2]],
+                                    ],
+                                    [
+                                        'case' => ['$eq' => [['$type' => '$tags'], 'object']],
+                                        'then' => ['$eq' => [['$size' => ['$objectToArray' => '$tags']], 2]],
+                                    ],
+                                ],
+                                'default' => false,
                             ],
                         ],
                     ],
@@ -1083,10 +1161,18 @@ class BuilderTest extends TestCase
                 'find' => [
                     [
                         '$expr' => [
-                            '$cond' => [
-                                'if' => ['$isArray' => '$options.languages'],
-                                'then' => ['$gt' => [['$size' => '$options.languages'], 1]],
-                                'else' => false,
+                            '$switch' => [
+                                'branches' => [
+                                    [
+                                        'case' => ['$isArray' => '$options.languages'],
+                                        'then' => ['$gt' => [['$size' => '$options.languages'], 1]],
+                                    ],
+                                    [
+                                        'case' => ['$eq' => [['$type' => '$options.languages'], 'object']],
+                                        'then' => ['$gt' => [['$size' => ['$objectToArray' => '$options.languages']], 1]],
+                                    ],
+                                ],
+                                'default' => false,
                             ],
                         ],
                     ],
@@ -1094,6 +1180,84 @@ class BuilderTest extends TestCase
                 ],
             ],
             fn (Builder $builder) => $builder->whereJsonLength('options->languages', '>', 1),
+        ];
+
+        yield 'whereJsonContains combined with where' => [
+            ['find' => [['$and' => [['name' => 'acme'], ['tags' => ['$all' => ['mongodb']]]]], []]],
+            fn (Builder $builder) => $builder->where('name', 'acme')->whereJsonContains('tags', 'mongodb'),
+        ];
+
+        yield 'whereJsonContains document combined with where' => [
+            ['find' => [['$and' => [['name' => 'acme'], ['options.enabled' => true]]], []]],
+            fn (Builder $builder) => $builder->where('name', 'acme')->whereJsonContains('options', ['enabled' => true]),
+        ];
+
+        yield 'whereJsonDoesntContain document combined with where' => [
+            ['find' => [['$and' => [['name' => 'acme'], ['options.enabled' => ['$not' => ['$eq' => true]]]]], []]],
+            fn (Builder $builder) => $builder->where('name', 'acme')->whereJsonDoesntContain('options', ['enabled' => true]),
+        ];
+
+        yield 'orWhereJsonContains document combined with where' => [
+            ['find' => [['$or' => [['name' => 'acme'], ['options.enabled' => true]]], []]],
+            fn (Builder $builder) => $builder->where('name', 'acme')->orWhereJsonContains('options', ['enabled' => true]),
+        ];
+
+        yield 'orWhereJsonContainsKey combined with where' => [
+            ['find' => [['$or' => [['name' => 'acme'], ['options.languages' => ['$exists' => true]]]], []]],
+            fn (Builder $builder) => $builder->where('name', 'acme')->orWhereJsonContainsKey('options->languages'),
+        ];
+
+        yield 'orWhereJsonOverlaps document combined with where' => [
+            [
+                'find' => [
+                    [
+                        '$or' => [
+                            ['name' => 'acme'],
+                            ['$or' => [['options.enabled' => true], ['options.theme' => 'dark']]],
+                        ],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder->where('name', 'acme')->orWhereJsonOverlaps('options', ['enabled' => true, 'theme' => 'dark']),
+        ];
+
+        yield 'whereJsonLength combined with where' => [
+            [
+                'find' => [
+                    [
+                        '$and' => [
+                            ['name' => 'acme'],
+                            [
+                                '$expr' => [
+                                    '$switch' => [
+                                        'branches' => [
+                                            [
+                                                'case' => ['$isArray' => '$tags'],
+                                                'then' => ['$eq' => [['$size' => '$tags'], 2]],
+                                            ],
+                                            [
+                                                'case' => ['$eq' => [['$type' => '$tags'], 'object']],
+                                                'then' => ['$eq' => [['$size' => ['$objectToArray' => '$tags']], 2]],
+                                            ],
+                                        ],
+                                        'default' => false,
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder->where('name', 'acme')->whereJsonLength('tags', 2),
+        ];
+
+        yield 'whereJsonContains combined with whereJsonContainsKey' => [
+            ['find' => [['$and' => [['options.enabled' => true], ['options.theme' => ['$exists' => true]]]], []]],
+            fn (Builder $builder) => $builder
+                ->whereJsonContains('options', ['enabled' => true])
+                ->whereJsonContainsKey('options->theme'),
         ];
 
         $regex = new Regex('^acme$', 'si');

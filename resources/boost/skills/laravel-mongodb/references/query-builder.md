@@ -124,19 +124,50 @@ Post::where('metadata.draft', true)->get();                // dotted path into s
 
 ## JSON where helpers
 
-Laravel's JSON where helpers query arrays and embedded documents. `->` is an
-alias for `.`.
+Laravel's JSON where helpers map to native BSON operators. They read native
+arrays and embedded documents, not values stored as JSON strings. A field written
+by the deprecated `array` cast, or kept as a string with the `json` cast, matches
+nothing: `$all`, `$in` and `$size` never match a string.
+
+`->` is an alias for `.`.
 
 ```php
 Post::whereJsonContains('tags', ['mongo', 'laravel'])->get(); // $all
 Post::whereJsonOverlaps('tags', ['mongo', 'laravel'])->get(); // $in
 Post::whereJsonContainsKey('metadata->draft')->get();         // $exists
-Post::whereJsonLength('tags', '>', 2)->get();                 // $size, arrays only
+Post::whereJsonLength('tags', '>', 2)->get();                 // $size
 Post::where('metadata->draft', true)->get();
 ```
 
-An associative array passed to `whereJsonContains()` or `whereJsonOverlaps()`
-matches a whole array element, not part of one. Use `elemMatch` for that.
+`whereJsonContains()` and `whereJsonOverlaps()` take either a list of values to
+find in an array, or an associative array to find in an embedded document.
+
+A list matches whole array elements, compared with BSON equality, which is
+sensitive to field order and to extra fields.
+
+An associative array matches a partial document, like Laravel: each key is
+compared with its value, and extra keys are allowed. The same works on an array
+of embedded documents, whatever the field order. A nested object is matched the
+same way, a nested array is compared with `$all`.
+
+```php
+Post::whereJsonContains('metadata', ['draft' => true])->get();            // partial object
+Post::whereJsonContains('items', ['name' => 'knife', 'qty' => 1])->get(); // partial element
+```
+
+To match a whole element by exact BSON equality, wrap it in a list:
+
+```php
+Post::whereJsonContains('items', [['name' => 'knife', 'qty' => 1]])->get();
+```
+
+An empty list is contained in any array or document, so
+`whereJsonContains('tags', [])` matches every document where `tags` is an array
+or an object.
+
+`whereJsonLength()` counts the elements of an array and the keys of an embedded
+document, like Laravel. It never matches a scalar, and it accepts the comparison
+operators `=`, `!=`, `<`, `<=`, `>`, `>=`.
 
 ## `where()` and MongoDB operator documents
 
