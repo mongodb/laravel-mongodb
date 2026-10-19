@@ -1733,6 +1733,7 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereJsonBoolean(array $where): array
     {
+        $where['column'] = $this->jsonPath($where['column']);
         $where['value'] = $where['value'] instanceof Expression
             ? $where['value']->getValue($this->grammar) === 'true'
             : (bool) $where['value'];
@@ -1747,20 +1748,16 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereJsonContains(array $where): array
     {
+        $column = $this->jsonPath($where['column']);
         $value = $where['value'] instanceof Arrayable ? $where['value']->toArray() : $where['value'];
 
         if (is_array($value) && ! array_is_list($value)) {
-            $predicate = [];
-            foreach ($this->jsonObjectPredicates($where['column'], $value) as $condition) {
-                $predicate += $condition;
-            }
-
-            return $where['not'] ? $this->negateJsonObject($predicate) : $predicate;
+            return $this->compileJsonObject($column, $value, $where['not']);
         }
 
-        $operator = $this->jsonListOperator($this->jsonItems($value));
+        $predicates = $this->jsonListPredicates($column, $this->jsonItems($value));
 
-        return [$where['column'] => $where['not'] ? ['$not' => $operator] : $operator];
+        return $this->combineJsonPredicates($predicates, $where['not']);
     }
 
     /**
@@ -1770,20 +1767,21 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereJsonOverlaps(array $where): array
     {
+        $column = $this->jsonPath($where['column']);
         $value = $where['value'] instanceof Arrayable ? $where['value']->toArray() : $where['value'];
 
         if (is_array($value) && ! array_is_list($value)) {
-            $predicates = $this->jsonObjectPredicates($where['column'], $value);
+            $predicates = $this->jsonObjectPredicates($column, $value);
 
             return $where['not'] ? $this->negateJsonOverlaps($predicates) : ['$or' => $predicates];
         }
 
-        return [$where['column'] => [($where['not'] ? '$nin' : '$in') => $this->jsonItems($value)]];
+        return [$column => [($where['not'] ? '$nin' : '$in') => $this->jsonItems($value)]];
     }
 
     protected function compileWhereJsonContainsKey(array $where): array
     {
-        return [$where['column'] => ['$exists' => ! $where['not']]];
+        return [$this->jsonPath($where['column']) => ['$exists' => ! $where['not']]];
     }
 
     /**
@@ -1793,7 +1791,7 @@ class Builder extends BaseBuilder
      */
     protected function compileWhereJsonLength(array $where): array
     {
-        $column = '$' . $where['column'];
+        $column = '$' . $this->jsonPath($where['column']);
         $operator = $this->compileExprOperator($where);
         $value = (int) $where['value'];
 
@@ -1816,6 +1814,15 @@ class Builder extends BaseBuilder
         ];
     }
 
+    /**
+     * Translate a JSON path into a MongoDB dotted path. Laravel writes an array
+     * index as "[0]" and a nested key as "->", which is already replaced by ".".
+     */
+    private function jsonPath(string $column): string
+    {
+        return preg_replace('/\[([^\]]+)\]/', '.$1', $column);
+    }
+
     private function jsonItems(mixed $value): array
     {
         if ($value instanceof Arrayable) {
@@ -1826,22 +1833,77 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * The operator matching the items of a list. An empty list is contained in
-     * any array or document, where "$all" with an empty list matches nothing.
+     * The predicates matching a list of items in an array. An empty list is
+     * contained in any array or document, where "$all" with an empty list matches
+     * nothing, so the type is tested instead. "$all" reads an element that is an
+     * operator document as an operator, so a list holding one is compared item by
+     * item with "$eq", which forces a literal comparison.
      *
      * @param list<mixed> $items
      *
+     * @return list<array<string, mixed>>
+     */
+    private function jsonListPredicates(string $path, array $items): array
+    {
+        if ($items === []) {
+            return [[$path => ['$type' => ['array', 'object']]]];
+        }
+
+        foreach ($items as $item) {
+            if (self::firstOperatorKey($item) !== null) {
+                return array_map(static fn (mixed $item): array => [$path => ['$eq' => $item]], $items);
+            }
+        }
+
+        return [[$path => ['$all' => $items]]];
+    }
+
+    /**
+     * Combine predicates with AND. A single predicate is negated on its own
+     * field, so an index on that field can still be used; several predicates need
+     * "$nor".
+     *
+     * @param list<array<string, mixed>> $predicates
+     *
      * @return array<string, mixed>
      */
-    private function jsonListOperator(array $items): array
+    private function combineJsonPredicates(array $predicates, bool $not): array
     {
-        return $items === [] ? ['$type' => ['array', 'object']] : ['$all' => $items];
+        if (count($predicates) === 1) {
+            return $not ? $this->negateJsonPredicate($predicates[0]) : $predicates[0];
+        }
+
+        return [$not ? '$nor' : '$and' => $predicates];
+    }
+
+    /**
+     * Match an object candidate against a partial document, like Laravel. The
+     * keys are flattened into dotted paths, which match keys spread over several
+     * elements of an array. An array is matched with "$elemMatch", which requires
+     * one element to hold every key, and the dotted paths are kept out of arrays
+     * with a type guard.
+     */
+    private function compileJsonObject(string $path, array $value, bool $not): array
+    {
+        $predicates = $this->jsonObjectPredicates($path, $value);
+
+        // A single predicate already matches one array element.
+        if (count($predicates) === 1 && ! $this->jsonMatchesSeveralElements($predicates[0])) {
+            return $this->combineJsonPredicates($predicates, $not);
+        }
+
+        $branches = [
+            [$path => ['$elemMatch' => $this->jsonRelativeDocument($path, $predicates)]],
+            ['$and' => array_merge([[$path => ['$not' => ['$type' => 'array']]]], $predicates)],
+        ];
+
+        return [$not ? '$nor' : '$or' => $branches];
     }
 
     /**
      * Flatten a JSON object into dotted-path predicates, one per leaf key, so an
      * object candidate matches a partial document, like Laravel. A nested object
-     * is flattened further, a list is compared with "$all".
+     * is flattened further, a list is matched with "$all".
      *
      * @return list<array<string, mixed>>
      */
@@ -1859,7 +1921,12 @@ class Builder extends BaseBuilder
             if (is_array($item) && ! array_is_list($item)) {
                 $predicates = array_merge($predicates, $this->jsonObjectPredicates($keyPath, $item));
             } elseif (is_array($item)) {
-                $predicates[] = [$keyPath => $this->jsonListOperator($item)];
+                $predicates = array_merge($predicates, $this->jsonListPredicates($keyPath, $item));
+            } elseif (is_object($item)) {
+                // A document goes through "$eq", which forces a literal
+                // comparison, so a value that looks like an operator is never
+                // read as one.
+                $predicates[] = [$keyPath => ['$eq' => $item]];
             } else {
                 $predicates[] = [$keyPath => $item];
             }
@@ -1869,21 +1936,48 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Negate a JSON object used with "contains". Its keys are combined with AND,
-     * so the whole document is negated at once. A single key is negated on its
-     * own field, so an index on that field can still be used.
+     * The predicates of an object, relative to the object path, as a document
+     * matching one array element. Several predicates on the same key need "$and",
+     * a document cannot hold the same key twice.
      *
-     * @param array<string, mixed> $predicate
+     * @param list<array<string, mixed>> $predicates
      *
      * @return array<string, mixed>
      */
-    private function negateJsonObject(array $predicate): array
+    private function jsonRelativeDocument(string $path, array $predicates): array
     {
-        if (count($predicate) === 1) {
-            return $this->negateJsonPredicate($predicate);
+        $offset = strlen($path) + 1;
+        $relative = [];
+        $duplicate = false;
+
+        foreach ($predicates as $predicate) {
+            $key = substr(array_key_first($predicate), $offset);
+
+            $duplicate = $duplicate || array_key_exists($key, $relative);
+            $relative[$key] = $predicate[array_key_first($predicate)];
         }
 
-        return ['$nor' => [$predicate]];
+        if (! $duplicate) {
+            return $relative;
+        }
+
+        return [
+            '$and' => array_map(
+                static fn (array $predicate): array => [
+                    substr(array_key_first($predicate), $offset) => $predicate[array_key_first($predicate)],
+                ],
+                $predicates,
+            ),
+        ];
+    }
+
+    /** "$all" with several items matches them in any elements of an array. */
+    private function jsonMatchesSeveralElements(array $predicate): bool
+    {
+        $value = $predicate[array_key_first($predicate)];
+        $all = is_array($value) ? $value['$all'] ?? null : null;
+
+        return is_array($all) && count($all) > 1;
     }
 
     /**

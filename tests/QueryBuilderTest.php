@@ -471,6 +471,55 @@ class QueryBuilderTest extends TestCase
         $this->assertSame(['a', 'c'], $names(DB::table('items')->whereJsonOverlaps('options', ['theme' => 'dark'])->orWhere('status', 'draft')));
     }
 
+    public function testWhereJsonArrayElements()
+    {
+        DB::table('items')->insert([
+            // The candidate keys are split over two elements.
+            ['name' => 'split', 'parts' => [['name' => 'knife'], ['qty' => 1]]],
+            // One element holds every key of the candidate.
+            ['name' => 'same', 'parts' => [['name' => 'knife', 'qty' => 1]]],
+            // An embedded document, not an array.
+            ['name' => 'document', 'parts' => ['name' => 'knife', 'qty' => 1]],
+        ]);
+
+        $names = fn ($query) => $query->orderBy('name')->pluck('name')->all();
+
+        // Every key of the candidate must be in the same element.
+        $this->assertSame(['document', 'same'], $names(DB::table('items')->whereJsonContains('parts', ['name' => 'knife', 'qty' => 1])));
+        $this->assertSame(['split'], $names(DB::table('items')->whereJsonDoesntContain('parts', ['name' => 'knife', 'qty' => 1])));
+
+        // A single key matches any element.
+        $this->assertSame(['document', 'same', 'split'], $names(DB::table('items')->whereJsonContains('parts', ['name' => 'knife'])));
+    }
+
+    public function testWhereJsonArrayIndex()
+    {
+        DB::table('items')->insert([
+            ['name' => 'en', 'options' => ['languages' => ['en', 'fr']]],
+            ['name' => 'none', 'options' => ['languages' => []]],
+        ]);
+
+        $names = fn ($query) => $query->orderBy('name')->pluck('name')->all();
+
+        // "options->languages[0]" is the first element, like Laravel.
+        $this->assertSame(['en'], $names(DB::table('items')->whereJsonContainsKey('options->languages[0]')));
+        $this->assertSame(['en'], $names(DB::table('items')->whereJsonContains('options->languages[0]', 'en')));
+    }
+
+    public function testWhereJsonOperatorValues()
+    {
+        DB::table('items')->insert([
+            ['name' => 'literal', 'tags' => [['$elemMatch' => ['$regex' => '^s3c']]], 'options' => ['theme' => (object) ['$gt' => '']]],
+            ['name' => 'secret', 'tags' => ['s3cr3t-token'], 'options' => ['theme' => 'dark']],
+        ]);
+
+        $names = fn ($query) => $query->orderBy('name')->pluck('name')->all();
+
+        // A value that looks like a MongoDB operator is compared literally.
+        $this->assertSame(['literal'], $names(DB::table('items')->whereJsonContains('tags', [['$elemMatch' => ['$regex' => '^s3c']]])));
+        $this->assertSame(['literal'], $names(DB::table('items')->whereJsonContains('options', ['theme' => (object) ['$gt' => '']])));
+    }
+
     public function testRaw()
     {
         DB::table('users')->insert([

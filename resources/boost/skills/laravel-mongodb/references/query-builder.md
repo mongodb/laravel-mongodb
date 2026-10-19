@@ -126,10 +126,11 @@ Post::where('metadata.draft', true)->get();                // dotted path into s
 
 Laravel's JSON where helpers map to native BSON operators. They read native
 arrays and embedded documents, not values stored as JSON strings. A field written
-by the deprecated `array` cast, or kept as a string with the `json` cast, matches
-nothing: `$all`, `$in` and `$size` never match a string.
+by the deprecated `array` cast, or kept as a string with the `json` cast, is a
+plain string: `$all` and `$in` only match that whole string, and `$size` never
+matches it.
 
-`->` is an alias for `.`.
+`->` is an alias for `.`, and `[0]` selects an array element.
 
 ```php
 Post::whereJsonContains('tags', ['mongo', 'laravel'])->get(); // $all
@@ -147,8 +148,12 @@ sensitive to field order and to extra fields.
 
 An associative array matches a partial document, like Laravel: each key is
 compared with its value, and extra keys are allowed. The same works on an array
-of embedded documents, whatever the field order. A nested object is matched the
-same way, a nested array is compared with `$all`.
+of embedded documents, whatever the field order, but one element must hold every
+key of the candidate. A nested object is matched the same way, a nested array is
+compared with `$all`.
+
+A value that looks like a MongoDB operator document, such as `['$gt' => '']`, is
+compared as a literal value and never read as an operator.
 
 ```php
 Post::whereJsonContains('metadata', ['draft' => true])->get();            // partial object
