@@ -427,6 +427,14 @@ class QueryBuilderTest extends TestCase
         $this->assertSame(['b', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntOverlap('options', ['theme' => 'dark'])));
         $this->assertSame(['b', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntContain('options', ['colors' => ['red', 'blue']])));
 
+        // "Does not contain" negates the whole object, "does not overlap" negates each key.
+        $this->assertSame(['b', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntContain('options', ['enabled' => true, 'theme' => 'dark'])));
+        $this->assertSame(['c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntOverlap('options', ['enabled' => true, 'theme' => 'dark'])));
+
+        // An empty list matches any array or document, at any depth.
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContains('options', ['colors' => []])));
+        $this->assertSame(['b', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntContain('options', ['colors' => []])));
+
         // An object also matches an array of embedded documents, in any field order.
         $this->assertSame(['c', 'd'], $names(DB::table('items')->whereJsonContains('parts', ['name' => 'knife', 'qty' => 1])));
 

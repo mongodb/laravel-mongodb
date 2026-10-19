@@ -1075,8 +1075,13 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->whereJsonDoesntContain('options', ['colors' => ['red', 'blue']]),
         ];
 
+        yield 'whereJsonContains nested empty list' => [
+            ['find' => [['options.colors' => ['$type' => ['array', 'object']]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('options', ['colors' => []]),
+        ];
+
         yield 'whereJsonDoesntContain multi-key document' => [
-            ['find' => [['$nor' => [['options.enabled' => true], ['options.theme' => 'dark']]], []]],
+            ['find' => [['$nor' => [['options.enabled' => true, 'options.theme' => 'dark']]], []]],
             fn (Builder $builder) => $builder->whereJsonDoesntContain('options', ['enabled' => true, 'theme' => 'dark']),
         ];
 

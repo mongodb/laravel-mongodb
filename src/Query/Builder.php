@@ -1750,25 +1750,15 @@ class Builder extends BaseBuilder
         $value = $where['value'] instanceof Arrayable ? $where['value']->toArray() : $where['value'];
 
         if (is_array($value) && ! array_is_list($value)) {
-            $predicates = $this->jsonObjectPredicates($where['column'], $value);
-
-            if ($where['not']) {
-                return $this->negateJsonObject($predicates);
-            }
-
             $predicate = [];
-            foreach ($predicates as $condition) {
+            foreach ($this->jsonObjectPredicates($where['column'], $value) as $condition) {
                 $predicate += $condition;
             }
 
-            return $predicate;
+            return $where['not'] ? $this->negateJsonObject($predicate) : $predicate;
         }
 
-        // An empty array is contained in any array or document. "$all" with an
-        // empty array matches nothing, so the type is tested instead.
-        $operator = $value === []
-            ? ['$type' => ['array', 'object']]
-            : ['$all' => $this->jsonItems($value)];
+        $operator = $this->jsonListOperator($this->jsonItems($value));
 
         return [$where['column'] => $where['not'] ? ['$not' => $operator] : $operator];
     }
@@ -1785,7 +1775,7 @@ class Builder extends BaseBuilder
         if (is_array($value) && ! array_is_list($value)) {
             $predicates = $this->jsonObjectPredicates($where['column'], $value);
 
-            return $where['not'] ? $this->negateJsonObject($predicates) : ['$or' => $predicates];
+            return $where['not'] ? $this->negateJsonOverlaps($predicates) : ['$or' => $predicates];
         }
 
         return [$where['column'] => [($where['not'] ? '$nin' : '$in') => $this->jsonItems($value)]];
@@ -1836,6 +1826,19 @@ class Builder extends BaseBuilder
     }
 
     /**
+     * The operator matching the items of a list. An empty list is contained in
+     * any array or document, where "$all" with an empty list matches nothing.
+     *
+     * @param list<mixed> $items
+     *
+     * @return array<string, mixed>
+     */
+    private function jsonListOperator(array $items): array
+    {
+        return $items === [] ? ['$type' => ['array', 'object']] : ['$all' => $items];
+    }
+
+    /**
      * Flatten a JSON object into dotted-path predicates, one per leaf key, so an
      * object candidate matches a partial document, like Laravel. A nested object
      * is flattened further, a list is compared with "$all".
@@ -1856,7 +1859,7 @@ class Builder extends BaseBuilder
             if (is_array($item) && ! array_is_list($item)) {
                 $predicates = array_merge($predicates, $this->jsonObjectPredicates($keyPath, $item));
             } elseif (is_array($item)) {
-                $predicates[] = [$keyPath => ['$all' => $item]];
+                $predicates[] = [$keyPath => $this->jsonListOperator($item)];
             } else {
                 $predicates[] = [$keyPath => $item];
             }
@@ -1866,22 +1869,49 @@ class Builder extends BaseBuilder
     }
 
     /**
-     * Negate the dotted-path predicates of a JSON object. A single predicate is
-     * negated on its own field, so an index on that field can still be used.
-     * Several predicates need "$nor", which cannot use an index.
+     * Negate a JSON object used with "contains". Its keys are combined with AND,
+     * so the whole document is negated at once. A single key is negated on its
+     * own field, so an index on that field can still be used.
+     *
+     * @param array<string, mixed> $predicate
+     *
+     * @return array<string, mixed>
+     */
+    private function negateJsonObject(array $predicate): array
+    {
+        if (count($predicate) === 1) {
+            return $this->negateJsonPredicate($predicate);
+        }
+
+        return ['$nor' => [$predicate]];
+    }
+
+    /**
+     * Negate a JSON object used with "overlaps". Its keys are combined with OR,
+     * so each predicate is negated separately.
      *
      * @param list<array<string, mixed>> $predicates
      *
      * @return array<string, mixed>
      */
-    private function negateJsonObject(array $predicates): array
+    private function negateJsonOverlaps(array $predicates): array
     {
-        if (count($predicates) !== 1) {
-            return ['$nor' => $predicates];
+        if (count($predicates) === 1) {
+            return $this->negateJsonPredicate($predicates[0]);
         }
 
-        $key = array_key_first($predicates[0]);
-        $value = $predicates[0][$key];
+        return ['$nor' => $predicates];
+    }
+
+    /**
+     * @param array<string, mixed> $predicate
+     *
+     * @return array<string, mixed>
+     */
+    private function negateJsonPredicate(array $predicate): array
+    {
+        $key = array_key_first($predicate);
+        $value = $predicate[$key];
 
         // "$all" is already an operator document. A scalar goes through "$eq",
         // which forces a literal comparison, so a value that looks like an
