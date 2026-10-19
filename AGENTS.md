@@ -138,6 +138,8 @@ Encryption need a replica set or a sharded cluster, not a standalone.
   observable results; check the stored BSON with the raw collection when the type matters.
 - Keep backwards compatibility: the package follows SemVer. The supported Laravel versions are the
   constraints declared in `composer.json`, read them there instead of assuming a version.
+- Detect a document model with `MongoDB\Laravel\Eloquent\Model::isDocumentModel($model)`, never with
+  `instanceof`: a document model can use the `DocumentModel` trait without extending the model class.
 
 ## Review guidelines
 
@@ -190,7 +192,6 @@ Update this file in the same change whenever the change makes it stale: the repo
 setup, the commands, the conventions, the review guidelines, or a key behaviour. When a review
 misses a problem, or a pull request written by an agent repeats a mistake, add the lesson here so
 the next agent applies it.
-
 ## Keeping the skill in sync
 
 When a change adds, removes, or alters user-facing behaviour covered by the

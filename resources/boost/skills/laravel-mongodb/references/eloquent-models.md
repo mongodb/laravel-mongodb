@@ -83,6 +83,11 @@ final class AuditLog extends BaseModel
 }
 ```
 
+A class that uses the trait is as much a document model as one extending
+`MongoDB\Laravel\Eloquent\Model`. To test whether a model is a document model,
+use `MongoDB\Laravel\Eloquent\Model::isDocumentModel($model)`: an `instanceof`
+check on the model class misses the trait case.
+
 ## Encryption
 
 ```php

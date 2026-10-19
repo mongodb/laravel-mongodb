@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Database\Query\Expression;
 use MongoDB\Driver\Exception\LogicException;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
+use MongoDB\Laravel\Encryption\EncryptedFieldTypes;
 use Override;
 use Throwable;
 
@@ -242,6 +243,106 @@ abstract class EmbedsOneOrMany extends Relation
 
         // Set the relation on the parent.
         return $this->parent->setRelation($this->relation, $records === null ? null : $this->getResults());
+    }
+
+    /**
+     * The bsonType declared for each encrypted field of the collection that
+     * holds the whole document, keyed by field path. An embedded document is
+     * stored inside the top-level document, so the encrypted fields of a nested
+     * document are declared in the encryptedFieldsMap of the top-level
+     * collection, not in the map of the related model's own collection.
+     *
+     * @return array<string, string>
+     */
+    private function getEncryptedFieldTypes(): array
+    {
+        $parent = $this->parent;
+
+        // A nested relation is stored in the top-level document.
+        while ($parentRelation = $parent->getParentRelation()) {
+            $parent = $parentRelation->getParent();
+        }
+
+        return EncryptedFieldTypes::fieldTypesFor($parent);
+    }
+
+    /**
+     * Coerce the attributes of an embedded model to the BSON types declared
+     * for the encrypted fields of the document that holds it. The model is
+     * written as is, both through its own builder and into the parent document.
+     */
+    protected function coerceEncryptedAttributes(Model $model): void
+    {
+        $fieldTypes = $this->getEncryptedFieldTypes();
+
+        if ($fieldTypes === []) {
+            return;
+        }
+
+        // The relation path is the prefix of the encrypted field paths of the
+        // embedded document, which can be nested in another relation.
+        $prefix     = $this->getPathHierarchy() . '.';
+        $attributes = $model->getAttributes();
+        $casts      = $model->getCasts();
+
+        foreach ($attributes as $key => $value) {
+            // A custom cast owns its value, as in setAttribute().
+            if (EncryptedFieldTypes::isCustomCast($casts[$key] ?? null)) {
+                continue;
+            }
+
+            $attributes[$key] = EncryptedFieldTypes::coerceField(
+                $fieldTypes,
+                $prefix . $key,
+                $value,
+                $model->fromDateTime(...),
+                $this->customCastPaths($model, $key),
+            );
+        }
+
+        $model->setRawAttributes($attributes);
+    }
+
+    /**
+     * The attributes of the nested model whose value is owned by a custom cast
+     * of that model, keyed by their name in the embedded document. The relation
+     * that wrote the value applied those casts, so coercing it again from here
+     * would undo them.
+     *
+     * A document nested in that model is stored as a plain array, without the
+     * model that wrote it, so its own casts cannot be read from here.
+     *
+     * @return array<string, true>
+     */
+    private function customCastPaths(Model $model, string $key): array
+    {
+        foreach ($model->getRelations() as $related) {
+            if (! $related instanceof Model || ! DocumentModel::isDocumentModel($related)) {
+                continue;
+            }
+
+            $relation = $related->getParentRelation();
+
+            if (
+                ! $relation instanceof self
+                || $relation->getParent() !== $model
+                || $relation->localKey !== $key
+            ) {
+                continue;
+            }
+
+            $paths = [];
+
+            foreach ($related->getCasts() as $name => $cast) {
+                if (EncryptedFieldTypes::isCustomCast($cast)) {
+                    $paths[$name] = true;
+                }
+            }
+
+            return $paths;
+        }
+
+        return [];
     }
 
     /**
