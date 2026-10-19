@@ -1894,6 +1894,10 @@ class Builder extends BaseBuilder
 
         $branches = [
             [$path => ['$elemMatch' => $this->jsonRelativeDocument($path, $predicates)]],
+            // "$type" "object" is not a document test: it also matches an array
+            // of documents, which is the case this branch must exclude. Only
+            // "array" is negated, so the branch is a single document holding
+            // every key.
             ['$and' => array_merge([[$path => ['$not' => ['$type' => 'array']]]], $predicates)],
         ];
 
