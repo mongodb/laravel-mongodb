@@ -1836,8 +1836,9 @@ class Builder extends BaseBuilder
      * The predicates matching a list of items in an array. An empty list is
      * contained in any array or document, where "$all" with an empty list matches
      * nothing, so the type is tested instead. "$all" reads an element that is an
-     * operator document as an operator, so a list holding one is compared item by
-     * item with "$eq", which forces a literal comparison.
+     * operator document as an operator, so a list holding one, or an object such
+     * as a stdClass or a BSON document, is compared item by item with "$eq",
+     * which forces a literal comparison.
      *
      * @param list<mixed> $items
      *
@@ -1850,7 +1851,7 @@ class Builder extends BaseBuilder
         }
 
         foreach ($items as $item) {
-            if (self::firstOperatorKey($item) !== null) {
+            if (is_object($item) || self::firstOperatorKey($item) !== null) {
                 return array_map(static fn (mixed $item): array => [$path => ['$eq' => $item]], $items);
             }
         }

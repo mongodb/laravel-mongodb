@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\Assert;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
@@ -534,6 +535,11 @@ class QueryBuilderTest extends TestCase
         // A value that looks like a MongoDB operator is compared literally.
         $this->assertSame(['literal'], $names(DB::table('items')->whereJsonContains('tags', [['$elemMatch' => ['$regex' => '^s3c']]])));
         $this->assertSame(['literal'], $names(DB::table('items')->whereJsonContains('options', ['theme' => (object) ['$gt' => '']])));
+
+        // An object is compared literally as well, alone or in a list.
+        $this->assertSame(['literal'], $names(DB::table('items')->whereJsonContains('tags', (object) ['$elemMatch' => ['$regex' => '^s3c']])));
+        $this->assertSame(['literal'], $names(DB::table('items')->whereJsonContains('tags', [(object) ['$elemMatch' => ['$regex' => '^s3c']]])));
+        $this->assertSame(['literal'], $names(DB::table('items')->whereJsonContains('tags', Document::fromPHP(['$elemMatch' => ['$regex' => '^s3c']]))));
     }
 
     public function testRaw()

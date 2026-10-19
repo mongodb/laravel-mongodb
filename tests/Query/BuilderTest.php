@@ -13,6 +13,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
 use LogicException;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Driver\ReadPreference;
@@ -1093,6 +1094,23 @@ class BuilderTest extends TestCase
         yield 'whereJsonContains operator document' => [
             ['find' => [['tags' => ['$eq' => ['$elemMatch' => ['$regex' => '^s3c']]]], []]],
             fn (Builder $builder) => $builder->whereJsonContains('tags', [['$elemMatch' => ['$regex' => '^s3c']]]),
+        ];
+
+        // An object is not inspected for operators, so it is always compared with "$eq".
+        yield 'whereJsonContains operator object' => [
+            ['find' => [['tags' => ['$eq' => (object) ['$gt' => '']]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('tags', (object) ['$gt' => '']),
+        ];
+
+        yield 'whereJsonContains list of operator objects' => [
+            ['find' => [['tags' => ['$eq' => (object) ['$gt' => '']]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('tags', [(object) ['$gt' => '']]),
+        ];
+
+        $document = Document::fromPHP(['$gt' => '']);
+        yield 'whereJsonContains operator BSON document' => [
+            ['find' => [['tags' => ['$eq' => $document]], []]],
+            fn (Builder $builder) => $builder->whereJsonContains('tags', $document),
         ];
 
         yield 'whereJsonContains operator documents' => [
