@@ -304,10 +304,13 @@ abstract class EmbedsOneOrMany extends Relation
     }
 
     /**
-     * The encrypted sub-fields of a nested relation whose model declares a
-     * custom cast, keyed by their path relative to that model. The relation
-     * that wrote the value applied those casts, so walking it again from here
+     * The attributes of the nested model whose value is owned by a custom cast
+     * of that model, keyed by their name in the embedded document. The relation
+     * that wrote the value applied those casts, so coercing it again from here
      * would undo them.
+     *
+     * A document nested in that model is stored as a plain array, without the
+     * model that wrote it, so its own casts cannot be read from here.
      *
      * @return array<string, true>
      */

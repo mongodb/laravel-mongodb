@@ -140,19 +140,62 @@ final class EncryptedFieldCastsTest extends TestCase
     #[TestWith(['9223372036854775808'])]
     #[TestWith(['-9223372036854775809'])]
     #[TestWith(['9223372036854775808 '])]
+    #[TestWith(['-9223372036854775809 '])]
     #[TestWith(['9223372036854775808.0'])]
+    #[TestWith(['-9223372036854775809.0'])]
     #[TestWith(['9.223372036854776e18'])]
     #[TestWith([9.223372036854776e18])]
     public function testLongValuesOutsideTheRangeAreLeftUntouched(string|float $value): void
     {
-        // The (int) cast would saturate them to PHP_INT_MAX and the driver
-        // would store a different number. A number written with a whitespace,
-        // a decimal part or an exponent rounds to the same float as
-        // PHP_INT_MAX, so it is left untouched too.
+        // The (int) cast would saturate them to PHP_INT_MAX and the driver would
+        // store a different number, so they are left to the driver, which
+        // rejects them.
         $model = new EncryptedCasting();
         $model->a_long = $value;
 
         self::assertSame($value, $model->getAttributes()['a_long']);
+    }
+
+    #[TestWith(['1500.0'])]
+    #[TestWith(['1e3'])]
+    #[TestWith([1500.0])]
+    public function testLongValuesNotWrittenAsAnIntegerAreLeftUntouched(string|float $value): void
+    {
+        // Only a value written as an integer is converted: the driver rejects
+        // it rather than a rounded number being stored.
+        $model = new EncryptedCasting();
+        $model->a_long = $value;
+
+        self::assertSame($value, $model->getAttributes()['a_long']);
+    }
+
+    #[TestWith(['1500 '])]
+    #[TestWith([' 1500'])]
+    #[TestWith(['01500'])]
+    #[TestWith(['+1500'])]
+    public function testLongValuesInAnIntegerFormAreConverted(string $value): void
+    {
+        // The value is parsed as a 64-bit integer whatever the size of a PHP
+        // int, so every form the driver accepts is converted.
+        $model = new EncryptedCasting();
+        $model->a_long = $value;
+
+        self::assertInstanceOf(Int64::class, $model->getAttributes()['a_long']);
+        self::assertSame('1500', (string) $model->getAttributes()['a_long']);
+    }
+
+    #[TestWith([1500])]
+    #[TestWith([-1500])]
+    #[TestWith([3000000000])]
+    public function testLongValuesGivenAsAnIntAreWrapped(int $value): void
+    {
+        // The driver stores a PHP int as int32 when it fits, which automatic
+        // encryption rejects for a "long" field.
+        $model = new EncryptedCasting();
+        $model->a_long = $value;
+
+        self::assertInstanceOf(Int64::class, $model->getAttributes()['a_long']);
+        self::assertSame((string) $value, (string) $model->getAttributes()['a_long']);
     }
 
     public function testReadsBackTheNativePhpTypes(): void

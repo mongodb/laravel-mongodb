@@ -8,12 +8,14 @@ use Illuminate\Database\Eloquent\Model;
 use LogicException;
 use MongoDB\BSON\Decimal128;
 use MongoDB\BSON\Int64;
+use MongoDB\Driver\Exception\InvalidArgumentException;
 use MongoDB\Laravel\Connection;
 use stdClass;
 use Stringable;
 
 use function array_is_list;
 use function array_key_exists;
+use function array_keys;
 use function array_shift;
 use function class_exists;
 use function ctype_digit;
@@ -25,15 +27,13 @@ use function is_int;
 use function is_numeric;
 use function is_scalar;
 use function is_string;
-use function ltrim;
-use function preg_match;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
-use function strcmp;
 use function strlen;
 use function strtolower;
 use function substr;
+use function trim;
 
 use const FILTER_NULL_ON_FAILURE;
 use const FILTER_VALIDATE_BOOLEAN;
@@ -84,12 +84,6 @@ final class EncryptedFieldTypes
         'object' => [],
         'array' => [],
     ];
-
-    /** The largest value of a signed 64-bit integer, as text. */
-    private const INT64_MAX = '9223372036854775807';
-
-    /** The absolute value of the smallest signed 64-bit integer, as text. */
-    private const INT64_MIN_ABS = '9223372036854775808';
 
     /**
      * The bsonType declared for each encrypted field of the collection of a
@@ -262,42 +256,32 @@ final class EncryptedFieldTypes
     }
 
     /**
-     * The value as a driver Int64. A value outside the signed 64-bit range is
-     * returned unchanged: the (int) cast would saturate it to PHP_INT_MAX and
-     * the driver would store a different number.
+     * The value as a driver Int64. A value that is not an integer of the signed
+     * 64-bit range is returned unchanged: the driver stores it as is, and
+     * automatic encryption rejects it rather than a different number being
+     * stored.
      */
     private static function toInt64(mixed $value): mixed
     {
-        if (self::isOutsideInt64Range($value)) {
+        // A PHP int is always in the 64-bit range, whatever its size.
+        if (is_int($value)) {
+            return new Int64($value);
+        }
+
+        // Only a string is parsed: the driver rejects a float rather than a
+        // rounded number being stored.
+        if (! is_string($value)) {
             return $value;
         }
 
-        return new Int64((int) $value);
-    }
-
-    /**
-     * Whether a number is outside the signed 64-bit range. An integer written
-     * as digits is compared as text, because a float cannot tell PHP_INT_MAX
-     * from PHP_INT_MAX + 1. Any other number is compared as a float, with an
-     * exclusive bound because 2^63 is not a PHP int.
-     */
-    private static function isOutsideInt64Range(mixed $value): bool
-    {
-        if (is_int($value)) {
-            return false;
+        try {
+            // The constructor parses the string in 64 bits whatever the size of
+            // a PHP int, and rejects a value out of range that the (int) cast
+            // would saturate.
+            return new Int64(trim($value));
+        } catch (InvalidArgumentException) {
+            return $value;
         }
-
-        if (is_string($value) && preg_match('/^[+-]?\d+$/', $value) === 1) {
-            $limit  = str_starts_with($value, '-') ? self::INT64_MIN_ABS : self::INT64_MAX;
-            $digits = ltrim(ltrim($value, '+-'), '0');
-
-            return strlen($digits) > strlen($limit)
-                || (strlen($digits) === strlen($limit) && strcmp($digits, $limit) > 0);
-        }
-
-        $number = (float) $value;
-
-        return $number >= 2 ** 63 || $number < -(2 ** 63);
     }
 
     /**
@@ -334,7 +318,7 @@ final class EncryptedFieldTypes
         }
 
         foreach ($fieldTypes as $path => $bsonType) {
-            if (isset($skipPaths[$path])) {
+            if (self::isOwnedByCustomCast($skipPaths, $path)) {
                 continue;
             }
 
@@ -342,6 +326,23 @@ final class EncryptedFieldTypes
         }
 
         return $value;
+    }
+
+    /**
+     * Whether a sub-path belongs to a value owned by a custom cast, either the
+     * value itself or a document that cast returned.
+     *
+     * @param array<string, true> $skipPaths
+     */
+    private static function isOwnedByCustomCast(array $skipPaths, string $path): bool
+    {
+        foreach (array_keys($skipPaths) as $skipPath) {
+            if ($path === $skipPath || str_starts_with($path, $skipPath . '.')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

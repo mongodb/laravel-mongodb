@@ -26,6 +26,8 @@ final class RecordingCast implements CastsAttributes
     {
         self::$received = $value;
 
-        return $value;
+        // Laravel merges an array returned by a cast into the attributes, so the
+        // value is returned under its own key to be stored as is.
+        return [$key => $value];
     }
 }

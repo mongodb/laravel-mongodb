@@ -20,10 +20,13 @@ class EncryptedEmbeddedItem extends Model
     protected static $unguarded = true;
 
     /**
-     * "note" is declared as an encrypted "int" field, so the cast class owns the
-     * value of that field, on this model and on a model nested in it.
+     * "note" and "details" are declared as encrypted fields, so the cast class
+     * owns their value, on this model and on a model nested in it.
      */
-    protected $casts = ['note' => RecordingCast::class];
+    protected $casts = [
+        'note' => RecordingCast::class,
+        'details' => RecordingCast::class,
+    ];
 
     public function label(): EmbedsOne
     {
