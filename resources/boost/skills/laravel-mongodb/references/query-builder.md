@@ -130,7 +130,10 @@ by the deprecated `array` cast, or kept as a string with the `json` cast, is a
 plain string: `$all` and `$in` only match that whole string, and `$size` never
 matches it.
 
-`->` is an alias for `.`, and `[0]` selects an array element.
+`->` is an alias for `.`, and `[0]` selects an array element. An index can be
+combined with a key, as in `metadata->items[0]->name`, and it only matches a
+document where that element exists: an empty array, a scalar and a missing field
+have no index 0.
 
 ```php
 Post::whereJsonContains('tags', ['mongo', 'laravel'])->get(); // $all

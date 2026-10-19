@@ -495,15 +495,31 @@ class QueryBuilderTest extends TestCase
     public function testWhereJsonArrayIndex()
     {
         DB::table('items')->insert([
-            ['name' => 'en', 'options' => ['languages' => ['en', 'fr']]],
-            ['name' => 'none', 'options' => ['languages' => []]],
+            ['name' => 'a', 'options' => ['languages' => ['en', 'fr']]],
+            // An empty array, a scalar and a missing field have no index 0.
+            ['name' => 'b', 'options' => ['languages' => []]],
+            ['name' => 'c', 'options' => ['languages' => 'en']],
+            ['name' => 'd'],
+            // A nested document under an index.
+            ['name' => 'e', 'options' => ['items' => [['name' => 'knife', 'qty' => 1], ['name' => 'fork']]]],
         ]);
 
         $names = fn ($query) => $query->orderBy('name')->pluck('name')->all();
 
         // "options->languages[0]" is the first element, like Laravel.
-        $this->assertSame(['en'], $names(DB::table('items')->whereJsonContainsKey('options->languages[0]')));
-        $this->assertSame(['en'], $names(DB::table('items')->whereJsonContains('options->languages[0]', 'en')));
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContainsKey('options->languages[0]')));
+        $this->assertSame(['b', 'c', 'd', 'e'], $names(DB::table('items')->whereJsonDoesntContainKey('options->languages[0]')));
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContainsKey('options->languages[1]')));
+        $this->assertSame([], $names(DB::table('items')->whereJsonContainsKey('options->languages[2]')));
+
+        // The index selects the element to compare.
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContains('options->languages[0]', 'en')));
+        $this->assertSame(['a'], $names(DB::table('items')->whereJsonContains('options->languages[1]', 'fr')));
+        $this->assertSame([], $names(DB::table('items')->whereJsonContains('options->languages[1]', 'en')));
+
+        // An index also reaches into a nested document.
+        $this->assertSame(['e'], $names(DB::table('items')->whereJsonContainsKey('options->items[0]->name')));
+        $this->assertSame(['e'], $names(DB::table('items')->whereJsonContains('options->items[0]', ['name' => 'knife', 'qty' => 1])));
     }
 
     public function testWhereJsonOperatorValues()

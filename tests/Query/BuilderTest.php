@@ -1242,6 +1242,11 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->whereJsonContains('options->languages[0]', 'en'),
         ];
 
+        yield 'whereJsonContainsKey nested array index' => [
+            ['find' => [['options.items.0.name' => ['$exists' => true]], []]],
+            fn (Builder $builder) => $builder->whereJsonContainsKey('options->items[0]->name'),
+        ];
+
         yield 'whereJsonLength' => [
             [
                 'find' => [
