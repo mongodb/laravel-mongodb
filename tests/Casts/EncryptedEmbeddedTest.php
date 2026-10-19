@@ -38,6 +38,10 @@ final class EncryptedEmbeddedTest extends TestCase
                     // "note" and "details" are owned by a cast of the model.
                     'address.label.note' => 'int',
                     'address.label.details.amount' => 'int',
+                    // EmbedsOne relation whose name differs from its local key.
+                    'address.child.amount' => 'int',
+                    'address.child.note' => 'int',
+                    'address.child.details.amount' => 'int',
                 ],
             ],
         ]);
@@ -111,6 +115,30 @@ final class EncryptedEmbeddedTest extends TestCase
         self::assertSame(1600, $label['amount']);
         self::assertSame('1500', $label['note']);
         self::assertSame(['amount' => '1700'], $label['details']);
+    }
+
+    public function testACustomCastOfANestedModelWhoseRelationNameDiffersFromItsKey(): void
+    {
+        // The nested model is loaded under the name of its relation,
+        // "childDocument", while its document is stored under the key "child".
+        $parent = new EncryptedEmbedded(['name' => 'Jane']);
+
+        $item = new EncryptedEmbeddedItem();
+        $item->setParentRelation($parent->address());
+
+        $item->childDocument()->associate(new EncryptedEmbeddedItem([
+            'amount' => '1600',
+            'note' => '1500',
+            'details' => ['amount' => '1700'],
+        ]));
+
+        $parent->address()->associate($item);
+
+        $child = $parent->getAttributes()['address']['child'];
+
+        self::assertSame(1600, $child['amount']);
+        self::assertSame('1500', $child['note']);
+        self::assertSame(['amount' => '1700'], $child['details']);
     }
 
     public function testCoercesANestedRelationThatWasOnlyLoaded(): void

@@ -117,10 +117,10 @@ Automatic encryption encrypts a value according to the `bsonType` declared in th
 | `object` | none | embedded document |
 | `array` | none | encrypted array |
 
-- A value that cannot be converted is passed to the driver unchanged, and automatic encryption rejects the write. The package adds no validation of its own. This covers `'abc'` on an `int` field and a `long` outside the signed 64-bit range, which the cast to a PHP integer would saturate.
+- A value that cannot be converted is passed to the driver unchanged, and automatic encryption rejects the write. The package adds no validation of its own. This covers `'abc'` on an `int` field and a `long` outside the signed 64-bit range, which the cast to a PHP integer would saturate. A numeric value written with surrounding whitespace, a leading `+`, or leading zeros is converted.
 - No cast is derived for `decimal`: declare `decimal:<scale>` yourself, with an integer scale, to read the `Decimal128`. A BSON date holds a full timestamp, so the derived cast is `datetime`, which keeps the time.
 - An embedded document is `bsonType: 'object'`, stored natively and read back as an array. Its encrypted sub-fields are declared as dotted paths (`billing.amount`) and coerced on write, including when the model is saved through an `EmbedsOne` relation. An `array` field is written as a whole, and its elements are not encrypted one by one. Automatic encryption refuses to encrypt a field under an array, so the documents of an `EmbedsMany` relation cannot hold encrypted fields.
-- A cast declared on an encrypted field is kept when it stores the declared BSON type, and reported with a `LogicException` when it does not. A custom cast class owns its value, on a nested embedded model too.
+- A cast declared on an encrypted field is kept when it stores the declared BSON type, as `integer` on an `int` field or `hashed` on a `string` field, and reported with a `LogicException` when it does not. A custom cast class owns its value, on a nested embedded model too.
 - The coercion runs when the attribute is assigned, before a set mutator, and applies to values written through the model, not to query values: a range query on a `date` field needs date objects (Carbon), not strings.
 - QE forbids multi-document updates. laravel-mongodb uses single-document updates automatically on encrypted collections, so `save()` and `update()` work as usual.
 

@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Encryption;
 
+use Illuminate\Contracts\Database\Eloquent\Castable;
+use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Illuminate\Contracts\Database\Eloquent\CastsInboundAttributes;
 use Illuminate\Database\Eloquent\Model;
 use LogicException;
 use MongoDB\BSON\Decimal128;
@@ -17,8 +20,8 @@ use function array_is_list;
 use function array_key_exists;
 use function array_keys;
 use function array_shift;
-use function class_exists;
 use function ctype_digit;
+use function enum_exists;
 use function explode;
 use function filter_var;
 use function in_array;
@@ -27,6 +30,7 @@ use function is_int;
 use function is_numeric;
 use function is_scalar;
 use function is_string;
+use function is_subclass_of;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
@@ -74,7 +78,7 @@ final class EncryptedFieldTypes
      * encryption rejects, so it is reported as a conflict.
      */
     private const COMPATIBLE_CASTS = [
-        'string' => ['string'],
+        'string' => ['string', 'hashed', 'encrypted'],
         'int' => ['integer', 'int'],
         'long' => ['integer', 'int'],
         'double' => ['float', 'double', 'real'],
@@ -133,10 +137,14 @@ final class EncryptedFieldTypes
             }
 
             if (array_key_exists($path, $casts)) {
-                if (! self::isCompatible($bsonType, (string) $casts[$path])) {
+                $cast = $casts[$path];
+
+                // Only a cast name is compared to the BSON type: another value
+                // is a cast of the developer, which owns the value it stores.
+                if (is_string($cast) && ! self::isCompatible($bsonType, $cast)) {
                     throw new LogicException(sprintf(
                         'The "%s" cast declared on attribute "%s" of model "%s" does not store the "%s" BSON type declared for this encrypted field. Remove the cast, or declare a compatible one.',
-                        $casts[$path],
+                        $cast,
                         $path,
                         $model,
                         $bsonType,
@@ -156,13 +164,24 @@ final class EncryptedFieldTypes
     }
 
     /**
-     * Whether a declared cast is a custom cast class, which owns the value it
-     * stores. Laravel's isClassCastable() is protected, so the class check is
-     * repeated here; the arguments after the colon are not part of the name.
+     * Whether a declared cast is a cast class of the developer, which owns the
+     * value it stores. Laravel's isClassCastable() is protected, so the check
+     * is repeated here: a cast class implements one of the cast contracts, or
+     * is an enum. A native type is never a cast class, even when a global class
+     * has the same name, as "datetime" and DateTime.
      */
     public static function isCustomCast(mixed $cast): bool
     {
-        return is_string($cast) && class_exists(explode(':', $cast, 2)[0]);
+        if (! is_string($cast)) {
+            return false;
+        }
+
+        $type = explode(':', $cast, 2)[0];
+
+        return enum_exists($type)
+            || is_subclass_of($type, CastsAttributes::class)
+            || is_subclass_of($type, CastsInboundAttributes::class)
+            || is_subclass_of($type, Castable::class);
     }
 
     /** Whether a cast declared by the developer can store the declared bsonType. */
@@ -244,7 +263,7 @@ final class EncryptedFieldTypes
             // force the int64 stored for a "long" field.
             'long' => is_numeric($value) ? self::toInt64($value) : $value,
             'double' => is_numeric($value) ? (float) $value : $value,
-            'decimal' => $value instanceof Decimal128 || ! is_numeric($value) ? $value : new Decimal128((string) $value),
+            'decimal' => $value instanceof Decimal128 || ! is_numeric($value) ? $value : self::toDecimal128($value),
             'bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? $value,
             'date' => $dateConverter === null ? $value : $dateConverter($value),
             'string' => is_scalar($value) || $value instanceof Stringable ? (string) $value : $value,
@@ -279,6 +298,22 @@ final class EncryptedFieldTypes
             // a PHP int, and rejects a value out of range that the (int) cast
             // would saturate.
             return new Int64(trim($value));
+        } catch (InvalidArgumentException) {
+            return $value;
+        }
+    }
+
+    /**
+     * The value as a driver Decimal128. A value that the driver does not parse
+     * is returned unchanged: automatic encryption rejects it rather than a
+     * different number being stored.
+     */
+    private static function toDecimal128(mixed $value): mixed
+    {
+        try {
+            // The constructor rejects a value surrounded by whitespace, which
+            // is_numeric() accepts.
+            return new Decimal128(trim((string) $value));
         } catch (InvalidArgumentException) {
             return $value;
         }

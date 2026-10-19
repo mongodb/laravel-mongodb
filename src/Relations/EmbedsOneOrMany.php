@@ -316,25 +316,33 @@ abstract class EmbedsOneOrMany extends Relation
      */
     private function customCastPaths(Model $model, string $key): array
     {
-        if (! $model->relationLoaded($key)) {
-            return [];
-        }
-
-        $related = $model->getRelation($key);
-
-        if (! $related instanceof Model) {
-            return [];
-        }
-
-        $paths = [];
-
-        foreach ($related->getCasts() as $name => $cast) {
-            if (EncryptedFieldTypes::isCustomCast($cast)) {
-                $paths[$name] = true;
+        foreach ($model->getRelations() as $related) {
+            if (! $related instanceof Model || ! DocumentModel::isDocumentModel($related)) {
+                continue;
             }
+
+            $relation = $related->getParentRelation();
+
+            if (
+                ! $relation instanceof self
+                || $relation->getParent() !== $model
+                || $relation->localKey !== $key
+            ) {
+                continue;
+            }
+
+            $paths = [];
+
+            foreach ($related->getCasts() as $name => $cast) {
+                if (EncryptedFieldTypes::isCustomCast($cast)) {
+                    $paths[$name] = true;
+                }
+            }
+
+            return $paths;
         }
 
-        return $paths;
+        return [];
     }
 
     /**

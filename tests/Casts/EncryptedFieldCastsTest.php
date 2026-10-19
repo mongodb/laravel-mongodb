@@ -198,6 +198,19 @@ final class EncryptedFieldCastsTest extends TestCase
         self::assertSame((string) $value, (string) $model->getAttributes()['a_long']);
     }
 
+    #[TestWith(['1500 '])]
+    #[TestWith([' 1500'])]
+    #[TestWith(["1500\n"])]
+    public function testDecimalValuesSurroundedByWhitespaceAreConverted(string $value): void
+    {
+        // is_numeric() accepts the whitespace, but the driver rejects it.
+        $model = new EncryptedCasting();
+        $model->a_decimal = $value;
+
+        self::assertInstanceOf(Decimal128::class, $model->getAttributes()['a_decimal']);
+        self::assertSame('1500', (string) $model->getAttributes()['a_decimal']);
+    }
+
     public function testReadsBackTheNativePhpTypes(): void
     {
         $model = new EncryptedCasting();
@@ -410,6 +423,31 @@ final class EncryptedFieldCastsTest extends TestCase
     {
         $model = new EncryptedCasting();
         $model->mergeCasts(['an_int' => 'string']);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('does not store the "int" BSON type');
+
+        $model->getCasts();
+    }
+
+    #[TestWith(['hashed'])]
+    #[TestWith(['encrypted'])]
+    public function testStringCastsStoringAStringAreKept(string $cast): void
+    {
+        // Both store a string, which is the BSON type declared for the field.
+        $model = new EncryptedCasting();
+        $model->mergeCasts(['a_string' => $cast]);
+
+        self::assertSame($cast, $model->getCasts()['a_string']);
+    }
+
+    public function testANativeCastIsNotMistakenForACastClass(): void
+    {
+        // class_exists('datetime') is true, because of the global DateTime
+        // class: the native cast is still reported as incompatible with a field
+        // of another BSON type.
+        $model = new EncryptedCasting();
+        $model->mergeCasts(['an_int' => 'datetime']);
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('does not store the "int" BSON type');

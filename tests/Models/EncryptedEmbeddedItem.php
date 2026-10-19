@@ -32,4 +32,13 @@ class EncryptedEmbeddedItem extends Model
     {
         return $this->embedsOne(self::class, 'label');
     }
+
+    /**
+     * The local key of this relation differs from the name of the relation: the
+     * document is stored under "child".
+     */
+    public function childDocument(): EmbedsOne
+    {
+        return $this->embedsOne(self::class, 'child');
+    }
 }
