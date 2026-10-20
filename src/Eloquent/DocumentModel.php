@@ -266,6 +266,24 @@ trait DocumentModel
         return parent::getAttributeFromArray($key);
     }
 
+    /**
+     * The reserved "__safeContent__" field is written by the server for
+     * Queryable Encryption. It is an implementation detail, so it is dropped
+     * from the hydrated attributes rather than exposed on the model.
+     *
+     * @inheritdoc
+     */
+    public function newFromBuilder($attributes = [], $connection = null)
+    {
+        if (is_object($attributes)) {
+            $attributes = (array) $attributes;
+        }
+
+        unset($attributes[AutoEncryption::SAFE_CONTENT_FIELD]);
+
+        return parent::newFromBuilder($attributes, $connection);
+    }
+
     /** @inheritdoc */
     public function setAttribute($key, $value)
     {
@@ -276,7 +294,7 @@ trait DocumentModel
         // never be forged or desynchronized by the application.
         if (AutoEncryption::isSafeContentKey($key)) {
             throw new MassAssignmentException(
-                sprintf('The reserved field [%s] is managed by the server and cannot be set on model [%s].', '__safeContent__', static::class),
+                sprintf('The reserved field [%s] is managed by the server and cannot be set on model [%s].', AutoEncryption::SAFE_CONTENT_FIELD, static::class),
             );
         }
 
@@ -474,7 +492,7 @@ trait DocumentModel
         // Reject attempts to unset the server-managed encrypted field.
         if (AutoEncryption::isSafeContentKey($offset)) {
             throw new MassAssignmentException(
-                sprintf('The reserved field [%s] is managed by the server and cannot be unset on model [%s].', '__safeContent__', static::class),
+                sprintf('The reserved field [%s] is managed by the server and cannot be unset on model [%s].', AutoEncryption::SAFE_CONTENT_FIELD, static::class),
             );
         }
 

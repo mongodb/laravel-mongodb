@@ -38,6 +38,12 @@ use function version_compare;
 final class AutoEncryption
 {
     /**
+     * The reserved field the server writes into encrypted documents, as an
+     * implementation detail of Queryable Encryption.
+     */
+    public const SAFE_CONTENT_FIELD = '__safeContent__';
+
+    /**
      * The subset of the driver's AutoEncryptionOptionsShape accepted by
      * ClientEncryption. The other options only apply to the auto-encryption
      * manager, which prepareDriverOptions() feeds.
@@ -98,7 +104,7 @@ final class AutoEncryption
      */
     public static function isSafeContentKey(string $key): bool
     {
-        return $key === '__safeContent__' || str_starts_with($key, '__safeContent__.');
+        return $key === self::SAFE_CONTENT_FIELD || str_starts_with($key, self::SAFE_CONTENT_FIELD . '.');
     }
 
     /** @param array<string, mixed> $config */

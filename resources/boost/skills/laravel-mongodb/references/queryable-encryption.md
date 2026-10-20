@@ -99,7 +99,7 @@ This rewraps the DEKs rather than replacing them. Replacing the DEKs themselves 
 
 ## `__safeContent__`
 
-The server writes a reserved `__safeContent__` array. laravel-mongodb rejects any attempt to write it, by direct assignment, by mass assignment, or through a dotted sub-path. It is still returned by `toArray()` and JSON output.
+The server writes a reserved `__safeContent__` array. laravel-mongodb rejects any attempt to write it, by direct assignment, by mass assignment, or through a dotted sub-path, and drops it from hydrated models: `getAttributes()`, `toArray()` and JSON output omit it. A query builder result (`DB::connection('mongodb')->table('patients')`) and a raw `getCollection()` read still return it.
 
 ## Match the bsonType
 

@@ -595,6 +595,23 @@ class ModelTest extends TestCase
         $this->assertFalse($item->isDirty());
     }
 
+    public function testSafeContentIsDroppedFromHydratedModels(): void
+    {
+        DB::connection('mongodb')
+            ->table('items')
+            ->insert(['name' => 'fork', '__safeContent__' => ['<server-managed>']]);
+
+        $item = Item::first();
+
+        $this->assertArrayNotHasKey('__safeContent__', $item->getAttributes());
+        $this->assertArrayNotHasKey('__safeContent__', $item->toArray());
+        $this->assertStringNotContainsString('__safeContent__', $item->toJson());
+
+        // The query builder and the raw driver read keep what the server wrote.
+        $this->assertArrayHasKey('__safeContent__', (array) DB::connection('mongodb')->table('items')->first());
+        $this->assertArrayHasKey('__safeContent__', (array) DB::connection('mongodb')->getCollection('items')->findOne(['name' => 'fork']));
+    }
+
     public function testSafeContentCannotBeWritten(): void
     {
         $item = new Item();
