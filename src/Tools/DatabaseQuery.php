@@ -43,7 +43,7 @@ class DatabaseQuery extends Tool
     // https://www.mongodb.com/docs/manual/core/aggregation-pipeline-limits/#number-of-stages-restrictions
     private const MAX_STAGES_PER_PIPELINE = 1000;
 
-    private const JS_EXECUTION_OPERATORS = ['$where', '$function', '$accumulator'];
+    private const JS_EXECUTION_OPERATORS = ['$where' => true, '$function' => true, '$accumulator' => true];
 
     /**
      * The tool's name.
