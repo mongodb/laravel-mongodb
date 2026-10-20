@@ -63,7 +63,7 @@ php artisan mongodb:encryption:status
 
 The collection argument is optional. Without it, every mapped collection that does not exist yet is created. In an interactive terminal they are proposed for selection first, all selected by default, so pressing enter creates them all.
 
-`--recreate` drops the mapped collections that already exist before creating them again, to rebuild them from a changed map. It asks for confirmation in production, and takes `--force`.
+`--recreate` drops the mapped collections that already exist before creating them again, to rebuild them from a changed map or to replace a collection that exists without encrypted fields. It asks for confirmation in production, and takes `--force`.
 
 Both commands accept `--no-server` to validate the configuration without a server. The Schema builder exposes the same creation:
 

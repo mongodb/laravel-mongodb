@@ -61,7 +61,7 @@ final class StatusCommand extends Command
 
         foreach ($unencrypted as $collection) {
             $this->error(sprintf(
-                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, drop the collection, and create it again with "php artisan mongodb:encryption:create-collection %s --recreate".',
+                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection %s --recreate".',
                 $collection,
                 $collection,
             ));

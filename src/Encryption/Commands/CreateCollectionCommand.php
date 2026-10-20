@@ -74,48 +74,65 @@ final class CreateCollectionCommand extends Command
 
         try {
             $builder = $connection->getSchemaBuilder();
-            $existing = array_values(array_filter($mapped, $builder->hasEncryptedCollection(...)));
-            $missing = array_values(array_diff($mapped, $existing));
+            // hasEncryptedCollection() applies the connection prefix itself,
+            // hasCollection() reads the real name.
+            $prefix = $connection->getTablePrefix();
+            $present = array_values(array_filter($mapped, static fn (string $name): bool => $builder->hasCollection($prefix . $name)));
+            $encrypted = array_values(array_filter($present, $builder->hasEncryptedCollection(...)));
+            $missing = array_values(array_diff($mapped, $present));
         } catch (DriverException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
         }
 
-        $targets = $this->targets($collection, $existing, $missing);
+        // A mapped collection that exists without encrypted fields stores them
+        // in plaintext. Only --recreate can fix it, by dropping it first.
+        if (! $this->option('recreate')) {
+            foreach (array_values(array_diff($present, $encrypted)) as $plaintext) {
+                $this->warn(sprintf(
+                    'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Run this command with "--recreate" to drop it and create it again.',
+                    $plaintext,
+                ));
+            }
+        }
+
+        $targets = $this->targets($collection, $present, $missing);
 
         if ($targets === []) {
             $this->info($this->option('recreate')
-                ? 'No mapped encrypted collection exists yet.'
-                : 'Every mapped encrypted collection already exists.');
+                ? 'No mapped collection exists yet.'
+                : 'Every mapped collection already exists.');
 
             return self::SUCCESS;
         }
 
-        if (! $this->confirmRecreate($targets, $existing)) {
+        $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $present)) : [];
+
+        if ($dropped !== [] && ! $this->confirmToProceed(sprintf('The collections "%s" will be dropped, removing their documents.', implode('", "', $dropped)))) {
             return self::FAILURE;
         }
 
-        return $this->createCollections($builder, $targets);
+        return $this->createCollections($builder, $targets, $dropped);
     }
 
     /**
      * The collections to act on: the one named on the command line, the ones
      * that exist for --recreate, the missing ones otherwise.
      *
-     * @param  list<string> $existing
-     * @param  list<string> $missing
+     * @param  list<string> $present The mapped collections that exist, encrypted or not.
+     * @param  list<string> $missing The mapped collections that do not exist.
      *
      * @return list<string>
      */
-    private function targets(?string $collection, array $existing, array $missing): array
+    private function targets(?string $collection, array $present, array $missing): array
     {
         if ($collection !== null) {
             return [$collection];
         }
 
         if ($this->option('recreate')) {
-            return $existing;
+            return $present;
         }
 
         if ($missing === []) {
@@ -176,34 +193,18 @@ final class CreateCollectionCommand extends Command
     }
 
     /**
-     * Dropping collections removes their documents, so the operation is
-     * confirmed in production.
-     *
      * @param list<string> $targets
-     * @param list<string> $existing
+     * @param list<string> $dropped The targets that exist and are dropped first.
      */
-    private function confirmRecreate(array $targets, array $existing): bool
+    private function createCollections(Builder $builder, array $targets, array $dropped): int
     {
-        $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $existing)) : [];
-
-        if ($dropped === []) {
-            return true;
-        }
-
-        return $this->confirmToProceed(sprintf('The encrypted collections "%s" will be dropped, removing their documents.', implode('", "', $dropped)));
-    }
-
-    /** @param list<string> $targets */
-    private function createCollections(Builder $builder, array $targets): int
-    {
-        $recreate = (bool) $this->option('recreate');
         $failed = false;
 
         foreach ($targets as $collection) {
             try {
-                if ($recreate && $builder->hasEncryptedCollection($collection)) {
+                if (in_array($collection, $dropped, true)) {
                     $builder->drop($collection);
-                    $this->info(sprintf('Dropped encrypted collection "%s".', $collection));
+                    $this->info(sprintf('Dropped collection "%s".', $collection));
                 }
 
                 $builder->createEncrypted($collection);
