@@ -130,9 +130,7 @@ Encryption need a replica set or a sharded cluster, not a standalone.
 
 - `declare(strict_types=1)` in every file, and import functions with `use function`.
 - Follow the Doctrine coding standard enforced by `phpcs.xml.dist`.
-- Mark methods that override a parent with `#[Override]`, except in the `DocumentModel` trait: it
-  is also used by classes that have no Eloquent parent, and the attribute is validated against every
-  class that uses the trait, so it makes the suite fatal at load time.
+- Mark methods that override a parent with `#[Override]`.
 - Prefer `vendor/bin/phpcbf` and `vendor/bin/rector process` over manual edits for style and
   automated refactors. Exclude a phpcs sniff in `phpcs.xml.dist`, or add a rule in `rector.php`,
   only when the rule is buggy or makes the code less readable, and comment the reason.
