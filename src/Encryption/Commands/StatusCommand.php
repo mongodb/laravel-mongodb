@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
 
 use function array_keys;
 use function class_exists;
@@ -21,6 +22,9 @@ use function sprintf;
 final class StatusCommand extends Command
 {
     use InteractsWithEncryption;
+
+    /** The state of a mapped collection that exists without encrypted fields. */
+    private const NOT_ENCRYPTED = ', exists, not encrypted';
 
     protected $signature = 'mongodb:encryption:status
         {--no-server : Only validate the configuration, do not contact the server}
@@ -43,7 +47,7 @@ final class StatusCommand extends Command
         $this->info('Queryable Encryption configuration is valid.');
 
         try {
-            $this->reportCollections($connection, $encryptedFields);
+            $unencrypted = $this->reportCollections($connection, $encryptedFields);
 
             if (! $this->option('no-server')) {
                 $this->line('Server version: ' . $connection->getServerVersion());
@@ -55,7 +59,15 @@ final class StatusCommand extends Command
             return self::FAILURE;
         }
 
-        return self::SUCCESS;
+        foreach ($unencrypted as $collection) {
+            $this->error(sprintf(
+                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, drop the collection, and create it again with "php artisan mongodb:encryption:create-collection %s --recreate".',
+                $collection,
+                $collection,
+            ));
+        }
+
+        return $unencrypted === [] ? self::SUCCESS : self::FAILURE;
     }
 
     /**
@@ -79,29 +91,59 @@ final class StatusCommand extends Command
     }
 
     /**
-     * @param array<array-key, int> $encryptedFields
+     * Print the state of every mapped collection. A collection that exists
+     * without encrypted fields is printed as an error, because its mapped
+     * fields are stored in plaintext.
+     *
+     * @param  array<array-key, int> $encryptedFields
+     *
+     * @return list<string> The mapped collections that exist without encryption.
      *
      * @throws DriverException
      */
-    private function reportCollections(Connection $connection, array $encryptedFields): void
+    private function reportCollections(Connection $connection, array $encryptedFields): array
     {
         if ($encryptedFields === []) {
             $this->line('Mapped collections: none');
 
-            return;
+            return [];
         }
 
         $this->line('Mapped collections: ');
 
         $builder = $this->option('no-server') ? null : $connection->getSchemaBuilder();
+        $unencrypted = [];
 
         foreach ($encryptedFields as $collection => $fields) {
-            $this->line(sprintf(
-                '  - %s: %d encrypted field(s)%s',
-                $collection,
-                $fields,
-                $builder === null ? '' : ($builder->hasEncryptedCollection((string) $collection) ? ', exists' : ', missing'),
-            ));
+            $state = $builder === null ? '' : $this->collectionState($connection, $builder, (string) $collection);
+            $line = sprintf('  - %s: %d encrypted field(s)%s', $collection, $fields, $state);
+
+            if ($state === self::NOT_ENCRYPTED) {
+                $unencrypted[] = (string) $collection;
+                $this->error($line);
+            } else {
+                $this->line($line);
+            }
         }
+
+        return $unencrypted;
+    }
+
+    /**
+     * The state of a mapped collection on the server. A collection that exists
+     * without encrypted fields is reported apart from a missing one: its mapped
+     * fields are stored in plaintext, which "missing" would hide.
+     */
+    private function collectionState(Connection $connection, SchemaBuilder $builder, string $collection): string
+    {
+        if ($builder->hasEncryptedCollection($collection)) {
+            return ', exists';
+        }
+
+        // hasEncryptedCollection() applies the connection prefix itself,
+        // hasCollection() reads the real name.
+        return $builder->hasCollection($connection->getTablePrefix() . $collection)
+            ? self::NOT_ENCRYPTED
+            : ', missing';
     }
 }

@@ -443,6 +443,29 @@ class EncryptedCommandsTest extends TestCase
             ->assertExitCode(Command::SUCCESS);
     }
 
+    #[Group('queryable-encryption')]
+    public function testStatusFailsOnACollectionThatExistsWithoutEncryption(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        // A collection that exists without encrypted fields stores the mapped
+        // fields in plaintext: it must not be reported as missing, and the
+        // command must fail.
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        try {
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 1 encrypted field(s), exists, not encrypted')
+                ->expectsOutputToContain('The collection "patients" exists without encryption')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $plain->getCollection('patients')->drop();
+        }
+    }
+
     public function testRewrapDataKeysFailsWithoutEncryptionConfigured(): void
     {
         config(['database.connections.mongodb.driver_options' => []]);
