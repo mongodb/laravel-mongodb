@@ -217,6 +217,131 @@ class DatabaseQueryTest extends TestCase
         ];
     }
 
+    /** @param array<string, mixed> $command */
+    #[DataProvider('jsExecutionOperatorsInFilters')]
+    public function testRejectsJsExecutionOperatorInFilter(array $command, string $operator): void
+    {
+        $this->fakeMongoConnection();
+
+        $response = $this->runTool(new DatabaseQuery(), [
+            'connection' => 'mongodb',
+            'command' => $command,
+        ]);
+
+        $this->assertToolHasError($response);
+        $this->assertToolTextContains($response, sprintf('Server-side JavaScript operators are not allowed. Found: %s', $operator));
+    }
+
+    public static function jsExecutionOperatorsInFilters(): array
+    {
+        return [
+            'where in find filter' => [
+                ['find' => 'examples', 'filter' => ['$where' => 'this.name === "Taylor"']],
+                '$where',
+            ],
+            'where in count query' => [
+                ['count' => 'examples', 'query' => ['$where' => 'true']],
+                '$where',
+            ],
+            'where in distinct query' => [
+                ['distinct' => 'examples', 'key' => 'name', 'query' => ['$where' => 'true']],
+                '$where',
+            ],
+            'function nested in find filter' => [
+                ['find' => 'examples', 'filter' => ['$expr' => ['$function' => ['body' => 'return true;', 'args' => [], 'lang' => 'js']]]],
+                '$function',
+            ],
+            'where nested in count query' => [
+                ['count' => 'examples', 'query' => ['$and' => [['$where' => 'true']]]],
+                '$where',
+            ],
+        ];
+    }
+
+    /** @param list<array<string, mixed>> $pipeline */
+    #[DataProvider('jsExecutionOperatorsInAggregations')]
+    public function testRejectsJsExecutionOperatorInAggregationStage(array $pipeline, string $operator): void
+    {
+        $this->fakeMongoConnection();
+
+        $response = $this->runTool(new DatabaseQuery(), [
+            'connection' => 'mongodb',
+            'command' => ['aggregate' => 'examples', 'pipeline' => $pipeline],
+        ]);
+
+        $this->assertToolHasError($response);
+        $this->assertToolTextContains($response, sprintf('Server-side JavaScript operators are not allowed. Found: %s', $operator));
+    }
+
+    public static function jsExecutionOperatorsInAggregations(): array
+    {
+        return [
+            'function in match' => [
+                [
+                    ['$match' => ['$expr' => ['$function' => ['body' => 'return true;', 'args' => [], 'lang' => 'js']]]],
+                ],
+                '$function',
+            ],
+            'accumulator in group' => [
+                [
+                    ['$group' => ['_id' => null, 'total' => ['$accumulator' => ['init' => 'function() { return 0; }', 'lang' => 'js']]]],
+                ],
+                '$accumulator',
+            ],
+            'where in project' => [
+                [
+                    ['$project' => ['matches' => ['$where' => 'true']]],
+                ],
+                '$where',
+            ],
+            'function nested in lookup pipeline' => [
+                [
+                    ['$lookup' => ['from' => 'others', 'pipeline' => [['$match' => ['$expr' => ['$function' => ['body' => 'return true;', 'args' => [], 'lang' => 'js']]]]]]],
+                ],
+                '$function',
+            ],
+            'accumulator nested in facet' => [
+                [
+                    ['$facet' => ['totals' => [['$group' => ['_id' => null, 'total' => ['$accumulator' => ['init' => 'function() { return 0; }', 'lang' => 'js']]]]]]],
+                ],
+                '$accumulator',
+            ],
+        ];
+    }
+
+    /** @param array<string, mixed> $command */
+    #[DataProvider('jsExecutionOperatorsInCommandFields')]
+    public function testRejectsJsExecutionOperatorInCommandField(array $command, string $operator): void
+    {
+        $this->fakeMongoConnection();
+
+        $response = $this->runTool(new DatabaseQuery(), [
+            'connection' => 'mongodb',
+            'command' => $command,
+        ]);
+
+        $this->assertToolHasError($response);
+        $this->assertToolTextContains($response, sprintf('Server-side JavaScript operators are not allowed. Found: %s', $operator));
+    }
+
+    public static function jsExecutionOperatorsInCommandFields(): array
+    {
+        return [
+            'function in find projection' => [
+                ['find' => 'examples', 'projection' => ['result' => ['$function' => ['body' => 'return 1;', 'args' => [], 'lang' => 'js']]]],
+                '$function',
+            ],
+            'function in find let' => [
+                ['find' => 'examples', 'let' => ['value' => ['$function' => ['body' => 'return 1;', 'args' => [], 'lang' => 'js']]]],
+                '$function',
+            ],
+            'function in aggregate let' => [
+                ['aggregate' => 'examples', 'pipeline' => [], 'let' => ['value' => ['$function' => ['body' => 'return 1;', 'args' => [], 'lang' => 'js']]]],
+                '$function',
+            ],
+        ];
+    }
+
     public function testReportsFailureWhenTheDriverThrows(): void
     {
         $database = Mockery::mock(Database::class);
