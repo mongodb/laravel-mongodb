@@ -233,20 +233,13 @@ class DatabaseQuery extends Tool
         }
 
         foreach ($document as $operator => $value) {
-            $this->ensureOperatorIsNotJavaScript($operator);
+            if (self::JS_EXECUTION_OPERATORS[$operator] ?? false) {
+                throw new InvalidArgumentException(sprintf('Server-side JavaScript operators are not allowed. Found: %s', $operator));
+            }
 
             if (is_array($value)) {
                 $this->ensureNoJsExecution($value, $level + 1);
             }
         }
-    }
-
-    private function ensureOperatorIsNotJavaScript(int|string $operator): void
-    {
-        if (! in_array($operator, self::JS_EXECUTION_OPERATORS, true)) {
-            return;
-        }
-
-        throw new InvalidArgumentException(sprintf('Server-side JavaScript operators are not allowed. Found: %s', $operator));
     }
 }
