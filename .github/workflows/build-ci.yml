@@ -11,7 +11,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    # ubuntu-22.04 (kernel 6.8) avoids MongoDB 8.x refusing to start on the
+    # newer ubuntu-24.04 runner kernel (SERVER-125742). Revert to ubuntu-24.04
+    # once the runner kernel or the mongo image is fixed, and switch the
+    # crypt_shared target below back to ubuntu2404 at the same time.
+    runs-on: ubuntu-22.04
 
     name: PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }} Server/${{ matrix.mongodb }} ${{ matrix.mode }}
 
@@ -105,14 +109,14 @@ jobs:
       - name: Resolve crypt_shared
         id: crypt-shared
         if: matrix.mongodb == '8.0'
-        run: php -d display_errors=stderr .github/scripts/crypt_shared_version.php --target ubuntu2404 >> "$GITHUB_OUTPUT"
+        run: php -d display_errors=stderr .github/scripts/crypt_shared_version.php --target ubuntu2204 >> "$GITHUB_OUTPUT"
 
       - name: Cache crypt_shared library
         if: matrix.mongodb == '8.0'
         uses: actions/cache@v6
         with:
           path: /tmp/crypt_shared
-          key: crypt-shared-ubuntu2404-${{ steps.crypt-shared.outputs.version }}
+          key: crypt-shared-ubuntu2204-${{ steps.crypt-shared.outputs.version }}
 
       - name: Install crypt_shared library
         if: matrix.mongodb == '8.0'
