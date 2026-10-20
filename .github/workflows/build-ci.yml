@@ -11,7 +11,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    # ubuntu-22.04 (kernel 6.8) avoids MongoDB 8.x refusing to start on the
+    # newer ubuntu-24.04 runner kernel (SERVER-125742). Revert to ubuntu-24.04
+    # once the runner kernel or the mongo image is fixed, and switch the
+    # crypt_shared target below back to ubuntu2404 at the same time.
+    runs-on: ubuntu-22.04
 
     name: PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }} Server/${{ matrix.mongodb }} ${{ matrix.mode }}
 
@@ -60,9 +64,33 @@ jobs:
           docker run --name mongodb -p 27017:27017 -e MONGO_INITDB_DATABASE=unittest --detach mongo:${{ matrix.mongodb }} mongod --replSet rs --setParameter transactionLifetimeLimitSeconds=5
 
           if [ "${{ matrix.mongodb }}" = "4.4" ]; then MONGOSH_BIN="mongo"; else MONGOSH_BIN="mongosh"; fi
-          until docker exec --tty mongodb $MONGOSH_BIN --eval "db.runCommand({ ping: 1 })"; do
+
+          ready=""
+          for _ in $(seq 1 60); do
+            if docker exec --tty mongodb $MONGOSH_BIN --eval "db.runCommand({ ping: 1 })"; then
+              ready="yes"
+              break
+            fi
+
+            if [ "$(docker inspect --format '{{.State.Running}}' mongodb 2>/dev/null)" != "true" ]; then
+              echo "::error::The mongodb container exited before it became ready."
+              break
+            fi
+
             sleep 1
           done
+
+          if [ -z "$ready" ]; then
+            echo "::group::MongoDB container diagnostics"
+            docker ps --all
+            docker inspect --format 'ExitCode={{.State.ExitCode}} Error={{.State.Error}}' mongodb || true
+            docker logs mongodb || true
+            df -h /
+            free -h
+            echo "::endgroup::"
+            exit 1
+          fi
+
           sudo docker exec --tty mongodb $MONGOSH_BIN --eval "rs.initiate({\"_id\":\"rs\",\"members\":[{\"_id\":0,\"host\":\"127.0.0.1:27017\" }]})"
 
       - name: Show MongoDB server status
@@ -81,14 +109,14 @@ jobs:
       - name: Resolve crypt_shared
         id: crypt-shared
         if: matrix.mongodb == '8.0'
-        run: php -d display_errors=stderr .github/scripts/crypt_shared_version.php --target ubuntu2404 >> "$GITHUB_OUTPUT"
+        run: php -d display_errors=stderr .github/scripts/crypt_shared_version.php --target ubuntu2204 >> "$GITHUB_OUTPUT"
 
       - name: Cache crypt_shared library
         if: matrix.mongodb == '8.0'
         uses: actions/cache@v6
         with:
           path: /tmp/crypt_shared
-          key: crypt-shared-ubuntu2404-${{ steps.crypt-shared.outputs.version }}
+          key: crypt-shared-ubuntu2204-${{ steps.crypt-shared.outputs.version }}
 
       - name: Install crypt_shared library
         if: matrix.mongodb == '8.0'

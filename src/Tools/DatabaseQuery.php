@@ -43,6 +43,8 @@ class DatabaseQuery extends Tool
     // https://www.mongodb.com/docs/manual/core/aggregation-pipeline-limits/#number-of-stages-restrictions
     private const MAX_STAGES_PER_PIPELINE = 1000;
 
+    private const JS_EXECUTION_OPERATORS = ['$where' => true, '$function' => true, '$accumulator' => true];
+
     /**
      * The tool's name.
      *
@@ -118,6 +120,8 @@ class DatabaseQuery extends Tool
             // Check nested write ops recursively with conservative allow list
             $this->ensureNoNestedWriteInAggregation($command['pipeline'] ?? []);
         }
+
+        $this->ensureNoJsExecution($command);
 
         return $connection->getDatabase()->command($command)->toArray();
     }
@@ -213,6 +217,28 @@ class DatabaseQuery extends Tool
                     }
 
                     break;
+            }
+        }
+    }
+
+    /**
+     * @param array<mixed> $document
+     *
+     * @throws InvalidArgumentException
+     */
+    private function ensureNoJsExecution(array $document, int $level = 1): void
+    {
+        if ($level > self::MAX_NESTING_LEVEL) {
+            throw new InvalidArgumentException(sprintf('Document nesting exceeds the maximum of %d levels.', self::MAX_NESTING_LEVEL));
+        }
+
+        foreach ($document as $operator => $value) {
+            if (self::JS_EXECUTION_OPERATORS[$operator] ?? false) {
+                throw new InvalidArgumentException(sprintf('Server-side JavaScript operators are not allowed. Found: %s', $operator));
+            }
+
+            if (is_array($value)) {
+                $this->ensureNoJsExecution($value, $level + 1);
             }
         }
     }
