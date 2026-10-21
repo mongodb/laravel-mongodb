@@ -435,8 +435,9 @@ class EncryptedCommandsTest extends TestCase
         $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
 
         try {
+            // The warning is a single output line, so it is matched as a whole.
             $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
-                ->expectsOutputToContain('The collection "patients" exists without encryption')
+                ->expectsOutputToContain('The collection "patients" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection patients --recreate".')
                 ->expectsOutputToContain('Every mapped collection already exists.')
                 ->assertExitCode(Command::FAILURE);
 
@@ -520,6 +521,37 @@ class EncryptedCommandsTest extends TestCase
             $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('patients'));
             $this->assertNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
             $this->assertSame(1, $plain->getCollection('users')->countDocuments([]));
+        } finally {
+            $plain->getCollection('patients')->drop();
+            $plain->getCollection('users')->drop();
+        }
+    }
+
+    /**
+     * A mapped collection that is not the one selected on the command line can
+     * be left without encryption: the warning names it, and the command to run
+     * on it.
+     */
+    #[Group('queryable-encryption')]
+    public function testCreateWarnsAboutAnotherMappedCollectionLeftWithoutEncryption(): void
+    {
+        $this->enableEncryption(self::PATIENTS_AND_USERS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+        $plain->getCollection('users')->insertOne(['email' => 'stored in plaintext']);
+
+        try {
+            $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients', '--recreate' => true, '--connection' => 'mongodb'])
+                ->expectsOutputToContain('Dropped collection "patients"')
+                ->expectsOutputToContain('Created encrypted collection "patients"')
+                ->expectsOutputToContain('The collection "users" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection users --recreate --connection=mongodb".')
+                ->assertExitCode(Command::FAILURE);
+
+            $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('patients'));
+            $this->assertNotNull($plain->getCollection('users')->findOne(['email' => 'stored in plaintext']));
         } finally {
             $plain->getCollection('patients')->drop();
             $plain->getCollection('users')->drop();

@@ -91,10 +91,17 @@ final class CreateCollectionCommand extends Command
         // A mapped collection that is not dropped keeps its plaintext fields.
         $unencrypted = array_values(array_diff($present, $encrypted, $dropped));
 
+        // The collection to replace is not always the one selected on the
+        // command line, so the warning names it and the command to run.
+        $connectionName = $this->option('connection');
+        $connectionOption = $connectionName ? ' --connection=' . $connectionName : '';
+
         foreach ($unencrypted as $name) {
             $this->warn(sprintf(
-                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Run this command with "--recreate" to drop it and create it again.',
+                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection %s --recreate%s".',
                 $name,
+                $name,
+                $connectionOption,
             ));
         }
 
