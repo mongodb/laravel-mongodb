@@ -565,6 +565,25 @@ class EncryptedCommandsTest extends TestCase
         }
     }
 
+    #[Group('queryable-encryption')]
+    public function testStatusRemediationTargetsTheSelectedConnection(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        try {
+            $this->artisan('mongodb:encryption:status', ['--connection' => 'mongodb'])
+                ->expectsOutputToContain('php artisan mongodb:encryption:create-collection patients --recreate --connection=mongodb')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $plain->getCollection('patients')->drop();
+        }
+    }
+
     public function testRewrapDataKeysFailsWithoutEncryptionConfigured(): void
     {
         config(['database.connections.mongodb.driver_options' => []]);

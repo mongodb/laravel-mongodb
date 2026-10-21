@@ -58,11 +58,15 @@ final class StatusCommand extends Command
             return self::FAILURE;
         }
 
+        $connectionName = $this->option('connection');
+        $connectionOption = $connectionName ? ' --connection=' . $connectionName : '';
+
         foreach ($unencrypted as $collection) {
             $this->error(sprintf(
-                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection %s --recreate".',
+                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection %s --recreate%s".',
                 $collection,
                 $collection,
+                $connectionOption,
             ));
         }
 
