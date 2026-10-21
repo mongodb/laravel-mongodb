@@ -11,11 +11,15 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Collection;
 use MongoDB\Database;
 use MongoDB\Laravel\Schema\Blueprint;
+use MongoDB\Model\CollectionInfo;
 use MongoDB\Model\IndexInfo;
 
+use function array_column;
 use function assert;
 use function collect;
+use function config;
 use function count;
+use function iterator_to_array;
 use function sprintf;
 
 class SchemaTest extends TestCase
@@ -32,6 +36,7 @@ class SchemaTest extends TestCase
         $database->dropCollection(self::COLL_2);
         $database->dropCollection(self::COLL_WITH_COLLATION);
         $database->dropCollection('test_view');
+        $database->dropCollection('test_' . self::COLL_1);
 
         parent::tearDown();
     }
@@ -101,6 +106,95 @@ class SchemaTest extends TestCase
         Schema::create(self::COLL_1);
         Schema::drop(self::COLL_1);
         $this->assertFalse(Schema::hasCollection(self::COLL_1));
+    }
+
+    /**
+     * The methods inherited from Laravel take the logical collection name and
+     * apply the connection table prefix, as Laravel does. The migration
+     * repository relies on "hasTable()" to decide whether the migrations
+     * already ran.
+     */
+    public function testHasTableAppliesTheTablePrefix(): void
+    {
+        $this->useTablePrefix();
+
+        Schema::create(self::COLL_1);
+
+        $this->assertContains('test_' . self::COLL_1, $this->collectionNames());
+        $this->assertTrue(Schema::hasTable(self::COLL_1));
+        $this->assertFalse(Schema::hasTable('missing'));
+    }
+
+    public function testDropIfExistsAppliesTheTablePrefix(): void
+    {
+        $this->useTablePrefix();
+
+        Schema::create(self::COLL_1);
+        $this->assertContains('test_' . self::COLL_1, $this->collectionNames());
+
+        Schema::dropIfExists(self::COLL_1);
+
+        $this->assertNotContains('test_' . self::COLL_1, $this->collectionNames());
+    }
+
+    /**
+     * getColumns() and getIndexes(), and the methods that delegate to them,
+     * take the logical collection name.
+     */
+    public function testColumnsAndIndexesApplyTheTablePrefix(): void
+    {
+        $this->useTablePrefix();
+
+        Schema::create(self::COLL_1, static function (Blueprint $collection) {
+            $collection->index('name');
+        });
+
+        DB::connection('mongodb')->table(self::COLL_1)->insert(['name' => 'value']);
+
+        $this->assertContains('name', array_column(Schema::getColumns(self::COLL_1), 'name'));
+        $this->assertContains('name', Schema::getColumnListing(self::COLL_1));
+        $this->assertTrue(Schema::hasColumn(self::COLL_1, 'name'));
+
+        $this->assertSame(['_id_', 'name_1'], array_column(Schema::getIndexes(self::COLL_1), 'name'));
+        $this->assertContains('name_1', Schema::getIndexListing(self::COLL_1));
+        $this->assertTrue(Schema::hasIndex(self::COLL_1, 'name_1'));
+    }
+
+    /**
+     * hasCollection() and getCollection() are not Laravel methods: they take
+     * the real collection name, the connection table prefix is not applied.
+     */
+    public function testCollectionLookupsTakeTheRealCollectionName(): void
+    {
+        $this->useTablePrefix();
+
+        Schema::create(self::COLL_1);
+
+        $this->assertTrue(Schema::hasCollection('test_' . self::COLL_1));
+        $this->assertFalse(Schema::hasCollection(self::COLL_1));
+
+        $collection = Schema::getCollection('test_' . self::COLL_1);
+        $this->assertInstanceOf(CollectionInfo::class, $collection);
+        $this->assertSame('test_' . self::COLL_1, $collection->getName());
+        $this->assertFalse(Schema::getCollection(self::COLL_1));
+    }
+
+    /**
+     * Configure the connection with a table prefix, and forget the resolved
+     * connection so the next schema call uses it.
+     */
+    private function useTablePrefix(): void
+    {
+        config(['database.connections.mongodb.prefix' => 'test_']);
+        $this->app->make('db')->purge('mongodb');
+    }
+
+    /** @return list<string> */
+    private function collectionNames(): array
+    {
+        $database = $this->getConnection('mongodb')->getDatabase();
+
+        return iterator_to_array($database->listCollectionNames(), false);
     }
 
     public function testBluePrint(): void

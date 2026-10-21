@@ -85,6 +85,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Determine if the given collection exists.
      *
+     * The name is the real collection name: the connection table prefix is not
+     * applied. Use hasTable() to pass a logical collection name.
+     *
      * @param string $name
      *
      * @return bool
@@ -100,11 +103,16 @@ class Builder extends \Illuminate\Database\Schema\Builder
         return count($collections) !== 0;
     }
 
-    /** @inheritdoc */
+    /**
+     * @inheritdoc
+     *
+     * The name is the logical table name: the connection table prefix is
+     * applied, as in Laravel.
+     */
     #[Override]
     public function hasTable($table)
     {
-        return $this->hasCollection($table);
+        return $this->hasCollection($this->connection->getTablePrefix() . $table);
     }
 
     /** @inheritdoc */
@@ -231,7 +239,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     #[Override]
     public function dropIfExists($table)
     {
-        if ($this->hasCollection($table)) {
+        if ($this->hasTable($table)) {
             $this->drop($table);
         }
     }
@@ -326,6 +334,12 @@ class Builder extends \Illuminate\Database\Schema\Builder
         return $collections;
     }
 
+    /**
+     * @inheritdoc
+     *
+     * The name is the logical collection name: the connection table prefix is
+     * applied. A "database.collection" name selects the database.
+     */
     #[Override]
     public function getColumns($table)
     {
@@ -333,6 +347,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
         if (str_contains($table, '.')) {
             [$db, $table] = explode('.', $table, 2);
         }
+
+        $table = $this->connection->getTablePrefix() . $table;
 
         $stats = $this->connection->getDatabase($db)->getCollection($table)->aggregate([
             // Sample 1,000 documents to get a representative sample of the collection
@@ -385,10 +401,16 @@ class Builder extends \Illuminate\Database\Schema\Builder
         return $columns;
     }
 
+    /**
+     * @inheritdoc
+     *
+     * The name is the logical collection name: the connection table prefix is
+     * applied.
+     */
     #[Override]
     public function getIndexes($table)
     {
-        $collection = $this->connection->getDatabase()->getCollection($table);
+        $collection = $this->connection->getDatabase()->getCollection($this->connection->getTablePrefix() . $table);
         assert($collection instanceof Collection);
         $indexList = [];
 
@@ -459,6 +481,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * Get collection.
+     *
+     * The name is the real collection name: the connection table prefix is not
+     * applied.
      *
      * @param string $name
      *
