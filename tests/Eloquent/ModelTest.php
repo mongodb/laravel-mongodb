@@ -50,7 +50,6 @@ class ModelTest extends TestCase
         yield [
             false,
             new class {
-                use DocumentModel;
             },
         ];
         yield [

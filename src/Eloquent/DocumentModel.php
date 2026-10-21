@@ -29,6 +29,7 @@ use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 use MongoDB\Laravel\Encryption\AutoEncryption;
 use MongoDB\Laravel\Encryption\EncryptedFieldTypes;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
+use Override;
 use ReflectionProperty;
 use Stringable;
 
@@ -267,6 +268,19 @@ trait DocumentModel
         return parent::getAttributeFromArray($key);
     }
 
+    #[Override]
+    public function newFromBuilder($attributes = [], $connection = null)
+    {
+        if (is_object($attributes)) {
+            $attributes = (array) $attributes;
+        }
+
+        // The reserved field is written by the server, drop it from the model.
+        unset($attributes[AutoEncryption::SAFE_CONTENT_FIELD]);
+
+        return parent::newFromBuilder($attributes, $connection);
+    }
+
     /** @inheritdoc */
     public function setAttribute($key, $value)
     {
@@ -277,7 +291,7 @@ trait DocumentModel
         // never be forged or desynchronized by the application.
         if (AutoEncryption::isSafeContentKey($key)) {
             throw new MassAssignmentException(
-                sprintf('The reserved field [%s] is managed by the server and cannot be set on model [%s].', '__safeContent__', static::class),
+                sprintf('The reserved field [%s] is managed by the server and cannot be set on model [%s].', AutoEncryption::SAFE_CONTENT_FIELD, static::class),
             );
         }
 
@@ -494,7 +508,7 @@ trait DocumentModel
         // Reject attempts to unset the server-managed encrypted field.
         if (AutoEncryption::isSafeContentKey($offset)) {
             throw new MassAssignmentException(
-                sprintf('The reserved field [%s] is managed by the server and cannot be unset on model [%s].', '__safeContent__', static::class),
+                sprintf('The reserved field [%s] is managed by the server and cannot be unset on model [%s].', AutoEncryption::SAFE_CONTENT_FIELD, static::class),
             );
         }
 

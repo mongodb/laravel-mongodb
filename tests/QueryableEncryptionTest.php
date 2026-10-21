@@ -75,11 +75,14 @@ final class QueryableEncryptionTest extends TestCase
             'billing' => ['credit_card_number' => '0000'],
         ]);
 
-        // The server-managed field is still returned by queries until the
-        // follow-up hides it. It is written by the server, so it is not on the
-        // in-memory model returned by create().
+        // The server-managed field is dropped from hydrated models.
         $fresh = Patient::findOrFail($patient->getKey());
-        $this->assertArrayHasKey('__safeContent__', $fresh->toArray());
+        $this->assertArrayNotHasKey('__safeContent__', $fresh->getAttributes());
+        $this->assertArrayNotHasKey('__safeContent__', $fresh->toArray());
+        $this->assertStringNotContainsString('__safeContent__', $fresh->toJson());
+
+        // The query builder and the raw driver read keep what the server wrote.
+        $this->assertArrayHasKey('__safeContent__', (array) $connection->table('patients')->first());
 
         // Equality and range queries on encrypted fields.
         $this->assertTrue(Patient::where('ssn', '123-456-7890')->exists());
