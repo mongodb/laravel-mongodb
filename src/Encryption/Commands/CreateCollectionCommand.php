@@ -52,7 +52,7 @@ final class CreateCollectionCommand extends Command
             return self::FAILURE;
         }
 
-        $mapped = array_keys($fields);
+        $mapped = $this->mappedCollectionNames($fields);
         $collection = $this->argument('collection');
 
         if ($collection !== null && ! in_array($collection, $mapped, true)) {
@@ -86,11 +86,13 @@ final class CreateCollectionCommand extends Command
         $targets = $this->targets($collection, $present, $missing);
         $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $present)) : [];
 
-        // A mapped collection that is not dropped keeps its current fields.
-        $leftBehind = array_values(array_filter(
-            $present,
-            static fn (string $name): bool => $states[$name]->needsRecreate() && ! in_array($name, $dropped, true),
-        ));
+        // A mapped collection that already exists is kept as it is, unless
+        // --recreate drops it first, so it keeps its current fields.
+        $kept = array_values(array_diff($present, $dropped));
+        $leftBehind = array_filter(
+            $kept,
+            static fn (string $name): bool => $states[$name]->needsRecreate(),
+        );
 
         // The collection to replace is not always the one selected on the
         // command line, so the warning names it and the command to run.
@@ -110,14 +112,16 @@ final class CreateCollectionCommand extends Command
             }
 
             foreach ($targets as $name) {
-                $this->line(sprintf('Would create encrypted collection "%s".', $name));
+                $this->line(in_array($name, $kept, true)
+                    ? sprintf('The collection "%s" already exists.', $name)
+                    : sprintf('Would create encrypted collection "%s".', $name));
             }
         } else {
             if ($dropped !== [] && ! $this->confirmToProceed(sprintf('The collections "%s" will be dropped, removing their documents.', implode('", "', $dropped)))) {
                 return self::FAILURE;
             }
 
-            $status = $this->createCollections($builder, $targets, $dropped);
+            $status = $this->createCollections($builder, $targets, $dropped, $kept);
         }
 
         return $leftBehind === [] ? $status : self::FAILURE;
@@ -201,8 +205,9 @@ final class CreateCollectionCommand extends Command
     /**
      * @param list<string> $targets
      * @param list<string> $dropped The targets that exist and are dropped first.
+     * @param list<string> $kept    The targets that exist and are not dropped.
      */
-    private function createCollections(Builder $builder, array $targets, array $dropped): int
+    private function createCollections(Builder $builder, array $targets, array $dropped, array $kept): int
     {
         $failed = false;
 
@@ -214,7 +219,10 @@ final class CreateCollectionCommand extends Command
                 }
 
                 $builder->createEncrypted($collection);
-                $this->info(sprintf('Created encrypted collection "%s".', $collection));
+
+                $this->info(in_array($collection, $kept, true)
+                    ? sprintf('The collection "%s" already exists.', $collection)
+                    : sprintf('Created encrypted collection "%s".', $collection));
             } catch (InvalidArgumentException | DriverException $e) {
                 $this->error(sprintf('%s: %s', $collection, $e->getMessage()));
                 $failed = true;

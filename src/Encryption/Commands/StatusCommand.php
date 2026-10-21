@@ -55,7 +55,7 @@ final class StatusCommand extends Command
             return self::FAILURE;
         }
 
-        foreach ($problems as $collection => $status) {
+        foreach ($problems as [$collection, $status]) {
             $this->error($this->remediation($collection, $status));
         }
 

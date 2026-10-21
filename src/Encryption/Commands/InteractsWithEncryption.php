@@ -78,15 +78,17 @@ trait InteractsWithEncryption
     {
         $prefix = $connection->getTablePrefix();
         $realNames = [];
+        $logicalNames = [];
         $states = [];
 
-        foreach (array_keys($encryptedFields) as $collection) {
-            $realNames[$prefix . $collection] = $collection;
+        foreach ($this->mappedCollectionNames($encryptedFields) as $collection) {
+            $realNames[] = $prefix . $collection;
+            $logicalNames[$prefix . $collection] = $collection;
             $states[$collection] = new CollectionStatus(CollectionState::Missing);
         }
 
-        foreach ($connection->getDatabase()->listCollections(['filter' => ['name' => ['$in' => array_keys($realNames)]]]) as $info) {
-            $collection = $realNames[$info->getName()] ?? null;
+        foreach ($connection->getDatabase()->listCollections(['filter' => ['name' => ['$in' => $realNames]]]) as $info) {
+            $collection = $logicalNames[$info->getName()] ?? null;
 
             if ($collection === null) {
                 continue;
@@ -103,6 +105,28 @@ trait InteractsWithEncryption
     }
 
     /**
+     * The logical names of the mapped collections, as strings.
+     *
+     * A collection name can be a number, and PHP turns such an array key into an
+     * int, which then fails the string parameters and the string comparisons of
+     * the commands.
+     *
+     * @param  array<string, mixed> $encryptedFields
+     *
+     * @return list<string>
+     */
+    protected function mappedCollectionNames(array $encryptedFields): array
+    {
+        $names = [];
+
+        foreach (array_keys($encryptedFields) as $collection) {
+            $names[] = (string) $collection;
+        }
+
+        return $names;
+    }
+
+    /**
      * Print each mapped collection with its state on the server, and return the
      * ones that do not hold the declared fields.
      *
@@ -112,7 +136,7 @@ trait InteractsWithEncryption
      * @param  array<string, list<array<string, mixed>>> $encryptedFields
      * @param  array<string, CollectionStatus>|null      $states          Null to list the collections without their state.
      *
-     * @return array<string, CollectionStatus> The collections that do not hold the declared fields.
+     * @return list<array{string, CollectionStatus}> The collections that do not hold the declared fields, with their name.
      */
     protected function printCollectionStates(array $encryptedFields, ?array $states): array
     {
@@ -125,13 +149,13 @@ trait InteractsWithEncryption
         $this->line('Mapped collections: ');
         $problems = [];
 
-        foreach ($encryptedFields as $collection => $fields) {
+        foreach ($this->mappedCollectionNames($encryptedFields) as $collection) {
             $status = $states[$collection] ?? null;
             $label = $status === null ? '' : ', ' . $status->state->value;
-            $line = sprintf('  - %s: %d encrypted field(s)%s', $collection, count($fields), $label);
+            $line = sprintf('  - %s: %d encrypted field(s)%s', $collection, count($encryptedFields[$collection]), $label);
 
             if ($status !== null && $status->needsRecreate()) {
-                $problems[$collection] = $status;
+                $problems[] = [$collection, $status];
                 $this->error($line);
             } else {
                 $this->line($line);
@@ -152,22 +176,17 @@ trait InteractsWithEncryption
      */
     protected function remediation(string $collection, CollectionStatus $status): string
     {
+        $name = $this->option('connection');
+
         return sprintf(
             'The collection "%s" %s. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection %s --recreate%s".',
             $collection,
             $status->state === CollectionState::Mismatched
                 ? sprintf('exists with encrypted fields that differ from the configuration ("%s")', implode('", "', $status->differingFields))
-                : 'exists without encryption: its mapped fields are stored in plaintext',
+                : 'exists without encrypted fields: the documents written so far may hold the mapped fields in plaintext',
             $collection,
-            $this->connectionOption(),
+            // Repeat the --connection option, empty for the default connection.
+            $name ? ' --connection=' . $name : '',
         );
-    }
-
-    /** The --connection option to repeat in a remediation command, empty for the default connection. */
-    protected function connectionOption(): string
-    {
-        $name = $this->option('connection');
-
-        return $name ? ' --connection=' . $name : '';
     }
 }
