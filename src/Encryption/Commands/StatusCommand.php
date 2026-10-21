@@ -9,6 +9,7 @@ use InvalidArgumentException;
 use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Encryption\CollectionState;
 use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
 
 use function array_keys;
@@ -22,8 +23,6 @@ use function sprintf;
 final class StatusCommand extends Command
 {
     use InteractsWithEncryption;
-
-    private const NOT_ENCRYPTED = ', exists, not encrypted';
 
     protected $signature = 'mongodb:encryption:status
         {--no-server : Only validate the configuration, do not contact the server}
@@ -114,10 +113,11 @@ final class StatusCommand extends Command
         $unencrypted = [];
 
         foreach ($encryptedFields as $collection => $fields) {
-            $state = $builder === null ? '' : $this->collectionState($connection, $builder, (string) $collection);
-            $line = sprintf('  - %s: %d encrypted field(s)%s', $collection, $fields, $state);
+            $state = $builder === null ? null : $this->collectionState($connection, $builder, (string) $collection);
+            $label = $state === null ? '' : ', ' . $state->value;
+            $line = sprintf('  - %s: %d encrypted field(s)%s', $collection, $fields, $label);
 
-            if ($state === self::NOT_ENCRYPTED) {
+            if ($state === CollectionState::NotEncrypted) {
                 $unencrypted[] = (string) $collection;
                 $this->error($line);
             } else {
@@ -128,15 +128,15 @@ final class StatusCommand extends Command
         return $unencrypted;
     }
 
-    private function collectionState(Connection $connection, SchemaBuilder $builder, string $collection): string
+    private function collectionState(Connection $connection, SchemaBuilder $builder, string $collection): CollectionState
     {
         if ($builder->hasEncryptedCollection($collection)) {
-            return ', exists';
+            return CollectionState::Encrypted;
         }
 
         // hasEncryptedCollection() applies the connection prefix, hasCollection() does not.
         return $builder->hasCollection($connection->getTablePrefix() . $collection)
-            ? self::NOT_ENCRYPTED
-            : ', missing';
+            ? CollectionState::NotEncrypted
+            : CollectionState::Missing;
     }
 }
