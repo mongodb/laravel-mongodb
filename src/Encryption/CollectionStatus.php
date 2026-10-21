@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Encryption;
 
 use function array_flip;
 use function array_intersect_key;
+use function array_is_list;
 use function array_keys;
 use function array_unique;
 use function is_array;
@@ -27,7 +28,7 @@ final readonly class CollectionStatus
      * does not control is ignored, so a value added by libmongocrypt does not
      * read as a difference.
      */
-    private const QUERY_OPTIONS = ['queryType', 'contention', 'min', 'max', 'sparsity', 'precision'];
+    private const QUERY_OPTIONS = ['queryType', 'contention', 'min', 'max', 'sparsity', 'precision', 'trimFactor'];
 
     /** The contention stored for a query when the configuration does not declare one. */
     private const DEFAULT_CONTENTION = 8;
@@ -134,6 +135,12 @@ final readonly class CollectionStatus
     {
         if (! is_array($queries)) {
             return [];
+        }
+
+        // A field can declare a single query document where a list of queries
+        // is expected, and the collection stores the shape it was given.
+        if (! array_is_list($queries)) {
+            $queries = [$queries];
         }
 
         $specs = [];

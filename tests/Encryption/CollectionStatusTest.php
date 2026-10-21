@@ -10,7 +10,9 @@ use MongoDB\Laravel\Encryption\CollectionStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
+use function array_is_list;
 use function array_map;
+use function is_array;
 
 /**
  * The comparison of the encrypted fields declared in the configuration with
@@ -59,6 +61,38 @@ class CollectionStatusTest extends TestCase
                 [['path' => 'ssn', 'bsonType' => 'string', 'queries' => [self::EQUALITY_QUERY]]],
                 CollectionState::Mismatched,
                 ['ssn'],
+            ],
+            // A field can declare a single query document instead of a list of
+            // queries, and the collection stores the shape it was given.
+            'single query document' => [
+                [['path' => 'ssn', 'bsonType' => 'string', 'queries' => self::EQUALITY_QUERY]],
+                [['path' => 'ssn', 'bsonType' => 'string', 'queries' => self::EQUALITY_QUERY]],
+                CollectionState::Encrypted,
+                [],
+            ],
+            'single query document against a list of queries' => [
+                [['path' => 'ssn', 'bsonType' => 'string', 'queries' => self::EQUALITY_QUERY]],
+                [['path' => 'ssn', 'bsonType' => 'string', 'queries' => [self::EQUALITY_QUERY]]],
+                CollectionState::Encrypted,
+                [],
+            ],
+            'another contention in a single query document' => [
+                [['path' => 'ssn', 'bsonType' => 'string', 'queries' => self::EQUALITY_QUERY + ['contention' => 4]]],
+                [['path' => 'ssn', 'bsonType' => 'string', 'queries' => self::EQUALITY_QUERY]],
+                CollectionState::Mismatched,
+                ['ssn'],
+            ],
+            'same trimFactor' => [
+                [['path' => 'amount', 'bsonType' => 'int', 'queries' => [self::RANGE_QUERY + ['trimFactor' => 0]]]],
+                [['path' => 'amount', 'bsonType' => 'int', 'queries' => [self::RANGE_QUERY + ['trimFactor' => 0]]]],
+                CollectionState::Encrypted,
+                [],
+            ],
+            'another trimFactor' => [
+                [['path' => 'amount', 'bsonType' => 'int', 'queries' => [self::RANGE_QUERY + ['trimFactor' => 1]]]],
+                [['path' => 'amount', 'bsonType' => 'int', 'queries' => [self::RANGE_QUERY]]],
+                CollectionState::Mismatched,
+                ['amount'],
             ],
             // A query option that the configuration does not control is
             // ignored, so a value added by the library is not a difference.
@@ -177,8 +211,12 @@ class CollectionStatusTest extends TestCase
             static function (array $field): array {
                 $field['keyId'] = new Binary('aaaabbbbccccdddd', Binary::TYPE_UUID);
 
-                foreach ($field['queries'] ?? [] as $index => $query) {
-                    $field['queries'][$index] += ['contention' => 8];
+                if (isset($field['queries']) && is_array($field['queries'])) {
+                    // A field declared with a single query document stores that
+                    // document, not a one-element list of queries.
+                    $field['queries'] = array_is_list($field['queries'])
+                        ? array_map(static fn (array $query): array => $query + ['contention' => 8], $field['queries'])
+                        : $field['queries'] + ['contention' => 8];
                 }
 
                 return $field;
