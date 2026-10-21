@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Encryption;
 
+use MongoDB\BSON\Int64;
+
 use function array_flip;
 use function array_intersect_key;
 use function array_is_list;
 use function array_keys;
+use function array_map;
 use function array_unique;
 use function is_array;
 use function is_string;
@@ -26,7 +29,8 @@ final readonly class CollectionStatus
     /**
      * The query options that are compared. An option that the configuration
      * does not control is ignored, so a value added by libmongocrypt does not
-     * read as a difference.
+     * read as a difference. An option that a later server version adds is not
+     * compared until it is listed here.
      */
     private const QUERY_OPTIONS = ['queryType', 'contention', 'min', 'max', 'sparsity', 'precision', 'trimFactor'];
 
@@ -154,6 +158,9 @@ final readonly class CollectionStatus
             // configuration declares one or not.
             $query['contention'] ??= self::DEFAULT_CONTENTION;
             $query = array_intersect_key($query, array_flip(self::QUERY_OPTIONS));
+
+            $query = array_map(self::normalizeValue(...), $query);
+
             ksort($query);
 
             $specs[] = (string) json_encode($query);
@@ -162,5 +169,24 @@ final readonly class CollectionStatus
         sort($specs);
 
         return $specs;
+    }
+
+    /**
+     * A query option value as the driver reads it back.
+     *
+     * The bound of a "long" range field has to be declared as an Int64, because
+     * the server rejects a PHP int there, while a stored 64-bit integer that
+     * fits in a PHP int is read back as an int. The two represent the same
+     * bound, so they have to compare equal.
+     */
+    private static function normalizeValue(mixed $value): mixed
+    {
+        if (! $value instanceof Int64) {
+            return $value;
+        }
+
+        $int = (int) (string) $value;
+
+        return (string) $int === (string) $value ? $int : $value;
     }
 }

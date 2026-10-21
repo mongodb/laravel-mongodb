@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests\Encryption;
 
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Int64;
 use MongoDB\Laravel\Encryption\CollectionState;
 use MongoDB\Laravel\Encryption\CollectionStatus;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -162,6 +163,36 @@ class CollectionStatusTest extends TestCase
 
         self::assertSame($state, $status->state);
         self::assertSame($differing, $status->differingFields);
+    }
+
+    /**
+     * The bound of a "long" range field has to be declared as an Int64, because
+     * the server rejects a PHP int there, while the driver reads the stored
+     * 64-bit integer back as a PHP int when it fits one. The stored shape below
+     * is the one the server holds for a collection created with the declaration.
+     */
+    public function testLongRangeBounds(): void
+    {
+        $declared = [['path' => 'amount', 'bsonType' => 'long', 'keyAltName' => 'unittest.patients/amount', 'queries' => [['queryType' => 'range', 'min' => new Int64(0), 'max' => new Int64(1000)]]]];
+        $stored = ['fields' => [['path' => 'amount', 'bsonType' => 'long', 'keyId' => new Binary('aaaabbbbccccdddd', Binary::TYPE_UUID), 'queries' => [['queryType' => 'range', 'contention' => 8, 'min' => 0, 'max' => 1000]]]]];
+
+        $status = CollectionStatus::fromEncryptedFields($declared, $stored);
+
+        self::assertSame(CollectionState::Encrypted, $status->state);
+        self::assertSame([], $status->differingFields);
+    }
+
+    /** A 64-bit bound outside the PHP integer range stays an Int64 on both sides. */
+    public function testLongRangeBoundsOutsideThePhpIntegerRange(): void
+    {
+        $declared = [['path' => 'amount', 'bsonType' => 'long', 'keyAltName' => 'unittest.patients/amount', 'queries' => [['queryType' => 'range', 'min' => new Int64('0'), 'max' => new Int64('9223372036854775807')]]]];
+        $stored = static fn (string $max): array => ['fields' => [['path' => 'amount', 'bsonType' => 'long', 'keyId' => new Binary('aaaabbbbccccdddd', Binary::TYPE_UUID), 'queries' => [['queryType' => 'range', 'contention' => 8, 'min' => new Int64('0'), 'max' => new Int64($max)]]]]];
+
+        self::assertSame(CollectionState::Encrypted, CollectionStatus::fromEncryptedFields($declared, $stored('9223372036854775807'))->state);
+
+        $other = CollectionStatus::fromEncryptedFields($declared, $stored('-9223372036854775808'));
+        self::assertSame(CollectionState::Mismatched, $other->state);
+        self::assertSame(['amount'], $other->differingFields);
     }
 
     /** @return array<string, array{CollectionState, bool}> */
