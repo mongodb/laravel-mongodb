@@ -85,33 +85,34 @@ final class CreateCollectionCommand extends Command
             return self::FAILURE;
         }
 
-        // Only --recreate can replace a collection that exists without encrypted fields.
-        if (! $this->option('recreate')) {
-            foreach (array_values(array_diff($present, $encrypted)) as $plaintext) {
-                $this->warn(sprintf(
-                    'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Run this command with "--recreate" to drop it and create it again.',
-                    $plaintext,
-                ));
-            }
+        $targets = $this->targets($collection, $present, $missing);
+        $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $present)) : [];
+
+        // A mapped collection that is not dropped keeps its plaintext fields.
+        $unencrypted = array_values(array_diff($present, $encrypted, $dropped));
+
+        foreach ($unencrypted as $name) {
+            $this->warn(sprintf(
+                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Run this command with "--recreate" to drop it and create it again.',
+                $name,
+            ));
         }
 
-        $targets = $this->targets($collection, $present, $missing);
+        $status = self::SUCCESS;
 
         if ($targets === []) {
             $this->info($this->option('recreate')
                 ? 'No mapped collection exists yet.'
                 : 'Every mapped collection already exists.');
+        } else {
+            if ($dropped !== [] && ! $this->confirmToProceed(sprintf('The collections "%s" will be dropped, removing their documents.', implode('", "', $dropped)))) {
+                return self::FAILURE;
+            }
 
-            return self::SUCCESS;
+            $status = $this->createCollections($builder, $targets, $dropped);
         }
 
-        $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $present)) : [];
-
-        if ($dropped !== [] && ! $this->confirmToProceed(sprintf('The collections "%s" will be dropped, removing their documents.', implode('", "', $dropped)))) {
-            return self::FAILURE;
-        }
-
-        return $this->createCollections($builder, $targets, $dropped);
+        return $unencrypted === [] ? $status : self::FAILURE;
     }
 
     /**

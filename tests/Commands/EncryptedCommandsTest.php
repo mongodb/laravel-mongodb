@@ -425,7 +425,7 @@ class EncryptedCommandsTest extends TestCase
     }
 
     #[Group('queryable-encryption')]
-    public function testCreateWarnsAboutACollectionThatExistsWithoutEncryption(): void
+    public function testCreateWithoutRecreateFailsOnACollectionThatExistsWithoutEncryption(): void
     {
         $this->enableEncryption(self::PATIENTS_MAP);
         $this->skipIfQEIsNotSupported();
@@ -438,7 +438,7 @@ class EncryptedCommandsTest extends TestCase
             $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
                 ->expectsOutputToContain('The collection "patients" exists without encryption')
                 ->expectsOutputToContain('Every mapped collection already exists.')
-                ->assertExitCode(Command::SUCCESS);
+                ->assertExitCode(Command::FAILURE);
 
             $this->assertNotNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
         } finally {
@@ -495,6 +495,35 @@ class EncryptedCommandsTest extends TestCase
         $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('patients'));
 
         $this->assertNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
+    }
+
+    #[Group('queryable-encryption')]
+    public function testCreateRecreateDropsOnlyTheCollectionNamedOnTheCommandLine(): void
+    {
+        $this->enableEncryption(self::PATIENTS_AND_USERS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $this->artisan('mongodb:encryption:create-collection', ['collection' => 'users'])->assertExitCode(Command::SUCCESS);
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('users')->insertOne(['name' => 'kept']);
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        try {
+            $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients', '--recreate' => true])
+                ->expectsOutputToContain('Dropped collection "patients"')
+                ->expectsOutputToContain('Created encrypted collection "patients"')
+                ->doesntExpectOutputToContain('exists without encryption')
+                ->assertExitCode(Command::SUCCESS);
+
+            $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('patients'));
+            $this->assertNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
+            $this->assertSame(1, $plain->getCollection('users')->countDocuments([]));
+        } finally {
+            $plain->getCollection('patients')->drop();
+            $plain->getCollection('users')->drop();
+        }
     }
 
     #[Group('queryable-encryption')]
