@@ -584,6 +584,42 @@ class EncryptedCommandsTest extends TestCase
         }
     }
 
+    /**
+     * The mapped collection names are logical: the connection table prefix
+     * applies, and the state is read on the prefixed collection.
+     */
+    #[Group('queryable-encryption')]
+    public function testCommandsApplyTheConnectionTablePrefix(): void
+    {
+        config(['database.connections.mongodb.prefix' => 'test_']);
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('test_patients')->drop();
+        // An unprefixed collection left behind by another test would make the
+        // prefixed name resolve anyway.
+        $plain->getCollection('patients')->drop();
+
+        try {
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 1 encrypted field(s), missing')
+                ->assertExitCode(Command::SUCCESS);
+
+            $plain->getCollection('test_patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 1 encrypted field(s), exists, not encrypted')
+                ->assertExitCode(Command::FAILURE);
+
+            $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
+                ->expectsOutputToContain('The collection "patients" exists without encryption')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $plain->getCollection('test_patients')->drop();
+        }
+    }
+
     public function testRewrapDataKeysFailsWithoutEncryptionConfigured(): void
     {
         config(['database.connections.mongodb.driver_options' => []]);
