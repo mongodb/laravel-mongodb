@@ -304,6 +304,43 @@ class RelationsTest extends TestCase
         $this->assertStringStartsWith('synced', $user->clients[1]->name);
     }
 
+    public function testBelongsToManyDetachWithoutIds(): void
+    {
+        $user    = User::create(['name' => 'Hans Thomas']);
+        $client1 = Client::create(['name' => 'Pork Pies Ltd.']);
+        $client2 = Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $user->clients()->attach([$client1->id, $client2->id]);
+
+        $this->assertSame(2, $user->clients()->detach());
+
+        $user    = User::find($user->id);
+        $client1 = Client::find($client1->id);
+        $client2 = Client::find($client2->id);
+
+        $this->assertSame([], $user->client_ids);
+        $this->assertSame([], $client1->user_ids);
+        $this->assertSame([], $client2->user_ids);
+
+        $user->clients()->sync([$client1->id]);
+
+        $this->assertSame([$client1->id], User::find($user->id)->client_ids);
+        $this->assertSame([$user->id], Client::find($client1->id)->user_ids);
+    }
+
+    public function testBelongsToManyDetachEmptyIdsDoesNothing(): void
+    {
+        $user   = User::create(['name' => 'Hans Thomas']);
+        $client = Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $user->clients()->attach($client);
+
+        $this->assertSame(0, $user->clients()->detach([]));
+
+        $this->assertSame([$client->id], User::find($user->id)->client_ids);
+        $this->assertSame([$user->id], Client::find($client->id)->user_ids);
+    }
+
     public function testBelongsToManySync(): void
     {
         // create test instances
@@ -829,6 +866,44 @@ class RelationsTest extends TestCase
 
         $this->assertEquals(1, $check->labels->count());
         $this->assertContains($label2->id, $client->labels->pluck('id'));
+    }
+
+    public function testMorphToManyDetachWithoutIds(): void
+    {
+        $client = Client::query()->create(['name' => 'Marshall Mathers']);
+
+        $label1 = Label::query()->create(['name' => "I'll never love again"]);
+        $label2 = Label::query()->create(['name' => 'The way I loved you']);
+
+        $client->labels()->attach([$label1->id, $label2->id]);
+
+        $this->assertSame(2, $client->labels()->detach());
+
+        $this->assertSame([], Client::find($client->id)->label_ids);
+        $this->assertCount(0, Client::find($client->id)->labels);
+        $this->assertCount(0, Label::find($label1->id)->clients);
+        $this->assertCount(0, Label::find($label2->id)->clients);
+    }
+
+    public function testMorphedByManyDetachWithoutIdsKeepsOtherTypes(): void
+    {
+        $client = Client::query()->create(['name' => 'Marshall Mathers']);
+        $user   = User::query()->create(['name' => 'Hans Thomas']);
+        $label  = Label::query()->create(['name' => 'The way I loved you']);
+
+        $client->labels()->attach($label);
+        $user->labels()->attach($label);
+
+        $this->assertSame(1, $label->clients()->detach());
+
+        $label = Label::find($label->id);
+        $this->assertCount(0, $label->clients);
+        $this->assertCount(1, $label->users);
+        $this->assertCount(0, Client::find($client->id)->labels);
+        $this->assertCount(1, User::find($user->id)->labels);
+
+        $this->assertSame(0, $label->clients()->detach([]));
+        $this->assertCount(1, $label->users);
     }
 
     public function testMorphToManyDetachingMultipleIds(): void
