@@ -629,8 +629,8 @@ class EncryptedCommandsTest extends TestCase
 
         $plain = $this->plainConnection();
         $plain->getCollection('test_patients')->drop();
-        // An unprefixed collection left behind by another test would make the
-        // prefixed name resolve anyway.
+        // The other tests use the unprefixed collection: drop it so the state
+        // can only come from the prefixed name.
         $plain->getCollection('patients')->drop();
 
         try {

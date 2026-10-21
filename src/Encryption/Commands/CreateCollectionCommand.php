@@ -9,6 +9,7 @@ use Illuminate\Console\ConfirmableTrait;
 use InvalidArgumentException;
 use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Encryption\CollectionState;
 use MongoDB\Laravel\Schema\Builder;
 
 use function array_diff;
@@ -73,17 +74,17 @@ final class CreateCollectionCommand extends Command
         }
 
         try {
-            $builder = $connection->getSchemaBuilder();
-            // hasEncryptedCollection() applies the connection prefix, hasCollection() does not.
-            $prefix = $connection->getTablePrefix();
-            $present = array_values(array_filter($mapped, static fn (string $name): bool => $builder->hasCollection($prefix . $name)));
-            $encrypted = array_values(array_filter($present, $builder->hasEncryptedCollection(...)));
-            $missing = array_values(array_diff($mapped, $present));
+            $states = $this->collectionStates($connection, $mapped);
         } catch (DriverException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
         }
+
+        $builder = $connection->getSchemaBuilder();
+        $present = array_values(array_filter($mapped, static fn (string $name): bool => $states[$name] !== CollectionState::Missing));
+        $encrypted = array_values(array_filter($mapped, static fn (string $name): bool => $states[$name] === CollectionState::Encrypted));
+        $missing = array_values(array_diff($mapped, $present));
 
         $targets = $this->targets($collection, $present, $missing);
         $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $present)) : [];

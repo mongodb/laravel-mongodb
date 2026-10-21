@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Encryption\Commands;
 
 use InvalidArgumentException;
+use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Encryption\CollectionState;
 
+use function array_keys;
 use function is_array;
 use function is_string;
 use function sprintf;
@@ -51,5 +54,45 @@ trait InteractsWithEncryption
         }
 
         return $config;
+    }
+
+    /**
+     * The state of the given mapped collections on the server.
+     *
+     * The names are the logical collection names: the connection table prefix
+     * is applied. A single listCollections call reads every collection, and its
+     * encryptedFields option tells an encrypted collection from a collection
+     * that exists without encryption.
+     *
+     * @param  list<string> $collections
+     *
+     * @return array<string, CollectionState> Keyed by the logical collection name.
+     *
+     * @throws DriverException
+     */
+    protected function collectionStates(Connection $connection, array $collections): array
+    {
+        $prefix = $connection->getTablePrefix();
+        $realNames = [];
+        $states = [];
+
+        foreach ($collections as $collection) {
+            $realNames[$prefix . $collection] = $collection;
+            $states[$collection] = CollectionState::Missing;
+        }
+
+        foreach ($connection->getDatabase()->listCollections(['filter' => ['name' => ['$in' => array_keys($realNames)]]]) as $info) {
+            $collection = $realNames[$info->getName()] ?? null;
+
+            if ($collection === null) {
+                continue;
+            }
+
+            $states[$collection] = is_array($info->getOptions()['encryptedFields'] ?? null)
+                ? CollectionState::Encrypted
+                : CollectionState::NotEncrypted;
+        }
+
+        return $states;
     }
 }

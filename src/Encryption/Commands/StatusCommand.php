@@ -10,12 +10,13 @@ use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Encryption\CollectionState;
-use MongoDB\Laravel\Schema\Builder as SchemaBuilder;
 
 use function array_keys;
+use function array_map;
 use function class_exists;
 use function count;
 use function sprintf;
+use function strval;
 
 /**
  * Diagnose the Queryable Encryption configuration and list mapped collections.
@@ -109,11 +110,13 @@ final class StatusCommand extends Command
 
         $this->line('Mapped collections: ');
 
-        $builder = $this->option('no-server') ? null : $connection->getSchemaBuilder();
+        $states = $this->option('no-server')
+            ? []
+            : $this->collectionStates($connection, array_map(strval(...), array_keys($encryptedFields)));
         $unencrypted = [];
 
         foreach ($encryptedFields as $collection => $fields) {
-            $state = $builder === null ? null : $this->collectionState($connection, $builder, (string) $collection);
+            $state = $states[(string) $collection] ?? null;
             $label = $state === null ? '' : ', ' . $state->value;
             $line = sprintf('  - %s: %d encrypted field(s)%s', $collection, $fields, $label);
 
@@ -126,17 +129,5 @@ final class StatusCommand extends Command
         }
 
         return $unencrypted;
-    }
-
-    private function collectionState(Connection $connection, SchemaBuilder $builder, string $collection): CollectionState
-    {
-        if ($builder->hasEncryptedCollection($collection)) {
-            return CollectionState::Encrypted;
-        }
-
-        // hasEncryptedCollection() applies the connection prefix, hasCollection() does not.
-        return $builder->hasCollection($connection->getTablePrefix() . $collection)
-            ? CollectionState::NotEncrypted
-            : CollectionState::Missing;
     }
 }
