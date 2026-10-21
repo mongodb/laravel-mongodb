@@ -52,6 +52,17 @@ class EncryptedCommandsTest extends TestCase
         ],
     ];
 
+    // The same collection with an extra field: a collection created from
+    // PATIENTS_MAP does not hold the "email" field.
+    private const PATIENTS_WITH_EMAIL_MAP = [
+        'patients' => [
+            'fields' => [
+                ['path' => 'ssn', 'bsonType' => 'string', 'queries' => [['queryType' => 'equality']]],
+                ['path' => 'email', 'bsonType' => 'string'],
+            ],
+        ],
+    ];
+
     // A map without encrypted fields needs no encryption runtime, so the tests
     // that only exercise the command arguments run on any extension version.
     private const EMPTY_FIELDS_MAP = [
@@ -558,6 +569,54 @@ class EncryptedCommandsTest extends TestCase
         }
     }
 
+    /**
+     * The collection was created from another configuration: the field declared
+     * since then is stored in plaintext, so the collection does not hold the
+     * declared fields.
+     */
+    #[Group('queryable-encryption')]
+    public function testCreateWithoutRecreateFailsOnAnEncryptedCollectionWithDifferentFields(): void
+    {
+        $this->createPatientsFromAnotherConfiguration();
+
+        try {
+            // The warning is a single output line, so it is matched as a whole.
+            $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
+                ->expectsOutputToContain('The collection "patients" exists with encrypted fields that differ from the configuration ("email"). Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection patients --recreate".')
+                ->expectsOutputToContain('Every mapped collection already exists.')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $this->dropEncryptedCollections();
+        }
+    }
+
+    /**
+     * Dropping and creating the collection again is the only way to apply the
+     * declared fields: an existing encrypted collection is never altered.
+     */
+    #[Group('queryable-encryption')]
+    public function testCreateRecreateAppliesTheDeclaredFieldsToAnEncryptedCollection(): void
+    {
+        $this->createPatientsFromAnotherConfiguration();
+
+        try {
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 2 encrypted field(s), exists, fields differ')
+                ->assertExitCode(Command::FAILURE);
+
+            $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true])
+                ->expectsOutputToContain('Dropped collection "patients"')
+                ->expectsOutputToContain('Created encrypted collection "patients"')
+                ->assertExitCode(Command::SUCCESS);
+
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 2 encrypted field(s), exists')
+                ->assertExitCode(Command::SUCCESS);
+        } finally {
+            $this->dropEncryptedCollections();
+        }
+    }
+
     #[Group('queryable-encryption')]
     public function testStatusListsMappedCollections(): void
     {
@@ -594,6 +653,21 @@ class EncryptedCommandsTest extends TestCase
                 ->assertExitCode(Command::FAILURE);
         } finally {
             $plain->getCollection('patients')->drop();
+        }
+    }
+
+    #[Group('queryable-encryption')]
+    public function testStatusFailsOnAnEncryptedCollectionWithDifferentFields(): void
+    {
+        $this->createPatientsFromAnotherConfiguration();
+
+        try {
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 2 encrypted field(s), exists, fields differ')
+                ->expectsOutputToContain('The collection "patients" exists with encrypted fields that differ from the configuration ("email")')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $this->dropEncryptedCollections();
         }
     }
 
@@ -861,6 +935,22 @@ class EncryptedCommandsTest extends TestCase
     {
         $this->dropEncryptedCollection('patients');
         $this->dropEncryptedCollection('users');
+    }
+
+    /**
+     * Create the encrypted "patients" collection from PATIENTS_MAP, then
+     * configure PATIENTS_WITH_EMAIL_MAP: the collection does not hold the
+     * "email" field declared since it was created.
+     */
+    private function createPatientsFromAnotherConfiguration(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $this->schemaBuilder()->createEncrypted('patients');
+
+        $this->enableEncryption(self::PATIENTS_WITH_EMAIL_MAP);
     }
 
     private function schemaBuilder(): Builder

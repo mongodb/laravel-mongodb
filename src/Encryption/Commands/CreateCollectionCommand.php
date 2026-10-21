@@ -46,13 +46,14 @@ final class CreateCollectionCommand extends Command
         try {
             $connection = $this->connection();
             $config = $this->autoEncryptionConfig($connection);
-            $mapped = $this->mappedCollections($connection, $config);
+            $fields = $this->mappedFields($connection, $config);
         } catch (InvalidArgumentException | DriverException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
         }
 
+        $mapped = array_keys($fields);
         $collection = $this->argument('collection');
 
         if ($collection !== null && ! in_array($collection, $mapped, true)) {
@@ -74,7 +75,7 @@ final class CreateCollectionCommand extends Command
         }
 
         try {
-            $states = $this->collectionStates($connection, $mapped);
+            $states = $this->collectionStates($connection, $fields);
         } catch (DriverException $e) {
             $this->error($e->getMessage());
 
@@ -82,28 +83,22 @@ final class CreateCollectionCommand extends Command
         }
 
         $builder = $connection->getSchemaBuilder();
-        $present = array_values(array_filter($mapped, static fn (string $name): bool => $states[$name] !== CollectionState::Missing));
-        $encrypted = array_values(array_filter($mapped, static fn (string $name): bool => $states[$name] === CollectionState::Encrypted));
+        $present = array_values(array_filter($mapped, static fn (string $name): bool => $states[$name]->state !== CollectionState::Missing));
         $missing = array_values(array_diff($mapped, $present));
 
         $targets = $this->targets($collection, $present, $missing);
         $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $present)) : [];
 
-        // A mapped collection that is not dropped keeps its plaintext fields.
-        $unencrypted = array_values(array_diff($present, $encrypted, $dropped));
+        // A mapped collection that is not dropped keeps its current fields.
+        $leftBehind = array_values(array_filter(
+            $present,
+            static fn (string $name): bool => $states[$name]->needsRecreate() && ! in_array($name, $dropped, true),
+        ));
 
         // The collection to replace is not always the one selected on the
         // command line, so the warning names it and the command to run.
-        $connectionName = $this->option('connection');
-        $connectionOption = $connectionName ? ' --connection=' . $connectionName : '';
-
-        foreach ($unencrypted as $name) {
-            $this->warn(sprintf(
-                'The collection "%s" exists without encryption: its mapped fields are stored in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection %s --recreate%s".',
-                $name,
-                $name,
-                $connectionOption,
-            ));
+        foreach ($leftBehind as $name) {
+            $this->warn($this->remediation($name, $states[$name]));
         }
 
         $status = self::SUCCESS;
@@ -120,7 +115,7 @@ final class CreateCollectionCommand extends Command
             $status = $this->createCollections($builder, $targets, $dropped);
         }
 
-        return $unencrypted === [] ? $status : self::FAILURE;
+        return $leftBehind === [] ? $status : self::FAILURE;
     }
 
     /**
@@ -147,15 +142,16 @@ final class CreateCollectionCommand extends Command
     }
 
     /**
-     * The collection names declared in the encryptedFieldsMap, each validated.
+     * The encrypted fields declared for each collection of the encryptedFieldsMap,
+     * keyed by the logical collection name.
      *
      * @param  array<string, mixed> $config
      *
-     * @return list<string>
+     * @return array<string, list<array<string, mixed>>>
      *
      * @throws InvalidArgumentException
      */
-    private function mappedCollections(Connection $connection, array $config): array
+    private function mappedFields(Connection $connection, array $config): array
     {
         $map = $config['encryptedFieldsMap'] ?? null;
 
@@ -163,13 +159,12 @@ final class CreateCollectionCommand extends Command
             throw new InvalidArgumentException('No collection is declared in the "encryptedFieldsMap" driver option.');
         }
 
-        $collections = [];
+        $fields = [];
         foreach (array_keys($map) as $collection) {
-            $connection->encryptedFieldsFor((string) $collection);
-            $collections[] = (string) $collection;
+            $fields[(string) $collection] = $connection->encryptedFieldsFor((string) $collection);
         }
 
-        return $collections;
+        return $fields;
     }
 
     /**

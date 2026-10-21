@@ -59,7 +59,7 @@ php artisan mongodb:encryption:create-collection patients
 php artisan mongodb:encryption:status
 ```
 
-`mongodb:encryption:status` marks each mapped collection as `exists`, `exists, not encrypted` when the collection exists without encrypted fields, or `missing`. A collection that exists without encryption stores its mapped fields in plaintext, so the command reports it and fails: migrate the data, then create the collection again with `--recreate`.
+`mongodb:encryption:status` marks each mapped collection as `exists`, `exists, not encrypted` when the collection exists without encrypted fields, `exists, fields differ` when its encrypted fields are not the ones declared in the map, or `missing`. A collection that exists without encryption stores its mapped fields in plaintext, and a collection created from another map does not encrypt the fields declared since then, so the command reports both and fails: migrate the data, then create the collection again with `--recreate`.
 
 The collection argument is optional. Without it, every mapped collection that does not exist yet is created. In an interactive terminal they are proposed for selection first, all selected by default, so pressing enter creates them all.
 

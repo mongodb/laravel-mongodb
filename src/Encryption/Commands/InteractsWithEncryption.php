@@ -8,8 +8,10 @@ use InvalidArgumentException;
 use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Encryption\CollectionState;
+use MongoDB\Laravel\Encryption\CollectionStatus;
 
 use function array_keys;
+use function implode;
 use function is_array;
 use function is_string;
 use function sprintf;
@@ -61,24 +63,25 @@ trait InteractsWithEncryption
      *
      * The names are the logical collection names: the connection table prefix
      * is applied. A single listCollections call reads every collection, and its
-     * encryptedFields option tells an encrypted collection from a collection
-     * that exists without encryption.
+     * encryptedFields option tells a collection that exists without encryption,
+     * and an encrypted collection whose fields are not the declared ones, from
+     * a collection that holds the declared fields.
      *
-     * @param  list<string> $collections
+     * @param  array<string, list<array<string, mixed>>> $encryptedFields The encrypted fields declared for each collection.
      *
-     * @return array<string, CollectionState> Keyed by the logical collection name.
+     * @return array<string, CollectionStatus> Keyed by the logical collection name.
      *
      * @throws DriverException
      */
-    protected function collectionStates(Connection $connection, array $collections): array
+    protected function collectionStates(Connection $connection, array $encryptedFields): array
     {
         $prefix = $connection->getTablePrefix();
         $realNames = [];
         $states = [];
 
-        foreach ($collections as $collection) {
+        foreach (array_keys($encryptedFields) as $collection) {
             $realNames[$prefix . $collection] = $collection;
-            $states[$collection] = CollectionState::Missing;
+            $states[$collection] = new CollectionStatus(CollectionState::Missing);
         }
 
         foreach ($connection->getDatabase()->listCollections(['filter' => ['name' => ['$in' => array_keys($realNames)]]]) as $info) {
@@ -88,11 +91,43 @@ trait InteractsWithEncryption
                 continue;
             }
 
-            $states[$collection] = is_array($info->getOptions()['encryptedFields'] ?? null)
-                ? CollectionState::Encrypted
-                : CollectionState::NotEncrypted;
+            $stored = $info->getOptions()['encryptedFields'] ?? null;
+
+            $states[$collection] = is_array($stored)
+                ? CollectionStatus::fromEncryptedFields($encryptedFields[$collection], $stored)
+                : new CollectionStatus(CollectionState::NotEncrypted);
         }
 
         return $states;
+    }
+
+    /**
+     * The message that tells how to bring a mapped collection back to the
+     * fields declared in the configuration.
+     *
+     * A collection that exists without encryption, or with other encrypted
+     * fields, cannot be fixed in place: it has to be dropped and created again,
+     * which removes its documents, hence the instruction to migrate the data
+     * first.
+     */
+    protected function remediation(string $collection, CollectionStatus $status): string
+    {
+        return sprintf(
+            'The collection "%s" %s. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection %s --recreate%s".',
+            $collection,
+            $status->state === CollectionState::Mismatched
+                ? sprintf('exists with encrypted fields that differ from the configuration ("%s")', implode('", "', $status->differingFields))
+                : 'exists without encryption: its mapped fields are stored in plaintext',
+            $collection,
+            $this->connectionOption(),
+        );
+    }
+
+    /** The --connection option to repeat in a remediation command, empty for the default connection. */
+    protected function connectionOption(): string
+    {
+        $name = $this->option('connection');
+
+        return $name ? ' --connection=' . $name : '';
     }
 }
