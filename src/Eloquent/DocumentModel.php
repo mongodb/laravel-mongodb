@@ -28,6 +28,7 @@ use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Eloquent\Model as MongoDBModel;
 use MongoDB\Laravel\Encryption\AutoEncryption;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
+use Override;
 use ReflectionProperty;
 use Stringable;
 
@@ -266,19 +267,14 @@ trait DocumentModel
         return parent::getAttributeFromArray($key);
     }
 
-    /**
-     * The reserved "__safeContent__" field is written by the server for
-     * Queryable Encryption. It is an implementation detail, so it is dropped
-     * from the hydrated attributes rather than exposed on the model.
-     *
-     * @inheritdoc
-     */
+    #[Override]
     public function newFromBuilder($attributes = [], $connection = null)
     {
         if (is_object($attributes)) {
             $attributes = (array) $attributes;
         }
 
+        // The reserved field is written by the server, drop it from the model.
         unset($attributes[AutoEncryption::SAFE_CONTENT_FIELD]);
 
         return parent::newFromBuilder($attributes, $connection);

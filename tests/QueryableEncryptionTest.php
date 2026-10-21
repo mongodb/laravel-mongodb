@@ -73,9 +73,7 @@ final class QueryableEncryptionTest extends TestCase
             'billing' => ['credit_card_number' => '0000'],
         ]);
 
-        // The server-managed field is dropped from hydrated models. It is
-        // written by the server, so it is not on the in-memory model returned
-        // by create() either.
+        // The server-managed field is dropped from hydrated models.
         $fresh = Patient::findOrFail($patient->getKey());
         $this->assertArrayNotHasKey('__safeContent__', $fresh->getAttributes());
         $this->assertArrayNotHasKey('__safeContent__', $fresh->toArray());

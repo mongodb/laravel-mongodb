@@ -37,10 +37,7 @@ use function version_compare;
  */
 final class AutoEncryption
 {
-    /**
-     * The reserved field the server writes into encrypted documents, as an
-     * implementation detail of Queryable Encryption.
-     */
+    /** The reserved field the server writes into encrypted documents. */
     public const SAFE_CONTENT_FIELD = '__safeContent__';
 
     /**
