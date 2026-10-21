@@ -11,6 +11,7 @@ use MongoDB\Laravel\Encryption\CollectionState;
 use MongoDB\Laravel\Encryption\CollectionStatus;
 
 use function array_keys;
+use function count;
 use function implode;
 use function is_array;
 use function is_string;
@@ -99,6 +100,45 @@ trait InteractsWithEncryption
         }
 
         return $states;
+    }
+
+    /**
+     * Print each mapped collection with its state on the server, and return the
+     * ones that do not hold the declared fields.
+     *
+     * A collection in one of those states is printed as an error: it cannot be
+     * fixed in place, it has to be dropped and created again.
+     *
+     * @param  array<string, list<array<string, mixed>>> $encryptedFields
+     * @param  array<string, CollectionStatus>|null      $states          Null to list the collections without their state.
+     *
+     * @return array<string, CollectionStatus> The collections that do not hold the declared fields.
+     */
+    protected function printCollectionStates(array $encryptedFields, ?array $states): array
+    {
+        if ($encryptedFields === []) {
+            $this->line('Mapped collections: none');
+
+            return [];
+        }
+
+        $this->line('Mapped collections: ');
+        $problems = [];
+
+        foreach ($encryptedFields as $collection => $fields) {
+            $status = $states[$collection] ?? null;
+            $label = $status === null ? '' : ', ' . $status->state->value;
+            $line = sprintf('  - %s: %d encrypted field(s)%s', $collection, count($fields), $label);
+
+            if ($status !== null && $status->needsRecreate()) {
+                $problems[$collection] = $status;
+                $this->error($line);
+            } else {
+                $this->line($line);
+            }
+        }
+
+        return $problems;
     }
 
     /**

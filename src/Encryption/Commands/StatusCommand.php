@@ -9,11 +9,9 @@ use InvalidArgumentException;
 use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Laravel\Connection;
-use MongoDB\Laravel\Encryption\CollectionStatus;
 
 use function array_keys;
 use function class_exists;
-use function count;
 use function sprintf;
 
 /**
@@ -44,9 +42,10 @@ final class StatusCommand extends Command
         $this->info('Queryable Encryption configuration is valid.');
 
         try {
-            $problems = $this->reportCollections($connection, $encryptedFields);
+            $states = $this->option('no-server') ? null : $this->collectionStates($connection, $encryptedFields);
+            $problems = $this->printCollectionStates($encryptedFields, $states);
 
-            if (! $this->option('no-server')) {
+            if ($states !== null) {
                 $this->line('Server version: ' . $connection->getServerVersion());
                 $this->line(sprintf('Client-side encryption support: %s', class_exists(ClientEncryption::class) ? 'available' : 'unavailable'));
             }
@@ -81,43 +80,5 @@ final class StatusCommand extends Command
         }
 
         return $fields;
-    }
-
-    /**
-     * @param  array<string, list<array<string, mixed>>> $encryptedFields
-     *
-     * @return array<string, CollectionStatus> The mapped collections that do not hold the declared fields.
-     *
-     * @throws DriverException
-     */
-    private function reportCollections(Connection $connection, array $encryptedFields): array
-    {
-        if ($encryptedFields === []) {
-            $this->line('Mapped collections: none');
-
-            return [];
-        }
-
-        $this->line('Mapped collections: ');
-
-        $states = $this->option('no-server')
-            ? []
-            : $this->collectionStates($connection, $encryptedFields);
-        $problems = [];
-
-        foreach ($encryptedFields as $collection => $fields) {
-            $status = $states[$collection] ?? null;
-            $label = $status === null ? '' : ', ' . $status->state->value;
-            $line = sprintf('  - %s: %d encrypted field(s)%s', $collection, count($fields), $label);
-
-            if ($status !== null && $status->needsRecreate()) {
-                $problems[$collection] = $status;
-                $this->error($line);
-            } else {
-                $this->line($line);
-            }
-        }
-
-        return $problems;
     }
 }

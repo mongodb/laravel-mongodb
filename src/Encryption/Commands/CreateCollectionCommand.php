@@ -17,7 +17,6 @@ use function array_filter;
 use function array_intersect;
 use function array_keys;
 use function array_values;
-use function count;
 use function implode;
 use function in_array;
 use function is_array;
@@ -35,7 +34,7 @@ final class CreateCollectionCommand extends Command
     protected $signature = 'mongodb:encryption:create-collection
         {collection? : The collection to create, when omitted every missing mapped collection is created}
         {--recreate : Drop and recreate the mapped collections that already exist}
-        {--no-server : Only validate the configuration, do not contact the server}
+        {--dry-run : List the mapped collections and report what would be created, without changing anything}
         {--connection= : The MongoDB connection to use}
         {--force : Force the operation to run when in production}';
 
@@ -66,20 +65,18 @@ final class CreateCollectionCommand extends Command
             return self::INVALID;
         }
 
-        if ($this->option('no-server')) {
-            $this->info($collection === null
-                ? sprintf('Configuration is valid. %d encrypted collection(s) would be created.', count($mapped))
-                : sprintf('Configuration is valid. Encrypted collection "%s" would be created.', $collection));
-
-            return self::SUCCESS;
-        }
-
         try {
             $states = $this->collectionStates($connection, $fields);
         } catch (DriverException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
+        }
+
+        $dryRun = (bool) $this->option('dry-run');
+
+        if ($dryRun) {
+            $this->printCollectionStates($fields, $states);
         }
 
         $builder = $connection->getSchemaBuilder();
@@ -107,6 +104,14 @@ final class CreateCollectionCommand extends Command
             $this->info($this->option('recreate')
                 ? 'No mapped collection exists yet.'
                 : 'Every mapped collection already exists.');
+        } elseif ($dryRun) {
+            foreach ($dropped as $name) {
+                $this->line(sprintf('Would drop collection "%s".', $name));
+            }
+
+            foreach ($targets as $name) {
+                $this->line(sprintf('Would create encrypted collection "%s".', $name));
+            }
         } else {
             if ($dropped !== [] && ! $this->confirmToProceed(sprintf('The collections "%s" will be dropped, removing their documents.', implode('", "', $dropped)))) {
                 return self::FAILURE;
@@ -177,7 +182,9 @@ final class CreateCollectionCommand extends Command
      */
     private function selectCollections(array $missing): array
     {
-        if (! $this->input->isInteractive()) {
+        // A dry run creates nothing, so it does not ask which collections to
+        // create.
+        if ($this->option('dry-run') || ! $this->input->isInteractive()) {
             return $missing;
         }
 

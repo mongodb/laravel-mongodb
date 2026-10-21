@@ -65,7 +65,7 @@ The collection argument is optional. Without it, every mapped collection that do
 
 `--recreate` drops the mapped collections that already exist before creating them again, to rebuild them from a changed map or to replace a collection that exists without encrypted fields. It asks for confirmation in production, and takes `--force`.
 
-Both commands accept `--no-server` to validate the configuration without a server. The Schema builder exposes the same creation:
+`mongodb:encryption:status --no-server` validates the configuration without contacting the server. `mongodb:encryption:create-collection --dry-run` lists the mapped collections with their state, and what the command would create or drop, without changing anything. The Schema builder exposes the same creation:
 
 ```php
 Schema::connection('mongodb')->createEncrypted('patients');
