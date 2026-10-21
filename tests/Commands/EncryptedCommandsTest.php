@@ -435,8 +435,6 @@ class EncryptedCommandsTest extends TestCase
         $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
 
         try {
-            // Without --recreate, the command creates the missing collections
-            // and leaves the plaintext collection alone, but says so.
             $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
                 ->expectsOutputToContain('The collection "patients" exists without encryption')
                 ->expectsOutputToContain('Every mapped collection already exists.')
@@ -458,10 +456,8 @@ class EncryptedCommandsTest extends TestCase
         $plain = $this->plainConnection();
         $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
 
-        // The status command is the first step of the scenario. Running a
-        // command before the environment switch also primes the Laravel
-        // Prompts fallback, which routes the production confirmation to the
-        // mocked console.
+        // This status call is also what primes the Laravel Prompts fallback
+        // that routes the production confirmation to the mocked console.
         $this->artisan('mongodb:encryption:status')
             ->expectsOutputToContain('patients: 1 encrypted field(s), exists, not encrypted')
             ->assertExitCode(Command::FAILURE);
@@ -469,8 +465,6 @@ class EncryptedCommandsTest extends TestCase
         $this->app->detectEnvironment(static fn () => 'production');
 
         try {
-            // Dropping a collection that holds plaintext documents is confirmed
-            // in production, and the collection is left alone when refused.
             $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true])
                 ->expectsConfirmation('Are you sure you want to run this command?', false)
                 ->expectsOutputToContain('Command cancelled.')
@@ -500,8 +494,6 @@ class EncryptedCommandsTest extends TestCase
 
         $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('patients'));
 
-        // The plaintext document is gone: the collection was dropped, not
-        // converted in place.
         $this->assertNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
     }
 
@@ -531,9 +523,6 @@ class EncryptedCommandsTest extends TestCase
         $this->skipIfQEIsNotSupported();
         $this->dropEncryptedCollections();
 
-        // A collection that exists without encrypted fields stores the mapped
-        // fields in plaintext: it must not be reported as missing, and the
-        // command must fail.
         $plain = $this->plainConnection();
         $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
 

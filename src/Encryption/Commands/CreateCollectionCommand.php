@@ -74,8 +74,7 @@ final class CreateCollectionCommand extends Command
 
         try {
             $builder = $connection->getSchemaBuilder();
-            // hasEncryptedCollection() applies the connection prefix itself,
-            // hasCollection() reads the real name.
+            // hasEncryptedCollection() applies the connection prefix, hasCollection() does not.
             $prefix = $connection->getTablePrefix();
             $present = array_values(array_filter($mapped, static fn (string $name): bool => $builder->hasCollection($prefix . $name)));
             $encrypted = array_values(array_filter($present, $builder->hasEncryptedCollection(...)));
@@ -86,8 +85,7 @@ final class CreateCollectionCommand extends Command
             return self::FAILURE;
         }
 
-        // A mapped collection that exists without encrypted fields stores them
-        // in plaintext. Only --recreate can fix it, by dropping it first.
+        // Only --recreate can replace a collection that exists without encrypted fields.
         if (! $this->option('recreate')) {
             foreach (array_values(array_diff($present, $encrypted)) as $plaintext) {
                 $this->warn(sprintf(
@@ -117,9 +115,6 @@ final class CreateCollectionCommand extends Command
     }
 
     /**
-     * The collections to act on: the one named on the command line, the ones
-     * that exist for --recreate, the missing ones otherwise.
-     *
      * @param  list<string> $present The mapped collections that exist, encrypted or not.
      * @param  list<string> $missing The mapped collections that do not exist.
      *

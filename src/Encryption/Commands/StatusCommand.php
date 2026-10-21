@@ -23,7 +23,6 @@ final class StatusCommand extends Command
 {
     use InteractsWithEncryption;
 
-    /** The state of a mapped collection that exists without encrypted fields. */
     private const NOT_ENCRYPTED = ', exists, not encrypted';
 
     protected $signature = 'mongodb:encryption:status
@@ -91,10 +90,6 @@ final class StatusCommand extends Command
     }
 
     /**
-     * Print the state of every mapped collection. A collection that exists
-     * without encrypted fields is printed as an error, because its mapped
-     * fields are stored in plaintext.
-     *
      * @param  array<array-key, int> $encryptedFields
      *
      * @return list<string> The mapped collections that exist without encryption.
@@ -129,19 +124,13 @@ final class StatusCommand extends Command
         return $unencrypted;
     }
 
-    /**
-     * The state of a mapped collection on the server. A collection that exists
-     * without encrypted fields is reported apart from a missing one: its mapped
-     * fields are stored in plaintext, which "missing" would hide.
-     */
     private function collectionState(Connection $connection, SchemaBuilder $builder, string $collection): string
     {
         if ($builder->hasEncryptedCollection($collection)) {
             return ', exists';
         }
 
-        // hasEncryptedCollection() applies the connection prefix itself,
-        // hasCollection() reads the real name.
+        // hasEncryptedCollection() applies the connection prefix, hasCollection() does not.
         return $builder->hasCollection($connection->getTablePrefix() . $collection)
             ? self::NOT_ENCRYPTED
             : ', missing';
