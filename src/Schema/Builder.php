@@ -85,10 +85,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Determine if the given collection exists.
      *
-     * The name is the real collection name: the connection table prefix is not
-     * applied. Use hasTable() to pass a logical collection name.
-     *
-     * @param string $name
+     * @param string $name The real collection name. The connection table prefix is not applied.
+     *                     Use hasTable() for a logical collection name.
      *
      * @return bool
      */
@@ -104,15 +102,14 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * @param string $table The logical table name. The connection table prefix is applied, as in Laravel.
      *
-     * The name is the logical table name: the connection table prefix is
-     * applied, as in Laravel.
+     * @inheritdoc
      */
     #[Override]
     public function hasTable($table)
     {
-        return $this->hasCollection($this->connection->getTablePrefix() . $table);
+        return $this->hasCollection($this->connection->getCollection($table)->getCollectionName());
     }
 
     /** @inheritdoc */
@@ -158,7 +155,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $config = $this->connection->getConfig('driver_options.autoEncryption');
         $fields = $this->connection->encryptedFieldsFor($collection);
-        $realCollection = $this->connection->getTablePrefix() . $collection;
+        $realCollection = $this->connection->getCollection($collection)->getCollectionName();
 
         $info = $this->collectionInfo($realCollection);
         if ($info !== null) {
@@ -203,7 +200,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function hasEncryptedCollection(string $collection): bool
     {
-        $info = $this->collectionInfo($this->connection->getTablePrefix() . $collection);
+        $info = $this->collectionInfo($this->connection->getCollection($collection)->getCollectionName());
 
         return is_array($info?->getOptions()['encryptedFields'] ?? null);
     }
@@ -218,6 +215,24 @@ class Builder extends \Illuminate\Database\Schema\Builder
         ]), false);
 
         return $infos[0] ?? null;
+    }
+
+    /**
+     * The collection named by a table argument.
+     *
+     * A "database.collection" name comes from getTables() or getTableListing(),
+     * which build it from the real collection names, so the connection table
+     * prefix is not applied. It is applied to a plain logical name.
+     */
+    private function collectionFor(string $table): Collection
+    {
+        if (! str_contains($table, '.')) {
+            return $this->connection->getCollection($table);
+        }
+
+        [$database, $collection] = explode('.', $table, 2);
+
+        return $this->connection->getDatabase($database)->getCollection($collection);
     }
 
     /**
@@ -253,7 +268,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         if ($this->connection->isAutoEncryptionEnabled($table)) {
             $map = $this->connection->getConfig('driver_options.autoEncryption.encryptedFieldsMap');
             $this->dropMetadataCollections(
-                $this->connection->getTablePrefix() . $table,
+                $this->connection->getCollection($table)->getCollectionName(),
                 is_array($map) && is_array($map[$table] ?? null) ? $map[$table] : [],
             );
         }
@@ -335,22 +350,16 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * @param string $table The logical collection name. The connection table prefix is applied.
+     *                      A "database.collection" name, as returned by getTables(), selects the
+     *                      database and is the real collection name, so it is not prefixed.
      *
-     * The name is the logical collection name: the connection table prefix is
-     * applied. A "database.collection" name selects the database.
+     * @inheritdoc
      */
     #[Override]
     public function getColumns($table)
     {
-        $db = null;
-        if (str_contains($table, '.')) {
-            [$db, $table] = explode('.', $table, 2);
-        }
-
-        $table = $this->connection->getTablePrefix() . $table;
-
-        $stats = $this->connection->getDatabase($db)->getCollection($table)->aggregate([
+        $stats = $this->collectionFor($table)->aggregate([
             // Sample 1,000 documents to get a representative sample of the collection
             ['$sample' => ['size' => 1_000]],
             // Convert each document to an array of fields
@@ -402,16 +411,16 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * @param string $table The logical collection name. The connection table prefix is applied.
+     *                      A "database.collection" name, as returned by getTables(), selects the
+     *                      database and is the real collection name, so it is not prefixed.
      *
-     * The name is the logical collection name: the connection table prefix is
-     * applied.
+     * @inheritdoc
      */
     #[Override]
     public function getIndexes($table)
     {
-        $collection = $this->connection->getDatabase()->getCollection($this->connection->getTablePrefix() . $table);
-        assert($collection instanceof Collection);
+        $collection = $this->collectionFor($table);
         $indexList = [];
 
         $indexes = $collection->listIndexes();
@@ -482,10 +491,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Get collection.
      *
-     * The name is the real collection name: the connection table prefix is not
-     * applied.
-     *
-     * @param string $name
+     * @param string $name The real collection name. The connection table prefix is not applied.
      *
      * @return bool|CollectionInfo
      */

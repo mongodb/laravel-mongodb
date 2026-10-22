@@ -1,6 +1,6 @@
 # Queryable Encryption
 
-Queryable Encryption (QE) is **automatic client-side field-level encryption** (also called automatic CSFLE). Encryption and decryption are performed by the MongoDB driver (libmongocrypt) and the server, transparently to the application. laravel-mongodb only provides **configuration**: the `encryptedFieldsMap`, the Schema DSL, and the Artisan commands. There is no model encryption metadata and no manual `encrypt()`/`decrypt()` call: the encryption work runs in libmongocrypt (native code reached through the driver) and on the server, not in a PHP loop. QE still has overhead (encryption, the `__safeContent__` array, extra indexes), just not in PHP userland.
+Queryable Encryption (QE) is **automatic client-side field-level encryption**. It is the second generation of in-use encryption, where CSFLE is the first. Encryption and decryption are performed by the MongoDB driver (libmongocrypt) and the server, transparently to the application. laravel-mongodb only provides **configuration**: the `encryptedFieldsMap`, the Schema DSL, and the Artisan commands. There is no model encryption metadata and no manual `encrypt()`/`decrypt()` call: the encryption work runs in libmongocrypt (native code reached through the driver) and on the server, not in a PHP loop. QE still has overhead (encryption, the `__safeContent__` array, extra indexes), just not in PHP userland.
 
 Use QE when a PII field must also be **queryable** by the server (exact match or range). For opacity only, without server-side querying, use the Eloquent `encrypted` cast instead (it encrypts with the application key and stores an opaque blob).
 
@@ -70,7 +70,11 @@ Schema::connection('mongodb')->createEncrypted('patients');
 Schema::connection('mongodb')->hasEncryptedCollection('patients');
 ```
 
-Collection names are logical: the connection `prefix` is applied, and the `encryptedFieldsMap` is matched on the real collection name. `Schema::drop()` on an encrypted collection also drops its metadata collections, so it can be created again.
+Collection names are logical: the connection `prefix` is applied to the collection, and the `encryptedFieldsMap` is keyed by the logical names. The map is handed to the driver keyed by namespace, so a mapped collection is encrypted even when the server does not know it as an encrypted collection yet.
+
+The map and the collection are both enforced, so they must agree. The map is what the client encrypts with: it decides the type, the key, and whether a field is queryable, even when the collection declares something else. The collection carries its own `encryptedFields`, and the server rejects a write that leaves a declared field in plaintext or whose encrypted type differs from the declaration. A client with no map entry for the collection encrypts from the collection instead, and a collection that was never created as encrypted has no declaration: another client can still write plaintext into it, and `mongodb:encryption:status` does not report it as an encrypted collection.
+
+`Schema::drop()` on an encrypted collection also drops its metadata collections, so it can be created again.
 
 Dropping the collection keeps the data keys, so you can recreate with the same map. __Dropping the whole database also drops the key vault and every data encryption key when the vault lives in that database. This is unrecoverable.__
 
@@ -99,11 +103,11 @@ This rewraps the DEKs rather than replacing them. Replacing the DEKs themselves 
 
 ## `__safeContent__`
 
-The server writes a reserved `__safeContent__` array. laravel-mongodb rejects any attempt to write it, by direct assignment, by mass assignment, or through a dotted sub-path, and drops it from hydrated models: `getAttributes()`, `toArray()` and JSON output omit it. A query builder result (`DB::connection('mongodb')->table('patients')`) and a raw `getCollection()` read still return it.
+Automatic encryption writes a reserved `__safeContent__` array, which holds the tokens used to support queries on the encrypted fields, and the server refuses any modification of it. laravel-mongodb rejects any attempt to write it, by direct assignment, by mass assignment, or through a dotted sub-path, and drops it from hydrated models: `getAttributes()`, `toArray()` and JSON output omit it. A query builder result (`DB::connection('mongodb')->table('patients')`) and a raw `getCollection()` read still return it.
 
 ## Match the bsonType
 
-Automatic encryption encrypts a value according to the `bsonType` declared in the map, and the server **rejects a value that does not match** that type at write time. For every encrypted field, laravel-mongodb derives an Eloquent cast from the `bsonType` and coerces the value on write, so a form or JSON string becomes the expected type instead of being stored as a string or rejected. `$model->billing_amount = '1500'` stores the integer `1500`, and the value read back is an `int`.
+Automatic encryption encrypts a value according to the `bsonType` declared in the map, and refuses a value of another type before sending it. For every encrypted field, laravel-mongodb derives an Eloquent cast from the `bsonType` and coerces the value on write, so a form or JSON string becomes the expected type instead of being stored as a string or rejected. `$model->billing_amount = '1500'` stores the integer `1500`, and the value read back is an `int`.
 
 | bsonType | Cast derived | Value stored |
 |---|---|---|
@@ -122,7 +126,9 @@ Automatic encryption encrypts a value according to the `bsonType` declared in th
 - An embedded document is `bsonType: 'object'`, stored natively and read back as an array. Its encrypted sub-fields are declared as dotted paths (`billing.amount`) and coerced on write, including when the model is saved through an `EmbedsOne` relation. An `array` field is written as a whole, and its elements are not encrypted one by one. Automatic encryption refuses to encrypt a field under an array, so the documents of an `EmbedsMany` relation cannot hold encrypted fields.
 - A cast declared on an encrypted field is kept when it stores the declared BSON type, as `integer` on an `int` field or `hashed` on a `string` field, and reported with a `LogicException` when it does not. A custom cast class owns its value, on a nested embedded model too.
 - The coercion runs when the attribute is assigned, before a set mutator, and applies to values written through the model, not to query values: a range query on a `date` field needs date objects (Carbon), not strings.
-- QE forbids multi-document updates. laravel-mongodb uses single-document updates automatically on encrypted collections, so `save()` and `update()` work as usual.
+- QE does not support multi-document update or delete operations. laravel-mongodb sends a single-document update on an encrypted collection, so `save()` on a model works, but an update through the query builder that matches several documents changes only the first one. Use a filter that matches one document.
+- A `null` value cannot be written to an encrypted field: the driver refuses it before the write. Leave the field out instead.
+- The tokens stored in a document come from the map of the client that wrote it, so every client that reads or queries a collection must declare the same fields and the same query types. A field declared for range by one client and for equality by another does not match across them, without an error.
 
 ## Supported queries and limits
 

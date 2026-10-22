@@ -86,7 +86,7 @@ final class AutoEncryption
         $autoEncryption = $this->validateAutoEncryptionConfig($autoEncryption);
 
         if (is_array($autoEncryption['encryptedFieldsMap'] ?? null)) {
-            $autoEncryption['encryptedFieldsMap'] = $this->prefixEncryptedFieldsMap(
+            $autoEncryption['encryptedFieldsMap'] = $this->keyByNamespace(
                 $this->normalizeEncryptedFieldsMap($autoEncryption['encryptedFieldsMap']),
             );
             $this->ensureAltKeyNameSupport($autoEncryption['encryptedFieldsMap']);
@@ -336,11 +336,8 @@ final class AutoEncryption
     }
 
     /**
-     * Default alternate key name: "<database>.<collection>/<path>". See
-     * DRIVERS-3637.
-     *
-     * The real collection name is used, so two connections sharing a key vault
-     * with different table prefixes do not resolve to the same data key.
+     * Default alternate key name, "<database>.<collection>/<path>", built on the
+     * real collection name. See DRIVERS-3637.
      *
      * @param  array<string, mixed> $field
      */
@@ -350,37 +347,39 @@ final class AutoEncryption
             return $field['keyAltName'];
         }
 
-        return $this->connection()->getDatabaseName() . '.' . $this->realCollectionName($collection) . '/' . $field['path'];
+        return $this->namespaceFor($collection) . '/' . $field['path'];
     }
 
     /**
-     * The collection name as stored by the server: the encryptedFieldsMap is
-     * keyed by the real name, while the package API accepts the logical name
-     * configured in the application.
+     * The namespace of a collection, "<database>.<real collection name>", with
+     * the table prefix applied.
+     *
+     * @param string $collection The logical collection name, without the prefix.
      */
-    private function realCollectionName(string $collection): string
+    private function namespaceFor(string $collection): string
     {
-        return $this->connection()->getTablePrefix() . $collection;
+        $connection = $this->connection();
+
+        return $connection->getDatabaseName() . '.' . $connection->getTablePrefix() . $collection;
     }
 
     /**
-     * Key the encrypted fields map by the real collection names before it is
-     * handed to the driver, which matches the map against the namespace of the
-     * operation.
+     * Key the encrypted fields map by namespace, which is what the driver
+     * matches an operation against.
      *
      * @param  array<string, mixed> $encryptedFieldsMap
      *
      * @return array<string, mixed>
      */
-    private function prefixEncryptedFieldsMap(array $encryptedFieldsMap): array
+    private function keyByNamespace(array $encryptedFieldsMap): array
     {
-        $prefixed = [];
+        $qualified = [];
 
         foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
-            $prefixed[$this->realCollectionName((string) $collection)] = $encryptedFields;
+            $qualified[$this->namespaceFor((string) $collection)] = $encryptedFields;
         }
 
-        return $prefixed;
+        return $qualified;
     }
 
     /**

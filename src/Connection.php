@@ -75,18 +75,16 @@ class Connection extends BaseConnection
         // You can pass options directly to the MongoDB constructor
         $options = $config['options'] ?? [];
 
-        // Resolve the database name first: the default alternate key name uses
-        // it while the automatic encryption options are normalized in
-        // createConnection().
+        // Resolve these before createConnection(): the automatic encryption
+        // options key the encrypted fields map and name the alternate keys.
         $this->database = $this->getDefaultDatabaseName($dsn, $config);
+        $this->tablePrefix = $config['prefix'] ?? '';
 
         // Create the connection
         $this->connection = $this->createConnection($dsn, $config, $options);
 
         // Select database
         $this->db = $this->connection->getDatabase($this->database);
-
-        $this->tablePrefix = $config['prefix'] ?? '';
 
         $this->useDefaultPostProcessor();
 
@@ -125,7 +123,7 @@ class Connection extends BaseConnection
     /**
      * Get a MongoDB collection.
      *
-     * @param  string $name
+     * @param  string $name The logical collection name. The connection table prefix is applied.
      *
      * @return Collection
      */
