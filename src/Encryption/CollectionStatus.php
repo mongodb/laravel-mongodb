@@ -55,7 +55,17 @@ final readonly class CollectionStatus
     private const DEFAULT_CONTENTION = 8;
 
     /** The query options the server stores as an integer, whatever the declared type. */
-    private const INTEGER_OPTIONS = ['contention', 'sparsity', 'precision', 'trimFactor'];
+    private const INTEGER_OPTIONS = [
+        'contention',
+        'sparsity',
+        'precision',
+        'trimFactor',
+        // The string preview lengths, which the server stores as an integer
+        // even when the configuration declares a double or a decimal.
+        'strMinQueryLength',
+        'strMaxQueryLength',
+        'strMaxLength',
+    ];
 
     /** @param list<string> $differingFields */
     public function __construct(

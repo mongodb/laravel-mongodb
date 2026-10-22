@@ -37,11 +37,11 @@ class CollectionStatusTest extends TestCase
     /** @return array<string, array{list<array<string, mixed>>, list<array<string, mixed>>, CollectionState, list<string>}> */
     public static function provideEncryptedFields(): array
     {
-        $search = static fn (bool $caseSensitive): array => [
+        $search = static fn (bool $caseSensitive, int|float $maxLength = 50): array => [
             [
                 'path' => 'ssn',
                 'bsonType' => 'string',
-                'queries' => [['queryType' => 'substringPreview', 'strMinQueryLength' => 2, 'strMaxQueryLength' => 10, 'strMaxLength' => 50, 'caseSensitive' => $caseSensitive]],
+                'queries' => [['queryType' => 'substringPreview', 'strMinQueryLength' => 2, 'strMaxQueryLength' => 10, 'strMaxLength' => $maxLength, 'caseSensitive' => $caseSensitive]],
             ],
         ];
 
@@ -161,6 +161,7 @@ class CollectionStatusTest extends TestCase
             // The string preview queries of the server 8.2 and later.
             'same search options' => [$search(true), $search(true), CollectionState::Encrypted, []],
             'another search option' => [$search(true), $search(false), CollectionState::Mismatched, ['ssn']],
+            'search length declared as a float' => [$search(true, 50.0), $search(true, 50), CollectionState::Encrypted, []],
             'differing fields are sorted' => [
                 [self::SSN_FIELD, self::EMAIL_FIELD, self::AMOUNT_FIELD],
                 [self::AMOUNT_FIELD],
