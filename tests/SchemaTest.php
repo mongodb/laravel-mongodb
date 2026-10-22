@@ -161,6 +161,29 @@ class SchemaTest extends TestCase
     }
 
     /**
+     * A "database.collection" name is the one returned by getTables() and
+     * getTableListing(), built on the real collection name, so the connection
+     * table prefix is not applied to it. The Laravel debug commands pass that
+     * name to getColumns() and getIndexes().
+     */
+    public function testQualifiedNameIsNotPrefixed(): void
+    {
+        $this->useTablePrefix();
+
+        Schema::create(self::COLL_1, static function (Blueprint $collection) {
+            $collection->index('name');
+        });
+
+        DB::connection('mongodb')->table(self::COLL_1)->insert(['name' => 'value']);
+
+        $qualified = DB::getDatabaseName() . '.test_' . self::COLL_1;
+
+        $this->assertContains($qualified, Schema::getTableListing(DB::getDatabaseName(), true));
+        $this->assertContains('name', array_column(Schema::getColumns($qualified), 'name'));
+        $this->assertSame(['_id_', 'name_1'], array_column(Schema::getIndexes($qualified), 'name'));
+    }
+
+    /**
      * hasCollection() and getCollection() are not Laravel methods: they take
      * the real collection name, the connection table prefix is not applied.
      */

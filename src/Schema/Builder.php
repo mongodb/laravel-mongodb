@@ -6,6 +6,7 @@ namespace MongoDB\Laravel\Schema;
 
 use Closure;
 use InvalidArgumentException;
+use MongoDB\Collection;
 use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Model\CollectionInfo;
@@ -217,6 +218,24 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
+     * The collection named by a table argument.
+     *
+     * A "database.collection" name comes from getTables() or getTableListing(),
+     * which build it from the real collection names, so the connection table
+     * prefix is not applied. It is applied to a plain logical name.
+     */
+    private function collectionFor(string $table): Collection
+    {
+        if (! str_contains($table, '.')) {
+            return $this->connection->getCollection($table);
+        }
+
+        [$database, $collection] = explode('.', $table, 2);
+
+        return $this->connection->getDatabase($database)->getCollection($collection);
+    }
+
+    /**
      * Drop the metadata collections of an encrypted collection. The server
      * does not remove them when the encrypted collection itself is dropped, so
      * they would otherwise leak.
@@ -332,24 +351,15 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * @param string $table The logical collection name. The connection table prefix is applied.
-     *                      A "database.collection" name selects the database.
+     *                      A "database.collection" name, as returned by getTables(), selects the
+     *                      database and is the real collection name, so it is not prefixed.
      *
      * @inheritdoc
      */
     #[Override]
     public function getColumns($table)
     {
-        $database = null;
-        if (str_contains($table, '.')) {
-            [$database, $table] = explode('.', $table, 2);
-        }
-
-        $collection = $this->connection->getCollection($table);
-        if ($database !== null) {
-            $collection = $this->connection->getDatabase($database)->getCollection($collection->getCollectionName());
-        }
-
-        $stats = $collection->aggregate([
+        $stats = $this->collectionFor($table)->aggregate([
             // Sample 1,000 documents to get a representative sample of the collection
             ['$sample' => ['size' => 1_000]],
             // Convert each document to an array of fields
@@ -402,13 +412,15 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
     /**
      * @param string $table The logical collection name. The connection table prefix is applied.
+     *                      A "database.collection" name, as returned by getTables(), selects the
+     *                      database and is the real collection name, so it is not prefixed.
      *
      * @inheritdoc
      */
     #[Override]
     public function getIndexes($table)
     {
-        $collection = $this->connection->getCollection($table);
+        $collection = $this->collectionFor($table);
         $indexList = [];
 
         $indexes = $collection->listIndexes();
