@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Encryption;
 
+use MongoDB\BSON\Decimal128;
 use MongoDB\BSON\Document;
 use MongoDB\BSON\Int64;
 
@@ -14,8 +15,10 @@ use function array_keys;
 use function array_map;
 use function array_unique;
 use function is_array;
+use function is_float;
 use function is_string;
 use function ksort;
+use function preg_match;
 use function sort;
 
 /**
@@ -36,6 +39,9 @@ final readonly class CollectionStatus
 
     /** The contention stored for a query when the configuration does not declare one. */
     private const DEFAULT_CONTENTION = 8;
+
+    /** The query options the server stores as an integer, whatever the declared type. */
+    private const INTEGER_OPTIONS = ['contention', 'sparsity', 'precision', 'trimFactor'];
 
     /** @param list<string> $differingFields */
     public function __construct(
@@ -160,6 +166,16 @@ final readonly class CollectionStatus
             $query = array_intersect_key($query, array_flip(self::QUERY_OPTIONS));
 
             $query = array_map(self::normalizeValue(...), $query);
+
+            // The server stores an integer option declared as a float or a
+            // decimal as an integer, such as contention 4.0 or Decimal128("4").
+            foreach (self::INTEGER_OPTIONS as $option) {
+                $value = $query[$option] ?? null;
+
+                if ((is_float($value) || $value instanceof Decimal128) && preg_match('/^-?\d+$/', (string) $value) === 1) {
+                    $query[$option] = (int) (string) $value;
+                }
+            }
 
             ksort($query);
 
