@@ -15,6 +15,7 @@ use MongoDB\Laravel\Tests\Models\EncryptedEmbedded;
 use MongoDB\Laravel\Tests\Models\EncryptedUser;
 use MongoDB\Laravel\Tests\Models\Patient;
 use PHPUnit\Framework\Attributes\Group;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function config;
 use function env;
@@ -156,6 +157,49 @@ final class QueryableEncryptionTest extends TestCase
         $this->assertSame(1600, Patient::findOrFail($patient->getKey())->billing_amount);
 
         $schema->drop('patients');
+    }
+
+    /**
+     * The encrypted fields map is the only configuration the driver has for a
+     * mapped collection that the server does not know as an encrypted
+     * collection. The writes must be encrypted anyway: the field would
+     * otherwise be stored in plaintext without any error.
+     */
+    #[TestWith([''])]
+    #[TestWith(['test_'])]
+    public function testAMappedCollectionThatIsNotEncryptedIsEncryptedOnWrite(string $prefix): void
+    {
+        // Every client gets its own encryption context, as in a fresh process.
+        // A client that already knows the collection encrypts from its cache,
+        // whether the map is right or not, and hides the behaviour under test.
+        config([
+            'database.connections.mongodb.prefix' => $prefix,
+            'database.connections.mongodb.driver_options.disableClientPersistence' => true,
+        ]);
+        $this->app->make('db')->purge('mongodb');
+
+        $schema = $this->getConnection('mongodb')->getSchemaBuilder();
+        $schema->dropIfExists('patients');
+
+        // Create the data key of the collection, then remove the collection so
+        // the server keeps nothing about its encrypted fields.
+        $schema->createEncrypted('patients');
+        $schema->drop('patients');
+        $this->app->make('db')->purge('mongodb');
+
+        $plain = $this->plainConnection();
+        $plain->getCollection($prefix . 'patients')->insertOne(['ssn' => 'plaintext']);
+        $this->assertFalse($this->getConnection('mongodb')->getSchemaBuilder()->hasEncryptedCollection('patients'));
+
+        $patient = Patient::create([
+            'ssn' => '123-456-7890',
+            'billing_amount' => 1500,
+            'billing' => ['credit_card_number' => '0000'],
+        ]);
+
+        $raw = $plain->getCollection($prefix . 'patients')->findOne(['_id' => new ObjectID($patient->getKey())]);
+        $this->assertInstanceOf(Binary::class, $raw['ssn']);
+        $this->assertArrayHasKey('__safeContent__', (array) $raw);
     }
 
     /**

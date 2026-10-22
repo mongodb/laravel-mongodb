@@ -86,7 +86,7 @@ final class AutoEncryption
         $autoEncryption = $this->validateAutoEncryptionConfig($autoEncryption);
 
         if (is_array($autoEncryption['encryptedFieldsMap'] ?? null)) {
-            $autoEncryption['encryptedFieldsMap'] = $this->prefixEncryptedFieldsMap(
+            $autoEncryption['encryptedFieldsMap'] = $this->keyByNamespace(
                 $this->normalizeEncryptedFieldsMap($autoEncryption['encryptedFieldsMap']),
             );
             $this->ensureAltKeyNameSupport($autoEncryption['encryptedFieldsMap']);
@@ -354,9 +354,9 @@ final class AutoEncryption
     }
 
     /**
-     * The collection name as stored by the server: the encryptedFieldsMap is
-     * keyed by the real name, while the package API accepts the logical name
-     * configured in the application.
+     * The collection name as stored by the server: the connection table prefix
+     * applies, while the package API accepts the logical name configured in the
+     * application.
      */
     private function realCollectionName(string $collection): string
     {
@@ -364,23 +364,24 @@ final class AutoEncryption
     }
 
     /**
-     * Key the encrypted fields map by the real collection names before it is
-     * handed to the driver, which matches the map against the namespace of the
-     * operation.
+     * Key the encrypted fields map by the namespace of each collection before
+     * it is handed to the driver, which matches the map against the namespace
+     * of the operation: the database name, a dot and the real collection name.
      *
      * @param  array<string, mixed> $encryptedFieldsMap
      *
      * @return array<string, mixed>
      */
-    private function prefixEncryptedFieldsMap(array $encryptedFieldsMap): array
+    private function keyByNamespace(array $encryptedFieldsMap): array
     {
-        $prefixed = [];
+        $database = $this->connection()->getDatabaseName();
+        $qualified = [];
 
         foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
-            $prefixed[$this->realCollectionName((string) $collection)] = $encryptedFields;
+            $qualified[$database . '.' . $this->realCollectionName((string) $collection)] = $encryptedFields;
         }
 
-        return $prefixed;
+        return $qualified;
     }
 
     /**

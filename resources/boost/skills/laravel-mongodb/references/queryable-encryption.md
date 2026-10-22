@@ -70,7 +70,7 @@ Schema::connection('mongodb')->createEncrypted('patients');
 Schema::connection('mongodb')->hasEncryptedCollection('patients');
 ```
 
-Collection names are logical: the connection `prefix` is applied, and the `encryptedFieldsMap` is matched on the real collection name. `Schema::drop()` on an encrypted collection also drops its metadata collections, so it can be created again.
+Collection names are logical: the connection `prefix` is applied to the collection, and the `encryptedFieldsMap` is keyed by the logical names. The map is handed to the driver keyed by namespace, so a mapped collection is encrypted even when the server does not know it as an encrypted collection yet. `Schema::drop()` on an encrypted collection also drops its metadata collections, so it can be created again.
 
 Dropping the collection keeps the data keys, so you can recreate with the same map. __Dropping the whole database also drops the key vault and every data encryption key when the vault lives in that database. This is unrecoverable.__
 

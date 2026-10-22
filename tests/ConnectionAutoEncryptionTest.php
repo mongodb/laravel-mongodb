@@ -159,7 +159,9 @@ class ConnectionAutoEncryptionTest extends TestCase
             'keyVaultNamespace' => self::KEY_VAULT,
             'kmsProviders' => $this->localKmsProviders(),
             'extraOptions' => $this->extraOptions(),
-            'schemaMap' => ['unittest.patients' => []],
+            // Another collection than the map below: the driver refuses a
+            // namespace declared in both schemaMap and encryptedFieldsMap.
+            'schemaMap' => ['unittest.legacy' => []],
             'encryptedFieldsMap' => ['patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string']]]],
         ]);
 
