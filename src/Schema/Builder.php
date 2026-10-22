@@ -84,10 +84,8 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Determine if the given collection exists.
      *
-     * The name is the real collection name: the connection table prefix is not
-     * applied. Use hasTable() to pass a logical collection name.
-     *
-     * @param string $name
+     * @param string $name The real collection name. The connection table prefix is not applied.
+     *                     Use hasTable() for a logical collection name.
      *
      * @return bool
      */
@@ -103,10 +101,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * @param string $table The logical table name. The connection table prefix is applied, as in Laravel.
      *
-     * The name is the logical table name: the connection table prefix is
-     * applied, as in Laravel.
+     * @inheritdoc
      */
     #[Override]
     public function hasTable($table)
@@ -334,22 +331,25 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * @param string $table The logical collection name. The connection table prefix is applied.
+     *                      A "database.collection" name selects the database.
      *
-     * The name is the logical collection name: the connection table prefix is
-     * applied. A "database.collection" name selects the database.
+     * @inheritdoc
      */
     #[Override]
     public function getColumns($table)
     {
-        $db = null;
+        $database = null;
         if (str_contains($table, '.')) {
-            [$db, $table] = explode('.', $table, 2);
+            [$database, $table] = explode('.', $table, 2);
         }
 
-        $table = $this->connection->getCollection($table)->getCollectionName();
+        $collection = $this->connection->getCollection($table);
+        if ($database !== null) {
+            $collection = $this->connection->getDatabase($database)->getCollection($collection->getCollectionName());
+        }
 
-        $stats = $this->connection->getDatabase($db)->getCollection($table)->aggregate([
+        $stats = $collection->aggregate([
             // Sample 1,000 documents to get a representative sample of the collection
             ['$sample' => ['size' => 1_000]],
             // Convert each document to an array of fields
@@ -401,10 +401,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
     }
 
     /**
-     * @inheritdoc
+     * @param string $table The logical collection name. The connection table prefix is applied.
      *
-     * The name is the logical collection name: the connection table prefix is
-     * applied.
+     * @inheritdoc
      */
     #[Override]
     public function getIndexes($table)
@@ -480,10 +479,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     /**
      * Get collection.
      *
-     * The name is the real collection name: the connection table prefix is not
-     * applied.
-     *
-     * @param string $name
+     * @param string $name The real collection name. The connection table prefix is not applied.
      *
      * @return bool|CollectionInfo
      */
