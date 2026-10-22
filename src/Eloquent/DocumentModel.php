@@ -50,6 +50,7 @@ use function is_object;
 use function is_string;
 use function ltrim;
 use function method_exists;
+use function property_exists;
 use function sprintf;
 use function str_contains;
 use function str_starts_with;
@@ -87,6 +88,14 @@ trait DocumentModel
      * @var array{string, true}
      */
     private array $unset = [];
+
+    /**
+     * The models already reported for declaring the removed "collection" property,
+     * so the deprecation is triggered once per model class.
+     *
+     * @var array<class-string, true>
+     */
+    private static array $reportedCollectionProperty = [];
 
     /**
      * Custom accessor for the model's id.
@@ -135,6 +144,38 @@ trait DocumentModel
         }
 
         $this->keyType = $keyType;
+    }
+
+    /**
+     * The "collection" property named the collection before the package moved to
+     * Eloquent's "table". It is ignored, so a model that still declares it reads
+     * and writes the collection Eloquent resolves.
+     *
+     * @inheritdoc
+     */
+    #[Override]
+    public function getTable()
+    {
+        $table = parent::getTable();
+
+        if (isset(self::$reportedCollectionProperty[static::class])) {
+            return $table;
+        }
+
+        self::$reportedCollectionProperty[static::class] = true;
+
+        if (property_exists($this, 'collection')) {
+            trigger_error(
+                sprintf(
+                    'The "collection" property of model "%s" is ignored, so the model uses the "%s" collection. Rename the property to "table" to choose the collection name.',
+                    static::class,
+                    $table,
+                ),
+                E_USER_DEPRECATED,
+            );
+        }
+
+        return $table;
     }
 
     /** @inheritdoc */

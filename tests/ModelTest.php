@@ -26,6 +26,7 @@ use MongoDB\Laravel\Tests\Models\IdIsBinaryUuid;
 use MongoDB\Laravel\Tests\Models\IdIsInt;
 use MongoDB\Laravel\Tests\Models\IdIsString;
 use MongoDB\Laravel\Tests\Models\Item;
+use MongoDB\Laravel\Tests\Models\LegacyCollection;
 use MongoDB\Laravel\Tests\Models\MemberStatus;
 use MongoDB\Laravel\Tests\Models\NonIncrementing;
 use MongoDB\Laravel\Tests\Models\Options;
@@ -43,12 +44,15 @@ use function array_merge;
 use function date_default_timezone_set;
 use function get_debug_type;
 use function hex2bin;
+use function restore_error_handler;
+use function set_error_handler;
 use function sleep;
 use function sort;
 use function strlen;
 use function time;
 
 use const DATE_ATOM;
+use const E_USER_DEPRECATED;
 
 class ModelTest extends TestCase
 {
@@ -80,6 +84,46 @@ class ModelTest extends TestCase
         $this->assertFalse($user->exists);
         $this->assertEquals('users', $user->getTable());
         $this->assertEquals('id', $user->getKeyName());
+    }
+
+    public function testModelDeclaringTheCollectionPropertyIsIgnoredAndDeprecated(): void
+    {
+        // The collection is dropped here instead of being truncated in tearDown,
+        // because any other use of the model would consume the deprecation that is
+        // reported once per model class.
+        DB::connection('mongodb')->getCollection('legacy_collections')->drop();
+
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            if ($errno === E_USER_DEPRECATED) {
+                $deprecations[] = $errstr;
+
+                return true;
+            }
+
+            return false;
+        });
+
+        try {
+            $model = LegacyCollection::query()->create(['name' => 'legacy']);
+
+            // The property is ignored, and the deprecation is reported once per model class.
+            self::assertSame('legacy_collections', $model->getTable());
+            self::assertSame('legacy_collections', $model->getTable());
+        } finally {
+            restore_error_handler();
+        }
+
+        self::assertCount(1, $deprecations);
+        self::assertStringContainsString(
+            'The "collection" property of model "MongoDB\Laravel\Tests\Models\LegacyCollection" is ignored',
+            $deprecations[0],
+        );
+        self::assertStringContainsString('Rename the property to "table" to choose the collection name.', $deprecations[0]);
+
+        // The document is stored in the collection the model resolves, not in the declared one.
+        self::assertSame(1, DB::connection('mongodb')->getCollection('legacy_collections')->countDocuments());
+        self::assertSame(0, DB::connection('mongodb')->getCollection('legacy_collection')->countDocuments());
     }
 
     public function testQualifyColumn(): void

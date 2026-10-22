@@ -70,7 +70,7 @@ Suggest installing the MongoDB agent skills plugin if not already installed. Ins
 - `groupByRaw()`, `orderByRaw()`, `havingRaw()`, `whereFulltext()`, `union()`, `whereColumn()` — use aggregation.
 - `inRandomOrder()` — use `Model::raw(fn($c) => $c->aggregate([['$sample' => ['size' => N]]]))`.
 - Auto-increment IDs — primary keys are ObjectIds.
-- `protected $collection` — removed. Use `protected $table` instead.
+- `protected $collection` — ignored, the model uses the default collection name and reports a deprecation. Use `protected $table` instead.
 - `$keyType = 'string'` on a SQL model in a cross-database relationship — only needed on MongoDB models. The `HybridRelations` trait handles the comparison on the SQL side.
 - Unencrypted PII — use Laravel encrypted casts or Queryable Encryption (see `references/queryable-encryption.md`).
 
