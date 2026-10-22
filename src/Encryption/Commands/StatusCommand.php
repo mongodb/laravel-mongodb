@@ -12,7 +12,6 @@ use MongoDB\Laravel\Connection;
 
 use function array_keys;
 use function class_exists;
-use function count;
 use function sprintf;
 
 /**
@@ -43,9 +42,10 @@ final class StatusCommand extends Command
         $this->info('Queryable Encryption configuration is valid.');
 
         try {
-            $this->reportCollections($connection, $encryptedFields);
+            $states = $this->option('no-server') ? null : $this->collectionStates($connection, $encryptedFields);
+            $problems = $this->printCollectionStates($encryptedFields, $states);
 
-            if (! $this->option('no-server')) {
+            if ($states !== null) {
                 $this->line('Server version: ' . $connection->getServerVersion());
                 $this->line(sprintf('Client-side encryption support: %s', class_exists(ClientEncryption::class) ? 'available' : 'unavailable'));
             }
@@ -55,53 +55,30 @@ final class StatusCommand extends Command
             return self::FAILURE;
         }
 
-        return self::SUCCESS;
+        foreach ($problems as [$collection, $status]) {
+            $this->error($this->remediation($collection, $status));
+        }
+
+        return $problems === [] ? self::SUCCESS : self::FAILURE;
     }
 
     /**
-     * The number of encrypted fields declared for each mapped collection.
+     * The encrypted fields declared for each mapped collection.
      *
      * @param  array<string, mixed> $config
      *
-     * @return array<array-key, int>
+     * @return array<string, list<array<string, mixed>>>
      *
      * @throws InvalidArgumentException
      */
     private function encryptedFields(Connection $connection, array $config): array
     {
-        $counts = [];
+        $fields = [];
 
         foreach (array_keys($config['encryptedFieldsMap'] ?? []) as $collection) {
-            $counts[(string) $collection] = count($connection->encryptedFieldsFor((string) $collection));
+            $fields[(string) $collection] = $connection->encryptedFieldsFor((string) $collection);
         }
 
-        return $counts;
-    }
-
-    /**
-     * @param array<array-key, int> $encryptedFields
-     *
-     * @throws DriverException
-     */
-    private function reportCollections(Connection $connection, array $encryptedFields): void
-    {
-        if ($encryptedFields === []) {
-            $this->line('Mapped collections: none');
-
-            return;
-        }
-
-        $this->line('Mapped collections: ');
-
-        $builder = $this->option('no-server') ? null : $connection->getSchemaBuilder();
-
-        foreach ($encryptedFields as $collection => $fields) {
-            $this->line(sprintf(
-                '  - %s: %d encrypted field(s)%s',
-                $collection,
-                $fields,
-                $builder === null ? '' : ($builder->hasEncryptedCollection((string) $collection) ? ', exists' : ', missing'),
-            ));
-        }
+        return $fields;
     }
 }

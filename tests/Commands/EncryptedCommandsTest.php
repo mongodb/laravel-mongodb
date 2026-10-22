@@ -6,7 +6,10 @@ namespace MongoDB\Laravel\Tests\Commands;
 
 use Illuminate\Console\Command;
 use MongoDB\BSON\Binary;
+use MongoDB\BSON\Decimal128;
+use MongoDB\BSON\Int64;
 use MongoDB\BSON\ObjectID;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Schema\Builder;
 use MongoDB\Laravel\Tests\Models\Patient;
@@ -48,6 +51,17 @@ class EncryptedCommandsTest extends TestCase
         'users' => [
             'fields' => [
                 ['path' => 'email', 'bsonType' => 'string', 'queries' => [['queryType' => 'equality']]],
+            ],
+        ],
+    ];
+
+    // The same collection with an extra field: a collection created from
+    // PATIENTS_MAP does not hold the "email" field.
+    private const PATIENTS_WITH_EMAIL_MAP = [
+        'patients' => [
+            'fields' => [
+                ['path' => 'ssn', 'bsonType' => 'string', 'queries' => [['queryType' => 'equality']]],
+                ['path' => 'email', 'bsonType' => 'string'],
             ],
         ],
     ];
@@ -163,20 +177,51 @@ class EncryptedCommandsTest extends TestCase
             ->assertExitCode(Command::FAILURE);
     }
 
-    public function testCreateNoServerValidatesConfiguration(): void
+    #[Group('queryable-encryption')]
+    public function testCreateDryRunListsTheMappedCollectionsAndCreatesNothing(): void
     {
-        $this->enableEncryption(['users' => ['fields' => []]]);
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
 
-        $this->artisan('mongodb:encryption:create-collection', ['collection' => 'users', '--no-server' => true])
-            ->expectsOutputToContain('would be created')
+        $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients', '--dry-run' => true])
+            ->expectsOutputToContain('patients: 1 encrypted field(s), missing')
+            ->expectsOutputToContain('Would create encrypted collection "patients".')
             ->assertExitCode(Command::SUCCESS);
+
+        $names = [];
+        foreach ($this->plainConnection()->getDatabase()->listCollections() as $info) {
+            $names[] = $info->getName();
+        }
+
+        $this->assertNotContains('patients', $names);
     }
 
-    public function testCreateNoServerFailsWithoutMappedCollection(): void
+    #[Group('queryable-encryption')]
+    public function testCreateDryRunRecreateReportsTheCollectionsWithoutDroppingThem(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true, '--dry-run' => true])
+            ->expectsOutputToContain('patients: 1 encrypted field(s), exists, not encrypted')
+            ->expectsOutputToContain('Would drop collection "patients".')
+            ->expectsOutputToContain('Would create encrypted collection "patients".')
+            ->assertExitCode(Command::SUCCESS);
+
+        // The plaintext collection was not dropped.
+        $this->assertNotNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
+    }
+
+    public function testCreateDryRunFailsWithoutMappedCollection(): void
     {
         $this->enableEncryption([]);
 
-        $this->artisan('mongodb:encryption:create-collection', ['collection' => 'users', '--no-server' => true])
+        $this->artisan('mongodb:encryption:create-collection', ['collection' => 'users', '--dry-run' => true])
             ->expectsOutputToContain('No collection is declared in the "encryptedFieldsMap" driver option.')
             ->assertExitCode(Command::FAILURE);
     }
@@ -244,7 +289,8 @@ class EncryptedCommandsTest extends TestCase
 
         $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients'])->assertExitCode(Command::SUCCESS);
         $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients'])
-            ->expectsOutputToContain('Created encrypted collection "patients"')
+            ->expectsOutputToContain('The collection "patients" already exists.')
+            ->doesntExpectOutputToContain('Created encrypted collection')
             ->assertExitCode(Command::SUCCESS);
     }
 
@@ -282,26 +328,26 @@ class EncryptedCommandsTest extends TestCase
             ->assertExitCode(Command::FAILURE);
     }
 
-    public function testCreateNoServerWithoutCollectionValidatesTheWholeMap(): void
+    #[Group('queryable-encryption')]
+    public function testCreateDryRunWithoutCollectionReportsEveryMappedCollection(): void
     {
         $this->enableEncryption(self::EMPTY_FIELDS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
 
-        $this->artisan('mongodb:encryption:create-collection', ['--no-server' => true])
-            ->expectsOutputToContain('Configuration is valid. 2 encrypted collection(s) would be created.')
+        $this->artisan('mongodb:encryption:create-collection', ['--dry-run' => true])
+            ->expectsOutputToContain('patients: 0 encrypted field(s), missing')
+            ->expectsOutputToContain('users: 0 encrypted field(s), missing')
+            ->expectsOutputToContain('Would create encrypted collection "patients".')
+            ->expectsOutputToContain('Would create encrypted collection "users".')
             ->assertExitCode(Command::SUCCESS);
-
-        $this->enableEncryption([]);
-
-        $this->artisan('mongodb:encryption:create-collection', ['--no-server' => true])
-            ->expectsOutputToContain('No collection is declared in the "encryptedFieldsMap"')
-            ->assertExitCode(Command::FAILURE);
     }
 
     public function testCreateFailsOnAMalformedMapEntry(): void
     {
         $this->enableEncryption(['patients' => ['fields' => [['path' => 'ssn']]]]);
 
-        $this->artisan('mongodb:encryption:create-collection', ['--no-server' => true])
+        $this->artisan('mongodb:encryption:create-collection', ['--dry-run' => true])
             ->expectsOutputToContain('Missing or invalid "bsonType"')
             ->assertExitCode(Command::FAILURE);
     }
@@ -322,7 +368,7 @@ class EncryptedCommandsTest extends TestCase
         $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('users'));
 
         $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
-            ->expectsOutputToContain('Every mapped encrypted collection already exists.')
+            ->expectsOutputToContain('Every mapped collection already exists.')
             ->assertExitCode(Command::SUCCESS);
     }
 
@@ -354,7 +400,7 @@ class EncryptedCommandsTest extends TestCase
         $patient = Patient::create(['ssn' => '123-45-6789']);
 
         $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true])
-            ->expectsOutputToContain('Dropped encrypted collection "patients"')
+            ->expectsOutputToContain('Dropped collection "patients"')
             ->expectsOutputToContain('Created encrypted collection "patients"')
             ->assertExitCode(Command::SUCCESS);
 
@@ -365,7 +411,7 @@ class EncryptedCommandsTest extends TestCase
         $this->dropEncryptedCollections();
 
         $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true])
-            ->expectsOutputToContain('No mapped encrypted collection exists yet.')
+            ->expectsOutputToContain('No mapped collection exists yet.')
             ->assertExitCode(Command::SUCCESS);
     }
 
@@ -400,7 +446,7 @@ class EncryptedCommandsTest extends TestCase
         $this->app->detectEnvironment(static fn () => 'production');
 
         $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true, '--force' => true])
-            ->expectsOutputToContain('Dropped encrypted collection "patients"')
+            ->expectsOutputToContain('Dropped collection "patients"')
             ->expectsOutputToContain('Created encrypted collection "patients"')
             ->assertExitCode(Command::SUCCESS);
     }
@@ -425,6 +471,258 @@ class EncryptedCommandsTest extends TestCase
     }
 
     #[Group('queryable-encryption')]
+    public function testCreateWithoutRecreateFailsOnACollectionThatExistsWithoutEncryption(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        try {
+            // The warning is a single output line, so it is matched as a whole.
+            $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
+                ->expectsOutputToContain('The collection "patients" exists without encrypted fields: the documents written so far may hold the mapped fields in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection patients --recreate".')
+                ->expectsOutputToContain('Every mapped collection already exists.')
+                ->assertExitCode(Command::FAILURE);
+
+            $this->assertNotNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
+        } finally {
+            $plain->getCollection('patients')->drop();
+        }
+    }
+
+    #[Group('queryable-encryption')]
+    public function testCreateRecreateAsksForConfirmationBeforeDroppingAPlaintextCollection(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        // This status call is also what primes the Laravel Prompts fallback
+        // that routes the production confirmation to the mocked console.
+        $this->artisan('mongodb:encryption:status')
+            ->expectsOutputToContain('patients: 1 encrypted field(s), exists, not encrypted')
+            ->assertExitCode(Command::FAILURE);
+
+        $this->app->detectEnvironment(static fn () => 'production');
+
+        try {
+            $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true])
+                ->expectsConfirmation('Are you sure you want to run this command?', false)
+                ->expectsOutputToContain('Command cancelled.')
+                ->assertExitCode(Command::FAILURE);
+
+            $this->assertFalse($this->schemaBuilder()->hasEncryptedCollection('patients'));
+            $this->assertNotNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
+        } finally {
+            $plain->getCollection('patients')->drop();
+        }
+    }
+
+    #[Group('queryable-encryption')]
+    public function testCreateRecreateDropsACollectionThatExistsWithoutEncryption(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true])
+            ->expectsOutputToContain('Dropped collection "patients"')
+            ->expectsOutputToContain('Created encrypted collection "patients"')
+            ->assertExitCode(Command::SUCCESS);
+
+        $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('patients'));
+
+        $this->assertNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
+    }
+
+    #[Group('queryable-encryption')]
+    public function testCreateRecreateDropsOnlyTheCollectionNamedOnTheCommandLine(): void
+    {
+        $this->enableEncryption(self::PATIENTS_AND_USERS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $this->artisan('mongodb:encryption:create-collection', ['collection' => 'users'])->assertExitCode(Command::SUCCESS);
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('users')->insertOne(['name' => 'kept']);
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        try {
+            $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients', '--recreate' => true])
+                ->expectsOutputToContain('Dropped collection "patients"')
+                ->expectsOutputToContain('Created encrypted collection "patients"')
+                ->doesntExpectOutputToContain('exists without encrypted fields')
+                ->assertExitCode(Command::SUCCESS);
+
+            $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('patients'));
+            $this->assertNull($plain->getCollection('patients')->findOne(['ssn' => 'stored in plaintext']));
+            $this->assertSame(1, $plain->getCollection('users')->countDocuments([]));
+        } finally {
+            $plain->getCollection('patients')->drop();
+            $plain->getCollection('users')->drop();
+        }
+    }
+
+    /**
+     * A mapped collection that is not the one selected on the command line can
+     * be left without encryption: the warning names it, and the command to run
+     * on it.
+     */
+    #[Group('queryable-encryption')]
+    public function testCreateWarnsAboutAnotherMappedCollectionLeftWithoutEncryption(): void
+    {
+        $this->enableEncryption(self::PATIENTS_AND_USERS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+        $plain->getCollection('users')->insertOne(['email' => 'stored in plaintext']);
+
+        try {
+            $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients', '--recreate' => true, '--connection' => 'mongodb'])
+                ->expectsOutputToContain('Dropped collection "patients"')
+                ->expectsOutputToContain('Created encrypted collection "patients"')
+                ->expectsOutputToContain('The collection "users" exists without encrypted fields: the documents written so far may hold the mapped fields in plaintext. Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection users --recreate --connection=mongodb".')
+                ->assertExitCode(Command::FAILURE);
+
+            $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('patients'));
+            $this->assertNotNull($plain->getCollection('users')->findOne(['email' => 'stored in plaintext']));
+        } finally {
+            $plain->getCollection('patients')->drop();
+            $plain->getCollection('users')->drop();
+        }
+    }
+
+    /**
+     * The collection was created from another configuration: the field declared
+     * since then is stored in plaintext, so the collection does not hold the
+     * declared fields.
+     */
+    #[Group('queryable-encryption')]
+    public function testCreateWithoutRecreateFailsOnAnEncryptedCollectionWithDifferentFields(): void
+    {
+        $this->createPatientsFromAnotherConfiguration();
+
+        try {
+            // The warning is a single output line, so it is matched as a whole.
+            $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
+                ->expectsOutputToContain('The collection "patients" exists with encrypted fields that differ from the configuration ("email"). Migrate the data, then create the collection again with "php artisan mongodb:encryption:create-collection patients --recreate".')
+                ->expectsOutputToContain('Every mapped collection already exists.')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $this->dropEncryptedCollections();
+        }
+    }
+
+    /**
+     * Dropping and creating the collection again is the only way to apply the
+     * declared fields: an existing encrypted collection is never altered.
+     */
+    #[Group('queryable-encryption')]
+    public function testCreateRecreateAppliesTheDeclaredFieldsToAnEncryptedCollection(): void
+    {
+        $this->createPatientsFromAnotherConfiguration();
+
+        try {
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 2 encrypted field(s), exists, fields differ')
+                ->assertExitCode(Command::FAILURE);
+
+            $this->artisan('mongodb:encryption:create-collection', ['--recreate' => true])
+                ->expectsOutputToContain('Dropped collection "patients"')
+                ->expectsOutputToContain('Created encrypted collection "patients"')
+                ->assertExitCode(Command::SUCCESS);
+
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 2 encrypted field(s), exists')
+                ->doesntExpectOutputToContain('fields differ')
+                ->assertExitCode(Command::SUCCESS);
+        } finally {
+            $this->dropEncryptedCollections();
+        }
+    }
+
+    /**
+     * The bounds of a range field of every supported type, created by the
+     * package, are the declared ones: a "long" bound is declared as an Int64 and
+     * the driver reads the stored 64-bit integer back as a PHP int.
+     */
+    #[Group('queryable-encryption')]
+    public function testStatusAcceptsEveryRangeTypeCreatedByThePackage(): void
+    {
+        $this->enableEncryption([
+            'patients' => [
+                'fields' => [
+                    ['path' => 'amount', 'bsonType' => 'int', 'queries' => [['queryType' => 'range', 'min' => 0, 'max' => 100]]],
+                    ['path' => 'big', 'bsonType' => 'long', 'queries' => [['queryType' => 'range', 'min' => new Int64(0), 'max' => new Int64(1000)]]],
+                    ['path' => 'ratio', 'bsonType' => 'double', 'queries' => [['queryType' => 'range', 'min' => 0.0, 'max' => 1.5, 'precision' => 2]]],
+                    ['path' => 'price', 'bsonType' => 'decimal', 'queries' => [['queryType' => 'range', 'min' => new Decimal128('0'), 'max' => new Decimal128('100.50'), 'precision' => 2]]],
+                    ['path' => 'birthday', 'bsonType' => 'date', 'queries' => [['queryType' => 'range', 'min' => new UTCDateTime(0), 'max' => new UTCDateTime(4102444800000)]]],
+                ],
+            ],
+        ]);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $this->artisan('mongodb:encryption:create-collection', ['collection' => 'patients'])->assertExitCode(Command::SUCCESS);
+
+        $this->artisan('mongodb:encryption:status')
+            ->expectsOutputToContain('patients: 5 encrypted field(s), exists')
+            ->doesntExpectOutputToContain('fields differ')
+            ->assertExitCode(Command::SUCCESS);
+    }
+
+    /**
+     * A collection named with digits only is a valid MongoDB collection name, and
+     * PHP turns such an array key into an int: the commands keep it as a string,
+     * to read its state and to create it.
+     */
+    #[Group('queryable-encryption')]
+    public function testCommandsHandleANumericCollectionName(): void
+    {
+        $this->enableEncryption(['patients' => ['fields' => []], '2024' => ['fields' => []]]);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+        $this->schemaBuilder()->drop('2024');
+
+        $plain = $this->plainConnection();
+
+        try {
+            // The collection exists without encryption: it is reported with its
+            // state rather than as missing.
+            $plain->getCollection('2024')->insertOne(['year' => 2024]);
+
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('2024: 0 encrypted field(s), exists, not encrypted')
+                ->assertExitCode(Command::FAILURE);
+
+            // The name on the command line matches the mapped one, and the
+            // collection is created.
+            $plain->getCollection('2024')->drop();
+
+            $this->artisan('mongodb:encryption:create-collection', ['collection' => '2024'])
+                ->doesntExpectOutputToContain('is not declared in the "encryptedFieldsMap" driver option')
+                ->expectsOutputToContain('Created encrypted collection "2024"')
+                ->assertExitCode(Command::SUCCESS);
+
+            $this->assertTrue($this->schemaBuilder()->hasEncryptedCollection('2024'));
+        } finally {
+            $this->schemaBuilder()->drop('2024');
+        }
+    }
+
+    #[Group('queryable-encryption')]
     public function testStatusListsMappedCollections(): void
     {
         $this->enableEncryption(self::PATIENTS_MAP);
@@ -441,6 +739,96 @@ class EncryptedCommandsTest extends TestCase
         $this->artisan('mongodb:encryption:status')
             ->expectsOutputToContain('patients: 1 encrypted field(s), exists')
             ->assertExitCode(Command::SUCCESS);
+    }
+
+    #[Group('queryable-encryption')]
+    public function testStatusFailsOnACollectionThatExistsWithoutEncryption(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        try {
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 1 encrypted field(s), exists, not encrypted')
+                ->expectsOutputToContain('The collection "patients" exists without encrypted fields')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $plain->getCollection('patients')->drop();
+        }
+    }
+
+    #[Group('queryable-encryption')]
+    public function testStatusFailsOnAnEncryptedCollectionWithDifferentFields(): void
+    {
+        $this->createPatientsFromAnotherConfiguration();
+
+        try {
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 2 encrypted field(s), exists, fields differ')
+                ->expectsOutputToContain('The collection "patients" exists with encrypted fields that differ from the configuration ("email")')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $this->dropEncryptedCollections();
+        }
+    }
+
+    #[Group('queryable-encryption')]
+    public function testStatusRemediationTargetsTheSelectedConnection(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+        try {
+            $this->artisan('mongodb:encryption:status', ['--connection' => 'mongodb'])
+                ->expectsOutputToContain('php artisan mongodb:encryption:create-collection patients --recreate --connection=mongodb')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $plain->getCollection('patients')->drop();
+        }
+    }
+
+    /**
+     * The mapped collection names are logical: the connection table prefix
+     * applies, and the state is read on the prefixed collection.
+     */
+    #[Group('queryable-encryption')]
+    public function testCommandsApplyTheConnectionTablePrefix(): void
+    {
+        config(['database.connections.mongodb.prefix' => 'test_']);
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+
+        $plain = $this->plainConnection();
+        $plain->getCollection('test_patients')->drop();
+        // The other tests use the unprefixed collection: drop it so the state
+        // can only come from the prefixed name.
+        $plain->getCollection('patients')->drop();
+
+        try {
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 1 encrypted field(s), missing')
+                ->assertExitCode(Command::SUCCESS);
+
+            $plain->getCollection('test_patients')->insertOne(['ssn' => 'stored in plaintext']);
+
+            $this->artisan('mongodb:encryption:status')
+                ->expectsOutputToContain('patients: 1 encrypted field(s), exists, not encrypted')
+                ->assertExitCode(Command::FAILURE);
+
+            $this->artisan('mongodb:encryption:create-collection', ['--no-interaction' => true])
+                ->expectsOutputToContain('The collection "patients" exists without encrypted fields')
+                ->assertExitCode(Command::FAILURE);
+        } finally {
+            $plain->getCollection('test_patients')->drop();
+        }
     }
 
     public function testRewrapDataKeysFailsWithoutEncryptionConfigured(): void
@@ -652,6 +1040,22 @@ class EncryptedCommandsTest extends TestCase
     {
         $this->dropEncryptedCollection('patients');
         $this->dropEncryptedCollection('users');
+    }
+
+    /**
+     * Create the encrypted "patients" collection from PATIENTS_MAP, then
+     * configure PATIENTS_WITH_EMAIL_MAP: the collection does not hold the
+     * "email" field declared since it was created.
+     */
+    private function createPatientsFromAnotherConfiguration(): void
+    {
+        $this->enableEncryption(self::PATIENTS_MAP);
+        $this->skipIfQEIsNotSupported();
+        $this->dropEncryptedCollections();
+
+        $this->schemaBuilder()->createEncrypted('patients');
+
+        $this->enableEncryption(self::PATIENTS_WITH_EMAIL_MAP);
     }
 
     private function schemaBuilder(): Builder

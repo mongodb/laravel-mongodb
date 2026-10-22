@@ -9,6 +9,7 @@ use Illuminate\Console\ConfirmableTrait;
 use InvalidArgumentException;
 use MongoDB\Driver\Exception\Exception as DriverException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Encryption\CollectionState;
 use MongoDB\Laravel\Schema\Builder;
 
 use function array_diff;
@@ -16,7 +17,6 @@ use function array_filter;
 use function array_intersect;
 use function array_keys;
 use function array_values;
-use function count;
 use function implode;
 use function in_array;
 use function is_array;
@@ -34,7 +34,7 @@ final class CreateCollectionCommand extends Command
     protected $signature = 'mongodb:encryption:create-collection
         {collection? : The collection to create, when omitted every missing mapped collection is created}
         {--recreate : Drop and recreate the mapped collections that already exist}
-        {--no-server : Only validate the configuration, do not contact the server}
+        {--dry-run : List the mapped collections and report what would be created, without changing anything}
         {--connection= : The MongoDB connection to use}
         {--force : Force the operation to run when in production}';
 
@@ -45,13 +45,14 @@ final class CreateCollectionCommand extends Command
         try {
             $connection = $this->connection();
             $config = $this->autoEncryptionConfig($connection);
-            $mapped = $this->mappedCollections($connection, $config);
+            $fields = $this->mappedFields($connection, $config);
         } catch (InvalidArgumentException | DriverException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
         }
 
+        $mapped = $this->mappedCollectionNames($fields);
         $collection = $this->argument('collection');
 
         if ($collection !== null && ! in_array($collection, $mapped, true)) {
@@ -64,58 +65,82 @@ final class CreateCollectionCommand extends Command
             return self::INVALID;
         }
 
-        if ($this->option('no-server')) {
-            $this->info($collection === null
-                ? sprintf('Configuration is valid. %d encrypted collection(s) would be created.', count($mapped))
-                : sprintf('Configuration is valid. Encrypted collection "%s" would be created.', $collection));
-
-            return self::SUCCESS;
-        }
-
         try {
-            $builder = $connection->getSchemaBuilder();
-            $existing = array_values(array_filter($mapped, $builder->hasEncryptedCollection(...)));
-            $missing = array_values(array_diff($mapped, $existing));
+            $states = $this->collectionStates($connection, $fields);
         } catch (DriverException $e) {
             $this->error($e->getMessage());
 
             return self::FAILURE;
         }
 
-        $targets = $this->targets($collection, $existing, $missing);
+        $dryRun = (bool) $this->option('dry-run');
+
+        if ($dryRun) {
+            $this->printCollectionStates($fields, $states);
+        }
+
+        $builder = $connection->getSchemaBuilder();
+        $present = array_values(array_filter($mapped, static fn (string $name): bool => $states[$name]->state !== CollectionState::Missing));
+        $missing = array_values(array_diff($mapped, $present));
+
+        $targets = $this->targets($collection, $present, $missing);
+        $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $present)) : [];
+
+        // A mapped collection that already exists is kept as it is, unless
+        // --recreate drops it first, so it keeps its current fields.
+        $kept = array_values(array_diff($present, $dropped));
+        $leftBehind = array_filter(
+            $kept,
+            static fn (string $name): bool => $states[$name]->needsRecreate(),
+        );
+
+        // The collection to replace is not always the one selected on the
+        // command line, so the warning names it and the command to run.
+        foreach ($leftBehind as $name) {
+            $this->warn($this->remediation($name, $states[$name]));
+        }
+
+        $status = self::SUCCESS;
 
         if ($targets === []) {
             $this->info($this->option('recreate')
-                ? 'No mapped encrypted collection exists yet.'
-                : 'Every mapped encrypted collection already exists.');
+                ? 'No mapped collection exists yet.'
+                : 'Every mapped collection already exists.');
+        } elseif ($dryRun) {
+            foreach ($dropped as $name) {
+                $this->line(sprintf('Would drop collection "%s".', $name));
+            }
 
-            return self::SUCCESS;
+            foreach ($targets as $name) {
+                $this->line(in_array($name, $kept, true)
+                    ? sprintf('The collection "%s" already exists.', $name)
+                    : sprintf('Would create encrypted collection "%s".', $name));
+            }
+        } else {
+            if ($dropped !== [] && ! $this->confirmToProceed(sprintf('The collections "%s" will be dropped, removing their documents.', implode('", "', $dropped)))) {
+                return self::FAILURE;
+            }
+
+            $status = $this->createCollections($builder, $targets, $dropped, $kept);
         }
 
-        if (! $this->confirmRecreate($targets, $existing)) {
-            return self::FAILURE;
-        }
-
-        return $this->createCollections($builder, $targets);
+        return $leftBehind === [] ? $status : self::FAILURE;
     }
 
     /**
-     * The collections to act on: the one named on the command line, the ones
-     * that exist for --recreate, the missing ones otherwise.
-     *
-     * @param  list<string> $existing
-     * @param  list<string> $missing
+     * @param  list<string> $present The mapped collections that exist, encrypted or not.
+     * @param  list<string> $missing The mapped collections that do not exist.
      *
      * @return list<string>
      */
-    private function targets(?string $collection, array $existing, array $missing): array
+    private function targets(?string $collection, array $present, array $missing): array
     {
         if ($collection !== null) {
             return [$collection];
         }
 
         if ($this->option('recreate')) {
-            return $existing;
+            return $present;
         }
 
         if ($missing === []) {
@@ -126,15 +151,16 @@ final class CreateCollectionCommand extends Command
     }
 
     /**
-     * The collection names declared in the encryptedFieldsMap, each validated.
+     * The encrypted fields declared for each collection of the encryptedFieldsMap,
+     * keyed by the logical collection name.
      *
      * @param  array<string, mixed> $config
      *
-     * @return list<string>
+     * @return array<string, list<array<string, mixed>>>
      *
      * @throws InvalidArgumentException
      */
-    private function mappedCollections(Connection $connection, array $config): array
+    private function mappedFields(Connection $connection, array $config): array
     {
         $map = $config['encryptedFieldsMap'] ?? null;
 
@@ -142,13 +168,12 @@ final class CreateCollectionCommand extends Command
             throw new InvalidArgumentException('No collection is declared in the "encryptedFieldsMap" driver option.');
         }
 
-        $collections = [];
+        $fields = [];
         foreach (array_keys($map) as $collection) {
-            $connection->encryptedFieldsFor((string) $collection);
-            $collections[] = (string) $collection;
+            $fields[(string) $collection] = $connection->encryptedFieldsFor((string) $collection);
         }
 
-        return $collections;
+        return $fields;
     }
 
     /**
@@ -161,7 +186,9 @@ final class CreateCollectionCommand extends Command
      */
     private function selectCollections(array $missing): array
     {
-        if (! $this->input->isInteractive()) {
+        // A dry run creates nothing, so it does not ask which collections to
+        // create.
+        if ($this->option('dry-run') || ! $this->input->isInteractive()) {
             return $missing;
         }
 
@@ -176,38 +203,26 @@ final class CreateCollectionCommand extends Command
     }
 
     /**
-     * Dropping collections removes their documents, so the operation is
-     * confirmed in production.
-     *
      * @param list<string> $targets
-     * @param list<string> $existing
+     * @param list<string> $dropped The targets that exist and are dropped first.
+     * @param list<string> $kept    The targets that exist and are not dropped.
      */
-    private function confirmRecreate(array $targets, array $existing): bool
+    private function createCollections(Builder $builder, array $targets, array $dropped, array $kept): int
     {
-        $dropped = $this->option('recreate') ? array_values(array_intersect($targets, $existing)) : [];
-
-        if ($dropped === []) {
-            return true;
-        }
-
-        return $this->confirmToProceed(sprintf('The encrypted collections "%s" will be dropped, removing their documents.', implode('", "', $dropped)));
-    }
-
-    /** @param list<string> $targets */
-    private function createCollections(Builder $builder, array $targets): int
-    {
-        $recreate = (bool) $this->option('recreate');
         $failed = false;
 
         foreach ($targets as $collection) {
             try {
-                if ($recreate && $builder->hasEncryptedCollection($collection)) {
+                if (in_array($collection, $dropped, true)) {
                     $builder->drop($collection);
-                    $this->info(sprintf('Dropped encrypted collection "%s".', $collection));
+                    $this->info(sprintf('Dropped collection "%s".', $collection));
                 }
 
                 $builder->createEncrypted($collection);
-                $this->info(sprintf('Created encrypted collection "%s".', $collection));
+
+                $this->info(in_array($collection, $kept, true)
+                    ? sprintf('The collection "%s" already exists.', $collection)
+                    : sprintf('Created encrypted collection "%s".', $collection));
             } catch (InvalidArgumentException | DriverException $e) {
                 $this->error(sprintf('%s: %s', $collection, $e->getMessage()));
                 $failed = true;
