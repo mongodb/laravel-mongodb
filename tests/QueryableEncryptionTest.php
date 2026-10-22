@@ -160,18 +160,15 @@ final class QueryableEncryptionTest extends TestCase
     }
 
     /**
-     * The encrypted fields map is the only configuration the driver has for a
-     * mapped collection that the server does not know as an encrypted
-     * collection. The writes must be encrypted anyway: the field would
-     * otherwise be stored in plaintext without any error.
+     * The map is the only encryption configuration for a collection the server
+     * does not know, and the write must be encrypted anyway.
      */
     #[TestWith([''])]
     #[TestWith(['test_'])]
     public function testAMappedCollectionThatIsNotEncryptedIsEncryptedOnWrite(string $prefix): void
     {
-        // Every client gets its own encryption context, as in a fresh process.
-        // A client that already knows the collection encrypts from its cache,
-        // whether the map is right or not, and hides the behaviour under test.
+        // Each client gets a fresh encryption context: a client that already
+        // knows the collection encrypts from its cache and hides the behaviour.
         config([
             'database.connections.mongodb.prefix' => $prefix,
             'database.connections.mongodb.driver_options.disableClientPersistence' => true,

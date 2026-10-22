@@ -336,11 +336,8 @@ final class AutoEncryption
     }
 
     /**
-     * Default alternate key name: "<database>.<collection>/<path>". See
-     * DRIVERS-3637.
-     *
-     * The real collection name is used, so two connections sharing a key vault
-     * with different table prefixes do not resolve to the same data key.
+     * Default alternate key name, "<database>.<collection>/<path>", built on the
+     * real collection name. See DRIVERS-3637.
      *
      * @param  array<string, mixed> $field
      */
@@ -350,13 +347,25 @@ final class AutoEncryption
             return $field['keyAltName'];
         }
 
-        return $this->connection()->getCollectionNamespace($collection) . '/' . $field['path'];
+        return $this->namespaceFor($collection) . '/' . $field['path'];
     }
 
     /**
-     * Key the encrypted fields map by the namespace of each collection before
-     * it is handed to the driver, which matches the map against the namespace
-     * of the operation: the database name, a dot and the real collection name.
+     * The namespace of a collection, "<database>.<real collection name>", with
+     * the table prefix applied. No Collection exists yet at this point.
+     *
+     * @param string $collection The logical collection name, without the prefix.
+     */
+    private function namespaceFor(string $collection): string
+    {
+        $connection = $this->connection();
+
+        return $connection->getDatabaseName() . '.' . $connection->getTablePrefix() . $collection;
+    }
+
+    /**
+     * Key the encrypted fields map by namespace, which is what the driver
+     * matches an operation against.
      *
      * @param  array<string, mixed> $encryptedFieldsMap
      *
@@ -367,7 +376,7 @@ final class AutoEncryption
         $qualified = [];
 
         foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
-            $qualified[$this->connection()->getCollectionNamespace((string) $collection)] = $encryptedFields;
+            $qualified[$this->namespaceFor((string) $collection)] = $encryptedFields;
         }
 
         return $qualified;

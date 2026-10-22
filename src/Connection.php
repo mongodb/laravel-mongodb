@@ -75,9 +75,8 @@ class Connection extends BaseConnection
         // You can pass options directly to the MongoDB constructor
         $options = $config['options'] ?? [];
 
-        // Resolve the database name and the table prefix first: the automatic
-        // encryption options normalized in createConnection() key the encrypted
-        // fields map and name the default alternate key after them.
+        // Resolve these before createConnection(): the automatic encryption
+        // options key the encrypted fields map and name the alternate keys.
         $this->database = $this->getDefaultDatabaseName($dsn, $config);
         $this->tablePrefix = $config['prefix'] ?? '';
 
@@ -146,19 +145,6 @@ class Connection extends BaseConnection
     public function getRealCollectionName(string $name): string
     {
         return $this->tablePrefix . $name;
-    }
-
-    /**
-     * The namespace of the collection, "<database>.<real collection name>",
-     * which is how the driver and the server identify a collection.
-     *
-     * @internal
-     *
-     * @param string $name The logical collection name, without the prefix.
-     */
-    public function getCollectionNamespace(string $name): string
-    {
-        return $this->getDatabaseName() . '.' . $this->getRealCollectionName($name);
     }
 
     /** @inheritdoc */
