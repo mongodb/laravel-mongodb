@@ -8,8 +8,6 @@ use MongoDB\BSON\Decimal128;
 use MongoDB\BSON\Document;
 use MongoDB\BSON\Int64;
 
-use function array_flip;
-use function array_intersect_key;
 use function array_is_list;
 use function array_keys;
 use function array_map;
@@ -29,28 +27,6 @@ use function sort;
  */
 final readonly class CollectionStatus
 {
-    /**
-     * The query options that are compared. An option that the configuration
-     * does not control is ignored, so a value added by libmongocrypt does not
-     * read as a difference. An option that a later server version adds is not
-     * compared until it is listed here.
-     */
-    private const QUERY_OPTIONS = [
-        'queryType',
-        'contention',
-        'min',
-        'max',
-        'sparsity',
-        'precision',
-        'trimFactor',
-        // The string preview queries, supported by the server 8.2 and later.
-        'strMinQueryLength',
-        'strMaxQueryLength',
-        'strMaxLength',
-        'caseSensitive',
-        'diacriticSensitive',
-    ];
-
     /** The contention stored for a query when the configuration does not declare one. */
     private const DEFAULT_CONTENTION = 8;
 
@@ -78,8 +54,8 @@ final readonly class CollectionStatus
      * The status of a collection that holds encrypted fields, compared with the
      * fields declared in the configuration.
      *
-     * The data keys are not compared: the configuration names them with a
-     * keyAltName, while the collection stores the resolved keyId.
+     * The data key is compared only when the configuration declares a keyId:
+     * a keyAltName is resolved by the server, which stores the resolved keyId.
      *
      * @param list<array<string, mixed>> $declared
      * @param array<string, mixed>       $stored   The "encryptedFields" option of the collection.
@@ -116,8 +92,10 @@ final readonly class CollectionStatus
      */
     private static function differingFields(array $declared, array $stored): array
     {
-        $declaredSpecs = self::fieldSpecs($declared);
-        $storedSpecs = self::fieldSpecs($stored);
+        $keyIdPaths = self::keyIdPaths($declared);
+
+        $declaredSpecs = self::fieldSpecs($declared, $keyIdPaths);
+        $storedSpecs = self::fieldSpecs($stored, $keyIdPaths);
 
         $differing = [];
 
@@ -133,15 +111,42 @@ final readonly class CollectionStatus
     }
 
     /**
+     * The paths whose declared field names the data key with a keyId, the only
+     * key that can be compared: a keyAltName is resolved by the server, which
+     * stores the resolved keyId, so it cannot be checked against the
+     * configuration.
+     *
+     * @param  list<array<string, mixed>> $declared
+     *
+     * @return array<string, true>
+     */
+    private static function keyIdPaths(array $declared): array
+    {
+        $paths = [];
+
+        foreach ($declared as $field) {
+            if (is_array($field) && isset($field['path']) && is_string($field['path']) && isset($field['keyId'])) {
+                $paths[$field['path']] = true;
+            }
+        }
+
+        return $paths;
+    }
+
+    /**
      * A canonical representation of each field, keyed by path, so that two
      * declarations are equal when they encrypt the same path the same way,
      * whatever the order of the fields and of their queries.
      *
-     * @param  array<mixed> $fields
+     * Every option of a field is compared, so an option that a later server
+     * version adds is compared without a change here.
+     *
+     * @param array<mixed>        $fields
+     * @param array<string, true> $keyIdPaths The paths whose data key is compared.
      *
      * @return array<string, string>
      */
-    private static function fieldSpecs(array $fields): array
+    private static function fieldSpecs(array $fields, array $keyIdPaths): array
     {
         $specs = [];
 
@@ -150,10 +155,20 @@ final readonly class CollectionStatus
                 continue;
             }
 
-            $specs[$field['path']] = Document::fromPHP([
-                'bsonType' => $field['bsonType'] ?? null,
-                'queries' => self::querySpecs($field['queries'] ?? null),
-            ])->toCanonicalExtendedJSON();
+            $path = $field['path'];
+
+            // The path names the field and the keyAltName is not stored.
+            if (! isset($keyIdPaths[$path])) {
+                unset($field['keyId']);
+            }
+
+            unset($field['path'], $field['keyAltName']);
+
+            $field['queries'] = self::querySpecs($field['queries'] ?? null);
+
+            ksort($field);
+
+            $specs[$path] = Document::fromPHP($field)->toCanonicalExtendedJSON();
         }
 
         return $specs;
@@ -162,6 +177,11 @@ final readonly class CollectionStatus
     /**
      * The canonical representation of the queries of a field, sorted so that
      * their order is not significant.
+     *
+     * Every option of a query is compared, so an option that a later server
+     * version adds is compared without a change here. An option the server
+     * stores on its own, such as the contention below, has to be given its
+     * default here, otherwise every collection reads as a difference.
      *
      * @return list<string>
      */
@@ -187,7 +207,6 @@ final readonly class CollectionStatus
             // The collection stores the contention of every query, whether the
             // configuration declares one or not.
             $query['contention'] ??= self::DEFAULT_CONTENTION;
-            $query = array_intersect_key($query, array_flip(self::QUERY_OPTIONS));
 
             $query = array_map(self::normalizeValue(...), $query);
 

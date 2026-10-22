@@ -24,6 +24,10 @@ use function is_array;
  */
 class CollectionStatusTest extends TestCase
 {
+    private const KEY_ID = 'aaaabbbbccccdddd';
+
+    private const OTHER_KEY_ID = 'eeeeffff00001111';
+
     private const EQUALITY_QUERY = ['queryType' => 'equality'];
 
     private const RANGE_QUERY = ['queryType' => 'range', 'min' => 0, 'max' => 100, 'sparsity' => 1];
@@ -47,7 +51,7 @@ class CollectionStatusTest extends TestCase
 
         return [
             // The configuration names the data key with a keyAltName, and the
-            // collection stores the resolved keyId: the keys are not compared.
+            // collection stores the resolved keyId: it is not compared.
             'same fields' => [
                 [self::SSN_FIELD, self::AMOUNT_FIELD],
                 [self::SSN_FIELD, self::AMOUNT_FIELD],
@@ -63,6 +67,28 @@ class CollectionStatusTest extends TestCase
             'another query order' => [
                 [['path' => 'amount', 'bsonType' => 'int', 'queries' => [self::RANGE_QUERY, self::EQUALITY_QUERY]]],
                 [['path' => 'amount', 'bsonType' => 'int', 'queries' => [self::EQUALITY_QUERY, self::RANGE_QUERY]]],
+                CollectionState::Encrypted,
+                [],
+            ],
+            // A field that names the data key with a keyId: the stored keyId
+            // has to be the same one.
+            'same keyId' => [
+                [self::SSN_FIELD + ['keyId' => self::keyId()]],
+                [self::SSN_FIELD + ['keyId' => self::keyId()]],
+                CollectionState::Encrypted,
+                [],
+            ],
+            'another keyId' => [
+                [self::SSN_FIELD + ['keyId' => self::keyId()]],
+                [self::SSN_FIELD + ['keyId' => self::keyId(self::OTHER_KEY_ID)]],
+                CollectionState::Mismatched,
+                ['ssn'],
+            ],
+            // A keyAltName is resolved by the server, so the stored keyId
+            // cannot be checked against it.
+            'keyAltName ignores the keyId' => [
+                [self::SSN_FIELD],
+                [self::SSN_FIELD + ['keyId' => self::keyId(self::OTHER_KEY_ID)]],
                 CollectionState::Encrypted,
                 [],
             ],
@@ -120,13 +146,13 @@ class CollectionStatusTest extends TestCase
                 CollectionState::Mismatched,
                 ['amount'],
             ],
-            // A query option that the configuration does not control is
-            // ignored, so a value added by the library is not a difference.
-            'stored option ignored' => [
+            // Every option is compared, so an option that a later server
+            // version adds is a difference without a change here.
+            'query option not declared' => [
                 [self::SSN_FIELD],
                 [['path' => 'ssn', 'bsonType' => 'string', 'queries' => [self::EQUALITY_QUERY + ['futureOption' => true]]]],
-                CollectionState::Encrypted,
-                [],
+                CollectionState::Mismatched,
+                ['ssn'],
             ],
             'field declared but not stored' => [
                 [self::SSN_FIELD, self::EMAIL_FIELD],
@@ -250,9 +276,14 @@ class CollectionStatusTest extends TestCase
         self::assertSame($expected, (new CollectionStatus($state))->needsRecreate());
     }
 
+    private static function keyId(string $hex = self::KEY_ID): Binary
+    {
+        return new Binary($hex, Binary::TYPE_UUID);
+    }
+
     /**
-     * The configured form of the fields: the configuration names the data key
-     * with a keyAltName.
+     * The configured form of the fields: a field that does not declare a keyId
+     * names the data key with an alternate name, as the normalization does.
      *
      * @param  list<array<string, mixed>> $fields
      *
@@ -261,7 +292,9 @@ class CollectionStatusTest extends TestCase
     private static function declaredFields(array $fields): array
     {
         return array_map(
-            static fn (array $field): array => $field + ['keyAltName' => 'unittest.patients/' . $field['path']],
+            static fn (array $field): array => isset($field['keyId'])
+                ? $field
+                : $field + ['keyAltName' => 'unittest.patients/' . $field['path']],
             $fields,
         );
     }
@@ -278,7 +311,7 @@ class CollectionStatusTest extends TestCase
     {
         return array_map(
             static function (array $field): array {
-                $field['keyId'] = new Binary('aaaabbbbccccdddd', Binary::TYPE_UUID);
+                $field['keyId'] ??= self::keyId();
 
                 if (isset($field['queries']) && is_array($field['queries'])) {
                     // A field declared with a single query document stores that
