@@ -35,7 +35,21 @@ final readonly class CollectionStatus
      * read as a difference. An option that a later server version adds is not
      * compared until it is listed here.
      */
-    private const QUERY_OPTIONS = ['queryType', 'contention', 'min', 'max', 'sparsity', 'precision', 'trimFactor'];
+    private const QUERY_OPTIONS = [
+        'queryType',
+        'contention',
+        'min',
+        'max',
+        'sparsity',
+        'precision',
+        'trimFactor',
+        // The string preview queries, supported by the server 8.2 and later.
+        'strMinQueryLength',
+        'strMaxQueryLength',
+        'strMaxLength',
+        'caseSensitive',
+        'diacriticSensitive',
+    ];
 
     /** The contention stored for a query when the configuration does not declare one. */
     private const DEFAULT_CONTENTION = 8;

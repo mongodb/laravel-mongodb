@@ -37,6 +37,14 @@ class CollectionStatusTest extends TestCase
     /** @return array<string, array{list<array<string, mixed>>, list<array<string, mixed>>, CollectionState, list<string>}> */
     public static function provideEncryptedFields(): array
     {
+        $search = static fn (bool $caseSensitive): array => [
+            [
+                'path' => 'ssn',
+                'bsonType' => 'string',
+                'queries' => [['queryType' => 'substringPreview', 'strMinQueryLength' => 2, 'strMaxQueryLength' => 10, 'strMaxLength' => 50, 'caseSensitive' => $caseSensitive]],
+            ],
+        ];
+
         return [
             // The configuration names the data key with a keyAltName, and the
             // collection stores the resolved keyId: the keys are not compared.
@@ -150,6 +158,9 @@ class CollectionStatusTest extends TestCase
                 CollectionState::Mismatched,
                 ['ssn'],
             ],
+            // The string preview queries of the server 8.2 and later.
+            'same search options' => [$search(true), $search(true), CollectionState::Encrypted, []],
+            'another search option' => [$search(true), $search(false), CollectionState::Mismatched, ['ssn']],
             'differing fields are sorted' => [
                 [self::SSN_FIELD, self::EMAIL_FIELD, self::AMOUNT_FIELD],
                 [self::AMOUNT_FIELD],
