@@ -61,7 +61,7 @@ trait InteractsWithEncryption
 
     /**
      * The state of the given mapped collections on the server, keyed by the
-     * logical collection name, with the connection table prefix applied.
+     * logical collection name.
      *
      * @param  array<string, list<array<string, mixed>>> $encryptedFields The encrypted fields declared for each collection.
      *
@@ -71,14 +71,14 @@ trait InteractsWithEncryption
      */
     protected function collectionStates(Connection $connection, array $encryptedFields): array
     {
-        $prefix = $connection->getTablePrefix();
         $realNames = [];
         $logicalNames = [];
         $states = [];
 
         foreach ($this->mappedCollectionNames($encryptedFields) as $collection) {
-            $realNames[] = $prefix . $collection;
-            $logicalNames[$prefix . $collection] = $collection;
+            $realName = $connection->getCollection($collection)->getCollectionName();
+            $realNames[] = $realName;
+            $logicalNames[$realName] = $collection;
             $states[$collection] = new CollectionStatus(CollectionState::Missing);
         }
 
