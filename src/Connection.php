@@ -123,6 +123,8 @@ class Connection extends BaseConnection
     /**
      * Get a MongoDB collection.
      *
+     * The name is logical: the connection table prefix is applied.
+     *
      * @param  string $name
      *
      * @return Collection
@@ -131,20 +133,7 @@ class Connection extends BaseConnection
     {
         $this->syncCommandSubscriber();
 
-        return $this->db->getCollection($this->getRealCollectionName($name));
-    }
-
-    /**
-     * The name of the collection as stored by the server: the connection table
-     * prefix applies to the logical name used by the application.
-     *
-     * @internal
-     *
-     * @param string $name The logical collection name, without the prefix.
-     */
-    public function getRealCollectionName(string $name): string
-    {
-        return $this->tablePrefix . $name;
+        return $this->db->getCollection($this->tablePrefix . $name);
     }
 
     /** @inheritdoc */

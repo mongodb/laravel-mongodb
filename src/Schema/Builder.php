@@ -6,7 +6,6 @@ namespace MongoDB\Laravel\Schema;
 
 use Closure;
 use InvalidArgumentException;
-use MongoDB\Collection;
 use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Model\CollectionInfo;
@@ -112,7 +111,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     #[Override]
     public function hasTable($table)
     {
-        return $this->hasCollection($this->connection->getRealCollectionName($table));
+        return $this->hasCollection($this->connection->getCollection($table)->getCollectionName());
     }
 
     /** @inheritdoc */
@@ -158,7 +157,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $config = $this->connection->getConfig('driver_options.autoEncryption');
         $fields = $this->connection->encryptedFieldsFor($collection);
-        $realCollection = $this->connection->getRealCollectionName($collection);
+        $realCollection = $this->connection->getCollection($collection)->getCollectionName();
 
         $info = $this->collectionInfo($realCollection);
         if ($info !== null) {
@@ -203,7 +202,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function hasEncryptedCollection(string $collection): bool
     {
-        $info = $this->collectionInfo($this->connection->getRealCollectionName($collection));
+        $info = $this->collectionInfo($this->connection->getCollection($collection)->getCollectionName());
 
         return is_array($info?->getOptions()['encryptedFields'] ?? null);
     }
@@ -253,7 +252,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         if ($this->connection->isAutoEncryptionEnabled($table)) {
             $map = $this->connection->getConfig('driver_options.autoEncryption.encryptedFieldsMap');
             $this->dropMetadataCollections(
-                $this->connection->getRealCollectionName($table),
+                $this->connection->getCollection($table)->getCollectionName(),
                 is_array($map) && is_array($map[$table] ?? null) ? $map[$table] : [],
             );
         }
@@ -348,7 +347,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
             [$db, $table] = explode('.', $table, 2);
         }
 
-        $table = $this->connection->getRealCollectionName($table);
+        $table = $this->connection->getCollection($table)->getCollectionName();
 
         $stats = $this->connection->getDatabase($db)->getCollection($table)->aggregate([
             // Sample 1,000 documents to get a representative sample of the collection
@@ -410,8 +409,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     #[Override]
     public function getIndexes($table)
     {
-        $collection = $this->connection->getDatabase()->getCollection($this->connection->getRealCollectionName($table));
-        assert($collection instanceof Collection);
+        $collection = $this->connection->getCollection($table);
         $indexList = [];
 
         $indexes = $collection->listIndexes();
