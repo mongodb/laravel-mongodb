@@ -123,9 +123,7 @@ class Connection extends BaseConnection
     /**
      * Get a MongoDB collection.
      *
-     * The name is logical: the connection table prefix is applied.
-     *
-     * @param  string $name
+     * @param  string $name The logical collection name. The connection table prefix is applied.
      *
      * @return Collection
      */
