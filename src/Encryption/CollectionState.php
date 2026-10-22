@@ -22,10 +22,8 @@ enum CollectionState: string
     case NotEncrypted = 'exists, not encrypted';
 
     /**
-     * The collection is an encrypted collection, but its encrypted fields are
-     * not the ones declared in the configuration. Its documents are encrypted
-     * with the stored fields, and the collection has to be dropped and created
-     * again to apply the declared ones.
+     * An encrypted collection whose stored fields are not the declared ones.
+     * It has to be dropped and created again.
      */
     case Mismatched = 'exists, fields differ';
 

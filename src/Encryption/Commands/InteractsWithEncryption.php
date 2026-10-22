@@ -60,17 +60,12 @@ trait InteractsWithEncryption
     }
 
     /**
-     * The state of the given mapped collections on the server.
-     *
-     * The names are the logical collection names: the connection table prefix
-     * is applied. A single listCollections call reads every collection, and its
-     * encryptedFields option tells a collection that exists without encryption,
-     * and an encrypted collection whose fields are not the declared ones, from
-     * a collection that holds the declared fields.
+     * The state of the given mapped collections on the server, keyed by the
+     * logical collection name, with the connection table prefix applied.
      *
      * @param  array<string, list<array<string, mixed>>> $encryptedFields The encrypted fields declared for each collection.
      *
-     * @return array<string, CollectionStatus> Keyed by the logical collection name.
+     * @return array<string, CollectionStatus>
      *
      * @throws DriverException
      */
@@ -105,11 +100,8 @@ trait InteractsWithEncryption
     }
 
     /**
-     * The logical names of the mapped collections, as strings.
-     *
-     * A collection name can be a number, and PHP turns such an array key into an
-     * int, which then fails the string parameters and the string comparisons of
-     * the commands.
+     * The logical names of the mapped collections, as strings: PHP turns a
+     * numeric collection name into an int array key.
      *
      * @param  array<string, mixed> $encryptedFields
      *
@@ -127,16 +119,13 @@ trait InteractsWithEncryption
     }
 
     /**
-     * Print each mapped collection with its state on the server, and return the
-     * ones that do not hold the declared fields.
-     *
-     * A collection in one of those states is printed as an error: it cannot be
-     * fixed in place, it has to be dropped and created again.
+     * Print each mapped collection with its state, and return the ones that do
+     * not hold the declared fields.
      *
      * @param  array<string, list<array<string, mixed>>> $encryptedFields
      * @param  array<string, CollectionStatus>|null      $states          Null to list the collections without their state.
      *
-     * @return list<array{string, CollectionStatus}> The collections that do not hold the declared fields, with their name.
+     * @return list<array{string, CollectionStatus}>
      */
     protected function printCollectionStates(array $encryptedFields, ?array $states): array
     {
@@ -166,13 +155,8 @@ trait InteractsWithEncryption
     }
 
     /**
-     * The message that tells how to bring a mapped collection back to the
-     * fields declared in the configuration.
-     *
-     * A collection that exists without encryption, or with other encrypted
-     * fields, cannot be fixed in place: it has to be dropped and created again,
-     * which removes its documents, hence the instruction to migrate the data
-     * first.
+     * How to bring a mapped collection back to the fields declared in the
+     * configuration.
      */
     protected function remediation(string $collection, CollectionStatus $status): string
     {
