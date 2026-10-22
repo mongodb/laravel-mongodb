@@ -66,6 +66,9 @@ $collection->vectorSearchIndex([
 ], 'products_vector');
 ```
 
+Search indexes require MongoDB Atlas or a local Atlas deployment. Call `Schema::ensureVectorExtensionExists()`
+before creating them to fail early with an explicit message on unsupported deployments.
+
 Can also be managed via the Atlas UI, Atlas Admin API, or MongoDB MCP server.
 
 ## No column definitions
