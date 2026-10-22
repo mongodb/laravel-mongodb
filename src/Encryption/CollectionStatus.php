@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Encryption;
 
+use MongoDB\BSON\Document;
 use MongoDB\BSON\Int64;
 
 use function array_flip;
@@ -14,7 +15,6 @@ use function array_map;
 use function array_unique;
 use function is_array;
 use function is_string;
-use function json_encode;
 use function ksort;
 use function sort;
 
@@ -120,10 +120,10 @@ final readonly class CollectionStatus
                 continue;
             }
 
-            $specs[$field['path']] = (string) json_encode([
+            $specs[$field['path']] = Document::fromPHP([
                 'bsonType' => $field['bsonType'] ?? null,
                 'queries' => self::querySpecs($field['queries'] ?? null),
-            ]);
+            ])->toCanonicalExtendedJSON();
         }
 
         return $specs;
@@ -163,7 +163,9 @@ final readonly class CollectionStatus
 
             ksort($query);
 
-            $specs[] = (string) json_encode($query);
+            // The BSON encoding compares the values as the types the server
+            // stores, and does not round a double like json_encode() does.
+            $specs[] = Document::fromPHP($query)->toCanonicalExtendedJSON();
         }
 
         sort($specs);

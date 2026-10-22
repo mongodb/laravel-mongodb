@@ -13,6 +13,8 @@ use PHPUnit\Framework\TestCase;
 
 use function array_is_list;
 use function array_map;
+use function ini_get;
+use function ini_set;
 use function is_array;
 
 /**
@@ -193,6 +195,28 @@ class CollectionStatusTest extends TestCase
         $other = CollectionStatus::fromEncryptedFields($declared, $stored('-9223372036854775808'));
         self::assertSame(CollectionState::Mismatched, $other->state);
         self::assertSame(['amount'], $other->differingFields);
+    }
+
+    /**
+     * The bounds are compared exactly, even when "serialize_precision" is 14 and
+     * json_encode() would round two different doubles to the same value.
+     */
+    public function testDoubleRangeBoundsAreComparedExactly(): void
+    {
+        $declared = [['path' => 'amount', 'bsonType' => 'double', 'keyAltName' => 'unittest.patients/amount', 'queries' => [['queryType' => 'range', 'min' => 0.0, 'max' => 0.3]]]];
+        $stored = ['fields' => [['path' => 'amount', 'bsonType' => 'double', 'keyId' => new Binary('aaaabbbbccccdddd', Binary::TYPE_UUID), 'queries' => [['queryType' => 'range', 'contention' => 8, 'min' => 0.0, 'max' => 0.30000000000000004]]]]];
+
+        $precision = (string) ini_get('serialize_precision');
+        ini_set('serialize_precision', '14');
+
+        try {
+            $status = CollectionStatus::fromEncryptedFields($declared, $stored);
+        } finally {
+            ini_set('serialize_precision', $precision);
+        }
+
+        self::assertSame(CollectionState::Mismatched, $status->state);
+        self::assertSame(['amount'], $status->differingFields);
     }
 
     /** @return array<string, array{CollectionState, bool}> */
