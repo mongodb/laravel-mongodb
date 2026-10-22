@@ -470,6 +470,27 @@ class ThroughRelationsTest extends TestCase
         self::assertSame(['Get Out'], $loaded[1]->filmsWithCustomKeys->pluck('title')->all());
     }
 
+    /**
+     * Two doubles that differ beyond the "precision" ini setting are two
+     * distinct keys: the string conversion of a double rounds it.
+     */
+    public function testCustomKeysOfTwoCloseDoublesDoNotShareDocuments(): void
+    {
+        Studio::create(['name' => 'FirstStudio', 'cstudio_id' => 1.0]);
+        Studio::create(['name' => 'SecondStudio', 'cstudio_id' => 1.0000000000000002]);
+
+        Director::create(['name' => 'Ari Aster', 'cdirector_id' => 10, 'cstudio_ref' => 1.0]);
+        Director::create(['name' => 'Jordan Peele', 'cdirector_id' => 20, 'cstudio_ref' => 1.0000000000000002]);
+
+        Film::create(['title' => 'Hereditary', 'cdirector_ref' => 10]);
+        Film::create(['title' => 'Get Out', 'cdirector_ref' => 20]);
+
+        $loaded = Studio::with('filmsWithCustomKeys')->orderBy('name')->get();
+
+        self::assertSame(['Hereditary'], $loaded[0]->filmsWithCustomKeys->pluck('title')->all());
+        self::assertSame(['Get Out'], $loaded[1]->filmsWithCustomKeys->pluck('title')->all());
+    }
+
     /** @return array<string, Studio> */
     private function createStudios(): array
     {
