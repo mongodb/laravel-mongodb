@@ -352,7 +352,7 @@ final class AutoEncryption
 
     /**
      * The namespace of a collection, "<database>.<real collection name>", with
-     * the table prefix applied. No Collection exists yet at this point.
+     * the table prefix applied.
      *
      * @param string $collection The logical collection name, without the prefix.
      */
