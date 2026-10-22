@@ -132,7 +132,33 @@ class Connection extends BaseConnection
     {
         $this->syncCommandSubscriber();
 
-        return $this->db->getCollection($this->tablePrefix . $name);
+        return $this->db->getCollection($this->getRealCollectionName($name));
+    }
+
+    /**
+     * The name of the collection as stored by the server: the connection table
+     * prefix applies to the logical name used by the application.
+     *
+     * @internal
+     *
+     * @param string $name The logical collection name, without the prefix.
+     */
+    public function getRealCollectionName(string $name): string
+    {
+        return $this->tablePrefix . $name;
+    }
+
+    /**
+     * The namespace of the collection, "<database>.<real collection name>",
+     * which is how the driver and the server identify a collection.
+     *
+     * @internal
+     *
+     * @param string $name The logical collection name, without the prefix.
+     */
+    public function getCollectionNamespace(string $name): string
+    {
+        return $this->getDatabaseName() . '.' . $this->getRealCollectionName($name);
     }
 
     /** @inheritdoc */

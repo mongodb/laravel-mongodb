@@ -112,7 +112,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     #[Override]
     public function hasTable($table)
     {
-        return $this->hasCollection($this->connection->getTablePrefix() . $table);
+        return $this->hasCollection($this->connection->getRealCollectionName($table));
     }
 
     /** @inheritdoc */
@@ -158,7 +158,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         $config = $this->connection->getConfig('driver_options.autoEncryption');
         $fields = $this->connection->encryptedFieldsFor($collection);
-        $realCollection = $this->connection->getTablePrefix() . $collection;
+        $realCollection = $this->connection->getRealCollectionName($collection);
 
         $info = $this->collectionInfo($realCollection);
         if ($info !== null) {
@@ -203,7 +203,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
      */
     public function hasEncryptedCollection(string $collection): bool
     {
-        $info = $this->collectionInfo($this->connection->getTablePrefix() . $collection);
+        $info = $this->collectionInfo($this->connection->getRealCollectionName($collection));
 
         return is_array($info?->getOptions()['encryptedFields'] ?? null);
     }
@@ -253,7 +253,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
         if ($this->connection->isAutoEncryptionEnabled($table)) {
             $map = $this->connection->getConfig('driver_options.autoEncryption.encryptedFieldsMap');
             $this->dropMetadataCollections(
-                $this->connection->getTablePrefix() . $table,
+                $this->connection->getRealCollectionName($table),
                 is_array($map) && is_array($map[$table] ?? null) ? $map[$table] : [],
             );
         }
@@ -348,7 +348,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
             [$db, $table] = explode('.', $table, 2);
         }
 
-        $table = $this->connection->getTablePrefix() . $table;
+        $table = $this->connection->getRealCollectionName($table);
 
         $stats = $this->connection->getDatabase($db)->getCollection($table)->aggregate([
             // Sample 1,000 documents to get a representative sample of the collection
@@ -410,7 +410,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     #[Override]
     public function getIndexes($table)
     {
-        $collection = $this->connection->getDatabase()->getCollection($this->connection->getTablePrefix() . $table);
+        $collection = $this->connection->getDatabase()->getCollection($this->connection->getRealCollectionName($table));
         assert($collection instanceof Collection);
         $indexList = [];
 

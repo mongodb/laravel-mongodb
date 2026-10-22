@@ -350,17 +350,7 @@ final class AutoEncryption
             return $field['keyAltName'];
         }
 
-        return $this->connection()->getDatabaseName() . '.' . $this->realCollectionName($collection) . '/' . $field['path'];
-    }
-
-    /**
-     * The collection name as stored by the server: the connection table prefix
-     * applies, while the package API accepts the logical name configured in the
-     * application.
-     */
-    private function realCollectionName(string $collection): string
-    {
-        return $this->connection()->getTablePrefix() . $collection;
+        return $this->connection()->getCollectionNamespace($collection) . '/' . $field['path'];
     }
 
     /**
@@ -374,11 +364,10 @@ final class AutoEncryption
      */
     private function keyByNamespace(array $encryptedFieldsMap): array
     {
-        $database = $this->connection()->getDatabaseName();
         $qualified = [];
 
         foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
-            $qualified[$database . '.' . $this->realCollectionName((string) $collection)] = $encryptedFields;
+            $qualified[$this->connection()->getCollectionNamespace((string) $collection)] = $encryptedFields;
         }
 
         return $qualified;
