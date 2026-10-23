@@ -15,12 +15,15 @@ use Illuminate\Support\Str;
 use Illuminate\Testing\Assert;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
+use LogicException;
 use MongoDB\BSON\ObjectId;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Builder\Stage;
 use MongoDB\Collection;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\CursorInterface;
+use MongoDB\Driver\Exception\CommandException;
 use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber;
@@ -97,6 +100,262 @@ class QueryBuilderTest extends TestCase
 
         $users = DB::table('users')->get();
         $this->assertCount(1, $users);
+    }
+
+    public function testPipelineStagesRunAsAnAggregate()
+    {
+        DB::table('users')->insert([
+            ['name' => 'Jane Doe'],
+            ['name' => 'John Doe'],
+        ]);
+
+        $users = DB::table('users')
+            ->addStage(['$addFields' => ['__name' => ['$toUpper' => '$name']]])
+            ->orderBy('__name', -1)
+            ->unsetTemporaryField('__name')
+            ->get();
+
+        $this->assertSame(['John Doe', 'Jane Doe'], $users->pluck('name')->all());
+        $this->assertArrayNotHasKey('__name', (array) $users->first());
+    }
+
+    public function testPipelineStagesFoldIntoTheCount()
+    {
+        DB::table('users')->insert([
+            ['name' => 'Jane Doe'],
+            ['name' => 'John Doe'],
+        ]);
+
+        $count = DB::table('users')
+            ->addStage(['$match' => ['name' => 'Jane Doe']])
+            ->count();
+
+        $this->assertSame(1, $count);
+    }
+
+    public function testPipelineStagesKeepTheOtherFieldsOfASliceProjection()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork', 'tags' => ['sharp', 'pointy']],
+        ]);
+
+        $item = DB::table('items')
+            ->project(['tags' => ['$slice' => 1]])
+            ->addStage(['$addFields' => ['__flag' => true]])
+            ->get()
+            ->first();
+
+        $this->assertSame('fork', $item->name);
+        $this->assertSame(['sharp'], $item->tags);
+    }
+
+    public function testPipelineStagesExcludeFieldsBesideASliceProjection()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork', 'secret' => 'hidden', 'tags' => ['sharp', 'pointy']],
+        ]);
+
+        $item = DB::table('items')
+            ->project(['tags' => ['$slice' => 1], 'secret' => 0])
+            ->addStage(['$addFields' => ['__flag' => true]])
+            ->get()
+            ->first();
+
+        $this->assertSame('fork', $item->name);
+        $this->assertSame(['sharp'], $item->tags);
+        $this->assertArrayNotHasKey('secret', (array) $item);
+    }
+
+    public function testPipelineStagesSliceOnlyArrayFields()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork', 'tags' => ['sharp', 'pointy']],
+            ['name' => 'knife', 'tags' => null],
+            ['name' => 'spoon', 'tags' => 'metal'],
+            ['name' => 'spork'],
+        ]);
+
+        $items = DB::table('items')
+            ->project(['tags' => ['$slice' => 1]])
+            ->addStage(['$addFields' => ['__flag' => true]])
+            ->orderBy('name')
+            ->get();
+
+        $this->assertSame(['sharp'], $items[0]->tags);
+        $this->assertNull($items[1]->tags);
+        $this->assertSame('metal', $items[2]->tags);
+        $this->assertArrayNotHasKey('tags', (array) $items[3]);
+    }
+
+    public function testPipelineStagesAcceptAStageBuilder()
+    {
+        DB::table('users')->insert([
+            ['name' => 'Jane Doe'],
+            ['name' => 'John Doe'],
+        ]);
+
+        $users = DB::table('users')
+            ->addStage(Stage::match(['name' => 'Jane Doe']))
+            ->get();
+
+        $this->assertSame(['Jane Doe'], $users->pluck('name')->all());
+    }
+
+    public function testPipelineStagesKeepAnObjectFormSort()
+    {
+        DB::table('items')->insert([
+            ['name' => 'a'],
+            ['name' => 'b'],
+            ['name' => 'c'],
+        ]);
+
+        $item = DB::table('items')
+            ->options(['sort' => (object) ['name' => -1], 'limit' => 1])
+            ->addStage(['$match' => ['name' => ['$ne' => 'zzz']]])
+            ->first();
+
+        $this->assertSame('c', $item->name);
+    }
+
+    public function testPipelineStagesKeepAnObjectFormProjection()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork', 'secret' => 'hidden'],
+        ]);
+
+        $item = DB::table('items')
+            ->options(['projection' => (object) ['secret' => 0]])
+            ->addStage(['$match' => ['name' => 'fork']])
+            ->first();
+
+        $this->assertSame('fork', $item->name);
+        $this->assertArrayNotHasKey('secret', (array) $item);
+    }
+
+    public function testPipelineStagesRunAComputedProjection()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork'],
+        ]);
+
+        $item = DB::table('items')
+            ->project(['upper' => ['$toUpper' => '$name']])
+            ->addStage(['$match' => ['name' => 'fork']])
+            ->first();
+
+        $this->assertSame('FORK', $item->upper);
+    }
+
+    public function testPipelineStagesTranslateAnObjectFormSliceSpecification()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork', 'tags' => ['sharp', 'pointy']],
+        ]);
+
+        $item = DB::table('items')
+            ->project(['tags' => (object) ['$slice' => 1]])
+            ->addStage(['$match' => ['name' => 'fork']])
+            ->get()
+            ->first();
+
+        $this->assertSame('fork', $item->name);
+        $this->assertSame(['sharp'], $item->tags);
+    }
+
+    public function testPipelineStagesLetTheServerRejectANegativeLimit()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork'],
+        ]);
+
+        $this->expectException(CommandException::class);
+        $this->expectExceptionMessage('limit');
+
+        DB::table('items')
+            ->options(['limit' => -2])
+            ->addStage(['$match' => ['name' => 'fork']])
+            ->get();
+    }
+
+    public function testPipelineStagesLetTheServerRejectAnInvalidLimit()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork'],
+        ]);
+
+        $this->expectException(CommandException::class);
+        $this->expectExceptionMessage('limit');
+
+        DB::table('items')
+            ->options(['limit' => 'invalid'])
+            ->addStage(['$match' => ['name' => 'fork']])
+            ->get();
+    }
+
+    public function testPipelineStagesKeepTheOtherFieldsBesideAnIdInclusionAndAnExclusion()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork', 'secret' => 'hidden', 'tags' => ['sharp', 'pointy']],
+        ]);
+
+        $item = DB::table('items')
+            ->project(['tags' => ['$slice' => 1], '_id' => 1, 'secret' => 0])
+            ->addStage(['$match' => ['name' => 'fork']])
+            ->get()
+            ->first();
+
+        $this->assertSame('fork', $item->name);
+        $this->assertSame(['sharp'], $item->tags);
+        $this->assertArrayNotHasKey('secret', (array) $item);
+    }
+
+    public function testPipelineStagesRejectASliceProjectionThroughAPath()
+    {
+        DB::table('items')->insert([
+            ['name' => 'fork', 'sub' => [['tags' => ['sharp']]]],
+        ]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The projection of "sub.tags" slices a field reached through a path');
+
+        DB::table('items')
+            ->project(['sub.tags' => ['$slice' => 1]])
+            ->addStage(['$match' => ['name' => 'fork']])
+            ->get();
+    }
+
+    public function testPipelineStagesRunAFilterOnADescendantOfATemporaryFieldAfterTheStages()
+    {
+        DB::table('items')->insert([
+            ['name' => 'a'],
+            ['name' => 'b'],
+        ]);
+
+        $items = DB::table('items')
+            ->addStage(['$addFields' => ['__rel' => ['title' => 'Moby']]])
+            ->unsetTemporaryField('__rel')
+            ->where('__rel.title', 'Moby')
+            ->get();
+
+        $this->assertSame(['a', 'b'], $items->pluck('name')->all());
+        $this->assertArrayNotHasKey('__rel', (array) $items->first());
+    }
+
+    public function testPipelineStagesRunAnExpressionOverATemporaryFieldAfterTheStages()
+    {
+        DB::table('items')->insert([
+            ['name' => 'a', 'count' => 5],
+            ['name' => 'b', 'count' => 1],
+        ]);
+
+        $items = DB::table('items')
+            ->addStage(['$addFields' => ['__double' => ['$multiply' => ['$count', 2]]]])
+            ->unsetTemporaryField('__double')
+            ->whereRaw(['$expr' => ['$gte' => ['$__double', 8]]])
+            ->get();
+
+        $this->assertSame(['a'], $items->pluck('name')->all());
+        $this->assertArrayNotHasKey('__double', (array) $items->first());
     }
 
     public function testNoDocument()
