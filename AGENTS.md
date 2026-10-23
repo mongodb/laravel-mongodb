@@ -131,6 +131,11 @@ Encryption need a replica set or a sharded cluster, not a standalone.
 - `declare(strict_types=1)` in every file, and import functions with `use function`.
 - Follow the Doctrine coding standard enforced by `phpcs.xml.dist`.
 - Mark methods that override a parent with `#[Override]`.
+- Reuse before inventing. Look for the logic in this package, in Laravel, or in the driver before
+  writing array manipulation or string formatting of your own. Build MQL with the `mongodb/mongodb`
+  builders — `MongoDB\Builder\Stage`, `Expression`, `Accumulator`, `Pipeline` — instead of
+  hand-written arrays and operator strings; `Collection::aggregate()` accepts the builder stages
+  natively and encodes them itself.
 - Prefer `vendor/bin/phpcbf` and `vendor/bin/rector process` over manual edits for style and
   automated refactors. Exclude a phpcs sniff in `phpcs.xml.dist`, or add a rule in `rector.php`,
   only when the rule is buggy or makes the code less readable, and comment the reason.
