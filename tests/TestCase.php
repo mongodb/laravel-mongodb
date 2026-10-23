@@ -172,7 +172,7 @@ class TestCase extends OrchestraTestCase
 
         $connection = $this->getConnection('mongodb');
 
-        if (! $connection->isAutoEncryptionEnabled('patients') && ! $connection->isAutoEncryptionEnabled('users')) {
+        if (! $connection->encryption()->isAutoEncryptionEnabled('patients') && ! $connection->encryption()->isAutoEncryptionEnabled('users')) {
             self::markTestSkipped('Queryable Encryption is not configured on the "mongodb" connection.');
         }
 

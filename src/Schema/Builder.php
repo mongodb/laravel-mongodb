@@ -154,7 +154,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     public function createEncrypted(string $collection, ?Closure $callback = null, array $options = []): array
     {
         $config = $this->connection->getConfig('driver_options.autoEncryption');
-        $fields = $this->connection->encryptedFieldsFor($collection);
+        $fields = $this->connection->encryption()->encryptedFieldsFor($collection);
         $realCollection = $this->connection->getCollection($collection)->getCollectionName();
 
         $info = $this->collectionInfo($realCollection);
@@ -170,9 +170,9 @@ class Builder extends \Illuminate\Database\Schema\Builder
 
         $kmsProvider = array_key_first($config['kmsProviders']) ?: 'local';
         $masterKey = isset($config['masterKey']) && is_array($config['masterKey']) ? $config['masterKey'] : null;
-        $clientEncryption = $this->connection->getClientEncryption();
+        $clientEncryption = $this->connection->encryption()->getClientEncryption();
 
-        $resolvedMap = $this->connection->resolveOrCreateEncryptionKeys([$collection => ['fields' => $fields]]);
+        $resolvedMap = $this->connection->encryption()->resolveOrCreateEncryptionKeys([$collection => ['fields' => $fields]]);
         $map = $resolvedMap[$collection];
 
         $encryptedFields = $this->connection->getDatabase()->createEncryptedCollection(
@@ -265,7 +265,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
     {
         // Dropping an encrypted collection also drops its metadata collections,
         // which the server leaves behind otherwise.
-        if ($this->connection->isAutoEncryptionEnabled($table)) {
+        if ($this->connection->encryption()->isAutoEncryptionEnabled($table)) {
             $map = $this->connection->getConfig('driver_options.autoEncryption.encryptedFieldsMap');
             $this->dropMetadataCollections(
                 $this->connection->getCollection($table)->getCollectionName(),
