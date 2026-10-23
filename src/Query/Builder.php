@@ -24,6 +24,7 @@ use MongoDB\Builder\Search;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Builder\Type\QueryInterface;
 use MongoDB\Builder\Type\SearchOperatorInterface;
+use MongoDB\Builder\Type\StageInterface;
 use MongoDB\Driver\Cursor;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
@@ -114,6 +115,8 @@ class Builder extends BaseBuilder
     public $hint;
 
     private ReadPreference $readPreference;
+
+    private ?Pipeline $pipeline = null;
 
     /**
      * Custom options to add to the query.
@@ -224,6 +227,99 @@ class Builder extends BaseBuilder
         return $this;
     }
 
+    /**
+     * @internal Used by the Eloquent\Builder hooks that bridge Filament.
+     *
+     * @param array<string, mixed>|StageInterface $stage
+     */
+    public function addInternalStage(array|StageInterface $stage): static
+    {
+        $this->pipeline()->addStage($stage);
+
+        return $this;
+    }
+
+    /** @internal Used by the Eloquent\Builder hooks that bridge Filament. */
+    public function addInternalFieldToUnset(string $field): static
+    {
+        $this->pipeline()->unsetTemporaryField($field);
+
+        return $this;
+    }
+
+    public function __clone()
+    {
+        if ($this->pipeline !== null) {
+            $this->pipeline = clone $this->pipeline;
+        }
+    }
+
+    private function pipeline(): Pipeline
+    {
+        return $this->pipeline ??= new Pipeline();
+    }
+
+    private function effectivePipeline(): ?Pipeline
+    {
+        $pipeline = $this->pipeline === null ? null : clone $this->pipeline;
+
+        foreach ($this->nestedQueries() as $query) {
+            $pipeline = $this->mergeNestedPipeline($pipeline, $query);
+        }
+
+        return $pipeline;
+    }
+
+    private function mergeNestedPipeline(?Pipeline $pipeline, self $query): ?Pipeline
+    {
+        $nested = $query->effectivePipeline();
+
+        if ($nested === null) {
+            return $pipeline;
+        }
+
+        $pipeline ??= new Pipeline();
+        $pipeline->mergeFrom($nested);
+
+        return $pipeline;
+    }
+
+    /** @return list<self> */
+    private function nestedQueries(): array
+    {
+        $queries = [];
+
+        foreach ($this->wheres as $where) {
+            if ($this->isNestedQuery($where)) {
+                $queries[] = $where['query'];
+            }
+        }
+
+        return $queries;
+    }
+
+    /** @param array<string, mixed> $where */
+    private function isNestedQuery(array $where): bool
+    {
+        return ($where['type'] ?? null) === 'Nested' && ($where['query'] ?? null) instanceof self;
+    }
+
+    private function assertWritable(): void
+    {
+        $this->effectivePipeline()?->assertWritable();
+    }
+
+    private function assertCarriesNoStage(): void
+    {
+        $pipeline = $this->effectivePipeline();
+
+        if ($pipeline === null || $pipeline->isEmpty()) {
+            return;
+        }
+
+        throw new LogicException('An $elemMatch constraint cannot carry pipeline stages, because a stage cannot be hoisted out of the $elemMatch operator. Attach the stage to the outer query instead.');
+    }
+
     /** @inheritdoc */
     #[Override]
     public function find($id, $columns = [])
@@ -293,6 +389,15 @@ class Builder extends BaseBuilder
      * @return array<string, mixed[]>
      */
     public function toMql(): array
+    {
+        $pipeline = $this->effectivePipeline();
+        $command = $this->compileCommand();
+
+        return $pipeline === null ? $command : $pipeline->applyTo($command);
+    }
+
+    /** @return array<string, mixed[]> */
+    private function compileCommand(): array
     {
         $columns = $this->columns ?? [];
 
@@ -995,6 +1100,7 @@ class Builder extends BaseBuilder
         }
 
         $wheres = $this->compileWheres();
+        $this->assertWritable();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
         $options = $this->inheritConnectionOptions();
 
@@ -1200,6 +1306,7 @@ class Builder extends BaseBuilder
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
+        $this->assertWritable();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
         // Queryable Encryption forbids multi-document updates, so encrypted
         // collections must use single-document updates. Unmapped collections
@@ -1733,7 +1840,13 @@ class Builder extends BaseBuilder
 
     protected function compileWhereSub(array $where): mixed
     {
-        $where['value'] = $where['query']->compileWheres();
+        $query = $where['query'];
+
+        if ($query instanceof self) {
+            $query->assertCarriesNoStage();
+        }
+
+        $where['value'] = $query->compileWheres();
 
         return $this->compileWhereBasic($where);
     }

@@ -15,6 +15,7 @@ use InvalidArgumentException;
 use LogicException;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
+use MongoDB\Builder\Stage;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
@@ -34,6 +35,14 @@ use function var_export;
 
 class BuilderTest extends TestCase
 {
+    private const SLICED_TAGS = [
+        '$cond' => [
+            ['$isArray' => ['$tags']],
+            ['$slice' => ['$tags', 1]],
+            '$tags',
+        ],
+    ];
+
     #[DataProvider('provideQueryBuilderToMql')]
     public function testMql(array $expected, Closure $build, ?string $requiredMethod = null): void
     {
@@ -1664,6 +1673,479 @@ class BuilderTest extends TestCase
             ['find' => [[], ['maxTimeMS' => 2000]]],
             fn (Builder $builder) => $builder->timeout(2),
         ];
+
+        yield 'pipeline stage turns find into aggregate' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['name' => 'foo']],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('name', 'foo')
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline stage without a filter' => [
+            [
+                'aggregate' => [
+                    [['$lookup' => ['from' => 'books', 'as' => '__rel_books']]],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline sorts on a field the stages compute' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$sort' => ['__count_books' => -1, 'name' => 1]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->orderBy('__count_books', -1)
+                ->orderBy('name')
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline runs the computed filter after the stages' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$match' => ['__count_books' => ['$gte' => 2]]],
+                        ['$unset' => ['__count_books']],
+                    ],
+                    [],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->where('active', true)
+                    ->where('__count_books', '>=', 2)
+                    ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']])
+                    ->addInternalFieldToUnset('__count_books');
+
+                return $builder;
+            },
+        ];
+
+        yield 'pipeline keeps paging and projection as stages' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$sort' => ['name' => 1]],
+                        ['$skip' => 5],
+                        ['$limit' => 10],
+                        ['$project' => ['name' => 1]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->orderBy('name')
+                ->skip(5)
+                ->limit(10)
+                ->select('name')
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline unsets temporary fields last' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$addFields' => ['__count_books' => ['$size' => '$__rel_books']]],
+                        ['$unset' => ['__rel_books', '__count_books']],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']])
+                ->addInternalStage(['$addFields' => ['__count_books' => ['$size' => '$__rel_books']]])
+                ->addInternalFieldToUnset('__rel_books')
+                ->addInternalFieldToUnset('__count_books'),
+        ];
+
+        yield 'pipeline count folds into an aggregate' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['name' => 'foo']],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$count' => 'aggregate'],
+                    ],
+                    [],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->where('name', 'foo')
+                    ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]);
+                $builder->aggregate = ['function' => 'count', 'columns' => ['*']];
+
+                return $builder;
+            },
+        ];
+
+        yield 'pipeline stages of a nested query are hoisted' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$match' => ['__count_books' => ['$gte' => 2]]],
+                        ['$unset' => ['__count_books']],
+                    ],
+                    [],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder
+                    ->where(function (Builder $query): void {
+                        $query->where('__count_books', '>=', 2)
+                            ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']])
+                            ->addInternalFieldToUnset('__count_books');
+                    })
+                    ->where('active', true);
+
+                return $builder;
+            },
+        ];
+
+        yield 'pipeline stages of a doubly nested query are hoisted' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                    ],
+                    [],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->where(function (Builder $outer): void {
+                    $outer->where(function (Builder $inner): void {
+                        $inner->where('active', true)
+                            ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]);
+                    });
+                });
+
+                return $builder;
+            },
+        ];
+
+        yield 'pipeline keeps the siblings of an $and filter' => [
+            [
+                'aggregate' => [
+                    [
+                        [
+                            '$match' => [
+                                '$and' => [
+                                    ['$or' => [['name' => 'foo'], ['name' => 'bar']]],
+                                    ['active' => true],
+                                ],
+                            ],
+                        ],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('name', 'foo')
+                ->orWhere('name', 'bar')
+                ->where('active', true)
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline count applies the paging options' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['name' => 'foo']],
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$skip' => 2],
+                        ['$limit' => 3],
+                        ['$count' => 'aggregate'],
+                    ],
+                    [],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->where('name', 'foo')
+                    ->options(['skip' => 2, 'limit' => 3])
+                    ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]);
+                $builder->aggregate = ['function' => 'count', 'columns' => ['*']];
+
+                return $builder;
+            },
+        ];
+
+        yield 'pipeline omits a zero limit' => [
+            [
+                'aggregate' => [
+                    [['$lookup' => ['from' => 'books', 'as' => '__rel_books']]],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->options(['limit' => 0])
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline translates a slice projection' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$set' => ['tags' => self::SLICED_TAGS]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['tags' => ['$slice' => 1]])
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline translates a slice beside an inclusion in one $project' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$project' => ['tags' => self::SLICED_TAGS, 'name' => 1]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['tags' => ['$slice' => 1], 'name' => 1])
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline translates a slice beside an exclusion in $set and $project' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$set' => ['tags' => self::SLICED_TAGS]],
+                        ['$project' => ['name' => 0]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['tags' => ['$slice' => 1], 'name' => 0])
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline omits an empty projection' => [
+            [
+                'aggregate' => [
+                    [['$lookup' => ['from' => 'books', 'as' => '__rel_books']]],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->options(['projection' => []])
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline accepts a stage builder' => [
+            [
+                'aggregate' => [
+                    [Stage::match(['name' => 'foo'])],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->addInternalStage(Stage::match(['name' => 'foo'])),
+        ];
+
+        yield 'pipeline stages join an existing aggregate after its match' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['name' => 'foo']],
+                        ['$addFields' => ['flag' => true]],
+                        ['$group' => ['_id' => ['type' => '$type'], 'type' => ['$last' => '$type']]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->where('name', 'foo')
+                ->groupBy('type')
+                ->addInternalStage(['$addFields' => ['flag' => true]]),
+        ];
+
+        yield 'pipeline translates an object-form sort' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$sort' => ['name' => -1]],
+                        ['$limit' => 1],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->options(['sort' => (object) ['name' => -1], 'limit' => 1])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline translates an object-form projection' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$project' => ['secret' => 0]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->options(['projection' => (object) ['secret' => 0]])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline passes a computed projection through' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$project' => ['upper' => ['$toUpper' => '$name']]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['upper' => ['$toUpper' => '$name']])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline translates an object-form slice specification' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$set' => ['tags' => self::SLICED_TAGS]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['tags' => (object) ['$slice' => 1]])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline keeps a negative skip and limit' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$skip' => -1],
+                        ['$limit' => -2],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->options(['skip' => -1, 'limit' => -2])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline keeps invalid paging values' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$skip' => 'from'],
+                        ['$limit' => 'invalid'],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->options(['skip' => 'from', 'limit' => 'invalid'])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline translates a slice beside a plain _id inclusion' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$project' => ['tags' => self::SLICED_TAGS, '_id' => 1]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['tags' => ['$slice' => 1], '_id' => 1])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline translates a slice beside an _id inclusion and an exclusion' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['active' => true]],
+                        ['$set' => ['tags' => self::SLICED_TAGS]],
+                        ['$project' => ['_id' => 1, 'secret' => 0]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['tags' => ['$slice' => 1], '_id' => 1, 'secret' => 0])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline runs a filter on a descendant of a temporary field after the stages' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$match' => ['__rel_books.title' => 'Moby-Dick']],
+                        ['$unset' => ['__rel_books']],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']])
+                ->addInternalFieldToUnset('__rel_books')
+                ->where('__rel_books.title', 'Moby-Dick'),
+        ];
+
+        yield 'pipeline runs an expression over a temporary field after the stages' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$addFields' => ['__count_books' => 1]],
+                        ['$match' => ['$expr' => ['$gte' => ['$__count_books', 2]]]],
+                        ['$unset' => ['__count_books']],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->addInternalStage(['$addFields' => ['__count_books' => 1]])
+                ->addInternalFieldToUnset('__count_books')
+                ->whereRaw(['$expr' => ['$gte' => ['$__count_books', 2]]]),
+        ];
     }
 
     #[DataProvider('provideExceptions')]
@@ -1816,6 +2298,102 @@ class BuilderTest extends TestCase
             'The value used as a document id or relation key cannot contain the MongoDB operator "$ne"',
             fn (Builder $builder) => $builder->whereIn('_id', [['$ne' => null]]),
         ];
+
+        yield 'pipeline stages with a distinct query' => [
+            LogicException::class,
+            'Pipeline stages cannot be combined with a [distinct] query.',
+            fn (Builder $builder) => $builder
+                ->distinct('foo')
+                ->addInternalStage(['$lookup' => ['from' => 'bar']]),
+        ];
+
+        yield 'pipeline with a natural sort' => [
+            LogicException::class,
+            'A "$natural" sort cannot be compiled into an aggregation $sort stage',
+            fn (Builder $builder) => $builder
+                ->orderBy('natural', 'desc')
+                ->addInternalStage(['$lookup' => ['from' => 'bar']]),
+        ];
+
+        yield 'pipeline with an $elemMatch projection' => [
+            LogicException::class,
+            'The projection of "tags" uses "$elemMatch", a find-only operator that cannot be compiled into an aggregation $project stage. Project the field with a $filter expression instead.',
+            fn (Builder $builder) => $builder
+                ->project(['tags' => ['$elemMatch' => ['name' => 'foo']]])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline with a $slice projection through a path' => [
+            LogicException::class,
+            'The projection of "sub.tags" slices a field reached through a path. A find applies that slice per array element along the path, which an aggregation stage cannot express; project the field with your own aggregation expression instead.',
+            fn (Builder $builder) => $builder
+                ->project(['sub.tags' => ['$slice' => 1]])
+                ->addInternalStage(['$match' => ['active' => true]]),
+        ];
+
+        yield 'pipeline stages in an elemMatch constraint' => [
+            LogicException::class,
+            'An $elemMatch constraint cannot carry pipeline stages, because a stage cannot be hoisted out of the $elemMatch operator. Attach the stage to the outer query instead.',
+            fn (Builder $builder) => $builder->where(
+                'items',
+                'elemMatch',
+                function (Builder $elemMatchQuery): void {
+                    $elemMatchQuery->where('value', 'foo')->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__r']]);
+                },
+            ),
+        ];
+    }
+
+    public function testPipelineStagesCannotBeUsedToDelete(): void
+    {
+        $builder = $this->getBuilder()->addInternalStage(['$lookup' => ['from' => 'bar']]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('A query carrying relationship aggregate stages cannot delete or update documents.');
+
+        $builder->delete();
+    }
+
+    public function testPipelineStagesCannotBeUsedToUpdate(): void
+    {
+        $builder = $this->getBuilder()->addInternalStage(['$lookup' => ['from' => 'bar']]);
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('A query carrying relationship aggregate stages cannot delete or update documents.');
+
+        $builder->update(['name' => 'foo']);
+    }
+
+    public function testPipelineStagesOfANestedQueryCannotBeUsedToDelete(): void
+    {
+        $builder = $this->getBuilder()->where(function (Builder $outer): void {
+            $outer->where(function (Builder $inner): void {
+                $inner->where('active', true)->addInternalStage(['$lookup' => ['from' => 'bar']]);
+            });
+        });
+
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('A query carrying relationship aggregate stages cannot delete or update documents.');
+
+        $builder->delete();
+    }
+
+    public function testPipelineStagesOfANestedQueryAreNotDuplicatedByRecompilation(): void
+    {
+        $builder = $this->getBuilder()->where(function (Builder $query): void {
+            $query->where('active', true)->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]);
+        });
+
+        $first = $builder->toMql();
+
+        $this->assertSame(
+            [
+                ['$match' => ['active' => true]],
+                ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+            ],
+            $first['aggregate'][0],
+        );
+        $this->assertSame($first, $builder->toMql());
     }
 
     #[DataProvider('getEloquentMethodsNotSupported')]
