@@ -109,7 +109,7 @@ final class EncryptedFieldTypes
             return [];
         }
 
-        return $connection->encryptedFieldTypes($model->getTable());
+        return $connection->encryption()->encryptedFieldTypes($model->getTable());
     }
 
     /**

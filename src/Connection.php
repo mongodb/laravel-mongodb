@@ -11,7 +11,6 @@ use InvalidArgumentException;
 use MongoDB\Client;
 use MongoDB\Collection;
 use MongoDB\Database;
-use MongoDB\Driver\ClientEncryption;
 use MongoDB\Driver\Exception\AuthenticationException;
 use MongoDB\Driver\Exception\ConnectionException;
 use MongoDB\Driver\Exception\RuntimeException;
@@ -95,13 +94,10 @@ class Connection extends BaseConnection
         $this->renameEmbeddedIdField = $config['rename_embedded_id_field'] ?? true;
     }
 
-    private function encryption(): ?AutoEncryption
+    /** Queryable Encryption support of this connection. */
+    public function encryption(): AutoEncryption
     {
-        if ($this->autoEncryption === null && isset($this->config['driver_options']['autoEncryption'])) {
-            $this->autoEncryption = new AutoEncryption($this, $this->getDsn($this->config), $this->config);
-        }
-
-        return $this->autoEncryption;
+        return $this->autoEncryption ??= new AutoEncryption($this, $this->getDsn($this->config), $this->config);
     }
 
     /**
@@ -277,101 +273,9 @@ class Connection extends BaseConnection
             $driverOptions += ['connectionName' => $config['name']];
         }
 
-        $driverOptions = $this->encryption()?->prepareDriverOptions($driverOptions) ?? $driverOptions;
+        $driverOptions = $this->encryption()->prepareDriverOptions($driverOptions);
 
         return new Client($dsn, $options, $driverOptions);
-    }
-
-    /**
-     * @param  array<string, mixed> $encryptedFieldsMap
-     *
-     * @return array<string, mixed>
-     */
-    public function normalizeEncryptedFieldsMap(array $encryptedFieldsMap): array
-    {
-        return $this->encryption()?->normalizeEncryptedFieldsMap($encryptedFieldsMap) ?? $encryptedFieldsMap;
-    }
-
-    /**
-     * @param  array<string, mixed> $encryptedFieldsMap
-     *
-     * @return array<string, mixed>
-     */
-    public function resolveOrCreateEncryptionKeys(array $encryptedFieldsMap): array
-    {
-        return $this->encryption()?->resolveOrCreateEncryptionKeys($encryptedFieldsMap) ?? $encryptedFieldsMap;
-    }
-
-    /** @param array<string, mixed> $config */
-    public function isEncryptionEnabled(array $config): bool
-    {
-        return $this->encryption()?->isEncryptionEnabled($config) ?? false;
-    }
-
-    public function isAutoEncryptionEnabled(?string $collection = null): bool
-    {
-        return $this->encryption()?->isAutoEncryptionEnabled($collection) ?? false;
-    }
-
-    /**
-     * @return list<array<string, mixed>>
-     *
-     * @throws InvalidArgumentException
-     */
-    public function encryptedFieldsFor(string $collection): array
-    {
-        $encryption = $this->encryption();
-
-        if ($encryption === null) {
-            throw new InvalidArgumentException('Queryable Encryption is not enabled on this connection.');
-        }
-
-        return $encryption->encryptedFieldsFor($collection);
-    }
-
-    /**
-     * The bsonType declared for each encrypted field of a collection, keyed by
-     * field path. Empty when the connection does not use automatic encryption
-     * or the collection is not in the encryptedFieldsMap.
-     *
-     * Used by the model layer to derive the casts and coerce the values written
-     * to encrypted fields. {@see encryptedFieldsFor()} is the public surface.
-     *
-     * @internal
-     *
-     * @return array<string, string>
-     */
-    public function encryptedFieldTypes(string $collection): array
-    {
-        return $this->encryption()?->encryptedFieldTypes($collection) ?? [];
-    }
-
-    /**
-     * @param  array<string, mixed> $autoEncryption
-     *
-     * @return array<string, mixed>
-     */
-    public function validateAutoEncryptionConfig(array $autoEncryption): array
-    {
-        return $this->encryption()?->validateAutoEncryptionConfig($autoEncryption) ?? $autoEncryption;
-    }
-
-    /** @throws InvalidArgumentException */
-    public function getClientEncryption(): ClientEncryption
-    {
-        $encryption = $this->encryption();
-
-        if ($encryption === null) {
-            throw new InvalidArgumentException('Queryable Encryption is not enabled on this connection.');
-        }
-
-        return $encryption->getClientEncryption();
-    }
-
-    /** @return array<string, mixed> */
-    public function getEncryptionOptions(): array
-    {
-        return $this->encryption()?->getEncryptionOptions() ?? [];
     }
 
     /**

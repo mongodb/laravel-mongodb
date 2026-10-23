@@ -30,10 +30,8 @@ use function strlen;
 use function version_compare;
 
 /**
- * Queryable Encryption support, owned by a Connection which exposes the public
- * surface.
- *
- * @internal
+ * Queryable Encryption support of a Connection, reached with
+ * {@see Connection::encryption()}.
  */
 final class AutoEncryption
 {
@@ -71,6 +69,8 @@ final class AutoEncryption
     }
 
     /**
+     * @internal
+     *
      * @param  array<string, mixed> $driverOptions
      *
      * @return array<string, mixed>
@@ -164,6 +164,8 @@ final class AutoEncryption
     /**
      * The bsonType declared for each encrypted field of a collection, keyed by
      * field path. Empty when the collection is not in the encryptedFieldsMap.
+     *
+     * @internal
      *
      * @param string $collection The logical collection name, without the
      *                           connection table prefix.

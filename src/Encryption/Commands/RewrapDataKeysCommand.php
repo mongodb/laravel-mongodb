@@ -57,7 +57,7 @@ final class RewrapDataKeysCommand extends Command
             return self::FAILURE;
         }
 
-        $result = $connection->getClientEncryption()->rewrapManyDataKey($filter, $options);
+        $result = $connection->encryption()->getClientEncryption()->rewrapManyDataKey($filter, $options);
 
         $this->report($result, $this->keyVaultNamespace($config), $options['provider']);
 
