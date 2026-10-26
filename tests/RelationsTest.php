@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use Mockery;
 use MongoDB\BSON\ObjectId;
@@ -12,10 +13,12 @@ use MongoDB\Laravel\Relations\MorphTo;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
+use MongoDB\Laravel\Tests\Models\Comment;
 use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Photo;
+use MongoDB\Laravel\Tests\Models\Post;
 use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\Soft;
@@ -38,6 +41,8 @@ class RelationsTest extends TestCase
         Label::truncate();
         Skill::truncate();
         Soft::truncate();
+        Post::truncate();
+        Comment::truncate();
 
         parent::tearDown();
     }
@@ -710,6 +715,93 @@ class RelationsTest extends TestCase
         $this->expectExceptionMessage('cannot contain the MongoDB operator "$ne"');
 
         $photo->hasImage()->first();
+    }
+
+    public function testHasManyWithObjectIdCastForeignKey(): void
+    {
+        $author = User::create(['name' => 'George R. R. Martin']);
+        $other  = User::create(['name' => 'John Doe']);
+
+        $author->posts()->create(['title' => 'A Game of Thrones']);
+        $author->posts()->create(['title' => 'A Clash of Kings']);
+        $other->posts()->create(['title' => 'Nothing']);
+
+        // The foreign key is stored as a native ObjectId and exposed as a string
+        $document = DB::connection('mongodb')->getCollection('posts')->findOne(['title' => 'A Game of Thrones']);
+        $this->assertInstanceOf(ObjectId::class, $document['author_id']);
+        $this->assertSame($author->id, (string) $document['author_id']);
+        $this->assertSame($author->id, Post::firstWhere('title', 'A Game of Thrones')->author_id);
+
+        // Lazy loading
+        $this->assertCount(2, $author->posts);
+        $this->assertSame(2, $author->posts()->count());
+        $this->assertCount(1, $other->posts);
+
+        // Eager loading
+        $users = User::with('posts')->orderBy('name')->get();
+        $this->assertCount(2, $users[0]->posts);
+        $this->assertCount(1, $users[1]->posts);
+
+        // Relation existence and aggregate
+        $this->assertSame([$author->id], User::has('posts', '>', 1)->pluck('id')->all());
+        $this->assertSame(2, User::withCount('posts')->find($author->id)->posts_count);
+
+        // Inverse relation
+        $post = Post::firstWhere('title', 'A Clash of Kings');
+        $this->assertSame($author->id, $post->author->id);
+        $this->assertSame($author->id, Post::with('author')->find($post->id)->author->id);
+
+        // Direct query by string
+        $this->assertCount(2, Post::where('author_id', $author->id)->get());
+        $this->assertCount(3, Post::whereIn('author_id', [$author->id, $other->id])->get());
+    }
+
+    public function testMorphManyWithObjectIdCastForeignKey(): void
+    {
+        $author = User::create(['name' => 'John Doe']);
+        $post   = Post::create(['title' => 'A Game of Thrones']);
+        $other  = Post::create(['title' => 'A Clash of Kings']);
+
+        $comment = $post->comments()->create(['body' => 'Great!', 'author_id' => $author->id]);
+        $post->comments()->create(['body' => 'Awesome!', 'author_id' => $author->id]);
+        $other->comments()->create(['body' => 'Meh.', 'author_id' => $author->id]);
+
+        // The polymorphic foreign key is stored as a native ObjectId and exposed as a string
+        $document = DB::connection('mongodb')->getCollection('comments')->findOne(['body' => 'Great!']);
+        $this->assertInstanceOf(ObjectId::class, $document['commentable_id']);
+        $this->assertSame($post->id, (string) $document['commentable_id']);
+        $this->assertSame(Post::class, $document['commentable_type']);
+        $this->assertSame($post->id, $comment->commentable_id);
+
+        // Lazy loading
+        $this->assertCount(2, $post->comments);
+        $this->assertSame(2, $post->comments()->count());
+        $this->assertCount(1, $other->comments);
+
+        // Eager loading
+        $posts = Post::with('comments')->orderBy('title')->get();
+        $this->assertCount(1, $posts[0]->comments);
+        $this->assertCount(2, $posts[1]->comments);
+
+        // Relation existence
+        $this->assertSame([$post->id], Post::whereHas('comments', fn ($query) => $query->where('body', 'Great!'))->pluck('id')->all());
+
+        // Inverse relation
+        $comment = Comment::firstWhere('body', 'Meh.');
+        $this->assertInstanceOf(Post::class, $comment->commentable);
+        $this->assertSame($other->id, $comment->commentable->id);
+
+        $comments = Comment::with('commentable', 'author')->get();
+        $this->assertCount(3, $comments);
+        foreach ($comments as $comment) {
+            $this->assertInstanceOf(Post::class, $comment->getRelation('commentable'));
+            $this->assertSame($comment->commentable_id, $comment->commentable->id);
+            $this->assertSame($author->id, $comment->author->id);
+        }
+
+        // Comments authored by the user, through a hasMany relation on the cast foreign key
+        $this->assertCount(3, $author->comments);
+        $this->assertCount(3, User::with('comments')->find($author->id)->comments);
     }
 
     public function testMorphToWithTrashed(): void
