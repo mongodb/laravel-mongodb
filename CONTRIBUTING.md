@@ -4,6 +4,18 @@ Contributions are **welcome** and will be fully **credited**.
 
 Please read and understand the contribution guide before creating an issue or pull request.
 
+## AI Usage
+
+We welcome contributions made with the help of AI. However, maintenance of this
+project is a human responsibility, and reviewing pull requests requires real, human
+time and energy. As such, please consider if:
+
+* your change solves a real, defined problem,
+* you understand the changes you're contributing,
+* you have invested your own time and judgment in the change.
+
+Your PR may be rejected if the team feels it does not apply the above principles.
+
 ## Etiquette
 
 This project is open source, and as such, the maintainers give their free time to build and maintain the source code
