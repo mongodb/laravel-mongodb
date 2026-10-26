@@ -80,6 +80,34 @@ The map and the collection are both enforced, so they must agree. The map is wha
 
 Dropping the collection keeps the data keys, so you can recreate with the same map. __Dropping the whole database also drops the key vault and every data encryption key when the vault lives in that database. This is unrecoverable.__
 
+## Manage keys from PHP
+
+The connection exposes the driver's client-side encryption object for operations outside the query path, such as encrypting an expression or managing data keys:
+
+```php
+$clientEncryption = DB::connection('mongodb')->getClientEncryption();
+
+// The data key is bound to an alternate name, "<database>.<collection>/<path>"
+// by default, or the "keyAltName" set on the field. The key exists once the
+// collection was created with mongodb:encryption:create-collection.
+$keyId = $clientEncryption->getKeyByAltName('app.patients/billing_amount')->_id;
+
+// The expression is wrapped in "$and", even for a single condition.
+$encrypted = $clientEncryption->encryptExpression(
+    ['$and' => [['billing_amount' => ['$gt' => 100]]]],
+    [
+        'algorithm' => MongoDB\Driver\ClientEncryption::ALGORITHM_RANGE,
+        'keyId' => $keyId,
+        'contentionFactor' => 0,
+        'queryType' => MongoDB\Driver\ClientEncryption::QUERY_TYPE_RANGE,
+        // Must match the range options of the encryptedFields entry.
+        'rangeOpts' => ['min' => 0, 'max' => 5000, 'sparsity' => 1],
+    ],
+);
+```
+
+`DB::connection('mongodb')->isAutoEncryptionEnabled('patients')` tells whether automatic encryption is configured on the connection and whether the collection is declared in the `encryptedFieldsMap`. `getClientEncryption()` throws an `InvalidArgumentException` when Queryable Encryption is not configured.
+
 ## Rotate the master key
 
 Each data encryption key (DEK) is itself stored encrypted in the key vault, under a master key held by a KMS provider. This command re-encrypts the DEKs under a new master key. The DEKs keep their id and key material, so no document is read or rewritten and encrypted data stays readable.

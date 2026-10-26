@@ -1205,7 +1205,7 @@ class Builder extends BaseBuilder
         // collections must use single-document updates. Unmapped collections
         // keep the multi-document behavior. The encrypted fields map is keyed
         // by the logical collection name, without the table prefix.
-        $result = $this->connection->isAutoEncryptionEnabled($this->from)
+        $result = $this->connection->encryption()->isAutoEncryptionEnabled($this->from)
             ? $this->collection->updateOne($wheres, $update, $options)
             : $this->collection->updateMany($wheres, $update, $options);
         if ($result->isAcknowledged()) {

@@ -170,7 +170,7 @@ final class CreateCollectionCommand extends Command
 
         $fields = [];
         foreach (array_keys($map) as $collection) {
-            $fields[(string) $collection] = $connection->encryptedFieldsFor((string) $collection);
+            $fields[(string) $collection] = $connection->encryption()->encryptedFieldsFor((string) $collection);
         }
 
         return $fields;
