@@ -109,7 +109,7 @@ final class EncryptedFieldTypes
             return [];
         }
 
-        return $connection->encryptedFieldTypes($model->getTable());
+        return $connection->encryption()->encryptedFieldTypes($model->getTable());
     }
 
     /**
@@ -184,25 +184,6 @@ final class EncryptedFieldTypes
             || is_subclass_of($type, Castable::class);
     }
 
-    /** Whether a cast declared by the developer can store the declared bsonType. */
-    private static function isCompatible(string $bsonType, string $cast): bool
-    {
-        // A custom cast class is the developer's responsibility.
-        if (self::isCustomCast($cast)) {
-            return true;
-        }
-
-        [$type, $scale] = explode(':', strtolower($cast), 2) + [1 => null];
-
-        // A decimal cast requires an integer scale: without one, the value
-        // cannot be converted, so the cast cannot store the declared BSON type.
-        if ($type === 'decimal' && ($scale === null || ! ctype_digit($scale))) {
-            return false;
-        }
-
-        return in_array($type, self::COMPATIBLE_CASTS[$bsonType] ?? [], true);
-    }
-
     /**
      * Coerce a value assigned to an attribute to the BSON type declared for
      * that field. When the attribute is an embedded document holding encrypted
@@ -242,6 +223,25 @@ final class EncryptedFieldTypes
         }
 
         return self::coerceEmbedded($children, $value, $dateConverter, $skipPaths);
+    }
+
+    /** Whether a cast declared by the developer can store the declared bsonType. */
+    private static function isCompatible(string $bsonType, string $cast): bool
+    {
+        // A custom cast class is the developer's responsibility.
+        if (self::isCustomCast($cast)) {
+            return true;
+        }
+
+        [$type, $scale] = explode(':', strtolower($cast), 2) + [1 => null];
+
+        // A decimal cast requires an integer scale: without one, the value
+        // cannot be converted, so the cast cannot store the declared BSON type.
+        if ($type === 'decimal' && ($scale === null || ! ctype_digit($scale))) {
+            return false;
+        }
+
+        return in_array($type, self::COMPATIBLE_CASTS[$bsonType] ?? [], true);
     }
 
     /**

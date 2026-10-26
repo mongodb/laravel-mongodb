@@ -93,8 +93,8 @@ class ConnectionAutoEncryptionTest extends TestCase
 
         $connection = new Connection($this->encryptionConfig($config));
 
-        $this->assertTrue($connection->isEncryptionEnabled($config));
-        $this->assertSame($config, $connection->getEncryptionOptions());
+        $this->assertTrue($connection->encryption()->isEncryptionEnabled($config));
+        $this->assertSame($config, $connection->encryption()->getEncryptionOptions());
     }
 
     public function testGetClientEncryptionReturned(): void
@@ -115,6 +115,33 @@ class ConnectionAutoEncryptionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $connection->getClientEncryption();
+    }
+
+    public function testAutoEncryptionEnabledForAMappedCollection(): void
+    {
+        // Building the connection resolves the field by its alternate key name.
+        $this->skipIfKeyAltNameIsNotSupported();
+
+        $connection = new Connection($this->encryptionConfig([
+            'keyVaultNamespace' => self::KEY_VAULT,
+            'kmsProviders' => $this->localKmsProviders(),
+            'extraOptions' => $this->extraOptions(),
+            'encryptedFieldsMap' => [
+                'patients' => ['fields' => ['ssn' => ['bsonType' => 'string']]],
+            ],
+        ]));
+
+        $this->assertTrue($connection->isAutoEncryptionEnabled());
+        $this->assertTrue($connection->isAutoEncryptionEnabled('patients'));
+        $this->assertFalse($connection->isAutoEncryptionEnabled('users'));
+    }
+
+    public function testAutoEncryptionDisabledWhenNotConfigured(): void
+    {
+        $connection = new Connection($this->connectionConfig());
+
+        $this->assertFalse($connection->isAutoEncryptionEnabled());
+        $this->assertFalse($connection->isAutoEncryptionEnabled('patients'));
     }
 
     public function testClientEncryptionOptionsForwardsTlsOptions(): void
@@ -204,7 +231,7 @@ class ConnectionAutoEncryptionTest extends TestCase
     {
         $connection = new Connection($this->encryptionConnectionConfig());
 
-        $normalized = $connection->normalizeEncryptedFieldsMap([
+        $normalized = $connection->encryption()->normalizeEncryptedFieldsMap([
             'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string']]],
         ]);
 
@@ -215,7 +242,7 @@ class ConnectionAutoEncryptionTest extends TestCase
     {
         $connection = new Connection($this->encryptionConnectionConfig());
 
-        $normalized = $connection->normalizeEncryptedFieldsMap([
+        $normalized = $connection->encryption()->normalizeEncryptedFieldsMap([
             'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string', 'keyAltName' => 'my-name']]],
         ]);
 
@@ -226,7 +253,7 @@ class ConnectionAutoEncryptionTest extends TestCase
     {
         $connection = new Connection($this->encryptionConnectionConfig());
 
-        $normalized = $connection->normalizeEncryptedFieldsMap([
+        $normalized = $connection->encryption()->normalizeEncryptedFieldsMap([
             'patients' => [
                 'fields' => [
                     'ssn' => ['bsonType' => 'string', 'queryType' => 'equality'],
@@ -256,7 +283,7 @@ class ConnectionAutoEncryptionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $connection = new Connection($this->encryptionConnectionConfig());
-        $connection->normalizeEncryptedFieldsMap([
+        $connection->encryption()->normalizeEncryptedFieldsMap([
             'patients' => ['fields' => [['bsonType' => 'string']]],
         ]);
     }
@@ -266,7 +293,7 @@ class ConnectionAutoEncryptionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $connection = new Connection($this->encryptionConnectionConfig());
-        $connection->normalizeEncryptedFieldsMap([
+        $connection->encryption()->normalizeEncryptedFieldsMap([
             'patients' => ['fields' => [['path' => 'ssn', 'queryType' => 'equality']]],
         ]);
     }
@@ -276,7 +303,7 @@ class ConnectionAutoEncryptionTest extends TestCase
         $this->expectException(InvalidArgumentException::class);
 
         $connection = new Connection($this->encryptionConnectionConfig());
-        $connection->normalizeEncryptedFieldsMap([
+        $connection->encryption()->normalizeEncryptedFieldsMap([
             'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string', 'keyId' => 'x', 'keyAltName' => 'y']]],
         ]);
     }
@@ -293,8 +320,8 @@ class ConnectionAutoEncryptionTest extends TestCase
             'patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string', 'keyAltName' => $altName]]],
         ];
 
-        $first  = $connection->resolveOrCreateEncryptionKeys($map('tests:idempotent'));
-        $second = $connection->resolveOrCreateEncryptionKeys($map('tests:idempotent'));
+        $first  = $connection->encryption()->resolveOrCreateEncryptionKeys($map('tests:idempotent'));
+        $second = $connection->encryption()->resolveOrCreateEncryptionKeys($map('tests:idempotent'));
 
         $this->assertSame(
             $first['patients']['fields'][0]['keyId']->getData(),
@@ -313,8 +340,8 @@ class ConnectionAutoEncryptionTest extends TestCase
         // The field declares neither a keyId nor a keyAltName.
         $map = ['patients' => ['fields' => [['path' => 'ssn', 'bsonType' => 'string']]]];
 
-        $first  = $connection->resolveOrCreateEncryptionKeys($map);
-        $second = $connection->resolveOrCreateEncryptionKeys($map);
+        $first  = $connection->encryption()->resolveOrCreateEncryptionKeys($map);
+        $second = $connection->encryption()->resolveOrCreateEncryptionKeys($map);
 
         $keyId = $first['patients']['fields'][0]['keyId'];
         $this->assertArrayHasKey('keyId', $first['patients']['fields'][0]);
@@ -323,7 +350,7 @@ class ConnectionAutoEncryptionTest extends TestCase
         $this->assertSame($keyId->getData(), $second['patients']['fields'][0]['keyId']->getData());
 
         // The default alternate name used to bind the key.
-        $normalized = $connection->normalizeEncryptedFieldsMap($map);
+        $normalized = $connection->encryption()->normalizeEncryptedFieldsMap($map);
         $this->assertSame('unittest.patients/ssn', $normalized['patients']['fields'][0]['keyAltName']);
     }
 

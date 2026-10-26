@@ -30,10 +30,11 @@ use function strlen;
 use function version_compare;
 
 /**
- * Queryable Encryption support, owned by a Connection which exposes the public
- * surface.
+ * Queryable Encryption support of a Connection, reached with
+ * {@see Connection::encryption()}.
  *
- * @internal
+ * @internal Use Connection::isAutoEncryptionEnabled() and
+ * Connection::getClientEncryption() instead.
  */
 final class AutoEncryption
 {
@@ -63,11 +64,6 @@ final class AutoEncryption
     public function __construct(Connection $connection, private readonly string $dsn, private readonly array $config)
     {
         $this->connection = WeakReference::create($connection);
-    }
-
-    private function connection(): Connection
-    {
-        return $this->connection->get() ?? throw new LogicException('The owning Connection is no longer available.');
     }
 
     /**
@@ -268,6 +264,72 @@ final class AutoEncryption
         return $encryptedFieldsMap;
     }
 
+    /** @throws InvalidArgumentException */
+    public function getClientEncryption(): ClientEncryption
+    {
+        return $this->connection()->getClient()->createClientEncryption($this->clientEncryptionOptions());
+    }
+
+    /** @return array<string, mixed> */
+    public function getEncryptionOptions(): array
+    {
+        $autoEncryption = $this->connection()->getConfig('driver_options.autoEncryption');
+
+        return is_array($autoEncryption) ? $autoEncryption : [];
+    }
+
+    /**
+     * @param  array<string, array{fields: list<array<string, mixed>>}> $encryptedFieldsMap
+     *
+     * @return array<string, array{
+     *     fields: list<array{
+     *         path: string,
+     *         bsonType: string,
+     *         keyId: Binary,
+     *         queries?: list<array<string, mixed>>,
+     *     }>,
+     * }>
+     */
+    public function resolveOrCreateEncryptionKeys(array $encryptedFieldsMap): array
+    {
+        $config = $this->getEncryptionOptions();
+        $clientEncryption = $this->getClientEncryption();
+        $kmsProvider = array_key_first($config['kmsProviders']) ?: 'local';
+        $masterKey = isset($config['masterKey']) && is_array($config['masterKey']) ? $config['masterKey'] : null;
+
+        foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
+            $fields = $encryptedFields['fields'] ?? [];
+
+            foreach ($fields as &$field) {
+                if (! is_array($field) || isset($field['keyId'])) {
+                    continue;
+                }
+
+                $keyAltName = $this->keyAltNameFor($field, $collection);
+                $existing = $this->findDataKeyByAltName($keyAltName);
+
+                $keyId = $existing instanceof Binary
+                    ? $existing
+                    : $clientEncryption->createDataKey($kmsProvider, $masterKey === null ? ['keyAltNames' => [$keyAltName]] : ['keyAltNames' => [$keyAltName], 'masterKey' => $masterKey]);
+
+                $field = ['keyId' => $keyId] + $field;
+                unset($field['keyAltName']);
+            }
+
+            unset($field);
+
+            $encryptedFields['fields'] = array_values($fields);
+            $encryptedFieldsMap[$collection] = $encryptedFields;
+        }
+
+        return $encryptedFieldsMap;
+    }
+
+    private function connection(): Connection
+    {
+        return $this->connection->get() ?? throw new LogicException('The owning Connection is no longer available.');
+    }
+
     /**
      * @param  array<mixed> $fields
      *
@@ -401,67 +463,6 @@ final class AutoEncryption
         $options['keyVaultClient'] ??= $this->plainManager();
 
         return $options;
-    }
-
-    /** @throws InvalidArgumentException */
-    public function getClientEncryption(): ClientEncryption
-    {
-        return $this->connection()->getClient()->createClientEncryption($this->clientEncryptionOptions());
-    }
-
-    /** @return array<string, mixed> */
-    public function getEncryptionOptions(): array
-    {
-        $autoEncryption = $this->connection()->getConfig('driver_options.autoEncryption');
-
-        return is_array($autoEncryption) ? $autoEncryption : [];
-    }
-
-    /**
-     * @param  array<string, array{fields: list<array<string, mixed>>}> $encryptedFieldsMap
-     *
-     * @return array<string, array{
-     *     fields: list<array{
-     *         path: string,
-     *         bsonType: string,
-     *         keyId: Binary,
-     *         queries?: list<array<string, mixed>>,
-     *     }>,
-     * }>
-     */
-    public function resolveOrCreateEncryptionKeys(array $encryptedFieldsMap): array
-    {
-        $config = $this->getEncryptionOptions();
-        $clientEncryption = $this->getClientEncryption();
-        $kmsProvider = array_key_first($config['kmsProviders']) ?: 'local';
-        $masterKey = isset($config['masterKey']) && is_array($config['masterKey']) ? $config['masterKey'] : null;
-
-        foreach ($encryptedFieldsMap as $collection => $encryptedFields) {
-            $fields = $encryptedFields['fields'] ?? [];
-
-            foreach ($fields as &$field) {
-                if (! is_array($field) || isset($field['keyId'])) {
-                    continue;
-                }
-
-                $keyAltName = $this->keyAltNameFor($field, $collection);
-                $existing = $this->findDataKeyByAltName($keyAltName);
-
-                $keyId = $existing instanceof Binary
-                    ? $existing
-                    : $clientEncryption->createDataKey($kmsProvider, $masterKey === null ? ['keyAltNames' => [$keyAltName]] : ['keyAltNames' => [$keyAltName], 'masterKey' => $masterKey]);
-
-                $field = ['keyId' => $keyId] + $field;
-                unset($field['keyAltName']);
-            }
-
-            unset($field);
-
-            $encryptedFields['fields'] = array_values($fields);
-            $encryptedFieldsMap[$collection] = $encryptedFields;
-        }
-
-        return $encryptedFieldsMap;
     }
 
     private function findDataKeyByAltName(string $keyAltName, ?Manager $manager = null): ?Binary
