@@ -14,6 +14,7 @@ use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use Override;
 
 use function array_diff;
+use function array_key_last;
 use function array_keys;
 use function array_map;
 use function array_replace;
@@ -30,6 +31,8 @@ use function is_numeric;
  */
 class BelongsToMany extends EloquentBelongsToMany
 {
+    private ?int $foreignConstraintIndex = null;
+
     /**
      * Get the key for comparing against the parent key in "has" query.
      *
@@ -92,6 +95,7 @@ class BelongsToMany extends EloquentBelongsToMany
         $value = $this->parent->{$this->parentKey};
         QueryBuilder::assertKeyIsNotOperator($value);
         $this->query->where($foreign, '=', $value);
+        $this->foreignConstraintIndex = array_key_last($this->query->getQuery()->wheres);
 
         return $this;
     }
@@ -312,6 +316,33 @@ class BelongsToMany extends EloquentBelongsToMany
     public function newRelatedQuery()
     {
         return $this->related->newQuery();
+    }
+
+    /**
+     * Part of the Filament bridge hooks. Returns the related models that can
+     * still be attached.
+     *
+     * @return Builder<TRelatedModel>
+     */
+    public function newUnattachedQuery(): Builder
+    {
+        $query = clone $this->query;
+
+        if ($this->foreignConstraintIndex === null) {
+            return $query->whereNotIn($this->foreignPivotKey, [$this->parent->{$this->parentKey}]);
+        }
+
+        $baseQuery = $query->getQuery();
+        $constraint = $baseQuery->wheres[$this->foreignConstraintIndex];
+
+        $baseQuery->wheres[$this->foreignConstraintIndex] = [
+            'type' => 'NotIn',
+            'column' => $constraint['column'],
+            'values' => [$this->parent->{$this->parentKey}],
+            'boolean' => $constraint['boolean'],
+        ];
+
+        return $query;
     }
 
     /**
