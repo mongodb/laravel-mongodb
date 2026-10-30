@@ -1393,4 +1393,107 @@ class RelationsTest extends TestCase
 
         $this->assertCount(3, $items);
     }
+
+    public function testBelongsToManyNewUnattachedQuery(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $unattached = $user->refresh()->clients()->newUnattachedQuery();
+
+        $this->assertSame(['Buffet Bar Inc.'], $unattached->pluck('name')->all());
+    }
+
+    public function testBelongsToManyNewUnattachedQueryStaysModifiable(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        Client::create(['name' => 'Buffet Bar Inc.']);
+        Client::create(['name' => 'Buffet Bar Inc. (closed)']);
+
+        $names = $user->refresh()->clients()->newUnattachedQuery()
+            ->where('name', 'Buffet Bar Inc.')
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Buffet Bar Inc.'], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithNothingAttached(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        Client::create(['name' => 'Pork Pies Ltd.']);
+        Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $names = $user->clients()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertEqualsCanonicalizing(['Pork Pies Ltd.', 'Buffet Bar Inc.'], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithEverythingAttached(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        $user->clients()->create(['name' => 'Buffet Bar Inc.']);
+
+        $names = $user->refresh()->clients()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame([], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithCustomKeys(): void
+    {
+        $client     = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $attached   = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $unattached = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
+
+        $client->skillsWithCustomKeys()->attach($attached);
+
+        $keys = $client->refresh()->skillsWithCustomKeys()->newUnattachedQuery()->pluck('cskill_id')->all();
+
+        $this->assertSame([$unattached->cskill_id], $keys);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryKeepsRelationConstraints(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        $unattached = Client::create(['name' => 'Buffet Bar Inc.']);
+        Client::create(['name' => 'Buffet Bar Inc. (closed)']);
+
+        $names = $user->refresh()->clients()
+            ->where('name', '!=', 'Buffet Bar Inc. (closed)')
+            ->newUnattachedQuery()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame([$unattached->name], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithPartialParent(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        $unattached = Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $partial = User::select(['_id', 'name'])->find($user->id);
+
+        $names = $partial->clients()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame([$unattached->name], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithRelationNamedLikePivotKey(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $attached = Group::create(['name' => 'Admins']);
+        $unattached = Group::create(['name' => 'Editors']);
+
+        $user->groups()->attach($attached);
+
+        $names = $user->groups()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame([$unattached->name], $names);
+    }
 }
