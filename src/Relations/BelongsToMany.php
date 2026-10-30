@@ -8,15 +8,19 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
+use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Arr;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use Override;
 
 use function array_diff;
+use function array_key_last;
 use function array_keys;
 use function array_map;
 use function array_replace;
+use function array_search;
+use function array_splice;
 use function array_values;
 use function assert;
 use function count;
@@ -30,6 +34,8 @@ use function is_numeric;
  */
 class BelongsToMany extends EloquentBelongsToMany
 {
+    private ?array $foreignConstraint = null;
+
     /**
      * Get the key for comparing against the parent key in "has" query.
      *
@@ -92,6 +98,9 @@ class BelongsToMany extends EloquentBelongsToMany
         $value = $this->parent->{$this->parentKey};
         QueryBuilder::assertKeyIsNotOperator($value);
         $this->query->where($foreign, '=', $value);
+
+        $baseQuery = $this->query->getQuery();
+        $this->foreignConstraint = $baseQuery->wheres[array_key_last($baseQuery->wheres)];
 
         return $this;
     }
@@ -312,6 +321,68 @@ class BelongsToMany extends EloquentBelongsToMany
     public function newRelatedQuery()
     {
         return $this->related->newQuery();
+    }
+
+    /**
+     * Part of the Filament bridge hooks. Returns the related models that can
+     * still be attached.
+     *
+     * @return Builder<TRelatedModel>
+     */
+    public function newUnattachedQuery(): Builder
+    {
+        $query = clone $this->query;
+        $index = $this->foreignConstraintIndex($query->getQuery());
+
+        if ($index === null) {
+            return $this->excludeCurrentParent($query);
+        }
+
+        return $this->invertForeignConstraint($query, $index);
+    }
+
+    private function foreignConstraintIndex(BaseBuilder $query): ?int
+    {
+        if ($this->foreignConstraint === null) {
+            return null;
+        }
+
+        $index = array_search($this->foreignConstraint, $query->wheres, true);
+
+        return $index === false ? null : $index;
+    }
+
+    private function invertForeignConstraint(Builder $query, int $index): Builder
+    {
+        $baseQuery = $query->getQuery();
+        $constraint = $baseQuery->wheres[$index];
+
+        if ($constraint['type'] === 'Null') {
+            array_splice($baseQuery->wheres, $index, 1);
+
+            return $query;
+        }
+
+        $baseQuery->wheres[$index] = [
+            'type' => 'NotIn',
+            'column' => $constraint['column'],
+            'values' => [$constraint['value']],
+            'boolean' => $constraint['boolean'],
+        ];
+
+        return $query;
+    }
+
+    private function excludeCurrentParent(Builder $query): Builder
+    {
+        $value = $this->parent->{$this->parentKey};
+        QueryBuilder::assertKeyIsNotOperator($value);
+
+        if ($value === null) {
+            return $query;
+        }
+
+        return $query->whereNotIn($this->getForeignKey(), [$value]);
     }
 
     /**

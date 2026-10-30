@@ -278,6 +278,41 @@ class HybridRelationsTest extends TestCase
         $this->assertEquals(1, $check->skills->count());
     }
 
+    public function testHybridBelongsToManyNewUnattachedQuery()
+    {
+        $user = new SqlUser();
+        $user->fill(['name' => 'John Doe'])->save();
+
+        $attached = Skill::query()->create(['name' => 'Laravel']);
+        $unattached = Skill::query()->create(['name' => 'MongoDB']);
+
+        $user->skills()->attach($attached);
+
+        $names = $user->refresh()->skills()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame([$unattached->name], $names);
+    }
+
+    public function testHybridBelongsToManyNewUnattachedQueryKeepsRelationConstraints()
+    {
+        $user = new SqlUser();
+        $user->fill(['name' => 'John Doe'])->save();
+
+        $attached = Skill::query()->create(['name' => 'Laravel']);
+        $unattached = Skill::query()->create(['name' => 'MongoDB']);
+        Skill::query()->create(['name' => 'PHP']);
+
+        $user->skills()->attach($attached);
+
+        $names = $user->refresh()->skills()
+            ->where('name', '!=', 'PHP')
+            ->newUnattachedQuery()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame([$unattached->name], $names);
+    }
+
     public function testQueryingHybridBelongsToManyRelationFails()
     {
         $user = new SqlUser();

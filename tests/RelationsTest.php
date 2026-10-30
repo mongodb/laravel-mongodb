@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use InvalidArgumentException;
 use Mockery;
 use MongoDB\BSON\ObjectId;
@@ -1392,5 +1393,188 @@ class RelationsTest extends TestCase
         $items = Item::whereBelongsTo($user)->get();
 
         $this->assertCount(3, $items);
+    }
+
+    public function testBelongsToManyNewUnattachedQuery(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $unattached = $user->refresh()->clients()->newUnattachedQuery();
+
+        $this->assertSame(['Buffet Bar Inc.'], $unattached->pluck('name')->all());
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithoutConstraints(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        $unattached = Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $relation = Relation::noConstraints(fn () => $user->refresh()->clients());
+
+        $this->assertSame([$unattached->name], $relation->newUnattachedQuery()->pluck('name')->all());
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithoutConstraintsRejectsOperatorParentKey(): void
+    {
+        $client = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $client->cclient_id = ['$ne' => null];
+
+        $relation = Relation::noConstraints(fn () => $client->skillsWithCustomKeys());
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('cannot contain the MongoDB operator "$ne"');
+
+        $relation->newUnattachedQuery();
+    }
+
+    public function testBelongsToManyNewUnattachedQueryLeavesRelationUnchanged(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $relation = $user->refresh()->clients();
+        $relation->newUnattachedQuery()->get();
+
+        $this->assertSame(['Pork Pies Ltd.'], $relation->pluck('name')->all());
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithUnsavedParent(): void
+    {
+        Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $user = new User(['name' => 'John Doe']);
+
+        $names = $user->clients()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame(['Pork Pies Ltd.'], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithoutConstraintsWithUnsavedParent(): void
+    {
+        Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $user = new User(['name' => 'John Doe']);
+        $relation = Relation::noConstraints(fn () => $user->clients());
+
+        $names = $relation->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame(['Pork Pies Ltd.'], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithoutConstraintsPreservesForeignKeyFilter(): void
+    {
+        $current = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $other = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+
+        $otherSkill = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $attachedSkill = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
+        Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'MongoDB']);
+
+        $other->skillsWithCustomKeys()->attach($otherSkill);
+        $current->skillsWithCustomKeys()->attach($attachedSkill);
+
+        $relation = Relation::noConstraints(
+            fn () => $current->skillsWithCustomKeys()->where('cclient_ids', '=', $other->cclient_id),
+        );
+
+        $names = $relation->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame([$otherSkill->name], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryStaysModifiable(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        Client::create(['name' => 'Buffet Bar Inc.']);
+        Client::create(['name' => 'Buffet Bar Inc. (closed)']);
+
+        $names = $user->refresh()->clients()->newUnattachedQuery()
+            ->where('name', 'Buffet Bar Inc.')
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Buffet Bar Inc.'], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithNothingAttached(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        Client::create(['name' => 'Pork Pies Ltd.']);
+        Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $names = $user->clients()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertEqualsCanonicalizing(['Pork Pies Ltd.', 'Buffet Bar Inc.'], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithEverythingAttached(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        $user->clients()->create(['name' => 'Buffet Bar Inc.']);
+
+        $names = $user->refresh()->clients()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame([], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithCustomKeys(): void
+    {
+        $client     = Client::create(['cclient_id' => (string) (new ObjectId()), 'years' => '5']);
+        $attached   = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'PHP']);
+        $unattached = Skill::create(['cskill_id' => (string) (new ObjectId()), 'name' => 'Laravel']);
+
+        $client->skillsWithCustomKeys()->attach($attached);
+
+        $keys = $client->refresh()->skillsWithCustomKeys()->newUnattachedQuery()->pluck('cskill_id')->all();
+
+        $this->assertSame([$unattached->cskill_id], $keys);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryKeepsRelationConstraints(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        $unattached = Client::create(['name' => 'Buffet Bar Inc.']);
+        Client::create(['name' => 'Buffet Bar Inc. (closed)']);
+
+        $names = $user->refresh()->clients()
+            ->where('name', '!=', 'Buffet Bar Inc. (closed)')
+            ->newUnattachedQuery()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame([$unattached->name], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithPartialParent(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->create(['name' => 'Pork Pies Ltd.']);
+        $unattached = Client::create(['name' => 'Buffet Bar Inc.']);
+
+        $partial = User::select(['_id', 'name'])->find($user->id);
+
+        $names = $partial->clients()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame([$unattached->name], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryWithRelationNamedLikePivotKey(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $attached = Group::create(['name' => 'Admins']);
+        $unattached = Group::create(['name' => 'Editors']);
+
+        $user->groups()->attach($attached);
+
+        $names = $user->groups()->newUnattachedQuery()->pluck('name')->all();
+
+        $this->assertSame([$unattached->name], $names);
     }
 }
