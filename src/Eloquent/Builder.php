@@ -90,6 +90,30 @@ class Builder extends EloquentBuilder
         return $result ?: $this;
     }
 
+    /** @return list<array{column: string, direction: 'asc'|'desc'}> */
+    public function getOrders(): array
+    {
+        $orders = [];
+
+        foreach ($this->getQuery()->orders ?? [] as $column => $direction) {
+            $orders[] = [
+                'column' => $this->orderColumn((string) $column),
+                'direction' => $direction === 1 ? 'asc' : 'desc',
+            ];
+        }
+
+        return $orders;
+    }
+
+    private function orderColumn(string $column): string
+    {
+        if ($column === '_id' && $this->getModel()->getKeyName() === 'id') {
+            return 'id';
+        }
+
+        return $column;
+    }
+
     /**
      * Performs a full-text search of the field or fields in an Atlas collection.
      *
