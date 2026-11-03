@@ -574,6 +574,80 @@ class QueryTest extends TestCase
         User::distinct('age')->paginate(2);
     }
 
+    public function testPluckDistinct(): void
+    {
+        $titles = User::query()
+            ->whereNotNull('title')
+            ->distinct()
+            ->pluck('title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin', 'user'], $titles);
+    }
+
+    public function testPluckDistinctColumn(): void
+    {
+        $titles = User::query()
+            ->whereNotNull('title')
+            ->distinct('title')
+            ->pluck('title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin', 'user'], $titles);
+    }
+
+    public function testPluckDistinctAfterSelectAllTargetsTheRequestedColumn(): void
+    {
+        $titles = User::query()
+            ->select('*')
+            ->whereNotNull('title')
+            ->distinct()
+            ->pluck('title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin', 'user'], $titles);
+    }
+
+    public function testPluckDistinctTargetsTheColumnOfEachCall(): void
+    {
+        $query = User::query()->where('title', 'admin')->distinct();
+
+        $this->assertEqualsCanonicalizing(['admin'], $query->pluck('title')->all());
+        $this->assertEqualsCanonicalizing(['John Doe', 'Jane Doe', 'Yvonne Yoe'], $query->pluck('name')->all());
+    }
+
+    public function testPluckDistinctWithKeyIsRejected(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Distinct queries do not support plucking with a key.');
+
+        User::query()->distinct()->pluck('name', 'id');
+    }
+
+    public function testPluckDistinctGroupedQueryReturnsValues(): void
+    {
+        $titles = User::query()
+            ->whereNotNull('title')
+            ->groupBy('title')
+            ->distinct()
+            ->pluck('title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin', 'user'], $titles);
+    }
+
+    public function testPluckDistinctGroupedQueryWithKey(): void
+    {
+        $titles = User::query()
+            ->whereNotNull('title')
+            ->groupBy('title')
+            ->distinct()
+            ->pluck('title', 'title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin' => 'admin', 'user' => 'user'], $titles);
+    }
+
     public function testUpdate(): void
     {
         $this->assertEquals(1, User::where(['name' => 'John Doe'])->update(['name' => 'Jim Morrison']));
