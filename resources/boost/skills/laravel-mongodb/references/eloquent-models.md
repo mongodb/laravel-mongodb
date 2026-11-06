@@ -88,6 +88,21 @@ A class that uses the trait is as much a document model as one extending
 use `MongoDB\Laravel\Eloquent\Model::isDocumentModel($model)`: an `instanceof`
 check on the model class misses the trait case.
 
+## Mass assignment and MongoDB operators
+
+`$fillable` and `$guarded` protect model attributes. A `$`-prefixed key is not an
+attribute: the model reads it as a MongoDB update operator when it is saved, which
+would write the fields it contains. `fill()`, `forceFill()` and direct assignment
+reject such a key with a `MassAssignmentException` instead.
+
+```php
+// WRONG: throws MassAssignmentException
+$post->fill(['$set' => ['published' => true]]);
+
+// CORRECT: operator updates go through the query builder
+Post::whereKey($post->id)->update(['$set' => ['published' => true]]);
+```
+
 ## Encryption
 
 ```php

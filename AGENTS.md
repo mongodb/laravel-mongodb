@@ -185,6 +185,9 @@ the Laravel source, and prefer a concrete suggestion.
   without the operator check, so operator documents stay allowed on embedded ids.
 - Operator documents (`['$ne' => ...]`) are rejected as an `_id` or a relation key value, to prevent
   MQL injection. See `Query\Builder::assertKeyIsNotOperator()`.
+- A `$`-prefixed key is an update operator, not an attribute. `DocumentModel::setAttribute()` rejects
+  it with a `MassAssignmentException`, so `fill()`, `forceFill()` and direct assignment cannot be
+  used to run an operator update. Use `Query\Builder::update()` instead.
 
 ## Keeping this file current
 
