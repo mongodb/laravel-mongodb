@@ -18,6 +18,7 @@ use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Label;
 use MongoDB\Laravel\Tests\Models\Photo;
 use MongoDB\Laravel\Tests\Models\Role;
+use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
@@ -34,6 +35,7 @@ class RelationsTest extends TestCase
         Book::truncate();
         Item::truncate();
         Role::truncate();
+        Scoped::truncate();
         Group::truncate();
         Photo::truncate();
         Label::truncate();
@@ -1548,6 +1550,22 @@ class RelationsTest extends TestCase
             ->newUnattachedQuery()
             ->pluck('name')
             ->all();
+
+        $this->assertSame([$unattached->name], $names);
+    }
+
+    public function testBelongsToManyNewUnattachedQueryKeepsGlobalScopes(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+
+        $attached = Scoped::create(['name' => 'Attached favourite', 'favorite' => true]);
+        Scoped::create(['name' => 'Not favourite', 'favorite' => false]);
+        $unattached = Scoped::create(['name' => 'Unattached favourite', 'favorite' => true]);
+
+        $relation = $user->refresh()->belongsToMany(Scoped::class);
+        $relation->attach($attached);
+
+        $names = $relation->newUnattachedQuery()->pluck('name')->all();
 
         $this->assertSame([$unattached->name], $names);
     }

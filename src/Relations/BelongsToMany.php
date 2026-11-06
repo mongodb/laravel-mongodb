@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Database\Query\Builder as BaseBuilder;
 use Illuminate\Support\Arr;
+use LogicException;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
 use Override;
@@ -324,8 +325,10 @@ class BelongsToMany extends EloquentBelongsToMany
     }
 
     /**
-     * Part of the Filament bridge hooks. Returns the related models that can
-     * still be attached.
+     * Get the related models that are not attached to this parent. The
+     * relation query is cloned, so the relation itself is left unchanged.
+     *
+     * Part of the Filament bridge hooks.
      *
      * @return Builder<TRelatedModel>
      */
@@ -349,7 +352,11 @@ class BelongsToMany extends EloquentBelongsToMany
 
         $index = array_search($this->foreignConstraint, $query->wheres, true);
 
-        return $index === false ? null : $index;
+        if ($index === false) {
+            throw new LogicException('The foreign key constraint added by setWhere() is missing from the relation query.');
+        }
+
+        return $index;
     }
 
     private function invertForeignConstraint(Builder $query, int $index): Builder
