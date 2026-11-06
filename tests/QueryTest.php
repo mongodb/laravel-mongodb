@@ -11,6 +11,7 @@ use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Tests\Models\Birthday;
 use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function str;
 
@@ -572,6 +573,72 @@ class QueryTest extends TestCase
         $this->expectExceptionMessage('Distinct queries cannot be used for pagination. Use GroupBy instead');
 
         User::distinct('age')->paginate(2);
+    }
+
+    #[TestWith([null])]
+    #[TestWith(['title'])]
+    #[TestWith(['name'])]
+    public function testPluckDistinct(?string $distinctColumn): void
+    {
+        $titles = User::query()
+            ->whereNotNull('title')
+            ->distinct($distinctColumn)
+            ->pluck('title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin', 'user'], $titles);
+    }
+
+    public function testPluckDistinctAfterSelectAllTargetsTheRequestedColumn(): void
+    {
+        $titles = User::query()
+            ->select('*')
+            ->whereNotNull('title')
+            ->distinct()
+            ->pluck('title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin', 'user'], $titles);
+    }
+
+    public function testPluckDistinctTargetsTheColumnOfEachCall(): void
+    {
+        $query = User::query()->where('title', 'admin')->distinct();
+
+        $this->assertEqualsCanonicalizing(['admin'], $query->pluck('title')->all());
+        $this->assertEqualsCanonicalizing(['John Doe', 'Jane Doe', 'Yvonne Yoe'], $query->pluck('name')->all());
+    }
+
+    public function testPluckDistinctWithKeyIsRejected(): void
+    {
+        $this->expectException(BadMethodCallException::class);
+        $this->expectExceptionMessage('Distinct queries do not support plucking with a key.');
+
+        User::query()->distinct()->pluck('name', 'id');
+    }
+
+    public function testPluckDistinctGroupedQueryReturnsValues(): void
+    {
+        $titles = User::query()
+            ->whereNotNull('title')
+            ->groupBy('title')
+            ->distinct()
+            ->pluck('title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin', 'user'], $titles);
+    }
+
+    public function testPluckDistinctGroupedQueryWithKey(): void
+    {
+        $titles = User::query()
+            ->whereNotNull('title')
+            ->groupBy('title')
+            ->distinct()
+            ->pluck('title', 'title')
+            ->all();
+
+        $this->assertEqualsCanonicalizing(['admin' => 'admin', 'user' => 'user'], $titles);
     }
 
     public function testUpdate(): void

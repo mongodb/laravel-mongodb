@@ -1081,11 +1081,31 @@ class Builder extends BaseBuilder
     #[Override]
     public function pluck($column, $key = null)
     {
+        if ($this->distinct && ! $this->groups && ! $this->aggregate) {
+            if ($key !== null) {
+                throw new BadMethodCallException('Distinct queries do not support plucking with a key.');
+            }
+
+            return $this->pluckDistinct($column);
+        }
+
         $results = $this->get($key === null ? [$column] : [$column, $key]);
 
         $p = Arr::pluck($results, $column, $key);
 
         return new Collection($p);
+    }
+
+    private function pluckDistinct($column): Collection
+    {
+        $selectedColumns = $this->columns;
+        $this->columns = [$column];
+
+        try {
+            return $this->get();
+        } finally {
+            $this->columns = $selectedColumns;
+        }
     }
 
     /** @inheritdoc */
