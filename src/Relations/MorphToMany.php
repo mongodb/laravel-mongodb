@@ -317,10 +317,14 @@ class MorphToMany extends EloquentMorphToMany
 
     /** @inheritdoc */
     #[Override]
-    public function detach($ids = [], $touch = true)
+    public function detach($ids = null, $touch = true)
     {
-        if ($ids instanceof Model) {
+        if ($ids !== null) {
             $ids = $this->parseIds($ids);
+
+            if ($ids === []) {
+                return 0;
+            }
         }
 
         $query = $this->newRelatedQuery();
@@ -328,13 +332,13 @@ class MorphToMany extends EloquentMorphToMany
         // If associated IDs were passed to the method we will only delete those
         // associations, otherwise all the association ties will be broken.
         // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array) $ids;
+        $attached = $ids ?? $this->getAttachedIds();
 
         // Detach all ids from the parent model.
         if ($this->getInverse()) {
             // Remove the relation from the parent.
             $data = [];
-            foreach ($ids as $item) {
+            foreach ($attached as $item) {
                 $data = [
                     ...$data,
                     [
@@ -353,7 +357,7 @@ class MorphToMany extends EloquentMorphToMany
             }
 
             // Prepare the query to select all related objects.
-            if (count($ids) > 0) {
+            if ($ids !== null) {
                 $query->whereIn($this->relatedKey, $ids);
             }
 
@@ -362,15 +366,15 @@ class MorphToMany extends EloquentMorphToMany
         } else {
             // Remove the relation from the parent.
             if (\MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
-                $this->parent->pull($this->relatedPivotKey, $ids);
+                $this->parent->pull($this->relatedPivotKey, $attached);
             } else {
                 $value = $this->parent->{$this->relationName}
-                    ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $ids));
+                    ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $attached));
                 $this->parent->setRelation($this->relationName, $value);
             }
 
             // Prepare the query to select all related objects.
-            if (count($ids) > 0) {
+            if ($ids !== null) {
                 $query->whereIn($this->relatedKey, $ids);
             }
 
@@ -387,7 +391,32 @@ class MorphToMany extends EloquentMorphToMany
             $this->touchIfTouching();
         }
 
-        return count($ids);
+        return count($attached);
+    }
+
+    /**
+     * Get the ids of the related models currently attached to the parent.
+     *
+     * @return array
+     */
+    private function getAttachedIds()
+    {
+        if (! \MongoDB\Laravel\Eloquent\Model::isDocumentModel($this->parent)) {
+            return $this->parent->{$this->relationName}->pluck($this->relatedKey)->all();
+        }
+
+        if (! $this->getInverse()) {
+            return Arr::wrap($this->parent->{$this->relatedPivotKey});
+        }
+
+        $ids = [];
+        foreach ((array) $this->parent->{$this->table} as $item) {
+            if (is_array($item) && ($item[$this->morphType] ?? null) === $this->related->getMorphClass()) {
+                $ids[] = $item[$this->relatedPivotKey];
+            }
+        }
+
+        return $ids;
     }
 
     /** @inheritdoc */

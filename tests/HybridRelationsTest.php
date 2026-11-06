@@ -278,6 +278,21 @@ class HybridRelationsTest extends TestCase
         $this->assertEquals(1, $check->skills->count());
     }
 
+    public function testHybridBelongsToManyDetachWithoutIds()
+    {
+        $user = SqlUser::query()->create(['name' => 'John Doe']);
+        $skill = Skill::query()->create(['name' => 'Laravel']);
+        $skill2 = Skill::query()->create(['name' => 'MongoDB']);
+
+        $user->skills()->attach([$skill->id, $skill2->id]);
+        $user->load('skills');
+        $this->assertCount(2, $user->skills);
+
+        $this->assertSame(2, $user->skills()->detach());
+        $this->assertCount(0, $user->skills);
+        $this->assertCount(0, SqlUser::find($user->id)->skills);
+    }
+
     public function testQueryingHybridBelongsToManyRelationFails()
     {
         $user = new SqlUser();
