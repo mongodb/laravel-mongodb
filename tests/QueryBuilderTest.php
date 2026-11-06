@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Carbon\Carbon;
+use Closure;
 use DateTime;
 use DateTimeImmutable;
 use Illuminate\Support\Collection as LaravelCollection;
@@ -32,7 +33,9 @@ use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
+use RuntimeException;
 use Stringable;
 
 use function count;
@@ -322,6 +325,117 @@ class QueryBuilderTest extends TestCase
 
         DB::table('users')->where('age', '<', 25)->delete();
         $this->assertEquals(1, DB::table('users')->count());
+    }
+
+    public static function provideReadOperationsRestrictedByBeforeQuery(): array
+    {
+        return [
+            'get' => [static fn (Builder $query) => $query->get()->count(), 0],
+            'first' => [static fn (Builder $query) => $query->first(), null],
+            'pluck' => [static fn (Builder $query) => $query->pluck('name')->count(), 0],
+            'value' => [static fn (Builder $query) => $query->value('name'), null],
+            'cursor' => [static fn (Builder $query) => $query->cursor()->count(), 0],
+            'exists' => [static fn (Builder $query) => $query->exists(), false],
+            'count' => [static fn (Builder $query) => $query->count(), 0],
+        ];
+    }
+
+    #[DataProvider('provideReadOperationsRestrictedByBeforeQuery')]
+    public function testBeforeQueryCallbackIsAppliedToReads(Closure $execute, mixed $expected): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'Visible', 'tenant_id' => 7],
+            ['name' => 'Other tenant', 'tenant_id' => 999],
+        ]);
+
+        $query = DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 42));
+
+        $this->assertSame($expected, $execute($query));
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToFind(): void
+    {
+        $id = DB::table('users')->insertGetId(['name' => 'Other tenant', 'tenant_id' => 999]);
+
+        $user = DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 42))
+            ->find($id);
+
+        $this->assertNull($user);
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToUpdate(): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'Visible', 'tenant_id' => 7, 'reviewed' => false],
+            ['name' => 'Other tenant', 'tenant_id' => 999, 'reviewed' => false],
+        ]);
+
+        $updated = DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 7))
+            ->update(['reviewed' => true]);
+
+        $this->assertSame(1, $updated);
+        $this->assertSame(1, DB::table('users')->where('tenant_id', 7)->where('reviewed', true)->count());
+        $this->assertSame(1, DB::table('users')->where('tenant_id', 999)->where('reviewed', false)->count());
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToIncrement(): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'Visible', 'tenant_id' => 7, 'age' => 20],
+            ['name' => 'Other tenant', 'tenant_id' => 999, 'age' => 20],
+        ]);
+
+        DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 7))
+            ->increment('age');
+
+        $this->assertSame(21, DB::table('users')->where('tenant_id', 7)->value('age'));
+        $this->assertSame(20, DB::table('users')->where('tenant_id', 999)->value('age'));
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToDelete(): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'Visible', 'tenant_id' => 7],
+            ['name' => 'Other tenant', 'tenant_id' => 999],
+        ]);
+
+        $deleted = DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 42))
+            ->delete();
+
+        $this->assertSame(0, $deleted);
+        $this->assertSame(2, DB::table('users')->count());
+    }
+
+    public static function provideInsertOperations(): array
+    {
+        return [
+            'insert' => [static fn (Builder $query) => $query->insert(['name' => 'John Doe'])],
+            'insertGetId' => [static fn (Builder $query) => $query->insertGetId(['name' => 'John Doe'])],
+        ];
+    }
+
+    #[DataProvider('provideInsertOperations')]
+    public function testBeforeQueryCallbackIsAppliedToInsert(Closure $insert): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $insert(DB::table('users')->beforeQuery(static function (): void {
+            throw new RuntimeException('Blocked by beforeQuery.');
+        }));
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToAggregationBuilder(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        DB::table('users')->beforeQuery(static function (): void {
+            throw new RuntimeException('Blocked by beforeQuery.');
+        })->aggregate();
     }
 
     public function testTruncate()

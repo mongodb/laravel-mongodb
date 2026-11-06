@@ -300,6 +300,10 @@ class Builder extends BaseBuilder
      */
     public function toMql(): array
     {
+        // Mirrors Laravel's toSql(), which invokes the callbacks so they apply
+        // to every query compiled from this builder.
+        $this->applyBeforeQueryCallbacks();
+
         $columns = $this->columns ?? [];
 
         // Drop all columns if * is present, MongoDB does not work this way.
@@ -576,6 +580,8 @@ class Builder extends BaseBuilder
     #[Override]
     public function aggregate($function = null, $columns = ['*'])
     {
+        $this->applyBeforeQueryCallbacks();
+
         assert(is_array($columns), new TypeError(sprintf('Argument #2 ($columns) must be of type array, %s given', get_debug_type($columns))));
 
         if ($function === null) {
@@ -777,6 +783,8 @@ class Builder extends BaseBuilder
             $values = [$values];
         }
 
+        $this->applyBeforeQueryCallbacks();
+
         $values = array_map(
             $this->grammar->prepareFieldsForQuery(...),
             $values,
@@ -793,6 +801,8 @@ class Builder extends BaseBuilder
     #[Override]
     public function insertGetId(array $values, $sequence = null)
     {
+        $this->applyBeforeQueryCallbacks();
+
         $options = $this->inheritConnectionOptions();
 
         $values = $this->grammar->prepareFieldsForQuery($values);
@@ -1011,6 +1021,8 @@ class Builder extends BaseBuilder
             $this->where('_id', '=', $id);
         }
 
+        $this->applyBeforeQueryCallbacks();
+
         $wheres = $this->compileWheres();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
         $options = $this->inheritConnectionOptions();
@@ -1045,6 +1057,8 @@ class Builder extends BaseBuilder
 
     public function truncate(): bool
     {
+        $this->applyBeforeQueryCallbacks();
+
         $options = $this->inheritConnectionOptions();
         $result = $this->collection->deleteMany([], $options);
 
@@ -1212,6 +1226,8 @@ class Builder extends BaseBuilder
      */
     protected function performUpdate(array $update, array $options = [])
     {
+        $this->applyBeforeQueryCallbacks();
+
         $update = $this->grammar->prepareFieldsForQuery($update);
 
         $options = $this->inheritConnectionOptions($options);
