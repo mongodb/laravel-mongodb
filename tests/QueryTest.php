@@ -11,6 +11,7 @@ use MongoDB\Laravel\Eloquent\Builder;
 use MongoDB\Laravel\Tests\Models\Birthday;
 use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function str;
 
@@ -574,22 +575,14 @@ class QueryTest extends TestCase
         User::distinct('age')->paginate(2);
     }
 
-    public function testPluckDistinct(): void
+    #[TestWith([null])]
+    #[TestWith(['title'])]
+    #[TestWith(['name'])]
+    public function testPluckDistinct(?string $distinctColumn): void
     {
         $titles = User::query()
             ->whereNotNull('title')
-            ->distinct()
-            ->pluck('title')
-            ->all();
-
-        $this->assertEqualsCanonicalizing(['admin', 'user'], $titles);
-    }
-
-    public function testPluckDistinctColumn(): void
-    {
-        $titles = User::query()
-            ->whereNotNull('title')
-            ->distinct('title')
+            ->distinct($distinctColumn)
             ->pluck('title')
             ->all();
 
