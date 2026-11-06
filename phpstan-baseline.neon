@@ -37,12 +37,6 @@ parameters:
 			path: src/Relations/EmbedsOneOrMany.php
 
 		-
-			message: '#^Call to an undefined method TDeclaringModel of Illuminate\\Database\\Eloquent\\Model\:\:setParentRelation\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/Relations/EmbedsOneOrMany.php
-
-		-
 			message: '#^Call to an undefined method TRelatedModel of Illuminate\\Database\\Eloquent\\Model\:\:setParentRelation\(\)\.$#'
 			identifier: method.notFound
 			count: 2
