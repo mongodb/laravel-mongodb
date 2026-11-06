@@ -110,9 +110,7 @@ final class Pipeline
             ...$this->matchStage($before),
             ...$this->stages,
             ...$this->matchStage($after),
-            ...$this->sortStage($options),
-            ...$this->pagingStages($options),
-            ...$this->projectionStages($options),
+            ...self::optionStages($options),
             ...$this->unsetStage(),
         ];
 
@@ -136,7 +134,7 @@ final class Pipeline
             ...$this->matchStage($before),
             ...$this->stages,
             ...$this->matchStage($after),
-            ...$this->pagingStages($options),
+            ...self::pagingStages($options),
             ['$count' => 'aggregate'],
         ];
 
@@ -298,13 +296,31 @@ final class Pipeline
     }
 
     /**
+     * Translates find options into aggregation stages.
+     *
+     * @internal Shared with the relationship lookup, which applies the same options inside a $lookup.
+     *
      * @param array<string, mixed> $options
      *
      * @return list<array<string, mixed>>
      */
-    private function sortStage(array $options): array
+    public static function optionStages(array $options): array
     {
-        $sort = $this->userSort($options);
+        return [
+            ...self::sortStage($options),
+            ...self::pagingStages($options),
+            ...self::projectionStages($options),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function sortStage(array $options): array
+    {
+        $sort = self::userSort($options);
 
         if ($sort === []) {
             return [];
@@ -322,7 +338,7 @@ final class Pipeline
      *
      * @return array<string, int>
      */
-    private function userSort(array $options): array
+    private static function userSort(array $options): array
     {
         $sort = $options['sort'] ?? null;
 
@@ -338,11 +354,11 @@ final class Pipeline
      *
      * @return list<array<string, mixed>>
      */
-    private function pagingStages(array $options): array
+    private static function pagingStages(array $options): array
     {
         return [
-            ...$this->stageIfNotZero($options, 'skip'),
-            ...$this->stageIfNotZero($options, 'limit'),
+            ...self::stageIfNotZero($options, 'skip'),
+            ...self::stageIfNotZero($options, 'limit'),
         ];
     }
 
@@ -351,7 +367,7 @@ final class Pipeline
      *
      * @return list<array<string, mixed>>
      */
-    private function stageIfNotZero(array $options, string $option): array
+    private static function stageIfNotZero(array $options, string $option): array
     {
         $value = $options[$option] ?? null;
 
@@ -367,7 +383,7 @@ final class Pipeline
      *
      * @return list<array<string, mixed>>
      */
-    private function projectionStages(array $options): array
+    private static function projectionStages(array $options): array
     {
         $projection = $options['projection'] ?? null;
 
