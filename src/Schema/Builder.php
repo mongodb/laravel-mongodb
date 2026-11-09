@@ -452,7 +452,7 @@ class Builder extends \Illuminate\Database\Schema\Builder
                     'name' => $index['name'],
                     'columns' => match ($index['type']) {
                         'search' => array_merge(
-                            $index['latestDefinition']['mappings']['dynamic'] ? ['dynamic'] : [],
+                            $index['latestDefinition']['mappings']['dynamic'] ?? false ? ['dynamic'] : [],
                             array_keys($index['latestDefinition']['mappings']['fields'] ?? []),
                         ),
                         'vectorSearch' => array_column($index['latestDefinition']['fields'], 'path'),
