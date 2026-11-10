@@ -64,6 +64,12 @@ mongosh --eval 'rs.initiate({_id:"rs",members:[{_id:0,host:"127.0.0.1:27017"}]})
 export MONGODB_URI="mongodb://127.0.0.1:27017/?replicaSet=rs"
 ```
 
+The `CI` and `Atlas CI` workflows run on `ubuntu-22.04` because MongoDB 8.0 exits at startup when
+`uname` reports a kernel between 6.19 and 7.0.13, and the `ubuntu-24.04` runner reports
+`7.0.0-1017-azure` while Ubuntu keeps the release at `X.Y.0` (SERVER-136848). Server 8.0.35 reads
+`/proc/version_signature` on Ubuntu (SERVER-131779), so move them back to `ubuntu-24.04` once
+`mongo:8.0` resolves to that version or later.
+
 To run `mongod` directly instead, create the data directory and fork the server, so the following
 commands are reached:
 

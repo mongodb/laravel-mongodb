@@ -11,10 +11,15 @@ on:
 
 jobs:
   build:
-    # ubuntu-22.04 (kernel 6.8) avoids MongoDB 8.x refusing to start on the
-    # newer ubuntu-24.04 runner kernel (SERVER-125742). Revert to ubuntu-24.04
-    # once the runner kernel or the mongo image is fixed, and switch the
-    # crypt_shared target below back to ubuntu2404 at the same time.
+    # MongoDB 8.0 exits at startup when uname reports a kernel between 6.19 and
+    # 7.0.13 (startup_check_rseq, SERVER-121912). The ubuntu-24.04 runner
+    # reports 7.0.0-1017-azure, and Ubuntu keeps the release at X.Y.0, so the
+    # 7.0.14 exemption added in 8.0.30 does not apply (SERVER-136848).
+    # ubuntu-22.04 (kernel 6.8) is below the cutoff, but it is deprecated since
+    # 2026-09-17 and unsupported after 2027-04-17. Move back to ubuntu-24.04,
+    # and to the ubuntu2404 crypt_shared target, once mongo:8.0 resolves to
+    # 8.0.35 or later, which reads /proc/version_signature on Ubuntu
+    # (SERVER-131779).
     runs-on: ubuntu-22.04
 
     name: PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }} Server/${{ matrix.mongodb }} ${{ matrix.mode }}
@@ -85,6 +90,8 @@ jobs:
             docker ps --all
             docker inspect --format 'ExitCode={{.State.ExitCode}} Error={{.State.Error}}' mongodb || true
             docker logs mongodb || true
+            uname -r
+            cat /proc/version_signature 2>/dev/null || true
             df -h /
             free -h
             echo "::endgroup::"

@@ -11,9 +11,12 @@ on:
 
 jobs:
   build:
-    # ubuntu-22.04 (kernel 6.8) avoids MongoDB 8.x refusing to start on the
-    # newer ubuntu-24.04 runner kernel (SERVER-125742). Revert to ubuntu-24.04
-    # once the runner kernel or the mongo image is fixed.
+    # The mongodb-atlas-local image embeds the same MongoDB 8.0 startup check:
+    # the ubuntu-24.04 runner reports kernel 7.0.0-1017-azure, which it rejects
+    # (SERVER-136848). ubuntu-22.04 (kernel 6.8) is below the cutoff, but it is
+    # deprecated since 2026-09-17 and unsupported after 2027-04-17. Move back
+    # once the image ships MongoDB 8.0.35 or later, which reads
+    # /proc/version_signature on Ubuntu (SERVER-131779).
     runs-on: ubuntu-22.04
 
     name: PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }}
