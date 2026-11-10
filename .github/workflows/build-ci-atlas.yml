@@ -11,10 +11,7 @@ on:
 
 jobs:
   build:
-    # ubuntu-22.04 (kernel 6.8) avoids MongoDB 8.x refusing to start on the
-    # newer ubuntu-24.04 runner kernel (SERVER-125742). Revert to ubuntu-24.04
-    # once the runner kernel or the mongo image is fixed.
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-26.04
 
     name: PHP/${{ matrix.php }} Laravel/${{ matrix.laravel }} Driver/${{ matrix.driver }}
 
