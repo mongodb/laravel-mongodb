@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Encryption;
 use Illuminate\Contracts\Database\Eloquent\Castable;
 use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
 use Illuminate\Contracts\Database\Eloquent\CastsInboundAttributes;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Eloquent\Model;
 use LogicException;
 use MongoDB\BSON\Decimal128;
@@ -15,6 +16,7 @@ use MongoDB\Driver\Exception\InvalidArgumentException;
 use MongoDB\Laravel\Connection;
 use stdClass;
 use Stringable;
+use WeakMap;
 
 use function array_is_list;
 use function array_key_exists;
@@ -90,26 +92,76 @@ final class EncryptedFieldTypes
     ];
 
     /**
+     * Whether automatic encryption is configured on a connection, per resolver
+     * and connection name. A connection without it skips the field types for
+     * every model, without resolving the connection again.
+     *
+     * @var WeakMap<ConnectionResolverInterface, array<string, bool>>|null
+     */
+    private static ?WeakMap $autoEncryption = null;
+
+    /**
      * The bsonType declared for each encrypted field of the collection of a
      * model, keyed by field path. Empty when the collection is not encrypted.
      *
+     * The connection caches the field types of its collections, so they are
+     * only read again when the connection is rebuilt with another encryption
+     * configuration.
+     *
+     * @param string|null $table The collection name, when the caller already knows it.
+     *
      * @return array<string, string>
      */
-    public static function fieldTypesFor(Model $model): array
+    public static function fieldTypesFor(Model $model, ?string $table = null): array
     {
         // A model used without a database connection, as a DTO or in a unit
         // test, has no connection to resolve.
-        if ($model::getConnectionResolver() === null) {
+        $resolver = $model::getConnectionResolver();
+
+        if ($resolver === null) {
             return [];
         }
 
-        $connection = $model->getConnection();
+        $name = $model->getConnectionName() ?? $resolver->getDefaultConnection();
 
-        if (! $connection instanceof Connection) {
+        self::$autoEncryption ??= new WeakMap();
+
+        $byName  = self::$autoEncryption[$resolver] ?? [];
+        $enabled = $byName[$name] ?? null;
+
+        if ($enabled === null) {
+            $connection = $model->getConnection();
+
+            if (! $connection instanceof Connection) {
+                return [];
+            }
+
+            $enabled = $byName[$name] = $connection->isAutoEncryptionEnabled();
+
+            self::$autoEncryption[$resolver] = $byName;
+        }
+
+        if (! $enabled) {
             return [];
         }
 
-        return $connection->encryption()->encryptedFieldTypes($model->getTable());
+        $connection ??= $model->getConnection();
+
+        return $connection instanceof Connection
+            ? $connection->encryption()->encryptedFieldTypes($table ?? $model->getTable())
+            : [];
+    }
+
+    /**
+     * Forget whether automatic encryption is configured on each connection,
+     * when a connection is disconnected. The rebuilt connection can use
+     * another encryption configuration.
+     *
+     * @internal
+     */
+    public static function clearCache(): void
+    {
+        self::$autoEncryption = null;
     }
 
     /**

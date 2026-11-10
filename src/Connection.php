@@ -18,6 +18,7 @@ use MongoDB\Driver\Exception\RuntimeException;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Concerns\ManagesTransactions;
 use MongoDB\Laravel\Encryption\AutoEncryption;
+use MongoDB\Laravel\Encryption\EncryptedFieldTypes;
 use OutOfBoundsException;
 use Override;
 use Throwable;
@@ -326,6 +327,9 @@ class Connection extends BaseConnection
         if ($this->connection !== null && $this->commandSubscriber !== null) {
             $this->connection->removeSubscriber($this->commandSubscriber);
         }
+
+        // The rebuilt connection can use another encryption configuration.
+        EncryptedFieldTypes::clearCache();
 
         $this->commandSubscriber = null;
         $this->connection = null;

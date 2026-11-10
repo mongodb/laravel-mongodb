@@ -455,6 +455,54 @@ final class EncryptedFieldCastsTest extends TestCase
         $model->getCasts();
     }
 
+    public function testTypesFollowTheConnectionOfTheModel(): void
+    {
+        $model = new EncryptedCasting();
+        self::assertSame('integer', $model->getCasts()['an_int']);
+
+        // The second connection has the same configuration without automatic
+        // encryption, so no cast is derived.
+        $model->setConnection('mongodb2');
+
+        self::assertArrayNotHasKey('an_int', $model->getCasts());
+    }
+
+    public function testTypesFollowTheTableOfTheModel(): void
+    {
+        $model = new EncryptedCasting();
+        self::assertSame('integer', $model->getCasts()['an_int']);
+
+        $model->setTable('another_collection');
+
+        self::assertArrayNotHasKey('an_int', $model->getCasts());
+    }
+
+    public function testTypesAreReloadedWhenTheConnectionIsRebuilt(): void
+    {
+        $model = new EncryptedCasting();
+        self::assertSame('integer', $model->getCasts()['an_int']);
+
+        // "an_int" is now a string, which the driver returns correctly without
+        // a derived cast.
+        $this->enableEncryption([
+            'encrypted_casting' => [
+                'fields' => ['an_int' => 'string'],
+            ],
+        ]);
+
+        self::assertArrayNotHasKey('an_int', (new EncryptedCasting())->getCasts());
+    }
+
+    public function testCastsAddedAfterFirstAccessAreTakenIntoAccount(): void
+    {
+        $model = new EncryptedCasting();
+        $model->getCasts();
+
+        $model->mergeCasts(['name' => 'integer']);
+
+        self::assertSame('integer', $model->getCasts()['name']);
+    }
+
     public function testExistingModelWithCompatibleCastIsNotReported(): void
     {
         // Patient declares "billing_amount" => "integer", compatible with the

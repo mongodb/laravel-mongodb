@@ -89,6 +89,22 @@ trait DocumentModel
     private array $unset = [];
 
     /**
+     * The bsonType declared for each encrypted field of the model, resolved
+     * once per instance. Null until the connection has been asked.
+     *
+     * @var array<string, string>|null
+     */
+    private ?array $encryptedFieldTypes = null;
+
+    /**
+     * The casts of the model, including the ones derived from the
+     * encryptedFieldsMap. Resolved once per instance.
+     *
+     * @var array<string, mixed>|null
+     */
+    private ?array $castsWithEncryptedFields = null;
+
+    /**
      * Custom accessor for the model's id.
      *
      * @param  mixed $value
@@ -310,10 +326,10 @@ trait DocumentModel
         // Automatic encryption rejects a value whose BSON type does not match
         // the declared bsonType, so a form or JSON string is coerced here.
         // A custom cast owns its value.
-        if ($value !== null && ! $this->isClassCastable($key)) {
-            $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
+        if ($value !== null) {
+            $fieldTypes = $this->encryptedFieldTypes ?? $this->resolveEncryptedFieldTypes();
 
-            if ($fieldTypes !== []) {
+            if ($fieldTypes !== [] && ! $this->isClassCastable($key)) {
                 $value = EncryptedFieldTypes::coerceField($fieldTypes, $key, $value, $this->fromDateTime(...));
             }
         }
@@ -427,15 +443,66 @@ trait DocumentModel
     /** @inheritdoc */
     public function getCasts()
     {
-        // The value read back must have the type declared in the
-        // encryptedFieldsMap, which a derived cast provides.
-        $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
+        return $this->castsWithEncryptedFields ??= $this->resolveCasts();
+    }
+
+    /**
+     * The casts of the model, with the casts derived from the encryptedFieldsMap
+     * merged in. The connection is resolved once per instance, because Eloquent
+     * calls getCasts() many times for the same model.
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveCasts(): array
+    {
+        $fieldTypes = $this->resolveEncryptedFieldTypes();
 
         if ($fieldTypes === []) {
             return $this->casts;
         }
 
         return EncryptedFieldTypes::mergeCasts(static::class, $this->casts, $fieldTypes);
+    }
+
+    /**
+     * The bsonType declared for each encrypted field of the model. Resolved
+     * once per instance, because Eloquent calls getCasts() many times for the
+     * same model, when it reads an attribute, serializes it or saves it.
+     *
+     * @return array<string, string>
+     */
+    private function resolveEncryptedFieldTypes(): array
+    {
+        return $this->encryptedFieldTypes ??= EncryptedFieldTypes::fieldTypesFor($this, $this->getTable());
+    }
+
+    #[Override]
+    public function setConnection($name)
+    {
+        // The field types depend on the connection.
+        $this->encryptedFieldTypes = null;
+        $this->castsWithEncryptedFields = null;
+
+        return parent::setConnection($name);
+    }
+
+    #[Override]
+    public function setTable($table)
+    {
+        // The field types depend on the collection.
+        $this->encryptedFieldTypes = null;
+        $this->castsWithEncryptedFields = null;
+
+        return parent::setTable($table);
+    }
+
+    #[Override]
+    public function mergeCasts($casts)
+    {
+        // The derived casts are merged again from the new declared casts.
+        $this->castsWithEncryptedFields = null;
+
+        return parent::mergeCasts($casts);
     }
 
     /** @inheritdoc */
