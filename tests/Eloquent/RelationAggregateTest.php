@@ -4,9 +4,13 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Eloquent;
 
+use Closure;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
+use MongoDB\BSON\Binary;
+use MongoDB\Laravel\Tests\Models\Book;
+use MongoDB\Laravel\Tests\Models\Client;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
@@ -14,6 +18,8 @@ use MongoDB\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 
+use function array_keys;
+use function collect;
 use function sprintf;
 
 class RelationAggregateTest extends TestCase
@@ -31,6 +37,8 @@ class RelationAggregateTest extends TestCase
 
         User::truncate();
         Item::truncate();
+        Client::truncate();
+        Book::truncate();
         Soft::truncate();
 
         parent::tearDown();
@@ -357,6 +365,166 @@ class RelationAggregateTest extends TestCase
         $this->expectExceptionMessage('An "offset()" on a relationship aggregate constraint is not supported.');
 
         User::orderByRelationAggregate('items', 'amount', 'sum', 'desc', fn ($query) => $query->offset(1));
+    }
+
+    public function testTheSortFollowsTheValuesOfWithSum(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->items()->create(['name' => 'a', 'amount' => '9']);
+        $alice->items()->create(['name' => 'b', 'amount' => true]);
+        $alice->items()->create(['name' => 'c', 'amount' => 1]);
+
+        $bob = User::create(['name' => 'Bob']);
+        $bob->items()->create(['name' => 'd', 'amount' => 5]);
+
+        $sums = User::withSum('items', 'amount')
+            ->orderByRelationAggregate('items', 'amount', 'sum', 'desc')
+            ->get()
+            ->pluck('items_sum_amount', 'name')
+            ->all();
+
+        $this->assertSame(['Bob' => 5, 'Alice' => 1], $sums);
+    }
+
+    public function testTheAggregateIsComputedFromTheQueriedCollection(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->clients()->create(['name' => 'a']);
+        $users = DB::connection('mongodb')->getCollection('users');
+        $archivedUsers = DB::connection('mongodb')->getCollection('archived_users');
+        $archivedUsers->insertOne($users->findOne(['name' => 'Alice']));
+        $users->deleteMany([]);
+
+        try {
+            $counts = User::from('archived_users')->withCount('clients')->get()->pluck('clients_count', 'name')->all();
+        } finally {
+            $archivedUsers->drop();
+        }
+
+        $this->assertSame(['Alice' => 1], $counts);
+    }
+
+    /** @param Closure(): iterable<User> $users */
+    #[DataProvider('provideSortsWithAnEmbeddedAggregate')]
+    public function testAnEmbeddedAggregateWorksWithASortOnARelationAggregate(Closure $users, array $counts, array $attributes): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+        $alice->items()->create(['name' => 'a', 'amount' => 3]);
+        $bob = User::create(['name' => 'Bob']);
+        $bob->addresses()->create(['city' => 'Paris']);
+        $bob->items()->create(['name' => 'b', 'amount' => 5]);
+        $bob->items()->create(['name' => 'c', 'amount' => 5]);
+
+        $users = collect($users());
+
+        $this->assertSame($counts, $users->pluck('addresses_count', 'name')->all());
+        $this->assertEqualsCanonicalizing($attributes, array_keys($users->first()->getAttributes()));
+    }
+
+    public static function provideSortsWithAnEmbeddedAggregate(): iterable
+    {
+        yield 'a narrowed selection' => [
+            static fn () => User::select('name')->withCount('addresses')->orderByRelationAggregate('items', 'amount', 'sum', 'desc')->get(),
+            ['Bob' => 1, 'Alice' => 2],
+            ['id', 'name', 'addresses_count'],
+        ];
+        yield 'every field' => [
+            static fn () => User::withCount('addresses')->orderByRelationAggregate('items', 'amount', 'sum', 'desc')->get(),
+            ['Bob' => 1, 'Alice' => 2],
+            ['id', 'name', 'addresses', 'addresses_count', 'created_at', 'updated_at'],
+        ];
+        yield 'a narrowed page' => [
+            static fn () => User::select('name')->withCount('addresses')->orderByRelationAggregate('items', 'amount', 'sum', 'desc')->paginate(1)->items(),
+            ['Bob' => 1],
+            ['id', 'name', 'addresses_count'],
+        ];
+    }
+
+    public function testAnAggregateKeepsItsValueWhenTheSelectionFollows(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        Book::create(['title' => 'A', 'author_id' => $alice->id]);
+
+        $counts = Book::withCount('author')->select('author_id')->where('author_id', $alice->id)->get()->pluck('author_count')->all();
+
+        $this->assertSame([1], $counts);
+    }
+
+    public function testAnAggregateIsMatchedByTheDocumentIdWhenTheDocumentHasItsOwnIdField(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        DB::connection('mongodb')->getCollection('books')->insertMany([
+            ['id' => 'own', 'title' => 'A', 'author_id' => $alice->id],
+            ['id' => 'own', 'title' => 'B'],
+        ]);
+
+        $this->assertSame(['A' => 1, 'B' => 0], Book::withCount('author')->orderBy('title')->get()->pluck('author_count', 'title')->all());
+        $this->assertSame(['A' => 1, 'B' => 0], Book::select('title')->withCount('author')->orderBy('title')->get()->pluck('author_count', 'title')->all());
+    }
+
+    public function testAnAggregateKeepsDocumentIdsOfDifferentTypesApart(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        DB::connection('mongodb')->getCollection('books')->insertMany([
+            ['_id' => 1, 'title' => 'A', 'author_id' => $alice->id],
+            ['_id' => '1', 'title' => 'B'],
+        ]);
+
+        $this->assertSame(['A' => 1, 'B' => 0], Book::withCount('author')->orderBy('title')->get()->pluck('author_count', 'title')->all());
+    }
+
+    public function testAnAggregateWorksWithADocumentId(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        DB::connection('mongodb')->getCollection('books')->insertMany([
+            ['_id' => ['tenant' => 1, 'book' => 2], 'title' => 'A', 'author_id' => $alice->id],
+            ['_id' => ['tenant' => 1, 'book' => 3], 'title' => 'B'],
+        ]);
+
+        $this->assertSame(['A' => 1, 'B' => 0], Book::withCount('author')->orderBy('title')->get()->pluck('author_count', 'title')->all());
+    }
+
+    public function testAnAggregateWorksWithAGroupedQuery(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        Book::create(['title' => 'A', 'author_id' => $alice->id]);
+        Book::create(['title' => 'B', 'author_id' => $alice->id]);
+
+        $counts = Book::select('author_id')->groupBy('author_id')->withCount('author')->get()->pluck('author_count')->all();
+
+        $this->assertSame([1], $counts);
+    }
+
+    public function testTheSelectionDoesNotChangeTheAggregate(): void
+    {
+        $alice = User::create(['name' => 'Alice', 'age' => '9', 'score' => 4]);
+        Book::create(['title' => 'A', 'author_id' => $alice->id]);
+
+        $books = Book::select('author_id')
+            ->where('author_id', $alice->id)
+            ->withCount('author')
+            ->withSum('author', 'age')
+            ->withSum('author', 'score')
+            ->get();
+
+        $this->assertSame([1], $books->pluck('author_count')->all());
+        $this->assertSame([9], $books->pluck('author_sum_age')->all());
+        $this->assertSame([4], $books->pluck('author_sum_score')->all());
+    }
+
+    #[TestWith(["\x01aaaaaaaaaaaaaaa"])]
+    #[TestWith(['aaaaaaaaaaaaaaaa'])]
+    public function testTheAggregateIsMatchedToAParentWithABinaryKey(string $uuid): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        DB::connection('mongodb')->getCollection('items')->insertOne([
+            '_id' => new Binary($uuid, Binary::TYPE_UUID),
+            'user_id' => $alice->id,
+        ]);
+
+        $this->assertSame([1], Item::withCount('user')->get()->pluck('user_count')->all());
     }
 
     private function seedUsers(): void

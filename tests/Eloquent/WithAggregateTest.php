@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests\Eloquent;
 
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
@@ -19,7 +21,10 @@ use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Laravel\Tests\TestCase;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+use function array_column;
+use function array_keys;
 use function assert;
+use function collect;
 
 class WithAggregateTest extends TestCase
 {
@@ -269,6 +274,226 @@ class WithAggregateTest extends TestCase
         self::assertTrue($users[0]->father_exists);
         self::assertSame(0, $users[1]->father_count);
         self::assertFalse($users[1]->father_exists);
+    }
+
+    /** @param Closure(): Collection<int, User> $users */
+    #[DataProvider('provideEmbeddedAggregatesOfANarrowedSelection')]
+    public function testAnEmbeddedAggregateReadsTheEmbeddedDocumentsOutsideTheSelection(Closure $users, string $attribute, array $expected): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+        $alice->father()->save(new User(['name' => 'Mark']));
+        User::create(['name' => 'Bob'])->addresses()->create(['city' => 'Lyon']);
+        User::create(['name' => 'Carol']);
+
+        self::assertSame($expected, $users()->pluck($attribute)->all());
+    }
+
+    /** @param Closure(): Builder<User> $query */
+    #[DataProvider('provideSelectionsWithAnEmbeddedAggregate')]
+    public function testAnEmbeddedAggregateKeepsTheSelection(Closure $query, array $attributes, ?array $cities): void
+    {
+        User::create(['name' => 'Alice', 'age' => 30])->addresses()->create(['city' => 'Paris', 'zip' => 75001]);
+
+        $user = $query()->where('name', 'Alice')->first();
+
+        self::assertEqualsCanonicalizing($attributes, array_keys($user->getAttributes()));
+        self::assertSame(1, $user->addresses_count);
+        self::assertSame($cities, isset($user->getAttributes()['addresses']) ? array_column($user->getAttributes()['addresses'], 'city') : null);
+    }
+
+    /** @param Closure(): iterable<User> $users */
+    #[DataProvider('provideNarrowedReadsWithAnEmbeddedAggregate')]
+    public function testAnEmbeddedAggregateOfANarrowedSelectionWorksWithEveryRead(Closure $users, array $counts): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+        $alice->items()->create(['name' => 'a', 'amount' => 3]);
+        $bob = User::create(['name' => 'Bob']);
+        $bob->addresses()->create(['city' => 'Paris']);
+        $bob->items()->create(['name' => 'b', 'amount' => 5]);
+        $bob->items()->create(['name' => 'c', 'amount' => 5]);
+
+        $users = collect($users());
+
+        self::assertSame($counts, $users->pluck('addresses_count', 'name')->all());
+        self::assertEqualsCanonicalizing(['id', 'name', 'addresses_count'], array_keys($users->first()->getAttributes()));
+    }
+
+    public static function provideNarrowedReadsWithAnEmbeddedAggregate(): iterable
+    {
+        yield 'paginate' => [
+            static fn () => User::select('name')->withCount('addresses')->orderBy('name')->paginate(1)->items(),
+            ['Alice' => 2],
+        ];
+        yield 'chunk' => [
+            static function () {
+                $users = [];
+                User::select('name')->withCount('addresses')->orderBy('name')->chunk(1, static function ($chunk) use (&$users) {
+                    $users = [...$users, ...$chunk];
+                });
+
+                return $users;
+            },
+            ['Alice' => 2, 'Bob' => 1],
+        ];
+        yield 'loadCount after a narrowed read' => [
+            static fn () => User::select('name')->orderBy('name')->get()->loadCount('addresses'),
+            ['Alice' => 2, 'Bob' => 1],
+        ];
+        yield 'with an eager loaded relation' => [
+            static fn () => User::select('name')->with('items')->withCount('addresses')->orderBy('name')->get(),
+            ['Alice' => 2, 'Bob' => 1],
+        ];
+        yield 'with a check for an embedded document' => [
+            static fn () => User::select('name')->withCount('addresses')->whereHas('addresses', static fn ($query) => $query->where('city', 'Lyon'))->get(),
+            ['Alice' => 2],
+        ];
+    }
+
+    public function testAReusedQueryComputesAnotherAggregateAfterAnEmbeddedAggregate(): void
+    {
+        User::create(['name' => 'Alice', 'age' => 30])->addresses()->create(['city' => 'Paris']);
+        User::create(['name' => 'Bob', 'age' => 40]);
+        $query = User::select('name')->withCount('addresses');
+
+        $query->get();
+
+        self::assertSame(70, $query->sum('age'));
+    }
+
+    public function testSeveralEmbeddedAggregatesOfANarrowedSelection(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris', 'zip' => 75001]);
+        $alice->addresses()->create(['city' => 'Lyon', 'zip' => 69001]);
+        $alice->father()->save(new User(['name' => 'Mark']));
+        User::create(['name' => 'Bob'])->addresses()->create(['city' => 'Lyon', 'zip' => 69001]);
+
+        $users = User::select('name')
+            ->withCount('addresses')
+            ->withSum('addresses', 'zip')
+            ->withExists('father')
+            ->withCount('books')
+            ->orderBy('name')
+            ->get();
+
+        self::assertSame([2, 1], $users->pluck('addresses_count')->all());
+        self::assertSame([144002, 69001], $users->pluck('addresses_sum_zip')->all());
+        self::assertSame([true, false], $users->pluck('father_exists')->all());
+        self::assertSame([0, 0], $users->pluck('books_count')->all());
+        self::assertEqualsCanonicalizing(
+            ['id', 'name', 'addresses_count', 'addresses_sum_zip', 'father_exists', 'books_count'],
+            array_keys($users->first()->getAttributes()),
+        );
+    }
+
+    public function testAGroupedQueryKeepsItsSelection(): void
+    {
+        User::create(['name' => 'Alice'])->addresses()->create(['city' => 'Paris']);
+
+        $group = User::select('name')->withCount('addresses')->groupBy('name')->first();
+
+        self::assertEqualsCanonicalizing(['id', 'name', 'addresses_count'], array_keys($group->getAttributes()));
+    }
+
+    /** @param Closure(Builder<User>): void $firstRead */
+    #[DataProvider('provideReusedQueriesWithAnEmbeddedAggregate')]
+    public function testAReusedQueryReadsTheSelectionOfEachRead(Closure $firstRead, Closure $secondRead, array $attributes): void
+    {
+        User::create(['name' => 'Alice'])->addresses()->create(['city' => 'Paris']);
+        $query = User::withCount('addresses');
+
+        $firstRead($query);
+        $user = $secondRead($query);
+
+        self::assertEqualsCanonicalizing($attributes, array_keys($user->getAttributes()));
+        self::assertSame(1, $user->addresses_count);
+    }
+
+    public static function provideReusedQueriesWithAnEmbeddedAggregate(): iterable
+    {
+        yield 'every field twice' => [
+            static fn (Builder $query) => $query->get(),
+            static fn (Builder $query) => $query->first(),
+            ['id', 'name', 'addresses', 'addresses_count', 'updated_at', 'created_at'],
+        ];
+        yield 'widened after a narrowed read' => [
+            static fn (Builder $query) => $query->select('name')->get(),
+            static fn (Builder $query) => $query->select('*')->first(),
+            ['id', 'name', 'addresses', 'addresses_count', 'updated_at', 'created_at'],
+        ];
+        yield 'narrowed after a full read' => [
+            static fn (Builder $query) => $query->get(),
+            static fn (Builder $query) => $query->select('name')->first(),
+            ['id', 'name', 'addresses_count'],
+        ];
+    }
+
+    public static function provideSelectionsWithAnEmbeddedAggregate(): iterable
+    {
+        yield 'a narrowed selection' => [
+            static fn () => User::select('name')->withCount('addresses'),
+            ['id', 'name', 'addresses_count'],
+            null,
+        ];
+        yield 'every field' => [
+            static fn () => User::select('*')->withCount('addresses'),
+            ['id', 'name', 'age', 'addresses', 'addresses_count', 'updated_at', 'created_at'],
+            ['Paris'],
+        ];
+        yield 'a field of the embedded documents' => [
+            static fn () => User::select('name', 'addresses.city')->withCount('addresses'),
+            ['id', 'name', 'addresses', 'addresses_count'],
+            ['Paris'],
+        ];
+        yield 'the embedded documents selected afterwards' => [
+            static fn () => User::select('name')->withCount('addresses')->addSelect('addresses'),
+            ['id', 'name', 'addresses', 'addresses_count'],
+            ['Paris'],
+        ];
+    }
+
+    public static function provideEmbeddedAggregatesOfANarrowedSelection(): iterable
+    {
+        yield 'withCount on a selection' => [
+            static fn
+        () => User::select('name')->withCount('addresses')->orderBy('name')->get(),
+            'addresses_count',
+            [2, 1, 0],
+        ];
+        yield 'withExists on a selection' => [
+            static fn
+        () => User::select('name')->withExists('addresses')->orderBy('name')->get(),
+            'addresses_exists',
+            [true, true, false],
+        ];
+        yield 'loadCount' => [
+            static fn
+        () => User::orderBy('name')->get()->loadCount('addresses'),
+            'addresses_count',
+            [2, 1, 0],
+        ];
+        yield 'loadExists' => [
+            static fn
+        () => User::orderBy('name')->get()->loadExists('addresses'),
+            'addresses_exists',
+            [true, true, false],
+        ];
+        yield 'loadCount of embeds one' => [
+            static fn
+        () => User::orderBy('name')->get()->loadCount('father'),
+            'father_count',
+            [1, 0, 0],
+        ];
+        yield 'loadExists of embeds one' => [
+            static fn
+        () => User::orderBy('name')->get()->loadExists('father'),
+            'father_exists',
+            [true, false, false],
+        ];
     }
 
     public function testAggregateIsAddedToArray(): void
