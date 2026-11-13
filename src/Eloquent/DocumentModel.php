@@ -327,7 +327,7 @@ trait DocumentModel
         // the declared bsonType, so a form or JSON string is coerced here.
         // A custom cast owns its value.
         if ($value !== null) {
-            $fieldTypes = $this->encryptedFieldTypes ?? $this->resolveEncryptedFieldTypes();
+            $fieldTypes = $this->encryptedFieldTypes ?? $this->getEncryptedFieldTypes();
 
             if ($fieldTypes !== [] && ! $this->isClassCastable($key)) {
                 $value = EncryptedFieldTypes::coerceField($fieldTypes, $key, $value, $this->fromDateTime(...));
@@ -455,7 +455,7 @@ trait DocumentModel
      */
     private function resolveCasts(): array
     {
-        $fieldTypes = $this->resolveEncryptedFieldTypes();
+        $fieldTypes = $this->getEncryptedFieldTypes();
 
         if ($fieldTypes === []) {
             return $this->casts;
@@ -469,9 +469,11 @@ trait DocumentModel
      * once per instance, because Eloquent calls getCasts() many times for the
      * same model, when it reads an attribute, serializes it or saves it.
      *
+     * @internal
+     *
      * @return array<string, string>
      */
-    private function resolveEncryptedFieldTypes(): array
+    public function getEncryptedFieldTypes(): array
     {
         return $this->encryptedFieldTypes ??= EncryptedFieldTypes::fieldTypesFor($this, $this->getTable());
     }
@@ -479,9 +481,12 @@ trait DocumentModel
     #[Override]
     public function setConnection($name)
     {
-        // The field types depend on the connection.
-        $this->encryptedFieldTypes = null;
-        $this->castsWithEncryptedFields = null;
+        // The field types depend on the connection. Setting the same
+        // connection again, as hydration does, must not discard them.
+        if ($name !== $this->connection) {
+            $this->encryptedFieldTypes = null;
+            $this->castsWithEncryptedFields = null;
+        }
 
         return parent::setConnection($name);
     }
@@ -490,8 +495,10 @@ trait DocumentModel
     public function setTable($table)
     {
         // The field types depend on the collection.
-        $this->encryptedFieldTypes = null;
-        $this->castsWithEncryptedFields = null;
+        if ($table !== $this->table) {
+            $this->encryptedFieldTypes = null;
+            $this->castsWithEncryptedFields = null;
+        }
 
         return parent::setTable($table);
     }

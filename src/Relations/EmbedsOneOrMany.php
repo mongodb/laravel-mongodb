@@ -263,7 +263,8 @@ abstract class EmbedsOneOrMany extends Relation
             $parent = $parentRelation->getParent();
         }
 
-        return EncryptedFieldTypes::fieldTypesFor($parent);
+        // The top-level model resolved its field types once per instance.
+        return DocumentModel::isDocumentModel($parent) ? $parent->getEncryptedFieldTypes() : [];
     }
 
     /**
