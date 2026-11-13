@@ -39,7 +39,11 @@ class Connection extends BaseConnection
 {
     use ManagesTransactions;
 
+    private const WIRE_VERSION_FOR_INDEXABLE_RELATION_LOOKUP = 13;
+
     private static ?string $version = null;
+
+    private ?bool $supportsRelationLookup = null;
 
     /**
      * The MongoDB database handler.
@@ -329,6 +333,7 @@ class Connection extends BaseConnection
 
         $this->commandSubscriber = null;
         $this->connection = null;
+        $this->supportsRelationLookup = null;
     }
 
     /**
@@ -470,6 +475,23 @@ class Connection extends BaseConnection
     public function getRenameEmbeddedIdField(): bool
     {
         return $this->renameEmbeddedIdField;
+    }
+
+    /**
+     * Supports the Filament bridge.
+     *
+     * @internal
+     */
+    public function supportsRelationLookup(): bool
+    {
+        return $this->supportsRelationLookup ??= $this->maxWireVersion() >= self::WIRE_VERSION_FOR_INDEXABLE_RELATION_LOOKUP;
+    }
+
+    private function maxWireVersion(): int
+    {
+        $server = $this->getClient()->getManager()->selectServer(new ReadPreference(ReadPreference::PRIMARY_PREFERRED));
+
+        return (int) ($server->getInfo()['maxWireVersion'] ?? 0);
     }
 
     /**

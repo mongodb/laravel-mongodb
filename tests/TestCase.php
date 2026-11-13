@@ -84,6 +84,13 @@ class TestCase extends OrchestraTestCase
         $app['config']->set('queue.failed.driver', 'mongodb');
     }
 
+    public function skipIfRelationLookupIsNotSupported(): void
+    {
+        if (! $this->getConnection('mongodb')->supportsRelationLookup()) {
+            self::markTestSkipped('Relationship lookups require MongoDB 5.0 or later.');
+        }
+    }
+
     public function skipIfSearchIndexManagementIsNotSupported(): void
     {
         try {

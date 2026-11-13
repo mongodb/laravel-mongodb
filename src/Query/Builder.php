@@ -232,9 +232,9 @@ class Builder extends BaseBuilder
      *
      * @param array<string, mixed>|StageInterface $stage
      */
-    public function addInternalStage(array|StageInterface $stage): static
+    public function addInternalStage(array|StageInterface $stage, bool $neededForCount = true): static
     {
-        $this->pipeline()->addStage($stage);
+        $this->pipeline()->addStage($stage, $neededForCount);
 
         return $this;
     }
