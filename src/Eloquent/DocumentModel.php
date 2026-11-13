@@ -452,8 +452,12 @@ trait DocumentModel
 
         if ($fieldTypes !== []) {
             // The value read back must have the type declared in the
-            // encryptedFieldsMap, which the derived cast provides.
-            $this->casts = EncryptedFieldTypes::mergeCasts(static::class, $this->casts, $fieldTypes);
+            // encryptedFieldsMap, which the derived cast provides. The casts
+            // are appended to the model's casts instead of merging a copy of
+            // the whole array.
+            foreach (EncryptedFieldTypes::derivedCasts(static::class, $this->casts, $fieldTypes) as $attribute => $cast) {
+                $this->casts[$attribute] = $cast;
+            }
         }
 
         $this->castsResolved = true;
