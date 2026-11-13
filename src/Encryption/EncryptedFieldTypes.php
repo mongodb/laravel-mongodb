@@ -169,9 +169,6 @@ final class EncryptedFieldTypes
      * declare one. A declared cast is kept, but reported when it cannot store
      * the declared bsonType.
      *
-     * The caller appends the result to the casts of the model, which avoids
-     * copying the whole casts array.
-     *
      * @param class-string          $model
      * @param array<string, mixed>  $declaredCasts
      * @param array<string, string> $fieldTypes    Map of field path to bsonType.
