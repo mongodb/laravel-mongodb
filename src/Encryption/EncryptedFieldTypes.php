@@ -101,6 +101,15 @@ final class EncryptedFieldTypes
     private static ?WeakMap $autoEncryption = null;
 
     /**
+     * Incremented when the caches are cleared, so a model instance that
+     * resolved the field types before a connection was rebuilt resolves them
+     * again.
+     *
+     * @internal
+     */
+    public static int $generation = 0;
+
+    /**
      * The bsonType declared for each encrypted field of the collection of a
      * model, keyed by field path. Empty when the collection is not encrypted.
      *
@@ -162,6 +171,7 @@ final class EncryptedFieldTypes
     public static function clearCache(): void
     {
         self::$autoEncryption = null;
+        self::$generation++;
     }
 
     /**
