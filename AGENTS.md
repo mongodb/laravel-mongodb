@@ -159,7 +159,10 @@ A change is reviewed against the following standards, in rough order of priority
    against something the server cannot, such as MQL injection.
 3. Follow Laravel. Reuse the parent Eloquent method instead of reimplementing it, align the
    generated MQL with the SQL Laravel produces for the same call, and do not add parameters to a
-   method that overrides a Laravel method.
+   method that overrides a Laravel method. When a change affects the input or output of the
+   user-facing API, run the same calls on a SQL model backed by SQLite (`SqlUser`, `SqlBook` and
+   `SqlRole` in `tests/Models/`) and compare the results, including edge cases such as an unsaved
+   parent or a relation instance passed instead of its name.
 4. Fail loudly. A public method that cannot express the requested constraint throws with a clear
    message instead of returning a query that matches the wrong documents. When a feature is not
    supported by the server version or the topology in use, let the server decide, then translate its

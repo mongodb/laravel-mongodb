@@ -4,15 +4,25 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use Closure;
 use DateTime;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Facades\DB;
+use InvalidArgumentException;
+use LogicException;
 use Mockery;
 use MongoDB\BSON\ObjectId;
+use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use MongoDB\Laravel\Tests\Models\Address;
+use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function array_merge;
+use function config;
 
 class EmbeddedRelationsTest extends TestCase
 {
@@ -1091,5 +1101,186 @@ class EmbeddedRelationsTest extends TestCase
         $user = User::find($user->id);
         $this->assertNotNull($user->dynamicFather);
         $this->assertEquals('Mark Doe', $user->dynamicFather->name);
+    }
+
+    /** @param Closure(): Builder $query */
+    #[DataProvider('provideWhereHasOnEmbeddedRelations')]
+    public function testWhereHasOnEmbeddedRelations(Closure $query, array $expected): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+        $alice->father()->save(new User(['name' => 'Mark', 'birthday' => new DateTime('1960-05-01')]));
+
+        $bob = User::create(['name' => 'Bob']);
+        $bob->addresses()->create(['city' => 'London']);
+        $bob->father()->save(new User(['name' => 'Tom', 'birthday' => new DateTime('1970-05-01')]));
+
+        User::create(['name' => 'Carol']);
+
+        $this->assertSame($expected, $query()->orderBy('name')->pluck('name')->all());
+    }
+
+    public static function provideWhereHasOnEmbeddedRelations(): iterable
+    {
+        yield 'embeds many with a constraint' => [
+            static fn () => User::whereHas('addresses', fn ($query) => $query->where('city', 'Paris')),
+            ['Alice'],
+        ];
+        yield 'embeds many without a constraint' => [static fn () => User::has('addresses'), ['Alice', 'Bob']];
+        yield 'embeds many absent' => [static fn () => User::doesntHave('addresses'), ['Carol']];
+        yield 'embeds many count' => [static fn () => User::has('addresses', '>=', 2), ['Alice']];
+        yield 'embeds many count of zero' => [static fn () => User::has('addresses', '=', 0), ['Carol']];
+        yield 'or where has' => [
+            static fn () => User::where('name', 'Carol')
+                ->orWhereHas('addresses', fn ($query) => $query->where('city', 'London')),
+            ['Bob', 'Carol'],
+        ];
+        yield 'embeds one with a constraint' => [
+            static fn () => User::whereHas('father', fn ($query) => $query->where('name', 'Mark')),
+            ['Alice'],
+        ];
+        yield 'embeds one with an or constraint' => [
+            static fn () => User::whereHas('father', fn ($query) => $query->where('name', 'Mark')->orWhere('name', 'Tom')),
+            ['Alice', 'Bob'],
+        ];
+        yield 'embeds one requires the embedded document' => [
+            static fn () => User::whereHas('father', fn ($query) => $query->whereNull('age')),
+            ['Alice', 'Bob'],
+        ];
+        yield 'embeds one absent' => [
+            static fn () => User::whereDoesntHave('father', fn ($query) => $query->where('name', 'Mark')),
+            ['Bob', 'Carol'],
+        ];
+        yield 'embeds one with a date constraint' => [
+            static fn () => User::whereHas('father', fn ($query) => $query->whereYear('birthday', 1960)),
+            ['Alice'],
+        ];
+    }
+
+    #[TestWith([true, '_id'])]
+    #[TestWith([false, 'id'])]
+    public function testWhereHasMatchesTheEmbeddedIdFieldOfTheConnection(bool $renameEmbeddedIdField, string $idField): void
+    {
+        DB::connection('mongodb')->setRenameEmbeddedIdField($renameEmbeddedIdField);
+        DB::connection('mongodb')->getCollection('users')->insertMany([
+            ['name' => 'Alice', 'father' => [$idField => 42], 'addresses' => [[$idField => 7]]],
+            ['name' => 'Bob', 'father' => [$idField => 43], 'addresses' => [[$idField => 8]]],
+        ]);
+
+        $this->assertSame(['Alice'], User::whereHas('father', fn ($query) => $query->where('id', 42))->pluck('name')->all());
+        $this->assertSame(['Bob'], User::whereHas('addresses', fn ($query) => $query->where('id', 8))->pluck('name')->all());
+        $this->assertSame(['Bob'], User::whereHas('addresses', fn ($query) => $query->where('id', ['$ne' => 7]))->pluck('name')->all());
+    }
+
+    #[TestWith([true])]
+    #[TestWith([false])]
+    public function testWhereHasMatchesTheGeneratedIdOfAnEmbeddedDocument(bool $renameEmbeddedIdField): void
+    {
+        DB::connection('mongodb')->setRenameEmbeddedIdField($renameEmbeddedIdField);
+        User::create(['name' => 'Alice'])->addresses()->create(['city' => 'Paris']);
+        $address = User::create(['name' => 'Bob'])->addresses()->create(['city' => 'London']);
+
+        $this->assertSame(['Bob'], User::whereHas('addresses', fn ($query) => $query->where('id', $address->id))->pluck('name')->all());
+    }
+
+    public function testWhereHasCompilesTheConstraintsOnTheConnectionOfTheParent(): void
+    {
+        config(['database.connections.mongodb_renaming' => config('database.connections.mongodb')]);
+        DB::connection('mongodb')->setRenameEmbeddedIdField(false);
+        $address = new class extends Address {
+            protected $connection = 'mongodb_renaming';
+        };
+        User::resolveRelationUsing('renamingAddresses', fn (User $user) => $user->embedsMany($address::class, 'addresses', 'user_id', 'renamingAddresses'));
+        DB::connection('mongodb')->getCollection('users')->insertMany([
+            ['name' => 'Alice', 'addresses' => [['id' => 7]]],
+            ['name' => 'Bob', 'addresses' => [['id' => 8]]],
+        ]);
+
+        $this->assertSame(['Bob'], User::whereHas('renamingAddresses', fn ($query) => $query->where('id', 8))->pluck('name')->all());
+    }
+
+    public function testAnExpressionConstraintOnEmbedsManyIsNotSupported(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('A "$expr" constraint is not supported on an EmbedsMany relation, because MongoDB only evaluates it against the top-level document.');
+
+        User::whereHas('addresses', fn ($query) => $query->whereYear('created_at', 2026));
+    }
+
+    public function testWhereHasKeepsTheValueOfACustomEmbeddedKey(): void
+    {
+        DB::connection('mongodb')->setRenameEmbeddedIdField(false);
+        User::resolveRelationUsing('favoriteBooks', fn (User $user) => $user->embedsMany(Book::class, 'favorite_books', 'user_id', 'favoriteBooks'));
+        DB::connection('mongodb')->getCollection('users')->insertMany([
+            ['name' => 'Alice', 'favorite_books' => [['title' => 'abcdefabcdefabcdefabcdef']]],
+            ['name' => 'Bob', 'favorite_books' => [['title' => 'fedcbafedcbafedcbafedcba']]],
+        ]);
+
+        $this->assertSame(['Alice'], User::whereHas('favoriteBooks', fn ($query) => $query->where('title', 'abcdefabcdefabcdefabcdef'))->pluck('name')->all());
+    }
+
+    /** @param Closure(Builder): Builder $constraints */
+    #[DataProvider('provideConstraintsThatCannotApplyInsideTheParent')]
+    public function testConstraintsThatCannotApplyInsideTheParentAreNotSupported(Closure $constraints, string $message): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage($message);
+
+        User::whereHas('addresses', $constraints);
+    }
+
+    public static function provideConstraintsThatCannotApplyInsideTheParent(): iterable
+    {
+        yield 'offset' => [
+            static fn
+        (Builder $query) => $query->skip(1),
+            'An "offset()" on the constraints of the embedded relation EmbedsMany is not supported',
+        ];
+        yield 'collation' => [
+            static fn
+        (Builder $query) => $query->options(['collation' => ['locale' => 'en', 'strength' => 2]]),
+            'A collation on the constraints of the embedded relation EmbedsMany is not supported',
+        ];
+    }
+
+    public function testAnUnsupportedCountOperatorIsRejected(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The operator "like" is not supported to count the documents of an embedded relation.');
+
+        User::has('addresses', 'like', 2);
+    }
+
+    /** @param Closure(): EmbedsOneOrMany $relation */
+    #[DataProvider('provideConstrainedEmbeddedRelations')]
+    public function testAConstrainedEmbeddedRelationIsNotSupported(Closure $relation): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('The embedded relation EmbedsMany carries constraints, which apply to the parent document rather than to the embedded documents.');
+
+        User::has($relation());
+    }
+
+    public static function provideConstrainedEmbeddedRelations(): iterable
+    {
+        yield 'unsaved parent' => [static fn () => (new User())->addresses()];
+        yield 'saved parent' => [static fn () => User::create(['name' => 'Alice'])->addresses()];
+    }
+
+    public function testCountingConstrainedEmbeddedDocumentsIsNotSupported(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('Counting the documents of the embedded relation EmbedsMany is only supported for an EmbedsMany relation without constraints.');
+
+        User::whereHas('addresses', fn ($query) => $query->where('city', 'Paris'), '>=', 2);
+    }
+
+    public function testAnExpressionConstraintOnEmbedsOneIsNotSupported(): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage('A "$expr" constraint is not supported on an embedded relation');
+
+        User::whereHas('father', fn ($query) => $query->whereRaw(['$expr' => ['$eq' => ['$name', 'Mark']]]));
     }
 }
