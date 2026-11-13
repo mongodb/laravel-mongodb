@@ -159,6 +159,10 @@ Automatic encryption encrypts a value according to the `bsonType` declared in th
 - QE does not support multi-document update or delete operations. laravel-mongodb sends a single-document update on an encrypted collection, so `save()` on a model works, but an update through the query builder that matches several documents changes only the first one. Use a filter that matches one document.
 - A `null` value cannot be written to an encrypted field: the driver refuses it before the write. Leave the field out instead.
 - The tokens stored in a document come from the map of the client that wrote it, so every client that reads or queries a collection must declare the same fields and the same query types. A field declared for range by one client and for equality by another does not match across them, without an error.
+- The field types are resolved once per model instance. To change the connection or the collection of an existing instance, call `setConnection()` or `setTable()`, or use a new instance. A change of the default connection does not invalidate an instance whose `$connection` is null.
+- A rebuilt connection (`DB::purge()`, `disconnect()`) is detected and the field types are resolved again. A configuration change without a rebuild is not picked up.
+- A cast written directly into `$casts` after the model has read its casts is ignored. Use `mergeCasts()`.
+- A fractional value assigned to an `int` field is truncated: `'1.9'` stores `1`. Validate the value before assignment if it must be rejected.
 
 ## Supported queries and limits
 

@@ -455,6 +455,146 @@ final class EncryptedFieldCastsTest extends TestCase
         $model->getCasts();
     }
 
+    public function testNewInstanceDoesNotInheritTheDerivedCasts(): void
+    {
+        $model = new EncryptedCasting();
+        self::assertSame('integer', $model->getCasts()['an_int']);
+
+        // The connection is rebuilt with "an_int" declared as a string.
+        $this->enableEncryption([
+            'encrypted_casting' => [
+                'fields' => ['an_int' => 'string'],
+            ],
+        ]);
+
+        // newInstance() copies the casts of the warmed model. A derived cast
+        // copied as a declared one would be incompatible with the new map.
+        self::assertArrayNotHasKey('an_int', $model->newInstance()->getCasts());
+    }
+
+    public function testTypesFollowTheConnectionOfTheModel(): void
+    {
+        $model = new EncryptedCasting();
+        self::assertSame('integer', $model->getCasts()['an_int']);
+        $model->an_int = '1500';
+        self::assertSame(1500, $model->getAttributes()['an_int']);
+
+        // The second connection has the same configuration without automatic
+        // encryption, so no cast is derived and no coercion runs.
+        $model->setConnection('mongodb2');
+
+        self::assertArrayNotHasKey('an_int', $model->getCasts());
+
+        $model->an_int = '1500';
+
+        self::assertSame('1500', $model->getAttributes()['an_int']);
+    }
+
+    public function testTypesFollowTheTableOfTheModel(): void
+    {
+        $model = new EncryptedCasting();
+        self::assertSame('integer', $model->getCasts()['an_int']);
+        $model->an_int = '1500';
+        self::assertSame(1500, $model->getAttributes()['an_int']);
+
+        $model->setTable('another_collection');
+
+        self::assertArrayNotHasKey('an_int', $model->getCasts());
+
+        $model->an_int = '1500';
+
+        self::assertSame('1500', $model->getAttributes()['an_int']);
+    }
+
+    public function testTypesAreDerivedWhenEncryptionIsEnabledAfterAConnectionIsRebuilt(): void
+    {
+        // Start without automatic encryption, and warm the cache of the
+        // connection with that configuration.
+        config(['database.connections.mongodb.driver_options.autoEncryption' => null]);
+        $this->app->make('db')->purge('mongodb');
+
+        $model = new EncryptedCasting();
+        self::assertArrayNotHasKey('an_int', $model->getCasts());
+
+        $this->enableEncryption([
+            'encrypted_casting' => [
+                'fields' => ['an_int' => 'int'],
+            ],
+        ]);
+
+        self::assertSame('integer', (new EncryptedCasting())->getCasts()['an_int']);
+    }
+
+    public function testAWarmedInstanceResolvesTheTypesWhenEncryptionIsEnabled(): void
+    {
+        // Start without automatic encryption, and warm the instance with an
+        // empty list of field types.
+        config(['database.connections.mongodb.driver_options.autoEncryption' => null]);
+        $this->app->make('db')->purge('mongodb');
+
+        $model = new EncryptedCasting();
+        self::assertArrayNotHasKey('an_int', $model->getCasts());
+
+        $this->enableEncryption([
+            'encrypted_casting' => [
+                'fields' => ['an_int' => 'int'],
+            ],
+        ]);
+
+        self::assertSame('integer', $model->getCasts()['an_int']);
+
+        $model->an_int = '1500';
+
+        self::assertSame(1500, $model->getAttributes()['an_int']);
+    }
+
+    public function testTypesAreReloadedOnAWarmedInstanceAfterTheConnectionIsRebuilt(): void
+    {
+        $model = new EncryptedCasting();
+        self::assertSame('integer', $model->getCasts()['an_int']);
+        $model->an_int = '1500';
+        self::assertSame(1500, $model->getAttributes()['an_int']);
+
+        // "an_int" is now a string, and the connection is rebuilt.
+        $this->enableEncryption([
+            'encrypted_casting' => [
+                'fields' => ['an_int' => 'string'],
+            ],
+        ]);
+
+        self::assertArrayNotHasKey('an_int', $model->getCasts());
+
+        $model->an_int = '1500';
+
+        self::assertSame('1500', $model->getAttributes()['an_int']);
+    }
+
+    public function testTypesAreReloadedWhenTheConnectionIsRebuilt(): void
+    {
+        $model = new EncryptedCasting();
+        self::assertSame('integer', $model->getCasts()['an_int']);
+
+        // "an_int" is now a string, which the driver returns correctly without
+        // a derived cast.
+        $this->enableEncryption([
+            'encrypted_casting' => [
+                'fields' => ['an_int' => 'string'],
+            ],
+        ]);
+
+        self::assertArrayNotHasKey('an_int', (new EncryptedCasting())->getCasts());
+    }
+
+    public function testCastsAddedAfterFirstAccessAreTakenIntoAccount(): void
+    {
+        $model = new EncryptedCasting();
+        $model->getCasts();
+
+        $model->mergeCasts(['name' => 'integer']);
+
+        self::assertSame('integer', $model->getCasts()['name']);
+    }
+
     public function testExistingModelWithCompatibleCastIsNotReported(): void
     {
         // Patient declares "billing_amount" => "integer", compatible with the

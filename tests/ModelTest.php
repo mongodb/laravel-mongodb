@@ -7,6 +7,7 @@ namespace MongoDB\Laravel\Tests;
 use Carbon\Carbon;
 use DateTime;
 use Generator;
+use Illuminate\Database\ConnectionResolverInterface;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -21,6 +22,7 @@ use MongoDB\Collection;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Eloquent\Model;
 use MongoDB\Laravel\Tests\Models\Book;
+use MongoDB\Laravel\Tests\Models\FieldTypesCacheProbe;
 use MongoDB\Laravel\Tests\Models\Guarded;
 use MongoDB\Laravel\Tests\Models\IdIsBinaryUuid;
 use MongoDB\Laravel\Tests\Models\IdIsInt;
@@ -35,7 +37,9 @@ use MongoDB\Laravel\Tests\Models\User;
 use MongoDB\Model\BSONArray;
 use MongoDB\Model\BSONDocument;
 use PHPUnit\Framework\Attributes\DataProvider;
+use PHPUnit\Framework\Attributes\DoesNotPerformAssertions;
 use PHPUnit\Framework\Attributes\TestWith;
+use RuntimeException;
 
 use function abs;
 use function array_keys;
@@ -1403,6 +1407,59 @@ class ModelTest extends TestCase
         $user = User::create([$id => null, 'email' => 'foo@bar']);
         $this->assertIsString($user->id);
         $this->assertEquals([['id' => $user->id, 'email' => 'foo@bar']], User::all(['id', 'email'])->toArray());
+    }
+
+    #[DoesNotPerformAssertions]
+    public function testEncryptedFieldTypesAreNotResolvedOnEveryAttributeAccess(): void
+    {
+        $resolver = Model::getConnectionResolver()
+            ?? self::fail('The model connection resolver is not set.');
+
+        $spy = new class ($resolver) implements ConnectionResolverInterface {
+            public bool $failOnConnection = false;
+
+            public function __construct(private readonly ConnectionResolverInterface $resolver)
+            {
+            }
+
+            public function connection($name = null)
+            {
+                if ($this->failOnConnection) {
+                    throw new RuntimeException('The connection resolver was called.');
+                }
+
+                return $this->resolver->connection($name);
+            }
+
+            public function getDefaultConnection()
+            {
+                return $this->resolver->getDefaultConnection();
+            }
+
+            public function setDefaultConnection($name)
+            {
+                $this->resolver->setDefaultConnection($name);
+            }
+        };
+
+        Model::setConnectionResolver($spy);
+
+        try {
+            // Warm the field types of the model instance.
+            $model = new FieldTypesCacheProbe();
+            $model->getCasts();
+            $model->setAttribute('name', 'John');
+
+            $spy->failOnConnection = true;
+
+            $model->getCasts();
+            $model->setAttribute('name', 'Jane');
+            $model->getAttribute('name');
+            $model->toArray();
+            (new FieldTypesCacheProbe())->getCasts();
+        } finally {
+            Model::setConnectionResolver($resolver);
+        }
     }
 
     /** @param class-string<Model> $modelClass */
