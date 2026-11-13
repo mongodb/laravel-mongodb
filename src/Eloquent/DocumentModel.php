@@ -89,6 +89,28 @@ trait DocumentModel
     private array $unset = [];
 
     /**
+     * The bsonType declared for each encrypted field of the model, resolved
+     * once per instance. Null until the connection has been asked.
+     *
+     * @var array<string, string>|null
+     */
+    private ?array $encryptedFieldTypes = null;
+
+    /**
+     * The cache generation when the field types were resolved. A rebuilt
+     * connection starts a new generation.
+     */
+    private ?int $encryptedFieldTypesGeneration = null;
+
+    /**
+     * The casts of the model, including the ones derived from the
+     * encryptedFieldsMap. Resolved once per instance.
+     *
+     * @var array<string, mixed>|null
+     */
+    private ?array $castsWithEncryptedFields = null;
+
+    /**
      * Custom accessor for the model's id.
      *
      * @param  mixed $value
@@ -310,10 +332,15 @@ trait DocumentModel
         // Automatic encryption rejects a value whose BSON type does not match
         // the declared bsonType, so a form or JSON string is coerced here.
         // A custom cast owns its value.
-        if ($value !== null && ! $this->isClassCastable($key)) {
-            $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
+        if ($value !== null) {
+            $fieldTypes = $this->encryptedFieldTypes ?? $this->getEncryptedFieldTypes();
 
-            if ($fieldTypes !== []) {
+            // A rebuilt connection can change the encryption configuration.
+            if ($this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation) {
+                $fieldTypes = $this->getEncryptedFieldTypes();
+            }
+
+            if ($fieldTypes !== [] && ! $this->isClassCastable($key)) {
                 $value = EncryptedFieldTypes::coerceField($fieldTypes, $key, $value, $this->fromDateTime(...));
             }
         }
@@ -427,15 +454,83 @@ trait DocumentModel
     /** @inheritdoc */
     public function getCasts()
     {
-        // The value read back must have the type declared in the
-        // encryptedFieldsMap, which a derived cast provides.
-        $fieldTypes = EncryptedFieldTypes::fieldTypesFor($this);
-
-        if ($fieldTypes === []) {
-            return $this->casts;
+        // Eloquent calls this method many times for the same model, up to 15
+        // times for one attribute write, so the field types are resolved once.
+        // A rebuilt connection can change the encryption configuration.
+        if (
+            $this->encryptedFieldTypes === null
+            || $this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation
+        ) {
+            $this->getEncryptedFieldTypes();
         }
 
-        return EncryptedFieldTypes::mergeCasts(static::class, $this->casts, $fieldTypes);
+        // The value read back must have the type declared in the
+        // encryptedFieldsMap, which the derived cast provides. The derived
+        // casts are kept apart from the declared ones, so a model created from
+        // this one does not inherit them as declarations.
+        return $this->castsWithEncryptedFields ??= ($this->encryptedFieldTypes === []
+            ? $this->casts
+            : EncryptedFieldTypes::mergeCasts(static::class, $this->casts, $this->encryptedFieldTypes));
+    }
+
+    /**
+     * The bsonType declared for each encrypted field of the model. Resolved
+     * once per instance, and again when a connection is rebuilt, because
+     * Eloquent calls getCasts() many times for the same model, when it reads an
+     * attribute, serializes it or saves it.
+     *
+     * @internal
+     *
+     * @return array<string, string>
+     */
+    public function getEncryptedFieldTypes(): array
+    {
+        if (
+            $this->encryptedFieldTypes === null
+            || $this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation
+        ) {
+            $this->encryptedFieldTypes = EncryptedFieldTypes::fieldTypesFor($this, $this->getTable());
+            $this->encryptedFieldTypesGeneration = EncryptedFieldTypes::$generation;
+            $this->castsWithEncryptedFields = null;
+        }
+
+        return $this->encryptedFieldTypes;
+    }
+
+    #[Override]
+    public function setConnection($name)
+    {
+        // The field types depend on the connection. Setting the same
+        // connection again, as hydration does, must not discard them.
+        if ($name !== $this->connection) {
+            $this->encryptedFieldTypes = null;
+            $this->encryptedFieldTypesGeneration = null;
+            $this->castsWithEncryptedFields = null;
+        }
+
+        return parent::setConnection($name);
+    }
+
+    #[Override]
+    public function setTable($table)
+    {
+        // The field types depend on the collection.
+        if ($table !== $this->table) {
+            $this->encryptedFieldTypes = null;
+            $this->encryptedFieldTypesGeneration = null;
+            $this->castsWithEncryptedFields = null;
+        }
+
+        return parent::setTable($table);
+    }
+
+    #[Override]
+    public function mergeCasts($casts)
+    {
+        // The derived casts are merged again from the new declared casts.
+        $this->castsWithEncryptedFields = null;
+
+        return parent::mergeCasts($casts);
     }
 
     /** @inheritdoc */
