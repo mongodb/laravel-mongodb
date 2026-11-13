@@ -525,6 +525,29 @@ final class EncryptedFieldCastsTest extends TestCase
         self::assertSame('integer', (new EncryptedCasting())->getCasts()['an_int']);
     }
 
+    public function testAWarmedInstanceResolvesTheTypesWhenEncryptionIsEnabled(): void
+    {
+        // Start without automatic encryption, and warm the instance with an
+        // empty list of field types.
+        config(['database.connections.mongodb.driver_options.autoEncryption' => null]);
+        $this->app->make('db')->purge('mongodb');
+
+        $model = new EncryptedCasting();
+        self::assertArrayNotHasKey('an_int', $model->getCasts());
+
+        $this->enableEncryption([
+            'encrypted_casting' => [
+                'fields' => ['an_int' => 'int'],
+            ],
+        ]);
+
+        self::assertSame('integer', $model->getCasts()['an_int']);
+
+        $model->an_int = '1500';
+
+        self::assertSame(1500, $model->getAttributes()['an_int']);
+    }
+
     public function testTypesAreReloadedOnAWarmedInstanceAfterTheConnectionIsRebuilt(): void
     {
         $model = new EncryptedCasting();

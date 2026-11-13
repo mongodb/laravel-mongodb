@@ -336,7 +336,7 @@ trait DocumentModel
             $fieldTypes = $this->encryptedFieldTypes ?? $this->getEncryptedFieldTypes();
 
             // A rebuilt connection can change the encryption configuration.
-            if ($fieldTypes !== [] && $this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation) {
+            if ($this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation) {
                 $fieldTypes = $this->getEncryptedFieldTypes();
             }
 
@@ -459,8 +459,7 @@ trait DocumentModel
         // A rebuilt connection can change the encryption configuration.
         if (
             $this->encryptedFieldTypes === null
-            || ($this->encryptedFieldTypes !== []
-                && $this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation)
+            || $this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation
         ) {
             $this->getEncryptedFieldTypes();
         }
@@ -488,8 +487,7 @@ trait DocumentModel
     {
         if (
             $this->encryptedFieldTypes === null
-            || ($this->encryptedFieldTypes !== []
-                && $this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation)
+            || $this->encryptedFieldTypesGeneration !== EncryptedFieldTypes::$generation
         ) {
             $this->encryptedFieldTypes = EncryptedFieldTypes::fieldTypesFor($this, $this->getTable());
             $this->encryptedFieldTypesGeneration = EncryptedFieldTypes::$generation;
