@@ -313,6 +313,66 @@ class HybridRelationsTest extends TestCase
         $this->assertSame([$unattached->name], $names);
     }
 
+    public function testHybridBelongsToManyDetachWithoutIdsOnStaleParent()
+    {
+        $user = SqlUser::query()->create(['name' => 'John Doe']);
+        $skill = Skill::query()->create(['name' => 'Laravel']);
+
+        $stale = SqlUser::find($user->id);
+        $this->assertCount(0, $stale->skills);
+
+        $user->skills()->attach($skill);
+
+        $this->assertSame(1, $stale->skills()->detach());
+        $this->assertCount(0, SqlUser::find($user->id)->skills);
+        $this->assertCount(0, Skill::find($skill->id)->sqlUsers);
+    }
+
+    public function testHybridMorphToManyDetachWithoutIdsOnStaleParent()
+    {
+        $user  = SqlUser::query()->create(['name' => 'John Doe']);
+        $label = Label::query()->create(['name' => 'Laravel']);
+
+        $stale = SqlUser::find($user->id);
+        $this->assertCount(0, $stale->labels);
+
+        $user->labels()->attach($label);
+
+        $this->assertSame(1, $stale->labels()->detach());
+        $this->assertCount(0, SqlUser::find($user->id)->labels);
+        $this->assertCount(0, Label::find($label->id)->sqlUsers);
+    }
+
+    public function testHybridMorphedByManyDetachWithoutIdsOnStaleParent()
+    {
+        $user       = SqlUser::query()->create(['name' => 'John Doe']);
+        $experience = Experience::query()->create(['title' => 'Laravel']);
+
+        $stale = SqlUser::find($user->id);
+        $this->assertCount(0, $stale->experiences);
+
+        $user->experiences()->attach($experience);
+
+        $this->assertSame(1, $stale->experiences()->detach());
+        $this->assertCount(0, SqlUser::find($user->id)->experiences);
+        $this->assertCount(0, Experience::find($experience->id)->sqlUsers);
+    }
+
+    public function testHybridBelongsToManyDetachWithoutIds()
+    {
+        $user = SqlUser::query()->create(['name' => 'John Doe']);
+        $skill = Skill::query()->create(['name' => 'Laravel']);
+        $skill2 = Skill::query()->create(['name' => 'MongoDB']);
+
+        $user->skills()->attach([$skill->id, $skill2->id]);
+        $user->load('skills');
+        $this->assertCount(2, $user->skills);
+
+        $this->assertSame(2, $user->skills()->detach());
+        $this->assertCount(0, $user->skills);
+        $this->assertCount(0, SqlUser::find($user->id)->skills);
+    }
+
     public function testQueryingHybridBelongsToManyRelationFails()
     {
         $user = new SqlUser();
