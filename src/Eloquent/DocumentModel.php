@@ -450,7 +450,7 @@ trait DocumentModel
 
     /**
      * The casts of the model, with the casts derived from the encryptedFieldsMap
-     * appended. The result is kept apart from the declared casts, so a model
+     * merged in. The result is kept apart from the declared casts, so a model
      * created from this one does not inherit them as declarations.
      *
      * @return array<string, mixed>
@@ -465,13 +465,7 @@ trait DocumentModel
 
         // The value read back must have the type declared in the
         // encryptedFieldsMap, which the derived cast provides.
-        $casts = $this->casts;
-
-        foreach (EncryptedFieldTypes::derivedCasts(static::class, $this->casts, $fieldTypes) as $attribute => $cast) {
-            $casts[$attribute] = $cast;
-        }
-
-        return $casts;
+        return EncryptedFieldTypes::mergeCasts(static::class, $this->casts, $fieldTypes);
     }
 
     /**

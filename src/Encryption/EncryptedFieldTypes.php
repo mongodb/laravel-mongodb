@@ -165,21 +165,21 @@ final class EncryptedFieldTypes
     }
 
     /**
-     * The casts derived from the encryptedFieldsMap, for the fields that do not
-     * declare one. A declared cast is kept, but reported when it cannot store
-     * the declared bsonType.
+     * Merge the casts derived from the encryptedFieldsMap into the casts
+     * declared on a model. A declared cast is kept, but reported when it cannot
+     * store the declared bsonType.
      *
      * @param class-string          $model
      * @param array<string, mixed>  $declaredCasts
      * @param array<string, string> $fieldTypes    Map of field path to bsonType.
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      *
      * @throws LogicException
      */
-    public static function derivedCasts(string $model, array $declaredCasts, array $fieldTypes): array
+    public static function mergeCasts(string $model, array $declaredCasts, array $fieldTypes): array
     {
-        $casts = [];
+        $casts = $declaredCasts;
 
         foreach ($fieldTypes as $path => $bsonType) {
             // An Eloquent cast is keyed by a plain attribute name, never a
@@ -188,8 +188,8 @@ final class EncryptedFieldTypes
                 continue;
             }
 
-            if (array_key_exists($path, $declaredCasts)) {
-                $cast = $declaredCasts[$path];
+            if (array_key_exists($path, $casts)) {
+                $cast = $casts[$path];
 
                 // Only a cast name is compared to the BSON type: another value
                 // is a cast of the developer, which owns the value it stores.
