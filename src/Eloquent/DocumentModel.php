@@ -97,11 +97,12 @@ trait DocumentModel
     private ?array $encryptedFieldTypes = null;
 
     /**
-     * Whether the casts derived from the encryptedFieldsMap have been merged
-     * into $casts. The connection and the collection do not change for a model
-     * instance, so the merge runs once.
+     * The casts of the model, including the ones derived from the
+     * encryptedFieldsMap. Resolved once per instance.
+     *
+     * @var array<string, mixed>|null
      */
-    private bool $castsResolved = false;
+    private ?array $castsWithEncryptedFields = null;
 
     /**
      * Custom accessor for the model's id.
@@ -443,24 +444,34 @@ trait DocumentModel
     public function getCasts()
     {
         // Eloquent calls this method many times for the same model, up to 15
-        // times for one attribute write, so the derived casts are merged once.
-        if ($this->castsResolved) {
+        // times for one attribute write, so the casts are resolved once.
+        return $this->castsWithEncryptedFields ??= $this->resolveCasts();
+    }
+
+    /**
+     * The casts of the model, with the casts derived from the encryptedFieldsMap
+     * appended. The result is kept apart from the declared casts, so a model
+     * created from this one does not inherit them as declarations.
+     *
+     * @return array<string, mixed>
+     */
+    private function resolveCasts(): array
+    {
+        $fieldTypes = $this->getEncryptedFieldTypes();
+
+        if ($fieldTypes === []) {
             return $this->casts;
         }
 
-        $fieldTypes = $this->getEncryptedFieldTypes();
+        // The value read back must have the type declared in the
+        // encryptedFieldsMap, which the derived cast provides.
+        $casts = $this->casts;
 
-        if ($fieldTypes !== []) {
-            // The value read back must have the type declared in the
-            // encryptedFieldsMap, which the derived cast provides.
-            foreach (EncryptedFieldTypes::derivedCasts(static::class, $this->casts, $fieldTypes) as $attribute => $cast) {
-                $this->casts[$attribute] = $cast;
-            }
+        foreach (EncryptedFieldTypes::derivedCasts(static::class, $this->casts, $fieldTypes) as $attribute => $cast) {
+            $casts[$attribute] = $cast;
         }
 
-        $this->castsResolved = true;
-
-        return $this->casts;
+        return $casts;
     }
 
     /**
@@ -478,10 +489,35 @@ trait DocumentModel
     }
 
     #[Override]
+    public function setConnection($name)
+    {
+        // The field types depend on the connection. Setting the same
+        // connection again, as hydration does, must not discard them.
+        if ($name !== $this->connection) {
+            $this->encryptedFieldTypes = null;
+            $this->castsWithEncryptedFields = null;
+        }
+
+        return parent::setConnection($name);
+    }
+
+    #[Override]
+    public function setTable($table)
+    {
+        // The field types depend on the collection.
+        if ($table !== $this->table) {
+            $this->encryptedFieldTypes = null;
+            $this->castsWithEncryptedFields = null;
+        }
+
+        return parent::setTable($table);
+    }
+
+    #[Override]
     public function mergeCasts($casts)
     {
         // The derived casts are merged again from the new declared casts.
-        $this->castsResolved = false;
+        $this->castsWithEncryptedFields = null;
 
         return parent::mergeCasts($casts);
     }
