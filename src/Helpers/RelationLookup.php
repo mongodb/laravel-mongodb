@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Helpers;
 
 use Closure;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -77,7 +78,7 @@ final class RelationLookup
         array $finalStages = [],
     ): self {
         self::assertLookupSupported($relation);
-        self::assertServerSupportsLookup($relation);
+        self::assertServerSupportsLookup($relation->getRelated()->getConnection());
 
         $relatedKey = self::relatedKeyName($relation);
         $keysField = $alias . '_keys';
@@ -106,6 +107,26 @@ final class RelationLookup
         ], $keysField);
     }
 
+    /**
+     * @param list<array<string, mixed>> $pipeline
+     *
+     * @return array<string, mixed>
+     */
+    public static function ofEmbeddedDocuments(Builder $parents, string $alias, array $pipeline): array
+    {
+        self::assertServerSupportsLookup($parents->getConnection());
+
+        return [
+            '$lookup' => [
+                'from' => $parents->getConnection()->getTablePrefix() . $parents->from,
+                'localField' => '_id',
+                'foreignField' => '_id',
+                'pipeline' => $pipeline,
+                'as' => $alias,
+            ],
+        ];
+    }
+
     /** @param Relation<Model, Model, mixed> $relation */
     private static function collectionName(Relation $relation, Builder $related): string
     {
@@ -132,11 +153,8 @@ final class RelationLookup
         self::assertRelatedStoredInSameDatabase($relation);
     }
 
-    /** @param Relation<Model, Model, mixed> $relation */
-    private static function assertServerSupportsLookup(Relation $relation): void
+    private static function assertServerSupportsLookup(ConnectionInterface $connection): void
     {
-        $connection = $relation->getRelated()->getConnection();
-
         if (! $connection instanceof Connection || $connection->supportsRelationLookup()) {
             return;
         }
