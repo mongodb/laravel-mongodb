@@ -434,7 +434,7 @@ class Builder extends BaseBuilder
             // Return distinct results directly
             $column = $columns[0] ?? '_id';
 
-            $options = $this->inheritConnectionOptions();
+            $options = $this->inheritConnectionOptions($this->options);
 
             return ['distinct' => [$column, $wheres, $options]];
         }
