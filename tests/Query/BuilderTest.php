@@ -1937,6 +1937,46 @@ class BuilderTest extends TestCase
                 ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
         ];
 
+        yield 'pipeline count skips stages not needed for count' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['name' => 'foo']],
+                        ['$count' => 'aggregate'],
+                    ],
+                    [],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->where('name', 'foo')
+                    ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']], neededForCount: false);
+                $builder->aggregate = ['function' => 'count', 'columns' => ['*']];
+
+                return $builder;
+            },
+        ];
+
+        yield 'pipeline count keeps the stages a filter depends on' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$match' => ['__rel_books' => ['$gt' => 0]]],
+                        ['$count' => 'aggregate'],
+                    ],
+                    [],
+                ],
+            ],
+            function (Builder $builder) {
+                $builder->where('__rel_books', '>', 0)
+                    ->addInternalFieldToUnset('__rel_books')
+                    ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']], neededForCount: false);
+                $builder->aggregate = ['function' => 'count', 'columns' => ['*']];
+
+                return $builder;
+            },
+        ];
+
         yield 'pipeline translates a slice projection' => [
             [
                 'aggregate' => [
@@ -1949,6 +1989,21 @@ class BuilderTest extends TestCase
             ],
             fn (Builder $builder) => $builder
                 ->project(['tags' => ['$slice' => 1]])
+                ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
+        ];
+
+        yield 'pipeline translates a slice projection with a skip' => [
+            [
+                'aggregate' => [
+                    [
+                        ['$lookup' => ['from' => 'books', 'as' => '__rel_books']],
+                        ['$set' => ['tags' => ['$cond' => [['$isArray' => ['$tags']], ['$slice' => ['$tags', 1, 2]], '$tags']]]],
+                    ],
+                    [],
+                ],
+            ],
+            fn (Builder $builder) => $builder
+                ->project(['tags' => ['$slice' => [1, 2]]])
                 ->addInternalStage(['$lookup' => ['from' => 'books', 'as' => '__rel_books']]),
         ];
 

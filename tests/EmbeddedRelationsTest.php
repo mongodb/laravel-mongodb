@@ -21,8 +21,10 @@ use MongoDB\Laravel\Tests\Models\User;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 
+use function array_keys;
 use function array_merge;
 use function config;
+use function count;
 
 class EmbeddedRelationsTest extends TestCase
 {
@@ -1131,6 +1133,10 @@ class EmbeddedRelationsTest extends TestCase
         yield 'embeds many absent' => [static fn () => User::doesntHave('addresses'), ['Carol']];
         yield 'embeds many count' => [static fn () => User::has('addresses', '>=', 2), ['Alice']];
         yield 'embeds many count of zero' => [static fn () => User::has('addresses', '=', 0), ['Carol']];
+        yield 'embeds many count above' => [static fn () => User::has('addresses', '>', 1), ['Alice']];
+        yield 'embeds many count below' => [static fn () => User::has('addresses', '<', 2), ['Bob', 'Carol']];
+        yield 'embeds many count at most' => [static fn () => User::has('addresses', '<=', 1), ['Bob', 'Carol']];
+        yield 'embeds many count other than' => [static fn () => User::has('addresses', '!=', 1), ['Alice', 'Carol']];
         yield 'or where has' => [
             static fn () => User::where('name', 'Carol')
                 ->orWhereHas('addresses', fn ($query) => $query->where('city', 'London')),
@@ -1171,6 +1177,20 @@ class EmbeddedRelationsTest extends TestCase
         $this->assertSame(['Alice'], User::whereHas('father', fn ($query) => $query->where('id', 42))->pluck('name')->all());
         $this->assertSame(['Bob'], User::whereHas('addresses', fn ($query) => $query->where('id', 8))->pluck('name')->all());
         $this->assertSame(['Bob'], User::whereHas('addresses', fn ($query) => $query->where('id', ['$ne' => 7]))->pluck('name')->all());
+    }
+
+    #[TestWith([true, '_id'])]
+    #[TestWith([false, 'id'])]
+    public function testACountMatchesTheEmbeddedIdFieldOfTheConnection(bool $renameEmbeddedIdField, string $idField): void
+    {
+        $this->skipIfRelationLookupIsNotSupported();
+        DB::connection('mongodb')->setRenameEmbeddedIdField($renameEmbeddedIdField);
+        DB::connection('mongodb')->getCollection('users')->insertMany([
+            ['name' => 'Alice', 'addresses' => [[$idField => 7], [$idField => 9]]],
+            ['name' => 'Bob', 'addresses' => [[$idField => 8]]],
+        ]);
+
+        $this->assertSame(['Alice'], User::whereHas('addresses', fn ($query) => $query->where('id', '!=', 8), '>=', 2)->pluck('name')->all());
     }
 
     #[TestWith([true])]
@@ -1242,6 +1262,73 @@ class EmbeddedRelationsTest extends TestCase
         (Builder $query) => $query->options(['collation' => ['locale' => 'en', 'strength' => 2]]),
             'A collation on the constraints of the embedded relation EmbedsMany is not supported',
         ];
+        yield 'distinct' => [
+            static fn
+        (Builder $query) => $query->where('city', 'Paris')->distinct(),
+            'Constraints producing a "distinct" command are not supported to count the documents of an embedded relation.',
+        ];
+    }
+
+    public function testACountedEmbeddedRelationKeepsAnEmbeddedAggregateOfANarrowedSelection(): void
+    {
+        $this->skipIfRelationLookupIsNotSupported();
+
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+        User::create(['name' => 'Bob'])->addresses()->create(['city' => 'Paris']);
+
+        $users = User::select('name')
+            ->withCount('addresses')
+            ->whereHas('addresses', static fn (Builder $query) => $query->where('city', 'Lyon'), '=', 1)
+            ->get();
+
+        $this->assertSame(['Alice' => 2], $users->pluck('addresses_count', 'name')->all());
+        $this->assertEqualsCanonicalizing(['id', 'name', 'addresses_count'], array_keys($users->first()->getAttributes()));
+    }
+
+    public function testEmbeddedDocumentsAreCountedInTheQueriedCollection(): void
+    {
+        $this->skipIfRelationLookupIsNotSupported();
+
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $users = DB::connection('mongodb')->getCollection('users');
+        $archivedUsers = DB::connection('mongodb')->getCollection('archived_users');
+        $archivedUsers->insertOne($users->findOne(['name' => 'Alice']));
+        $users->deleteMany([]);
+
+        try {
+            $names = User::from('archived_users')
+                ->whereHas('addresses', static fn (Builder $query) => $query->where('city', 'Paris'), '>=', 2)
+                ->pluck('name')
+                ->all();
+        } finally {
+            $archivedUsers->drop();
+        }
+
+        $this->assertSame(['Alice'], $names);
+    }
+
+    public function testEmbeddedCountsOfAClonedQueryKeepTheirOwnField(): void
+    {
+        $this->skipIfRelationLookupIsNotSupported();
+
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Dublin']);
+        $bob = User::create(['name' => 'Bob']);
+        $bob->addresses()->create(['city' => 'Paris']);
+        $bob->addresses()->create(['city' => 'Paris']);
+
+        $query = User::whereHas('addresses', static fn (Builder $query) => $query->where('city', 'Paris'), '>=', 2);
+        $query = clone $query;
+        $query->where(static fn (Builder $query) => $query->whereHas('addresses', static fn (Builder $query) => $query->where('city', 'Dublin'), '=', 1));
+
+        $this->assertSame(1, $query->count());
+        $this->assertSame(['Alice'], $query->pluck('name')->all());
     }
 
     public function testAnUnsupportedCountOperatorIsRejected(): void
@@ -1268,12 +1355,99 @@ class EmbeddedRelationsTest extends TestCase
         yield 'saved parent' => [static fn () => User::create(['name' => 'Alice'])->addresses()];
     }
 
-    public function testCountingConstrainedEmbeddedDocumentsIsNotSupported(): void
+    /** @param Closure(): Builder $query */
+    #[DataProvider('provideEmbeddedDocumentCounts')]
+    public function testEmbeddedDocumentsAreCountedWithALookup(Closure $query, array $expected): void
+    {
+        $this->skipIfRelationLookupIsNotSupported();
+
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+        $alice->father()->save(new User(['name' => 'Mark']));
+
+        $bob = User::create(['name' => 'Bob']);
+        $bob->addresses()->create(['city' => 'London']);
+        $bob->father()->save(new User(['name' => 'Tom']));
+
+        User::create(['name' => 'Carol']);
+
+        $this->assertSame($expected, $query()->orderBy('name')->pluck('name')->all());
+        $this->assertSame(count($expected), $query()->count());
+    }
+
+    public static function provideEmbeddedDocumentCounts(): iterable
+    {
+        yield 'embeds many with a constraint' => [
+            static fn () => User::whereHas('addresses', fn ($query) => $query->where('city', '!=', 'London'), '>=', 2),
+            ['Alice'],
+        ];
+        yield 'embeds many with a constraint, counting each document' => [
+            static fn () => User::whereHas('addresses', fn ($query) => $query->where('city', '!=', 'Paris'), '=', 1),
+            ['Alice', 'Bob'],
+        ];
+        yield 'embeds many with a constraint, counting none' => [
+            static fn () => User::whereHas('addresses', fn ($query) => $query->where('city', 'Paris'), '=', 0),
+            ['Bob', 'Carol'],
+        ];
+        yield 'embeds one' => [static fn () => User::has('father', '=', 1), ['Alice', 'Bob']];
+        yield 'embeds one absent' => [static fn () => User::has('father', '=', 0), ['Carol']];
+        yield 'embeds one with a constraint' => [
+            static fn () => User::whereHas('father', fn ($query) => $query->where('name', 'Mark'), '!=', 1),
+            ['Bob', 'Carol'],
+        ];
+        yield 'or where has' => [
+            static fn () => User::where('name', 'Carol')
+                ->orWhereHas('addresses', fn ($query) => $query->where('city', '!=', 'London'), '>=', 2),
+            ['Alice', 'Carol'],
+        ];
+        yield 'several counts' => [
+            static fn () => User::whereHas('addresses', fn ($query) => $query->whereNotNull('city'), '<=', 1)
+                ->has('father', '=', 1),
+            ['Bob'],
+        ];
+        yield 'counts in a nested where' => [
+            static fn () => User::has('father', '=', 1)
+                ->where(fn ($query) => $query->whereHas('addresses', fn ($query) => $query->whereNotNull('city'), '<=', 1)),
+            ['Bob'],
+        ];
+        yield 'constraints with pipeline stages' => [
+            static fn () => User::whereHas('addresses', fn ($query) => $query->groupBy('city'), '>=', 2),
+            ['Alice'],
+        ];
+        yield 'existence with pipeline stages' => [
+            static fn () => User::whereHas('addresses', fn ($query) => $query->where('city', 'London')->groupBy('city')),
+            ['Bob'],
+        ];
+    }
+
+    /** @param Closure(): Builder $query */
+    #[DataProvider('provideNestedEmbeddedDocumentCounts')]
+    public function testNestedEmbeddedDocumentsAreCountedInsideEachEmbeddedDocument(Closure $query, array $expected): void
+    {
+        DB::connection('mongodb')->getCollection('users')->insertMany([
+            ['name' => 'Alice', 'addresses' => [['city' => 'Paris', 'addresses' => [['city' => 'Montmartre'], ['city' => 'Marais']]], ['city' => 'Lyon']]],
+            ['name' => 'Bob', 'addresses' => [['city' => 'London', 'addresses' => [['city' => 'Soho']]]]],
+            ['name' => 'Carol'],
+        ]);
+
+        $this->assertSame($expected, $query()->orderBy('name')->pluck('name')->all());
+    }
+
+    public static function provideNestedEmbeddedDocumentCounts(): iterable
+    {
+        yield 'at least' => [static fn () => User::has('addresses.addresses', '>=', 2), ['Alice']];
+        yield 'exactly' => [static fn () => User::has('addresses.addresses', '=', 1), ['Bob']];
+        yield 'none' => [static fn () => User::has('addresses.addresses', '=', 0), ['Alice']];
+        yield 'with an empty callback' => [static fn () => User::whereHas('addresses.addresses', fn ($query) => $query, '>=', 2), ['Alice']];
+    }
+
+    public function testCountingEmbeddedDocumentsInsideAnotherEmbeddedDocumentIsNotSupported(): void
     {
         $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Counting the documents of the embedded relation EmbedsMany is only supported for an EmbedsMany relation without constraints.');
+        $this->expectExceptionMessage('Counting the documents of the embedded relation EmbedsMany inside another embedded document is not supported.');
 
-        User::whereHas('addresses', fn ($query) => $query->where('city', 'Paris'), '>=', 2);
+        User::whereHas('addresses', fn ($query) => $query->whereHas('addresses', fn ($query) => $query->where('city', 'Paris'), '>=', 2));
     }
 
     public function testAnExpressionConstraintOnEmbedsOneIsNotSupported(): void

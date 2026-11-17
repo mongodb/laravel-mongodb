@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use LogicException;
 use MongoDB\BSON\Document;
 use MongoDB\Builder\Expression;
 use MongoDB\Builder\Type\QueryInterface;
@@ -18,9 +19,13 @@ use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Helpers\QueriesRelationshipAggregates;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
+use MongoDB\Laravel\Helpers\RelationAggregate;
+use MongoDB\Laravel\Helpers\RelationLookup;
 use MongoDB\Laravel\Query\AggregationBuilder;
+use MongoDB\Laravel\Query\Builder as MongoQueryBuilder;
 use MongoDB\Model\BSONDocument;
 use Override;
+use SortDirection;
 
 use function array_key_exists;
 use function array_map;
@@ -33,6 +38,7 @@ use function is_object;
 use function iterator_to_array;
 use function method_exists;
 use function property_exists;
+use function sprintf;
 use function value;
 
 /**
@@ -46,6 +52,12 @@ class Builder extends EloquentBuilder
     use QueriesRelationshipAggregates;
 
     private const DUPLICATE_KEY_ERROR = 11000;
+
+    /** @var int<0, max> */
+    private int $relationAggregateIndex = 0;
+
+    /** @var list<string> */
+    private array $relationAggregateFields = [];
 
     /**
      * The methods that should be returned from query builder.
@@ -171,6 +183,92 @@ class Builder extends EloquentBuilder
         );
 
         return $this->hydrate($results->all());
+    }
+
+    /** Supports the Filament bridge. */
+    public function orderByRelationAggregate(
+        string $relation,
+        string $column,
+        string $function,
+        string|SortDirection $direction = 'asc',
+        ?Closure $callback = null,
+    ): static {
+        $field = $this->addRelationAggregateField($relation, $column, $function, $callback);
+
+        $this->orderBy($field, $direction);
+
+        return $this;
+    }
+
+    private function addRelationAggregateField(
+        string $relation,
+        string $column,
+        string $function,
+        ?Closure $callback,
+    ): string {
+        $resolvedRelation = $this->getRelationWithoutConstraints($relation);
+        $aggregate = RelationAggregate::of($function, RelationLookup::resolveField($resolvedRelation->getRelated(), $column));
+        $index = $this->relationAggregateIndex++;
+        $field = sprintf('__%s_%s_%d', $aggregate->function, $relation, $index);
+        $alias = $field . '_related';
+
+        $this->relationAggregateFields[] = $field;
+
+        $lookup = RelationLookup::for(
+            $resolvedRelation,
+            $alias,
+            $callback,
+            aggregated: true,
+            finalStages: $aggregate->stagesOverRelated(),
+        );
+
+        foreach ($lookup->stages as $stage) {
+            $this->mongoQuery()->addInternalStage($stage, neededForCount: false);
+        }
+
+        $this->mongoQuery()
+            ->addInternalStage(['$addFields' => [$field => $aggregate->valueIn($alias)]], neededForCount: false)
+            ->addInternalFieldToUnset($lookup->keysField)
+            ->addInternalFieldToUnset($alias)
+            ->addInternalFieldToUnset($field);
+
+        return $field;
+    }
+
+    /** @inheritdoc */
+    #[Override]
+    public function cursorPaginate($perPage = null, $columns = ['*'], $cursorName = 'cursor', $cursor = null)
+    {
+        foreach ($this->relationAggregateFields as $field) {
+            if (! isset($this->mongoQuery()->orders[$field])) {
+                continue;
+            }
+
+            throw new LogicException('Cursor pagination is not supported on a query sorted with orderByRelationAggregate(). Use paginate() or simplePaginate() instead.');
+        }
+
+        return parent::cursorPaginate($perPage, $columns, $cursorName, $cursor);
+    }
+
+    /**
+     * Supports the Filament bridge.
+     *
+     * @internal
+     */
+    public function applyGroupedConstraints(Closure $constraints): static
+    {
+        $this->callScope($constraints);
+
+        return $this;
+    }
+
+    private function mongoQuery(): MongoQueryBuilder
+    {
+        $query = $this->getQuery();
+
+        assert($query instanceof MongoQueryBuilder, 'Unexpected query type returned from the Eloquent builder, expecting ' . MongoQueryBuilder::class);
+
+        return $query;
     }
 
     /**

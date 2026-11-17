@@ -30,15 +30,19 @@ final class Pipeline
     /** @var list<string> */
     private array $temporaryFields = [];
 
+    /** @var list<bool> */
+    private array $neededForCount = [];
+
     public function __construct()
     {
         $this->stages = new BuilderPipeline();
     }
 
     /** @param array<string, mixed>|StageInterface $stage */
-    public function addStage(array|StageInterface $stage): void
+    public function addStage(array|StageInterface $stage, bool $neededForCount = true): void
     {
         $this->stages = new BuilderPipeline($this->stages, $stage);
+        $this->neededForCount[] = $neededForCount;
     }
 
     public function unsetTemporaryField(string $field): void
@@ -49,6 +53,7 @@ final class Pipeline
     public function mergeFrom(self $other): void
     {
         $this->stages = new BuilderPipeline($this->stages, $other->stages);
+        $this->neededForCount = [...$this->neededForCount, ...$other->neededForCount];
 
         foreach ($other->temporaryFields as $field) {
             $this->temporaryFields[] = $field;
@@ -110,9 +115,7 @@ final class Pipeline
             ...$this->matchStage($before),
             ...$this->stages,
             ...$this->matchStage($after),
-            ...$this->sortStage($options),
-            ...$this->pagingStages($options),
-            ...$this->projectionStages($options),
+            ...self::optionStages($options),
             ...$this->unsetStage(),
         ];
 
@@ -134,13 +137,29 @@ final class Pipeline
 
         $pipeline = [
             ...$this->matchStage($before),
-            ...$this->stages,
+            ...$this->stagesForCount($after !== []),
             ...$this->matchStage($after),
-            ...$this->pagingStages($options),
+            ...self::pagingStages($options),
             ['$count' => 'aggregate'],
         ];
 
         return ['aggregate' => [$pipeline, ['typeMap' => self::OBJECT_TYPE_MAP] + $this->pipelineOptions($options)]];
+    }
+
+    /** @return list<array<string, mixed>|StageInterface> */
+    private function stagesForCount(bool $needsAll): array
+    {
+        $stages = [];
+        $index = 0;
+        foreach ($this->stages as $stage) {
+            if ($needsAll || ($this->neededForCount[$index] ?? true)) {
+                $stages[] = $stage;
+            }
+
+            $index++;
+        }
+
+        return $stages;
     }
 
     /**
@@ -298,13 +317,31 @@ final class Pipeline
     }
 
     /**
+     * Supports the Filament bridge.
+     *
+     * @internal
+     *
      * @param array<string, mixed> $options
      *
      * @return list<array<string, mixed>>
      */
-    private function sortStage(array $options): array
+    public static function optionStages(array $options): array
     {
-        $sort = $this->userSort($options);
+        return [
+            ...self::sortStage($options),
+            ...self::pagingStages($options),
+            ...self::projectionStages($options),
+        ];
+    }
+
+    /**
+     * @param array<string, mixed> $options
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function sortStage(array $options): array
+    {
+        $sort = self::userSort($options);
 
         if ($sort === []) {
             return [];
@@ -322,7 +359,7 @@ final class Pipeline
      *
      * @return array<string, int>
      */
-    private function userSort(array $options): array
+    private static function userSort(array $options): array
     {
         $sort = $options['sort'] ?? null;
 
@@ -338,11 +375,11 @@ final class Pipeline
      *
      * @return list<array<string, mixed>>
      */
-    private function pagingStages(array $options): array
+    private static function pagingStages(array $options): array
     {
         return [
-            ...$this->stageIfNotZero($options, 'skip'),
-            ...$this->stageIfNotZero($options, 'limit'),
+            ...self::stageIfNotZero($options, 'skip'),
+            ...self::stageIfNotZero($options, 'limit'),
         ];
     }
 
@@ -351,7 +388,7 @@ final class Pipeline
      *
      * @return list<array<string, mixed>>
      */
-    private function stageIfNotZero(array $options, string $option): array
+    private static function stageIfNotZero(array $options, string $option): array
     {
         $value = $options[$option] ?? null;
 
@@ -367,7 +404,7 @@ final class Pipeline
      *
      * @return list<array<string, mixed>>
      */
-    private function projectionStages(array $options): array
+    private static function projectionStages(array $options): array
     {
         $projection = $options['projection'] ?? null;
 
