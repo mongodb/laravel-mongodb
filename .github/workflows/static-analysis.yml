@@ -16,8 +16,13 @@ on:
         required: true
 
 jobs:
+  # Static analysis findings are surfaced via SARIF upload, which requires Code
+  # Security (GitHub Advanced Security). Limit to the public repo to avoid
+  # failing GitHub Actions on mirrors.
   phpstan:
     name: PHP/${{ matrix.php }} Driver/${{ matrix.driver }}
+
+    if: github.repository == 'mongodb/laravel-mongodb'
 
     runs-on: ubuntu-22.04
 
