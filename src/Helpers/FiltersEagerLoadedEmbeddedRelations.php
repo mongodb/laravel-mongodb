@@ -9,17 +9,21 @@ use Illuminate\Database\Eloquent\Model;
 use LogicException;
 use MongoDB\Collection;
 use MongoDB\Laravel\Query\Builder as QueryBuilder;
-use MongoDB\Laravel\Relations\EmbedsOne;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use Override;
+use ReflectionFunction;
+use ReflectionIntersectionType;
+use ReflectionNamedType;
+use ReflectionType;
+use ReflectionUnionType;
 
-use function array_intersect_key;
 use function array_is_list;
-use function array_key_exists;
-use function array_map;
 use function assert;
 use function class_basename;
 use function collect;
+use function in_array;
+use function is_a;
+use function is_string;
 use function iterator_to_array;
 use function method_exists;
 use function sprintf;
@@ -33,7 +37,7 @@ trait FiltersEagerLoadedEmbeddedRelations
     {
         $relation = $this->getRelation($name);
 
-        if ($models === [] || ! $relation instanceof EmbedsOneOrMany) {
+        if ($models === [] || ! $relation instanceof EmbedsOneOrMany || ! $this->acceptsTheBuilder($constraints)) {
             return parent::eagerLoadRelation($models, $name, $constraints);
         }
 
@@ -41,14 +45,31 @@ trait FiltersEagerLoadedEmbeddedRelations
         self::assertConstraintsApplyPerParent($relation, $query);
 
         if (! self::narrowsTheDocuments($query)) {
-            return parent::eagerLoadRelation($models, $name, $constraints);
+            return parent::eagerLoadRelation($models, $name, static fn () => null);
         }
 
         self::assertParentsAreStored($models, $relation);
 
-        $matches = $this->matchingPositionsPerParent($models, $relation, $query);
+        return $this->withMatchingDocuments($models, $name, $this->matchingDocumentsPerParent($models, $relation, $query));
+    }
 
-        return $this->withMatchingDocuments($relation->initRelation($models, $name), $name, $matches);
+    private function acceptsTheBuilder(Closure $constraints): bool
+    {
+        $combined = (new ReflectionFunction($constraints))->getStaticVariables()['constraints'] ?? [$constraints];
+
+        return collect($combined)->every(fn (Closure $constraint): bool => $this->typeAcceptsTheBuilder(((new ReflectionFunction($constraint))->getParameters()[0] ?? null)?->getType()));
+    }
+
+    private function typeAcceptsTheBuilder(?ReflectionType $type): bool
+    {
+        return match (true) {
+            $type === null => true,
+            $type instanceof ReflectionUnionType => collect($type->getTypes())->contains(fn (ReflectionType $member) => $this->typeAcceptsTheBuilder($member)),
+            $type instanceof ReflectionIntersectionType => collect($type->getTypes())->every(fn (ReflectionType $member) => $this->typeAcceptsTheBuilder($member)),
+            $type instanceof ReflectionNamedType && $type->isBuiltin() => in_array($type->getName(), ['mixed', 'object'], true),
+            $type instanceof ReflectionNamedType => is_a($this, $type->getName()),
+            default => false,
+        };
     }
 
     private static function narrowsTheDocuments(QueryBuilder $query): bool
@@ -94,84 +115,128 @@ trait FiltersEagerLoadedEmbeddedRelations
         $stored = $parentRelation->getParent()->getAttributes()[$parentRelation->getLocalKeyName()] ?? [];
         $documents = array_is_list($stored) ? $stored : [$stored];
 
-        return collect($documents)->contains(static fn (array $document) => (string) ($document['_id'] ?? $document['id'] ?? '') === (string) $model->getKey());
+        $key = (string) $model->getKey();
+
+        return collect($documents)->contains(static fn (array $document) => (string) ($document[$model->getKeyName()] ?? $document['_id'] ?? $document['id'] ?? '') === $key);
     }
 
     /** @return array<string, mixed> */
     private function aggregationOptions(): array
     {
-        $options = ['typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array']];
-        $session = $this->mongoQuery()->getConnection()->getSession();
+        $options = [...$this->mongoQuery()->options, 'typeMap' => ['root' => 'array', 'document' => 'array', 'array' => 'array']];
 
-        if ($session !== null) {
-            $options['session'] = $session;
-        }
-
-        return $options + array_intersect_key($this->mongoQuery()->options, ['collation' => true]);
+        return $this->mongoQuery()->inheritConnectionOptions($options);
     }
 
     /**
      * @param list<Model> $models
      *
-     * @return array<string, list<int|null>>
+     * @return array<string, list<array<string, mixed>>>
      */
-    private function matchingPositionsPerParent(array $models, EmbedsOneOrMany $relation, QueryBuilder $query): array
+    private function matchingDocumentsPerParent(array $models, EmbedsOneOrMany $relation, QueryBuilder $query): array
     {
+        $keyField = self::parentKeyField($models[0]);
+        $keys = $this->parentKeys($models, $keyField);
+
+        if ($keys === []) {
+            return [];
+        }
+
         $path = '$' . $relation->getLocalKeyName();
         $filter = self::leadingFilter($query);
-        $keys = array_map(fn (Model $model) => $this->mongoQuery()->convertKey($model->getKey()), $models);
 
         $stages = [
-            ['$match' => ['_id' => ['$in' => $keys]]],
-            ['$project' => [$relation->getLocalKeyName() => 1]],
-            ['$unwind' => ['path' => $path, 'includeArrayIndex' => '__position']],
+            ['$match' => [$keyField => ['$in' => $keys]]],
+            ['$project' => [$relation->getLocalKeyName() => 1, $keyField => 1]],
+            ['$unwind' => $path],
             ...($filter === [] ? [] : [['$match' => $filter]]),
-            ['$replaceRoot' => ['newRoot' => ['$mergeObjects' => [$path, ['__parent' => '$_id', '__position' => '$__position']]]]],
-            ...(empty($query->orders) ? [] : [['$sort' => $this->mongoQuery()->getGrammar()->prepareFieldsForQuery($query->orders, false)]]),
-            ['$group' => ['_id' => '$__parent', 'positions' => ['$push' => '$__position']]],
+            ['$replaceRoot' => ['newRoot' => ['parent' => '$' . $keyField, 'document' => $path]]],
+            ...(empty($query->orders) ? [] : [['$sort' => self::sortFields($relation, $query->orders)]]),
         ];
 
         $cursor = $this->mongoQuery()->raw(fn (Collection $collection) => $collection->aggregate($stages, $this->aggregationOptions()));
-
-        $positions = [];
+        $grammar = $this->mongoQuery()->getGrammar();
+        $documents = [];
 
         foreach (iterator_to_array($cursor) as $row) {
-            $positions[(string) $row['_id']] = $row['positions'];
+            $documents[self::aggregateKey($row['parent'])][] = $grammar->prepareFieldsForResult($row['document'], false);
         }
 
-        return $positions;
+        return $documents;
     }
 
     /**
-     * @param list<Model>                   $models
-     * @param array<string, list<int|null>> $matches
+     * @param list<Model> $models
+     *
+     * @return list<mixed>
+     */
+    private function parentKeys(array $models, string $keyField): array
+    {
+        $keys = [];
+
+        foreach ($models as $model) {
+            $key = self::storedKey($model);
+
+            if ($key !== null) {
+                $keys[] = $keyField === '_id' && is_string($key) ? $this->mongoQuery()->convertKey($key) : $key;
+            }
+        }
+
+        return $keys;
+    }
+
+    /**
+     * @param array<string, list<array<string, mixed>>> $matches
+     *
+     * @return list<array<string, mixed>>
+     */
+    private static function matchesOfParent(array $matches, Model $parent): array
+    {
+        $key = self::storedKey($parent);
+
+        return $key === null ? [] : $matches[self::aggregateKey($key)] ?? [];
+    }
+
+    private static function storedKey(Model $model): mixed
+    {
+        $attributes = $model->getAttributes();
+
+        return $attributes[$model->getKeyName()] ?? $attributes['id'] ?? $attributes['_id'] ?? null;
+    }
+
+    private static function parentKeyField(Model $parent): string
+    {
+        return RelationLookup::resolveField($parent, $parent->getKeyName());
+    }
+
+    /**
+     * @param array<string, int> $orders
+     *
+     * @return array<string, int>
+     */
+    private static function sortFields(EmbedsOneOrMany $relation, array $orders): array
+    {
+        $sort = [];
+
+        foreach ($orders as $field => $direction) {
+            $sort['document.' . RelationLookup::resolveField($relation->getParent(), (string) $field, root: false)] = $direction;
+        }
+
+        return $sort;
+    }
+
+    /**
+     * @param list<Model>                               $models
+     * @param array<string, list<array<string, mixed>>> $matches
      *
      * @return list<Model>
      */
     private function withMatchingDocuments(array $models, string $name, array $matches): array
     {
         foreach ($models as $model) {
-            $key = (string) $model->getKey();
-
-            if (! array_key_exists($key, $matches)) {
-                continue;
-            }
-
-            $model->setRelation($name, $this->keepPositions($model->{$name}(), $model->{$name}()->getResults(), $matches[$key]));
+            $model->setRelation($name, $model->{$name}()->hydrate(self::matchesOfParent($matches, $model)));
         }
 
         return $models;
-    }
-
-    /** @param list<int|null> $positions */
-    private function keepPositions(EmbedsOneOrMany $relation, mixed $documents, array $positions): mixed
-    {
-        if ($relation instanceof EmbedsOne) {
-            return $documents;
-        }
-
-        $all = $documents->values()->all();
-
-        return $relation->getRelated()->newCollection(array_map(static fn (int $position) => $all[$position], $positions));
     }
 }

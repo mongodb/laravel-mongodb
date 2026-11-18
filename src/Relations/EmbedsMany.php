@@ -40,6 +40,17 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /** @inheritdoc */
+
+    /**
+     * @internal
+     *
+     * @param list<array<string, mixed>> $documents
+     */
+    public function hydrate(array $documents): Collection
+    {
+        return $this->toCollection($documents);
+    }
+
     public function getResults()
     {
         return $this->toCollection($this->getEmbedded());
