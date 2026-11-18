@@ -34,6 +34,7 @@ use function array_merge;
 use function array_replace;
 use function assert;
 use function collect;
+use function in_array;
 use function is_array;
 use function is_object;
 use function iterator_to_array;
@@ -41,6 +42,7 @@ use function method_exists;
 use function property_exists;
 use function sprintf;
 use function str_contains;
+use function strtolower;
 use function value;
 
 /**
@@ -56,7 +58,7 @@ class Builder extends EloquentBuilder
     private const DUPLICATE_KEY_ERROR = 11000;
 
     /** @var int<0, max> */
-    private int $relationAggregateIndex = 0;
+    private static int $relationAggregateSequence = 0;
 
     /** @var list<string> */
     private array $relationAggregateFields = [];
@@ -202,6 +204,26 @@ class Builder extends EloquentBuilder
         return $this;
     }
 
+    /** Supports the Filament bridge. */
+    public function whereRelationAggregate(
+        string $relation,
+        string $column,
+        string $function,
+        string $operator,
+        float $value,
+        ?Closure $callback = null,
+    ): static {
+        RelationAggregate::assertComparisonOperator($operator);
+
+        $field = $this->addRelationAggregateField($relation, $column, $function, $callback);
+
+        if (! in_array($operator, ['!=', '<>'], true) || in_array(strtolower($function), ['count', 'exists'], true)) {
+            return $this->where($field, $operator, $value);
+        }
+
+        return $this->where(fn (self $query) => $query->where($field, $operator, $value)->whereNotNull($field));
+    }
+
     private function addRelationAggregateField(
         string $relation,
         string $column,
@@ -211,8 +233,8 @@ class Builder extends EloquentBuilder
         $this->assertRelationIsNotNested($relation);
 
         $resolvedRelation = $this->getRelationWithoutConstraints($relation);
-        $aggregate = RelationAggregate::of($function, RelationLookup::resolveField($resolvedRelation->getRelated(), $column));
-        $field = sprintf('__%s_%s_%d', $aggregate->function, $relation, $this->relationAggregateIndex++);
+        $aggregate = RelationAggregate::of($function, $this->aggregatedColumn($resolvedRelation, $column));
+        $field = sprintf('__aggregate_%s_%s_%d', $aggregate->function, $relation, self::$relationAggregateSequence++);
 
         $this->relationAggregateFields[] = $field;
 
@@ -220,6 +242,16 @@ class Builder extends EloquentBuilder
         $this->mongoQuery()->addInternalFieldToUnset($field);
 
         return $field;
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private function aggregatedColumn(Relation $relation, string $column): string
+    {
+        if ($relation instanceof EmbedsOneOrMany) {
+            return RelationLookup::resolveField($relation->getParent(), $column, root: false);
+        }
+
+        return RelationLookup::resolveField($relation->getRelated(), $column);
     }
 
     private function assertRelationIsNotNested(string $relation): void
@@ -234,7 +266,7 @@ class Builder extends EloquentBuilder
     /** @param Relation<Model, Model, mixed> $relation */
     private function addAggregateValue(Relation $relation, string $field, ?Closure $callback, RelationAggregate $aggregate): void
     {
-        if ($relation instanceof EmbedsOneOrMany && $callback === null && $aggregate->isComputableInParent()) {
+        if ($relation instanceof EmbedsOneOrMany && $callback === null && $relation->getRelated()->getGlobalScopes() === [] && $aggregate->isComputableInParent()) {
             $this->mongoQuery()->addInternalStage(
                 ['$addFields' => [$field => $aggregate->valueInParent('$' . $relation->getLocalKeyName())]],
                 neededForCount: false,

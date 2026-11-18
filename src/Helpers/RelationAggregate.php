@@ -19,6 +19,8 @@ final readonly class RelationAggregate
 {
     public const FUNCTIONS = ['avg', 'count', 'exists', 'max', 'min', 'sum'];
 
+    public const COMPARISON_OPERATORS = ['=', '!=', '<>', '<', '<=', '>', '>='];
+
     private function __construct(
         public string $function,
         public string $column,
@@ -60,6 +62,20 @@ final readonly class RelationAggregate
         }
 
         return new self($function, implode('.', $paths), $paths[0]);
+    }
+
+    /** Supports the Filament bridge. */
+    public static function assertComparisonOperator(string $operator): void
+    {
+        if (in_array($operator, self::COMPARISON_OPERATORS, true)) {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Comparison operator "%s" is not supported on a relation aggregate. Supported operators are: %s.',
+            $operator,
+            implode(', ', self::COMPARISON_OPERATORS),
+        ));
     }
 
     /**

@@ -515,14 +515,14 @@ final class RelationLookup
      *
      * @internal
      */
-    public static function resolveField(Model $model, string $name): string
+    public static function resolveField(Model $model, string $name, bool $root = true): string
     {
         $grammar = $model->getConnection()->getQueryGrammar();
 
         if (! $grammar instanceof Grammar) {
-            return $name === 'id' ? '_id' : $name;
+            return $name === 'id' && $root ? '_id' : $name;
         }
 
-        return (string) array_key_first($grammar->prepareFieldsForQuery([$name => true]));
+        return (string) array_key_first($grammar->prepareFieldsForQuery([$name => true], $root));
     }
 }
