@@ -23,6 +23,7 @@ use MongoDB\Laravel\Helpers\RelationAggregate;
 use MongoDB\Laravel\Helpers\RelationLookup;
 use MongoDB\Laravel\Query\AggregationBuilder;
 use MongoDB\Laravel\Query\Builder as MongoQueryBuilder;
+use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use MongoDB\Model\BSONDocument;
 use Override;
 use SortDirection;
@@ -39,6 +40,7 @@ use function iterator_to_array;
 use function method_exists;
 use function property_exists;
 use function sprintf;
+use function str_contains;
 use function value;
 
 /**
@@ -206,16 +208,69 @@ class Builder extends EloquentBuilder
         string $function,
         ?Closure $callback,
     ): string {
+        $this->assertRelationIsNotNested($relation);
+
         $resolvedRelation = $this->getRelationWithoutConstraints($relation);
         $aggregate = RelationAggregate::of($function, RelationLookup::resolveField($resolvedRelation->getRelated(), $column));
-        $index = $this->relationAggregateIndex++;
-        $field = sprintf('__%s_%s_%d', $aggregate->function, $relation, $index);
-        $alias = $field . '_related';
+        $field = sprintf('__%s_%s_%d', $aggregate->function, $relation, $this->relationAggregateIndex++);
 
         $this->relationAggregateFields[] = $field;
 
+        $this->addAggregateValue($resolvedRelation, $field, $callback, $aggregate);
+        $this->mongoQuery()->addInternalFieldToUnset($field);
+
+        return $field;
+    }
+
+    private function assertRelationIsNotNested(string $relation): void
+    {
+        if (! str_contains($relation, '.')) {
+            return;
+        }
+
+        throw new LogicException(sprintf('The nested relation "%s" is not supported on a relation aggregate. Aggregate the relation of the model itself.', $relation));
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private function addAggregateValue(Relation $relation, string $field, ?Closure $callback, RelationAggregate $aggregate): void
+    {
+        if ($relation instanceof EmbedsOneOrMany && $callback === null && $aggregate->isComputableInParent()) {
+            $this->mongoQuery()->addInternalStage(
+                ['$addFields' => [$field => $aggregate->valueInParent('$' . $relation->getLocalKeyName())]],
+                neededForCount: false,
+            );
+
+            return;
+        }
+
+        $this->addValueFromRelatedDocuments($relation, $field, $callback, $aggregate);
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private function addValueFromRelatedDocuments(Relation $relation, string $field, ?Closure $callback, RelationAggregate $aggregate): void
+    {
+        $alias = $field . '_related';
+
+        $temporaryFields = $relation instanceof EmbedsOneOrMany
+            ? $this->addEmbeddedRelatedStages($relation, $alias, $callback, $aggregate)
+            : $this->addReferencedRelatedStages($relation, $alias, $callback, $aggregate);
+
+        $this->mongoQuery()->addInternalStage(['$addFields' => [$field => $aggregate->valueIn($alias)]], neededForCount: false);
+
+        foreach ([...$temporaryFields, $alias] as $temporaryField) {
+            $this->mongoQuery()->addInternalFieldToUnset($temporaryField);
+        }
+    }
+
+    /**
+     * @param Relation<Model, Model, mixed> $relation
+     *
+     * @return list<string>
+     */
+    private function addReferencedRelatedStages(Relation $relation, string $alias, ?Closure $callback, RelationAggregate $aggregate): array
+    {
         $lookup = RelationLookup::for(
-            $resolvedRelation,
+            $relation,
             $alias,
             $callback,
             aggregated: true,
@@ -226,13 +281,17 @@ class Builder extends EloquentBuilder
             $this->mongoQuery()->addInternalStage($stage, neededForCount: false);
         }
 
-        $this->mongoQuery()
-            ->addInternalStage(['$addFields' => [$field => $aggregate->valueIn($alias)]], neededForCount: false)
-            ->addInternalFieldToUnset($lookup->keysField)
-            ->addInternalFieldToUnset($alias)
-            ->addInternalFieldToUnset($field);
+        return [$lookup->keysField];
+    }
 
-        return $field;
+    /** @return list<string> */
+    private function addEmbeddedRelatedStages(EmbedsOneOrMany $relation, string $alias, ?Closure $callback, RelationAggregate $aggregate): array
+    {
+        $stages = [...self::embeddedDocumentStages($relation, self::embeddedQuery($relation, $callback)), ...$aggregate->stagesOverRelated()];
+
+        $this->mongoQuery()->addInternalStage(RelationLookup::ofEmbeddedDocuments($this->mongoQuery(), $alias, $stages), neededForCount: false);
+
+        return [];
     }
 
     /** @inheritdoc */

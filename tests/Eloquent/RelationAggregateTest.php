@@ -20,6 +20,7 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 use function array_keys;
 use function collect;
+use function json_encode;
 use function sprintf;
 
 class RelationAggregateTest extends TestCase
@@ -525,6 +526,118 @@ class RelationAggregateTest extends TestCase
         ]);
 
         $this->assertSame([1], Item::withCount('user')->get()->pluck('user_count')->all());
+    }
+
+    #[DataProvider('provideEmbeddedAggregateSorts')]
+    public function testOrderByRelationAggregateOnAnEmbeddedRelation(string $function, string $column, string $direction, array $expected): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $names = User::orderByRelationAggregate('addresses', $column, $function, $direction)
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame($expected, $names);
+    }
+
+    public static function provideEmbeddedAggregateSorts(): iterable
+    {
+        yield 'count desc' => ['count', '*', 'desc', ['Alice', 'Bob', 'Carol']];
+        yield 'count asc' => ['count', '*', 'asc', ['Carol', 'Bob', 'Alice']];
+        yield 'count of a column' => ['count', 'floor', 'desc', ['Alice', 'Bob', 'Carol']];
+        yield 'sum desc' => ['sum', 'floor', 'desc', ['Bob', 'Alice', 'Carol']];
+        yield 'avg desc' => ['avg', 'floor', 'desc', ['Bob', 'Alice', 'Carol']];
+        yield 'min asc' => ['min', 'floor', 'asc', ['Carol', 'Alice', 'Bob']];
+        yield 'max asc' => ['max', 'floor', 'asc', ['Carol', 'Alice', 'Bob']];
+        yield 'exists asc' => ['exists', '*', 'asc', ['Carol', 'Alice', 'Bob']];
+    }
+
+    public function testTheConstraintsApplyToTheEmbeddedDocuments(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $names = User::orderByRelationAggregate('addresses', 'floor', 'sum', 'asc', fn ($query) => $query->where('city', 'Lyon'))
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bob', 'Carol', 'Alice'], $names);
+    }
+
+    public function testAnUnconstrainedEmbeddedAggregateDoesNotJoinAnything(): void
+    {
+        $command = User::orderByRelationAggregate('addresses', '*', 'count')->toMql();
+
+        $this->assertStringNotContainsString('$lookup', json_encode($command));
+    }
+
+    #[TestWith(['addresses.addresses'])]
+    #[TestWith(['items.user'])]
+    public function testANestedRelationIsNotSupported(string $relation): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(sprintf('The nested relation "%s" is not supported on a relation aggregate.', $relation));
+
+        User::orderByRelationAggregate($relation, '*', 'count');
+    }
+
+    public function testAnEmbeddedOneRelationCanBeAggregated(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->father()->create(['name' => 'Alfred']);
+
+        User::create(['name' => 'Bob']);
+
+        $names = User::orderByRelationAggregate('father', '*', 'count', 'desc')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Alice', 'Bob'], $names);
+    }
+
+    public function testEmbeddedAndReferencedAggregatesCombineInOneQuery(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        User::where('name', 'Alice')->firstOrFail()->items()->create(['name' => 'a']);
+
+        $bob = User::where('name', 'Bob')->firstOrFail();
+        $bob->items()->create(['name' => 'b']);
+        $bob->items()->create(['name' => 'c']);
+
+        $names = User::orderByRelationAggregate('items', '*', 'count', 'desc')
+            ->orderByRelationAggregate('addresses', '*', 'count', 'desc')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bob', 'Alice', 'Carol'], $names);
+    }
+
+    public function testPaginationCountsTheParentsOfAnEmbeddedSort(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $page = User::orderByRelationAggregate('addresses', '*', 'count', 'desc')->paginate(2);
+
+        $this->assertSame(3, $page->total());
+        $this->assertSame(['Alice', 'Bob'], $page->pluck('name')->all());
+    }
+
+    private function seedUsersWithAddresses(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris', 'floor' => 1]);
+        $alice->addresses()->create(['city' => 'Lyon', 'floor' => 2]);
+
+        $bob = User::create(['name' => 'Bob']);
+        $bob->addresses()->create(['city' => 'Paris', 'floor' => 5]);
+
+        User::create(['name' => 'Carol']);
     }
 
     private function seedUsers(): void

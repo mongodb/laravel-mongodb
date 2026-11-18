@@ -88,6 +88,67 @@ final readonly class RelationAggregate
         return ['$ifNull' => [$value, $this->emptyValue()]];
     }
 
+    /** Supports the Filament bridge. */
+    public function isComputableInParent(): bool
+    {
+        return $this->arrayPath === null;
+    }
+
+    /**
+     * Supports the Filament bridge.
+     *
+     * @return array<string, mixed>
+     */
+    public function valueInParent(string $documentsPath): array
+    {
+        return [
+            '$let' => [
+                'vars' => ['documents' => self::documentsAt($documentsPath)],
+                'in' => $this->valueOverDocuments(),
+            ],
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private static function documentsAt(string $path): array
+    {
+        $single = ['$cond' => [['$eq' => [['$type' => $path], 'object']], [$path], []]];
+
+        return ['$cond' => [['$isArray' => $path], $path, $single]];
+    }
+
+    /** @return array<string, mixed> */
+    private function valueOverDocuments(): array
+    {
+        return match ($this->function) {
+            'count' => ['$size' => $this->presentDocuments()],
+            'exists' => ['$cond' => [['$gt' => [['$size' => '$$documents'], 0]], 1, 0]],
+            default => [
+                '$cond' => [
+                    ['$eq' => [['$size' => '$$documents'], 0]],
+                    null,
+                    ['$' . $this->function => '$$documents.' . $this->column],
+                ],
+            ],
+        };
+    }
+
+    /** @return array<string, mixed>|string */
+    private function presentDocuments(): array|string
+    {
+        if ($this->column === '*') {
+            return '$$documents';
+        }
+
+        return [
+            '$filter' => [
+                'input' => '$$documents',
+                'as' => 'document',
+                'cond' => ['$ne' => [['$ifNull' => ['$$document.' . $this->column, null]], null]],
+            ],
+        ];
+    }
+
     /** @return list<array<string, mixed>> */
     private function presentColumnFilter(): array
     {
