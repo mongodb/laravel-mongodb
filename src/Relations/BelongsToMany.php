@@ -248,10 +248,14 @@ class BelongsToMany extends EloquentBelongsToMany
 
     /** @inheritdoc */
     #[Override]
-    public function detach($ids = [], $touch = true)
+    public function detach($ids = null, $touch = true)
     {
-        if ($ids instanceof Model) {
+        if ($ids !== null) {
             $ids = $this->parseIds($ids);
+
+            if ($ids === []) {
+                return 0;
+            }
         }
 
         $query = $this->newRelatedQuery();
@@ -259,19 +263,19 @@ class BelongsToMany extends EloquentBelongsToMany
         // If associated IDs were passed to the method we will only delete those
         // associations, otherwise all of the association ties will be broken.
         // We'll return the numbers of affected rows when we do the deletes.
-        $ids = (array) $ids;
+        $attached = $ids ?? $this->getAttachedIds();
 
         // Detach all ids from the parent model.
         if (DocumentModel::isDocumentModel($this->parent)) {
-            $this->parent->pull($this->relatedPivotKey, $ids);
+            $this->parent->pull($this->relatedPivotKey, $attached);
         } else {
             $value = $this->parent->{$this->relationName}
-                ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $ids));
+                ->filter(fn ($rel) => ! in_array($rel->{$this->relatedKey}, $attached));
             $this->parent->setRelation($this->relationName, $value);
         }
 
         // Prepare the query to select all related objects.
-        if (count($ids) > 0) {
+        if ($ids !== null) {
             $query->whereIn($this->relatedKey, $ids);
         }
 
@@ -284,7 +288,29 @@ class BelongsToMany extends EloquentBelongsToMany
             $this->touchIfTouching();
         }
 
-        return count($ids);
+        return count($attached);
+    }
+
+    /**
+     * Get the ids of the related models currently attached to the parent,
+     * read from the database so a stale or partially selected parent works.
+     *
+     * @return array
+     */
+    private function getAttachedIds()
+    {
+        if (DocumentModel::isDocumentModel($this->parent)) {
+            return Arr::wrap(
+                $this->parent->newQueryWithoutScopes()
+                    ->where($this->parentKey, $this->parent->{$this->parentKey})
+                    ->value($this->relatedPivotKey),
+            );
+        }
+
+        return $this->newRelatedQuery()
+            ->where($this->foreignPivotKey, $this->parent->{$this->parentKey})
+            ->pluck($this->relatedKey)
+            ->all();
     }
 
     /** @inheritdoc */
