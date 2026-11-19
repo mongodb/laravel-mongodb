@@ -19,6 +19,8 @@ final readonly class RelationAggregate
 {
     public const FUNCTIONS = ['avg', 'count', 'exists', 'max', 'min', 'sum'];
 
+    public const COMPARISON_OPERATORS = ['=', '!=', '<>', '<', '<=', '>', '>='];
+
     private function __construct(
         public string $function,
         public string $column,
@@ -62,6 +64,20 @@ final readonly class RelationAggregate
         return new self($function, implode('.', $paths), $paths[0]);
     }
 
+    /** Supports the Filament bridge. */
+    public static function assertComparisonOperator(string $operator): void
+    {
+        if (in_array($operator, self::COMPARISON_OPERATORS, true)) {
+            return;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            'Comparison operator "%s" is not supported on a relation aggregate. Supported operators are: %s.',
+            $operator,
+            implode(', ', self::COMPARISON_OPERATORS),
+        ));
+    }
+
     /**
      * Supports the Filament bridge.
      *
@@ -86,6 +102,67 @@ final readonly class RelationAggregate
         $value = ['$arrayElemAt' => ['$' . $alias . '.value', 0]];
 
         return ['$ifNull' => [$value, $this->emptyValue()]];
+    }
+
+    /** Supports the Filament bridge. */
+    public function isComputableInParent(): bool
+    {
+        return $this->arrayPath === null;
+    }
+
+    /**
+     * Supports the Filament bridge.
+     *
+     * @return array<string, mixed>
+     */
+    public function valueInParent(string $documentsPath): array
+    {
+        return [
+            '$let' => [
+                'vars' => ['documents' => self::documentsAt($documentsPath)],
+                'in' => $this->valueOverDocuments(),
+            ],
+        ];
+    }
+
+    /** @return array<string, mixed> */
+    private static function documentsAt(string $path): array
+    {
+        $single = ['$cond' => [['$eq' => [['$type' => $path], 'object']], [$path], []]];
+
+        return ['$cond' => [['$isArray' => $path], $path, $single]];
+    }
+
+    /** @return array<string, mixed> */
+    private function valueOverDocuments(): array
+    {
+        return match ($this->function) {
+            'count' => ['$size' => $this->presentDocuments()],
+            'exists' => ['$cond' => [['$gt' => [['$size' => '$$documents'], 0]], 1, 0]],
+            default => [
+                '$cond' => [
+                    ['$eq' => [['$size' => '$$documents'], 0]],
+                    null,
+                    ['$' . $this->function => '$$documents.' . $this->column],
+                ],
+            ],
+        };
+    }
+
+    /** @return array<string, mixed>|string */
+    private function presentDocuments(): array|string
+    {
+        if ($this->column === '*') {
+            return '$$documents';
+        }
+
+        return [
+            '$filter' => [
+                'input' => '$$documents',
+                'as' => 'document',
+                'cond' => ['$ne' => [['$ifNull' => ['$$document.' . $this->column, null]], null]],
+            ],
+        ];
     }
 
     /** @return list<array<string, mixed>> */

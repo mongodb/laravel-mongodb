@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
 use MongoDB\BSON\Binary;
+use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
 use MongoDB\Laravel\Tests\Models\Item;
@@ -20,6 +21,8 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 use function array_keys;
 use function collect;
+use function json_encode;
+use function preg_grep;
 use function sprintf;
 
 class RelationAggregateTest extends TestCase
@@ -525,6 +528,382 @@ class RelationAggregateTest extends TestCase
         ]);
 
         $this->assertSame([1], Item::withCount('user')->get()->pluck('user_count')->all());
+    }
+
+    #[DataProvider('provideEmbeddedAggregateSorts')]
+    public function testOrderByRelationAggregateOnAnEmbeddedRelation(string $function, string $column, string $direction, array $expected): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $names = User::orderByRelationAggregate('addresses', $column, $function, $direction)
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame($expected, $names);
+    }
+
+    public static function provideEmbeddedAggregateSorts(): iterable
+    {
+        yield 'count desc' => ['count', '*', 'desc', ['Alice', 'Bob', 'Carol']];
+        yield 'count asc' => ['count', '*', 'asc', ['Carol', 'Bob', 'Alice']];
+        yield 'count of a column' => ['count', 'floor', 'desc', ['Alice', 'Bob', 'Carol']];
+        yield 'sum desc' => ['sum', 'floor', 'desc', ['Bob', 'Alice', 'Carol']];
+        yield 'avg desc' => ['avg', 'floor', 'desc', ['Bob', 'Alice', 'Carol']];
+        yield 'min asc' => ['min', 'floor', 'asc', ['Carol', 'Alice', 'Bob']];
+        yield 'max asc' => ['max', 'floor', 'asc', ['Carol', 'Alice', 'Bob']];
+        yield 'exists asc' => ['exists', '*', 'asc', ['Carol', 'Alice', 'Bob']];
+    }
+
+    public function testTheConstraintsApplyToTheEmbeddedDocuments(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $names = User::orderByRelationAggregate('addresses', 'floor', 'sum', 'asc', fn ($query) => $query->where('city', 'Lyon'))
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bob', 'Carol', 'Alice'], $names);
+    }
+
+    public function testAnUnconstrainedEmbeddedAggregateDoesNotJoinAnything(): void
+    {
+        $command = User::orderByRelationAggregate('addresses', '*', 'count')->toMql();
+
+        $this->assertStringNotContainsString('$lookup', json_encode($command));
+    }
+
+    #[TestWith(['addresses.addresses'])]
+    #[TestWith(['items.user'])]
+    public function testANestedRelationIsNotSupported(string $relation): void
+    {
+        $this->expectException(LogicException::class);
+        $this->expectExceptionMessage(sprintf('The nested relation "%s" is not supported on a relation aggregate.', $relation));
+
+        User::orderByRelationAggregate($relation, '*', 'count');
+    }
+
+    public function testAnEmbeddedOneRelationCanBeAggregated(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->father()->create(['name' => 'Alfred']);
+
+        User::create(['name' => 'Bob']);
+
+        $names = User::orderByRelationAggregate('father', '*', 'count', 'desc')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Alice', 'Bob'], $names);
+    }
+
+    public function testEmbeddedAndReferencedAggregatesCombineInOneQuery(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        User::where('name', 'Alice')->firstOrFail()->items()->create(['name' => 'a']);
+
+        $bob = User::where('name', 'Bob')->firstOrFail();
+        $bob->items()->create(['name' => 'b']);
+        $bob->items()->create(['name' => 'c']);
+
+        $names = User::orderByRelationAggregate('items', '*', 'count', 'desc')
+            ->orderByRelationAggregate('addresses', '*', 'count', 'desc')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bob', 'Alice', 'Carol'], $names);
+    }
+
+    public function testPaginationCountsTheParentsOfAnEmbeddedSort(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $page = User::orderByRelationAggregate('addresses', '*', 'count', 'desc')->paginate(2);
+
+        $this->assertSame(3, $page->total());
+        $this->assertSame(['Alice', 'Bob'], $page->pluck('name')->all());
+    }
+
+    #[DataProvider('provideWhereRelationAggregate')]
+    public function testWhereRelationAggregate(string $function, string $column, string $operator, int|float $value, array $expected): void
+    {
+        $this->seedUsers();
+
+        $names = User::whereRelationAggregate('items', $column, $function, $operator, $value)
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame($expected, $names);
+    }
+
+    public static function provideWhereRelationAggregate(): iterable
+    {
+        yield 'count at least' => ['count', '*', '>=', 2, ['Alice', 'Bob']];
+        yield 'count none' => ['count', '*', '=', 0, ['Carol']];
+        yield 'count not' => ['count', '*', '!=', 2, ['Alice', 'Carol']];
+        yield 'sum above' => ['sum', 'amount', '>', 15, ['Bob']];
+        yield 'avg below' => ['avg', 'amount', '<', 6, ['Alice']];
+        yield 'min at most' => ['min', 'amount', '<=', 4, ['Alice']];
+        yield 'max equal float' => ['max', 'amount', '=', 10.0, ['Bob']];
+        yield 'exists' => ['exists', '*', '=', 1, ['Alice', 'Bob']];
+    }
+
+    public function testWhereRelationAggregateConstrainsTheRelatedQuery(): void
+    {
+        $this->seedUsers();
+
+        $names = User::whereRelationAggregate(
+            'items',
+            '*',
+            'count',
+            '>=',
+            2,
+            fn ($query) => $query->where('amount', '>=', 5),
+        )
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Alice', 'Bob'], $names);
+    }
+
+    public function testWhereRelationAggregateComposesWithOrWhere(): void
+    {
+        $this->seedUsers();
+
+        $names = User::whereRelationAggregate('items', '*', 'count', '>=', 3)
+            ->orWhere('name', 'Carol')
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Alice', 'Carol'], $names);
+    }
+
+    public function testWhereRelationAggregateComposesInsideANestedWhere(): void
+    {
+        $this->seedUsers();
+
+        $names = User::where('name', '!=', 'Alice')
+            ->where(fn ($query) => $query
+                ->whereRelationAggregate('items', 'amount', 'sum', '>', 15)
+                ->orWhere(fn ($inner) => $inner->whereRelationAggregate('items', '*', 'count', '=', 0)))
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bob', 'Carol'], $names);
+    }
+
+    public function testWhereRelationAggregateCombinesWithAnOrderOnTheSameRelation(): void
+    {
+        $this->seedUsers();
+
+        $names = User::whereRelationAggregate('items', '*', 'count', '>=', 2)
+            ->orderByRelationAggregate('items', 'amount', 'sum', 'desc')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bob', 'Alice'], $names);
+    }
+
+    public function testPaginationCountsOnlyTheParentsMatchingTheAggregate(): void
+    {
+        $this->seedUsers();
+
+        $page = User::whereRelationAggregate('items', '*', 'count', '>=', 2)
+            ->orderBy('name')
+            ->paginate(1);
+
+        $this->assertSame(2, $page->total());
+        $this->assertSame(['Alice'], $page->pluck('name')->all());
+    }
+
+    public function testTheAggregateFieldIsNotHydratedOnTheModels(): void
+    {
+        $this->seedUsers();
+
+        $user = User::whereRelationAggregate('items', '*', 'count', '>=', 3)->firstOrFail();
+
+        $this->assertSame([], preg_grep('/^__/', array_keys($user->getAttributes())));
+    }
+
+    public function testWhereRelationAggregateUnsupportedOperator(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Comparison operator "like" is not supported on a relation aggregate. Supported operators are: =, !=, <>, <, <=, >, >=.');
+
+        User::whereRelationAggregate('items', '*', 'count', 'like', 1);
+    }
+
+    public function testWhereRelationAggregateUnsupportedFunction(): void
+    {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('Aggregate function "median" is not supported by MongoDB.');
+
+        User::whereRelationAggregate('items', 'amount', 'median', '>', 1);
+    }
+
+    #[DataProvider('provideEmbeddedAggregateFilters')]
+    public function testWhereRelationAggregateOnAnEmbeddedRelation(string $function, string $column, string $operator, int $value, array $expected): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $names = User::whereRelationAggregate('addresses', $column, $function, $operator, $value)
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame($expected, $names);
+    }
+
+    public static function provideEmbeddedAggregateFilters(): iterable
+    {
+        yield 'count at least' => ['count', '*', '>=', 2, ['Alice']];
+        yield 'count none' => ['count', '*', '=', 0, ['Carol']];
+        yield 'sum above' => ['sum', 'floor', '>', 3, ['Bob']];
+        yield 'avg below' => ['avg', 'floor', '<', 3, ['Alice']];
+        yield 'min at most' => ['min', 'floor', '<=', 1, ['Alice']];
+        yield 'max at least' => ['max', 'floor', '>=', 5, ['Bob']];
+        yield 'exists' => ['exists', '*', '=', 1, ['Alice', 'Bob']];
+    }
+
+    public function testWhereRelationAggregateConstrainsTheEmbeddedDocuments(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $names = User::whereRelationAggregate('addresses', '*', 'count', '>=', 1, fn ($query) => $query->where('city', 'Lyon'))
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Alice'], $names);
+    }
+
+    public function testEmbeddedAndReferencedAggregatesFilterInOneQuery(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        User::where('name', 'Alice')->firstOrFail()->items()->create(['name' => 'a', 'amount' => 1]);
+
+        $names = User::whereRelationAggregate('addresses', '*', 'count', '>=', 1)
+            ->whereRelationAggregate('items', '*', 'count', '>=', 1)
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Alice'], $names);
+    }
+
+    public function testPaginationCountsTheEmbeddedMatches(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $page = User::whereRelationAggregate('addresses', '*', 'count', '>=', 1)->orderBy('name')->paginate(1);
+
+        $this->assertSame(2, $page->total());
+        $this->assertSame(['Alice'], $page->pluck('name')->all());
+    }
+
+    #[TestWith([true, '_id'])]
+    #[TestWith([false, 'id'])]
+    public function testAnEmbeddedAggregateReadsTheEmbeddedIdFieldOfTheConnection(bool $renameEmbeddedIdField, string $idField): void
+    {
+        DB::connection('mongodb')->setRenameEmbeddedIdField($renameEmbeddedIdField);
+        DB::connection('mongodb')->getCollection('users')->insertMany([
+            ['name' => 'Alice', 'addresses' => [[$idField => 7], [$idField => 9]]],
+            ['name' => 'Bob', 'addresses' => [['city' => 'Paris']]],
+        ]);
+
+        $names = User::whereRelationAggregate('addresses', 'id', 'count', '>=', 1)->pluck('name')->all();
+        $sum = User::whereRelationAggregate('addresses', 'id', 'sum', '=', 16)->pluck('name')->all();
+
+        $this->assertSame(['Alice'], $names);
+        $this->assertSame(['Alice'], $sum);
+    }
+
+    public function testAggregatesOfTheSameRelationInNestedConditionsKeepTheirOwnValue(): void
+    {
+        $this->seedUsersWithAddresses();
+
+        $names = User::whereRelationAggregate('addresses', '*', 'count', '>=', 2)
+            ->orWhere(fn ($query) => $query->whereRelationAggregate('addresses', '*', 'count', '=', 0, fn ($addresses) => $addresses->where('city', 'Lyon')))
+            ->orderBy('name')
+            ->get()
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Alice', 'Bob', 'Carol'], $names);
+    }
+
+    public function testTheGlobalScopesOfTheEmbeddedModelApplyToTheAggregate(): void
+    {
+        $scoped = new class extends Address {
+            protected static function boot()
+            {
+                parent::boot();
+
+                static::addGlobalScope('paris', fn ($query) => $query->where('city', 'Paris'));
+            }
+        };
+        User::resolveRelationUsing('scopedAddresses', fn (User $user) => $user->embedsMany($scoped::class, 'addresses', 'user_id', 'scopedAddresses'));
+        $this->seedUsersWithAddresses();
+
+        $names = User::whereRelationAggregate('scopedAddresses', '*', 'count', '>=', 2)->pluck('name')->all();
+
+        $this->assertSame([], $names);
+    }
+
+    #[TestWith(['!='])]
+    #[TestWith(['<>'])]
+    public function testAnInequalityExcludesTheParentsWithoutAValue(string $operator): void
+    {
+        $this->seedUsers();
+
+        $names = User::whereRelationAggregate('items', 'amount', 'sum', $operator, 15)
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bob'], $names);
+    }
+
+    public function testAnInequalityStaysGroupedWithAFollowingOrWhere(): void
+    {
+        $this->seedUsers();
+
+        $names = User::whereRelationAggregate('items', 'amount', 'sum', '!=', 15)
+            ->orWhere('name', 'Carol')
+            ->orderBy('name')
+            ->pluck('name')
+            ->all();
+
+        $this->assertSame(['Bob', 'Carol'], $names);
+    }
+
+    private function seedUsersWithAddresses(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris', 'floor' => 1]);
+        $alice->addresses()->create(['city' => 'Lyon', 'floor' => 2]);
+
+        $bob = User::create(['name' => 'Bob']);
+        $bob->addresses()->create(['city' => 'Paris', 'floor' => 5]);
+
+        User::create(['name' => 'Carol']);
     }
 
     private function seedUsers(): void
