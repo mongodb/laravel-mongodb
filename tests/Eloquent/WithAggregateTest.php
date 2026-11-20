@@ -276,6 +276,20 @@ class WithAggregateTest extends TestCase
         self::assertFalse($users[1]->father_exists);
     }
 
+    public function testLoadCountAndLoadExistsOfAnEmbedsOneRelation(): void
+    {
+        $user = User::create(['name' => 'Alice']);
+        $user->father()->save(new User(['name' => 'Mark Doe', 'age' => 70]));
+        User::create(['name' => 'Bob']);
+
+        $users = User::orderBy('name')->get()->loadCount('father')->loadExists('father');
+
+        self::assertSame(1, $users[0]->father_count);
+        self::assertTrue($users[0]->father_exists);
+        self::assertSame(0, $users[1]->father_count);
+        self::assertFalse($users[1]->father_exists);
+    }
+
     /** @param Closure(): Collection<int, User> $users */
     #[DataProvider('provideEmbeddedAggregatesOfANarrowedSelection')]
     public function testAnEmbeddedAggregateReadsTheEmbeddedDocumentsOutsideTheSelection(Closure $users, string $attribute, array $expected): void
@@ -580,12 +594,46 @@ class WithAggregateTest extends TestCase
         Photo::withCount('hasImage')->get();
     }
 
-    public function testConstraintsOnEmbeddedRelationAreNotSupported(): void
+    public function testConstraintsApplyToTheEmbeddedDocumentsOfACount(): void
     {
-        $this->expectException(LogicException::class);
-        $this->expectExceptionMessage('Constraints on the embedded relation "addresses" are not supported');
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris', 'floor' => 1]);
+        $alice->addresses()->create(['city' => 'Lyon', 'floor' => 2]);
+        $bob = User::create(['name' => 'Bob']);
+        $bob->addresses()->create(['city' => 'Lyon', 'floor' => 5]);
+        User::create(['name' => 'Carol']);
 
-        User::withCount(['addresses' => static fn (Builder $query) => $query->where('city', 'Paris')])->get();
+        $users = User::withCount(['addresses as paris_count' => static fn (Builder $query) => $query->where('city', 'Paris')])
+            ->withSum(['addresses as lyon_floors' => static fn (Builder $query) => $query->where('city', 'Lyon')], 'floor')
+            ->withExists(['addresses as in_lyon' => static fn (Builder $query) => $query->where('city', 'Lyon')])
+            ->orderBy('name')
+            ->get();
+
+        $this->assertSame([1, 0, 0], $users->pluck('paris_count')->all());
+        $this->assertSame([2, 5, null], $users->pluck('lyon_floors')->all());
+        $this->assertSame([true, true, false], $users->pluck('in_lyon')->all());
+    }
+
+    public function testConstraintsApplyToTheEmbeddedDocumentsOfALoadedCount(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+
+        $users = User::all()->loadCount(['addresses as paris_count' => static fn (Builder $query) => $query->where('city', 'Paris')]);
+
+        $this->assertSame([1], $users->pluck('paris_count')->all());
+    }
+
+    public function testConstraintsApplyToTheEmbeddedDocumentsOfACountOnANarrowedSelection(): void
+    {
+        $alice = User::create(['name' => 'Alice']);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+
+        $user = User::select('name')->withCount(['addresses as paris_count' => static fn (Builder $query) => $query->where('city', 'Paris')])->first();
+
+        $this->assertSame(1, $user->paris_count);
     }
 
     public function testLimitOnEmbeddedRelationIsNotSupported(): void

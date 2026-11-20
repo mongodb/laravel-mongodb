@@ -143,7 +143,7 @@ trait QueriesRelationshipAggregates
         $constraints($subQuery);
         $query = $subQuery->getQuery();
 
-        if ($query->wheres || $query->limit !== null || $query->offset !== null || $query->distinct) {
+        if ($query->limit !== null || $query->offset !== null || $query->distinct) {
             throw new LogicException(sprintf(
                 'Constraints on the embedded relation "%s" are not supported.',
                 $name,
@@ -190,6 +190,26 @@ trait QueriesRelationshipAggregates
         }
     }
 
+    /**
+     * @param EloquentModel[]                                                                                 $models
+     * @param array{name: string, function: string, column: string, parentKey: ?string, constraints: Closure} $aggregate
+     */
+    private function hydrateEmbeddedAggregate(array $models, string $alias, array $aggregate, EmbedsOneOrMany $relation): void
+    {
+        $query = self::embeddedQuery($relation, $aggregate['constraints']);
+        $matches = $models !== [] && self::narrowsTheDocuments($query)
+            ? $this->matchingDocumentsPerParent($models, $relation, $query)
+            : null;
+
+        foreach ($models as $model) {
+            $documents = $matches === null
+                ? self::embeddedDocumentsOf($model, $relation, $aggregate['name'])
+                : $model->{$aggregate['name']}()->hydrate(self::matchesOfParent($matches, $model));
+
+            $model->setAttribute($alias, self::aggregateValues($documents, $aggregate['function'], $aggregate['column']));
+        }
+    }
+
     /** @param list<string> $columns */
     private function projectEmbeddedDocumentsOfANarrowedSelection(MongoQueryBuilder $query, array $columns): void
     {
@@ -206,6 +226,8 @@ trait QueriesRelationshipAggregates
 
             $alias = self::embeddedDocumentsAlias($relation);
             $query->projections[$alias] = '$' . $relation->getLocalKeyName();
+            $parentKey = self::parentKeyField($this->getModel());
+            $query->projections[$parentKey] ??= '$' . $parentKey;
             $this->embeddedDocumentAliases[$alias] = true;
         }
     }
@@ -224,15 +246,8 @@ trait QueriesRelationshipAggregates
         // The relation is resolved for each execution to start from a query without constraints.
         $relation = $this->getRelationWithoutConstraints($aggregate['name']);
 
-        // Embedded documents are already part of the parent document, no query is needed.
         if ($relation instanceof EmbedsOneOrMany) {
-            foreach ($models as $model) {
-                $model->setAttribute($alias, self::aggregateValues(
-                    self::embeddedDocumentsOf($model, $relation, $aggregate['name']),
-                    $aggregate['function'],
-                    $aggregate['column'],
-                ));
-            }
+            $this->hydrateEmbeddedAggregate($models, $alias, $aggregate, $relation);
 
             return;
         }

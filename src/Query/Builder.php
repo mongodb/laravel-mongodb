@@ -2044,8 +2044,10 @@ class Builder extends BaseBuilder
      *
      * Every command goes through this method, so the connection also checks here
      * that the query events are reported.
+     *
+     * @internal
      */
-    private function inheritConnectionOptions(array $options = []): array
+    public function inheritConnectionOptions(array $options = []): array
     {
         $this->connection->syncCommandSubscriber();
 
