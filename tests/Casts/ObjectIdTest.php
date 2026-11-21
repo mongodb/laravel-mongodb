@@ -50,4 +50,23 @@ class ObjectIdTest extends TestCase
         $model = CastObjectId::firstWhere('oid', $stringObjectId);
         $this->assertNull($model);
     }
+
+    public function testStoreNull(): void
+    {
+        CastObjectId::create(['oid' => null]);
+
+        $model = CastObjectId::first();
+        $this->assertNull($model->oid);
+        $this->assertNull($model->getRawOriginal('oid'));
+    }
+
+    public function testClearToNull(): void
+    {
+        $model = CastObjectId::create(['oid' => new ObjectId()]);
+
+        $model->oid = null;
+        $model->save();
+
+        $this->assertNull($model->fresh()->getRawOriginal('oid'));
+    }
 }
