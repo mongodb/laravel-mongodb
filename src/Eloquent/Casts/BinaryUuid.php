@@ -50,10 +50,15 @@ class BinaryUuid implements CastsAttributes
      * @param  Model $model
      * @param  mixed $value
      *
-     * @return Binary
+     * @return Binary|null
      */
     public function set($model, string $key, $value, array $attributes)
     {
+        // A null value clears the attribute.
+        if ($value === null) {
+            return null;
+        }
+
         if ($value instanceof Binary) {
             return $value;
         }

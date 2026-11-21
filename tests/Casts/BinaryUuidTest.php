@@ -49,4 +49,23 @@ class BinaryUuidTest extends TestCase
         $model = Casting::firstWhere('uuid', $uuid);
         $this->assertNull($model);
     }
+
+    public function testStoreNull(): void
+    {
+        Casting::create(['uuid' => null]);
+
+        $model = Casting::first();
+        $this->assertNull($model->uuid);
+        $this->assertNull($model->getRawOriginal('uuid'));
+    }
+
+    public function testClearToNull(): void
+    {
+        $model = Casting::create(['uuid' => '0c103357-3806-48c9-a84b-867dcb625cfb']);
+
+        $model->uuid = null;
+        $model->save();
+
+        $this->assertNull($model->fresh()->getRawOriginal('uuid'));
+    }
 }

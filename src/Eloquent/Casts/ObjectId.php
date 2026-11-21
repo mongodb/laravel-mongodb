@@ -37,6 +37,11 @@ class ObjectId implements CastsAttributes
      */
     public function set($model, string $key, $value, array $attributes)
     {
+        // A null value clears the attribute.
+        if ($value === null) {
+            return null;
+        }
+
         if ($value instanceof BSONObjectId) {
             return $value;
         }
