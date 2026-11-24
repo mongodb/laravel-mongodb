@@ -28,6 +28,16 @@ class EmbedsOne extends EmbedsOneOrMany
         return $models;
     }
 
+    /**
+     * @internal
+     *
+     * @param list<array<string, mixed>> $documents
+     */
+    public function hydrate(array $documents): ?Model
+    {
+        return $this->toModel($documents[0] ?? null);
+    }
+
     public function getResults()
     {
         return $this->toModel($this->getEmbedded());

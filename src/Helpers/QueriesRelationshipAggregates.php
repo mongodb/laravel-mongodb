@@ -18,7 +18,7 @@ use LogicException;
 use MongoDB\BSON\Binary;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use MongoDB\Laravel\Query\Builder as MongoQueryBuilder;
-use MongoDB\Laravel\Query\ColumnSelection;
+use MongoDB\Laravel\Query\Projection;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use MongoDB\Laravel\Relations\HasOneThrough;
 use MongoDB\Laravel\Relations\ThroughRelation;
@@ -59,6 +59,9 @@ trait QueriesRelationshipAggregates
 
     /** @var array<string, true> */
     private array $embeddedDocumentAliases = [];
+
+    /** @var array<string, string> */
+    private array $narrowedAggregates = [];
 
     /** @inheritdoc */
     public function withAggregate($relations, $column, $function = null)
@@ -144,7 +147,7 @@ trait QueriesRelationshipAggregates
         $constraints($subQuery);
         $query = $subQuery->getQuery();
 
-        if ($query->wheres || $query->limit !== null || $query->offset !== null || $query->distinct) {
+        if ($query->limit !== null || $query->offset !== null || $query->distinct) {
             throw new LogicException(sprintf(
                 'Constraints on the embedded relation "%s" are not supported.',
                 $name,
@@ -181,32 +184,80 @@ trait QueriesRelationshipAggregates
             return parent::getModels($columns);
         }
 
-        $projections = $query->projections;
-        $this->projectEmbeddedDocumentsOfANarrowedSelection($query, (array) ($query->columns ?? $columns));
+        $original = $this->query;
+        $this->query = clone $query;
 
         try {
+            $this->shapeEmbeddedDocuments($this->query, (array) ($this->query->columns ?? $columns));
+
             return parent::getModels($columns);
         } finally {
-            $query->projections = $projections;
+            $this->query = $original;
         }
     }
 
     /** @param list<string> $columns */
-    private function projectEmbeddedDocumentsOfANarrowedSelection(MongoQueryBuilder $query, array $columns): void
+    private function shapeEmbeddedDocuments(MongoQueryBuilder $query, array $columns): void
     {
         $this->embeddedDocumentAliases = [];
-        if ((new ColumnSelection($columns, (string) $query->from))->selectsEveryField() || $query->groups) {
-            return;
-        }
+        $this->narrowedEmbeddedRelations = [];
+        $this->narrowedAggregates = [];
 
-        foreach ($this->withAggregates as $aggregate) {
+        $selectionIsNarrowed = Projection::isInclusive($query->effectiveProjection($columns));
+
+        $this->narrowEagerLoadedEmbeddedRelations($query, $selectionIsNarrowed);
+        $this->narrowEmbeddedAggregates($query, $selectionIsNarrowed);
+        $this->projectEmbeddedDocumentsOfANarrowedSelection($query, $selectionIsNarrowed);
+    }
+
+    private function narrowEmbeddedAggregates(MongoQueryBuilder $query, bool $selectionIsNarrowed): void
+    {
+        foreach ($this->withAggregates as $alias => $aggregate) {
             $relation = $this->getRelationWithoutConstraints($aggregate['name']);
             if (! $relation instanceof EmbedsOneOrMany) {
                 continue;
             }
 
+            $embedded = self::embeddedQuery($relation, $aggregate['constraints']);
+            if (! self::filtersTheDocuments($embedded)) {
+                continue;
+            }
+
+            $this->narrowedAggregates[$alias] = $this->narrowEmbeddedDocuments($query, $relation, $embedded, '__aggregate_' . $alias, $selectionIsNarrowed);
+        }
+    }
+
+    /**
+     * @param EloquentModel[]                                                                                 $models
+     * @param array{name: string, function: string, column: string, parentKey: ?string, constraints: Closure} $aggregate
+     */
+    private function hydrateEmbeddedAggregate(array $models, string $alias, array $aggregate, EmbedsOneOrMany $relation): void
+    {
+        $narrowed = $this->narrowedAggregates[$alias] ?? null;
+
+        foreach ($models as $model) {
+            $documents = $narrowed === null
+                ? self::embeddedDocumentsOf($model, $relation, $aggregate['name'])
+                : $model->{$aggregate['name']}()->hydrate(self::narrowedDocumentsOf($model, $narrowed));
+
+            $model->setAttribute($alias, self::aggregateValues($documents, $aggregate['function'], $aggregate['column']));
+        }
+    }
+
+    private function projectEmbeddedDocumentsOfANarrowedSelection(MongoQueryBuilder $query, bool $selectionIsNarrowed): void
+    {
+        if (! $selectionIsNarrowed || $query->groups) {
+            return;
+        }
+
+        foreach ($this->withAggregates as $aggregateAlias => $aggregate) {
+            $relation = $this->getRelationWithoutConstraints($aggregate['name']);
+            if (! $relation instanceof EmbedsOneOrMany || isset($this->narrowedAggregates[$aggregateAlias])) {
+                continue;
+            }
+
             $alias = self::embeddedDocumentsAlias($relation);
-            $query->projections[$alias] = '$' . $relation->getLocalKeyName();
+            $query->addInternalProjection($alias, '$' . $relation->getLocalKeyName());
             $this->embeddedDocumentAliases[$alias] = true;
         }
     }
@@ -225,15 +276,8 @@ trait QueriesRelationshipAggregates
         // The relation is resolved for each execution to start from a query without constraints.
         $relation = $this->getRelationWithoutConstraints($aggregate['name']);
 
-        // Embedded documents are already part of the parent document, no query is needed.
         if ($relation instanceof EmbedsOneOrMany) {
-            foreach ($models as $model) {
-                $model->setAttribute($alias, self::aggregateValues(
-                    self::embeddedDocumentsOf($model, $relation, $aggregate['name']),
-                    $aggregate['function'],
-                    $aggregate['column'],
-                ));
-            }
+            $this->hydrateEmbeddedAggregate($models, $alias, $aggregate, $relation);
 
             return;
         }

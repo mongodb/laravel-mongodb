@@ -27,6 +27,8 @@ final class Pipeline
 
     private BuilderPipeline $stages;
 
+    private BuilderPipeline $stagesAfterPaging;
+
     /** @var list<string> */
     private array $temporaryFields = [];
 
@@ -36,6 +38,7 @@ final class Pipeline
     public function __construct()
     {
         $this->stages = new BuilderPipeline();
+        $this->stagesAfterPaging = new BuilderPipeline();
     }
 
     /** @param array<string, mixed>|StageInterface $stage */
@@ -43,6 +46,12 @@ final class Pipeline
     {
         $this->stages = new BuilderPipeline($this->stages, $stage);
         $this->neededForCount[] = $neededForCount;
+    }
+
+    /** @param array<string, mixed>|StageInterface $stage */
+    public function addStageAfterPaging(array|StageInterface $stage): void
+    {
+        $this->stagesAfterPaging = new BuilderPipeline($this->stagesAfterPaging, $stage);
     }
 
     public function unsetTemporaryField(string $field): void
@@ -53,6 +62,7 @@ final class Pipeline
     public function mergeFrom(self $other): void
     {
         $this->stages = new BuilderPipeline($this->stages, $other->stages);
+        $this->stagesAfterPaging = new BuilderPipeline($this->stagesAfterPaging, $other->stagesAfterPaging);
         $this->neededForCount = [...$this->neededForCount, ...$other->neededForCount];
 
         foreach ($other->temporaryFields as $field) {
@@ -62,7 +72,7 @@ final class Pipeline
 
     public function isEmpty(): bool
     {
-        return iterator_count($this->stages) === 0;
+        return iterator_count($this->stages) === 0 && iterator_count($this->stagesAfterPaging) === 0;
     }
 
     public function assertWritable(): void
@@ -115,7 +125,10 @@ final class Pipeline
             ...$this->matchStage($before),
             ...$this->stages,
             ...$this->matchStage($after),
-            ...self::optionStages($options),
+            ...self::sortStage($options),
+            ...self::pagingStages($options),
+            ...$this->stagesAfterPaging,
+            ...self::projectionStages($options),
             ...$this->unsetStage(),
         ];
 
@@ -182,6 +195,7 @@ final class Pipeline
                     ...$this->stages,
                     ...$this->matchStage($after),
                     ...$pipeline,
+                    ...$this->stagesAfterPaging,
                     ...$this->unsetStage(),
                 ],
                 $options,

@@ -44,6 +44,18 @@ final class Projection
         return self::modificationStages($modifications, $exclusions);
     }
 
+    /** @param array<string, mixed>|stdClass $projection */
+    public static function isInclusive(array|stdClass $projection): bool
+    {
+        [, $exclusions, $selections] = self::partition((array) $projection);
+
+        if ($exclusions !== []) {
+            [, $selections] = self::splitPlainIdInclusions($selections);
+        }
+
+        return $selections !== [];
+    }
+
     /**
      * @param array<string, mixed> $projection
      *

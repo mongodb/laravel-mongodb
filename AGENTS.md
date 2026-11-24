@@ -27,6 +27,12 @@ finding by whether Filament's own sort, search and filter calls can reach it. De
 needs hand-written raw MQL, such as a raw `$expr` or `options()`, when the code already fails with a
 clear message.
 
+Constraints on an eager loaded embedded relation (`with()`, `withWhereHas()`, `withCount()` and the
+other aggregates, `load()`) are the second exception: they need MongoDB 6.0, because the documents are
+narrowed in the parent read with a `$lookup` that starts from `$documents`. Calls without a constraint
+never use it and run on every server. The stage runs after the sort, skip and limit of the parent
+query, with `Pipeline::addStageAfterPaging()`, so a page only narrows its own documents.
+
 When a Laravel feature cannot work on MongoDB, do not diverge silently: state the limitation, and
 prefer a change in Laravel or in a dependency when that unblocks a faithful implementation.
 

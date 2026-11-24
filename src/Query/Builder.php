@@ -34,6 +34,7 @@ use Override;
 use ReflectionMethod;
 use RuntimeException;
 use SortDirection;
+use stdClass;
 use TypeError;
 
 use function array_fill_keys;
@@ -241,6 +242,20 @@ class Builder extends BaseBuilder
         return $this;
     }
 
+    /**
+     * The stage runs after the sort, skip and limit of the query, so it only reads the documents of the page.
+     *
+     * @internal
+     *
+     * @param array<string, mixed>|StageInterface $stage
+     */
+    public function addInternalStageAfterPaging(array|StageInterface $stage): static
+    {
+        $this->pipeline()->addStageAfterPaging($stage);
+
+        return $this;
+    }
+
     /** @internal Used by the Eloquent\Builder hooks that bridge Filament. */
     public function addInternalFieldToUnset(string $field): static
     {
@@ -410,6 +425,54 @@ class Builder extends BaseBuilder
         return (new ColumnSelection($columns, (string) $this->from))->fields();
     }
 
+    /**
+     * @internal
+     *
+     * @param array<array-key, mixed> $columns
+     *
+     * @return array<string, mixed>
+     */
+    public function effectiveProjection(array $columns): array
+    {
+        $optionProjection = $this->options['projection'] ?? null;
+
+        if ($optionProjection instanceof stdClass || is_array($optionProjection)) {
+            return (array) $optionProjection;
+        }
+
+        return $this->projectionOf($this->selectedFields($columns));
+    }
+
+    /** @internal */
+    public function addInternalProjection(string $field, mixed $specification): void
+    {
+        $this->projections[$field] = $specification;
+
+        $optionProjection = $this->options['projection'] ?? null;
+
+        if (! $optionProjection instanceof stdClass && ! is_array($optionProjection)) {
+            return;
+        }
+
+        $internal = [$field => $specification];
+
+        $this->options['projection'] = $optionProjection instanceof stdClass
+            ? (object) array_replace((array) $optionProjection, $internal)
+            : array_replace($optionProjection, $internal);
+    }
+
+    /**
+     * @param list<mixed> $fields
+     *
+     * @return array<string, mixed>
+     */
+    private function projectionOf(array $fields): array
+    {
+        $projection = $this->grammar->prepareFieldsForQuery(array_fill_keys($fields, true));
+
+        return $this->projections ? array_replace($projection, $this->projections) : $projection;
+    }
+
     /** @return array<string, mixed[]> */
     private function compileCommand(): array
     {
@@ -554,13 +617,7 @@ class Builder extends BaseBuilder
         }
 
         // Normal query
-        // Convert select columns to simple projections.
-        $projection = $this->grammar->prepareFieldsForQuery(array_fill_keys($columns, true));
-
-        // Add custom projections.
-        if ($this->projections) {
-            $projection = array_replace($projection, $this->projections);
-        }
+        $projection = $this->projectionOf($columns);
 
         $options = [];
 

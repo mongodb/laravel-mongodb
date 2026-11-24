@@ -91,6 +91,13 @@ class TestCase extends OrchestraTestCase
         }
     }
 
+    public function skipIfDocumentsLookupIsNotSupported(): void
+    {
+        if (! $this->getConnection('mongodb')->supportsDocumentsLookup()) {
+            self::markTestSkipped('Constraints on an eager loaded embedded relation require MongoDB 6.0 or later.');
+        }
+    }
+
     public function skipIfSearchIndexManagementIsNotSupported(): void
     {
         try {
