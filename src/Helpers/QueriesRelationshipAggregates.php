@@ -18,6 +18,7 @@ use LogicException;
 use MongoDB\BSON\Binary;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
 use MongoDB\Laravel\Query\Builder as MongoQueryBuilder;
+use MongoDB\Laravel\Query\ColumnSelection;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use MongoDB\Laravel\Relations\HasOneThrough;
 use MongoDB\Laravel\Relations\ThroughRelation;
@@ -194,7 +195,7 @@ trait QueriesRelationshipAggregates
     private function projectEmbeddedDocumentsOfANarrowedSelection(MongoQueryBuilder $query, array $columns): void
     {
         $this->embeddedDocumentAliases = [];
-        if ($columns === [] || in_array('*', $columns, true) || $query->groups) {
+        if ((new ColumnSelection($columns, (string) $query->from))->selectsEveryField() || $query->groups) {
             return;
         }
 

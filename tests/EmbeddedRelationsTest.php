@@ -1269,6 +1269,23 @@ class EmbeddedRelationsTest extends TestCase
         ];
     }
 
+    #[TestWith(['users.*'])]
+    #[TestWith(['clients.*'])]
+    public function testACountedEmbeddedRelationKeepsEveryFieldOfATableQualifiedWildcard(string $wildcard): void
+    {
+        $this->skipIfRelationLookupIsNotSupported();
+
+        $alice = User::create(['name' => 'Alice', 'age' => 35]);
+        $alice->addresses()->create(['city' => 'Paris']);
+        $alice->addresses()->create(['city' => 'Lyon']);
+
+        $user = User::select($wildcard)->withCount('addresses')->first();
+
+        $this->assertSame(2, $user->addresses_count);
+        $this->assertSame(35, $user->age);
+        $this->assertCount(2, $user->addresses);
+    }
+
     public function testACountedEmbeddedRelationKeepsAnEmbeddedAggregateOfANarrowedSelection(): void
     {
         $this->skipIfRelationLookupIsNotSupported();
