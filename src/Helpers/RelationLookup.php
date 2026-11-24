@@ -110,33 +110,13 @@ final class RelationLookup
     }
 
     /**
-     * @param list<array<string, mixed>> $pipeline
-     *
-     * @return array<string, mixed>
-     */
-    public static function ofEmbeddedDocuments(Builder $parents, string $alias, array $pipeline): array
-    {
-        self::assertServerSupportsLookup($parents->getConnection());
-
-        return [
-            '$lookup' => [
-                'from' => $parents->getConnection()->getTablePrefix() . $parents->from,
-                'localField' => '_id',
-                'foreignField' => '_id',
-                'pipeline' => $pipeline,
-                'as' => $alias,
-            ],
-        ];
-    }
-
-    /**
-     * Narrows the embedded documents of each parent document, without reading the collection again.
+     * Runs the pipeline over the embedded documents of each parent document, without reading the collection again.
      *
      * @param list<array<string, mixed>> $pipeline
      *
      * @return array<string, mixed>
      */
-    public static function narrowingEmbeddedDocuments(Builder $parents, EmbedsOneOrMany $relation, string $alias, array $pipeline): array
+    public static function ofEmbeddedDocuments(Builder $parents, EmbedsOneOrMany $relation, string $alias, array $pipeline): array
     {
         self::assertServerSupportsDocumentsLookup($parents->getConnection());
 
@@ -162,7 +142,7 @@ final class RelationLookup
         }
 
         throw new LogicException(sprintf(
-            'Constraints on an eager loaded embedded relation require MongoDB 6.0 or later, and the server of connection [%s] is older. Upgrade the server, or filter the documents of the relation after loading it.',
+            'Constraining the documents of an embedded relation in the query requires MongoDB 6.0 or later, and the server of connection [%s] is older. Upgrade the server, or filter the documents of the relation after loading it.',
             $connection->getName(),
         ));
     }

@@ -558,6 +558,7 @@ class RelationAggregateTest extends TestCase
 
     public function testTheConstraintsApplyToTheEmbeddedDocuments(): void
     {
+        $this->skipIfDocumentsLookupIsNotSupported();
         $this->seedUsersWithAddresses();
 
         $names = User::orderByRelationAggregate('addresses', 'floor', 'sum', 'asc', fn ($query) => $query->where('city', 'Lyon'))
@@ -783,6 +784,7 @@ class RelationAggregateTest extends TestCase
 
     public function testWhereRelationAggregateConstrainsTheEmbeddedDocuments(): void
     {
+        $this->skipIfDocumentsLookupIsNotSupported();
         $this->seedUsersWithAddresses();
 
         $names = User::whereRelationAggregate('addresses', '*', 'count', '>=', 1, fn ($query) => $query->where('city', 'Lyon'))
@@ -837,6 +839,7 @@ class RelationAggregateTest extends TestCase
 
     public function testAggregatesOfTheSameRelationInNestedConditionsKeepTheirOwnValue(): void
     {
+        $this->skipIfDocumentsLookupIsNotSupported();
         $this->seedUsersWithAddresses();
 
         $names = User::whereRelationAggregate('addresses', '*', 'count', '>=', 2)
@@ -851,6 +854,7 @@ class RelationAggregateTest extends TestCase
 
     public function testTheGlobalScopesOfTheEmbeddedModelApplyToTheAggregate(): void
     {
+        $this->skipIfDocumentsLookupIsNotSupported();
         $scoped = new class extends Address {
             protected static function boot()
             {

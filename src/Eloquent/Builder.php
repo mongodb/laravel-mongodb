@@ -323,7 +323,7 @@ class Builder extends EloquentBuilder
     {
         $stages = [...self::embeddedDocumentStages($relation, self::embeddedQuery($relation, $callback)), ...$aggregate->stagesOverRelated()];
 
-        $this->mongoQuery()->addInternalStage(RelationLookup::ofEmbeddedDocuments($this->mongoQuery(), $alias, $stages), neededForCount: false);
+        $this->mongoQuery()->addInternalStage(RelationLookup::ofEmbeddedDocuments($this->mongoQuery(), $relation, $alias, $stages), neededForCount: false);
 
         return [];
     }

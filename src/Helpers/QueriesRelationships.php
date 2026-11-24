@@ -278,7 +278,7 @@ trait QueriesRelationships
 
         $field = sprintf('__count_%s_%d', $relation->getLocalKeyName(), self::$embeddedCountSequence++);
         $alias = $field . '_documents';
-        $lookup = RelationLookup::ofEmbeddedDocuments($query, $alias, [...self::embeddedDocumentStages($relation, $related), ['$count' => 'count']]);
+        $lookup = RelationLookup::ofEmbeddedDocuments($query, $relation, $alias, [...self::embeddedDocumentStages($relation, $related), ['$count' => 'count']]);
 
         $query->addInternalStage($lookup, neededForCount: false)
             ->addInternalStage(['$addFields' => [$field => ['$ifNull' => [['$arrayElemAt' => ['$' . $alias . '.count', 0]], 0]]]], neededForCount: false)
@@ -295,7 +295,6 @@ trait QueriesRelationships
         $filter = self::leadingFilter($query);
 
         return [
-            ['$unwind' => $path],
             ...($filter === [] ? [] : [['$match' => $filter]]),
             ['$replaceRoot' => ['newRoot' => $path]],
             ...self::stagesAfterTheFilter($query),

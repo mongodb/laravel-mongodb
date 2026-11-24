@@ -139,7 +139,7 @@ trait FiltersEagerLoadedEmbeddedRelations
             ));
         }
 
-        $query->addInternalStageAfterPaging(RelationLookup::narrowingEmbeddedDocuments($query, $relation, $alias, self::narrowingStages($relation, $embedded)));
+        $query->addInternalStageAfterPaging(RelationLookup::ofEmbeddedDocuments($query, $relation, $alias, self::narrowingStages($relation, $embedded)));
 
         if ($selectionIsNarrowed) {
             $query->addInternalProjection($alias, 1);
