@@ -398,15 +398,22 @@ class Builder extends BaseBuilder
         return $pipeline === null ? $command : $pipeline->applyTo($command);
     }
 
+    /**
+     * MongoDB has no wildcard: a selection of every field is an absent projection.
+     *
+     * @param array<array-key, mixed> $columns
+     *
+     * @return list<mixed>
+     */
+    private function selectedFields(array $columns): array
+    {
+        return (new ColumnSelection($columns, (string) $this->from))->fields();
+    }
+
     /** @return array<string, mixed[]> */
     private function compileCommand(): array
     {
-        $columns = $this->columns ?? [];
-
-        // Drop all columns if * is present, MongoDB does not work this way.
-        if (in_array('*', $columns)) {
-            $columns = [];
-        }
+        $columns = $this->selectedFields($this->columns ?? []);
 
         $wheres = $this->compileWheres();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
@@ -617,10 +624,7 @@ class Builder extends BaseBuilder
             $this->columns = $columns;
         }
 
-        // Drop all columns if * is present, MongoDB does not work this way.
-        if (in_array('*', $this->columns)) {
-            $this->columns = [];
-        }
+        $this->columns = $this->selectedFields($this->columns);
 
         $command = $this->toMql();
         assert(count($command) >= 1, 'At least one method call is required to execute a query');

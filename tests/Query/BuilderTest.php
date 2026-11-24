@@ -147,6 +147,26 @@ class BuilderTest extends TestCase
             fn (Builder $builder) => $builder->select('*'),
         ];
 
+        yield 'select all of the queried collection' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder->from('users')->select('users.*'),
+        ];
+
+        yield 'select all of the queried collection and a field' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder->from('users')->select('users.*', 'name'),
+        ];
+
+        yield 'select all of another collection' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder->from('users')->select('clients.*'),
+        ];
+
+        yield 'select all of another collection and a field' => [
+            ['find' => [[], ['projection' => ['name' => 1]]]],
+            fn (Builder $builder) => $builder->from('users')->select('clients.*', 'name'),
+        ];
+
         yield 'find all with select' => [
             ['find' => [[], ['projection' => ['foo' => 1, 'bar' => 1]]]],
             fn (Builder $builder) => $builder->select('foo', 'bar'),
