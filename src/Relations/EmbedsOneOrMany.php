@@ -102,12 +102,26 @@ abstract class EmbedsOneOrMany extends Relation
         foreach ($models as $model) {
             $results = $model->$relation()->getResults();
 
-            $model->setParentRelation($this);
-
             $model->setRelation($relation, $results);
         }
 
         return $models;
+    }
+
+    /**
+     * Get a fresh write query constrained to the parent model.
+     *
+     * A relation instance created by eager loading carries no constraint, so
+     * write operations must always apply the parent key constraint themselves
+     * instead of relying on the relation query.
+     */
+    protected function constrainedWriteQuery()
+    {
+        return $this->toBase()->where(
+            $this->getQualifiedParentKeyName(),
+            '=',
+            $this->getParentKey(),
+        );
     }
 
     #[Override]

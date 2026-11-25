@@ -317,6 +317,15 @@ trait DocumentModel
             );
         }
 
+        // A "$"-prefixed key is read as a MongoDB operator when the model is
+        // saved, which would bypass the mass assignment guards. It is not an
+        // attribute, so it cannot be assigned to the model.
+        if (str_starts_with($key, '$')) {
+            throw new MassAssignmentException(
+                sprintf('The key [%s] is read as a MongoDB operator when the model is saved and cannot be set as an attribute on model [%s]. Use the query builder to perform an operator update.', $key, static::class),
+            );
+        }
+
         $casts = $this->getCasts();
         if (array_key_exists($key, $casts)) {
             $castType = $this->getCastType($key);

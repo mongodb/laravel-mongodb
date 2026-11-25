@@ -62,7 +62,7 @@ class EmbedsOne extends EmbedsOneOrMany
             return $this->parent->save() ? $model : false;
         }
 
-        $result = $this->toBase()->update([$this->localKey => $model->getAttributes()]);
+        $result = $this->constrainedWriteQuery()->update([$this->localKey => $model->getAttributes()]);
 
         // Attach the model to its parent.
         if ($result) {
@@ -89,7 +89,7 @@ class EmbedsOne extends EmbedsOneOrMany
 
         $values = self::getUpdateValues($model->getDirty(), $this->localKey . '.');
 
-        $result = $this->toBase()->update($values);
+        $result = $this->constrainedWriteQuery()->update($values);
 
         // Attach the model to its parent.
         if ($result) {
@@ -114,7 +114,7 @@ class EmbedsOne extends EmbedsOneOrMany
         }
 
         // Overwrite the local key with an empty array.
-        $result = $this->toBase()->update([$this->localKey => null]);
+        $result = $this->constrainedWriteQuery()->update([$this->localKey => null]);
 
         // Detach the model from its parent.
         if ($result) {
