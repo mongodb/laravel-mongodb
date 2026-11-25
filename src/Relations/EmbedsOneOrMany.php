@@ -528,6 +528,11 @@ abstract class EmbedsOneOrMany extends Relation
         return $results;
     }
 
+    public function getLocalKeyName(): string
+    {
+        return $this->localKey;
+    }
+
     /**
      * Get the foreign key for the relationship.
      *

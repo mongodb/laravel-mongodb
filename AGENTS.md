@@ -18,6 +18,15 @@ The package runs on every MongoDB topology (standalone, replica set and sharded 
 supported server version. Do not assume a topology or a version, the same code must work on all of
 them.
 
+The Filament bridge is the one exception: its relationship lookups require MongoDB 5.1, because an
+indexable `$lookup` combines `localField`/`foreignField` with a `pipeline`, and only 5.1 accepts a
+sharded collection in `from`. Older servers reject the stage. Keep existing Eloquent calls such as
+`withCount()` off the lookup path, so they keep working on every server and topology. Matching the keys the Eloquent relation itself matches is the bar; a gap beyond it is an
+accepted trade-off when it is documented. The bridge exists only for Filament, so judge a review
+finding by whether Filament's own sort, search and filter calls can reach it. Decline a finding that
+needs hand-written raw MQL, such as a raw `$expr` or `options()`, when the code already fails with a
+clear message.
+
 When a Laravel feature cannot work on MongoDB, do not diverge silently: state the limitation, and
 prefer a change in Laravel or in a dependency when that unblocks a faithful implementation.
 
@@ -122,8 +131,9 @@ without an assertion or with output fails. Run with `php -d zend.assertions=1` t
 transaction with `#[TestWith]`.
 
 Some tests are conditional. `#[Group('atlas-search')]` needs Atlas or Atlas Local and is excluded by
-default. `TestCase::skipIfQEIsNotSupported()` and `skipIfSearchIndexManagementIsNotSupported()` skip
-when the server, the driver or the version does not support the feature. Transactions and Queryable
+default. `TestCase::skipIfQEIsNotSupported()`, `skipIfSearchIndexManagementIsNotSupported()` and
+`skipIfRelationLookupIsNotSupported()` skip when the server, the driver or the version does not
+support the feature. Transactions and Queryable
 Encryption need a replica set or a sharded cluster, not a standalone.
 
 ## Conventions
@@ -131,6 +141,11 @@ Encryption need a replica set or a sharded cluster, not a standalone.
 - `declare(strict_types=1)` in every file, and import functions with `use function`.
 - Follow the Doctrine coding standard enforced by `phpcs.xml.dist`.
 - Mark methods that override a parent with `#[Override]`.
+- Reuse before inventing. Look for the logic in this package, in Laravel, or in the driver before
+  writing array manipulation or string formatting of your own. Build MQL with the `mongodb/mongodb`
+  builders — `MongoDB\Builder\Stage`, `Expression`, `Accumulator`, `Pipeline` — instead of
+  hand-written arrays and operator strings; `Collection::aggregate()` accepts the builder stages
+  natively and encodes them itself.
 - Prefer `vendor/bin/phpcbf` and `vendor/bin/rector process` over manual edits for style and
   automated refactors. Exclude a phpcs sniff in `phpcs.xml.dist`, or add a rule in `rector.php`,
   only when the rule is buggy or makes the code less readable, and comment the reason.
@@ -154,7 +169,10 @@ A change is reviewed against the following standards, in rough order of priority
    against something the server cannot, such as MQL injection.
 3. Follow Laravel. Reuse the parent Eloquent method instead of reimplementing it, align the
    generated MQL with the SQL Laravel produces for the same call, and do not add parameters to a
-   method that overrides a Laravel method.
+   method that overrides a Laravel method. When a change affects the input or output of the
+   user-facing API, run the same calls on a SQL model backed by SQLite (`SqlUser`, `SqlBook` and
+   `SqlRole` in `tests/Models/`) and compare the results, including edge cases such as an unsaved
+   parent or a relation instance passed instead of its name.
 4. Fail loudly. A public method that cannot express the requested constraint throws with a clear
    message instead of returning a query that matches the wrong documents. When a feature is not
    supported by the server version or the topology in use, let the server decide, then translate its

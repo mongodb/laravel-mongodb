@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Builder as EloquentBuilder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use LogicException;
 use MongoDB\BSON\Document;
 use MongoDB\Builder\Expression;
 use MongoDB\Builder\Type\QueryInterface;
@@ -18,9 +19,14 @@ use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Helpers\QueriesRelationshipAggregates;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
+use MongoDB\Laravel\Helpers\RelationAggregate;
+use MongoDB\Laravel\Helpers\RelationLookup;
 use MongoDB\Laravel\Query\AggregationBuilder;
+use MongoDB\Laravel\Query\Builder as MongoQueryBuilder;
+use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use MongoDB\Model\BSONDocument;
 use Override;
+use SortDirection;
 
 use function array_key_exists;
 use function array_map;
@@ -28,11 +34,15 @@ use function array_merge;
 use function array_replace;
 use function assert;
 use function collect;
+use function in_array;
 use function is_array;
 use function is_object;
 use function iterator_to_array;
 use function method_exists;
 use function property_exists;
+use function sprintf;
+use function str_contains;
+use function strtolower;
 use function value;
 
 /**
@@ -46,6 +56,12 @@ class Builder extends EloquentBuilder
     use QueriesRelationshipAggregates;
 
     private const DUPLICATE_KEY_ERROR = 11000;
+
+    /** @var int<0, max> */
+    private static int $relationAggregateSequence = 0;
+
+    /** @var list<string> */
+    private array $relationAggregateFields = [];
 
     /**
      * The methods that should be returned from query builder.
@@ -88,6 +104,30 @@ class Builder extends EloquentBuilder
         $result = $this->toBase()->aggregate($function, $columns);
 
         return $result ?: $this;
+    }
+
+    /** @return list<array{column: string, direction: 'asc'|'desc'}> */
+    public function getOrders(): array
+    {
+        $orders = [];
+
+        foreach ($this->getQuery()->orders ?? [] as $column => $direction) {
+            $orders[] = [
+                'column' => $this->orderColumn((string) $column),
+                'direction' => $direction === 1 ? 'asc' : 'desc',
+            ];
+        }
+
+        return $orders;
+    }
+
+    private function orderColumn(string $column): string
+    {
+        if ($column === '_id' && $this->getModel()->getKeyName() === 'id') {
+            return 'id';
+        }
+
+        return $column;
     }
 
     /**
@@ -147,6 +187,179 @@ class Builder extends EloquentBuilder
         );
 
         return $this->hydrate($results->all());
+    }
+
+    /** Supports the Filament bridge. */
+    public function orderByRelationAggregate(
+        string $relation,
+        string $column,
+        string $function,
+        string|SortDirection $direction = 'asc',
+        ?Closure $callback = null,
+    ): static {
+        $field = $this->addRelationAggregateField($relation, $column, $function, $callback);
+
+        $this->orderBy($field, $direction);
+
+        return $this;
+    }
+
+    /** Supports the Filament bridge. */
+    public function whereRelationAggregate(
+        string $relation,
+        string $column,
+        string $function,
+        string $operator,
+        float $value,
+        ?Closure $callback = null,
+    ): static {
+        RelationAggregate::assertComparisonOperator($operator);
+
+        $field = $this->addRelationAggregateField($relation, $column, $function, $callback);
+
+        if (! in_array($operator, ['!=', '<>'], true) || in_array(strtolower($function), ['count', 'exists'], true)) {
+            return $this->where($field, $operator, $value);
+        }
+
+        return $this->where(fn (self $query) => $query->where($field, $operator, $value)->whereNotNull($field));
+    }
+
+    private function addRelationAggregateField(
+        string $relation,
+        string $column,
+        string $function,
+        ?Closure $callback,
+    ): string {
+        $this->assertRelationIsNotNested($relation);
+
+        $resolvedRelation = $this->getRelationWithoutConstraints($relation);
+        $aggregate = RelationAggregate::of($function, $this->aggregatedColumn($resolvedRelation, $column));
+        $field = sprintf('__aggregate_%s_%s_%d', $aggregate->function, $relation, self::$relationAggregateSequence++);
+
+        $this->relationAggregateFields[] = $field;
+
+        $this->addAggregateValue($resolvedRelation, $field, $callback, $aggregate);
+        $this->mongoQuery()->addInternalFieldToUnset($field);
+
+        return $field;
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private function aggregatedColumn(Relation $relation, string $column): string
+    {
+        if ($relation instanceof EmbedsOneOrMany) {
+            return RelationLookup::resolveField($relation->getParent(), $column, root: false);
+        }
+
+        return RelationLookup::resolveField($relation->getRelated(), $column);
+    }
+
+    private function assertRelationIsNotNested(string $relation): void
+    {
+        if (! str_contains($relation, '.')) {
+            return;
+        }
+
+        throw new LogicException(sprintf('The nested relation "%s" is not supported on a relation aggregate. Aggregate the relation of the model itself.', $relation));
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private function addAggregateValue(Relation $relation, string $field, ?Closure $callback, RelationAggregate $aggregate): void
+    {
+        if ($relation instanceof EmbedsOneOrMany && $callback === null && $relation->getRelated()->getGlobalScopes() === [] && $aggregate->isComputableInParent()) {
+            $this->mongoQuery()->addInternalStage(
+                ['$addFields' => [$field => $aggregate->valueInParent('$' . $relation->getLocalKeyName())]],
+                neededForCount: false,
+            );
+
+            return;
+        }
+
+        $this->addValueFromRelatedDocuments($relation, $field, $callback, $aggregate);
+    }
+
+    /** @param Relation<Model, Model, mixed> $relation */
+    private function addValueFromRelatedDocuments(Relation $relation, string $field, ?Closure $callback, RelationAggregate $aggregate): void
+    {
+        $alias = $field . '_related';
+
+        $temporaryFields = $relation instanceof EmbedsOneOrMany
+            ? $this->addEmbeddedRelatedStages($relation, $alias, $callback, $aggregate)
+            : $this->addReferencedRelatedStages($relation, $alias, $callback, $aggregate);
+
+        $this->mongoQuery()->addInternalStage(['$addFields' => [$field => $aggregate->valueIn($alias)]], neededForCount: false);
+
+        foreach ([...$temporaryFields, $alias] as $temporaryField) {
+            $this->mongoQuery()->addInternalFieldToUnset($temporaryField);
+        }
+    }
+
+    /**
+     * @param Relation<Model, Model, mixed> $relation
+     *
+     * @return list<string>
+     */
+    private function addReferencedRelatedStages(Relation $relation, string $alias, ?Closure $callback, RelationAggregate $aggregate): array
+    {
+        $lookup = RelationLookup::for(
+            $relation,
+            $alias,
+            $callback,
+            aggregated: true,
+            finalStages: $aggregate->stagesOverRelated(),
+        );
+
+        foreach ($lookup->stages as $stage) {
+            $this->mongoQuery()->addInternalStage($stage, neededForCount: false);
+        }
+
+        return [$lookup->keysField];
+    }
+
+    /** @return list<string> */
+    private function addEmbeddedRelatedStages(EmbedsOneOrMany $relation, string $alias, ?Closure $callback, RelationAggregate $aggregate): array
+    {
+        $stages = [...self::embeddedDocumentStages($relation, self::embeddedQuery($relation, $callback)), ...$aggregate->stagesOverRelated()];
+
+        $this->mongoQuery()->addInternalStage(RelationLookup::ofEmbeddedDocuments($this->mongoQuery(), $alias, $stages), neededForCount: false);
+
+        return [];
+    }
+
+    /** @inheritdoc */
+    #[Override]
+    public function cursorPaginate($perPage = null, $columns = ['*'], $cursorName = 'cursor', $cursor = null)
+    {
+        foreach ($this->relationAggregateFields as $field) {
+            if (! isset($this->mongoQuery()->orders[$field])) {
+                continue;
+            }
+
+            throw new LogicException('Cursor pagination is not supported on a query sorted with orderByRelationAggregate(). Use paginate() or simplePaginate() instead.');
+        }
+
+        return parent::cursorPaginate($perPage, $columns, $cursorName, $cursor);
+    }
+
+    /**
+     * Supports the Filament bridge.
+     *
+     * @internal
+     */
+    public function applyGroupedConstraints(Closure $constraints): static
+    {
+        $this->callScope($constraints);
+
+        return $this;
+    }
+
+    private function mongoQuery(): MongoQueryBuilder
+    {
+        $query = $this->getQuery();
+
+        assert($query instanceof MongoQueryBuilder, 'Unexpected query type returned from the Eloquent builder, expecting ' . MongoQueryBuilder::class);
+
+        return $query;
     }
 
     /**

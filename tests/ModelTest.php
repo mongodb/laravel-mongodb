@@ -364,6 +364,28 @@ class ModelTest extends TestCase
         $this->assertEquals('John Doe', $user->name);
     }
 
+    #[TestWith(['*'])]
+    #[TestWith(['users.*'])]
+    #[TestWith(['clients.*'])]
+    public function testSelectAllFields(string $wildcard): void
+    {
+        User::create(['name' => 'Selected Alice', 'age' => 35]);
+
+        $user = User::select($wildcard)->where('name', 'Selected Alice')->first();
+
+        $this->assertSame('Selected Alice', $user->name);
+        $this->assertSame(35, $user->age);
+    }
+
+    public function testSelectAllFieldsOfTheQueriedCollectionWithAField(): void
+    {
+        User::create(['name' => 'Selected Alice', 'age' => 35]);
+
+        $user = User::select('users.*', 'name')->where('name', 'Selected Alice')->first();
+
+        $this->assertSame(35, $user->age);
+    }
+
     public function testNoDocument(): void
     {
         $items = Item::where('name', 'nothing')->get();

@@ -17,11 +17,16 @@ use InvalidArgumentException;
 use LogicException;
 use MongoDB\BSON\Binary;
 use MongoDB\Laravel\Eloquent\Model as DocumentModel;
+use MongoDB\Laravel\Query\Builder as MongoQueryBuilder;
+use MongoDB\Laravel\Query\ColumnSelection;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use MongoDB\Laravel\Relations\HasOneThrough;
 use MongoDB\Laravel\Relations\ThroughRelation;
+use Override;
 use Stringable;
 
+use function array_diff_key;
+use function array_key_exists;
 use function bin2hex;
 use function class_basename;
 use function count;
@@ -34,6 +39,7 @@ use function is_scalar;
 use function is_string;
 use function preg_replace;
 use function sprintf;
+use function str_replace;
 use function str_starts_with;
 use function strtolower;
 
@@ -48,10 +54,11 @@ use function strtolower;
  */
 trait QueriesRelationshipAggregates
 {
-    private const AGGREGATE_FUNCTIONS = ['count', 'exists', 'sum', 'avg', 'min', 'max'];
-
     /** @var array<string, array{name: string, function: string, column: string, parentKey: ?string, constraints: Closure}> */
     private array $withAggregates = [];
+
+    /** @var array<string, true> */
+    private array $embeddedDocumentAliases = [];
 
     /** @inheritdoc */
     public function withAggregate($relations, $column, $function = null)
@@ -60,11 +67,11 @@ trait QueriesRelationshipAggregates
             return $this;
         }
 
-        if (! in_array($function, self::AGGREGATE_FUNCTIONS, true)) {
+        if (! in_array($function, RelationAggregate::FUNCTIONS, true)) {
             throw new InvalidArgumentException(sprintf(
                 'Aggregate function "%s" is not supported by MongoDB. Supported functions are: %s.',
                 $function ?? 'null',
-                implode(', ', self::AGGREGATE_FUNCTIONS),
+                implode(', ', RelationAggregate::FUNCTIONS),
             ));
         }
 
@@ -153,7 +160,60 @@ trait QueriesRelationshipAggregates
             $this->hydrateAggregate($models, $alias, $aggregate);
         }
 
-        return parent::eagerLoadRelations($models);
+        $models = parent::eagerLoadRelations($models);
+        if ($this->embeddedDocumentAliases === []) {
+            return $models;
+        }
+
+        foreach ($models as $model) {
+            $model->setRawAttributes(array_diff_key($model->getAttributes(), $this->embeddedDocumentAliases));
+        }
+
+        return $models;
+    }
+
+    /** @inheritdoc */
+    #[Override]
+    public function getModels($columns = ['*'])
+    {
+        $query = $this->getQuery();
+        if (! $query instanceof MongoQueryBuilder) {
+            return parent::getModels($columns);
+        }
+
+        $projections = $query->projections;
+        $this->projectEmbeddedDocumentsOfANarrowedSelection($query, (array) ($query->columns ?? $columns));
+
+        try {
+            return parent::getModels($columns);
+        } finally {
+            $query->projections = $projections;
+        }
+    }
+
+    /** @param list<string> $columns */
+    private function projectEmbeddedDocumentsOfANarrowedSelection(MongoQueryBuilder $query, array $columns): void
+    {
+        $this->embeddedDocumentAliases = [];
+        if ((new ColumnSelection($columns, (string) $query->from))->selectsEveryField() || $query->groups) {
+            return;
+        }
+
+        foreach ($this->withAggregates as $aggregate) {
+            $relation = $this->getRelationWithoutConstraints($aggregate['name']);
+            if (! $relation instanceof EmbedsOneOrMany) {
+                continue;
+            }
+
+            $alias = self::embeddedDocumentsAlias($relation);
+            $query->projections[$alias] = '$' . $relation->getLocalKeyName();
+            $this->embeddedDocumentAliases[$alias] = true;
+        }
+    }
+
+    private static function embeddedDocumentsAlias(EmbedsOneOrMany $relation): string
+    {
+        return '__aggregated_' . str_replace('.', '_', $relation->getLocalKeyName());
     }
 
     /**
@@ -169,7 +229,7 @@ trait QueriesRelationshipAggregates
         if ($relation instanceof EmbedsOneOrMany) {
             foreach ($models as $model) {
                 $model->setAttribute($alias, self::aggregateValues(
-                    $model->{$aggregate['name']}()->getResults(),
+                    self::embeddedDocumentsOf($model, $relation, $aggregate['name']),
                     $aggregate['function'],
                     $aggregate['column'],
                 ));
@@ -336,6 +396,20 @@ trait QueriesRelationshipAggregates
         ));
     }
 
+    private static function embeddedDocumentsOf(EloquentModel $model, EmbedsOneOrMany $relation, string $name): mixed
+    {
+        $attributes = $model->getAttributes();
+        $alias = self::embeddedDocumentsAlias($relation);
+        if (! array_key_exists($alias, $attributes)) {
+            return $model->{$name}()->getResults();
+        }
+
+        return $model->newInstance()
+            ->setRawAttributes([$relation->getLocalKeyName() => $attributes[$alias]])
+            ->{$name}()
+            ->getResults();
+    }
+
     private function getAggregateParentKey(Relation $relation): ?string
     {
         return match (true) {
@@ -352,7 +426,7 @@ trait QueriesRelationshipAggregates
     {
         if (isset($this->getQuery()->orders[$alias])) {
             throw new LogicException(sprintf(
-                'Ordering by the aggregated field "%s" is not supported, as it is computed after the documents are read. Sort the results with the collection method "sortBy" instead.',
+                'Ordering by the aggregated field "%s" is not supported, as it is computed after the documents are read. Sort on the relation with "orderByRelationAggregate()", or sort the results with the collection method "sortBy".',
                 $alias,
             ));
         }

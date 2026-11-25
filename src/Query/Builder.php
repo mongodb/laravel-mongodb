@@ -28,9 +28,12 @@ use MongoDB\Builder\Search;
 use MongoDB\Builder\Stage\FluentFactoryTrait;
 use MongoDB\Builder\Type\QueryInterface;
 use MongoDB\Builder\Type\SearchOperatorInterface;
+use MongoDB\Builder\Type\StageInterface;
 use MongoDB\Driver\Cursor;
+use MongoDB\Driver\Exception\ServerException;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Helpers\RelationLookup;
 use Override;
 use ReflectionMethod;
 use RuntimeException;
@@ -120,6 +123,8 @@ class Builder extends BaseBuilder
     public $hint;
 
     private ReadPreference $readPreference;
+
+    private ?Pipeline $pipeline = null;
 
     /**
      * Custom options to add to the query.
@@ -230,6 +235,99 @@ class Builder extends BaseBuilder
         return $this;
     }
 
+    /**
+     * @internal Used by the Eloquent\Builder hooks that bridge Filament.
+     *
+     * @param array<string, mixed>|StageInterface $stage
+     */
+    public function addInternalStage(array|StageInterface $stage, bool $neededForCount = true): static
+    {
+        $this->pipeline()->addStage($stage, $neededForCount);
+
+        return $this;
+    }
+
+    /** @internal Used by the Eloquent\Builder hooks that bridge Filament. */
+    public function addInternalFieldToUnset(string $field): static
+    {
+        $this->pipeline()->unsetTemporaryField($field);
+
+        return $this;
+    }
+
+    public function __clone()
+    {
+        if ($this->pipeline !== null) {
+            $this->pipeline = clone $this->pipeline;
+        }
+    }
+
+    private function pipeline(): Pipeline
+    {
+        return $this->pipeline ??= new Pipeline();
+    }
+
+    private function effectivePipeline(): ?Pipeline
+    {
+        $pipeline = $this->pipeline === null ? null : clone $this->pipeline;
+
+        foreach ($this->nestedQueries() as $query) {
+            $pipeline = $this->mergeNestedPipeline($pipeline, $query);
+        }
+
+        return $pipeline;
+    }
+
+    private function mergeNestedPipeline(?Pipeline $pipeline, self $query): ?Pipeline
+    {
+        $nested = $query->effectivePipeline();
+
+        if ($nested === null) {
+            return $pipeline;
+        }
+
+        $pipeline ??= new Pipeline();
+        $pipeline->mergeFrom($nested);
+
+        return $pipeline;
+    }
+
+    /** @return list<self> */
+    private function nestedQueries(): array
+    {
+        $queries = [];
+
+        foreach ($this->wheres as $where) {
+            if ($this->isNestedQuery($where)) {
+                $queries[] = $where['query'];
+            }
+        }
+
+        return $queries;
+    }
+
+    /** @param array<string, mixed> $where */
+    private function isNestedQuery(array $where): bool
+    {
+        return ($where['type'] ?? null) === 'Nested' && ($where['query'] ?? null) instanceof self;
+    }
+
+    private function assertWritable(): void
+    {
+        $this->effectivePipeline()?->assertWritable();
+    }
+
+    private function assertCarriesNoStage(): void
+    {
+        $pipeline = $this->effectivePipeline();
+
+        if ($pipeline === null || $pipeline->isEmpty()) {
+            return;
+        }
+
+        throw new LogicException('An $elemMatch constraint cannot carry pipeline stages, because a stage cannot be hoisted out of the $elemMatch operator. Attach the stage to the outer query instead.');
+    }
+
     /** @inheritdoc */
     #[Override]
     public function find($id, $columns = [])
@@ -304,12 +402,28 @@ class Builder extends BaseBuilder
         // to every query compiled from this builder.
         $this->applyBeforeQueryCallbacks();
 
-        $columns = $this->columns ?? [];
+        $pipeline = $this->effectivePipeline();
+        $command = $this->compileCommand();
 
-        // Drop all columns if * is present, MongoDB does not work this way.
-        if (in_array('*', $columns)) {
-            $columns = [];
-        }
+        return $pipeline === null ? $command : $pipeline->applyTo($command);
+    }
+
+    /**
+     * MongoDB has no wildcard: a selection of every field is an absent projection.
+     *
+     * @param array<array-key, mixed> $columns
+     *
+     * @return list<mixed>
+     */
+    private function selectedFields(array $columns): array
+    {
+        return (new ColumnSelection($columns, (string) $this->from))->fields();
+    }
+
+    /** @return array<string, mixed[]> */
+    private function compileCommand(): array
+    {
+        $columns = $this->selectedFields($this->columns ?? []);
 
         $wheres = $this->compileWheres();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
@@ -503,6 +617,16 @@ class Builder extends BaseBuilder
      */
     public function getFresh($columns = [], $returnLazy = false)
     {
+        try {
+            return $this->runFreshSelect($columns, $returnLazy);
+        } catch (ServerException $exception) {
+            throw RelationLookup::explainFailure($exception);
+        }
+    }
+
+    /** @return array|static[]|Collection|LazyCollection */
+    private function runFreshSelect($columns, bool $returnLazy)
+    {
         // If no columns have been specified for the select statement, we will set them
         // here to either the passed columns, or the standard default of retrieving
         // all of the columns on the table using the "wildcard" column character.
@@ -510,10 +634,7 @@ class Builder extends BaseBuilder
             $this->columns = $columns;
         }
 
-        // Drop all columns if * is present, MongoDB does not work this way.
-        if (in_array('*', $this->columns)) {
-            $this->columns = [];
-        }
+        $this->columns = $this->selectedFields($this->columns);
 
         $command = $this->toMql();
         assert(count($command) >= 1, 'At least one method call is required to execute a query');
@@ -1003,11 +1124,31 @@ class Builder extends BaseBuilder
     #[Override]
     public function pluck($column, $key = null)
     {
+        if ($this->distinct && ! $this->groups && ! $this->aggregate) {
+            if ($key !== null) {
+                throw new BadMethodCallException('Distinct queries do not support plucking with a key.');
+            }
+
+            return $this->pluckDistinct($column);
+        }
+
         $results = $this->get($key === null ? [$column] : [$column, $key]);
 
         $p = Arr::pluck($results, $column, $key);
 
         return new Collection($p);
+    }
+
+    private function pluckDistinct($column): Collection
+    {
+        $selectedColumns = $this->columns;
+        $this->columns = [$column];
+
+        try {
+            return $this->get();
+        } finally {
+            $this->columns = $selectedColumns;
+        }
     }
 
     /** @inheritdoc */
@@ -1024,6 +1165,7 @@ class Builder extends BaseBuilder
         $this->applyBeforeQueryCallbacks();
 
         $wheres = $this->compileWheres();
+        $this->assertWritable();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
         $options = $this->inheritConnectionOptions();
 
@@ -1233,6 +1375,7 @@ class Builder extends BaseBuilder
         $options = $this->inheritConnectionOptions($options);
 
         $wheres = $this->compileWheres();
+        $this->assertWritable();
         $wheres = $this->grammar->prepareFieldsForQuery($wheres);
         // Queryable Encryption forbids multi-document updates, so encrypted
         // collections must use single-document updates. Unmapped collections
@@ -1758,7 +1901,13 @@ class Builder extends BaseBuilder
 
     protected function compileWhereSub(array $where): mixed
     {
-        $where['value'] = $where['query']->compileWheres();
+        $query = $where['query'];
+
+        if ($query instanceof self) {
+            $query->assertCarriesNoStage();
+        }
+
+        $where['value'] = $query->compileWheres();
 
         return $this->compileWhereBasic($where);
     }
