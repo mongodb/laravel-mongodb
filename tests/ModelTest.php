@@ -1219,6 +1219,29 @@ class ModelTest extends TestCase
         $this->assertEquals($dataValues, $model->getAttribute('level1'));
     }
 
+    public function testMassAssignmentCannotSetAnOperatorKey(): void
+    {
+        $model = Guarded::create(['name' => 'John Doe']);
+
+        // The "$set" key is read as an operator when the model is saved, which
+        // would write the guarded "foobar" field.
+        $this->expectException(MassAssignmentException::class);
+        $this->expectExceptionMessage('The key [$set] is read as a MongoDB operator');
+
+        $model->fill(['name' => 'Jane Doe', '$set' => ['foobar' => 'injected']]);
+    }
+
+    public function testOperatorKeyCannotBeAssigned(): void
+    {
+        // Even an unguarded model cannot hold an operator key as an attribute.
+        $user = new User();
+
+        $this->expectException(MassAssignmentException::class);
+        $this->expectExceptionMessage('The key [$inc] is read as a MongoDB operator');
+
+        $user->{'$inc'} = ['age' => 1];
+    }
+
     public function testFirstOrCreate(): void
     {
         $name = 'Jane Poe';

@@ -8,12 +8,15 @@ use Closure;
 use DateTime;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Events\Dispatcher;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use LogicException;
 use Mockery;
 use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\UTCDateTime;
 use MongoDB\Laravel\Relations\EmbedsOneOrMany;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
@@ -22,6 +25,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
 
 use function array_keys;
+use function array_map;
 use function array_merge;
 use function config;
 use function count;
@@ -31,6 +35,7 @@ class EmbeddedRelationsTest extends TestCase
     public function tearDown(): void
     {
         Mockery::close();
+        Carbon::setTestNow();
         User::truncate();
 
         parent::tearDown();
@@ -1103,6 +1108,179 @@ class EmbeddedRelationsTest extends TestCase
         $user = User::find($user->id);
         $this->assertNotNull($user->dynamicFather);
         $this->assertEquals('Mark Doe', $user->dynamicFather->name);
+    }
+
+    public function testUpdateAfterEagerLoadOnlyAffectsTheTargetDocument()
+    {
+        $user1 = User::create(['name' => 'John Doe']);
+        $user1->father()->save(new User(['name' => 'Mark Doe']));
+        $user2 = User::create(['name' => 'Jane Doe']);
+        $user2->father()->save(new User(['name' => 'Robert Doe']));
+
+        User::with('father')->find($user1->id)->update(['name' => 'John Smith']);
+
+        $raw = $this->getConnection('mongodb')->getCollection('users');
+        $this->assertSame(1, $raw->countDocuments(['name' => 'John Smith']));
+        $this->assertSame(1, $raw->countDocuments(['name' => 'Jane Doe']));
+        $this->assertSame('Mark Doe', $raw->findOne(['name' => 'John Smith'])['father']['name']);
+        $this->assertSame('Robert Doe', $raw->findOne(['name' => 'Jane Doe'])['father']['name']);
+    }
+
+    public function testDeleteAfterEagerLoadOfEmbedsOneOnlyAffectsTheTargetDocument()
+    {
+        $user1 = User::create(['name' => 'John Doe']);
+        $user1->father()->save(new User(['name' => 'Mark Doe']));
+        $user2 = User::create(['name' => 'Jane Doe']);
+        $user2->father()->save(new User(['name' => 'Robert Doe']));
+
+        User::with('father')->find($user1->id)->delete();
+
+        $raw = $this->getConnection('mongodb')->getCollection('users');
+        $this->assertSame(1, $raw->countDocuments());
+        $this->assertSame('Jane Doe', $raw->findOne(['name' => 'Jane Doe'])['name']);
+        $this->assertSame('Robert Doe', $raw->findOne(['name' => 'Jane Doe'])['father']['name']);
+    }
+
+    public function testDeleteAfterEagerLoadOfEmbedsManyOnlyAffectsTheTargetDocument()
+    {
+        $user1 = User::create(['name' => 'John Doe']);
+        $user1->addresses()->save(new Address(['city' => 'London']));
+        $user2 = User::create(['name' => 'Jane Doe']);
+        $user2->addresses()->save(new Address(['city' => 'Paris']));
+
+        User::with('addresses')->find($user1->id)->delete();
+
+        $raw = $this->getConnection('mongodb')->getCollection('users');
+        $this->assertSame(1, $raw->countDocuments());
+        $this->assertSame('Jane Doe', $raw->findOne(['name' => 'Jane Doe'])['name']);
+        $this->assertSame('Paris', $raw->findOne(['name' => 'Jane Doe'])['addresses'][0]['city']);
+    }
+
+    public function testUnconstrainedEmbedsManyInsertOnlyAffectsTheParentDocument()
+    {
+        [$user1] = $this->twoUsersSharingAnAddress();
+
+        Relation::noConstraints(fn () => $user1->addresses())->save(new Address(['city' => 'Berlin']));
+
+        $this->assertSame(['London', 'Berlin'], $this->rawCities('John Doe'));
+        $this->assertSame(['London'], $this->rawCities('Jane Doe'));
+    }
+
+    public function testUnconstrainedEmbedsManyUpdateOnlyAffectsTheParentDocument()
+    {
+        [$user1] = $this->twoUsersSharingAnAddress();
+        $address = $user1->addresses->first();
+        $address->city = 'Paris';
+
+        Relation::noConstraints(fn () => $user1->addresses())->save($address);
+
+        $this->assertSame(['Paris'], $this->rawCities('John Doe'));
+        $this->assertSame(['London'], $this->rawCities('Jane Doe'));
+    }
+
+    public function testUnconstrainedEmbedsManyDeleteOfAModelOnlyAffectsTheParentDocument()
+    {
+        [$user1, , $addressId] = $this->twoUsersSharingAnAddress();
+
+        Relation::noConstraints(fn () => $user1->addresses())->destroy($addressId);
+
+        $this->assertSame([], $this->rawCities('John Doe'));
+        $this->assertSame(['London'], $this->rawCities('Jane Doe'));
+    }
+
+    public function testUnconstrainedEmbedsManyDeleteOfAllModelsOnlyAffectsTheParentDocument()
+    {
+        [$user1] = $this->twoUsersSharingAnAddress();
+
+        Relation::noConstraints(fn () => $user1->addresses())->delete();
+
+        $this->assertSame([], $this->rawCities('John Doe'));
+        $this->assertSame(['London'], $this->rawCities('Jane Doe'));
+    }
+
+    public function testUnconstrainedEmbedsOneInsertOnlyAffectsTheParentDocument()
+    {
+        [$user1] = $this->twoUsersWithAFather();
+        $user1->father()->delete();
+
+        Relation::noConstraints(fn () => $user1->father())->save(new User(['name' => 'Luke Doe']));
+
+        $this->assertSame('Luke Doe', $this->rawFatherName('John Doe'));
+        $this->assertSame('Robert Doe', $this->rawFatherName('Jane Doe'));
+    }
+
+    public function testUnconstrainedEmbedsOneUpdateOnlyAffectsTheParentDocument()
+    {
+        [$user1] = $this->twoUsersWithAFather();
+        $father       = $user1->father;
+        $father->name = 'Luke Doe';
+
+        Relation::noConstraints(fn () => $user1->father())->save($father);
+
+        $this->assertSame('Luke Doe', $this->rawFatherName('John Doe'));
+        $this->assertSame('Robert Doe', $this->rawFatherName('Jane Doe'));
+    }
+
+    public function testUnconstrainedEmbedsOneDeleteOnlyAffectsTheParentDocument()
+    {
+        [$user1] = $this->twoUsersWithAFather();
+
+        Relation::noConstraints(fn () => $user1->father())->delete();
+
+        $this->assertNull($this->rawFatherName('John Doe'));
+        $this->assertSame('Robert Doe', $this->rawFatherName('Jane Doe'));
+    }
+
+    public function testDeleteOfAllEmbeddedModelsTouchesTheParentUpdatedAt()
+    {
+        Carbon::setTestNow('2026-01-01 10:00:00');
+        $user = User::create(['name' => 'John Doe']);
+        $user->addresses()->save(new Address(['city' => 'London']));
+        Carbon::setTestNow('2026-01-02 10:00:00');
+
+        $user->addresses()->delete();
+
+        $raw = $this->getConnection('mongodb')->getCollection('users');
+        $this->assertEquals(new UTCDateTime(Carbon::now()), $raw->findOne(['name' => 'John Doe'])['updated_at']);
+    }
+
+    /** @return array{User, User, ObjectId} */
+    private function twoUsersSharingAnAddress(): array
+    {
+        $addressId = new ObjectId();
+        $user1     = User::create(['name' => 'John Doe']);
+        $user1->addresses()->save(new Address(['id' => $addressId, 'city' => 'London']));
+        $user2 = User::create(['name' => 'Jane Doe']);
+        $user2->addresses()->save(new Address(['id' => $addressId, 'city' => 'London']));
+
+        return [$user1, $user2, $addressId];
+    }
+
+    /** @return array{User, User} */
+    private function twoUsersWithAFather(): array
+    {
+        $user1 = User::create(['name' => 'John Doe']);
+        $user1->father()->save(new User(['name' => 'Mark Doe']));
+        $user2 = User::create(['name' => 'Jane Doe']);
+        $user2->father()->save(new User(['name' => 'Robert Doe']));
+
+        return [$user1, $user2];
+    }
+
+    /** @return list<string> */
+    private function rawCities(string $userName): array
+    {
+        $raw       = $this->getConnection('mongodb')->getCollection('users');
+        $addresses = $raw->findOne(['name' => $userName])['addresses'];
+
+        return array_map(fn ($address) => $address['city'], (array) $addresses);
+    }
+
+    private function rawFatherName(string $userName): ?string
+    {
+        $raw = $this->getConnection('mongodb')->getCollection('users');
+
+        return $raw->findOne(['name' => $userName])['father']['name'] ?? null;
     }
 
     /** @param Closure(): Builder $query */

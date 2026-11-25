@@ -135,6 +135,14 @@ Post::where('status', $request->input('status'))->get();      // DON'T DO THIS
 Post::where('status', '=', $request->input('status'))->get(); // safe: literal match
 ```
 
+## `incrementEach()` and `decrementEach()` reject expressions in `$extra`
+
+The `$extra` columns are written by an aggregation pipeline, where a `$`-prefixed string is a field path or a variable and a `$`-prefixed key is an operator. Such values are rejected with an `InvalidArgumentException`.
+
+```php
+Post::whereKey($post->getKey())->incrementEach(['views' => 1], ['updated_by' => $request->user()->name]);
+```
+
 ## Raw aggregation entry point
 
 ```php

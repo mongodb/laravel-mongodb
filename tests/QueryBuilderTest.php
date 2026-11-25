@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace MongoDB\Laravel\Tests;
 
 use Carbon\Carbon;
+use Closure;
 use DateTime;
 use DateTimeImmutable;
 use Illuminate\Support\Collection as LaravelCollection;
@@ -16,8 +17,11 @@ use Illuminate\Testing\Assert;
 use Illuminate\Tests\Database\DatabaseQueryBuilderTest;
 use InvalidArgumentException;
 use LogicException;
+use MongoDB\BSON\Document;
 use MongoDB\BSON\ObjectId;
+use MongoDB\BSON\PackedArray;
 use MongoDB\BSON\Regex;
+use MongoDB\BSON\Serializable;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\Stage;
 use MongoDB\Collection;
@@ -32,7 +36,9 @@ use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\TestWith;
+use RuntimeException;
 use Stringable;
 
 use function count;
@@ -578,6 +584,117 @@ class QueryBuilderTest extends TestCase
 
         DB::table('users')->where('age', '<', 25)->delete();
         $this->assertEquals(1, DB::table('users')->count());
+    }
+
+    public static function provideReadOperationsRestrictedByBeforeQuery(): array
+    {
+        return [
+            'get' => [static fn (Builder $query) => $query->get()->count(), 0],
+            'first' => [static fn (Builder $query) => $query->first(), null],
+            'pluck' => [static fn (Builder $query) => $query->pluck('name')->count(), 0],
+            'value' => [static fn (Builder $query) => $query->value('name'), null],
+            'cursor' => [static fn (Builder $query) => $query->cursor()->count(), 0],
+            'exists' => [static fn (Builder $query) => $query->exists(), false],
+            'count' => [static fn (Builder $query) => $query->count(), 0],
+        ];
+    }
+
+    #[DataProvider('provideReadOperationsRestrictedByBeforeQuery')]
+    public function testBeforeQueryCallbackIsAppliedToReads(Closure $execute, mixed $expected): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'Visible', 'tenant_id' => 7],
+            ['name' => 'Other tenant', 'tenant_id' => 999],
+        ]);
+
+        $query = DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 42));
+
+        $this->assertSame($expected, $execute($query));
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToFind(): void
+    {
+        $id = DB::table('users')->insertGetId(['name' => 'Other tenant', 'tenant_id' => 999]);
+
+        $user = DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 42))
+            ->find($id);
+
+        $this->assertNull($user);
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToUpdate(): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'Visible', 'tenant_id' => 7, 'reviewed' => false],
+            ['name' => 'Other tenant', 'tenant_id' => 999, 'reviewed' => false],
+        ]);
+
+        $updated = DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 7))
+            ->update(['reviewed' => true]);
+
+        $this->assertSame(1, $updated);
+        $this->assertSame(1, DB::table('users')->where('tenant_id', 7)->where('reviewed', true)->count());
+        $this->assertSame(1, DB::table('users')->where('tenant_id', 999)->where('reviewed', false)->count());
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToIncrement(): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'Visible', 'tenant_id' => 7, 'age' => 20],
+            ['name' => 'Other tenant', 'tenant_id' => 999, 'age' => 20],
+        ]);
+
+        DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 7))
+            ->increment('age');
+
+        $this->assertSame(21, DB::table('users')->where('tenant_id', 7)->value('age'));
+        $this->assertSame(20, DB::table('users')->where('tenant_id', 999)->value('age'));
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToDelete(): void
+    {
+        DB::table('users')->insert([
+            ['name' => 'Visible', 'tenant_id' => 7],
+            ['name' => 'Other tenant', 'tenant_id' => 999],
+        ]);
+
+        $deleted = DB::table('users')
+            ->beforeQuery(static fn (Builder $query) => $query->where('tenant_id', 42))
+            ->delete();
+
+        $this->assertSame(0, $deleted);
+        $this->assertSame(2, DB::table('users')->count());
+    }
+
+    public static function provideInsertOperations(): array
+    {
+        return [
+            'insert' => [static fn (Builder $query) => $query->insert(['name' => 'John Doe'])],
+            'insertGetId' => [static fn (Builder $query) => $query->insertGetId(['name' => 'John Doe'])],
+        ];
+    }
+
+    #[DataProvider('provideInsertOperations')]
+    public function testBeforeQueryCallbackIsAppliedToInsert(Closure $insert): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        $insert(DB::table('users')->beforeQuery(static function (): void {
+            throw new RuntimeException('Blocked by beforeQuery.');
+        }));
+    }
+
+    public function testBeforeQueryCallbackIsAppliedToAggregationBuilder(): void
+    {
+        $this->expectException(RuntimeException::class);
+
+        DB::table('users')->beforeQuery(static function (): void {
+            throw new RuntimeException('Blocked by beforeQuery.');
+        })->aggregate();
     }
 
     public function testTruncate()
@@ -1587,6 +1704,105 @@ class QueryBuilderTest extends TestCase
         $this->assertEquals(30, $user->age);
         $this->assertEquals(5, $user->note);
         $this->assertEquals('foo', $user->extra);
+    }
+
+    public function testIncrementEachStoresExtraValues(): void
+    {
+        DB::table('users')->insert(['name' => 'John Doe', 'age' => 30]);
+
+        DB::table('users')->incrementEach(['age' => 1], ['note' => 'John Doe', 'meta' => ['draft' => true]]);
+
+        $user = DB::table('users')->where('name', 'John Doe')->first();
+        $this->assertSame(31, $user->age);
+        $this->assertSame('John Doe', $user->note);
+        $this->assertSame(['draft' => true], (array) $user->meta);
+    }
+
+    #[TestWith(['$name'])]
+    #[TestWith(['$$ROOT'])]
+    #[TestWith([['$ne' => 1]])]
+    #[TestWith([['a', '$name']])]
+    #[TestWith([['a' => ['b' => '$c']]])]
+    public function testIncrementEachRejectsExpressionValues(mixed $value): void
+    {
+        $this->assertIncrementEachRejects($value);
+    }
+
+    public static function objectExpressionValues(): iterable
+    {
+        yield 'stdClass operator' => [(object) ['$concat' => ['$secret', '']]];
+        yield 'stdClass string' => [(object) ['a' => '$secret']];
+        yield 'nested stdClass' => [['a' => (object) ['$ne' => 1]]];
+        yield 'BSON document' => [Document::fromPHP(['$concat' => ['$secret', '']])];
+        yield 'nested BSON document' => [['a' => Document::fromPHP(['b' => '$secret'])]];
+        yield 'BSON array' => [PackedArray::fromPHP(['$secret'])];
+        yield 'serializable' => [self::serializableOperatorDocument()];
+        yield 'plain object' => [self::plainObjectWithFieldPath()];
+        yield 'nested plain object' => [['a' => self::plainObjectWithFieldPath()]];
+    }
+
+    private static function plainObjectWithFieldPath(): object
+    {
+        return new class () {
+            public string $note = '$secret';
+        };
+    }
+
+    private static function serializableOperatorDocument(): Serializable
+    {
+        return new class () implements Serializable {
+            /** @return array<string, mixed> */
+            public function bsonSerialize(): array
+            {
+                return ['$concat' => ['$secret', '']];
+            }
+        };
+    }
+
+    public function testIncrementEachStoresBsonTypesAndPlainObjectsWithoutExpressions(): void
+    {
+        $id = new ObjectId();
+        $when = new UTCDateTime();
+        DB::table('users')->insert(['name' => 'John Doe', 'age' => 30]);
+
+        DB::table('users')->incrementEach(['age' => 1], [
+            'ref' => $id,
+            'at' => $when,
+            'meta' => (object) ['draft' => true],
+        ]);
+
+        $user = DB::table('users')->where('name', 'John Doe')->first();
+        $this->assertSame(31, $user->age);
+        $this->assertEquals($id, $user->ref);
+        $this->assertSame($when->toDateTime()->format('Uv'), $user->at->format('Uv'));
+        $this->assertSame(['draft' => true], (array) $user->meta);
+    }
+
+    #[DataProvider('objectExpressionValues')]
+    public function testIncrementEachRejectsObjectExpressionValues(mixed $value): void
+    {
+        $this->assertIncrementEachRejects($value);
+    }
+
+    private function assertIncrementEachRejects(mixed $value): void
+    {
+        DB::table('users')->insert(['name' => 'John Doe', 'age' => 30, 'secret' => 'TOP-SECRET']);
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The value of the extra column "note" cannot contain a MongoDB operator or a "$"-prefixed string.');
+
+        DB::table('users')->incrementEach(['age' => 1], ['note' => $value]);
+    }
+
+    #[TestWith(['$name'])]
+    #[TestWith([['$ne' => 1]])]
+    public function testDecrementEachRejectsExpressionValues(mixed $value): void
+    {
+        DB::table('users')->insert(['name' => 'John Doe', 'age' => 30, 'secret' => 'TOP-SECRET']);
+
+        $this->expectException(InvalidArgumentException::class);
+
+        DB::table('users')->decrementEach(['age' => 1], ['note' => $value]);
     }
 
     #[TestWith(['id', 'id'])]

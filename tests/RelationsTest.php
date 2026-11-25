@@ -13,6 +13,7 @@ use MongoDB\Laravel\Relations\MorphTo;
 use MongoDB\Laravel\Tests\Models\Address;
 use MongoDB\Laravel\Tests\Models\Book;
 use MongoDB\Laravel\Tests\Models\Client;
+use MongoDB\Laravel\Tests\Models\CustomMorphClassUser;
 use MongoDB\Laravel\Tests\Models\Group;
 use MongoDB\Laravel\Tests\Models\Item;
 use MongoDB\Laravel\Tests\Models\Label;
@@ -22,12 +23,15 @@ use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class RelationsTest extends TestCase
 {
     public function tearDown(): void
     {
         Mockery::close();
+
+        Relation::morphMap([], false);
 
         User::truncate();
         Client::truncate();
@@ -786,6 +790,52 @@ class RelationsTest extends TestCase
 
         $this->assertEquals(1, $client->labels->count());
         $this->assertContains($label->id, $user->labels->pluck('id'));
+    }
+
+    /**
+     * The pivot stores the model's morph class, which is not the class name when
+     * a morph map or a getMorphClass() override is used. The existence queries
+     * must filter the pivot on that same value.
+     *
+     * @param class-string<User>          $userClass
+     * @param array<string, class-string> $morphMap
+     */
+    #[DataProvider('provideMorphToManyMorphClass')]
+    public function testMorphToManyExistsQueriesUseTheStoredMorphClass(string $userClass, array $morphMap): void
+    {
+        Relation::morphMap($morphMap, false);
+        $userClass::truncate();
+
+        $labelled = $userClass::create(['name' => 'Labelled']);
+        $userClass::create(['name' => 'Unlabelled']);
+        $label = Label::create(['name' => 'deny']);
+
+        $labelled->labels()->attach($label);
+
+        $relation = $labelled->labels();
+        $pivot = $this->getConnection('mongodb')
+            ->getCollection('labels')
+            ->findOne(['_id' => new ObjectId($label->id)]);
+        $this->assertSame($labelled->getMorphClass(), $pivot[$relation->getTable()][0][$relation->getMorphType()]);
+
+        // The negative form must exclude it. When the morph class does not match
+        // the stored one, the exclusion list is empty and every model is returned.
+        $this->assertSame(['Unlabelled'], $userClass::doesntHave('labels')->pluck('name')->all());
+        $this->assertSame(['Unlabelled'], $userClass::whereDoesntHave('labels', static fn ($query) => $query->where('name', 'deny'))->pluck('name')->all());
+
+        // The positive form must select the labelled model only.
+        $this->assertSame(['Labelled'], $userClass::has('labels')->pluck('name')->all());
+        $this->assertSame(['Labelled'], $userClass::whereHas('labels', static fn ($query) => $query->where('name', 'deny'))->pluck('name')->all());
+    }
+
+    /** @return array<string, array{class-string<User>, array<string, class-string>}> */
+    public static function provideMorphToManyMorphClass(): array
+    {
+        return [
+            'morph map alias' => [User::class, ['user' => User::class]],
+            'getMorphClass() override' => [CustomMorphClassUser::class, []],
+            'no alias' => [User::class, []],
+        ];
     }
 
     public function testMorphToManyAttachEloquentCollection(): void

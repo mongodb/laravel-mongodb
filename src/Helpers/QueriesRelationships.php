@@ -569,7 +569,7 @@ trait QueriesRelationships
     {
         // First we select the parent models that have a relation to our related model,
         // Then extracts related model's ids from the pivot column
-        $hasQuery->where($relation->getTable() . '.' . $relation->getMorphType(), $relation->getParent()::class);
+        $hasQuery->where($relation->getTable() . '.' . $relation->getMorphType(), $relation->getMorphClass());
         $relations = $hasQuery->pluck($relation->getTable());
         $relations = $relation->extractIds($relations->flatten(1)->toArray(), $relation->getForeignPivotKeyName());
 

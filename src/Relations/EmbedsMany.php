@@ -65,7 +65,7 @@ class EmbedsMany extends EmbedsOneOrMany
         }
 
         // Push the new model to the database.
-        $result = $this->toBase()->push($this->localKey, $model->getAttributes(), true);
+        $result = $this->constrainedWriteQuery()->push($this->localKey, $model->getAttributes(), true);
 
         // Attach the model to its parent.
         if ($result) {
@@ -95,7 +95,7 @@ class EmbedsMany extends EmbedsOneOrMany
         $values = self::getUpdateValues($model->getDirty(), $this->localKey . '.$.');
 
         // Update document in database.
-        $result = $this->toBase()->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)
+        $result = $this->constrainedWriteQuery()->where($this->localKey . '.' . $model->getKeyName(), $foreignKey)
             ->update($values);
 
         // Attach the model to its parent.
@@ -123,7 +123,7 @@ class EmbedsMany extends EmbedsOneOrMany
         // Get the correct foreign key value.
         $foreignKey = $this->getForeignKeyValue($model);
 
-        $result = $this->toBase()->pull($this->localKey, [$model->getKeyName() => $foreignKey]);
+        $result = $this->constrainedWriteQuery()->pull($this->localKey, [$model->getKeyName() => $foreignKey]);
 
         if ($result) {
             $this->dissociate($model);
@@ -214,7 +214,9 @@ class EmbedsMany extends EmbedsOneOrMany
         throw_if($id !== null, new LogicException('The id parameter should not be used.'));
 
         // Overwrite the local key with an empty array.
-        $result = $this->query->update([$this->localKey => []]);
+        $result = $this->getQuery()
+            ->where($this->getQualifiedParentKeyName(), '=', $this->getParentKey())
+            ->update([$this->localKey => []]);
 
         if ($result) {
             $this->setEmbedded([]);
