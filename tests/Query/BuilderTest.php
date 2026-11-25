@@ -2723,6 +2723,18 @@ class BuilderTest extends TestCase
             ['options' => ['maxTimeMS' => 2000]],
         ];
 
+        yield 'distinct preserves custom collation and inherits maxTimeMS' => [
+            ['distinct' => ['name', [], ['collation' => ['locale' => 'en', 'strength' => 2], 'maxTimeMS' => 2000]]],
+            fn (Builder $builder) => $builder->options(['collation' => ['locale' => 'en', 'strength' => 2]])->distinct('name'),
+            ['options' => ['maxTimeMS' => 2000]],
+        ];
+
+        yield 'distinct options maxTimeMS overrides config maxTimeMS' => [
+            ['distinct' => ['name', [], ['maxTimeMS' => 5000]]],
+            fn (Builder $builder) => $builder->options(['maxTimeMS' => 5000])->distinct('name'),
+            ['options' => ['maxTimeMS' => 2000]],
+        ];
+
         yield 'options maxTimeMS overrides config maxTimeMS' => [
             ['find' => [[], ['maxTimeMS' => 5000]]],
             fn (Builder $builder) => $builder->options(['maxTimeMS' => 5000]),
