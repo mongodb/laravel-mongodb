@@ -32,6 +32,7 @@ use MongoDB\Driver\Monitoring\CommandFailedEvent;
 use MongoDB\Driver\Monitoring\CommandStartedEvent;
 use MongoDB\Driver\Monitoring\CommandSubscriber;
 use MongoDB\Driver\Monitoring\CommandSucceededEvent;
+use MongoDB\Driver\ReadConcern;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
 use MongoDB\Laravel\Tests\Models\Item;
@@ -106,6 +107,174 @@ class QueryBuilderTest extends TestCase
 
         $users = DB::table('users')->get();
         $this->assertCount(1, $users);
+    }
+
+    public static function provideGetCommandOptions(): iterable
+    {
+        $cases = [
+            'readConcern local' => [
+                ['readConcern' => new ReadConcern(ReadConcern::LOCAL)],
+                ['readConcern' => ['level' => 'local']],
+            ],
+            'readConcern majority' => [
+                ['readConcern' => new ReadConcern(ReadConcern::MAJORITY)],
+                ['readConcern' => ['level' => 'majority']],
+            ],
+            'readConcern available' => [
+                ['readConcern' => new ReadConcern(ReadConcern::AVAILABLE)],
+                ['readConcern' => ['level' => 'available']],
+            ],
+            'comment simple' => [
+                ['comment' => 'builder options test'],
+                ['comment' => 'builder options test'],
+            ],
+            'comment with quotes' => [
+                ['comment' => 'options with "quotes" and spaces'],
+                ['comment' => 'options with "quotes" and spaces'],
+            ],
+            'maxTimeMS zero' => [['maxTimeMS' => 0], ['maxTimeMS' => 0]],
+            'maxTimeMS positive' => [['maxTimeMS' => 10000], ['maxTimeMS' => 10000]],
+        ];
+
+        foreach (['query builder' => false, 'eloquent' => true] as $builder => $eloquent) {
+            foreach ($cases as $name => [$options, $expectedCommandOptions]) {
+                yield $builder . ': ' . $name => [$eloquent, $options, $expectedCommandOptions];
+            }
+        }
+    }
+
+    #[DataProvider('provideGetCommandOptions')]
+    public function testGetWithCommandOptions(bool $eloquent, array $options, array $expectedCommandOptions): void
+    {
+        DB::table('users')->insert([
+            ['foo' => 'baz', 'name' => 'Jane Doe'],
+            ['foo' => 'bar', 'name' => 'John Doe'],
+        ]);
+
+        $builder = $eloquent
+            ? User::where('foo', 'bar')
+            : DB::table('users')->where('foo', 'bar');
+
+        DB::enableQueryLog();
+        try {
+            $users = $builder->options($options)->get();
+            $logs = DB::getQueryLog();
+        } finally {
+            DB::disableQueryLog();
+        }
+
+        $this->assertSame(['John Doe'], $users->pluck('name')->all());
+        $this->assertCount(1, $logs);
+        $this->assertEquals(
+            ['find' => 'users', 'filter' => ['foo' => 'bar']] + $expectedCommandOptions,
+            Document::fromJSON($logs[0]['query'])->toPHP(['root' => 'array', 'document' => 'array']),
+        );
+    }
+
+    public static function provideGetSortLimitAndSkipOptions(): iterable
+    {
+        $cases = [
+            'sort ascending' => [['sort' => ['name' => 1]], ['Alice', 'Bob', 'Charlie', 'David']],
+            'sort descending' => [['sort' => ['name' => -1]], ['David', 'Charlie', 'Bob', 'Alice']],
+            'limit zero' => [['limit' => 0], ['Charlie', 'Alice', 'David', 'Bob']],
+            'limit one' => [['limit' => 1], ['Charlie']],
+            'limit two' => [['limit' => 2], ['Charlie', 'Alice']],
+            'skip zero' => [['skip' => 0], ['Charlie', 'Alice', 'David', 'Bob']],
+            'skip one' => [['skip' => 1], ['Alice', 'David', 'Bob']],
+            'skip two' => [['skip' => 2], ['David', 'Bob']],
+            'skip all' => [['skip' => 4], []],
+            'limit zero with skip' => [['limit' => 0, 'skip' => 1], ['Alice', 'David', 'Bob']],
+            'limit two with skip' => [['limit' => 2, 'skip' => 1], ['Alice', 'David']],
+        ];
+
+        foreach (['query builder' => false, 'eloquent' => true] as $builder => $eloquent) {
+            foreach ($cases as $name => [$options, $expectedNames]) {
+                yield $builder . ': ' . $name => [$eloquent, $options, $expectedNames];
+            }
+        }
+    }
+
+    #[DataProvider('provideGetSortLimitAndSkipOptions')]
+    public function testGetWithSortLimitAndSkipOptions(bool $eloquent, array $options, array $expectedNames): void
+    {
+        DB::table('users')->insert([
+            ['_id' => 1, 'name' => 'Charlie'],
+            ['_id' => 2, 'name' => 'Alice'],
+            ['_id' => 3, 'name' => 'David'],
+            ['_id' => 4, 'name' => 'Bob'],
+        ]);
+
+        $builder = $eloquent ? User::query() : DB::table('users');
+        $users = $builder->orderBy('id')->options($options)->get();
+
+        $this->assertSame($expectedNames, $users->pluck('name')->all());
+    }
+
+    public static function provideGetProjectionOptions(): iterable
+    {
+        $cases = [
+            'include name' => [['name' => 1, '_id' => 0], ['name' => 'John Doe']],
+            'exclude age' => [['age' => 0, '_id' => 0], ['foo' => 'bar', 'name' => 'John Doe']],
+        ];
+
+        foreach (['query builder' => false, 'eloquent' => true] as $builder => $eloquent) {
+            foreach ($cases as $name => [$projection, $expectedAttributes]) {
+                yield $builder . ': ' . $name => [$eloquent, $projection, $expectedAttributes];
+            }
+        }
+    }
+
+    #[DataProvider('provideGetProjectionOptions')]
+    public function testGetWithProjectionOption(bool $eloquent, array $projection, array $expectedAttributes): void
+    {
+        DB::table('users')->insert([
+            ['foo' => 'baz', 'name' => 'Jane Doe', 'age' => 20],
+            ['foo' => 'bar', 'name' => 'John Doe', 'age' => 25],
+        ]);
+
+        $builder = $eloquent
+            ? User::where('foo', 'bar')
+            : DB::table('users')->where('foo', 'bar');
+        $users = $builder->options(['projection' => $projection])->get();
+
+        $this->assertSame(
+            [$expectedAttributes],
+            $users->map(static fn ($user) => $eloquent ? $user->getAttributes() : (array) $user)->all(),
+        );
+    }
+
+    public static function provideGetCollationOptions(): iterable
+    {
+        $cases = [
+            'strength one' => [1, ['cafe', 'café', 'CAFE', 'CAFÉ']],
+            'strength two' => [2, ['café', 'CAFÉ']],
+            'strength three' => [3, ['café']],
+        ];
+
+        foreach (['query builder' => false, 'eloquent' => true] as $builder => $eloquent) {
+            foreach ($cases as $name => [$strength, $expectedNames]) {
+                yield $builder . ': ' . $name => [$eloquent, $strength, $expectedNames];
+            }
+        }
+    }
+
+    #[DataProvider('provideGetCollationOptions')]
+    public function testGetWithCollationOption(bool $eloquent, int $strength, array $expectedNames): void
+    {
+        DB::table('users')->insert([
+            ['_id' => 1, 'name' => 'cafe'],
+            ['_id' => 2, 'name' => 'café'],
+            ['_id' => 3, 'name' => 'CAFE'],
+            ['_id' => 4, 'name' => 'CAFÉ'],
+            ['_id' => 5, 'name' => 'tea'],
+        ]);
+
+        $builder = $eloquent
+            ? User::where('name', 'café')
+            : DB::table('users')->where('name', 'café');
+        $users = $builder->orderBy('id')->options(['collation' => ['locale' => 'en', 'strength' => $strength]])->get();
+
+        $this->assertSame($expectedNames, $users->pluck('name')->all());
     }
 
     public function testPipelineStagesRunAsAnAggregate()

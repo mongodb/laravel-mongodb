@@ -16,6 +16,7 @@ use LogicException;
 use MongoDB\BSON\Regex;
 use MongoDB\BSON\UTCDateTime;
 use MongoDB\Builder\Stage;
+use MongoDB\Driver\ReadConcern;
 use MongoDB\Driver\ReadPreference;
 use MongoDB\Laravel\Connection;
 use MongoDB\Laravel\Query\Builder;
@@ -113,6 +114,85 @@ class BuilderTest extends TestCase
         }
 
         $this->assertEquals($expected, $mql, var_export($mql, true));
+    }
+
+    #[DataProvider('provideQueryOptions')]
+    public function testOptionsAreForwardedToFindAndAggregate(array $options): void
+    {
+        $builder = $this->getBuilder()->where('foo', 'bar');
+
+        $this->assertSame($builder, $builder->options($options));
+
+        $expectedOptions = ['typeMap' => ['root' => 'object', 'document' => 'array'], ...$options];
+
+        $this->assertEquals(
+            ['find' => [['foo' => 'bar'], $expectedOptions]],
+            $builder->toMql(),
+        );
+        $this->assertEquals(
+            [
+                'aggregate' => [
+                    [
+                        ['$match' => ['foo' => 'bar']],
+                        ['$group' => ['_id' => ['foo' => '$foo'], 'foo' => ['$last' => '$foo']]],
+                    ],
+                    $expectedOptions,
+                ],
+            ],
+            $builder->groupBy('foo')->toMql(),
+        );
+    }
+
+    public static function provideQueryOptions(): iterable
+    {
+        yield 'empty options' => [[]];
+
+        foreach ([ReadConcern::LOCAL, ReadConcern::MAJORITY, ReadConcern::AVAILABLE, ReadConcern::LINEARIZABLE, ReadConcern::SNAPSHOT] as $level) {
+            yield 'readConcern ' . $level => [['readConcern' => new ReadConcern($level)]];
+        }
+
+        foreach ([ReadPreference::PRIMARY, ReadPreference::PRIMARY_PREFERRED, ReadPreference::SECONDARY, ReadPreference::SECONDARY_PREFERRED, ReadPreference::NEAREST] as $mode) {
+            yield 'readPreference ' . $mode => [['readPreference' => new ReadPreference($mode)]];
+        }
+
+        yield 'readPreference with tags' => [
+            ['readPreference' => new ReadPreference(ReadPreference::SECONDARY_PREFERRED, [['dc' => 'ny']])],
+        ];
+        yield 'readPreference with max staleness' => [
+            ['readPreference' => new ReadPreference(ReadPreference::NEAREST, null, ['maxStalenessSeconds' => 120])],
+        ];
+        yield 'empty comment' => [['comment' => '']];
+        yield 'nonempty comment' => [['comment' => 'hello']];
+
+        foreach ([0, 2000] as $timeout) {
+            yield 'maxTimeMS ' . $timeout => [['maxTimeMS' => $timeout]];
+        }
+
+        foreach ([0, 2] as $batchSize) {
+            yield 'batchSize ' . $batchSize => [['batchSize' => $batchSize]];
+        }
+
+        yield 'allowDiskUse false' => [['allowDiskUse' => false]];
+        yield 'allowDiskUse true' => [['allowDiskUse' => true]];
+
+        foreach ([1, 2, 3] as $strength) {
+            yield 'collation strength ' . $strength => [['collation' => ['locale' => 'en', 'strength' => $strength]]];
+        }
+
+        yield 'hint by name' => [['hint' => 'foo_1']];
+        yield 'hint by keys' => [['hint' => ['foo' => 1]]];
+        yield 'let string' => [['let' => ['value' => 'bar']]];
+        yield 'let integer' => [['let' => ['value' => 42]]];
+        yield 'custom typeMap' => [['typeMap' => ['root' => 'array', 'document' => 'object']]];
+        yield 'combined options' => [[
+            'readConcern' => new ReadConcern(ReadConcern::MAJORITY),
+            'readPreference' => new ReadPreference(ReadPreference::PRIMARY_PREFERRED),
+            'comment' => 'hello',
+            'maxTimeMS' => 2000,
+            'allowDiskUse' => false,
+            'hint' => ['foo' => 1],
+        ],
+        ];
     }
 
     public static function provideQueryBuilderToMql(): iterable
@@ -1706,6 +1786,20 @@ class BuilderTest extends TestCase
         yield 'options' => [
             ['find' => [[], ['comment' => 'hello']]],
             fn (Builder $builder) => $builder->options(['comment' => 'hello']),
+        ];
+
+        yield 'options replaces previous options' => [
+            ['find' => [[], ['readConcern' => new ReadConcern(ReadConcern::MAJORITY)]]],
+            fn (Builder $builder) => $builder
+                ->options(['comment' => 'hello', 'readConcern' => new ReadConcern(ReadConcern::LOCAL)])
+                ->options(['readConcern' => new ReadConcern(ReadConcern::MAJORITY)]),
+        ];
+
+        yield 'empty options clears previous options' => [
+            ['find' => [[], []]],
+            fn (Builder $builder) => $builder
+                ->options(['readConcern' => new ReadConcern(ReadConcern::MAJORITY)])
+                ->options([]),
         ];
 
         yield 'readPreference' => [
