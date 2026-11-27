@@ -197,7 +197,8 @@ class BelongsToMany extends EloquentBelongsToMany
     #[Override]
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
-        // Do nothing, we have no pivot table.
+        (new IgnoredPivotAttributes($attributes, $this))->report();
+
         return $this;
     }
 
@@ -205,6 +206,8 @@ class BelongsToMany extends EloquentBelongsToMany
     #[Override]
     public function attach($id, array $attributes = [], $touch = true)
     {
+        (new IgnoredPivotAttributes($attributes, $this))->report();
+
         if ($id instanceof Model) {
             $model = $id;
 

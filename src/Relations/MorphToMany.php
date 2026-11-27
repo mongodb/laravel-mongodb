@@ -214,13 +214,15 @@ class MorphToMany extends EloquentMorphToMany
     #[Override]
     public function updateExistingPivot($id, array $attributes, $touch = true): void
     {
-        // Do nothing, we have no pivot table.
+        (new IgnoredPivotAttributes($attributes, $this))->report();
     }
 
     /** @inheritdoc */
     #[Override]
     public function attach($id, array $attributes = [], $touch = true)
     {
+        (new IgnoredPivotAttributes($attributes, $this))->report();
+
         if ($id instanceof Model) {
             $model = $id;
 
