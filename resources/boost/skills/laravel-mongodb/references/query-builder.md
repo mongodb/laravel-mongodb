@@ -63,7 +63,7 @@ Limitations:
 - `orderBy()` on an aggregate alias throws, because the value does not exist server side. Sort the resulting
   collection with `sortBy()` instead.
 - `cursor()` and `lazy()` do not eager load, so the aliases are absent on those paths.
-- Constraint closures on embedded relations are not supported.
+- On an embedded relation, the closure of an aggregate filters the documents with `where()` and needs MongoDB 6.0 or later. `orderBy()` is ignored, and `limit()`, `offset()` and `distinct()` throw. Eager loading with `with()` also applies `orderBy()` and `limit()` to the documents of each parent.
 - Use a `$lookup` pipeline instead when you need to filter, sort or paginate on the aggregated value:
 
 ```php

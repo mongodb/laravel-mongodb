@@ -46,6 +46,16 @@ class EmbedsMany extends EmbedsOneOrMany
     }
 
     /**
+     * @internal
+     *
+     * @param list<array<string, mixed>> $documents
+     */
+    public function hydrate(array $documents): Collection
+    {
+        return $this->toCollection($documents);
+    }
+
+    /**
      * Save a new model and attach it to the parent model.
      *
      * @return Model|bool

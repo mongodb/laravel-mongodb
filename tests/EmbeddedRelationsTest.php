@@ -1361,7 +1361,7 @@ class EmbeddedRelationsTest extends TestCase
     #[TestWith([false, 'id'])]
     public function testACountMatchesTheEmbeddedIdFieldOfTheConnection(bool $renameEmbeddedIdField, string $idField): void
     {
-        $this->skipIfRelationLookupIsNotSupported();
+        $this->skipIfDocumentsLookupIsNotSupported();
         DB::connection('mongodb')->setRenameEmbeddedIdField($renameEmbeddedIdField);
         DB::connection('mongodb')->getCollection('users')->insertMany([
             ['name' => 'Alice', 'addresses' => [[$idField => 7], [$idField => 9]]],
@@ -1466,7 +1466,7 @@ class EmbeddedRelationsTest extends TestCase
 
     public function testACountedEmbeddedRelationKeepsAnEmbeddedAggregateOfANarrowedSelection(): void
     {
-        $this->skipIfRelationLookupIsNotSupported();
+        $this->skipIfDocumentsLookupIsNotSupported();
 
         $alice = User::create(['name' => 'Alice']);
         $alice->addresses()->create(['city' => 'Paris']);
@@ -1484,7 +1484,7 @@ class EmbeddedRelationsTest extends TestCase
 
     public function testEmbeddedDocumentsAreCountedInTheQueriedCollection(): void
     {
-        $this->skipIfRelationLookupIsNotSupported();
+        $this->skipIfDocumentsLookupIsNotSupported();
 
         $alice = User::create(['name' => 'Alice']);
         $alice->addresses()->create(['city' => 'Paris']);
@@ -1508,7 +1508,7 @@ class EmbeddedRelationsTest extends TestCase
 
     public function testEmbeddedCountsOfAClonedQueryKeepTheirOwnField(): void
     {
-        $this->skipIfRelationLookupIsNotSupported();
+        $this->skipIfDocumentsLookupIsNotSupported();
 
         $alice = User::create(['name' => 'Alice']);
         $alice->addresses()->create(['city' => 'Paris']);
@@ -1554,7 +1554,7 @@ class EmbeddedRelationsTest extends TestCase
     #[DataProvider('provideEmbeddedDocumentCounts')]
     public function testEmbeddedDocumentsAreCountedWithALookup(Closure $query, array $expected): void
     {
-        $this->skipIfRelationLookupIsNotSupported();
+        $this->skipIfDocumentsLookupIsNotSupported();
 
         $alice = User::create(['name' => 'Alice']);
         $alice->addresses()->create(['city' => 'Paris']);

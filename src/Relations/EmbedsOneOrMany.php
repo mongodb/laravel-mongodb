@@ -32,6 +32,13 @@ use function throw_if;
 abstract class EmbedsOneOrMany extends Relation
 {
     /**
+     * @internal
+     *
+     * @param list<array<string, mixed>> $documents
+     */
+    abstract public function hydrate(array $documents): mixed;
+
+    /**
      * The local key of the parent model.
      *
      * @var string

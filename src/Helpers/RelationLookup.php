@@ -38,6 +38,8 @@ final class RelationLookup
 {
     private const KEYS_VARIABLE = 'laravel_mongodb_relation_keys';
 
+    private const DOCUMENTS_VARIABLE = 'laravel_mongodb_embedded_documents';
+
     private const UUID_KEY_MARKER = 'laravel_mongodb_uuid_key_stored_as_string';
 
     private const CONVERSION_FAILURE = 241;
@@ -108,23 +110,41 @@ final class RelationLookup
     }
 
     /**
+     * Runs the pipeline over the embedded documents of each parent document, without reading the collection again.
+     *
      * @param list<array<string, mixed>> $pipeline
      *
      * @return array<string, mixed>
      */
-    public static function ofEmbeddedDocuments(Builder $parents, string $alias, array $pipeline): array
+    public static function ofEmbeddedDocuments(Builder $parents, EmbedsOneOrMany $relation, string $alias, array $pipeline): array
     {
-        self::assertServerSupportsLookup($parents->getConnection());
+        self::assertServerSupportsDocumentsLookup($parents->getConnection());
+
+        $field = $relation->getLocalKeyName();
+        $path = '$' . $field;
+        $variable = '$$' . self::DOCUMENTS_VARIABLE;
+        $embedded = ['$cond' => [['$isArray' => $path], $path, ['$cond' => [['$eq' => [['$type' => $path], 'object']], [$path], []]]]];
+        $underField = ['$map' => ['input' => $variable, 'as' => 'document', 'in' => [$field => '$$document']]];
 
         return [
             '$lookup' => [
-                'from' => $parents->getConnection()->getTablePrefix() . $parents->from,
-                'localField' => '_id',
-                'foreignField' => '_id',
-                'pipeline' => $pipeline,
+                'let' => [self::DOCUMENTS_VARIABLE => $embedded],
+                'pipeline' => [['$documents' => $underField], ...$pipeline],
                 'as' => $alias,
             ],
         ];
+    }
+
+    private static function assertServerSupportsDocumentsLookup(ConnectionInterface $connection): void
+    {
+        if (! $connection instanceof Connection || $connection->supportsDocumentsLookup()) {
+            return;
+        }
+
+        throw new LogicException(sprintf(
+            'Constraining the documents of an embedded relation in the query requires MongoDB 6.0 or later, and the server of connection [%s] is older. Upgrade the server, or filter the documents of the relation after loading it.',
+            $connection->getName(),
+        ));
     }
 
     /** @param Relation<Model, Model, mixed> $relation */

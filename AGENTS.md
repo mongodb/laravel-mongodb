@@ -20,12 +20,20 @@ them.
 
 The Filament bridge is the one exception: its relationship lookups require MongoDB 5.1, because an
 indexable `$lookup` combines `localField`/`foreignField` with a `pipeline`, and only 5.1 accepts a
-sharded collection in `from`. Older servers reject the stage. Keep existing Eloquent calls such as
+sharded collection in `from`. Older servers reject the stage. Its lookups over an embedded relation
+need MongoDB 6.0, see below. Keep existing Eloquent calls such as
 `withCount()` off the lookup path, so they keep working on every server and topology. Matching the keys the Eloquent relation itself matches is the bar; a gap beyond it is an
 accepted trade-off when it is documented. The bridge exists only for Filament, so judge a review
 finding by whether Filament's own sort, search and filter calls can reach it. Decline a finding that
 needs hand-written raw MQL, such as a raw `$expr` or `options()`, when the code already fails with a
 clear message.
+
+Constraints on an embedded relation inside a query (`with()`, `withWhereHas()`, `withCount()` and the
+other aggregates, `load()`, `has()` with a count, `orderByRelationAggregate()` and
+`whereRelationAggregate()`) are the second exception: they need MongoDB 6.0, because the documents are
+read in the parent read with a `$lookup` that starts from `$documents`. Calls without a constraint
+never use it and run on every server. The stage runs after the sort, skip and limit of the parent
+query, with `Pipeline::addStageAfterPaging()`, so a page only narrows its own documents.
 
 When a Laravel feature cannot work on MongoDB, do not diverge silently: state the limitation, and
 prefer a change in Laravel or in a dependency when that unblocks a faithful implementation.

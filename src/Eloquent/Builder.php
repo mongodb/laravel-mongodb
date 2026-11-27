@@ -17,6 +17,7 @@ use MongoDB\Builder\Type\SearchOperatorInterface;
 use MongoDB\Driver\CursorInterface;
 use MongoDB\Driver\Exception\BulkWriteException;
 use MongoDB\Laravel\Connection;
+use MongoDB\Laravel\Helpers\FiltersEagerLoadedEmbeddedRelations;
 use MongoDB\Laravel\Helpers\QueriesRelationshipAggregates;
 use MongoDB\Laravel\Helpers\QueriesRelationships;
 use MongoDB\Laravel\Helpers\RelationAggregate;
@@ -52,6 +53,7 @@ use function value;
  */
 class Builder extends EloquentBuilder
 {
+    use FiltersEagerLoadedEmbeddedRelations;
     use QueriesRelationships;
     use QueriesRelationshipAggregates;
 
@@ -321,7 +323,7 @@ class Builder extends EloquentBuilder
     {
         $stages = [...self::embeddedDocumentStages($relation, self::embeddedQuery($relation, $callback)), ...$aggregate->stagesOverRelated()];
 
-        $this->mongoQuery()->addInternalStage(RelationLookup::ofEmbeddedDocuments($this->mongoQuery(), $alias, $stages), neededForCount: false);
+        $this->mongoQuery()->addInternalStage(RelationLookup::ofEmbeddedDocuments($this->mongoQuery(), $relation, $alias, $stages), neededForCount: false);
 
         return [];
     }

@@ -42,9 +42,13 @@ class Connection extends BaseConnection
 
     private const WIRE_VERSION_FOR_RELATION_LOOKUP = 14;
 
+    private const WIRE_VERSION_FOR_DOCUMENTS_LOOKUP = 17;
+
     private static ?string $version = null;
 
     private ?bool $supportsRelationLookup = null;
+
+    private ?bool $supportsDocumentsLookup = null;
 
     /**
      * The MongoDB database handler.
@@ -338,6 +342,7 @@ class Connection extends BaseConnection
         $this->commandSubscriber = null;
         $this->connection = null;
         $this->supportsRelationLookup = null;
+        $this->supportsDocumentsLookup = null;
     }
 
     /**
@@ -489,6 +494,12 @@ class Connection extends BaseConnection
     public function supportsRelationLookup(): bool
     {
         return $this->supportsRelationLookup ??= $this->maxWireVersion() >= self::WIRE_VERSION_FOR_RELATION_LOOKUP;
+    }
+
+    /** @internal */
+    public function supportsDocumentsLookup(): bool
+    {
+        return $this->supportsDocumentsLookup ??= $this->maxWireVersion() >= self::WIRE_VERSION_FOR_DOCUMENTS_LOOKUP;
     }
 
     private function maxWireVersion(): int
