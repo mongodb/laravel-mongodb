@@ -58,7 +58,9 @@ class BelongsToMany extends EloquentBelongsToMany
     #[Override]
     protected function hydratePivotRelation(array $models)
     {
-        // Do nothing.
+        foreach ($models as $model) {
+            $model->setRelation($this->accessor, $this->newExistingPivot([]));
+        }
     }
 
     /**
@@ -143,11 +145,7 @@ class BelongsToMany extends EloquentBelongsToMany
             'updated' => [],
         ];
 
-        if ($ids instanceof Collection) {
-            $ids = $this->parseIds($ids);
-        } elseif ($ids instanceof Model) {
-            $ids = $this->parseIds($ids);
-        }
+        $ids = $this->parseIds($ids);
 
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
@@ -201,7 +199,8 @@ class BelongsToMany extends EloquentBelongsToMany
     #[Override]
     public function updateExistingPivot($id, array $attributes, $touch = true)
     {
-        // Do nothing, we have no pivot table.
+        (new IgnoredPivotAttributes($attributes, $this))->report();
+
         return $this;
     }
 
@@ -209,6 +208,8 @@ class BelongsToMany extends EloquentBelongsToMany
     #[Override]
     public function attach($id, array $attributes = [], $touch = true)
     {
+        (new IgnoredPivotAttributes($attributes, $this))->report();
+
         if ($id instanceof Model) {
             $model = $id;
 

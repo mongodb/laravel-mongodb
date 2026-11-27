@@ -4,7 +4,10 @@ declare(strict_types=1);
 
 namespace MongoDB\Laravel\Tests;
 
+use Closure;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use InvalidArgumentException;
 use Mockery;
@@ -22,8 +25,15 @@ use MongoDB\Laravel\Tests\Models\Role;
 use MongoDB\Laravel\Tests\Models\Scoped;
 use MongoDB\Laravel\Tests\Models\Skill;
 use MongoDB\Laravel\Tests\Models\Soft;
+use MongoDB\Laravel\Tests\Models\SqlUser;
 use MongoDB\Laravel\Tests\Models\User;
 use PHPUnit\Framework\Attributes\DataProvider;
+
+use function collect;
+use function restore_error_handler;
+use function set_error_handler;
+
+use const E_USER_DEPRECATED;
 
 class RelationsTest extends TestCase
 {
@@ -270,6 +280,140 @@ class RelationsTest extends TestCase
         $this->assertNotContains($user->id, $client->user_ids);
         $this->assertCount(0, $user->clients);
         $this->assertCount(1, $client->users);
+    }
+
+    #[DataProvider('provideWritesWithPivotAttributes')]
+    public function testBelongsToManyDeprecatesPivotAttributes(Closure $write): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $client = Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $deprecations = $this->collectDeprecations(fn () => $write($user->clients(), $client));
+
+        $this->assertCount(1, $deprecations);
+        $this->assertStringContainsString('[price]', $deprecations[0]);
+    }
+
+    public function testBelongsToManyStillAttachesWhenPivotAttributesAreIgnored(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $client = Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $this->collectDeprecations(fn () => $user->clients()->attach($client, ['price' => 200]));
+
+        $this->assertSame([$client->id], $user->fresh()->client_ids);
+    }
+
+    public function testBelongsToManyAdvisesAnEmbeddedRelationForADocumentParent(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $client = Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $deprecations = $this->collectDeprecations(fn () => $user->clients()->attach($client, ['price' => 200]));
+
+        $this->assertStringContainsString('embedsMany', $deprecations[0]);
+    }
+
+    public function testBelongsToManyDoesNotAdviseAnEmbeddedRelationForASqlParent(): void
+    {
+        $user = new SqlUser();
+        $skill = Skill::create(['name' => 'Laravel']);
+
+        $deprecations = $this->collectDeprecations(fn () => $user->skills()->attach($skill, ['level' => 3]));
+
+        $this->assertStringNotContainsString('embedsMany', $deprecations[0]);
+        $this->assertStringContainsString('a model of its own', $deprecations[0]);
+    }
+
+    public function testBelongsToManyDoesNotDeprecateWithoutPivotAttributes(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $client = Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $deprecations = $this->collectDeprecations(fn () => $user->clients()->attach($client));
+
+        $this->assertSame([], $deprecations);
+    }
+
+    #[DataProvider('provideMorphToManyWritesWithPivotAttributes')]
+    public function testMorphToManyDeprecatesPivotAttributes(Closure $write): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $label = Label::create(['name' => 'ddd']);
+
+        $deprecations = $this->collectDeprecations(fn () => $write($user->labels(), $label));
+
+        $this->assertCount(1, $deprecations);
+        $this->assertStringContainsString('[price]', $deprecations[0]);
+    }
+
+    public static function provideMorphToManyWritesWithPivotAttributes(): iterable
+    {
+        yield 'attach' => [fn (MorphToMany $relation, Label $label) => $relation->attach($label, ['price' => 200])];
+        yield 'save' => [fn (MorphToMany $relation, Label $label) => $relation->save($label, ['price' => 200])];
+        yield 'create' => [fn (MorphToMany $relation) => $relation->create(['name' => 'Acme'], ['price' => 200])];
+        yield 'sync' => [fn (MorphToMany $relation, Label $label) => $relation->sync([$label->id => ['price' => 200]])];
+        yield 'syncWithPivotValues' => [fn (MorphToMany $relation, Label $label) => $relation->syncWithPivotValues([$label->id], ['price' => 200])];
+        yield 'updateExistingPivot' => [fn (MorphToMany $relation, Label $label) => $relation->updateExistingPivot($label->id, ['price' => 200])];
+    }
+
+    public function testBelongsToManyHydratesAnEmptyPivot(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->attach(Client::create(['name' => 'Pork Pies Ltd.']));
+
+        $client = $user->clients()->first();
+
+        $this->assertSame([], $client->pivot->attributesToArray());
+    }
+
+    public function testMorphToManyHydratesAnEmptyPivot(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->labels()->attach(Label::create(['name' => 'ddd']));
+
+        $label = $user->labels()->first();
+
+        $this->assertSame(['labelled_type' => User::class], $label->pivot->attributesToArray());
+    }
+
+    public function testBelongsToManySyncsABaseCollectionOfIds(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $client = Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $user->clients()->sync(collect([$client->id]));
+
+        $this->assertSame([$client->id], $user->fresh()->client_ids);
+    }
+
+    public static function provideWritesWithPivotAttributes(): iterable
+    {
+        yield 'attach' => [fn (BelongsToMany $relation, Client $client) => $relation->attach($client, ['price' => 200])];
+        yield 'save' => [fn (BelongsToMany $relation, Client $client) => $relation->save($client, ['price' => 200])];
+        yield 'create' => [fn (BelongsToMany $relation) => $relation->create(['name' => 'Acme'], ['price' => 200])];
+        yield 'sync' => [fn (BelongsToMany $relation, Client $client) => $relation->sync([$client->id => ['price' => 200]])];
+        yield 'syncWithPivotValues' => [fn (BelongsToMany $relation, Client $client) => $relation->syncWithPivotValues([$client->id], ['price' => 200])];
+        yield 'updateExistingPivot' => [fn (BelongsToMany $relation, Client $client) => $relation->updateExistingPivot($client->id, ['price' => 200])];
+    }
+
+    /** @return list<string> */
+    private function collectDeprecations(Closure $callback): array
+    {
+        $deprecations = [];
+        set_error_handler(static function (int $errno, string $errstr) use (&$deprecations): bool {
+            $deprecations[] = $errstr;
+
+            return true;
+        }, E_USER_DEPRECATED);
+
+        try {
+            $callback();
+        } finally {
+            restore_error_handler();
+        }
+
+        return $deprecations;
     }
 
     public function testBelongsToManyAttachesExistingModels(): void

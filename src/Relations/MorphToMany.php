@@ -42,7 +42,9 @@ class MorphToMany extends EloquentMorphToMany
     #[Override]
     protected function hydratePivotRelation(array $models)
     {
-        // Do nothing.
+        foreach ($models as $model) {
+            $model->setRelation($this->accessor, $this->newExistingPivot([]));
+        }
     }
 
     #[Override]
@@ -147,11 +149,7 @@ class MorphToMany extends EloquentMorphToMany
             'updated' => [],
         ];
 
-        if ($ids instanceof Collection) {
-            $ids = $this->parseIds($ids);
-        } elseif ($ids instanceof Model) {
-            $ids = $this->parseIds($ids);
-        }
+        $ids = $this->parseIds($ids);
 
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
@@ -218,13 +216,15 @@ class MorphToMany extends EloquentMorphToMany
     #[Override]
     public function updateExistingPivot($id, array $attributes, $touch = true): void
     {
-        // Do nothing, we have no pivot table.
+        (new IgnoredPivotAttributes($attributes, $this))->report();
     }
 
     /** @inheritdoc */
     #[Override]
     public function attach($id, array $attributes = [], $touch = true)
     {
+        (new IgnoredPivotAttributes($attributes, $this))->report();
+
         if ($id instanceof Model) {
             $model = $id;
 
