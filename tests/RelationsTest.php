@@ -25,6 +25,8 @@ use MongoDB\Laravel\Tests\Models\Soft;
 use MongoDB\Laravel\Tests\Models\User;
 use PHPUnit\Framework\Attributes\DataProvider;
 
+use function collect;
+
 class RelationsTest extends TestCase
 {
     public function tearDown(): void
@@ -270,6 +272,16 @@ class RelationsTest extends TestCase
         $this->assertNotContains($user->id, $client->user_ids);
         $this->assertCount(0, $user->clients);
         $this->assertCount(1, $client->users);
+    }
+
+    public function testBelongsToManySyncsABaseCollectionOfIds(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $client = Client::create(['name' => 'Pork Pies Ltd.']);
+
+        $user->clients()->sync(collect([$client->id]));
+
+        $this->assertSame([$client->id], $user->fresh()->client_ids);
     }
 
     public function testBelongsToManyAttachesExistingModels(): void

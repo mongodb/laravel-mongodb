@@ -143,11 +143,7 @@ class BelongsToMany extends EloquentBelongsToMany
             'updated' => [],
         ];
 
-        if ($ids instanceof Collection) {
-            $ids = $this->parseIds($ids);
-        } elseif ($ids instanceof Model) {
-            $ids = $this->parseIds($ids);
-        }
+        $ids = $this->parseIds($ids);
 
         // First we need to attach any of the associated models that are not currently
         // in this joining table. We'll spin through the given IDs, checking to see
