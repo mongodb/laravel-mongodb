@@ -357,6 +357,26 @@ class RelationsTest extends TestCase
         yield 'updateExistingPivot' => [fn (MorphToMany $relation, Label $label) => $relation->updateExistingPivot($label->id, ['price' => 200])];
     }
 
+    public function testBelongsToManyHydratesAnEmptyPivot(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->clients()->attach(Client::create(['name' => 'Pork Pies Ltd.']));
+
+        $client = $user->clients()->first();
+
+        $this->assertSame([], $client->pivot->attributesToArray());
+    }
+
+    public function testMorphToManyHydratesAnEmptyPivot(): void
+    {
+        $user = User::create(['name' => 'John Doe']);
+        $user->labels()->attach(Label::create(['name' => 'ddd']));
+
+        $label = $user->labels()->first();
+
+        $this->assertSame(['labelled_type' => User::class], $label->pivot->attributesToArray());
+    }
+
     public function testBelongsToManySyncsABaseCollectionOfIds(): void
     {
         $user = User::create(['name' => 'John Doe']);

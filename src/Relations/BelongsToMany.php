@@ -58,7 +58,9 @@ class BelongsToMany extends EloquentBelongsToMany
     #[Override]
     protected function hydratePivotRelation(array $models)
     {
-        // Do nothing.
+        foreach ($models as $model) {
+            $model->setRelation($this->accessor, $this->newExistingPivot([]));
+        }
     }
 
     /**
